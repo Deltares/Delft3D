@@ -469,14 +469,14 @@ contains
 
       write (lunhyd, '(a,a)') 'task      ', 'full-coupling'
 
-      if (layertype == LAYTP_SIGMA) then ! all sigma layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
-      elseif (layertype == LAYTP_Z) then ! z layers or z-sigma layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
-      elseif (layertype == LAYTP_LEFTSIGMA) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-sigma-layers'
-      elseif (layertype == LAYTP_LEFTZ) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-z-layers'
+      if (layertype == LAYTP_SIGMA) then ! sigma-layers
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured sigma-layers'
+      elseif (layertype == LAYTP_Z) then ! z- or z-sigma-layers
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z- or z-sigma-layers'
+      elseif (layertype == LAYTP_POLYGON_MIXED) then
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured polygon defined z-layers'
+      elseif (layertype == LAYTP_DENS_SIGMA) then
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured density controlled sigma-layers'
       else ! other?
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured other'
       end if
@@ -2282,7 +2282,8 @@ contains
             else if (kk1 > 0 .or. kk2 > 0) then
                ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
                ! If both are in an other domain, we simply skip this.
-               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(srcname(numsrc)), ' are not in the same domain. This is not yet supported in DELWAQ output!'; call err_flush()
+               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(srcname(numsrc)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
+               call err_flush()
             end if
          end if
       end do
@@ -2459,8 +2460,8 @@ contains
       end do
       do ip = 1, waqpar%noql
          if (waqpar%aggre == 1) then
-            lenex(1, ip) = lenex(1, ip) / dble(noqa(ip))
-            lenex(2, ip) = lenex(2, ip) / dble(noqa(ip))
+            lenex(1, ip) = lenex(1, ip) / real(noqa(ip), kind=dp)
+            lenex(2, ip) = lenex(2, ip) / real(noqa(ip), kind=dp)
          end if
          ! Copy lenghts to other layers
          do kk = 1, waqpar%kmxnxa - 1
@@ -2607,7 +2608,8 @@ contains
                do L = 1, lnx
                   call getLbotLtopmax(L, Lb, Lt)
                   do LL = Lb, Lt
-                     k1 = ln(1, LL); k2 = ln(2, LL)
+                     k1 = ln(1, LL)
+                     k2 = ln(2, LL)
                      dv1(k1) = dv1(k1) - q1waq(LL)
                      dv1(k2) = dv1(k2) + q1waq(LL)
                   end do
@@ -2931,12 +2933,12 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%vdf = 0d0
+      waqpar%vdf = 0.0_dp
       if (waqpar%aggre == 0 .and. waqpar%aggrel == 0) then
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb + 1, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%vdf(waqpar%isaggr(kk)) = vicwws(kk - 1)
                end if
             end do
@@ -2949,15 +2951,15 @@ contains
             do kk = kb + 1, ktx
                if (waqpar%isaggr(kk - 1) == waqpar%isaggr(kk)) then
                   ! equal to the previous layer? find next minimum, and add volume
-                  if (vol1(kk) > 1d-25) then
+                  if (vol1(kk) > 1.0e-25_dp) then
                      if (vicwws(kk - 1) < vdfmin .or. vdfmin == 0.0) vdfmin = vicwws(kk - 1)
                      volsum = volsum + vol1(kk)
                   end if
                else
                   ! not equal to previous layer? add the (minimum) dispersion * volume vor the horizontal averaging
                   waqpar%vdf(waqpar%isaggr(kk - 1)) = waqpar%vdf(waqpar%isaggr(kk - 1)) + vdfmin * volsum
-                  if (vol1(kk) > 1d-25) then
-                     vdfmin = dble(vicwws(kk - 1))
+                  if (vol1(kk) > 1.0e-25_dp) then
+                     vdfmin = real(vicwws(kk - 1), kind=dp)
                      volsum = vol1(kk)
                   end if
                end if
@@ -2966,10 +2968,10 @@ contains
             waqpar%vdf(waqpar%isaggr(ktx)) = waqpar%vdf(waqpar%isaggr(ktx)) + vdfmin * volsum
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%vol(i) > 1d-25) then
+            if (waqpar%vol(i) > 1.0e-25_dp) then
                waqpar%vdf(i) = waqpar%vdf(i) / waqpar%vol(i)
             else
-               waqpar%vdf(i) = 0d0
+               waqpar%vdf(i) = 0.0_dp
             end if
          end do
       end if
@@ -2999,7 +3001,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%area = 0d0
+      waqpar%area = 0.0_dp
 
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, lnx
@@ -3026,12 +3028,12 @@ contains
 
       ! dummy areas for sink/sources
       do i = waqpar%noq12 + 1, waqpar%noq12s
-         waqpar%area(i) = 0.1d0
+         waqpar%area(i) = 0.1_dp
       end do
 
       ! dummy areas for laterals
       do i = waqpar%noq12s + 1, waqpar%noq12sl
-         waqpar%area(i) = 0.1d0
+         waqpar%area(i) = 0.1_dp
       end do
 
       ! Add area of the vertical exchanges
@@ -3071,7 +3073,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%qag = 0d0
+      waqpar%qag = 0.0_dp
 
       ! Average the accumulated discharges.
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
@@ -3081,14 +3083,14 @@ contains
             else
                L = Lbot(i)
             end if
-            waqpar%qag(i) = q1waq(L) / dble(ti_waq)
+            waqpar%qag(i) = q1waq(L) / real(ti_waq, kind=dp)
          end do
       else if (waqpar%aggre == 0 .and. waqpar%aggrel == 0) then
          do L = 1, lnx
             call getLbotLtopmax(L, Lb, Ltx)
 
             do LL = Lb, Ltx
-               waqpar%qag(waqpar%iqaggr(LL)) = q1waq(LL) / dble(ti_waq)
+               waqpar%qag(waqpar%iqaggr(LL)) = q1waq(LL) / real(ti_waq, kind=dp)
             end do
          end do
       else
@@ -3098,9 +3100,9 @@ contains
                do LL = Lb, Ltx
                   ip = abs(waqpar%iqaggr(LL))
                   if (waqpar%iqaggr(LL) > 0) then
-                     waqpar%qag(ip) = waqpar%qag(ip) + q1waq(LL) / dble(ti_waq)
+                     waqpar%qag(ip) = waqpar%qag(ip) + q1waq(LL) / real(ti_waq, kind=dp)
                   else
-                     waqpar%qag(ip) = waqpar%qag(ip) - q1waq(LL) / dble(ti_waq)
+                     waqpar%qag(ip) = waqpar%qag(ip) - q1waq(LL) / real(ti_waq, kind=dp)
                   end if
                end do
             end if
@@ -3111,14 +3113,14 @@ contains
    !! TODO: write out discharges to a separe (ascii) file for additional wasteloads?
       if (waqpar%numsrcwaq > 0) then
          do isrc = 1, waqpar%numsrcwaq
-            waqpar%qag(waqpar%noq12 + isrc) = qsrcwaq(isrc) / dble(ti_waq)
+            waqpar%qag(waqpar%noq12 + isrc) = qsrcwaq(isrc) / real(ti_waq, kind=dp)
          end do
       end if
 
       ! Add laterals
       if (waqpar%numlatwaq > 0) then
          do ilatwaq = 1, waqpar%numlatwaq
-            waqpar%qag(waqpar%noq12s + ilatwaq) = qlatwaq(ilatwaq) / dble(ti_waq)
+            waqpar%qag(waqpar%noq12s + ilatwaq) = qlatwaq(ilatwaq) / real(ti_waq, kind=dp)
          end do
       end if
 
@@ -3129,7 +3131,7 @@ contains
                call getkbotktopmax(k, kb, kt, ktx)
                do kk = kb, ktx - 1
                   if (waqpar%iqwaggr(kk) > 0) then
-                     waqpar%qag(waqpar%iqwaggr(kk)) = -qwwaq(kk) / dble(ti_waq)
+                     waqpar%qag(waqpar%iqwaggr(kk)) = -qwwaq(kk) / real(ti_waq, kind=dp)
                   end if
                end do
             end do
@@ -3138,7 +3140,7 @@ contains
                call getkbotktopmax(k, kb, kt, ktx)
                do kk = kb, ktx
                   if (waqpar%iqwaggr(kk) > 0) then
-                     waqpar%qag(waqpar%iqwaggr(kk)) = waqpar%qag(waqpar%iqwaggr(kk)) - qwwaq(kk) / dble(ti_waq)
+                     waqpar%qag(waqpar%iqwaggr(kk)) = waqpar%qag(waqpar%iqwaggr(kk)) - qwwaq(kk) / real(ti_waq, kind=dp)
                   end if
                end do
             end do

@@ -70,7 +70,8 @@ contains
 
       nx = 0
       do L = lnx1D + 1, lnx
-         k3 = lncn(1, L); k4 = lncn(2, L)
+         k3 = lncn(1, L)
+         k4 = lncn(2, L)
          nx = max(nx, k3, k4)
       end do
 
@@ -80,7 +81,8 @@ contains
          end if
 
          wud = wu(L) * dx(L)
-         k3 = lncn(1, L); k4 = lncn(2, L)
+         k3 = lncn(1, L)
+         k4 = lncn(2, L)
          wcnxy(3, k3) = wcnxy(3, k3) + wud
          wcnxy(3, k4) = wcnxy(3, k4) + wud
 
@@ -123,7 +125,8 @@ contains
 
       do L = lnx1D + 1, lnx
          if (abs(kcu(L)) == 1) cycle
-         k3 = lncn(1, L); k4 = lncn(2, L)
+         k3 = lncn(1, L)
+         k4 = lncn(2, L)
          if (wcnxy(1, k3) /= 0) wcnx3(L) = wcnx3(L) / wcnxy(1, k3)
          if (wcnxy(2, k3) /= 0) wcny3(L) = wcny3(L) / wcnxy(2, k3)
          if (wcnxy(1, k4) /= 0) wcnx4(L) = wcnx4(L) / wcnxy(1, k4)
@@ -132,10 +135,12 @@ contains
          if (wcnxy(3, k4) /= 0) wcLn(2, L) = wcLn(2, L) / wcnxy(3, k4)
          if (irov == 2) then ! zero cornervelocities for no-slip
             if (int(wcnxy(3, k3)) /= nmk(k3)) then
-               wcnx3(L) = 0.0_dp; wcny3(L) = 0.0_dp
+               wcnx3(L) = 0.0_dp
+               wcny3(L) = 0.0_dp
             end if
             if (int(wcnxy(3, k4)) /= nmk(k4)) then
-               wcnx4(L) = 0.0_dp; wcny4(L) = 0.0_dp
+               wcnx4(L) = 0.0_dp
+               wcny4(L) = 0.0_dp
             end if
          end if
       end do
@@ -149,7 +154,8 @@ contains
          if (jacorner(k) == 1) then
             krcnw = krcnw + 1 ! cnw = cornerwall point (netnode)
             kcnw(krcnw) = k
-            ka = 0; kb = 0
+            ka = 0
+            kb = 0
             do LL = 1, nmk(k)
                L = nod(k)%lin(LL) ! netstuff
                if (lnn(L) == 1) then

@@ -31,6 +31,7 @@
 !
 
 module m_ndisplay
+
    use m_zoom3, only: zoom3
    use m_setcoltabfile, only: setcoltabfile
    use m_checknetwork, only: checknetwork
@@ -39,6 +40,7 @@ module m_ndisplay
    use m_setwy
    use m_waveconst
 
+use precision, only: dp
    implicit none
 
 contains
@@ -155,7 +157,8 @@ contains
                call MESSAGE('YOU SAVED ', filnam, ' ')
             end if
          else if (NWHAT2 == 6) then
-            call load_displaysettings('unstruc.cfg'); key = 3
+            call load_displaysettings('unstruc.cfg')
+            key = 3
          else if (NWHAT2 == 7) then
             call save_displaysettings('unstruc.cfg')
          end if
@@ -381,7 +384,7 @@ contains
          OPTION(35) = 'Rho                              (kg/m3)'
          OPTION(36) = 'cflmx*vol1(k)/squ(k)               (   )'
 
-         if (soiltempthick == 0d0) then
+         if (soiltempthick == 0.0_dp) then
             OPTION(37) = 'salmase                            (   )'
          else
             OPTION(37) = 'soiltemp                           ( C )'
@@ -411,7 +414,7 @@ contains
 
          if (nonlin >= 2) then
             OPTION(48) = 'a1m                                 (m2)'
-         else if (lnx1D > 0d0) then
+         else if (lnx1D > 0.0_dp) then
             OPTION(48) = 'uc1d                               (m/s)'
          else if (kmx > 0) then
             OPTION(48) = 'max nr of layers                   (   )'

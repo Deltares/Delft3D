@@ -57,7 +57,8 @@ contains
       if (jsfertek == 1) then
          do i = 1, n
             call dproject(x(i), y(i), xx, yy, 1)
-            xr(i) = xx; yr(i) = yy
+            xr(i) = xx
+            yr(i) = yy
          end do
       else
          xr(1:N) = x(1:N)

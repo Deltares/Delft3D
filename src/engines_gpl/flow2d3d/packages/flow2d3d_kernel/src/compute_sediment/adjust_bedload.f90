@@ -227,19 +227,19 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                    dzdu = dzduu(nm)
                    dzdv =0.0_fp
                    ndv = 0
-                   if (kcv(nmu) > 0) then
+                   if (abs(kcv(nmu)) > 0) then
                       dzdv = dzdv + dzdvv(nmu)
                       ndv  = ndv + 1
                    endif
-                   if (kcv(nm) > 0) then
+                   if (abs(kcv(nm)) > 0) then
                       dzdv = dzdv + dzdvv(nm)
                       ndv  = ndv + 1
                    endif
-                   if (kcv(ndmu) > 0) then
+                   if (abs(kcv(ndmu)) > 0) then
                       dzdv = dzdv + dzdvv(ndmu)
                       ndv  = ndv + 1
                    endif
-                   if (kcv(ndm) > 0) then
+                   if (abs(kcv(ndm)) > 0) then
                       dzdv = dzdv + dzdvv(ndm)
                       ndv  = ndv + 1
                    endif
@@ -265,19 +265,19 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                    dzdv = dzdvv(nm)
                    dzdu =0.0_fp
                    ndu = 0
-                   if (kcu(num) > 0) then
+                   if (abs(kcu(num)) > 0) then
                       dzdu = dzdu + dzduu(num)
                       ndu  = ndu + 1
                    endif
-                   if (kcu(nm) > 0) then
+                   if (abs(kcu(nm)) > 0) then
                       dzdu = dzdu + dzduu(nm)
                       ndu  = ndu + 1
                    endif
-                   if (kcu(numd) > 0) then
+                   if (abs(kcu(numd)) > 0) then
                       dzdu = dzdu + dzduu(numd)
                       ndu  = ndu + 1
                    endif
-                   if (kcu(nmd) > 0) then
+                   if (abs(kcu(nmd)) > 0) then
                       dzdu = dzdu + dzduu(nmd)
                       ndu  = ndu + 1
                    endif

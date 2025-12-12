@@ -91,7 +91,8 @@ contains
          if (needfindcells == 1) call findcells(0)
       end if
 
-      inhul1 = -1; inhul2 = -1
+      inhul1 = -1
+      inhul2 = -1
 ! Construct the new polygon set in XPH (backup pol is not used anway during this operation)
       XPH = dmiss
       NPH = 0
@@ -132,14 +133,14 @@ contains
          kstart = kn(1, L)
          XPH(NPH) = XK(kstart)
          YPH(NPH) = YK(kstart)
-         ZPH(NPH) = dble(kstart)
+         ZPH(NPH) = real(kstart, kind=dp)
 !    CALL CIRR(XK(kstart), YK(kstart), 71)
          ! Add second point and then...
          kcur = kn(2, L)
          NPH = NPH + 1
          XPH(NPH) = XK(kcur)
          YPH(NPH) = YK(kcur)
-         ZPH(NPH) = dble(kcur)
+         ZPH(NPH) = real(kcur, kind=dp)
 !    CALL CIRR(XK(kcur), YK(kcur), 81)
          jalinkvisited(L) = 1
          ! ... start walking connected netlinks
@@ -168,7 +169,7 @@ contains
                end if
                XPH(NPH) = XK(kcur)
                YPH(NPH) = YK(kcur)
-               ZPH(NPH) = dble(kcur)
+               ZPH(NPH) = real(kcur, kind=dp)
                jalinkvisited(LL) = 1
 !            CALL CIRR(XK(kcur), YK(kcur), 31)
                goto 10
@@ -259,19 +260,31 @@ contains
             if (jacros == 1) then
                inland = abs(inland - 1)
                if (ia0 == -999 .and. iseg < nseg) then
-                  ia0 = ia; ib0 = ib; ic0 = ic; idir0 = idir; sl0 = sl
+                  ia0 = ia
+                  ib0 = ib
+                  ic0 = ic
+                  idir0 = idir
+                  sl0 = sl
                   iseg0 = iseg
                   cycle ! Allow a second crossing
                else
                   if (ia0 /= -999 .and. sl0 > sl) then
-                     ia = ia0; ib = ib0; ic = ic0; idir = idir0; sl = sl0
+                     ia = ia0
+                     ib = ib0
+                     ic = ic0
+                     idir = idir0
+                     sl = sl0
                      isegc = iseg0
                   end if
                end if
             else ! jacross == 0
                if (iseg == nseg) then
                   if (ia0 /= -999) then
-                     ia = ia0; ib = ib0; ic = ic0; idir = idir0; sl = sl0
+                     ia = ia0
+                     ib = ib0
+                     ic = ic0
+                     idir = idir0
+                     sl = sl0
                      isegc = iseg0
                      jacros = 1
                   end if

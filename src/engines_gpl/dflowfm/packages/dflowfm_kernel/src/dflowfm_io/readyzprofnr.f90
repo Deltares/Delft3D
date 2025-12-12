@@ -118,7 +118,8 @@ contains
                   else
                      y02 = yy(n2) - yy(n0)
                      y01 = yy(n1) - yy(n0)
-                     b = y01 / y02; a = 1.0_dp - b
+                     b = y01 / y02
+                     a = 1.0_dp - b
                      zn1 = a * zz(n0) + b * zz(n2)
                      dif = abs(zz(n1) - zn1)
                      if (dif > tolzprof) then
@@ -147,11 +148,14 @@ contains
       goto 10
 
 999   write (tex, '(i10)') iprofnr
-      call readerror('could not find profnr iprofnr = ', tex, myzprofs); return
+      call readerror('could not find profnr iprofnr = ', tex, myzprofs)
+      return
 
-888   call readerror('reading two integers nrows, nkols, but getting ', rec, myzprofs); return
+888   call readerror('reading two integers nrows, nkols, but getting ', rec, myzprofs)
+return
 
-777   call readerror('reading x,y,z , but getting ', rec, myzprofs); return
+777   call readerror('reading x,y,z , but getting ', rec, myzprofs)
+return
 
    end subroutine readyzprofnr
 

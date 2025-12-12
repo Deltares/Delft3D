@@ -47,7 +47,10 @@ contains
 
       integer :: LL, np, La, npa, k1a, k2a
 
-      La = 0; npa = 0; k1a = 0; k2a = 0
+      La = 0
+      npa = 0
+      k1a = 0
+      k2a = 0
 
       if (np == 0) return
 

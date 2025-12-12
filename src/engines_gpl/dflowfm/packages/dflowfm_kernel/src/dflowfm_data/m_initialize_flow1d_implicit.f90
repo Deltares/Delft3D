@@ -237,9 +237,9 @@ contains
 !allocate
       call realloc(f1dimppar%grd_sre_fm, ngrid)
       call realloc(f1dimppar%grd_fm_sre, ndx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
-         f1dimppar%grd_fm_sre = 0
+      f1dimppar%grd_fm_sre = 0
       call realloc(f1dimppar%grd_fm_sre2, ndx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
-         f1dimppar%grd_fm_sre2 = 0
+      f1dimppar%grd_fm_sre2 = 0
       call realloc(f1dimppar%grd_fmL_sre, lnx1D, 2)
       call realloc(f1dimppar%branch, 4, nbran)
       call realloc(f1dimppar%x, ngrid)
@@ -252,33 +252,33 @@ contains
       call realloc(f1dimppar%bfrict, 3, nbran)
       call realloc(f1dimppar%sectv, ngrid, 8)
       !`nd_mor` is a derived type. We cannot use `realloc` here.
-      if (allocated(nd_mor)) then 
+      if (allocated(nd_mor)) then
          deallocate (nd_mor)
       end if
       allocate (nd_mor(ndx_max)) !more than we need
-         do kd = 1, ndx
-            nd_mor(kd) = nd(kd)
-         end do
+      do kd = 1, ndx
+         nd_mor(kd) = nd(kd)
+      end do
       call realloc(f1dimppar%grd_fmmv_fmsv, ndx_max) !more than we need
-         grd_fmmv_fmsv => f1dimppar%grd_fmmv_fmsv
-         !allocate every node with itself
-         do kd = 1, ndx_max
-            grd_fmmv_fmsv(kd) = kd
-         end do
+      grd_fmmv_fmsv => f1dimppar%grd_fmmv_fmsv
+      !allocate every node with itself
+      do kd = 1, ndx_max
+         grd_fmmv_fmsv(kd) = kd
+      end do
       call realloc(f1dimppar%strtyp, 10, nstru)
       call realloc(f1dimppar%strpar, dmstrpar, nstru)
       call realloc(ln_mor, 2, lnx_max)
-         do kl = 1, lnx
-            do kd = 1, 2
-               ln_mor(kd, kl) = ln(kd, kl)
-            end do
+      do kl = 1, lnx
+         do kd = 1, 2
+            ln_mor(kd, kl) = ln(kd, kl)
          end do
+      end do
       call realloc(f1dimppar%grd_ghost_link_closest, lnx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
-         grd_ghost_link_closest => f1dimppar%grd_ghost_link_closest
-         do kl = 1, lnx
-            grd_ghost_link_closest(kl) = kl
-         end do
-         
+      grd_ghost_link_closest => f1dimppar%grd_ghost_link_closest
+      do kl = 1, lnx
+         grd_ghost_link_closest(kl) = kl
+      end do
+
 !FM1DIMP2DO: I am now adapting the input for using the morphodynamic implementation of Pure 1D. However,
 !I amnot sure it is the best. This should be revisited with Bert :).
       if (jased > 0 .and. stm_included) then !passing if no morphpdynamics
@@ -297,7 +297,7 @@ contains
       end do
 
 !copy to <gridpoint2cross_o>
-      !`gridpoint2cross_o` is a derived type. No `realloc` possible. 
+      !`gridpoint2cross_o` is a derived type. No `realloc` possible.
       if (allocated(gridpoint2cross_o)) then
          deallocate (gridpoint2cross_o)
       end if
@@ -323,7 +323,7 @@ contains
          return
       end if
 
-      !`gridpoint2cross` is a derived type. No `realloc` possible. 
+      !`gridpoint2cross` is a derived type. No `realloc` possible.
       if (allocated(gridpoint2cross)) then
          deallocate (gridpoint2cross)
       end if
@@ -348,7 +348,7 @@ contains
 !
 !cross-section (gridpoint,level)
 !
-      
+
       call realloc(f1dimppar%wft, ngrid, maxlev)
       call realloc(f1dimppar%aft, ngrid, maxlev)
       call realloc(f1dimppar%wtt, ngrid, maxlev)
@@ -375,8 +375,8 @@ contains
 !
 
       call realloc(f1dimppar%node, 4, nnode)
-         node => f1dimppar%node
-         node = -999 !we use this value to check that it has not been filled.
+      node => f1dimppar%node
+      node = -999 !we use this value to check that it has not been filled.
       call realloc(f1dimppar%numnod, nnode)
       call realloc(f1dimppar%nodnod, nnode, nbrnod + 1)
 
@@ -1211,11 +1211,10 @@ contains
 !
 !local
 !
-      
+
       integer :: ksre, k2, idx_fm, idx_crs, idx_h
       integer :: last_friction_type !< to check that friction type is the same in all sections
 
-      
       !Defined in <sobcon.i>, but not accessible here.
       !
       !cfrchc (1) : Chezy constant
@@ -1226,7 +1225,6 @@ contains
       !cfrsks (6) : Strickler 2 constant ( k s )
       !cfrnik (7) : Nikuradze constant
       !cfreng (8) : Engelund predictor
-
 
 !----------------------------------------
 !BEGIN POINT
@@ -1247,8 +1245,8 @@ contains
 
       iresult = 0 !no error
 
-      last_friction_type=network%rgs%rough(1)%frictiontype !initially the overall value. It has already been checked it is the same for all section. 
- 
+      last_friction_type = network%rgs%rough(1)%frictiontype !initially the overall value. It has already been checked it is the same for all section.
+
       do ksre = 1, ngrid
 
          idx_fm = grd_sre_fm(ksre) !index of the global grid point in fm for the global gridpoint <k> in SRE
@@ -1277,63 +1275,62 @@ contains
          !                      c3sec (2) : 2 sub sections
          !                      (For a circle cross section   : 0 ;
          !                       For a sedredge cross section : 1 )
-         sectc(ksre,1)=network%crs%cross(idx_crs)%frictionsectionscount-1
-         
-         if (network%crs%cross(idx_crs)%frictionsectionscount>1) then
+         sectc(ksre, 1) = network%crs%cross(idx_crs)%frictionsectionscount - 1
+
+         if (network%crs%cross(idx_crs)%frictionsectionscount > 1) then
          !!!
          !!!SUBSECTION 1
          !!!
-         idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(1)
+            idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(1)
 
-         !`sectv(1,2)` = `secth0`
-         ! secth0(ngrid)     I  H0-value (for 1 or 2 sub sections) for every
-         !                         grid point.
-         sectv(ksre, 2) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
-         !`sectv(1,4)` = `afh0`
-         ! afh0(ngrid)       I  Flow area Af at water level h=h0 for every
-         !                      grid point.
-         sectv(ksre, 4) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
-         ! `sectv(1,6)` = `oh0`
-         ! oh0(ngrid)        I  Wetted perimeter Ot at water level h=h0 for
-         !                      every grid point.
-         sectv(ksre, 6) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
+            !`sectv(1,2)` = `secth0`
+            ! secth0(ngrid)     I  H0-value (for 1 or 2 sub sections) for every
+            !                         grid point.
+            sectv(ksre, 2) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
+            !`sectv(1,4)` = `afh0`
+            ! afh0(ngrid)       I  Flow area Af at water level h=h0 for every
+            !                      grid point.
+            sectv(ksre, 4) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
+            ! `sectv(1,6)` = `oh0`
+            ! oh0(ngrid)        I  Wetted perimeter Ot at water level h=h0 for
+            !                      every grid point.
+            sectv(ksre, 6) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
 
-         !
-         !`sectc(:,2)` = `wfh0`
-         ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
-         !                      grid point.
-         sectc(ksre,2)=network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
-         
-         endif 
+            !
+            !`sectc(:,2)` = `wfh0`
+            ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
+            !                      grid point.
+            sectc(ksre, 2) = network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
 
-         if (network%crs%cross(idx_crs)%frictionsectionscount>2) then
+         end if
+
+         if (network%crs%cross(idx_crs)%frictionsectionscount > 2) then
          !!!
          !!!SUBSECTION 2
          !!!
-         idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(2)
+            idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(2)
 
-         !`sectv(1,3)` = `secth1`
-         ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
-         !                         point.
-         sectv(ksre, 3) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
-         !`sectv(1,5)` = `afh1`
-         ! afh1(ngrid)       I  Flow area Af at water level h=h1 for every
-         !                      grid point.
-         sectv(ksre, 5) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
-         ! `sectv(1,7)` = `oh1`
-         ! oh1(ngrid)        I  Wetted perimeter Ot at water level h=h1 for
-         !                      every grid point.
-         sectv(ksre, 7) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
+            !`sectv(1,3)` = `secth1`
+            ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
+            !                         point.
+            sectv(ksre, 3) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
+            !`sectv(1,5)` = `afh1`
+            ! afh1(ngrid)       I  Flow area Af at water level h=h1 for every
+            !                      grid point.
+            sectv(ksre, 5) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
+            ! `sectv(1,7)` = `oh1`
+            ! oh1(ngrid)        I  Wetted perimeter Ot at water level h=h1 for
+            !                      every grid point.
+            sectv(ksre, 7) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
 
-         !
-         !`sectc(:,3)` = `wfh1`
-         ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
-         !                      grid point.
-         sectc(ksre, 3) = network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
+            !
+            !`sectc(:,3)` = `wfh1`
+            ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
+            !                      grid point.
+            sectc(ksre, 3) = network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
 
-         endif
-         
-         
+         end if
+
          !`bfricp` is not used anymore. We directly use `network` inside Sobek-RE.
          !bfricp(6,ngrid)   I  Bed friction parameters:
          !                     (1,i) = Parameter for positive flow direction
@@ -1369,7 +1366,7 @@ contains
          !                     (6,i) = Parameter for negative flow direction
          !                             in sub sec 2 (depending on friction
          !                             type) Same definition as bfricp (3,i).
-         
+
       end do !ksre
 
    end subroutine inifm1dimp_fbrp

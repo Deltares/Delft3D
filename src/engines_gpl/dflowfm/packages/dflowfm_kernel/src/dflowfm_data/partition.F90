@@ -1182,7 +1182,8 @@ contains
                do kk = 1, netcell(ic)%N
                   k = netcell(ic)%nod(kk)
                   do i = 1, nmk(k)
-                     ip1 = i + 1; if (ip1 > nmk(k)) ip1 = ip1 - nmk(k)
+                     ip1 = i + 1
+                     if (ip1 > nmk(k)) ip1 = ip1 - nmk(k)
                      L = nod(k)%lin(i)
                      Lp1 = nod(k)%lin(ip1)
                      icother = common_cell_for_two_net_links(L, Lp1)
@@ -1526,7 +1527,7 @@ contains
       else
          numnew = nr_send_list(numdomains - 1) + num
          if (numnew > ubound(send_list, 1)) then
-            call realloc(send_list, int(1.2_dp * dble(numnew) + 1.0_dp), fill=0, keepExisting=.true.)
+            call realloc(send_list, int(1.2_dp * real(numnew, kind=dp) + 1.0_dp), fill=0, keepExisting=.true.)
          end if
       end if
 
@@ -1858,7 +1859,7 @@ contains
 
 !        check recv array size
          if (icount > 2 * ubound(xy_recv, 2)) then ! reallocate if necessary
-            call realloc(xy_recv, [2, int(1.2_dp * dble(icount / 2) + 1.0_dp)], keepExisting=.false., fill=0.0_dp)
+            call realloc(xy_recv, [2, int(1.2_dp * real(icount / 2, kind=dp) + 1.0_dp)], keepExisting=.false., fill=0.0_dp)
          end if
 
          call mpi_recv(xy_recv, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, status, error)
@@ -2022,7 +2023,7 @@ contains
             k = isendlist_s(j)
             xs(NS) = xzw(k)
             ys(NS) = yzw(k)
-            zs(NS) = dble(i)
+            zs(NS) = real(i, kind=dp)
          end do
       end do
 
@@ -2032,7 +2033,7 @@ contains
             k = isendlist_sall(j)
             xs(NS) = xzw(k)
             ys(NS) = yzw(k)
-            zs(NS) = dble(i)
+            zs(NS) = real(i, kind=dp)
          end do
       end do
 
@@ -2042,7 +2043,7 @@ contains
             k = abs(isendlist_u(j))
             xs(NS) = xu(k)
             ys(NS) = yu(k)
-            zs(NS) = -dble(i)
+            zs(NS) = -real(i, kind=dp)
          end do
       end do
 
@@ -2415,7 +2416,7 @@ contains
       end if
 
       if (ubound(work, 1) < num) then
-         call realloc(work, int(1.2_dp * dble(num) + 1.0_dp))
+         call realloc(work, int(1.2_dp * real(num, kind=dp) + 1.0_dp))
       end if
 
 !     fill work array
@@ -2542,7 +2543,7 @@ contains
       end if
 
       if (ubound(workrec, 1) < num) then
-         call realloc(workrec, int(1.2_dp * dble(num) + 1.0_dp))
+         call realloc(workrec, int(1.2_dp * real(num, kind=dp) + 1.0_dp))
       end if
 
       if (ja3d /= 1) then
@@ -2901,7 +2902,7 @@ contains
 
       if (jampi == 1) then
 !        update global ghost-cell numbers
-         dum = dble(iglobnum)
+         dum = real(iglobnum, kind=dp)
          if (jatime == 1) call starttimer(IMPICOMM)
          !call update_ghost(dum,ierror)
          if (jampi == 1) then
@@ -4147,8 +4148,8 @@ contains
                      do i = 1, num
                         L = netbr(ibr)%LN(i)
                         La = abs(L)
-                        xloc = 0.5d0 * (xk(kn(1, La)) + xk(kn(2, La)))
-                        yloc = 0.5d0 * (yk(kn(1, La)) + yk(kn(2, La)))
+                        xloc = 0.5_dp * (xk(kn(1, La)) + xk(kn(2, La)))
+                        yloc = 0.5_dp * (yk(kn(1, La)) + yk(kn(2, La)))
                         if (dbdistance(xloc, yloc, xyL_all(1, ibr_other), xyL_all(2, ibr_other), jsferic, jasfer3D, dmiss) < dtol) then
                            !                       left match found
                            Lleftfound = .true.
@@ -4302,7 +4303,7 @@ contains
          call update_ghosts(itype, 1, N, dum, ierr)
          do L = 1, Lnxi
             if (idomain(ln(1, L)) == my_rank .or. idomain(ln(2, L)) == my_rank) then
-               if (abs(dum(L) - var(L)) > 1d-12) then
+               if (abs(dum(L) - var(L)) > 1.0e-12_dp) then
                   write (6, *) 'XXX: ', my_rank, L, dum(L), var(L), dum(L) - var(L)
                end if
             end if
@@ -4312,7 +4313,7 @@ contains
          do i = 1, nghostlist_sall(ndomains - 1)
             k = ighostlist_sall(i)
             if (ighostlev_cellbased(k) > 3 .or. ighostlev_nodebased(k) > 2) cycle
-            if (abs(dum(k) - var(k)) > 1d-12) then
+            if (abs(dum(k) - var(k)) > 1.0e-12_dp) then
                write (6, *) 'XXX: ', my_rank, k, dum(k), var(k), dum(k) - var(k)
             end if
          end do
@@ -4364,19 +4365,19 @@ contains
       ierr = 0
       nsegments = size(startLinks)
       allocate (resultsSum(2, nsegments))
-      results = 0.0d0
+      results = 0.0_dp
 
       do ns = 1, nsegments
 
-         sumQuantitiesByWeight = 0d0
-         sumWeights = 0d0
+         sumQuantitiesByWeight = 0.0_dp
+         sumWeights = 0.0_dp
 
          do nl = startLinks(ns), endLinks(ns)
 
             indWeight = abs(indsWeight(nl))
             indQuantity = abs(indsQuantity(nl))
-            quantitiesByWeight = 0.0d0
-            weight = 0.0d0
+            quantitiesByWeight = 0.0_dp
+            weight = 0.0_dp
 
             if (jampi == 1) then
                ! Exclude ghost nodes
@@ -4399,15 +4400,15 @@ contains
 
             if (present(firstFilter) .and. present(firstFilterValue)) then
                if (firstFilter(indWeight) <= firstFilterValue) then
-                  quantitiesByWeight = 0.0d0
-                  weight = 0.0d0
+                  quantitiesByWeight = 0.0_dp
+                  weight = 0.0_dp
                end if
             end if
 
             if (present(secondFilter) .and. present(secondFilterValue)) then
                if (secondFilter(nl) <= secondFilterValue) then
-                  quantitiesByWeight = 0.0d0
-                  weight = 0.0d0
+                  quantitiesByWeight = 0.0_dp
+                  weight = 0.0_dp
                end if
             end if
 
@@ -4529,7 +4530,7 @@ contains
          call copynetboundstopol(0, 0, 0, 1)
 
 !        set polygon nodal value to domain number
-         zpl(1:NPL) = dble(idmn)
+         zpl(1:NPL) = real(idmn, kind=dp)
 
 !        add polygon to tpoly-type partitioning polygons
          call pol_to_tpoly(npartition_pol, partition_pol, keepExisting=.true.)
@@ -4770,7 +4771,7 @@ contains
          call realloc(ghost_list(ghost_level)%N, number_of_domains - 1, -1, fill=0, keepExisting=.true.)
       end if
       if (number_of_data > ubound(ghost_list(ghost_level)%list, 1)) then
-         call realloc(ghost_list(ghost_level)%list, int(1.2d0 * dble(number_of_data)) + 1, fill=0, keepExisting=.true.)
+         call realloc(ghost_list(ghost_level)%list, int(1.2_dp * real(number_of_data, kind=dp)) + 1, fill=0, keepExisting=.true.)
       end if
 
       ghost_list(ghost_level)%N(domain_number) = ghost_list(ghost_level)%N(domain_number) + 1
@@ -4867,7 +4868,7 @@ contains
             if (ghost_list(ghost_level)%N(domain_number) - ghost_list(ghost_level)%N(domain_number - 1) > 0) then
                num = num + 1
                if (num > ubound(ghost_list(ghost_level)%neighdmn, 1)) then
-                  call realloc(ghost_list(ghost_level)%neighdmn, int(1.2d0 * dble(num) + 1d0), keepExisting=.true., fill=0)
+                  call realloc(ghost_list(ghost_level)%neighdmn, int(1.2_dp * real(num, kind=dp) + 1.0_dp), keepExisting=.true., fill=0)
                end if
                ghost_list(ghost_level)%neighdmn(num) = domain_number
             end if
@@ -5143,8 +5144,8 @@ contains
          end if
       end do
       nNodesCrs = sum(nodeCountCrs)
-      call realloc(geomXCrs, nNodesCrs, keepExisting=.false., fill=0d0)
-      call realloc(geomYCrs, nNodesCrs, keepExisting=.false., fill=0d0)
+      call realloc(geomXCrs, nNodesCrs, keepExisting=.false., fill=0.0_dp)
+      call realloc(geomYCrs, nNodesCrs, keepExisting=.false., fill=0.0_dp)
       if (jampi > 0) then
          ! In parallel runs, one cross section might lie on multiple subdomains. To handle this situation,
          ! we will need to know which nodes are on boundaries of a cross section on each subdomain, and the boundary nodes will be handled separately.
@@ -5247,14 +5248,14 @@ contains
          if (my_rank == 0) then
             ! Allocate arrays
             call realloc(nodeCountCrsMPI, ncrs, keepExisting=.false., fill=0)
-            call realloc(geomXCrsMPI, nNodesCrsMPI, keepExisting=.false., fill=0d0)
-            call realloc(geomYCrsMPI, nNodesCrsMPI, keepExisting=.false., fill=0d0)
+            call realloc(geomXCrsMPI, nNodesCrsMPI, keepExisting=.false., fill=0.0_dp)
+            call realloc(geomYCrsMPI, nNodesCrsMPI, keepExisting=.false., fill=0.0_dp)
 
             ! Allocate arrays that gather information from all subdomains
             ! Data on all subdomains will be gathered in a contiguous way
             call realloc(nodeCountCrsGat, ncrs * ndomains, keepExisting=.false., fill=0)
-            call realloc(xGat, nNodesCrsMPI, keepExisting=.false., fill=0d0)
-            call realloc(yGat, nNodesCrsMPI, keepExisting=.false., fill=0d0)
+            call realloc(xGat, nNodesCrsMPI, keepExisting=.false., fill=0.0_dp)
+            call realloc(yGat, nNodesCrsMPI, keepExisting=.false., fill=0.0_dp)
             call realloc(displs, ndomains, keepExisting=.false., fill=0)
             call realloc(nNodesCrsGat, ndomains, keepExisting=.false., fill=0)
             call realloc(maskBndGat, nNodesCrsMPI, keepExisting=.false., fill=0)
@@ -5367,8 +5368,8 @@ contains
             ! Copy the MPI-arrays to nodeCountCrs, geomXCrs and geomYCrs for the his-output
             nNodesCrs = nNodesCrsMPI
             nodeCountCrs(1:ncrs) = nodeCountCrsMPI(1:ncrs)
-            call realloc(geomXCrs, nNodesCrs, keepExisting=.false., fill=0d0)
-            call realloc(geomYCrs, nNodesCrs, keepExisting=.false., fill=0d0)
+            call realloc(geomXCrs, nNodesCrs, keepExisting=.false., fill=0.0_dp)
+            call realloc(geomYCrs, nNodesCrs, keepExisting=.false., fill=0.0_dp)
             geomXCrs(1:nNodesCrs) = geomXCrsMPI(1:nNodesCrs)
             geomYCrs(1:nNodesCrs) = geomYCrsMPI(1:nNodesCrs)
          end if
@@ -5487,7 +5488,7 @@ contains
 
       integer :: numdisabled
 
-      real(kind=dp), parameter :: dtol = 1d-4
+      real(kind=dp), parameter :: dtol = 1.0e-4_dp
 
       call wall_clock_time(t0)
 
@@ -5508,7 +5509,7 @@ contains
       allocate (irequest(0:2 * ndomains - 1))
 !     allocate xysnd sufficiently large
       allocate (xysnd(3, numL))
-      xysnd = 0d0
+      xysnd = 0.0_dp
 !     allocate kcesnd sufficiently large
       call realloc(kcesnd, numL, keepExisting=.false., fill=0)
 
@@ -5542,9 +5543,9 @@ contains
                if (idomain(ke(L)) == other_domain) then
                   k3 = kn(1, L)
                   k4 = kn(2, L)
-                  xysnd(1, istart + num) = 0.5d0 * (xk(k3) + xk(k4))
-                  xysnd(2, istart + num) = 0.5d0 * (yk(k3) + yk(k4))
-                  xysnd(3, istart + num) = dble(kn(3, L)) ! also send type of netlink
+                  xysnd(1, istart + num) = 0.5_dp * (xk(k3) + xk(k4))
+                  xysnd(2, istart + num) = 0.5_dp * (yk(k3) + yk(k4))
+                  xysnd(3, istart + num) = real(kn(3, L), kind=dp) ! also send type of netlink
                   num = num + 1
                end if
             end if
@@ -5559,8 +5560,8 @@ contains
       end do
 
 !     recieve requests from other domains
-      timefind1 = 0d0 ! time spent in finding netlinks
-      timefind2 = 0d0 ! time spent in finding netlinks
+      timefind1 = 0.0_dp ! time spent in finding netlinks
+      timefind2 = 0.0_dp ! time spent in finding netlinks
       istart = 1
       do other_domain = 0, ndomains - 1
          num = numrequest(my_rank, other_domain)
@@ -5583,7 +5584,7 @@ contains
          end if
 
 !        realloc
-         call realloc(xyrec, [3, num], keepExisting=.false., fill=0d0)
+         call realloc(xyrec, [3, num], keepExisting=.false., fill=0.0_dp)
 
 !        recieve
          call mpi_recv(xyrec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
@@ -5604,8 +5605,8 @@ contains
 !              get netlink coordinates
                k3 = kn(1, L)
                k4 = kn(2, L)
-               xL = 0.5d0 * (xk(k3) + xk(k4))
-               yL = 0.5d0 * (yk(k3) + yk(k4))
+               xL = 0.5_dp * (xk(k3) + xk(k4))
+               yL = 0.5_dp * (yk(k3) + yk(k4))
 
 !              measure distance
                dis = dbdistance(xL, yL, xyrec(1, i), xyrec(2, i), jsferic, jasfer3D, dmiss)

@@ -85,7 +85,8 @@ contains
          maxitverticalforestersal = 0
       end if
       if (jatem == 0) then
-         limtypTM = 0; maxitverticalforestertem = 0
+         limtypTM = 0
+         maxitverticalforestertem = 0
       end if
       if (jased == 0) then
          limtypsed = 0
@@ -104,7 +105,8 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             kb = 0
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) >= 0 .or. keepstbndonoutflow == 1) then
                   kk = kmxd * (k - 1) + L - Lb + 1
                   constituents(isalt, kb) = zbnds(kk) ! inflow
@@ -131,7 +133,8 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             kb = 0
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) >= 0 .or. keepstbndonoutflow == 1) then
                   kk = kmxd * (k - 1) + L - Lb + 1
                   constituents(itemp, kb) = zbndTM(kk) ! inflow
@@ -203,7 +206,8 @@ contains
          end do
          !$OMP END PARALLEL DO
 
-         saminbnd = 0.0_dp; samoutbnd = 0.0_dp
+         saminbnd = 0.0_dp
+         samoutbnd = 0.0_dp
 
          do LL = lnxi + 1, 0 !  lnx                                ! copy on outflow
             call getLbotLtop(LL, Lb, Lt)
@@ -211,7 +215,8 @@ contains
                cycle
             end if
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) > 0) then
                   saminbnd = saminbnd + q1(L) * constituents(isalt, kb) * dts ! mass in
                else
@@ -254,7 +259,8 @@ contains
       if (jarhoxu > 0 .and. jacreep == 1) then
          do LL = 1, lnx
             do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                rhou(L) = 0.5_dp * (rho(k1) + rho(k2))
             end do
          end do
@@ -392,7 +398,8 @@ contains
          end if
          do L = Lb, Lt
             if (q1(L) < 0) then
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (jasal > 0 .and. keepstbndonoutflow == 0) then
                   constituents(isalt, kb) = constituents(isalt, ki)
                end if

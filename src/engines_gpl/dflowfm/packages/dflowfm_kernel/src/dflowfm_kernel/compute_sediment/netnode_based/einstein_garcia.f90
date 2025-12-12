@@ -50,17 +50,23 @@ contains
       integer :: i1, i2, k
 
       if (da < 0.001_dp) then
-         i1 = 1; i2 = 1
+         i1 = 1
+         i2 = 1
       else if (da < 0.005_dp) then
-         i1 = 1; i2 = 2
+         i1 = 1
+         i2 = 2
       else if (da < 0.01_dp) then
-         i1 = 2; i2 = 3
+         i1 = 2
+         i2 = 3
       else if (da < 0.05_dp) then
-         i1 = 3; i2 = 4
+         i1 = 3
+         i2 = 4
       else if (da < 0.1_dp) then
-         i1 = 4; i2 = 5
+         i1 = 4
+         i2 = 5
       else
-         i1 = 5; i2 = 5
+         i1 = 5
+         i2 = 5
       end if
       if (i1 == i2) then
          aa = 0.0_dp

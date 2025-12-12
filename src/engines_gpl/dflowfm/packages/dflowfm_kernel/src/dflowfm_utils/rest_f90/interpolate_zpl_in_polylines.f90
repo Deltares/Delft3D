@@ -109,8 +109,10 @@ contains
          do i = jstart, jend
             iL = iLeft(i)
             iR = iRight(i)
-            wL = 0.0_dp; if (iL > 0) wL = wfromLeft(iL)
-            wR = 0.0_dp; if (iR > 0) wR = wfromLeft(iR)
+            wL = 0.0_dp
+            if (iL > 0) wL = wfromLeft(iL)
+            wR = 0.0_dp
+            if (iR > 0) wR = wfromLeft(iR)
 
             if (iL == iR .and. iL /= 0) then
 !           value prescibed

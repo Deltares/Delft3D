@@ -59,9 +59,13 @@ contains
       do while (ds > epscg) ! Jacobi
 
          if (mod(itsol, 2) == 0) then
-            n1 = 1; n2 = ndx; ni = 1
+            n1 = 1
+            n2 = ndx
+            ni = 1
          else
-            n2 = 1; n1 = ndx; ni = -1
+            n2 = 1
+            n1 = ndx
+            ni = -1
          end if
 
          !$OMP PARALLEL DO                                          &
@@ -70,7 +74,8 @@ contains
             if (kfs(n) == 1) then
                s1(n) = db(n)
                do nn = 1, nd(n)%lnx
-                  L = nd(n)%ln(nn); La = abs(L)
+                  L = nd(n)%ln(nn)
+                  La = abs(L)
                   if (ccr(Lv2(La)) < 0.0_dp) then
                      if (L > 0) then
                         s1(n) = s1(n) - ccr(Lv2(La)) * s1(ln(1, La)) * bbi(n)
@@ -91,7 +96,8 @@ contains
                if (kfs(n) == 1) then
                   rrn = ddr(n) - bbr(n) * s1(n) ! For explicit points db = s0, so this does won't hurt
                   do nn = 1, nd(n)%lnx
-                     L = nd(n)%ln(nn); La = abs(L)
+                     L = nd(n)%ln(nn)
+                     La = abs(L)
                      if (ccr(Lv2(La)) < 0.0_dp) then
                         if (L > 0) then
                            rrn = rrn - ccr(Lv2(La)) * s1(ln(1, La))

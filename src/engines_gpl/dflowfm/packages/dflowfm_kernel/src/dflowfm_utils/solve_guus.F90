@@ -61,26 +61,32 @@ contains
       integer m, ierr
       integer idmn, k
 
-      lintot = lnx; nodtot = ndx
+      lintot = lnx
+      nodtot = ndx
 
       allocate (ij(nodtot), stat=ierr)
       call aerr('ij(nodtot)', ierr, nodtot)
 
-      allocate (nodbr2(nodtot), stat=ierr); nodbr2 = 0
+      allocate (nodbr2(nodtot), stat=ierr)
+      nodbr2 = 0
       call aerr('nodbr2(nodtot)', ierr, nodtot)
 
-      allocate (nbrstk(nodtot), stat=ierr); nbrstk = 0
+      allocate (nbrstk(nodtot), stat=ierr)
+      nbrstk = 0
       call aerr('nbrstk(nodtot)', ierr, nodtot)
 
-      allocate (nodstk(nodtot), stat=ierr); nodstk = 0
+      allocate (nodstk(nodtot), stat=ierr)
+      nodstk = 0
       call aerr('nodstk(nodtot)', ierr, nodtot)
 
       if (allocated(noel)) deallocate (noel)
-      allocate (noel(nodtot), stat=ierr); noel = 0
+      allocate (noel(nodtot), stat=ierr)
+      noel = 0
       call aerr('noel(nodtot)', ierr, nodtot)
 
       if (allocated(noel0)) deallocate (noel0)
-      allocate (noel0(nodtot), stat=ierr); noel0 = 0
+      allocate (noel0(nodtot), stat=ierr)
+      noel0 = 0
       call aerr('noel0(nodtot)', ierr, nodtot)
 
       if (allocated(ia)) deallocate (ia)
@@ -92,11 +98,13 @@ contains
       call aerr('row(nodtot)', ierr, nodtot)
 
       if (allocated(lv2)) deallocate (lv2)
-      allocate (lv2(lintot), stat=ierr); lv2 = 0
+      allocate (lv2(lintot), stat=ierr)
+      lv2 = 0
       call aerr('lv2(lintot)', ierr, lintot)
 
       if (allocated(jagauss)) deallocate (jagauss)
-      allocate (jagauss(nodtot), stat=ierr); jagauss = 1
+      allocate (jagauss(nodtot), stat=ierr)
+      jagauss = 1
       call aerr('jagauss(nodtot)', ierr, nodtot)
 
 ! check solver applicability
@@ -298,7 +306,8 @@ contains
          deallocate (ij(i)%j, ij(i)%b, stat=ierr)
          call aerr('ij(i)%j,ij(i)%b)', ierr, -2 * ij(i)%l)
 
-         nodbr2(i) = nodbr2(i) + 1; ij(i)%l = ij(i)%l + 1
+         nodbr2(i) = nodbr2(i) + 1
+         ij(i)%l = ij(i)%l + 1
 
          allocate (ij(i)%j(ij(i)%l), ij(i)%b(ij(i)%l), stat=ierr)
          call aerr('ij(i)%j(ij(i)%l),ij(i)%b(ij(i)%l)', ierr, ij(i)%l)
@@ -311,15 +320,18 @@ contains
          allocate (ij(i)%b(1), ij(i)%j(1), stat=ierr)
          call aerr('ij(i)%b(1),ij(i)%j(1)', ierr, 1)
 
-         nodbr2(i) = 1; ij(i)%l = 1
-         ij(i)%b(1) = .true.; ij(i)%j(1) = j
+         nodbr2(i) = 1
+         ij(i)%l = 1
+         ij(i)%b(1) = .true.
+         ij(i)%j(1) = j
       end if
       if (ij(j)%l /= 0) then
          logbuf(1:ij(j)%l) = ij(j)%b(1:ij(j)%l)
          intbuf(1:ij(j)%l) = ij(j)%j(1:ij(j)%l)
          deallocate (ij(j)%j, ij(j)%b, stat=ierr)
          call aerr('ij(j)%j,ij(j)%b', ierr, -2 * ij(j)%l)
-         nodbr2(j) = nodbr2(j) + 1; ij(j)%l = ij(j)%l + 1
+         nodbr2(j) = nodbr2(j) + 1
+         ij(j)%l = ij(j)%l + 1
 
          allocate (ij(j)%j(ij(j)%l), ij(j)%b(ij(j)%l), stat=ierr)
          call aerr('ij(j)%j(ij(j)%l),ij(j)%b(ij(j)%l)', ierr, 2 * ij(j)%l)
@@ -331,8 +343,10 @@ contains
       else
          allocate (ij(j)%b(1), ij(j)%j(1), stat=ierr)
          call aerr('ij(j)%b(1),ij(j)%j(1)', ierr, 1)
-         nodbr2(j) = 1; ij(j)%l = 1
-         ij(j)%b(1) = .true.; ij(j)%j(1) = i
+         nodbr2(j) = 1
+         ij(j)%l = 1
+         ij(j)%b(1) = .true.
+         ij(j)%j(1) = i
       end if
    end subroutine ijtrue
 
@@ -488,7 +502,8 @@ contains
             allocate (row(ndn)%j(nodbr2(ndn)), row(ndn)%a(nodbr2(ndn)), stat=ierr)
             call aerr('inicg', ierr, 2 * nodbr2(ndn))
             row(ndn)%l = nodbr2(ndn)
-            nocg = nocg + 1; noel(nogauss + nocg) = ndn; 
+            nocg = nocg + 1
+            noel(nogauss + nocg) = ndn
             m = 0
             do n = 1, ij(ndn)%l
                if (ij(ndn)%b(n)) then
@@ -1468,7 +1483,8 @@ contains
 
       integer m, n, np, Ltot, j, iftot, k
 
-      Ltot = 0; iftot = 0
+      Ltot = 0
+      iftot = 0
       do n = nogauss0, 1, -1
          k = 0
          ndn = noel0(n)
@@ -1495,8 +1511,14 @@ contains
          deallocate (L1row, L2row, iarow, jrow, ifrow, ift)
       end if
       if (.not. allocated(L1row)) then
-         allocate (L1row(nodtot), L2row(nodtot), iarow(Ltot), jrow(Ltot)); L1row = 0; L2row = 0; iarow = 0; jrow = 0
-         allocate (ifrow(iftot), ift(nodtot)); ifrow = 0; ift = 0
+         allocate (L1row(nodtot), L2row(nodtot), iarow(Ltot), jrow(Ltot))
+         L1row = 0
+         L2row = 0
+         iarow = 0
+         jrow = 0
+         allocate (ifrow(iftot), ift(nodtot))
+         ifrow = 0
+         ift = 0
       end if
 
       Ltot = 0
@@ -1800,21 +1822,26 @@ contains
       integer allocerr
 
       if (allocated(ccr)) deallocate (ccr)
-      allocate (ccr(0:ijstck), STAT=allocErr); ccr = 0
+      allocate (ccr(0:ijstck), STAT=allocErr)
+      ccr = 0
       call aerr('ccr(0:ijstck)', allocerr, ijstck)
 
       if (allocated(bbl)) deallocate (bbl)
-      allocate (bbl(0:ijstck), STAT=allocErr); bbl = 0
+      allocate (bbl(0:ijstck), STAT=allocErr)
+      bbl = 0
       call aerr('bbl(0:ijstck)', allocerr, ijstck)
 
       if (nonlin > 0) then
          if (allocated(ccrsav)) deallocate (ccrsav)
-         allocate (ccrsav(0:ijstck), STAT=allocErr); ccrsav = 0
+         allocate (ccrsav(0:ijstck), STAT=allocErr)
+         ccrsav = 0
          call aerr('ccrsav(0:ijstck)', allocerr, ijstck)
       end if
 
       if (allocated(bbr)) deallocate (bbr, ddr)
-      allocate (bbr(nodtot), ddr(nodtot), STAT=allocErr); bbr = 0; ddr = 0
+      allocate (bbr(nodtot), ddr(nodtot), STAT=allocErr)
+      bbr = 0
+      ddr = 0
       call aerr('bbr(nodtot), ddr(nodtot)', allocErr, 2 * nodtot)
 
       if (allocated(d0)) deallocate (d0, zkr, pk, apk, rk)
@@ -2019,7 +2046,7 @@ contains
       ! END MPI
 
       ! compute A pk and pk' A Pk
-      pkapki = 0d0
+      pkapki = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          apk(ndn) = bbr(ndn) * pk(ndn)
@@ -2041,7 +2068,7 @@ contains
       ! END MPI
 
       alfak = rkzki / pkapki
-      eps = 0d0
+      eps = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          s1(ndn) = s1(ndn) + alfak * pk(ndn)
@@ -2141,7 +2168,7 @@ contains
                if (ierror /= 0) goto 1234
             end if
          else
-            zkr = 0d0
+            zkr = 0.0_dp
          end if
       end if
 
@@ -2167,7 +2194,7 @@ contains
       end if
 
       rkzki0 = rkzki
-      rkzki = 0d0
+      rkzki = 0.0_dp
 
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
@@ -2280,11 +2307,11 @@ contains
 
       if (allocated(s1_ghost)) deallocate (s1_ghost)
       allocate (s1_ghost(numghost_s))
-      s1_ghost = 0d0
+      s1_ghost = 0.0_dp
 
       allocate (imask(Ndx))
 
-      call inisaad(epscg, maxmatvecs, 1d0)
+      call inisaad(epscg, maxmatvecs, 1.0_dp)
 
 !   mark ghostcells in ighostlist_s
       imask = 0
@@ -2298,7 +2325,8 @@ contains
       nbndint = 0
       do L = 1, Lnx
          do i = 1, 2
-            ip1 = i + 1; if (ip1 > 2) ip1 = ip1 - 2
+            ip1 = i + 1
+            if (ip1 > 2) ip1 = ip1 - 2
             k1 = ln(i, L)
             k2 = ln(ip1, L)
 
@@ -2330,13 +2358,14 @@ contains
       kbndint = 0
       if (allocated(zbndint)) deallocate (zbndint)
       allocate (zbndint(2, nbndint))
-      zbndint = 0d0
+      zbndint = 0.0_dp
 
 !   store interface ghost cells and links
       nbndint = 0
       do L = 1, Lnx
          do i = 1, 2
-            ip1 = i + 1; if (ip1 > 2) ip1 = ip1 - 2
+            ip1 = i + 1
+            if (ip1 > 2) ip1 = ip1 - 2
             k1 = ln(i, L)
             k2 = ln(ip1, L)
 
@@ -2376,9 +2405,9 @@ contains
          k1 = kbndint(1, n)
          k2 = kbndint(2, n)
          L = kbndint(3, n)
-         call adddot(xz(k1), yz(k1), 1d0)
-         call adddot(xz(k2), yz(k2), 2d0)
-         call adddot(xu(L), yu(L), 3d0)
+         call adddot(xz(k1), yz(k1), 1.0_dp)
+         call adddot(xz(k2), yz(k2), 2.0_dp)
+         call adddot(xu(L), yu(L), 3.0_dp)
       end do
       call write_dots('Lbndint_'//sdmn//'.xyz', jawritten)
 !   END DEBUG
@@ -2458,7 +2487,7 @@ contains
 
          !beta = abs(u1(L))*dts * Dxi(L)   ! CFL number in normal direcion
          !beta = 0.5d0
-         bbr(ki) = bbr(ki) - ccr(jj) * (0.5d0 - beta) / (0.5d0 + beta)
+         bbr(ki) = bbr(ki) - ccr(jj) * (0.5_dp - beta) / (0.5_dp + beta)
       end do
 
 !   initialize Saad solver and compute preconditioner, get row numbering
@@ -2507,8 +2536,8 @@ contains
             !beta = abs(u1(L))*dts * Dxi(L)   ! CFL number in normal direcion
           !!beta = 0.5d0
             !beta = 10d0
-            val = (0.5d0 - beta) * s1(ki) + (0.5d0 + beta) * s1(kb)
-            ddr(ki) = ddr(ki) - ccr(jj) * val / (0.5d0 + beta) !s1(\kb)
+            val = (0.5_dp - beta) * s1(ki) + (0.5_dp + beta) * s1(kb)
+            ddr(ki) = ddr(ki) - ccr(jj) * val / (0.5_dp + beta) !s1(\kb)
             !  bbr(ki) = bbr_sav(n) - ccr(jj)*(0.5d0-beta)/(0.5d0+beta)
 
             !zbndint(1,n) = beta
@@ -2579,7 +2608,7 @@ contains
 
             !beta = zbndint(1,n)
             val = zbndint(2, n)
-            s1(kb) = (val - (0.5d0 - beta) * s1(ki)) / (0.5d0 + beta)
+            s1(kb) = (val - (0.5_dp - beta) * s1(ki)) / (0.5_dp + beta)
          end do
 !      compute global residual
          res_global = fpar(3)**2
@@ -2641,7 +2670,7 @@ contains
 !
 !       call reduce_double3_max(maxdiff,res,maxresloc)
 
-         dum = dble(its)
+         dum = real(its, kind=dp)
          call reduce_double3_max(maxdiff, res, dum)
          its = int(dum)
 

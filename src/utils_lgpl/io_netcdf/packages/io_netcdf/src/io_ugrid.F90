@@ -130,7 +130,7 @@ module io_ugrid
       integer :: numnet
       type(t_ug_mesh), allocatable :: meshids(:) !< The type with underlying variable IDs (one column for each mesh topology).
       type(t_ug_network), allocatable :: netids(:)
-      type(t_ug_contacts), allocatable :: contactids(:) !< The array with underlying variable IDs, one column for each link topology.
+      type(t_ug_contact), allocatable :: contactids(:) !< The array with underlying variable IDs, one column for each link topology.
       character(len=256), allocatable :: meshnames(:) !< The variable names for all mesh topologies in file.
       character(len=256), allocatable :: networksnames(:)
       character(len=256), allocatable :: contactsnames(:) !< The variable names for all contacts.
@@ -1674,7 +1674,7 @@ contains
       type(t_ug_file), intent(inout) :: ug_file !< UGRID file struct with cached meta information.
       integer :: ierr !< Result status (UG_NOERR if successful).
       integer, intent(inout) :: contactsmesh
-      type(t_ug_contacts), allocatable :: newcontacts(:)
+      type(t_ug_contact), allocatable :: newcontacts(:)
       character(len=256), allocatable :: newcontactsnames(:)
       integer :: npresentcontactmeshes, ncontactmeshes, i
 
@@ -1869,7 +1869,7 @@ contains
 
       integer, intent(in) :: ncid !< ID of already opened data set.
       integer, intent(in) :: varid !< NetCDF variable ID that contains the link topology information (1-based).
-      type(t_ug_contacts), intent(inout) :: contactids !< vector in which all link topology dimension and variables ids will be stored.
+      type(t_ug_contact), intent(inout) :: contactids !< vector in which all link topology dimension and variables ids will be stored.
       integer :: ierr !< Result status (UG_NOERR if successful).
       character(len=nf90_max_name) :: varname
       integer :: tabledims(2)
@@ -4002,7 +4002,7 @@ contains
       type(t_ug_mesh), intent(in) :: meshidfrom, meshidto
       character(len=*), intent(in) :: linkmeshname
       character(len=len_trim(linkmeshname)) :: prefix
-      type(t_ug_contacts), intent(inout) :: contactids
+      type(t_ug_contact), intent(inout) :: contactids
       character(len=nf90_max_name) :: locationType1, locationType2, mesh1, mesh2
       integer :: ierr
       logical :: wasInDefine
@@ -4141,7 +4141,7 @@ contains
    function ug_get_contacts_count(ncid, contactids, ncontacts) result(ierr)
 
       integer, intent(in) :: ncid !< NetCDF data set id
-      type(t_ug_contacts), intent(in) :: contactids !< Mesh contact set
+      type(t_ug_contact), intent(in) :: contactids !< Mesh contact set
       integer, intent(out) :: ncontacts !< Number of contact links in the given meshcontact set.
       integer :: ierr !< Result status (IONC_NOERR if successful).
 
@@ -4169,11 +4169,98 @@ contains
 
    end function ug_get_contacts_count
 
+!> Extracts mesh names from the contact attribute and queries their topology dimensions.
+!! The contact attribute has format: "mesh1_name: location1 mesh2_name: location2"
+   function ug_get_contact_mesh_topology_dimensions(ncid, contactids, mesh1_topo_dim, mesh2_topo_dim) result(ierr)
+      use netcdf_utils, only: ncu_get_att
+
+      integer, intent(in) :: ncid !< NetCDF data set id
+      type(t_ug_contact), intent(in) :: contactids !< Mesh contact set
+      integer, intent(out) :: mesh1_topo_dim !< Topology dimension of first mesh (mathematical dimension, so not to be confused with a NetCDF dimension).
+      integer, intent(out) :: mesh2_topo_dim !< Topology dimension of second mesh (mathematical dimension, so not to be confused with a NetCDF dimension).
+      integer :: ierr !< Result status (UG_NOERR if successful)
+
+      character(len=:), allocatable :: contact_attr, contact_name, error_message
+      character(len=nf90_max_name) :: mesh1_name, mesh2_name, location1, location2, temp
+      integer :: istart, icolon, ispace, mesh1_varid, mesh2_varid
+
+      ierr = UG_NOERR
+
+      !> defaults, in case contacts attribute was incorrectly written we assume old situation
+      mesh1_topo_dim = 1
+      mesh2_topo_dim = 2
+
+      ! Get the contact variable name for better error messages
+      ierr = nf90_inquire_variable(ncid, contactids%varids(cid_contacttopo), name=temp) ! nf90_inquire cannot handle allocatable strings
+      if (ierr /= nf90_noerr) then
+         call check_ug_error(UG_SOMEERR, 'Could not read contact, assuming default topology dimensions')
+      end if
+      error_message = ' from mesh topology contacts "'//contact_name//'", assuming defaults.'
+
+      ! Get the contact attribute value
+      ierr = ncu_get_att(ncid, contactids%varids(cid_contacttopo), 'contact', contact_attr)
+      call check_ug_error(ierr, 'Could not read contact attribute'//error_message)
+      if (ierr /= nf90_noerr) return
+
+      ! Parse first mesh name
+      icolon = index(contact_attr, ':')
+      if (icolon == 0) then
+         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing first colon'//error_message)
+         ierr = UG_SOMEERR
+         return
+      end if
+      mesh1_name = trim(adjustl(contact_attr(1:icolon - 1)))
+
+      ! Skip past first location to find second mesh name
+      ! Find the space after the first location
+      istart = icolon + 1
+      do while (istart <= len(contact_attr) .and. contact_attr(istart:istart) == ' ') !> skip possible spaces after colon
+         istart = istart + 1
+      end do
+      ispace = index(contact_attr(istart:), ' ') !> adjustl in case of an extra space after the colon
+      if (ispace == 0) then
+         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing space separator'//error_message)
+         return
+      end if
+
+      ! increment istart to the first character that is not a space
+      istart = istart + ispace ! Move to the space
+      do while (istart <= len(contact_attr) .and. contact_attr(istart:istart) == ' ')
+         istart = istart + 1
+      end do
+
+      icolon = index(contact_attr(istart:), ':')
+      if (icolon == 0) then
+         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing second colon'//error_message)
+         ierr = UG_SOMEERR
+         return
+      end if
+      mesh2_name = trim(adjustl(contact_attr(istart:istart + icolon - 2)))
+
+      ! Get mesh1 topology dimension
+      ierr = nf90_inq_varid(ncid, trim(mesh1_name), mesh1_varid)
+      call check_ug_error(ierr, 'Could not find mesh topology "'//trim(mesh1_name)//'"'//error_message)
+      if (ierr /= nf90_noerr) return
+
+      ierr = nf90_get_att(ncid, mesh1_varid, 'topology_dimension', mesh1_topo_dim)
+      call check_ug_error(ierr, 'Could not read topology_dimension for "'//trim(mesh1_name)//'"'//error_message)
+      if (ierr /= nf90_noerr) return
+
+      ! Get mesh2 topology dimension
+      ierr = nf90_inq_varid(ncid, trim(mesh2_name), mesh2_varid)
+      call check_ug_error(ierr, 'Could not find mesh topology "'//trim(mesh2_name)//'"'//error_message)
+      if (ierr /= nf90_noerr) return
+
+      ierr = nf90_get_att(ncid, mesh2_varid, 'topology_dimension', mesh2_topo_dim)
+      call check_ug_error(ierr, 'Could not read topology_dimension for "'//trim(mesh2_name)//'"'//error_message)
+
+   end function ug_get_contact_mesh_topology_dimensions
+
 ! Writes the mesh_topology_contact mesh.
    function ug_put_mesh_contact(ncid, contactids, mesh1indexes, mesh2indexes, contacttype, contactsids, contactslongnames, startIndex) result(ierr)
       use array_module
       integer, intent(in) :: ncid
-      type(t_ug_contacts), intent(in) :: contactids
+      type(t_ug_contact), intent(in) :: contactids
       integer, intent(in) :: mesh1indexes(:), mesh2indexes(:), contacttype(:)
       integer, allocatable :: contacts(:, :)
       character(len=*), optional, intent(in) :: contactsids(:), contactslongnames(:)
@@ -4213,7 +4300,7 @@ contains
    function ug_get_mesh_contact(ncid, contactids, mesh1indexes, mesh2indexes, contactsids, contactslongnames, contacttype, startIndex) result(ierr)
       use array_module
       integer, intent(in) :: ncid, startIndex
-      type(t_ug_contacts), intent(in) :: contactids
+      type(t_ug_contact), intent(in) :: contactids
       integer, intent(out) :: mesh1indexes(:), mesh2indexes(:), contacttype(:)
       character(len=*), intent(out) :: contactsids(:), contactslongnames(:)
       integer, allocatable :: contacts(:, :)
@@ -4287,7 +4374,7 @@ contains
    function ug_get_mesh_contact_links(ncid, contactids, contactlinksfromto, contacttype, startIndex) result(ierr)
       use array_module
       integer, intent(in) :: ncid !< NetCDF dataset id
-      type(t_ug_contacts), intent(in) :: contactids !< Mesh contact topology set
+      type(t_ug_contact), intent(in) :: contactids !< Mesh contact topology set
       integer, intent(out) :: contactlinksfromto(:, :) !< (2,numcontactlinks) table with from-to indices
       integer, intent(out) :: contacttype(:) !< Contact type for each link
       integer, intent(in) :: startIndex !< Desired start index for the table.
@@ -5196,8 +5283,8 @@ contains
       integer, intent(in) :: numl1d2d !< Number of 1d2d links
       integer, intent(in) :: nvars !< Number of variables
       integer, dimension(nvars), intent(in) :: varidmap !< Mapping array of contact variable ids to all variables
-      type(t_ug_contacts), intent(in) :: cidsin !< Contact struct with dim+varids in input dataset
-      type(t_ug_contacts), intent(inout) :: cidsout !< Contact struct with newly created dim+varids in output dataset
+      type(t_ug_contact), intent(in) :: cidsin !< Contact struct with dim+varids in input dataset
+      type(t_ug_contact), intent(inout) :: cidsout !< Contact struct with newly created dim+varids in output dataset
       integer, dimension(nvars), intent(out) :: id_outvars !< Ids of contact variables in the output file
 
       integer :: i, j, ierr, xtype, ndims, nAtts, dimvalue, id, idout
@@ -5694,7 +5781,7 @@ contains
 !> Gets the name of the contact topology variable in an open dataset.
    function ug_get_contact_name(ncid, contactids, meshContactName) result(ierr)
       integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
-      type(t_ug_contacts), intent(in) :: contactids !< Set of NetCDF-ids for all contact ids.
+      type(t_ug_contact), intent(in) :: contactids !< Set of NetCDF-ids for all contact ids.
       character(len=*), intent(out) :: meshContactName !< The name of the mesh topology variable.
       integer :: ierr !< Result status, ug_noerr if successful.
 
@@ -5715,7 +5802,7 @@ contains
       use string_module
       integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
       type(t_ug_mesh), optional, intent(in) :: mids !< Set of NetCDF-ids for all mesh geometry arrays.
-      type(t_ug_contacts), optional, intent(in) :: cids !< Set of NetCDF-ids for all contact geometry arrays.
+      type(t_ug_contact), optional, intent(in) :: cids !< Set of NetCDF-ids for all contact geometry arrays.
       integer, intent(in) :: jaid !< Returns variable ids (1) or not (0)
       integer, intent(out) :: nvars !< Number of variables defined on the requested mesh.
       integer, optional, intent(out) :: id_vars(:) !< Array to store the variable ids in.
@@ -5782,4 +5869,23 @@ contains
 999   continue
 
    end function ug_get_var_total_count
+
+!> Compact error checker that calls SetMessage only if error occurred
+   subroutine check_ug_error(ierr, context_msg, level)
+      integer, intent(in) :: ierr !< Error code to check
+      character(len=*), intent(in) :: context_msg !< Context message to display if error
+      integer, optional, intent(in) :: level !< Message level (default: LEVEL_WARN)
+
+      integer :: level_
+
+      if (ierr /= nf90_noerr) then
+         if (present(level)) then
+            level_ = level
+         else
+            level_ = LEVEL_WARN
+         end if
+         call SetMessage(level_, trim(context_msg))
+      end if
+   end subroutine check_ug_error
+
 end module io_ugrid

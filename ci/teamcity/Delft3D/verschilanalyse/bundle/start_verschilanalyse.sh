@@ -107,7 +107,7 @@ mkdir -p "${LOG_DIR}/models" "${VAHOME}/${MODELS_PATH}"
 srun --nodes=1 --ntasks=1 --cpus-per-task=16 --partition=16vcpu_spot \
     --account=verschilanalyse --qos=verschilanalyse \
     docker run --rm --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VAHOME}/${MODELS_PATH}:/data" \
-    docker.io/amazon/aws-cli:2.22.7 \
+    docker.io/amazon/aws-cli:2.32.14 \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
     s3 sync --delete --no-progress "${BUCKET}/${MODELS_PATH}/" /data
 

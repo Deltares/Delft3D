@@ -89,7 +89,7 @@ contains
 
       end do
       NsubR = NsubR + 1
-      hR(NsubR) = splinelength_int(num, xs, ys, t(kkR), dble(num - 1))
+      hR(NsubR) = splinelength_int(num, xs, ys, t(kkR), real(num - 1, kind=dp))
 
 !     begin test
 !         hR(NsubR) = cosphi(ncs)*hR(NsubR)

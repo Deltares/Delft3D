@@ -40,7 +40,7 @@ object ReportVerschilanalyse: BuildType({
             name = "Download logs and verschillentool output"
             val script = File(DslContext.baseDir, "verschilanalyse/scripts/download_reports.sh")
             scriptContent = Util.readScript(script)
-            dockerImage = "containers.deltares.nl/docker-proxy/amazon/aws-cli:2.22.7"
+            dockerImage = "containers.deltares.nl/docker-proxy/amazon/aws-cli:2.32.14"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = """
                 --rm

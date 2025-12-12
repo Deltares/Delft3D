@@ -31,7 +31,7 @@ mkdir -p "$ARCHIVE_DIR" "$REFERENCE_DIR"
 
 docker run --rm \
     --volume="${HOME}/.aws:/root/.aws:ro" --volume="${ARCHIVE_DIR}:/data" \
-    docker.io/amazon/aws-cli:2.22.7 \
+    docker.io/amazon/aws-cli:2.32.14 \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
     s3 sync --delete --no-progress "${BUCKET}/${REFERENCE_PREFIX}/output" /data
 

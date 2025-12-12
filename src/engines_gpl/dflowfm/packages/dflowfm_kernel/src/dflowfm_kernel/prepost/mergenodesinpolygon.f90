@@ -166,7 +166,7 @@ contains
                   if (k == 0) cycle ! already merged
 
                   if (mod(K, kint) == 0) then
-                     call READYY(' ', min(1.0_dp, dble(k) / kint))
+                     call READYY(' ', min(1.0_dp, real(k, kind=dp) / kint))
                   end if
 
 !              fill query vector
@@ -230,7 +230,7 @@ contains
 !       non-kdtree
             do K = 1, NUMK
                if (mod(K, kint) == 0) then
-                  call READYY(' ', min(1.0_dp, dble(k) / kint))
+                  call READYY(' ', min(1.0_dp, real(k, kind=dp) / kint))
                end if
 
                if (KC(K) > 0) then
@@ -262,7 +262,7 @@ contains
 
          do K = 1, NUMK ! MERGE 1d ENDPOINTS TO 1d ENDPOINTS THAT ARE REALLY CLOSE
             if (mod(K, kint) == 0) then
-               call READYY(' ', 0.5_dp * min(1.0_dp, dble(k) / kint))
+               call READYY(' ', 0.5_dp * min(1.0_dp, real(k, kind=dp) / kint))
             end if
             if (KC(K) == 1 .and. NMK(K) == 1) then
                do KK = K + 1, NUMK
@@ -281,7 +281,8 @@ contains
 
          call SETBRANCH_LC(nrl1d)
          if (nrl1d == 0) then
-            call READYY(' ', -1.0_dp); netstat = NETSTAT_OK
+            call READYY(' ', -1.0_dp)
+            netstat = NETSTAT_OK
             return
          end if
 
@@ -295,21 +296,25 @@ contains
          Lint = max(NUML / 100, 1)
          do L = 1, NUML
             if (mod(L, Lint) == 0) then
-               call READYY(' ', 0.5_dp + 0.5_dp * min(1.0_dp, dble(L) / Lint))
+               call READYY(' ', 0.5_dp + 0.5_dp * min(1.0_dp, real(L, kind=dp) / Lint))
             end if
             if (KN(3, L) == 1 .or. KN(3, L) == 4) then
                kn3 = kn(3, L)
-               K1 = KN(1, L); K2 = KN(2, L)
+               K1 = KN(1, L)
+               K2 = KN(2, L)
                if (KC(K1) > 0 .and. KC(K2) > 0) then
                   KA = 0
                   if (NMK(K1) == 1 .and. NMK(K2) == 2) then
-                     KA = K1; KB = K2
+                     KA = K1
+                     KB = K2
                   else if (NMK(K2) == 1 .and. NMK(K1) == 2) then
-                     KA = K2; KB = K1
+                     KA = K2
+                     KB = K1
                   end if
 
                   if (KA /= 0) then
-                     DISMIN = 1.0e9_dp; KM = 0
+                     DISMIN = 1.0e9_dp
+                     KM = 0
                      do K = 1, NUMK
                         if (KA /= K .and. KC(K) == 1) then
                            JADUM = 1
@@ -322,7 +327,8 @@ contains
                            if (dbdistance(XK(K), yk(k), XK(Ka), yk(ka), jsferic, jasfer3D, dmiss) < connect1dend) then
                               DIST = dbdistance(XK(KA), YK(KA), XK(K), YK(K), jsferic, jasfer3D, dmiss)
                               if (Dist < DISMIN) then
-                                 dismin = dist; KM = K
+                                 dismin = dist
+                                 KM = K
                               end if
                            end if
                         end if

@@ -95,7 +95,8 @@ contains
             if (A /= dmiss) JA = 1
             goto 10
          else
-            JA = 1; ICHANGE = NWHAT
+            JA = 1
+            ICHANGE = NWHAT
          end if
       end if
 
@@ -110,7 +111,7 @@ contains
       call READYY('CHANGE FIELD VALUES', 0.0_dp)
       do k = 1, NUMK
          if (mod(k, 1000) == 0) then
-            AF = dble(K) / dble(NUMK)
+            AF = real(K, kind=dp) / real(NUMK, kind=dp)
             call READYY('CHANGE FIELD VALUES', AF)
          end if
          XI = XK(K)

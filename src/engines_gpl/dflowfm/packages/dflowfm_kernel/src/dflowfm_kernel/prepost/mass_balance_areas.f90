@@ -1747,11 +1747,11 @@ contains
             do iflux = ipfluxsys(isys) + 1, ipfluxsys(isys) + nfluxsys(isys)
                jflux = fluxsys(iflux)
                if (stochi(isys, jflux) >= 0.0) then
-                  flux(1) = dble(stochi(isys, jflux)) * p_flxdmp(1, jflux, imba)
-                  flux(2) = dble(stochi(isys, jflux)) * p_flxdmp(2, jflux, imba)
+                  flux(1) = real(stochi(isys, jflux), kind=dp) * p_flxdmp(1, jflux, imba)
+                  flux(2) = real(stochi(isys, jflux), kind=dp) * p_flxdmp(2, jflux, imba)
                else
-                  flux(1) = -dble(stochi(isys, jflux)) * p_flxdmp(2, jflux, imba)
-                  flux(2) = -dble(stochi(isys, jflux)) * p_flxdmp(1, jflux, imba)
+                  flux(1) = -real(stochi(isys, jflux), kind=dp) * p_flxdmp(2, jflux, imba)
+                  flux(2) = -real(stochi(isys, jflux), kind=dp) * p_flxdmp(1, jflux, imba)
                end if
                call add_values(fluxes, imbf, flux, jambalumpproc, has_entry)
             end do
@@ -2027,11 +2027,11 @@ contains
             do iflux = ipfluxsys(isys) + 1, ipfluxsys(isys) + nfluxsys(isys)
                jflux = fluxsys(iflux)
                if (stochi(isys, jflux) >= 0.0) then
-                  flux(1) = dble(stochi(isys, jflux)) * sum(p_flxdmp(1, jflux, :))
-                  flux(2) = dble(stochi(isys, jflux)) * sum(p_flxdmp(2, jflux, :))
+                  flux(1) = real(stochi(isys, jflux), kind=dp) * sum(p_flxdmp(1, jflux, :))
+                  flux(2) = real(stochi(isys, jflux), kind=dp) * sum(p_flxdmp(2, jflux, :))
                else
-                  flux(1) = -dble(stochi(isys, jflux)) * sum(p_flxdmp(2, jflux, :))
-                  flux(2) = -dble(stochi(isys, jflux)) * sum(p_flxdmp(1, jflux, :))
+                  flux(1) = -real(stochi(isys, jflux), kind=dp) * sum(p_flxdmp(2, jflux, :))
+                  flux(2) = -real(stochi(isys, jflux), kind=dp) * sum(p_flxdmp(1, jflux, :))
                end if
                call add_values(fluxes, imbf, flux, jambalumpproc, has_entry)
             end do

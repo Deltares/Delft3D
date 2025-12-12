@@ -81,7 +81,8 @@ contains
          numadd = 0
          do i = 1, num
             Lprev = L
-            ip1 = i + 1; if (ip1 > num) ip1 = ip1 - num
+            ip1 = i + 1
+            if (ip1 > num) ip1 = ip1 - num
             L = isleft(pli(ipol)%x(ip1), pli(ipol)%y(ip1))
             if (L .and. Lprev) then
 !            segment is internal
