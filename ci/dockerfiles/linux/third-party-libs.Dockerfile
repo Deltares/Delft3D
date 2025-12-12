@@ -356,7 +356,8 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_INSTALL_LIBDIR=lib \
-    -DENABLE_PARALLEL4=ON
+    -DENABLE_PARALLEL4=ON \
+    -DNETCDF_ENABLE_FILTER_SZIP=OFF
 
 make --jobs=$(nproc)
 make install
