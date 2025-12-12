@@ -1140,7 +1140,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                           & umod     , uuu     , vvv) 
           !write(*,*) umod
           call trtrou(lundia    ,kmax      ,nmmax   , &
-                    & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                    & r(cfurou) ,rouflo    ,.true.   ,r(gvu)    , &
                     & r(hu)     ,i(kcu)    ,r(sig)    , &
                     & r(z0urou) ,1         ,TRACHY_WAQ,gdtrachy  , & 
                     & umod      ,nmlb      ,nmub      ,nmlb      , nmub    , & 
@@ -1155,7 +1155,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
        !          & r(z0urou) ,r(deltau) ,1         ,gdp       )
        if (error) goto 9999
           call trtrou(lundia    ,kmax      ,nmmax   , &
-                    & r(cfurou) ,rouflo    ,.false.   ,r(gvu)    , &
+                    & r(cfurou) ,rouflo    ,.true.   ,r(gvu)    , &
                     & r(hu)     ,i(kcu)    ,r(sig)    , &
                     & r(z0urou) ,2         ,TRACHY_WAQ,gdtrachy  , & 
                     & umod      ,nmlb      ,nmub      ,nmlb      ,nmub    , & 
