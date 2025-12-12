@@ -77,7 +77,9 @@ contains
          if (hpr1 > 0) then
             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
             dx1 = 0.5_dp * dx(L) * acl(L)
-            if (k1 > ndx2D) dx1 = 2 * dx1
+            if (k1 > ndx2D) then
+               dx1 = 2 * dx1
+            end if
             a1(k1) = a1(k1) + dx1 * wid1
             vol1(k1) = vol1(k1) + dx1 * ar1
          end if
@@ -86,7 +88,9 @@ contains
          if (hpr2 > 0) then
             call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
             dx2 = 0.5_dp * dx(L) * (1.0_dp - acl(L))
-            if (k2 > ndx2D) dx2 = 2 * dx2
+            if (k2 > ndx2D) then
+               dx2 = 2 * dx2
+            end if
             a1(k2) = a1(k2) + dx2 * wid2
             vol1(k2) = vol1(k2) + dx2 * ar2
          end if
@@ -127,7 +131,9 @@ contains
             if (hpr1 > 0) then
                call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
                dx1 = 0.5_dp * dx(L) * acl(L)
-               if (k1 > ndx2D) dx1 = 2 * dx1
+               if (k1 > ndx2D) then
+                  dx1 = 2 * dx1
+               end if
                vol1_f(k1) = vol1_f(k1) + dx1 * ar1
             end if
 
@@ -135,7 +141,9 @@ contains
             if (hpr2 > 0) then
                call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
                dx2 = 0.5_dp * dx(L) * (1.0_dp - acl(L))
-               if (k2 > ndx2D) dx2 = 2 * dx2
+               if (k2 > ndx2D) then
+                  dx2 = 2 * dx2
+               end if
                vol1_f(k2) = vol1_f(k2) + dx2 * ar2
             end if
          else

@@ -59,7 +59,9 @@ contains
       topo_info = DMISS
 
 !  check if administration is in order
-      if (L > ubound(lnn, 1)) goto 1234
+      if (L > ubound(lnn, 1)) then
+         goto 1234
+      end if
 
 !  check if the landboundary can be taken into account (not necessarily the up-to-date)
       if (ubound(lanseg_map, 1) >= numk) then
@@ -72,7 +74,9 @@ contains
 
       topo_info = -real(n, kind=dp)
 
-      if (topo_info <= 0.0_dp) topo_info = DMISS
+      if (topo_info <= 0.0_dp) then
+         topo_info = DMISS
+      end if
 
       return
 

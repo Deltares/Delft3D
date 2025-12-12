@@ -66,16 +66,24 @@ contains
                NR = NMK(K0)
                if (NR == 3) then
                   KA = K + 1
-                  if (KA > NN) KA = KA - NN
+                  if (KA > NN) then
+                     KA = KA - NN
+                  end if
                   K1 = netcell(N)%NOD(KA) ! L2  L1  K0  K1  K2
                   KA = K + 2
-                  if (KA > NN) KA = KA - NN
+                  if (KA > NN) then
+                     KA = KA - NN
+                  end if
                   K2 = netcell(N)%NOD(KA)
                   KA = K - 1
-                  if (KA < 1) KA = KA + NN
+                  if (KA < 1) then
+                     KA = KA + NN
+                  end if
                   L1 = netcell(N)%NOD(KA)
                   KA = K - 2
-                  if (KA < 1) KA = KA + NN
+                  if (KA < 1) then
+                     KA = KA + NN
+                  end if
                   L2 = netcell(N)%NOD(KA)
 
                   if (abs(dcosphi(XK(L2), YK(L2), XK(L1), YK(L1), XK(L1), YK(L1), XK(K0), YK(K0), jsferic, jasfer3D, dxymis)) < 0.3 .and. &
@@ -98,10 +106,14 @@ contains
             if (K3 == 1 .and. NN == 5) then
                K0 = netcell(N)%NOD(N3(K3))
                KA = N3(K3) + 2
-               if (KA > NN) KA = KA - NN
+               if (KA > NN) then
+                  KA = KA - NN
+               end if
                K1 = netcell(N)%NOD(KA)
                KB = N3(K3) - 2
-               if (KB < 1) KB = KB + NN
+               if (KB < 1) then
+                  KB = KB + NN
+               end if
                K2 = netcell(N)%NOD(KB)
                call NEWLINK(K0, K1, LNU)
                call NEWLINK(K0, K2, LNU)
@@ -110,23 +122,35 @@ contains
                K0 = netcell(N)%NOD(N3(K3))
                K01 = K0
                KA = N3(K3) + 2
-               if (KA > NN) KA = KA - NN
+               if (KA > NN) then
+                  KA = KA - NN
+               end if
                K1 = netcell(N)%NOD(KA)
                KB = N3(K3) - 2
-               if (KB < 1) KB = KB + NN
+               if (KB < 1) then
+                  KB = KB + NN
+               end if
                K2 = netcell(N)%NOD(KB)
                call NEWLINK(K0, K1, LNU)
                call NEWLINK(K0, K2, LNU)
                K3 = 2
                K0 = netcell(N)%NOD(N3(K3))
                KA = N3(K3) + 2
-               if (KA > 6) KA = KA - 6
+               if (KA > 6) then
+                  KA = KA - 6
+               end if
                K1 = netcell(N)%NOD(KA)
                KB = N3(K3) - 2
-               if (KB < 1) KB = KB + 6
+               if (KB < 1) then
+                  KB = KB + 6
+               end if
                K2 = netcell(N)%NOD(KB)
-               if (K1 /= K01) call NEWLINK(K0, K1, LNU)
-               if (K2 /= K01) call NEWLINK(K0, K2, LNU)
+               if (K1 /= K01) then
+                  call NEWLINK(K0, K1, LNU)
+               end if
+               if (K2 /= K01) then
+                  call NEWLINK(K0, K2, LNU)
+               end if
             else if (K3 == -3 .and. NN == 7) then ! NAAR CENTRAAL POINT MET VIJF LINKJES, TWEE VANUIT HOEKEN, DIRE VANUIT K3 = 3
                call getcellsurface(N, ARN, XCN, YCN) ! SORRY, 7 IS EILAND EN WORDT DUS SOWIESO NIET HERKEND, EVEN VERGETEN
                call dSETNEWPOINT(XCN, YCN, KP)

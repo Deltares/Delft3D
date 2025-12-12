@@ -58,7 +58,9 @@ contains
       logical :: jawel
 
       inquire (file=trim(md_pipefile), exist=jawel)
-      if (.not. jawel) return
+      if (.not. jawel) then
+         return
+      end if
 
       call oldfil(minp, md_pipefile)
       call reapol(minp, 0)
@@ -77,7 +79,9 @@ contains
          z2 = zpl(n + 1)
          w2 = dzL(n + 1)
          h2 = dzR(n + 1)
-         if (x1 == DMISS .or. x2 == DMISS) cycle
+         if (x1 == DMISS .or. x2 == DMISS) then
+            cycle
+         end if
          if (w1 <= 0.0_dp .or. w2 <= 0.0_dp) then
             call qnerror(' pipes: width <= 0d0, fourth column', 'in', md_pipefile)
             call qnerror(' pipes: width <= 0d0, fourth column', 'in', md_pipefile)

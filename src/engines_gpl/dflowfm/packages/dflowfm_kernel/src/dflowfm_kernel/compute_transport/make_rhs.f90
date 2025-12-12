@@ -77,7 +77,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("make_rhs", ithndl)
+      if (timon) then
+         call timstrt("make_rhs", ithndl)
+      end if
 
       dt_loc = dts
       rhs = 0.0_dp
@@ -100,7 +102,9 @@ contains
             kt = ktop(kk)
             do k = kb, kt
                dvoli = 1.0_dp / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk))
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk))
+               end if
 
                do j = 1, NUMCONST
 
@@ -121,7 +125,9 @@ contains
 
             do k = 1, Ndxi
                dvoli = 1.0_dp / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
+               end if
 
                do j = 1, NUMCONST
                   rhs(j, k) = (sumhorflux(j, k) * dvoli + source(j, k)) * dts + sed(j, k)
@@ -142,7 +148,9 @@ contains
                end if
 
                dvoli = 1.0_dp / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
+               end if
 
                do j = 1, NUMCONST
                   rhs(j, k) = (sumhorflux(j, k) / ndeltasteps(k) * dvoli + source(j, k)) * dt_loc + sed(j, k)
@@ -153,7 +161,9 @@ contains
          end if
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine make_rhs
 
 end module m_make_rhs

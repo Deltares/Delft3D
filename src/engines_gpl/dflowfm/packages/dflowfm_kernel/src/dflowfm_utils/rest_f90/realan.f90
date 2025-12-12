@@ -74,7 +74,9 @@ contains
       call READYY('READING land boundary', 0.0_dp)
 10    continue
       read (MLAN, '(A)', end=777, ERR=887) MATR
-      if (MATR(1:1) == '*') goto 10
+      if (MATR(1:1) == '*') then
+         goto 10
+      end if
 
       read (MLAN, '(A)', end=777) REC
       read (REC, *, ERR=666) NROW, NKOL

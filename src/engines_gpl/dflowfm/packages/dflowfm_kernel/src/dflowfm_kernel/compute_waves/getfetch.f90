@@ -62,13 +62,19 @@ contains
       if (Hs(k) > 0.0_dp) then
          call getlink1(k, L) ! het is maar voor wind
          U10 = sqrt(WX(L) * WX(L) + WY(L) * WY(L))
-         if (U10 < 1.0_dp) return
+         if (U10 < 1.0_dp) then
+            return
+         end if
 
          DIR = atan2(WY(L), WX(L))
-         if (DIR < 0.0_dp) DIR = DIR + TWOPI
+         if (DIR < 0.0_dp) then
+            DIR = DIR + TWOPI
+         end if
 
          dir = dir / twopi
-         if (dir >= 1.0_dp) dir = 0.0_dp
+         if (dir >= 1.0_dp) then
+            dir = 0.0_dp
+         end if
          NW1 = DIR * (nwf - 1) + 1
          NW2 = NW1 + 1
 

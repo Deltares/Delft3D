@@ -77,7 +77,9 @@ contains
 
 !  add startnode to list
       nlist = nlist + 1
-      if (nlist > size(klist)) call realloc(klist, int(1.2_dp * real(nlist, kind=dp)) + 1, fill=0, keepExisting=.true.)
+      if (nlist > size(klist)) then
+         call realloc(klist, int(1.2_dp * real(nlist, kind=dp)) + 1, fill=0, keepExisting=.true.)
+      end if
       klist(nlist) = kstart
 
 !  process the startnode list
@@ -116,11 +118,17 @@ contains
 !        loop over links connected to k
             do i_ = 1, nmk(k)
                i = i + iDi
-               if (i > nmk(k)) i = i - nmk(k)
-               if (i < 1) i = i + nmk(k)
+               if (i > nmk(k)) then
+                  i = i - nmk(k)
+               end if
+               if (i < 1) then
+                  i = i + nmk(k)
+               end if
 
                L = nod(k)%lin(i)
-               if (Lc(L) /= 1) cycle
+               if (Lc(L) /= 1) then
+                  cycle
+               end if
 
                knext = kn(1, L) + kn(2, L) - k
 
@@ -141,7 +149,9 @@ contains
 
 !              add new startnode to list
                   nlist = nlist + 1
-                  if (nlist > size(klist)) call realloc(klist, int(1.2_dp * real(nlist, kind=dp)) + 1, fill=0, keepExisting=.true.)
+                  if (nlist > size(klist)) then
+                     call realloc(klist, int(1.2_dp * real(nlist, kind=dp)) + 1, fill=0, keepExisting=.true.)
+                  end if
                   klist(nlist) = k
                   cycle ! do not add this node to branch
                end if

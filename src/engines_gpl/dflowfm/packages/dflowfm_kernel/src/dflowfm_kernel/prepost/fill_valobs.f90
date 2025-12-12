@@ -92,7 +92,9 @@ contains
       kmx_const = kmx
       nlyrs = 0
 
-      if (timon) call timstrt("fill_valobs", handle_extra(55))
+      if (timon) then
+         call timstrt("fill_valobs", handle_extra(55))
+      end if
       !
       if (.not. allocated(ueux)) then
          call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
@@ -224,7 +226,9 @@ contains
                   k1 = ln(1, LLL)
                   k2 = ln(2, LLL)
                   k3 = 1
-                  if (nd(k)%ln(LL) > 0) k3 = 2
+                  if (nd(k)%ln(LL) > 0) then
+                     k3 = 2
+                  end if
                   valobs(i, IPNT_wx) = valobs(i, IPNT_wx) + wx(LLL) * wcL(k3, LLL)
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
@@ -589,7 +593,9 @@ contains
          deallocate (wa)
       end if
 
-      if (timon) call timstop(handle_extra(55))
+      if (timon) then
+         call timstop(handle_extra(55))
+      end if
    end subroutine fill_valobs
 
    !> Support routine to collect the values of the ice quantities at the observation stations
@@ -605,7 +611,9 @@ contains
       integer, intent(in) :: i !< index of the observation station
       integer, intent(in) :: k !< face index associated with the observation station
 
-      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) return
+      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) then
+         return
+      end if
 
       call conditional_assign(valobs, i, IPNT_ICE_S1, ice_s1, k)
       call conditional_assign(valobs, i, IPNT_ICE_ZMIN, ice_zmin, k)

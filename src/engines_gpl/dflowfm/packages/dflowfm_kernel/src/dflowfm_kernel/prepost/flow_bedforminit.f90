@@ -64,7 +64,9 @@ contains
 
       else if (stage == 2) then
 
-         if (.not. bfm_included) return
+         if (.not. bfm_included) then
+            return
+         end if
          !
          call fm_rdbedformpar(bfmpar, md_bedformfile, error)
          if (error) then

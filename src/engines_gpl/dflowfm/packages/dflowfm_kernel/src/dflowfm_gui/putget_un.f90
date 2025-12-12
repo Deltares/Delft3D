@@ -68,18 +68,24 @@ contains
 !
       if (KEY >= 24 .and. KEY <= 26) then
          call FKEYS(KEY)
-         if (KEY == 3) return
+         if (KEY == 3) then
+            return
+         end if
       else if (KEY == 1) then
 !        BOVEN
          JA = KEY
          call MENUH(JA, NUM, NWHAT)
          call BOTLIN(0, NUMB, KEY)
-         if (JA /= 0) return
+         if (JA /= 0) then
+            return
+         end if
       else if (KEY == 2) then
 !        ONDER
          JA = KEY
          call BOTLIN(JA, NUMB, KEY)
-         if (JA /= 0) return
+         if (JA /= 0) then
+            return
+         end if
       else if (KEY == 90 .or. KEY == 90 + 32) then
 !        Z(oomin)
          call ZOOMIN(KEY, NPUT)

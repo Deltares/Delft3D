@@ -66,7 +66,9 @@ contains
       integer :: L, LL
       real(kind=dp) :: d1, d2, x, y
 
-      if (NDRAW(2) <= 0 .or. NUML == 0) return
+      if (NDRAW(2) <= 0 .or. NUML == 0) then
+         return
+      end if
 
 !      call wall_clock_time(t0)
 
@@ -89,7 +91,9 @@ contains
          do L = 1, NUML
             if (ja /= -1234 .and. mod(L, 500) == 0) then
                call halt2(ja)
-               if (ja == 1) exit
+               if (ja == 1) then
+                  exit
+               end if
             end if
 
             if (kn(3, L) == 2) then
@@ -108,7 +112,9 @@ contains
          do K = 1, NUMK
             if (ja /= -1234 .and. mod(k, 500) == 0) then
                call halt2(ja)
-               if (ja == 1) exit
+               if (ja == 1) then
+                  exit
+               end if
             end if
 
             if (INVIEW(XK(K), YK(K))) then
@@ -135,7 +141,9 @@ contains
          do L = 1, NUML
             if (ja /= -1234 .and. mod(L, 500) == 0) then
                call halt2(ja)
-               if (ja == 1) exit
+               if (ja == 1) then
+                  exit
+               end if
             end if
             K3 = KN(3, L)
             if (k3 /= 2 .and. k3 /= 0) then
@@ -163,7 +171,9 @@ contains
          do L = 1, NUML
             if (ja /= -1234 .and. mod(L, LMOD) == 0) then
                call halt2(ja)
-               if (ja == 1) exit
+               if (ja == 1) then
+                  exit
+               end if
             end if
             if (LNN(L) == 1) then
                K1 = KN(1, L)
@@ -180,7 +190,9 @@ contains
          call TEKXZ(221)
       end if
 
-      if (NDRAW(22) >= 2) call TEKFACES()
+      if (NDRAW(22) >= 2) then
+         call TEKFACES()
+      end if
 
       if (NDRAW(2) == 5) then
          ! Draw link crossings (precomputed by checknet)
@@ -189,10 +201,9 @@ contains
             call TEKLINK(linkcross(2, L), NCOLWARN2)
 
             LL = linkcross(1, L)
-            if (kn(1, linkcross(1, L)) <= 0 .or. kn(1, linkcross(1, L)) > numk .or. &
-                kn(2, linkcross(1, L)) <= 0 .or. kn(2, linkcross(1, L)) > numk .or. &
-                kn(1, linkcross(2, L)) <= 0 .or. kn(1, linkcross(2, L)) > numk .or. &
-                kn(2, linkcross(2, L)) <= 0 .or. kn(2, linkcross(2, L)) > numk) cycle
+            if (kn(1, linkcross(1, L)) <= 0 .or. kn(1, linkcross(1, L)) > numk .or. kn(2, linkcross(1, L)) <= 0 .or. kn(2, linkcross(1, L)) > numk .or. kn(1, linkcross(2, L)) <= 0 .or. kn(1, linkcross(2, L)) > numk .or. kn(2, linkcross(2, L)) <= 0 .or. kn(2, linkcross(2, L)) > numk) then
+               cycle
+            end if
             d1 = max(abs(xk(kn(2, linkcross(1, L))) - xk(kn(1, linkcross(1, L)))), &
                      abs(yk(kn(2, linkcross(1, L))) - yk(kn(1, linkcross(1, L)))))
 
@@ -209,9 +220,12 @@ contains
          ! and too short flow links (precomputed by flow_geominit) .
          do L = 1, nlinkbadortho + nlinktoosmall
             LL = linkbadqual(L)
-            if (LL <= 0 .or. LL > numl) cycle
-            if (kn(1, LL) <= 0 .or. kn(1, LL) > numk .or. &
-                kn(2, LL) <= 0 .or. kn(2, LL) > numk) cycle
+            if (LL <= 0 .or. LL > numl) then
+               cycle
+            end if
+            if (kn(1, LL) <= 0 .or. kn(1, LL) > numk .or. kn(2, LL) <= 0 .or. kn(2, LL) > numk) then
+               cycle
+            end if
             call TEKLINK(LL, NCOLWARN3)
             d1 = max(abs(xk(kn(2, LL)) - xk(kn(1, LL))), &
                      abs(yk(kn(2, LL)) - yk(kn(1, LL))))

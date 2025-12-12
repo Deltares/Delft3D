@@ -385,14 +385,30 @@ contains
                      allocate (sedh(ndx))
                   end if
                   isednum = 1
-                  if (qid(16:16) == '2') isednum = 2
-                  if (qid(16:16) == '3') isednum = 3
-                  if (qid(16:16) == '4') isednum = 4
-                  if (qid(16:16) == '5') isednum = 5
-                  if (qid(16:16) == '6') isednum = 6
-                  if (qid(16:16) == '7') isednum = 7
-                  if (qid(16:16) == '8') isednum = 8
-                  if (qid(16:16) == '9') isednum = 9
+                  if (qid(16:16) == '2') then
+                     isednum = 2
+                  end if
+                  if (qid(16:16) == '3') then
+                     isednum = 3
+                  end if
+                  if (qid(16:16) == '4') then
+                     isednum = 4
+                  end if
+                  if (qid(16:16) == '5') then
+                     isednum = 5
+                  end if
+                  if (qid(16:16) == '6') then
+                     isednum = 6
+                  end if
+                  if (qid(16:16) == '7') then
+                     isednum = 7
+                  end if
+                  if (qid(16:16) == '8') then
+                     isednum = 8
+                  end if
+                  if (qid(16:16) == '9') then
+                     isednum = 9
+                  end if
 
                   sedh(1:ndx) = sed(isednum, 1:ndx)
                   success = timespaceinitialfield(xz, yz, sedh, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
@@ -718,7 +734,9 @@ contains
             else if (qid == 'groundlayerthickness') then
 
                success = timespaceinitialfield(xu, yu, grounlay, Lnx1D, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
-               if (success) jagrounlay = 1
+               if (success) then
+                  jagrounlay = 1
+               end if
 
             else if (.not. stm_included .and. qid == 'erodablelayerthicknessgrainsize1' .and. mxgr >= 1) then
 
@@ -1027,8 +1045,12 @@ contains
                end if
                ! update the administration
                if (success) then
-                  if (qid == 'sea_ice_area_fraction') ja_ice_area_fraction_read = 1
-                  if (qid == 'sea_ice_thickness') ja_ice_thickness_read = 1
+                  if (qid == 'sea_ice_area_fraction') then
+                     ja_ice_area_fraction_read = 1
+                  end if
+                  if (qid == 'sea_ice_thickness') then
+                     ja_ice_thickness_read = 1
+                  end if
                end if
 
             else if (qid == 'cloudiness') then
@@ -1291,7 +1313,9 @@ contains
 
             else if (qid(1:25) == 'bedrock_surface_elevation') then
                kx = 1
-               if (allocated(subsupl)) deallocate (subsupl, subsupl_t0, subsupl_tp, subsout, sdu_blp)
+               if (allocated(subsupl)) then
+                  deallocate (subsupl, subsupl_t0, subsupl_tp, subsout, sdu_blp)
+               end if
 
                select case (ibedlevtyp)
                case (1)
@@ -1716,7 +1740,9 @@ contains
       end if
 
       if (jaoldstr > 0 .and. ncgensg > 0) then
-         if (allocated(xcgen)) deallocate (xcgen, ycgen, zcgen)
+         if (allocated(xcgen)) then
+            deallocate (xcgen, ycgen, zcgen)
+         end if
          if (allocated(kcgen)) then
             deallocate (kcgen)
          end if
@@ -1893,10 +1919,18 @@ contains
                qid = 'pump'
                npumpsg = npumpsg + 1
                success = ec_addtimespacerelation(qid, xpump, ypump, kdp, kx, filename, filetype, method, operand, xy2pump, targetIndex=npumpsg)
-               if (transformcoef(4) /= dmiss) pumponoff(1, npumpsg) = transformcoef(4)
-               if (transformcoef(5) /= dmiss) pumponoff(2, npumpsg) = transformcoef(5)
-               if (transformcoef(6) /= dmiss) pumponoff(3, npumpsg) = transformcoef(6)
-               if (transformcoef(7) /= dmiss) pumponoff(4, npumpsg) = transformcoef(7)
+               if (transformcoef(4) /= dmiss) then
+                  pumponoff(1, npumpsg) = transformcoef(4)
+               end if
+               if (transformcoef(5) /= dmiss) then
+                  pumponoff(2, npumpsg) = transformcoef(5)
+               end if
+               if (transformcoef(6) /= dmiss) then
+                  pumponoff(3, npumpsg) = transformcoef(6)
+               end if
+               if (transformcoef(7) /= dmiss) then
+                  pumponoff(4, npumpsg) = transformcoef(7)
+               end if
             end if
          end do
       end if

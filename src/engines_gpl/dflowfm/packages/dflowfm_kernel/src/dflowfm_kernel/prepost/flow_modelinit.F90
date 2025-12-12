@@ -222,11 +222,15 @@ contains
 
          if (Ndx > 0) then
             call mess(LEVEL_INFO, 'Start partitioning model...')
-            if (jatimer == 1) call starttimer(IPARTINIT)
+            if (jatimer == 1) then
+               call starttimer(IPARTINIT)
+            end if
 
             call partition_init_1D2D(md_ident, iresult) ! 1D & 2D (hence the name, thanks to Herman for pointing this out)
 
-            if (jatimer == 1) call stoptimer(IPARTINIT)
+            if (jatimer == 1) then
+               call stoptimer(IPARTINIT)
+            end if
             call mess(LEVEL_INFO, 'Done partitioning model.')
 
             if (iresult == 0) then
@@ -322,9 +326,13 @@ contains
          call update_vertadmin()
 
          !3D: partition_init needs kmxn and kmxL arrays for 3D send- and ghostlists
-         if (jatimer == 1) call starttimer(IPARTINIT)
+         if (jatimer == 1) then
+            call starttimer(IPARTINIT)
+         end if
          call partition_init_3D(iresult)
-         if (jatimer == 1) call stoptimer(IPARTINIT)
+         if (jatimer == 1) then
+            call stoptimer(IPARTINIT)
+         end if
 
          if (iresult /= DFM_NOERR) then
             call mess(LEVEL_WARN, 'Error in 3D partitioning initialization.')

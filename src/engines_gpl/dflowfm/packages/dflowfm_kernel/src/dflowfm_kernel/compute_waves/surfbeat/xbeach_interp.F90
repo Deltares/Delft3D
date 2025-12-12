@@ -75,7 +75,9 @@ contains
          indint = 0
       end if
 
-      if (N <= 0) return
+      if (N <= 0) then
+         return
+      end if
       !
       ! *** N GREATER THAN 0
       !
@@ -216,7 +218,9 @@ contains
       !
   !! executable statements -------------------------------------------------------
       !
-      if (iprint == 1) write (*, *) 'in grmap n1 n2', n1, n2
+      if (iprint == 1) then
+         write (*, *) 'in grmap n1 n2', n1, n2
+      end if
       do i2 = 1, n2
          i = iref(1, i2)
          if (i > 0) then
@@ -228,13 +232,15 @@ contains
             ! Function values at grid 2 are expressed as weighted average
             ! of function values in Np surrounding points of grid 1
             !
-            if (iprint == 1 .and. i2 <= n2) &
-          & write (*, '(1X,A,I6,4(1X,E11.4))') ' i2 w ', i2, (w(ip, i2), ip=1,  &
-          & np)
+            if (iprint == 1 .and. i2 <= n2) then
+               write (*, '(1X,A,I6,4(1X,E11.4))') ' i2 w ', i2, (w(ip, i2), ip=1, np)
+            end if
             do ip = 1, np
                i = iref(ip, i2)
                i1 = max(i, 1)
-               if (iprint == 1 .and. i2 <= n2) write (*, *) ' i1,f1(i1) ', i1, f1(i1)
+               if (iprint == 1 .and. i2 <= n2) then
+                  write (*, *) ' i1,f1(i1) ', i1, f1(i1)
+               end if
                f2(i2) = f2(i2) + w(ip, i2) * f1(i1)
             end do
          end if

@@ -51,7 +51,9 @@ contains
 
       real(kind=dp) :: sx2, sy2, css, sns, rr, cr, sr, snum
       integer :: n
-      if (iniship == 0) return
+      if (iniship == 0) then
+         return
+      end if
 
       call setcol(4)
 

@@ -361,7 +361,9 @@ contains
             ipli = 0
             call reapol_nampli(MLAN, ja, 1, ipli) ! Read pol/pli as crs
             call pol_to_crosssections(xpl, ypl, npl, names=nampli)
-            if (NPL > 0) call delpol()
+            if (NPL > 0) then
+               call delpol()
+            end if
             call MESSAGE('YOU LOADED ', filnam, ' ')
             call MINMXNS()
             md_crsfile = ' '

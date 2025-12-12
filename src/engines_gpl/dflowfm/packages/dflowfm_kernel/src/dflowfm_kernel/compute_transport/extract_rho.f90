@@ -51,14 +51,18 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("extract_rho", ithndl)
+      if (timon) then
+         call timstrt("extract_rho", ithndl)
+      end if
 
       do k = 1, Ndkx
          rho(k) = constituents(1, k)
          constituents(1, k) = sa1(k)
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine extract_rho
 

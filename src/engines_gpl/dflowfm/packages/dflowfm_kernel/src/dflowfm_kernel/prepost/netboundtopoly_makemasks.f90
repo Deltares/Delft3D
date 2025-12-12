@@ -54,8 +54,12 @@ contains
       kc = -1
       inside = -1
       do L = 1, numL
-         if (lnn(L) /= 1) cycle ! not a net boundary link
-         if (kn(3, L) /= 2) cycle ! not a 2D link
+         if (lnn(L) /= 1) then
+            cycle ! not a net boundary link
+         end if
+         if (kn(3, L) /= 2) then
+            cycle ! not a 2D link
+         end if
          k1 = kn(1, L)
          k2 = kn(2, L)
          if (k1 < 1 .or. k1 > numk .or. k2 < 1 .or. k2 > numk) then ! safety, should not happen

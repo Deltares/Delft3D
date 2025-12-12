@@ -68,7 +68,9 @@ contains
             if (ja2 == 1 .or. ndraw(28) == 3) then ! crash
                if (inview(xz(n), yz(n))) then
                   zn = znod(n)
-                  if (zn == DMISS) cycle
+                  if (zn == DMISS) then
+                     cycle
+                  end if
                   if (zn < rmin) then
                      rmin = zn
                      ndmin = n

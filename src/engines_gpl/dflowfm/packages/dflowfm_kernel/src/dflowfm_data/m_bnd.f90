@@ -59,14 +59,30 @@ contains
 
       type(bndtype), intent(inout) :: bnd !< boundary data
 
-      if (allocated(bnd%x)) deallocate (bnd%x)
-      if (allocated(bnd%y)) deallocate (bnd%y)
-      if (allocated(bnd%sigma)) deallocate (bnd%sigma)
-      if (allocated(bnd%zminmax)) deallocate (bnd%zminmax)
-      if (allocated(bnd%z)) deallocate (bnd%z)
-      if (allocated(bnd%xy2)) deallocate (bnd%xy2)
-      if (allocated(bnd%kd)) deallocate (bnd%kd)
-      if (allocated(bnd%k)) deallocate (bnd%k)
+      if (allocated(bnd%x)) then
+         deallocate (bnd%x)
+      end if
+      if (allocated(bnd%y)) then
+         deallocate (bnd%y)
+      end if
+      if (allocated(bnd%sigma)) then
+         deallocate (bnd%sigma)
+      end if
+      if (allocated(bnd%zminmax)) then
+         deallocate (bnd%zminmax)
+      end if
+      if (allocated(bnd%z)) then
+         deallocate (bnd%z)
+      end if
+      if (allocated(bnd%xy2)) then
+         deallocate (bnd%xy2)
+      end if
+      if (allocated(bnd%kd)) then
+         deallocate (bnd%kd)
+      end if
+      if (allocated(bnd%k)) then
+         deallocate (bnd%k)
+      end if
 
       return
    end subroutine dealloc_bnd

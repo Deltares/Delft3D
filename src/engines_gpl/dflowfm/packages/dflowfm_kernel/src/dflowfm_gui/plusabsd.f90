@@ -85,14 +85,18 @@ contains
             ICHANGE = NWHAT
             if (A == dmiss) then
                call GETREAL('FIRST SPECIFY UNIFORM VALUE = ', A)
-               if (A /= dmiss) JA = 1
+               if (A /= dmiss) then
+                  JA = 1
+               end if
                goto 10
             else
                JA = 1
             end if
          else if (NWHAT == 10) then
             call GETREAL('SPECIFY UNIFORM VALUE = ', A)
-            if (A /= dmiss) JA = 1
+            if (A /= dmiss) then
+               JA = 1
+            end if
             goto 10
          else
             JA = 1
@@ -121,7 +125,9 @@ contains
          JA = 0
          if (NPL >= 3) then
             call DPINPOK(XI, YI, ZI, NPL, XPL, YPL, INHUL, jins, dmiss)
-            if (INHUL == 1) JA = 1
+            if (INHUL == 1) then
+               JA = 1
+            end if
          else
             JA = 1
          end if
@@ -134,19 +140,31 @@ contains
             else if (ICHANGE == 2) then
                EA(K) = DA
             else if (ICHANGE == 3) then
-               if (RD /= dmiss) EA(K) = max(EA(K), DA)
+               if (RD /= dmiss) then
+                  EA(K) = max(EA(K), DA)
+               end if
             else if (ICHANGE == 4) then
-               if (RD /= dmiss) EA(K) = min(EA(K), DA)
+               if (RD /= dmiss) then
+                  EA(K) = min(EA(K), DA)
+               end if
             else if (ICHANGE == 5) then
-               if (RD /= dmiss) EA(K) = EA(K) + DA
+               if (RD /= dmiss) then
+                  EA(K) = EA(K) + DA
+               end if
             else if (ICHANGE == 6) then
-               if (RD /= dmiss) EA(K) = EA(K) * DA
+               if (RD /= dmiss) then
+                  EA(K) = EA(K) * DA
+               end if
             else if (ICHANGE == 7) then
                EA(K) = dmiss
             else if (ICHANGE == 8) then
-               if (RD /= dmiss .and. EA(K) > DA) EA(K) = DMISS
+               if (RD /= dmiss .and. EA(K) > DA) then
+                  EA(K) = DMISS
+               end if
             else if (ICHANGE == 9) then
-               if (RD /= dmiss .and. EA(K) < DA) EA(K) = DMISS
+               if (RD /= dmiss .and. EA(K) < DA) then
+                  EA(K) = DMISS
+               end if
             end if
          end if
       end do

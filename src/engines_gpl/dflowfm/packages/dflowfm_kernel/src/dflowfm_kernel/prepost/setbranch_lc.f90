@@ -76,7 +76,9 @@ contains
          return
       end if
 
-      if (allocated(IBN)) deallocate (IBN, LIB, K1BR, NRLB)
+      if (allocated(IBN)) then
+         deallocate (IBN, LIB, K1BR, NRLB)
+      end if
       allocate (IBN(NUML), LIB(NUML), K1BR(NUML), NRLB(NUML))
       IBN = 0
       LIB = 0

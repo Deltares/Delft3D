@@ -59,7 +59,9 @@ contains
       avalflux = 0.0_dp
 
       do L = 1, lnx
-         if (wu_mor(L) == 0.0_dp) cycle
+         if (wu_mor(L) == 0.0_dp) then
+            cycle
+         end if
          k1 = ln(1, L)
          k2 = ln(2, L)
          ac1 = acL(L)

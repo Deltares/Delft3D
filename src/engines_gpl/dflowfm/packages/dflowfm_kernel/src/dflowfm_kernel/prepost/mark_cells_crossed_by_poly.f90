@@ -63,7 +63,9 @@ contains
       do L = 1, numL
          k1 = kn(1, L)
          k2 = kn(2, L)
-         if (k1 < 1 .or. k2 < 1 .or. k1 > numk .or. k2 > numk) cycle
+         if (k1 < 1 .or. k2 < 1 .or. k1 > numk .or. k2 > numk) then
+            cycle
+         end if
          if (kmask(k1) /= kmask(k2)) then
             Lmask(L) = 1
          else

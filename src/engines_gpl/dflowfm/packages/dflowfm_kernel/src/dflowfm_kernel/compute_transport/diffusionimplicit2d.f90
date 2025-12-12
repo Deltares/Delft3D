@@ -57,7 +57,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("diffusionimplicit2D", ithndl)
+      if (timon) then
+         call timstrt("diffusionimplicit2D", ithndl)
+      end if
 
       do i = 1, numconst
 
@@ -97,7 +99,9 @@ contains
 
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine diffusionimplicit2D
 
 end module m_diffusionimplicit2d

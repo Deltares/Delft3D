@@ -58,8 +58,12 @@ contains
       do L = 1, numl
          k1 = lne(1, L)
          k2 = lne(2, L)
-         if (k1 > 0 .and. k2 > 0) cycle
-         if (k1 <= 0 .and. k2 <= 0) cycle
+         if (k1 > 0 .and. k2 > 0) then
+            cycle
+         end if
+         if (k1 <= 0 .and. k2 <= 0) then
+            cycle
+         end if
          nDryLinks = nDryLinks + 1
          kdryarea(nDryLinks) = L
       end do

@@ -131,21 +131,41 @@ contains
    subroutine deallocVoltable(this)
       class(t_voltable) :: this
 
-      if (allocated(this%vol)) deallocate (this%vol)
-      if (allocated(this%sur)) deallocate (this%sur)
+      if (allocated(this%vol)) then
+         deallocate (this%vol)
+      end if
+      if (allocated(this%sur)) then
+         deallocate (this%sur)
+      end if
 
       if (this%numberOfSummerDikes /= 0) then
-         if (allocated(this%inundationPhase)) deallocate (this%inundationPhase)
-         if (allocated(this%linkNumber)) deallocate (this%linkNumber)
-         if (allocated(this%summerDikeCrestLevel)) deallocate (this%summerDikeCrestLevel)
-         if (allocated(this%summerDikeBaseLevel)) deallocate (this%summerDikeBaseLevel)
-         if (allocated(this%sdinVolume)) deallocate (this%sdinVolume)
-         if (allocated(this%sdinArea)) deallocate (this%sdinArea)
+         if (allocated(this%inundationPhase)) then
+            deallocate (this%inundationPhase)
+         end if
+         if (allocated(this%linkNumber)) then
+            deallocate (this%linkNumber)
+         end if
+         if (allocated(this%summerDikeCrestLevel)) then
+            deallocate (this%summerDikeCrestLevel)
+         end if
+         if (allocated(this%summerDikeBaseLevel)) then
+            deallocate (this%summerDikeBaseLevel)
+         end if
+         if (allocated(this%sdinVolume)) then
+            deallocate (this%sdinVolume)
+         end if
+         if (allocated(this%sdinArea)) then
+            deallocate (this%sdinArea)
+         end if
       end if
 
       if (this%hasDecreasingWidths) then
-         if (allocated(this%volDecreasing)) deallocate (this%volDecreasing)
-         if (allocated(this%surDecreasing)) deallocate (this%surDecreasing)
+         if (allocated(this%volDecreasing)) then
+            deallocate (this%volDecreasing)
+         end if
+         if (allocated(this%surDecreasing)) then
+            deallocate (this%surDecreasing)
+         end if
       end if
    end subroutine deallocVoltable
 

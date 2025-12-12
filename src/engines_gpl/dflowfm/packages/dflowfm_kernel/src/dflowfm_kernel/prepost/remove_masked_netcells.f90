@@ -68,10 +68,14 @@ contains
       num = 0
 
 !     check if cellmask array is allocated
-      if (.not. allocated(cellmask)) goto 1234
+      if (.not. allocated(cellmask)) then
+         goto 1234
+      end if
 
 !     check if cellmask array is sufficiently large
-      if (ubound(cellmask, 1) < nump1d2d) goto 1234
+      if (ubound(cellmask, 1) < nump1d2d) then
+         goto 1234
+      end if
 
 !     see if we can update idomain
       jaidomain = 0

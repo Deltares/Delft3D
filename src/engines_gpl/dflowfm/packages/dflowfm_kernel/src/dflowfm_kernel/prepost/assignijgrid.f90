@@ -110,10 +110,14 @@ contains
                        [minval(ic, ic /= IMISS) - 1, minval(jc, jc /= IMISS) - 1], &
                        [maxval(ic, ic /= IMISS) + 1, maxval(jc, jc /= IMISS) + 1], 0)
 
-         if (icount == 0) exit
+         if (icount == 0) then
+            exit
+         end if
       end do
 
-      if (iter == MAXITER) write (6, *) 'assignijgrid: iter=MAXITER'
+      if (iter == MAXITER) then
+         write (6, *) 'assignijgrid: iter=MAXITER'
+      end if
 
       call readyy('creating curvilinear grid', -1.0_dp)
 

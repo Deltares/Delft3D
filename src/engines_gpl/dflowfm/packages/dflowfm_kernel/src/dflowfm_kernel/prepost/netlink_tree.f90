@@ -81,7 +81,9 @@ contains
 
       if (phase == 1) then
          !   deallocation step
-         if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+         if (treeglob%itreestat /= ITREE_EMPTY) then
+            call delete_kdtree2(treeglob)
+         end if
       end if
 
    end subroutine

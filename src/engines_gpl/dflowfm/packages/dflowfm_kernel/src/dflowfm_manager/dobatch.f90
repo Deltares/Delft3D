@@ -70,7 +70,9 @@ contains
          kmx = km(k)
          iturbulencemodel = 3
          jaustarint = 0
-         if (k > 10) dt_max = 1.0_dp
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
          ierr = flow()
          q30 = q1(1) / 47.434
 
@@ -78,7 +80,9 @@ contains
          kmx = km(k)
          iturbulencemodel = 4
          jaustarint = 0
-         if (k > 10) dt_max = 1.0_dp
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
          ierr = flow()
          q40 = q1(1) / 47.434
 
@@ -86,7 +90,9 @@ contains
          kmx = km(k)
          iturbulencemodel = 3
          jaustarint = 1
-         if (k > 10) dt_max = 1.0_dp
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
          ierr = flow()
          q31 = q1(1) / 47.434
 
@@ -94,7 +100,9 @@ contains
          kmx = km(k)
          iturbulencemodel = 4
          jaustarint = 1
-         if (k > 10) dt_max = 1.0_dp
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
          ierr = flow()
          q41 = q1(1) / 47.434
 
@@ -102,7 +110,9 @@ contains
          kmx = km(k)
          iturbulencemodel = 3
          jaustarint = 2
-         if (k > 10) dt_max = 1.0_dp
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
          ierr = flow()
          q32 = q1(1) / 47.434
 
@@ -110,7 +120,9 @@ contains
          kmx = km(k)
          iturbulencemodel = 4
          jaustarint = 2
-         if (k > 10) dt_max = 1.0_dp
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
          ierr = flow()
          q42 = q1(1) / 47.434
 

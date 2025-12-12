@@ -70,7 +70,9 @@ contains
       call mess(LEVEL_INFO, 'Initialising water quality processes')
 
       jawriteDetailedTimers = 1
-      if (timon) call timstrt("fm_wq_processes_ini_sub", ithndl)
+      if (timon) then
+         call timstrt("fm_wq_processes_ini_sub", ithndl)
+      end if
 
       ibflag = 0
 
@@ -302,7 +304,9 @@ contains
 
       call read_substances(Lallocated, substance_file, num_substances_transported, num_substances_total, num_constants, noout_sub, syname_sub, syunit_sub, coname_sub, &
                            covalue_sub, ouname_sub, oudesc_sub, ierr_sub, cerr)
-      if (ierr_sub /= 0) call mess(LEVEL_ERROR, cerr)
+      if (ierr_sub /= 0) then
+         call mess(LEVEL_ERROR, cerr)
+      end if
       call realloc(syname_sub, num_substances_total, keepExisting=.false., fill=' ')
       call realloc(syunit_sub, num_substances_total, keepExisting=.false., fill=' ')
       call realloc(coname_sub, num_constants, keepExisting=.false., fill=' ')
@@ -312,7 +316,9 @@ contains
       Lallocated = .true.
       call read_substances(Lallocated, substance_file, num_substances_transported, num_substances_total, num_constants, noout_sub, syname_sub, syunit_sub, coname_sub, &
                            covalue_sub, ouname_sub, oudesc_sub, ierr_sub, cerr)
-      if (ierr_sub /= 0) call mess(LEVEL_ERROR, cerr)
+      if (ierr_sub /= 0) then
+         call mess(LEVEL_ERROR, cerr)
+      end if
       noout_map = noout_sub
 
       if (Leho) then
@@ -320,14 +326,18 @@ contains
          Lallocated = .false.
          call read_substances(Lallocated, his_output_file, nosys_eho, notot_eho, nocons_eho, noout_eho, syname_eho, syunit_eho, coname_eho, &
                               covalue_eho, ouname_eho, oudesc_eho, ierr_eho, cerr)
-         if (ierr_eho /= 0) call mess(LEVEL_ERROR, cerr)
+         if (ierr_eho /= 0) then
+            call mess(LEVEL_ERROR, cerr)
+         end if
          if (nosys_eho == 0 .and. notot_eho == 0 .and. nocons_eho == 0) then
             call realloc(ouname_eho, noout_eho, keepExisting=.false., fill=' ')
             call realloc(oudesc_eho, noout_eho, keepExisting=.false., fill=' ')
             Lallocated = .true.
             call read_substances(Lallocated, his_output_file, nosys_eho, notot_eho, nocons_eho, noout_eho, syname_eho, syunit_eho, coname_eho, &
                                  covalue_eho, ouname_eho, oudesc_eho, ierr_eho, cerr)
-            if (ierr_eho /= 0) call mess(LEVEL_ERROR, cerr)
+            if (ierr_eho /= 0) then
+               call mess(LEVEL_ERROR, cerr)
+            end if
          else
             ! Error: extra history outputfile contains other definitions that output alone!
          end if
@@ -380,7 +390,9 @@ contains
 
       jawaqproc = 1 ! substances succesfully initiated
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine fm_wq_processes_ini_sub
 
    module subroutine fm_wq_processes_ini_proc()
@@ -451,7 +463,9 @@ contains
       character(len=20), parameter :: cWaveL = 'WaveLength'
       character(len=20), parameter :: cWaveT = 'WavePeriod'
 
-      if (timon) call timstrt("fm_wq_processes_ini_proc", ithndl)
+      if (timon) then
+         call timstrt("fm_wq_processes_ini_proc", ithndl)
+      end if
 
       ! Register pointers to MPI subroutines
       wq_processes_mpi = wq_processes_mpi_subroutines(wq_processes_mpi_mydomain, wq_processes_mpi_reduce_sum, wq_processes_mpi_reduce_int_max)
@@ -916,7 +930,9 @@ contains
 
       jawaqproc = 2 ! processes succesfully initiated
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine fm_wq_processes_ini_proc
 
@@ -957,7 +973,9 @@ contains
 
       integer(4), save :: ithndl = 0
 
-      if (timon) call timstrt("dfm_waq_initexternalforcings", ithndl)
+      if (timon) then
+         call timstrt("dfm_waq_initexternalforcings", ithndl)
+      end if
 
       iresult = DFM_NOERR
 
@@ -1124,7 +1142,9 @@ contains
          rewind (mext) ! rewind ext file
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
 
    contains
@@ -1163,7 +1183,9 @@ contains
 
          integer(4), save :: ithndl = 0
 
-         if (timon) call timstrt("global_to_local", ithndl)
+         if (timon) then
+            call timstrt("global_to_local", ithndl)
+         end if
 
          if (jampi == 0) then
             global_to_local = global_number
@@ -1180,7 +1202,9 @@ contains
                end if
             end if
          end if
-         if (timon) call timstop(ithndl)
+         if (timon) then
+            call timstop(ithndl)
+         end if
       end function global_to_local
 
    end subroutine dfm_waq_initexternalforcings
@@ -1309,12 +1333,18 @@ contains
          return
       end if
 
-      if (timon) call timstrt("fm_wq_processes_step", ithand0)
+      if (timon) then
+         call timstrt("fm_wq_processes_step", ithand0)
+      end if
 
       !     copy data from D-FlowFM to WAQ
-      if (timon) call timstrt("copy_data_from_fm_to_wq_processes", ithand1)
+      if (timon) then
+         call timstrt("copy_data_from_fm_to_wq_processes", ithand1)
+      end if
       call copy_data_from_fm_to_wq_processes(time)
-      if (timon) call timstop(ithand1)
+      if (timon) then
+         call timstop(ithand1)
+      end if
 
       ipoiconc = arrpoi(iiconc)
       ipoivol = arrpoi(iivol)
@@ -1335,11 +1365,17 @@ contains
                                arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf))
 
       ! copy data from WAQ to D-FlowFM
-      if (timon) call timstrt("copy_data_from_wq_processes_to_fm", ithand2)
+      if (timon) then
+         call timstrt("copy_data_from_wq_processes_to_fm", ithand2)
+      end if
       call copy_data_from_wq_processes_to_fm(dt, time)
-      if (timon) call timstop(ithand2)
+      if (timon) then
+         call timstop(ithand2)
+      end if
 
-      if (timon) call timstop(ithand0)
+      if (timon) then
+         call timstop(ithand0)
+      end if
       return
    end subroutine fm_wq_processes_step
 
@@ -1512,9 +1548,13 @@ contains
                ! apparently wind is available at edges only, so just take the 1st edge
                call getlink1(kk, L)
                dir = atan2(wy(L), wx(L))
-               if (dir < 0.0_dp) dir = dir + twopi
+               if (dir < 0.0_dp) then
+                  dir = dir + twopi
+               end if
                wdir = 270.0_dp - dir * rd2dg ! from rad to degree
-               if (wdir < 0.0_dp) wdir = wdir + 360.0_dp
+               if (wdir < 0.0_dp) then
+                  wdir = wdir + 360.0_dp
+               end if
                process_space_real(ipoiwinddir + kb - kbx:ipoiwinddir + ktmax - kbx) = wdir
             end do
          else
@@ -1702,7 +1742,9 @@ contains
       integer(4), save :: ithand3 = 0
 
       ! fill concentrations (transported)
-      if (timon) call timstrt("copy_const", ithand1)
+      if (timon) then
+         call timstrt("copy_const", ithand1)
+      end if
       do kk = 1, Ndxi
          call getkbotktopmax(kk, kb, kt, ktmax)
          do k = kb, kt
@@ -1714,7 +1756,9 @@ contains
             end if
          end do
       end do
-      if (timon) call timstop(ithand1)
+      if (timon) then
+         call timstop(ithand1)
+      end if
 
       ! Ouputs to waq outputs array (only when his or map outputs will be written within the next timestep,
       ! and during first timestep)
@@ -1735,7 +1779,9 @@ contains
 
       if (copyoutput) then
          ! copy additional output
-         if (timon) call timstrt("copy_output", ithand2)
+         if (timon) then
+            call timstrt("copy_output", ithand2)
+         end if
          waqoutputs = dmiss
          noout = outputs%current_size
          do j = 1, noout
@@ -1763,7 +1809,9 @@ contains
                end do
             end if
          end do
-         if (timon) call timstop(ithand2)
+         if (timon) then
+            call timstop(ithand2)
+         end if
       end if
 
       ! Copy wqbot data (when his or map, but also when rst or mba outputs will be written within the next timestep, and during first timestep)
@@ -1780,7 +1828,9 @@ contains
 
       if (copyoutput) then
          ! copy concentrations (not transported)
-         if (timon) call timstrt("copy_wqbot", ithand3)
+         if (timon) then
+            call timstrt("copy_wqbot", ithand3)
+         end if
          if (num_substances_total > num_substances_transported) then
             do kk = 1, Ndxi
                call getkbotktopmax(kk, kb, kt, ktmax)
@@ -1792,7 +1842,9 @@ contains
                end do
             end do
          end if
-         if (timon) call timstop(ithand3)
+         if (timon) then
+            call timstop(ithand3)
+         end if
       end if
       return
    end subroutine copy_data_from_wq_processes_to_fm

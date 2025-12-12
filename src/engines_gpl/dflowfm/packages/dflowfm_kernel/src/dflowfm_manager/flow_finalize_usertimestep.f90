@@ -80,9 +80,13 @@ contains
 !   call fm_wq_processes_step(dt_user,time_user)
       if (ti_waqproc > 0) then
          if (comparereal(time_user, time_waqproc, eps10) == 0) then
-            if (jatimer == 1) call starttimer(IFMWAQ)
+            if (jatimer == 1) then
+               call starttimer(IFMWAQ)
+            end if
             call fm_wq_processes_step(ti_waqproc, time_user)
-            if (jatimer == 1) call stoptimer(IFMWAQ)
+            if (jatimer == 1) then
+               call stoptimer(IFMWAQ)
+            end if
             tem_dif = (time_user - tstart_user) / ti_waqproc
             time_waqproc = tstart_user + (floor(tem_dif + 0.001_dp) + 1) * ti_waqproc
          end if
@@ -103,7 +107,9 @@ contains
             time1 = time_user
             time0 = time1
          end if
-         if (jatimer == 1) call starttimer(IOUTPUT)
+         if (jatimer == 1) then
+            call starttimer(IOUTPUT)
+         end if
 
          call timstrt('Output', handle_extra(53)) ! output
 
@@ -154,7 +160,9 @@ contains
          call timstop(handle_extra(79))
 
          call timstop(handle_extra(53)) ! output
-         if (jatimer == 1) call stoptimer(IOUTPUT)
+         if (jatimer == 1) then
+            call stoptimer(IOUTPUT)
+         end if
 
       end if
 

@@ -35,7 +35,6 @@ program waqmerge
     use waqmerge_version_module, only: getfullversionstring_waqmerge
     use m_date_time_utils_external, only: fill_in_date_time
     use m_file_path_utils, only: extract_file_extension
-    use m_merge_domains
 
     implicit none
 

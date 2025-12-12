@@ -366,7 +366,9 @@ contains
       jastop = 0
       iresult = DFM_GENERICERROR
 
-      if (jatimer == 1) call starttimer(ITOTAL)
+      if (jatimer == 1) then
+         call starttimer(ITOTAL)
+      end if
 
       if (ndx == 0) then ! No valid flow network was initialized
          jastop = 1

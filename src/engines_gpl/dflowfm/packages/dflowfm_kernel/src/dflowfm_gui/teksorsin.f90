@@ -52,7 +52,9 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: xp, yp
 
-      if (ndraw(41) <= 1 .or. numsrc == 0) return
+      if (ndraw(41) <= 1 .or. numsrc == 0) then
+         return
+      end if
 
       call IGrCharJustify('L')
       call settextsizefac(1.0_dp)
