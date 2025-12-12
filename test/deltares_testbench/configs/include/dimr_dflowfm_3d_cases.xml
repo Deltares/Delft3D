@@ -663,7 +663,7 @@
     </testCase>
 
     <testCase name="e02_f020_c035_salinity_freezing_3d" ref="dflowfm_default">
-      <path version="2025-08-21T11:30:00.000000">e02_dflowfm/f020_heat_flux/c035_salinity_freezing_3d</path>
+      <path version="2025-12-12T14:35:26.545000">e02_dflowfm/f020_heat_flux/c035_salinity_freezing_3d</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="output/winter97_saltwater_his.nc" type="netCDF">
