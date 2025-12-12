@@ -319,8 +319,7 @@ pushd "/var/cache/src/${BASEDIR}"
     --enable-build-mode=$BUILD_MODE \
     --enable-fortran \
     --enable-parallel \
-    --with-zlib=/usr/local/include,/usr/local/lib \
-    --with-szlib=/usr/local
+    --with-zlib=/usr/local/include,/usr/local/lib
 make --jobs=$(nproc)
 make install
 popd
