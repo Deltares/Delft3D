@@ -175,7 +175,9 @@ contains
          NWHAT2 = NDRAW(2) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(2)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(2)) then
+               KEY = 3
+            end if
             NDRAW(2) = NWHAT2 - 1
             if (NDRAW(2) >= 2 .and. NDRAW(2) <= 4) then
                call findcells(0)
@@ -195,7 +197,9 @@ contains
          NWHAT2 = NDRAW(16) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(16)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(16)) then
+               KEY = 3
+            end if
             NDRAW(16) = NWHAT2 - 1
          end if
       else if (NWHAT == 4) then
@@ -206,7 +210,9 @@ contains
          NWHAT2 = NDRAW(15) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(15)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(15)) then
+               KEY = 3
+            end if
             NDRAW(15) = NWHAT2 - 1
          end if
       else if (NWHAT == 5) then
@@ -224,7 +230,9 @@ contains
          NWHAT2 = NDRAW(3) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(3)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(3)) then
+               KEY = 3
+            end if
             NDRAW(3) = NWHAT2 - 1
          end if
       else if (NWHAT == 6) then
@@ -241,7 +249,9 @@ contains
          MAXOPT = 10
          NWHAT2 = NDRAW(19)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(19)) KEY = 3
+         if (NWHAT2 /= NDRAW(19)) then
+            KEY = 3
+         end if
          NDRAW(19) = NWHAT2
       else if (NWHAT == 7) then
          OPTION(1) = 'NO                                      '
@@ -257,7 +267,9 @@ contains
          MAXOPT = 10
          NWHAT2 = NDRAW(11)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(11)) KEY = 3
+         if (NWHAT2 /= NDRAW(11)) then
+            KEY = 3
+         end if
          NDRAW(11) = NWHAT2
       else if (NWHAT == 8) then
          OPTION(1) = 'NO NODE VALUES                          '
@@ -274,7 +286,9 @@ contains
          MAXOPT = 11
          NWHAT2 = NDRAW(8)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(8)) KEY = 3
+         if (NWHAT2 /= NDRAW(8)) then
+            KEY = 3
+         end if
          NDRAW(8) = NWHAT2
          ! Set default display mode to numbers for nodenums/codes, etc.
          if (nwhat2 == 2 .or. nwhat2 == 3 .or. nwhat2 == 4 .or. nwhat2 == 5 .or. nwhat2 == 7) then
@@ -320,7 +334,9 @@ contains
          end if
          NWHAT2 = NDRAW(7)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(7)) KEY = 3
+         if (NWHAT2 /= NDRAW(7)) then
+            KEY = 3
+         end if
          NDRAW(7) = NWHAT2
          ! Prepare data
          if (nwhat2 == 4 .or. nwhat2 == 15) then
@@ -337,7 +353,9 @@ contains
          if (NWHAT2 /= 0) then
             call PARAMTEXT(OPTION(NWHAT2), 2)
          end if
-         if (NWHAT2 == 6 .or. NWHAT2 == 7) call SETBRANCH_LC(ium)
+         if (NWHAT2 == 6 .or. NWHAT2 == 7) then
+            call SETBRANCH_LC(ium)
+         end if
       else if (NWHAT == 10) then ! flow nodes
          option = ' '
          OPTION(1) = 'NO                                      '
@@ -455,9 +473,15 @@ contains
          NWHAT2 = NDRAW(28)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          ! Set default display mode to numbers for nodenums/codes, etc.
-         if (nwhat2 == 11 .and. isalt > 0) iconst_cur = isalt
-         if (nwhat2 == 12 .and. itemp > 0) iconst_cur = itemp
-         if (nwhat2 == 13 .and. ised1 > 0) iconst_cur = ised1
+         if (nwhat2 == 11 .and. isalt > 0) then
+            iconst_cur = isalt
+         end if
+         if (nwhat2 == 12 .and. itemp > 0) then
+            iconst_cur = itemp
+         end if
+         if (nwhat2 == 13 .and. ised1 > 0) then
+            iconst_cur = ised1
+         end if
 
          if (ndraw(19) == 1) then
             if (nwhat2 == 15 .or. nwhat2 == 16) then
@@ -470,7 +494,9 @@ contains
             call PARAMTEXT(OPTION(NWHAT2), 1)
          end if
 
-         if (NWHAT2 /= NDRAW(28)) KEY = 3
+         if (NWHAT2 /= NDRAW(28)) then
+            KEY = 3
+         end if
          NDRAW(28) = NWHAT2
 
          if (ndraw(28) == 24 .and. jaceneqtr == 2) then ! transfer to net node drawing
@@ -603,7 +629,9 @@ contains
          MAXOPT = numopt
          NWHAT2 = NDRAW(29)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(29)) KEY = 3
+         if (NWHAT2 /= NDRAW(29)) then
+            KEY = 3
+         end if
          ! Set default display mode to numbers for linknums, etc.
          if (nwhat2 == 29) then
             ndraw(11) = 2
@@ -647,7 +675,9 @@ contains
          MAXOPT = 20
          NWHAT2 = NDRAW(33)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(33)) KEY = 3
+         if (NWHAT2 /= NDRAW(33)) then
+            KEY = 3
+         end if
          NDRAW(33) = NWHAT2
          if (NWHAT2 > 1) then
             call PARAMTEXT(OPTION(NWHAT2), 1)
@@ -670,7 +700,9 @@ contains
          MAXOPT = 5
          NWHAT2 = NDRAW(31)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(31)) KEY = 3
+         if (NWHAT2 /= NDRAW(31)) then
+            KEY = 3
+         end if
          NDRAW(31) = NWHAT2
       else if (NWHAT == 14) then ! show all flow white line
          OPTION(1) = 'Do NOt show flow links                  '
@@ -681,7 +713,9 @@ contains
          MAXOPT = 5
          NWHAT2 = NDRAW(30)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
-         if (NWHAT2 /= NDRAW(30)) KEY = 3
+         if (NWHAT2 /= NDRAW(30)) then
+            KEY = 3
+         end if
          NDRAW(30) = NWHAT2
       else if (NWHAT == 15) then
          OPTION(1) = 'NO                                      '
@@ -717,7 +751,9 @@ contains
          NWHAT2 = NDRAWobs
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 /= NDRAWobs) KEY = 3
+            if (NWHAT2 /= NDRAWobs) then
+               KEY = 3
+            end if
             NDRAWobs = NWHAT2
          end if
       else if (NWHAT == 17) then
@@ -734,12 +770,18 @@ contains
          OPTION(11) = 'Line dir integrated transport 2(c*m3/sm)'
 
          MAXOPT = 9
-         if (numconst >= 1) MAXOPT = 10
-         if (numconst >= 2) MAXOPT = 11
+         if (numconst >= 1) then
+            MAXOPT = 10
+         end if
+         if (numconst >= 2) then
+            MAXOPT = 11
+         end if
          NWHAT2 = ndrawcrosssections
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 /= NDRAWcrosssections) KEY = 3
+            if (NWHAT2 /= NDRAWcrosssections) then
+               KEY = 3
+            end if
             NDRAWcrosssections = NWHAT2
          end if
       else if (NWHAT == 18) then
@@ -774,7 +816,9 @@ contains
          NWHAT2 = NDRAW(12)
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 /= NDRAW(12)) KEY = 3
+            if (NWHAT2 /= NDRAW(12)) then
+               KEY = 3
+            end if
             NDRAW(12) = NWHAT2
          end if
       else if (NWHAT == 22) then
@@ -839,7 +883,9 @@ contains
          NWHAT2 = max(0, NDRAW(32)) + 1
          call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
-            if (NWHAT2 - 1 /= NDRAW(32)) KEY = 3
+            if (NWHAT2 - 1 /= NDRAW(32)) then
+               KEY = 3
+            end if
             NDRAW(32) = NWHAT2 - 1
          end if
       else if (NWHAT == 33) then

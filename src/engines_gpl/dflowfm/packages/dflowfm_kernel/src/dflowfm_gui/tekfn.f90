@@ -101,7 +101,9 @@ contains
          INI = INI + 1
       end if
 
-      if (N < 2) return
+      if (N < 2) then
+         return
+      end if
 
       Fx1 = 1.0e20_dp
       Fx2 = -1.0e20_dp
@@ -121,10 +123,18 @@ contains
          X1 = Fx1
          X2 = max(Fx2, Fx1 + 1.0e-4_dp)
 
-         if (fy1 < 2.0_dp * y1 - y2) return
-         if (fy2 > 2.0_dp * y2 - y1) return
-         if (fx1 < 2.0_dp * x1 - x2) return
-         if (fx2 > 2.0_dp * x2 - x1) return
+         if (fy1 < 2.0_dp * y1 - y2) then
+            return
+         end if
+         if (fy2 > 2.0_dp * y2 - y1) then
+            return
+         end if
+         if (fx1 < 2.0_dp * x1 - x2) then
+            return
+         end if
+         if (fx2 > 2.0_dp * x2 - x1) then
+            return
+         end if
       end if
 
       if (Fx1 < -1.0e6_dp .or. Fx2 > 1.0e6_dp) then

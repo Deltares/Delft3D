@@ -55,8 +55,12 @@ contains
       do k = 1, ndxi
          ht_xx(k) = 0.0_dp
          ht_xy(k) = 0.0_dp
-         if (spirucm(k) < 1.0e-3_dp) cycle
-         if (hs(k) < epshu) cycle
+         if (spirucm(k) < 1.0e-3_dp) then
+            cycle
+         end if
+         if (hs(k) < epshu) then
+            cycle
+         end if
          alfa = sag / vonkar / czssf(k)
          betas = spirbeta * (5.0_dp * alfa - 15.6_dp * alfa**2 + 37.5_dp * alfa**3)
          beta = betas * spirint(k) / spirucm(k)
@@ -69,7 +73,9 @@ contains
          k2 = ln(2, L)
          ht_xy(k1) = 0.0_dp
          ht_xy(k1) = 0.0_dp
-         if (hs(k2) < epshu) cycle
+         if (hs(k2) < epshu) then
+            cycle
+         end if
          ht_xx(k1) = ht_xx(k2)
          ht_xy(k1) = ht_xy(k2)
       end do
@@ -78,7 +84,9 @@ contains
          k1 = k
          spirfx(k1) = 0.0_dp
          spirfy(k1) = 0.0_dp
-         if (hs(k1) < epshu) cycle
+         if (hs(k1) < epshu) then
+            cycle
+         end if
          cofa = 0.0_dp
          cofb = 0.0_dp
          cofc = 0.0_dp
@@ -98,7 +106,9 @@ contains
             coftxy = ht_xy(k2) - ht_xy(k1)
             cof0 = sqrt(cofx * cofx + cofy * cofy)
             cofw = 1.0_dp / cof0
-            if (cof0 < 1.0e-6_dp) cofw = 1.0e6_dp
+            if (cof0 < 1.0e-6_dp) then
+               cofw = 1.0e6_dp
+            end if
             cofx = cofw * cofx
             cofy = cofw * cofy
             coftxx = cofw * coftxx
@@ -113,7 +123,9 @@ contains
          end do
          cof0 = cofa * cofc - cofb * cofb
 
-         if (cof0 == 0.0_dp .or. n < 2) cycle
+         if (cof0 == 0.0_dp .or. n < 2) then
+            cycle
+         end if
          dtxxdx = (cofd * cofc - cofb * cofe) / cof0
          dtxxdy = (cofa * cofe - cofd * cofb) / cof0
          dtxydx = (coff * cofc - cofb * cofg) / cof0

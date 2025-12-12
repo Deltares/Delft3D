@@ -83,7 +83,9 @@ contains
 
       call timstrt('Initialise timestep', handle_inistep)
 
-      if (jazws0 == 0) s0 = s1 ! progress water levels
+      if (jazws0 == 0) then
+         s0 = s1 ! progress water levels
+      end if
 
       call bathyupdate() ! only if jamorf == 1
 
@@ -213,7 +215,9 @@ contains
 
       if (jaimplicit == 1) then
          call fillsystem_advec(ierror)
-         if (ierror /= 0) goto 888
+         if (ierror /= 0) then
+            goto 888
+         end if
       end if
 
       if (jatem > 1 .and. jaheat_eachstep == 1) then

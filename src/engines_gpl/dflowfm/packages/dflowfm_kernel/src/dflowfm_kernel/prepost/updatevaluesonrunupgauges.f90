@@ -62,7 +62,9 @@ contains
          max_y = dmiss
          maxk = 0
          ! determine runup value
-         if (rug(irug)%path%lnx == 0) cycle
+         if (rug(irug)%path%lnx == 0) then
+            cycle
+         end if
          do il = 1, rug(irug)%path%lnx
             L = abs(rug(irug)%path%ln(il))
 

@@ -99,7 +99,9 @@ contains
             if (includeghosts /= 1) then
 !             exclude ghost links
                call link_ghostdata(my_rank, idomain(ln(1, Lf)), idomain(ln(2, Lf)), jaghost, idmn_ghost, ighostlev(ln(1, Lf)), ighostlev(ln(2, Lf)))
-               if (jaghost == 1) cycle
+               if (jaghost == 1) then
+                  cycle
+               end if
             end if
          end if
 

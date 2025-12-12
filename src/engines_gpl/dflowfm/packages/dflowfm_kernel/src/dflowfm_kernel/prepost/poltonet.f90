@@ -168,7 +168,9 @@ contains
                exit
             end if
          end do
-         if (L == N2) exit
+         if (L == N2) then
+            exit
+         end if
       end do
 
       do I = L2 + 1, NPH

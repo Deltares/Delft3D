@@ -73,7 +73,9 @@ contains
             k2 = ln(2, LL)
             if (k1 == knod) then
                call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do LLL = Lb, Lt
                   k3 = LLL - Lb + 1
                   vnod(1, k3) = vnod(1, k3) + vlin(LLL) * wcx1(LL)
@@ -83,7 +85,9 @@ contains
             !
             if (k2 == knod) then
                call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do LLL = Lb, Lt
                   k3 = LLL - Lb + 1
                   vnod(1, k3) = vnod(1, k3) + vlin(LLL) * wcx2(LL)

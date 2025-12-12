@@ -124,9 +124,13 @@ contains
                num = 0
                do i = 1, NPL
                   ip1 = i + 1
-                  if (ip1 > NPL) ip1 = ip1 - NPL
+                  if (ip1 > NPL) then
+                     ip1 = ip1 - NPL
+                  end if
 
-                  if (xpl(ip1) == DMISS) cycle
+                  if (xpl(ip1) == DMISS) then
+                     cycle
+                  end if
                   cof0 = xpl(i) * ypl(ip1) - xpl(ip1) * ypl(i)
                   Area = Area + cof0
                   cx = cx + (xpl(i) + xpl(ip1)) * cof0
@@ -135,7 +139,9 @@ contains
                end do
                area = area * 0.5_dp
 
-               if (area == 0.0_dp) cycle
+               if (area == 0.0_dp) then
+                  cycle
+               end if
 
                cx = cx / area / 6.0_dp
                cy = cy / area / 6.0_dp
@@ -235,7 +241,9 @@ contains
 
          do N = 1, NUMP
 
-            if (mod(n, KMOD) == 0) call READYY('CUTCELWU', real(n, kind=dp) / real(nump, kind=dp))
+            if (mod(n, KMOD) == 0) then
+               call READYY('CUTCELWU', real(n, kind=dp) / real(nump, kind=dp))
+            end if
 
             if (KNP(N) == 1) then ! AT LEAST 1 POINT INSIDE POLYGON, SO CHECK CUTC
 
@@ -260,7 +268,9 @@ contains
                   end if
 
                   LLU = LL + 1
-                  if (LLU > NN) LLU = 1
+                  if (LLU > NN) then
+                     LLU = 1
+                  end if
                   K1 = NETCELL(N)%NOD(LL)
                   K2 = NETCELL(N)%NOD(LLU)
 
@@ -306,7 +316,9 @@ contains
                            XXC(IC) = XK(K2)
                            YYC(IC) = YK(K2)
                            if (Lf > 0) then
-                              if (wu(LF) /= 0.0_dp) WU(LF) = DBDISTANCE(XM, YM, XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
+                              if (wu(LF) /= 0.0_dp) then
+                                 WU(LF) = DBDISTANCE(XM, YM, XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
+                              end if
                            end if
                         else if (kc(k1) /= 1 .and. kc(k2) == 1) then
                            if (IC == 0) then
@@ -318,7 +330,9 @@ contains
                            XXC(IC) = XM
                            YYC(IC) = YM
                            if (Lf > 0) then
-                              if (wu(LF) /= 0.0_dp) WU(LF) = DBDISTANCE(XM, YM, XK(K1), YK(K1), jsferic, jasfer3D, dmiss)
+                              if (wu(LF) /= 0.0_dp) then
+                                 WU(LF) = DBDISTANCE(XM, YM, XK(K1), YK(K1), jsferic, jasfer3D, dmiss)
+                              end if
                            end if
                         else if (kc(k1) == 1 .and. kc(k2) == 1 .and. Lf > 0) then
                            wu(Lf) = 0.0_dp

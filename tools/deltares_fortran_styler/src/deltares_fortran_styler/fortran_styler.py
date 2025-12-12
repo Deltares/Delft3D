@@ -32,11 +32,13 @@ try:
     from deltares_fortran_styler.double_precision_converter import DoublePrecisionConverter
     from deltares_fortran_styler.array_delimiter_converter import ArrayDelimiterConverter
     from deltares_fortran_styler.semicolon_separator_converter import SemicolonSeparatorConverter
+    from deltares_fortran_styler.single_line_if_converter import SingleLineIfConverter
 except ImportError:
     from file_processor import FileProcessor
     from double_precision_converter import DoublePrecisionConverter
     from array_delimiter_converter import ArrayDelimiterConverter
     from semicolon_separator_converter import SemicolonSeparatorConverter
+    from single_line_if_converter import SingleLineIfConverter
 
 
 # Registry of available converters
@@ -44,6 +46,20 @@ AVAILABLE_CONVERTERS = {
     'double_precision': DoublePrecisionConverter,
     'array_delimiter': ArrayDelimiterConverter,
     'semicolon_separator': SemicolonSeparatorConverter,
+    'single_line_if': SingleLineIfConverter,
+}
+
+# Fast converters that run quickly on large codebases (default)
+FAST_CONVERTERS = [
+    'double_precision',
+    'array_delimiter',
+    'semicolon_separator',
+]
+
+# Special converter groups
+CONVERTER_GROUPS = {
+    'fast': FAST_CONVERTERS,
+    'all': list(AVAILABLE_CONVERTERS.keys()),
 }
 
 
@@ -52,15 +68,32 @@ def get_converters(converter_names: List[str]):
     Instantiate the requested converters.
 
     Args:
-        converter_names: List of converter names to enable
+        converter_names: List of converter names to enable (can include 'fast' or 'all')
 
     Returns:
         List of instantiated converter objects
     """
-    converters = []
+    # Expand converter groups
+    expanded_names = []
     for name in converter_names:
+        if name in CONVERTER_GROUPS:
+            expanded_names.extend(CONVERTER_GROUPS[name])
+        else:
+            expanded_names.append(name)
+
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_names = []
+    for name in expanded_names:
+        if name not in seen:
+            seen.add(name)
+            unique_names.append(name)
+
+    # Instantiate converters
+    converters = []
+    for name in unique_names:
         if name not in AVAILABLE_CONVERTERS:
-            print(f"Warning: Unknown converter '{name}'. Available: {', '.join(AVAILABLE_CONVERTERS.keys())}")
+            print(f"Warning: Unknown converter '{name}'. Available: {', '.join(AVAILABLE_CONVERTERS.keys())}, {', '.join(CONVERTER_GROUPS.keys())}")
             continue
         converters.append(AVAILABLE_CONVERTERS[name]())
     return converters
@@ -76,14 +109,21 @@ Examples:
   python fortran_styler.py --directory src/
   python fortran_styler.py --check input.f90
   python fortran_styler.py --check --directory src/
-  python fortran_styler.py --converters double_precision --directory src/
+  python fortran_styler.py --converters fast --directory src/
+  python fortran_styler.py --converters all --directory src/
+  python fortran_styler.py --converters double_precision array_delimiter --directory src/
 
 Available converters:
-  double_precision    - Convert double precision literals and declarations
-  array_delimiter     - Convert old-style array constructors (/ /) to [...]
-  semicolon_separator - Split semicolon-separated statements onto separate lines
+  double_precision    - Convert double precision literals and declarations (fast)
+  array_delimiter     - Convert old-style array constructors (/ /) to [...] (fast)
+  semicolon_separator - Split semicolon-separated statements onto separate lines (fast)
+  single_line_if      - Convert single-line if statements to multi-line then/end if format (slow)
 
-By default, all converters are enabled. Use --converters to specify a subset.
+Converter groups:
+  fast                - Only fast converters (double_precision, array_delimiter) [default]
+  all                 - All available converters
+
+By default, the 'fast' converters are enabled. Use --converters to specify different converters.
 
 Note: All conversions are done in-place. Use git for version control safety.
         """
@@ -98,8 +138,9 @@ Note: All conversions are done in-place. Use git for version control safety.
                        default=['.f90', '.f95', '.f03', '.f08', '.F90', '.F95', '.F03', '.F08'],
                        help='File extensions to process (default: Fortran extensions)')
     parser.add_argument('--converters', nargs='+',
-                       choices=list(AVAILABLE_CONVERTERS.keys()),
-                       help='Specify which converters to enable (default: all)')
+                       choices=list(AVAILABLE_CONVERTERS.keys()) + list(CONVERTER_GROUPS.keys()),
+                       metavar='CONVERTER',
+                       help=f'Specify which converters to enable. Choices: {", ".join(list(AVAILABLE_CONVERTERS.keys()) + list(CONVERTER_GROUPS.keys()))} (default: fast)')
 
     args = parser.parse_args()
 
@@ -107,8 +148,8 @@ Note: All conversions are done in-place. Use git for version control safety.
     if args.converters:
         converter_names = args.converters
     else:
-        # Default: enable all converters
-        converter_names = list(AVAILABLE_CONVERTERS.keys())
+        # Default: enable fast converters only
+        converter_names = ['fast']
 
     converters = get_converters(converter_names)
 
@@ -130,6 +171,17 @@ Note: All conversions are done in-place. Use git for version control safety.
                 args.directory, args.extensions, check_mode=True
             )
             print(f"Checked {files_processed} files, {files_needing_conversion} need conversion")
+
+            # Display timing statistics
+            timing_stats = processor.get_timing_stats()
+            if timing_stats:
+                print("\nTiming statistics:")
+                total_time = sum(timing_stats.values())
+                for converter_name, elapsed_time in sorted(timing_stats.items()):
+                    percentage = (elapsed_time / total_time * 100) if total_time > 0 else 0
+                    print(f"  {converter_name}: {elapsed_time:.3f}s ({percentage:.1f}%)")
+                print(f"  Total: {total_time:.3f}s")
+
             if files_needing_conversion > 0:
                 conversion_needed = True
 
@@ -142,6 +194,16 @@ Note: All conversions are done in-place. Use git for version control safety.
                 needs_conversion, _ = processor.process_file(file_path, check_mode=True)
                 if needs_conversion:
                     conversion_needed = True
+
+            # Display timing statistics for individual files
+            timing_stats = processor.get_timing_stats()
+            if timing_stats and any(timing_stats.values()):
+                print("\nTiming statistics:")
+                total_time = sum(timing_stats.values())
+                for converter_name, elapsed_time in sorted(timing_stats.items()):
+                    percentage = (elapsed_time / total_time * 100) if total_time > 0 else 0
+                    print(f"  {converter_name}: {elapsed_time:.3f}s ({percentage:.1f}%)")
+                print(f"  Total: {total_time:.3f}s")
 
         else:
             parser.print_help()

@@ -110,7 +110,9 @@ contains
       integer, allocatable :: crossed_links(:), polygon_nodes(:)
       real(kind=dp), allocatable :: polygon_segment_weights(:)
 
-      if (ndx < 1) return
+      if (ndx < 1) then
+         return
+      end if
 
       if (npl > 1) then
          if (japol == 0) then
@@ -145,17 +147,27 @@ contains
       zmx = -zmn
       do k = 1, ndx
          if (japol == 1) then
-            if (kc(k) == 0) cycle
+            if (kc(k) == 0) then
+               cycle
+            end if
          end if
 
          xx = xz(k)
          yy = yz(k)
          if (inview(xx, yy)) then
-            if (xz(k) < xmn) xmn = xz(k)
-            if (xz(k) > xmx) xmx = xz(k)
+            if (xz(k) < xmn) then
+               xmn = xz(k)
+            end if
+            if (xz(k) > xmx) then
+               xmx = xz(k)
+            end if
 
-            if (yz(k) < ymn) ymn = yz(k)
-            if (yz(k) > ymx) ymx = yz(k)
+            if (yz(k) < ymn) then
+               ymn = yz(k)
+            end if
+            if (yz(k) > ymx) then
+               ymx = yz(k)
+            end if
 
             bot = bl(k)
 
@@ -232,7 +244,9 @@ contains
       end if
 
       zmx2 = zmx + yfac * (ymx - ymn)
-      if (zmx2 == zmn) zmx2 = zmn + 1
+      if (zmx2 == zmn) then
+         zmx2 = zmn + 1
+      end if
 
       if (nsiz == 1) then
          call setwor_rai(0.0, 0.77, 1.0, 0.92, x1, zmn, x2, zmx2)
@@ -262,7 +276,9 @@ contains
                   k1 = ln(1, LL)
                   k2 = ln(2, LL)
                   if (japol == 1) then
-                     if (kc(k1) * kc(k2) == 0) cycle
+                     if (kc(k1) * kc(k2) == 0) then
+                        cycle
+                     end if
                   end if
 
                   call getLbotLtop(LL, Lb, Lt)
@@ -288,7 +304,9 @@ contains
                   if (japol == 1) then
                      k1 = ln(1, LL)
                      k2 = ln(2, LL)
-                     if (kc(k1) * kc(k2) == 0) cycle
+                     if (kc(k1) * kc(k2) == 0) then
+                        cycle
+                     end if
                   end if
 
                   call getLbotLtop(LL, Lb, Lt)
@@ -306,7 +324,9 @@ contains
                   k1 = ln(1, LL)
                   k2 = ln(2, LL)
                   if (japol == 1) then
-                     if (kc(k1) * kc(k2) == 0) cycle
+                     if (kc(k1) * kc(k2) == 0) then
+                        cycle
+                     end if
                   end if
 
                   xp(1) = xz(k1)
@@ -335,7 +355,9 @@ contains
 
                do n = 1, ndxi
                   if (japol == 1) then
-                     if (kc(n) == 0) cycle
+                     if (kc(n) == 0) then
+                        cycle
+                     end if
                   end if
                   xxmn = minval(nd(n)%x)
                   xxmx = maxval(nd(n)%x)
@@ -373,7 +395,9 @@ contains
                n1 = ln(1, LL)
                n2 = ln(2, LL)
                if (japol == 1) then
-                  if (kc(n1) * kc(n2) == 0) cycle
+                  if (kc(n1) * kc(n2) == 0) then
+                     cycle
+                  end if
                end if
 
                xp(1) = xz(n1)
@@ -413,7 +437,9 @@ contains
                n1 = ln(1, LL)
                n2 = ln(2, LL)
                if (japol == 1) then
-                  if (kc(n1) * kc(n2) == 0) cycle
+                  if (kc(n1) * kc(n2) == 0) then
+                     cycle
+                  end if
                end if
 
                xx = xz(n1)
@@ -473,7 +499,9 @@ contains
                   n1 = ln(1, LL)
                   n2 = ln(2, LL)
                   if (japol == 1) then
-                     if (kc(n1) * kc(n2) == 0) cycle
+                     if (kc(n1) * kc(n2) == 0) then
+                        cycle
+                     end if
                   end if
 
                   xx = xz(n1)
@@ -490,7 +518,9 @@ contains
                n1 = ln(1, LL)
                n2 = ln(2, LL)
                if (japol == 1) then
-                  if (kc(n1) * kc(n2) == 0) cycle
+                  if (kc(n1) * kc(n2) == 0) then
+                     cycle
+                  end if
                end if
 
                xx = xz(n1)
@@ -507,7 +537,9 @@ contains
             zfac = (zmx2 - zmn) / (x2 - x1)
             do n = 1, ndxi
                if (japol == 1) then
-                  if (kc(n) == 0) cycle
+                  if (kc(n) == 0) then
+                     cycle
+                  end if
                end if
 
                xp(1) = xz(n)
@@ -561,7 +593,9 @@ contains
             n1 = ln(1, LL)
             n2 = ln(2, LL)
             if (japol == 1) then
-               if (kc(n1) * kc(n2) == 0) cycle
+               if (kc(n1) * kc(n2) == 0) then
+                  cycle
+               end if
             end if
 
             xz1 = xz(n1)
@@ -613,7 +647,9 @@ contains
             k1 = ln(1, L)
             k2 = ln(2, L)
             if (japol == 1) then
-               if (kc(k1) * kc(k2) == 0) cycle
+               if (kc(k1) * kc(k2) == 0) then
+                  cycle
+               end if
             end if
 
             bup = min(bob(1, L), bob(2, L))
@@ -629,13 +665,17 @@ contains
             k2 = kcgen(2, n)
             L = kcgen(3, n)
             if (japol == 1) then
-               if (kc(k1) * kc(k2) == 0) cycle
+               if (kc(k1) * kc(k2) == 0) then
+                  cycle
+               end if
             end if
 
             bup = min(bob(1, L), bob(2, L))
             doorh = 10.0_dp
             if (generalstruc(ng)%gatedoorheight < 1.0e10_dp .and. generalstruc(ng)%gatedoorheight < 1.0e10_dp) then
-               if (generalstruc(ng)%gatedoorheight > 0.0_dp) doorh = generalstruc(ng)%gatedoorheight
+               if (generalstruc(ng)%gatedoorheight > 0.0_dp) then
+                  doorh = generalstruc(ng)%gatedoorheight
+               end if
                call fbox(xz(k1), zgaten, xz(k2), zgaten + doorh)
             end if
 
@@ -649,7 +689,9 @@ contains
             k1 = ln(1, L)
             k2 = ln(2, L)
             if (japol == 1) then
-               if (kc(k1) * kc(k2) == 0) cycle
+               if (kc(k1) * kc(k2) == 0) then
+                  cycle
+               end if
             end if
 
             bup = bob(2, L) ! min( bob(1,L), bob(2,L) )
@@ -663,7 +705,9 @@ contains
             qsrck = qsrc(n)
             kk = ksrc(1, n) ! 2D pressure cell nr from
             if (japol == 1) then
-               if (kc(kk) == 0) cycle
+               if (kc(kk) == 0) then
+                  cycle
+               end if
             end if
 
             if (kk /= 0 .and. ksrc(2, n) > 0) then
@@ -678,7 +722,9 @@ contains
 
             kk = ksrc(4, n) ! 2D pressure cell nr to
             if (japol == 1) then
-               if (kc(kk) == 0) cycle
+               if (kc(kk) == 0) then
+                  cycle
+               end if
             end if
 
             if (kk /= 0 .and. ksrc(5, n) > 0) then
@@ -697,7 +743,9 @@ contains
          call setcol(221)
          do k = 1, ndxi
             if (japol == 1) then
-               if (kc(kk) == 0) cycle
+               if (kc(kk) == 0) then
+                  cycle
+               end if
             end if
 
             if (stemheight(k) > 0.0_dp) then

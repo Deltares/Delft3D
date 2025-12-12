@@ -161,7 +161,9 @@ contains
       end do
 
       do k = 1, ndx
-         if (s1(k) - bl(k) <= epshs) cycle
+         if (s1(k) - bl(k) <= epshs) then
+            cycle
+         end if
          !
          h0 = s1(k) - bl(k)
          chezy = sag * log(h0 / ee / max(epsz0, z0rou(k))) / vonkar ! consistency with getczz0
@@ -260,7 +262,9 @@ contains
             cclay = 0.0_dp
             do ll = 1, lsed
                ctot = ctot + constituents(ised1 + ll - 1, kk)
-               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ised1 + ll - 1, kk)
+               if (sedtyp(ll) == SEDTYP_CLAY) then
+                  cclay = cclay + constituents(ised1 + ll - 1, kk)
+               end if
             end do
             !
             do ll = 1, lsed

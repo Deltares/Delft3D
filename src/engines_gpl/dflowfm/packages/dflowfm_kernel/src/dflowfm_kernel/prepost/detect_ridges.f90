@@ -71,7 +71,9 @@ contains
       Nsamplesmooth = 4
 
 !  check if the sample set is structured and non-empty
-      if (MXSAM * MYSAM /= NS .or. NS == 0) goto 1234
+      if (MXSAM * MYSAM /= NS .or. NS == 0) then
+         goto 1234
+      end if
 
 !  compute sample mesh width
       Dh = min(dbdistance(xs(1), ys(1), xs(2), ys(2), jsferic, jasfer3D, dmiss), dbdistance(xs(1), ys(1), xs(1 + MXSAM), ys(1 + MXSAM), jsferic, jasfer3D, dmiss))
@@ -80,7 +82,9 @@ contains
       call savesam()
 
       call prepare_sampleHessian(ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
 !  plot ridges
       call plot_ridges(ierror)

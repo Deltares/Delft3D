@@ -204,12 +204,16 @@ contains
 
       i1 = lne(1, 1:NUML)
       do L = 1, NUML
-         if (abs(i1(L)) > nump .or. i1(L) == 0) cycle
+         if (abs(i1(L)) > nump .or. i1(L) == 0) then
+            cycle
+         end if
          lne(1, L) = sign(1, i1(L)) * perm_inv(abs(i1(L)))
       end do
       i1 = lne(2, 1:NUML)
       do L = 1, NUML
-         if (abs(i1(L)) > nump .or. i1(L) == 0) cycle
+         if (abs(i1(L)) > nump .or. i1(L) == 0) then
+            cycle
+         end if
          lne(2, L) = sign(1, i1(L)) * perm_inv(abs(i1(L)))
       end do
 
@@ -243,7 +247,9 @@ contains
       ! Now build the permutation list, based on sort order of lne.
       ! Only after this 'postponed sorting', the lne list itself will be permuted.
       do
-         if (numl - numl1D <= 1) exit
+         if (numl - numl1D <= 1) then
+            exit
+         end if
          call sort_heap_external(numl - numl1D, indx, i, j, isgn)
          ii = i + numl1D
          jj = j + numl1D

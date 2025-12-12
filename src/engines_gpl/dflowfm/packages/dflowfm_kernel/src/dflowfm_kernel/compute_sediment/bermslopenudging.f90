@@ -61,7 +61,9 @@ contains
       !
       if (jawave > NO_WAVES) then
          do L = 1, lnx
-            if (hu(L) < epshu) cycle
+            if (hu(L) < epshu) then
+               cycle
+            end if
             k1 = ln(1, L)
             k2 = ln(2, L)
             hwavu = max(hwav(k1), hwav(k2))
@@ -72,7 +74,9 @@ contains
       end if
       ! Criteria cannot be combined as hwav not allocated for jawave==0
       do L = 1, lnx
-         if (hu(L) < epshu) cycle
+         if (hu(L) < epshu) then
+            cycle
+         end if
          if (hu(L) < bermslopedepth) then ! to check: hu value up to date? Replace by weighted hs?
             bermslopeindex(L) = .true.
          else
@@ -88,9 +92,15 @@ contains
       end if
       !
       do L = 1, lnx
-         if (hu(L) <= epshu) cycle
-         if (wu_mor(L) == 0) cycle
-         if (.not. bermslopeindexbed(L) .and. .not. bermslopeindexsus(L)) cycle
+         if (hu(L) <= epshu) then
+            cycle
+         end if
+         if (wu_mor(L) == 0) then
+            cycle
+         end if
+         if (.not. bermslopeindexbed(L) .and. .not. bermslopeindexsus(L)) then
+            cycle
+         end if
          !
          k1 = ln(1, L)
          k2 = ln(2, L)
@@ -104,7 +114,9 @@ contains
             ! slope magnitude smaller than bermslope leads to transport away from the cell, ie outward
             ! minus sign because e_dzdn is defined as bl1-bl2 in fm_erosed
             if (bermslopeindexbed(L) .and. bed /= 0.0) then
-               if (.not. has_bedload(stmpar%sedpar%tratyp(lsd))) cycle
+               if (.not. has_bedload(stmpar%sedpar%tratyp(lsd))) then
+                  cycle
+               end if
                trmag_u = hypot(e_sbcn(L, lsd), e_sbct(L, lsd))
                flx = trmag_u * slpfac
                e_sbcn(L, lsd) = e_sbcn(L, lsd) - flx

@@ -53,7 +53,9 @@ contains
       real(kind=dp) :: seq(mxgr) !< sed equilibrium transport rate (kg/m/s) , dimension = mxgr
       real(kind=dp) :: wse(mxgr) !< effective fall velocity (m/s)           , dimension = mxgr, ws*crefa=wse*seq
 
-      if (ndraw(34) <= 1 .or. jaceneqtr == 1 .or. jased == 0) return
+      if (ndraw(34) <= 1 .or. jaceneqtr == 1 .or. jased == 0) then
+         return
+      end if
       call setcol(3)
       do kk = 1, mxban
 

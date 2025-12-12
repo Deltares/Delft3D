@@ -96,12 +96,16 @@ contains
          if (num == 0) then
             k = k_
          else
-            if (pdxL(k_) /= ipoly) cycle
+            if (pdxL(k_) /= ipoly) then
+               cycle
+            end if
             k = jdxL(k_)
          end if
 
          KU = K + 1
-         if (K == NPL) KU = 1
+         if (K == NPL) then
+            KU = 1
+         end if
          XP1 = XPL(K)
          YP1 = YPL(K)
          XP2 = XPL(KU)

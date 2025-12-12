@@ -49,7 +49,9 @@ contains
       integer :: k
       real(kind=dp), intent(in) :: deltat ! dt of current timestep
 
-      if (jaQext == 0) return
+      if (jaQext == 0) then
+         return
+      end if
 
       do k = 1, ndx
          vextcum(k) = vextcum(k) + qextreal(k) * deltat

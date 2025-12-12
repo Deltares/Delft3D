@@ -41,7 +41,9 @@ contains
       use m_alloc, only: aerr
       integer :: ndx, lnx, ierr
 
-      if (ndx == ndxjac .and. lnx == lnxjac) return
+      if (ndx == ndxjac .and. lnx == lnxjac) then
+         return
+      end if
 
       if (allocated(bbi)) then
          deallocate (bbi, db, rr)

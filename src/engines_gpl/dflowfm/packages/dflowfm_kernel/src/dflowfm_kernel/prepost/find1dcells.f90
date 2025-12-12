@@ -247,7 +247,9 @@ contains
       do L = 1, NUML1D
          k1 = KN(1, L)
          k2 = KN(2, L)
-         if (k1 == 0) cycle
+         if (k1 == 0) then
+            cycle
+         end if
          left_cell = get_2D_cell(L, k1, left_2D_cells)
          right_cell = get_2D_cell(L, k2, right_2D_cells)
          if (left_cell /= 0 .and. left_cell == right_cell) then !Both net nodes inside 2D cell, but assume that the first is then the 1D net node.

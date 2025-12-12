@@ -103,7 +103,9 @@ contains
             rmin = 0
             k = ln(k12, L)
             kd = ln(2, L)
-            if (k12 == 2) kd = ln(1, L)
+            if (k12 == 2) then
+               kd = ln(1, L)
+            end if
 
 ! SPvdP: (xzup, yzup) not used here
 !       xzup = 2d0*xz(k) - xz(kd)                     ! upwind position for which cell centre interpolated values
@@ -125,7 +127,9 @@ contains
                LL = abs(nd(k)%ln(kk)) ! use this 1 point if it is less than e.g. 0.1dx away from xzup
                if (LL > lnx1D .and. LL /= L) then !
                   ku = ln(1, LL)
-                  if (ku == k) ku = ln(2, LL)
+                  if (ku == k) then
+                     ku = ln(2, LL)
+                  end if
 
                   r = dprodin(xz(kd), yz(kd), xz(k), yz(k), xz(k), yz(k), xz(ku), yz(ku))
                   r = r * (dxi(L)**2)
@@ -177,21 +181,27 @@ contains
                   nn = 2
                   ku2 = kun(nri(nn)) ! can we interpolate in ku and ku2?
                   call dcross(xz(kd), yz(kd), xz(k), yz(k), xz(ku), yz(ku), xz(ku2), yz(ku2), JACROS, SL, SM, XCR, YCR, CRP)
-                  if (sl < 1.2) jacros = 0 ! int point too close to xz(k)
+                  if (sl < 1.2) then
+                     jacros = 0 ! int point too close to xz(k)
+                  end if
                end if
 
                if (n >= 3 .and. jacros == 0) then
                   nn = 3
                   ku2 = kun(nri(nn))
                   call dcross(xz(kd), yz(kd), xz(k), yz(k), xz(ku), yz(ku), xz(ku2), yz(ku2), JACROS, SL, SM, XCR, YCR, CRP)
-                  if (sl < 1.2) jacros = 0 ! int point too close to xz(k)
+                  if (sl < 1.2) then
+                     jacros = 0 ! int point too close to xz(k)
+                  end if
                end if
 
                if (n >= 4 .and. jacros == 0) then
                   nn = 4
                   ku2 = kun(nri(nn))
                   call dcross(xz(kd), yz(kd), xz(k), yz(k), xz(ku), yz(ku), xz(ku2), yz(ku2), JACROS, SL, SM, XCR, YCR, CRP)
-                  if (sl < 1.2) jacros = 0 ! int point too close to xz(k)
+                  if (sl < 1.2) then
+                     jacros = 0 ! int point too close to xz(k)
+                  end if
                end if
 
                if (jacros == 1) then

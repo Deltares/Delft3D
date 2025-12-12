@@ -99,7 +99,9 @@ contains
          end if
       end do
 !
-      if (ISHOT == 1) goto 666
+      if (ISHOT == 1) then
+         goto 666
+      end if
       MVOL = 0
       call DISPNODE(MVOL)
       return

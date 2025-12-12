@@ -75,7 +75,9 @@ contains
       if (kmx > 0) then
          if (kplotordepthaveraged == 1) then
             call getktoplot(kk, k)
-            if (k < 0) return
+            if (k < 0) then
+               return
+            end if
          end if
       end if
 
@@ -111,7 +113,9 @@ contains
             znod = ucyq_mor(k)
          end if
       else if (nodval == 11) then
-         if (jasal > 0) znod = constituents(isalt, k)
+         if (jasal > 0) then
+            znod = constituents(isalt, k)
+         end if
       else if (nodval == 12) then
          if (jatem > 0) then
             if (jafahrenheit == 0) then
@@ -154,7 +158,9 @@ contains
       else if (nodval == 23) then
          znod = qin(k)
       else if (nodval == 24) then
-         if (mxgr > 1 .and. jaceneqtr == 1) znod = grainlay(jgrtek, kk)
+         if (mxgr > 1 .and. jaceneqtr == 1) then
+            znod = grainlay(jgrtek, kk)
+         end if
       else if (nodval == 25 .and. kmx > 0) then
          znod = ktop(kk) - kbot(kk) + 1
       else if (nodval == 26) then
@@ -162,7 +168,9 @@ contains
             znod = vol1(k) / squ(k)
          end if
       else if (nodval == 27) then
-         if (kmx > 1) znod = vicwws(k)
+         if (kmx > 1) then
+            znod = vicwws(k)
+         end if
          ! 28 = substi/cg
       else if (nodval == 29) then
          if (allocated(tidep)) then
@@ -179,9 +187,13 @@ contains
             znod = min(znod, vol1(k) / max(squ(k), eps10))
          end do
       else if (nodval == 31) then
-         if (air_pressure_available) znod = air_pressure(kk)
+         if (air_pressure_available) then
+            znod = air_pressure(kk)
+         end if
       else if (nodval == 32) then
-         if (numlimdt(kk) > 0) znod = numlimdt(kk)
+         if (numlimdt(kk) > 0) then
+            znod = numlimdt(kk)
+         end if
       else if (nodval == 33) then
          ZNOD = (ucx(k) * ucx(k) + ucy(k) * ucy(k)) / (2.0_dp * ag)
          znod = u1(min(k, lnx)) * u1(min(k, lnx)) / (2.0_dp * ag)

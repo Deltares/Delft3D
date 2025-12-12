@@ -80,7 +80,9 @@ contains
       do nm = ndx2D + 1, ndxi_mor ! only for internal 1D nodes
          do j = 1, gridpoint2cross(nm)%num_cross_sections
             c = gridpoint2cross(nm)%cross(j)
-            if (c == -999) cycle
+            if (c == -999) then
+               cycle
+            end if
             cdef => network%crs%cross(c)%tabdef
             ctype = cdef%crosstype
             ds = fm_get_ds(nm, j)
@@ -190,7 +192,9 @@ contains
             ncs = size(gridpoint2cross(nm)%cross)
             do j = 1, ncs
                c = gridpoint2cross(nm)%cross(j)
-               if (c == -999) cycle
+               if (c == -999) then
+                  cycle
+               end if
                cdef => network%crs%cross(c)%tabdef
                !LL = nd(nm)%ln(j)
                !L = abs(LL)
@@ -378,7 +382,9 @@ contains
          ba_mor_tot = 0.0_dp
          do j = 1, gridpoint2cross(nm)%num_cross_sections
             c = gridpoint2cross(nm)%cross(j)
-            if (c == -999) cycle
+            if (c == -999) then
+               cycle
+            end if
             cdef => network%crs%cross(c)%tabdef
             ctype = cdef%crosstype
             if (ctype == CS_TABULATED) then

@@ -152,7 +152,9 @@ contains
 !     set exact solution
       sex = xzw
 
-      if (jatimer == 1) call starttimer(ITOTAL)
+      if (jatimer == 1) then
+         call starttimer(ITOTAL)
+      end if
 
 !!     prepare matrix
 !      if ( jatimer.eq.1 ) call starttimer(IREDUCE)
@@ -184,7 +186,9 @@ contains
          call solve_matrix(s1, Ndx, itsol)
 
       end do
-      if (jatimer == 1) call stoptimer(ITOTAL)
+      if (jatimer == 1) then
+         call stoptimer(ITOTAL)
+      end if
 
 !     unmask all cells
       dmask = 0.0_dp

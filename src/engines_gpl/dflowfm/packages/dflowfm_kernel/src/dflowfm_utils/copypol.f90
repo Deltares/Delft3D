@@ -66,9 +66,13 @@ contains
 
       numadd = jend - jstart + 1
 
-      if (numadd < 2 .or. ipol < jstart .or. ipol > jend) return ! no polygon found
+      if (numadd < 2 .or. ipol < jstart .or. ipol > jend) then
+         return ! no polygon found
+      end if
 
-      if (Lotherpart) numadd = 2 * numadd
+      if (Lotherpart) then
+         numadd = 2 * numadd
+      end if
 
 !        copy polygon
       jpoint = NPL
@@ -142,11 +146,15 @@ contains
       end if
 
 !        add new polygon
-      if (jsferic == 1) dist = dist / (Ra * dg2rd)
+      if (jsferic == 1) then
+         dist = dist / (Ra * dg2rd)
+      end if
       do i = jstart, jend
          dy = dny(i - jstart + 1) * dist
          dx = dnx(i - jstart + 1) * dist
-         if (jsferic == 1) dx = dx / cos((ypl(i) + 0.5_dp * dy) * dg2rd)
+         if (jsferic == 1) then
+            dx = dx / cos((ypl(i) + 0.5_dp * dy) * dg2rd)
+         end if
          xpl(jpoint + i - jstart) = xpl(i) + dx
          ypl(jpoint + i - jstart) = ypl(i) + dy
          zpl(jpoint + i - jstart) = zpl(i)

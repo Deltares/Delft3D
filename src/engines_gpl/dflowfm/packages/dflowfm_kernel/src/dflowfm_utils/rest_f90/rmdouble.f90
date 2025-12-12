@@ -125,7 +125,9 @@ contains
             end if
 
 !           deallocate kdtree
-            if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+            if (treeglob%itreestat /= ITREE_EMPTY) then
+               call delete_kdtree2(treeglob)
+            end if
 
 !           disable kdtree
             jakdtree = 0
@@ -143,7 +145,9 @@ contains
          do ii = 1, num
             i = iperm(ii)
 
-            if (i == 0) cycle ! already merged
+            if (i == 0) then
+               cycle ! already merged
+            end if
 
 !           fill query vector
             call make_queryvector_kdtree(treeglob, xs(i), ys(i), jsferic)
@@ -228,7 +232,9 @@ contains
 !     set new number of samples
       NS = K
 
-      if (JADOUBLE == 1) goto 5
+      if (JADOUBLE == 1) then
+         goto 5
+      end if
 
       NUMWEG = NSORG - K
       if (NUMWEG >= 1) then
@@ -259,7 +265,9 @@ contains
          end if
 
 !         deallocate kdtree
-         if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+         if (treeglob%itreestat /= ITREE_EMPTY) then
+            call delete_kdtree2(treeglob)
+         end if
       end if
 
 !     restore jsferic

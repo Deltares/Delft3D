@@ -308,7 +308,9 @@ contains
             end if
 
             if (autotimestep == AUTO_TIMESTEP_3D_HOR_OUT .or. autotimestep == AUTO_TIMESTEP_3D_HOR_INOUT) then
-               if (.not. allocated(Squ2D)) allocate (squ2D(ndkx), stat=ierr)
+               if (.not. allocated(Squ2D)) then
+                  allocate (squ2D(ndkx), stat=ierr)
+               end if
             end if
          end if
          call IWinClose(1)

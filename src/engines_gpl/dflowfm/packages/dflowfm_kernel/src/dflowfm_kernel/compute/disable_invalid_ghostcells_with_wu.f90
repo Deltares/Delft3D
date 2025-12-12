@@ -57,7 +57,9 @@ contains
       integer :: ierror
 
       ierror = 0 ! so far, so good
-      if (jampi == 0) return ! nothing to do
+      if (jampi == 0) then
+         return ! nothing to do
+      end if
 
       ierror = 1
 

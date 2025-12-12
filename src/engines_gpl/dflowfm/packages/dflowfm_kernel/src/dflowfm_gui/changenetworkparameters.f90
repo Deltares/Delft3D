@@ -317,7 +317,9 @@ contains
          if (KEY == 23) then
             ! netcell administration out of date if jins changes
             call IFORMGETINTEGER(2 * 1, jins)
-            if (jins /= jins_old) netstat = NETSTAT_CELLS_DIRTY
+            if (jins /= jins_old) then
+               netstat = NETSTAT_CELLS_DIRTY
+            end if
             jins_old = jins
 
             !CALL IFormGetDouble  (2*2 , TRIANGLEMINANGLE)

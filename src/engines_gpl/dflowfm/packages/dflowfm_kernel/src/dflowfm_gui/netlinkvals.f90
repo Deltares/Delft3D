@@ -68,7 +68,9 @@ contains
       real(kind=dp) :: xd, YD, ZD
       real(kind=dp) :: areaL, areaR, xc, yc, aa
 
-      if (MET == 1) return
+      if (MET == 1) then
+         return
+      end if
 
       jaxz = 0
       if (allocated(xz)) then
@@ -127,14 +129,18 @@ contains
             else if (MET == 6) then
                V = LC(L)
             else if (MET == 7) then
-               if (lc(L) > 0) V = netbr(LC(L))%nx
+               if (lc(L) > 0) then
+                  V = netbr(LC(L))%nx
+               end if
             else if (MET >= 7 .and. MET <= 9) then
                XD = XK(K2) - XK(K1)
                YD = YK(K2) - YK(K1)
                ZD = ZK(K2) - ZK(K1)
                RD = sqrt(XD * XD + YD * YD + ZD * ZD)
                REK = 0 ! ( RD - RL(L) ) / RL(L)
-               if (LC(L) == 0) REK = max(0.0_dp, REK)
+               if (LC(L) == 0) then
+                  REK = max(0.0_dp, REK)
+               end if
                SP = E0 * REK
                FSP = 0 ! SP*EA(L)/1e3  ! spanning in kN
                if (MET == 9) then
@@ -146,13 +152,19 @@ contains
                V = KN(3, L)
             else if (MET == 12) then
                V = 0
-               if (L <= size(LNN)) V = LNN(L)
+               if (L <= size(LNN)) then
+                  V = LNN(L)
+               end if
             else if (MET == 13) then
                V = 0
-               if (L <= size(LNN)) V = LNE(1, L)
+               if (L <= size(LNN)) then
+                  V = LNE(1, L)
+               end if
             else if (MET == 14) then
                V = 0
-               if (L <= size(LNN)) V = LNE(2, L)
+               if (L <= size(LNN)) then
+                  V = LNE(2, L)
+               end if
             else if (MET == 15) then ! topology information
                V = topo_info(L)
             else if (MET == 16) then ! area ratio
@@ -163,9 +175,13 @@ contains
                   kR = lne(2, L)
                   call getcellsurface(kL, areaL, xc, yc)
                   call getcellsurface(kR, areaR, xc, yc)
-                  if (areaL < 1.0e-12_dp .or. areaR < 1.0e-12_dp) cycle
+                  if (areaL < 1.0e-12_dp .or. areaR < 1.0e-12_dp) then
+                     cycle
+                  end if
                   V = areaR / areaL
-                  if (V < 1.0_dp) V = 1.0_dp / V
+                  if (V < 1.0_dp) then
+                     V = 1.0_dp / V
+                  end if
                end if
             else if (MET == 17) then ! link size criterion
                if (lnn(L) < 2) then
@@ -175,7 +191,9 @@ contains
                   kR = lne(2, L)
                   call getcellsurface(kL, areaL, xc, yc)
                   call getcellsurface(kR, areaR, xc, yc)
-                  if (areaL < 1.0e-12_dp .or. areaR < 1.0e-12_dp) cycle
+                  if (areaL < 1.0e-12_dp .or. areaR < 1.0e-12_dp) then
+                     cycle
+                  end if
                   k1 = kn(1, L)
                   k2 = kn(2, L)
                   aa = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss) * dbdistance(xz(kL), yz(kL), xz(kR), yz(kR), jsferic, jasfer3D, dmiss)

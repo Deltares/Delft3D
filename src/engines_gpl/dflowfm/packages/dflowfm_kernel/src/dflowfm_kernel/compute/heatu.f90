@@ -74,8 +74,12 @@ contains
       !$OMP PARALLEL DO   &
       !$OMP PRIVATE(n,kb,kt)
       do n = 1, ndxi
-         if (nd(n)%lnx == 0) cycle
-         if (hs(n) < epshstem) cycle
+         if (nd(n)%lnx == 0) then
+            cycle
+         end if
+         if (hs(n) < epshstem) then
+            cycle
+         end if
          call heatun(n, time_in_hours, nominal_solar_radiation)
          if (hs(n) < chktempdep) then
             call getkbotktop(n, kb, kt)

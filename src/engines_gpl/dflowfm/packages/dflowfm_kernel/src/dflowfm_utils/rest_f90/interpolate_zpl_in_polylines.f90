@@ -64,7 +64,9 @@ contains
 
       ierror = 1
 
-      if (NPL < 2) goto 1234
+      if (NPL < 2) then
+         goto 1234
+      end if
 
 !  allocate
       allocate (wfromleft(NPL))
@@ -110,9 +112,13 @@ contains
             iL = iLeft(i)
             iR = iRight(i)
             wL = 0.0_dp
-            if (iL > 0) wL = wfromLeft(iL)
+            if (iL > 0) then
+               wL = wfromLeft(iL)
+            end if
             wR = 0.0_dp
-            if (iR > 0) wR = wfromLeft(iR)
+            if (iR > 0) then
+               wR = wfromLeft(iR)
+            end if
 
             if (iL == iR .and. iL /= 0) then
 !           value prescibed

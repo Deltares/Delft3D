@@ -78,9 +78,13 @@ contains
       ierror = 1
       ic = 0
 
-      if (nump < 1) goto 1234
+      if (nump < 1) then
+         goto 1234
+      end if
 
-      if (netstat /= NETSTAT_OK) call findcells(0)
+      if (netstat /= NETSTAT_OK) then
+         call findcells(0)
+      end if
 
 !  allocate
       allocate (xc(nump), yc(nump))
@@ -101,7 +105,9 @@ contains
 
             do i = 1, N
                ip1 = i + 1
-               if (ip1 > N) ip1 = ip1 - N
+               if (ip1 > N) then
+                  ip1 = ip1 - N
+               end if
                k = netcell(ic)%nod(i)
                kp1 = netcell(ic)%nod(ip1)
                xplist(i) = xk(k)
@@ -109,7 +115,9 @@ contains
                !        find the link connected to this node
                do j = 0, N - 1
                   ii = i + j
-                  if (ii > N) ii = ii - N
+                  if (ii > N) then
+                     ii = ii - N
+                  end if
                   L = netcell(ic)%lin(ii)
                   if ((kn(1, L) == k .and. kn(2, L) == kp1) .or. (kn(1, L) == kp1 .and. kn(2, L) == k)) then
                      exit ! found
@@ -144,7 +152,9 @@ contains
          yz(1:nump) = yz(1:nump) + dsigma * (yc(1:nump) - yz(1:nump))
 
 !     check residual
-         if (drmsabscosphi <= dmaxnonortho) exit
+         if (drmsabscosphi <= dmaxnonortho) then
+            exit
+         end if
 
 !     output information
          af = real(iter, kind=dp) / real(MAXITER, kind=dp)
@@ -166,11 +176,15 @@ contains
 
       if (ierror /= 0) then
 !      call qnerror('make_orthocenters: error', ' ', ' ')
-         if (ic > 0 .and. ic < nump) call cirr(xc(ic), yc(ic), ncolhl)
+         if (ic > 0 .and. ic < nump) then
+            call cirr(xc(ic), yc(ic), ncolhl)
+         end if
       end if
 
 !  deallocate
-      if (allocated(xc)) deallocate (xc, yc)
+      if (allocated(xc)) then
+         deallocate (xc, yc)
+      end if
 
       return
    end subroutine make_orthocenters

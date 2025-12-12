@@ -61,7 +61,9 @@ contains
 
       integer, save :: NEEDFINDCELLS = 1
 
-      if (nump < 1) NEEDFINDCELLS = 1
+      if (nump < 1) then
+         NEEDFINDCELLS = 1
+      end if
 
       if (NEEDFINDCELLS /= 0 .or. netstat /= NETSTAT_OK) then
          call findcells(100)
@@ -72,9 +74,13 @@ contains
 !  find the cell
       in = 0
       do k = 1, nump
-         if (netcell(k)%N < 1) cycle
+         if (netcell(k)%N < 1) then
+            cycle
+         end if
          call pinpok(xp, yp, netcell(k)%N, xk(netcell(k)%nod), yk(netcell(k)%nod), in, jins, dmiss)
-         if (in > 0) exit
+         if (in > 0) then
+            exit
+         end if
       end do
 
       if (in == 0) then ! no cell found
