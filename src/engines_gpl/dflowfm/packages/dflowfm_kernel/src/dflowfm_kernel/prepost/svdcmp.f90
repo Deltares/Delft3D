@@ -191,8 +191,12 @@ contains
          do ITS = 1, 30
             l_loop: do L = K, 1, -1
                NM = L - 1
-               if ((abs(RV1(L)) + ANORM) == ANORM) GO TO 2
-               if ((abs(W(NM)) + ANORM) == ANORM) exit l_loop
+               if ((abs(RV1(L)) + ANORM) == ANORM) then
+                  GO TO 2
+               end if
+               if ((abs(W(NM)) + ANORM) == ANORM) then
+                  exit l_loop
+               end if
             end do l_loop
             C = 0.0
             S = 1.0

@@ -74,7 +74,9 @@ contains
                J2 = J
                DX2 = XH(I, J) - X(I, J)
                DY2 = YH(I, J) - Y(I, J)
-               if (I == M2 .and. J == N2) KLAST = 0
+               if (I == M2 .and. J == N2) then
+                  KLAST = 0
+               end if
                do II = I1, I2 - IN * KLAST
                   do JJ = J1, J2 - JN * KLAST
                      if (IN == 1) then

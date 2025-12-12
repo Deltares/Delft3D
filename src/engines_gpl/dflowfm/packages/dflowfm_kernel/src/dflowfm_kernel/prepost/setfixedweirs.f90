@@ -103,8 +103,12 @@ contains
       end if
 
       jatabellenboekorvillemonte = 0
-      if (ifixedweirscheme == 8) jatabellenboekorvillemonte = 1
-      if (ifixedweirscheme == 9) jatabellenboekorvillemonte = 2
+      if (ifixedweirscheme == 8) then
+         jatabellenboekorvillemonte = 1
+      end if
+      if (ifixedweirscheme == 9) then
+         jatabellenboekorvillemonte = 2
+      end if
 
       include_fixed_weir_below_bob = (jatabellenboekorvillemonte > 0)
 
@@ -235,7 +239,9 @@ contains
             iloop: do i = 1, 2
 
                if (i == 1) then
-                  if (Lastfoundk == 0) cycle
+                  if (Lastfoundk == 0) then
+                     cycle
+                  end if
                   kf = max(1, Lastfoundk - 100)
                   kL = min(npl - 1, Lastfoundk + 100)
                else
@@ -336,8 +342,12 @@ contains
                         do kk = 1, nmk(n1) !          |         |
                            Lnt = nod(n1)%lin(kk) ! ---------o---------o-------fixedweir
                            Lf = lne2ln(Lnt) !          |         |
-                           if (Lf == 0) cycle
-                           if (iLcr(abs(Lf)) == 1) cycle
+                           if (Lf == 0) then
+                              cycle
+                           end if
+                           if (iLcr(abs(Lf)) == 1) then
+                              cycle
+                           end if
                            nna = kn(1, Lnt)
                            nnb = kn(2, Lnt)
                            xa = xk(nna)
@@ -526,14 +536,18 @@ contains
                         LLLa = abs(LLL)
                         if (LLLa == L) then
                            LLLa = LL - 1
-                           if (LLLa == 0) LLLa = nx ! left of weir link
+                           if (LLLa == 0) then
+                              LLLa = nx ! left of weir link
+                           end if
                            LLLa = abs(nd(k)%ln(LLLa))
                            if (ihu(LLLa) == 0) then ! if not already marked as weir
                               bob(1, LLLa) = max(zcrest(L), bob(1, LLLa)) ! raise both bobs
                               bob(2, LLLa) = max(zcrest(L), bob(2, LLLa)) ! raise both bobs
                            end if
                            LLLa = LL + 1
-                           if (LLLa > nx) LLLa = 1 ! right of weir link
+                           if (LLLa > nx) then
+                              LLLa = 1 ! right of weir link
+                           end if
                            LLLa = abs(nd(k)%ln(LLLa))
                            if (ihu(LLLa) == 0) then ! if not already marked as weir
                               bob(1, LLLa) = max(zcrest(L), bob(1, LLLa)) ! raise both bobs
@@ -580,11 +594,15 @@ contains
       end do
 
       if (nfxw > 0) then
-         if (allocated(lnfxw)) deallocate (nfxwL, lnfxw)
+         if (allocated(lnfxw)) then
+            deallocate (nfxwL, lnfxw)
+         end if
          if (allocated(weirdte)) then
             deallocate (weirdte)
          end if
-         if (allocated(shlxw)) deallocate (shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
+         if (allocated(shlxw)) then
+            deallocate (shlxw, shrxw, crestlevxw, crestlxw, taludlxw, taludrxw, vegxw, iweirtxw)
+         end if
          allocate (nfxwL(Lnx), stat=ierr)
          call aerr('nfxwL(Lnx)', ierr, lnx)
 

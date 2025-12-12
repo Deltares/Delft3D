@@ -84,7 +84,9 @@ contains
       ig = 0 ! index in gridline array
       numcentersplines = 0
       do is = 1, mcs
-         if (splineprops(is)%id /= 0) cycle ! center splines only
+         if (splineprops(is)%id /= 0) then
+            cycle ! center splines only
+         end if
          numcentersplines = numcentersplines + 1
 
 !     determine the number of control points in the spline

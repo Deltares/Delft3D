@@ -208,7 +208,9 @@ contains
             call IFormGEtINTEGER(2 * 6, Interpolate_to)
             call IFormGEtDouble(2 * 7, Percentileminmax)
             call IFormGEtinteger(2 * 8, Mxsam)
-            if (mxsam == 0) mca = 0
+            if (mxsam == 0) then
+               mca = 0
+            end if
 
          end if
          call IWinClose(1)

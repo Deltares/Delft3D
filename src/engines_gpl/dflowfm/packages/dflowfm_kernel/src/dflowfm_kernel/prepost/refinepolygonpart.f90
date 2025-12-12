@@ -110,9 +110,13 @@ contains
       end if
 
       if (jauniform /= 1) then
-         if (NO < 4) return
+         if (NO < 4) then
+            return
+         end if
       else
-         if (NO < 2) return
+         if (NO < 2) then
+            return
+         end if
       end if
 
       NPLO = NPL ! Back up current poly length

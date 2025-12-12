@@ -240,9 +240,13 @@ contains
       integer :: ierror
 
 #ifdef HAVE_MPI
-      if (jatimer == 1) call starttimer(IOUTPUTMPI)
+      if (jatimer == 1) then
+         call starttimer(IOUTPUTMPI)
+      end if
       call mpi_allreduce(mpi_in_place, crs_values, nval * ncrs, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) call stoptimer(IOUTPUTMPI)
+      if (jatimer == 1) then
+         call stoptimer(IOUTPUTMPI)
+      end if
 #endif
 
    end subroutine reduce_cross_section_flowlink_integrals

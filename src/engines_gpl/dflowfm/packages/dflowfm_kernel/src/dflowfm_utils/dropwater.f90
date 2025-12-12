@@ -63,7 +63,9 @@ contains
       integer :: n, nn, in, ncol
       real(kind=dp) :: dropstep, s10
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
       dropstep = idir * sdropstep
 
@@ -85,7 +87,9 @@ contains
 
          do n = ndxi, 1, -1
             nn = size(nd(n)%x)
-            if (nn == 0) cycle
+            if (nn == 0) then
+               cycle
+            end if
             call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
             if (in == 1) then
                s10 = s1(n)

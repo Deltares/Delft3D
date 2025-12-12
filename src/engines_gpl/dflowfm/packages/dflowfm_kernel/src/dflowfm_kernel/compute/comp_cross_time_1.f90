@@ -92,8 +92,12 @@ contains
 
 !   if ( t(1).ne.DMISS .and. t(2).ne.DMISS ) then
       do i = 1, 4
-         if (t(i) == DMISS) cycle
-         if (t(i) < dtol) cycle ! positive times only
+         if (t(i) == DMISS) then
+            cycle
+         end if
+         if (t(i) < dtol) then
+            cycle ! positive times only
+         end if
          xs = x4 - x3 + (v4 - v3) * t(i)
          det = dot_product(xs, xs)
          if (abs(det) > dtol) then
@@ -110,7 +114,9 @@ contains
             else
                DdDt = -1.0e99_dp
             end if
-            if (DdDt < 0.0_dp) time = min(time, t(i))
+            if (DdDt < 0.0_dp) then
+               time = min(time, t(i))
+            end if
          end if
       end do
 

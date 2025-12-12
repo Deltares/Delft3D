@@ -92,9 +92,13 @@ contains
       ! globally reduce time step
       if (jampi == 1 .and. jareduced == 0) then
          ! globally reduce dts (dtsc may now be larger)
-         if (jatimer == 1) call starttimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call starttimer(IMPIREDUCE)
+         end if
          call reduce_double_min(dts)
-         if (jatimer == 1) call stoptimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call stoptimer(IMPIREDUCE)
+         end if
       end if
 
       dtsc = dts

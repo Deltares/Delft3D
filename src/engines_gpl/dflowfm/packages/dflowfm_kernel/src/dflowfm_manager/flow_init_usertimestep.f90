@@ -60,7 +60,9 @@ contains
       call inctime_user()
 
       tim1fld = max(time_user, tim1fld)
-      if (janudge == 1) call setzcs()
+      if (janudge == 1) then
+         call setzcs()
+      end if
       call set_external_forcings(tim1fld, .false., iresult) ! set field oriented forcings. boundary oriented forcings are in
       if (iresult /= DFM_NOERR) then
          goto 888

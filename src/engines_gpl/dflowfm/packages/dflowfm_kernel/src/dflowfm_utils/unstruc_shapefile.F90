@@ -1650,7 +1650,9 @@ contains
          do link_index = 1, ubound(dambreak_links, 1)
             ! create a shape object with the "simple" method, for each shape 2 components are added x, y
             flow_link = dambreak_links(link_index)
-            if (flow_link == 0) cycle
+            if (flow_link == 0) then
+               cycle
+            end if
 
             write (string_shape_element, '(I4.4)') shape_element
             object_name = trim(dambreak_names(dambreak_index))//'_'//string_shape_element

@@ -65,7 +65,9 @@ contains
          deallocate (snb)
       end if
 
-      if (jsferic == 0 .or. jasfer3D == 0) return
+      if (jsferic == 0 .or. jasfer3D == 0) then
+         return
+      end if
 
       allocate (csb(2, Lnx), stat=ierr)
       csb = 1.0_dp

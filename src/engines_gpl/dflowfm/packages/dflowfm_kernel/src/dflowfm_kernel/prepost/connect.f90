@@ -67,7 +67,9 @@ contains
       end do
 
       R0 = R00
-      if (R0 <= 0) R0 = DLENGTH(K1, K2)
+      if (R0 <= 0) then
+         R0 = DLENGTH(K1, K2)
+      end if
 
       do LL = 1, LFAC
 

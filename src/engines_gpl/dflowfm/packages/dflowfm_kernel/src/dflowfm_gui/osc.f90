@@ -72,7 +72,9 @@ contains
          call msg_flush()
          call IOsCommand(STRING(:LEN))
       else if (KEY == 23) then
-         if (NOPSYS == 1) call ISCREENMODE('GR', NPX, NPY, NCOLR)
+         if (NOPSYS == 1) then
+            call ISCREENMODE('GR', NPX, NPY, NCOLR)
+         end if
          KEY = 3
          return
       end if

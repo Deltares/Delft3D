@@ -60,7 +60,9 @@ contains
             k2 = ln(2, L)
             if (inview(xz(k1), yz(k1)) .or. inview(xz(k2), yz(k2))) then
                zn = zlin(L)
-               if (zn == DMISS) cycle
+               if (zn == DMISS) then
+                  cycle
+               end if
                if (zn < rmin) then
                   rmin = zn
                   lnmin = L

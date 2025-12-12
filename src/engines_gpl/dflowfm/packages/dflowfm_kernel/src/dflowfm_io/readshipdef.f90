@@ -86,17 +86,29 @@ contains
          call zoekinteger(minp, 'NSHIPN', nn, ja)
          call zoekinteger(minp, 'ICONTROLTYP', icontroltyp(n), ja)
          call zoekdouble(minp, 'SHL', shL(n), ja)
-         if (ja == 1) shL(n) = 0.5_dp * shL(n) ! shiplenght on input, then half length
+         if (ja == 1) then
+            shL(n) = 0.5_dp * shL(n) ! shiplenght on input, then half length
+         end if
          call zoekdouble(minp, 'SHB', shB(n), ja)
-         if (ja == 1) shB(n) = 0.5_dp * shB(n) ! idem width
+         if (ja == 1) then
+            shB(n) = 0.5_dp * shB(n) ! idem width
+         end if
          call zoekdouble(minp, 'SHD', shd(n), ja)
-         if (ja == 1) chkadvd = min(chkadvd, 1.0e-2_dp * shd(n))
+         if (ja == 1) then
+            chkadvd = min(chkadvd, 1.0e-2_dp * shd(n))
+         end if
          call zoekdouble(minp, 'DEADW', deadw(n), ja)
-         if (ja == 1) deadw(n) = 1000.0_dp * deadw(n) !kg
+         if (ja == 1) then
+            deadw(n) = 1000.0_dp * deadw(n) !kg
+         end if
          call zoekdouble(minp, 'POWERMX', powermx(n), ja)
-         if (ja == 1) powermx(n) = 1000.0_dp * 0.75_dp * powermx(n) ! conversion hp to kw
+         if (ja == 1) then
+            powermx(n) = 1000.0_dp * 0.75_dp * powermx(n) ! conversion hp to kw
+         end if
          call zoekdouble(minp, 'SPEEDMX', speedmx(n), ja)
-         if (ja == 1) speedmx(n) = 0.514444_dp * speedmx(n) ! conversion knots to m/s
+         if (ja == 1) then
+            speedmx(n) = 0.514444_dp * speedmx(n) ! conversion knots to m/s
+         end if
 
          if (ja == 1 .and. speedmx(n) /= 0.0_dp) then
             stuwmx(n) = 0.65_dp * powermx(n) / speedmx(n) ! propellor efficiency 0.65
@@ -108,7 +120,9 @@ contains
          call zoekdouble(minp, 'SHX', shx(n), ja)
          call zoekdouble(minp, 'SHY', shy(n), ja)
          call zoekdouble(minp, 'SHI', shi(n), ja)
-         if (ja == 1) shi(n) = shi(n) * dg2rd
+         if (ja == 1) then
+            shi(n) = shi(n) * dg2rd
+         end if
          call zoekdouble(minp, 'SHU', shu(n), ja)
          call zoekdouble(minp, 'SHV', shv(n), ja)
          call zoekdouble(minp, 'SHO', sho(n), ja)

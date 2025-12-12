@@ -51,10 +51,14 @@ contains
       integer :: mpu, mpd, npu, npd
 
       call SETCOL(NCOL)
-      if (MP == 0) return
+      if (MP == 0) then
+         return
+      end if
       XP = X(MP, NP)
       YP = Y(MP, NP)
-      if (XP == 0) return
+      if (XP == 0) then
+         return
+      end if
       MPU = MP + 1
       MPD = MP - 1
       NPU = NP + 1

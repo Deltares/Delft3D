@@ -91,7 +91,9 @@ contains
          end do
          do L = lnx1D + 1, lnx
             if (jabarrieradvection == 3) then
-               if (struclink(L) == 1) cycle
+               if (struclink(L) == 1) then
+                  cycle
+               end if
             end if
             if (u1_loc(L) /= 0.0_dp) then ! link flows
                k1 = ln(1, L)

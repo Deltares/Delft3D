@@ -161,10 +161,18 @@ contains
       ! Allocation of memory for bedform roughness arrays
       !
       istat = 0
-      if (istat == 0) allocate (bfmpar%kdpar(6), stat=istat)
-      if (istat == 0) allocate (bfmpar%rksr(1:ndx), stat=istat)
-      if (istat == 0) allocate (bfmpar%rksmr(1:ndx), stat=istat)
-      if (istat == 0) allocate (bfmpar%rksd(1:ndx), stat=istat)
+      if (istat == 0) then
+         allocate (bfmpar%kdpar(6), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%rksr(1:ndx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%rksmr(1:ndx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%rksd(1:ndx), stat=istat)
+      end if
       !
       if (istat /= 0) then
          write (errmsg, '(a)') 'Error in fm_initbedformpar: could not allocate memory.'
@@ -331,10 +339,14 @@ contains
          end if
          if (spatial_bedform) then
             allocate (bfmpar%bedformD50(1:ndx), stat=istat)
-            if (istat == 0) allocate (bfmpar%bedformD90(1:ndx), stat=istat)
+            if (istat == 0) then
+               allocate (bfmpar%bedformD90(1:ndx), stat=istat)
+            end if
          else
             allocate (bfmpar%bedformD50(1), stat=istat)
-            if (istat == 0) allocate (bfmpar%bedformD90(1), stat=istat)
+            if (istat == 0) then
+               allocate (bfmpar%bedformD90(1), stat=istat)
+            end if
          end if
          if (istat /= 0) then
             call write_error('RDBEDFORMPAR: Could not allocate memory for D50/D90 arrays', unit=mdia)
@@ -423,21 +435,41 @@ contains
       ! if Bdf keyword turned out to be NO,
       ! then try to read only Van Rijn 2004 bedform roughness height parameters.
       !
-      if (.not. lfbedfrm) goto 8888
+      if (.not. lfbedfrm) then
+         goto 8888
+      end if
       !
       ! Allocation of memory for other arrays
       !
       istat = 0
-      if (istat == 0) allocate (bfmpar%duneheight(1:ndx), stat=istat)
-      if (istat == 0) allocate (bfmpar%duneheightequi(1:ndx), stat=istat)
-      if (istat == 0) allocate (bfmpar%dunelength(1:ndx), stat=istat)
-      if (istat == 0) allocate (bfmpar%qbedformx(1:lnx), stat=istat)
-      if (istat == 0) allocate (bfmpar%qbedformy(1:lnx), stat=istat)
-      if (istat == 0) allocate (bfmpar%ubedform(1:lnx), stat=istat)
+      if (istat == 0) then
+         allocate (bfmpar%duneheight(1:ndx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%duneheightequi(1:ndx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%dunelength(1:ndx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%qbedformx(1:lnx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%qbedformy(1:lnx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%ubedform(1:lnx), stat=istat)
+      end if
       !
-      if (istat == 0) allocate (bfmpar%hdpar(2), stat=istat)
-      if (istat == 0) allocate (bfmpar%ldpar(2), stat=istat)
-      if (istat == 0) allocate (bfmpar%cdpar(2), stat=istat)
+      if (istat == 0) then
+         allocate (bfmpar%hdpar(2), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%ldpar(2), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (bfmpar%cdpar(2), stat=istat)
+      end if
       !
       if (istat /= 0) then
          write (errmsg, '(a)') 'Error in rdbedformpar: could not allocate memory.'
@@ -636,7 +668,9 @@ contains
          !
          txtput1 = 'Dune height advection'
          txtput2 = '                  NO'
-         if (lfbedfrmADV) txtput2 = '                 YES'
+         if (lfbedfrmADV) then
+            txtput2 = '                 YES'
+         end if
          write (mdia, '(a,a,a)') txtput1, ': ', txtput2
          !
          if (lfbedfrmADV) then
@@ -644,7 +678,9 @@ contains
             !
             txtput1 = 'CFL check'
             txtput2 = '                  NO'
-            if (lfbedfrmCFL) txtput2 = '                 YES'
+            if (lfbedfrmCFL) then
+               txtput2 = '                 YES'
+            end if
             write (mdia, '(a,a,a)') txtput1, ': ', txtput2
          end if
          !
@@ -805,7 +841,9 @@ contains
       !
       ! if Bdf keyword turned out to be NO, skip remainder
       !
-      if (.not. lfbedfrm) goto 9999
+      if (.not. lfbedfrm) then
+         goto 9999
+      end if
       !
       !---------------------------
       ! Reading initial dune height/dune length
@@ -826,7 +864,9 @@ contains
          !
          ! Intel 7.0 crashes on an inquire statement when file = ' '
          !
-         if (flbdfh == ' ') flbdfh = 'dummyname'
+         if (flbdfh == ' ') then
+            flbdfh = 'dummyname'
+         end if
          inquire (file=flbdfh, exist=bdfhfile_exists)
          txtput1 = 'Initial dune height'
          if (.not. bdfhfile_exists) then

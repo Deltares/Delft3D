@@ -94,7 +94,9 @@ contains
          call mpi_reduce(numcgits, itsol_max, 1, MPI_INTEGER, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
 #endif
          jadoit = 0
-         if (my_rank == 0) jadoit = 1
+         if (my_rank == 0) then
+            jadoit = 1
+         end if
       else
          itsol_max = numcgits
          jadoit = 1
@@ -176,10 +178,18 @@ contains
          close (MFILE)
       end if
 
-      if (allocated(t_max)) deallocate (t_max)
-      if (allocated(t_ave)) deallocate (t_ave)
-      if (allocated(tcpu_max)) deallocate (tcpu_max)
-      if (allocated(tcpu_ave)) deallocate (tcpu_ave)
+      if (allocated(t_max)) then
+         deallocate (t_max)
+      end if
+      if (allocated(t_ave)) then
+         deallocate (t_ave)
+      end if
+      if (allocated(tcpu_max)) then
+         deallocate (tcpu_max)
+      end if
+      if (allocated(tcpu_ave)) then
+         deallocate (tcpu_ave)
+      end if
 
    end subroutine print_timings
 

@@ -59,8 +59,9 @@ contains
       k2k = 0
       ja = 0
 
-      if (x1 == x2 .and. y1 == y2 .or. &
-          x3 == x4 .and. y3 == y4) return
+      if (x1 == x2 .and. y1 == y2 .or. x3 == x4 .and. y3 == y4) then
+         return
+      end if
 
       r1 = dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss)
       r2 = dbdistance(x3, y3, x4, y4, jsferic, jasfer3D, dmiss)

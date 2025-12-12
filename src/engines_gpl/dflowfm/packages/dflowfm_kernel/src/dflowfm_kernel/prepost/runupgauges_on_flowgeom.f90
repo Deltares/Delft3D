@@ -70,7 +70,9 @@ contains
       real(kind=dp) :: t0, t1
       character(len=128) :: mesg
 
-      if (num_rugs < 1) return
+      if (num_rugs < 1) then
+         return
+      end if
 
       intersection_count = 0
 
@@ -167,7 +169,9 @@ contains
          if (allocated(istartcrs)) then
             deallocate (istartcrs)
          end if
-         if (allocated(xx)) deallocate (xx, yy)
+         if (allocated(xx)) then
+            deallocate (xx, yy)
+         end if
 
          call wall_clock_time(t1)
          write (mesg, "('runup gauges with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0

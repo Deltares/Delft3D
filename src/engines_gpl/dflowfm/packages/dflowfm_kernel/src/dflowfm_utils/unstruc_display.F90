@@ -218,65 +218,145 @@ contains
       end if
 
       call prop_get(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success)
-      if (success) NCOLDG = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLDG = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success)
-      if (success) NCOLRG = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLRG = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success)
-      if (success) NCOLDN = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLDN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success)
-      if (success) NCOLRN = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLRN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success)
-      if (success) NCOLNN = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLNN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success)
-      if (success) NCOLSP = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLSP = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success)
-      if (success) NCOLLN = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLLN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success)
-      if (success) NCOLTX = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLTX = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success)
-      if (success) NCOLPL = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLPL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success)
-      if (success) NCOLCRS = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLCRS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success)
-      if (success) NCOLTHD = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLTHD = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success)
-      if (success) NCOLFXW = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLFXW = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success)
-      if (success) NCOLHL = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         NCOLHL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success)
-      if (success) KLVEC = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         KLVEC = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success)
-      if (success) KLAXS = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         KLAXS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success)
-      if (success) KLSCL = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         KLSCL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success)
-      if (success) KLTEX = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         KLTEX = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success)
-      if (success) KLOBS = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         KLOBS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'KLPROF ', KRGB, 4, success)
-      if (success) KLPROF = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         KLPROF = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
       call prop_get(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success)
-      if (success) KLSRC = KRGB(1)
-      if (success) call SETINTRGB(KRGB)
+      if (success) then
+         KLSRC = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
 
       call prop_get(dis_ptr, '*', 'NREDS  ', NREDS, success)
       call prop_get(dis_ptr, '*', 'NGREENS', NGREENS, success)
@@ -304,13 +384,21 @@ contains
       YBOT = max(0.0_dp, (min(YBOT, 0.25_dp)))
       JAXIS = min(1, (max(JAXIS, 0)))
       if (JAXIS == 1) then
-         if (XLEFT == 0) XLEFT = .15
-         if (YBOT == 0) YBOT = .10
+         if (XLEFT == 0) then
+            XLEFT = .15
+         end if
+         if (YBOT == 0) then
+            YBOT = .10
+         end if
       end if
 
       do I = 1, NUMHCOPTS
-         if (IHCOPTS(1, I) == 22) IHCOPTS(2, I) = JAEPS
-         if (IHCOPTS(1, I) == 5) IHCOPTS(2, I) = JALAND
+         if (IHCOPTS(1, I) == 22) then
+            IHCOPTS(2, I) = JAEPS
+         end if
+         if (IHCOPTS(1, I) == 5) then
+            IHCOPTS(2, I) = JALAND
+         end if
       end do
 
       call SETTEXTSIZE()
@@ -404,8 +492,12 @@ contains
       call prop_set(dis_ptr, '*', 'ICONST', iconst_cur, ' ! active constituent number')
 
       do I = 1, NUMHCOPTs
-         if (IHCOPTS(1, I) == 22) JAEPS = IHCOPTS(2, I)
-         if (IHCOPTS(1, I) == 5) JALAND = IHCOPTS(2, I)
+         if (IHCOPTS(1, I) == 22) then
+            JAEPS = IHCOPTS(2, I)
+         end if
+         if (IHCOPTS(1, I) == 5) then
+            JALAND = IHCOPTS(2, I)
+         end if
       end do
 
       call prop_set(dis_ptr, '*', 'NHCDEV       ', NHCDEV)
@@ -574,13 +666,17 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: temb, temt
 
-      if (ndrawobs == 1) return
+      if (ndrawobs == 1) then
+         return
+      end if
 
       call IGrCharJustify('L')
       call settextsizefac(1.0_dp)
 
       do n = 1, numobs + nummovobs
-         if (.not. inview(xobs(n), yobs(n))) cycle
+         if (.not. inview(xobs(n), yobs(n))) then
+            cycle
+         end if
 
          call setcol(klobs)
 
@@ -723,7 +819,9 @@ contains
       integer :: i, met, k, numk
       MET = NDRAW(15)
 
-      if (met == 0) return
+      if (met == 0) then
+         return
+      end if
 
 !   allocate
       allocate (xh2(numpi), yh2(numpi))
@@ -733,10 +831,14 @@ contains
 
       if (NUMPI == 1) then
          call MOVABS(XH(1), YH(1))
-         if (MET <= 2) call CIR(1.4 * RCIR)
+         if (MET <= 2) then
+            call CIR(1.4 * RCIR)
+         end if
       else if (NUMPI > 1) then
          call MOVABS(XH(1), YH(1))
-         if (MET <= 2) call CIR(1.4 * RCIR)
+         if (MET <= 2) then
+            call CIR(1.4 * RCIR)
+         end if
          call SPLINE(XH, NUMPI, XH2)
          call SPLINE(YH, NUMPI, YH2)
 
@@ -747,7 +849,9 @@ contains
                call SPLINT(YH, YH2, NUMPI, TN, YK)
                call LNABS(XK, YK)
             end do
-            if (MET <= 2) call CIR(RCIR)
+            if (MET <= 2) then
+               call CIR(RCIR)
+            end if
          end do
       end if
 
@@ -765,7 +869,9 @@ contains
       character :: tex * 40
 
       met = ndrawCrosssections
-      if (met == 1) return
+      if (met == 1) then
+         return
+      end if
 
       if (met >= 3) then
          jaArrow = 1
@@ -840,7 +946,9 @@ contains
 
       integer :: i
 
-      if (ndrawThinDams == 0 .or. nthd == 0) return
+      if (ndrawThinDams == 0 .or. nthd == 0) then
+         return
+      end if
 
       call thicklinetexcol(ncolthd)
 
@@ -861,7 +969,9 @@ contains
       integer :: i, L, k3, k4, ncol
       real(kind=dp) :: xu, yu
 
-      if (ndrawFixedWeirs == 0 .or. nfxw == 0) return
+      if (ndrawFixedWeirs == 0 .or. nfxw == 0) then
+         return
+      end if
 
       call thicklinetexcol(ncolfxw)
 
@@ -982,7 +1092,9 @@ contains
 
             if (inview(xx, yy)) then ! find first and last j in viewing area
                jmax = j
-               if (jmin == 0) jmin = j
+               if (jmin == 0) then
+                  jmin = j
+               end if
             end if
          end do
          if (jmax == 0 .and. jmin == 0) then
@@ -1014,7 +1126,9 @@ contains
          call igrcharfont(7)
          xt = xx2
          yt = yy2
-         if (xt > x2 - dsix) xt = x2 - dsix
+         if (xt > x2 - dsix) then
+            xt = x2 - dsix
+         end if
          call gtext(trim(label), xt, yt, kltex)
       end if
 
@@ -1199,7 +1313,9 @@ contains
             if (link > 0 .and. link <= lnx) then ! for safety
                x = xu(link)
                y = yu(link)
-               if (.not. inView(x, y)) cycle
+               if (.not. inView(x, y)) then
+                  cycle
+               end if
 
                ! Draw structure.
                active = hu(link) > epshu
@@ -1593,7 +1709,9 @@ contains
       character tex * 60
       integer :: ncol, k, kk, vlatin, vlatout, i, mout
 
-      if (ndraw(40) == 0 .and. npdf == 0) return
+      if (ndraw(40) == 0 .and. npdf == 0) then
+         return
+      end if
 
       call thicklinetexcol(ncolln)
 

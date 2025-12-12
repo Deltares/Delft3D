@@ -121,7 +121,9 @@ contains
 
          N = LNE(1, LT)
          NN = 0
-         if (N > 0) NN = NETCELL(N)%N
+         if (N > 0) then
+            NN = NETCELL(N)%N
+         end if
 
          if (LNN(LT) == 1 .and. NN == 3) then ! SMALL BOUNDARY TRIANGLES
 
@@ -155,9 +157,13 @@ contains
                      COSMIN = 1.0_dp
                      do LL = 1, 3 ! FIND KHOEK
                         LU = LL + 1
-                        if (LU == 4) LU = 1
+                        if (LU == 4) then
+                           LU = 1
+                        end if
                         LD = LL - 1
-                        if (LD == 0) LD = 3
+                        if (LD == 0) then
+                           LD = 3
+                        end if
                         K0 = NETCELL(N)%NOD(LD)
                         L0 = NETCELL(N)%LIN(LD)
                         K1 = NETCELL(N)%NOD(LL)

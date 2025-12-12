@@ -54,7 +54,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_horfluxtot", ithndl)
+      if (timon) then
+         call timstrt("comp_horfluxtot", ithndl)
+      end if
 
       if (kmx < 1) then
          do L = 1, Lnx
@@ -74,7 +76,9 @@ contains
          end do
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine comp_horfluxtot
 
 end module m_comp_horfluxtot

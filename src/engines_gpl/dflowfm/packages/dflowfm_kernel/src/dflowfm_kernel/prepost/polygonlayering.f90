@@ -63,7 +63,9 @@ contains
 
       call increasesam(npl + ndx)
 
-      if (allocated(indlaynod)) deallocate (indlaynod, wflaynod)
+      if (allocated(indlaynod)) then
+         deallocate (indlaynod, wflaynod)
+      end if
       allocate (indlaynod(3, ndxi), stat=ierr)
       indlaynod = 0
       call aerr('indlaynod(3,ndxi)', ierr, ndxi)

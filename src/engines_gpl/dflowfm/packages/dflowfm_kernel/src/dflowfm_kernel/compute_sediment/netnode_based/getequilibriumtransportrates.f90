@@ -63,7 +63,9 @@ contains
       real(kind=dp) :: sumlay, dmorfacL, dh, ustar2swart, ustw2, fw, qeng, cf, wa, z00
       integer :: j, n, k, kg, nn, n1, L, LL, jabanhydrad = 0
 
-      if (stm_included) return
+      if (stm_included) then
+         return
+      end if
 
       seq = 0.0_dp
       flx = 0.0_dp

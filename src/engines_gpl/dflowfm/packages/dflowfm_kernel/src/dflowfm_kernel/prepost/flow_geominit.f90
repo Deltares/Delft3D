@@ -219,7 +219,9 @@ contains
       end if
 
       do k = 1, numk
-         if (kc(k) /= 0) kc(k) = 1 ! all active grid nodes are now kc = 1 : only to cure old net files
+         if (kc(k) /= 0) then
+            kc(k) = 1 ! all active grid nodes are now kc = 1 : only to cure old net files
+         end if
       end do
 
       call timstrt('Findcells/preparecells', handle_extra(46)) ! findcells/preparecells
@@ -241,7 +243,9 @@ contains
       end if
 
       if (md_findcells == 1 .or. ierr /= DFM_NOERR) then ! Either force findcells, or if cells have not been found in file.
-         if (ierr == DFM_NOERR) call mess(LEVEL_WARN, 'Domain numbers read from file, but overwriting cell numbering by enforcing findcells.', my_rank)
+         if (ierr == DFM_NOERR) then
+            call mess(LEVEL_WARN, 'Domain numbers read from file, but overwriting cell numbering by enforcing findcells.', my_rank)
+         end if
 
          call findcells(0) ! shortest walks in network (0 means: look for all shapes, tris, quads, pentas, hexas)
          call find1dcells()
@@ -515,13 +519,17 @@ contains
          end if
          NDRAW(2) = 5 !< Automatically set 'Display > Network + crossing/quality checks'
       end if
-      if (lnxi == 0 .and. numbnp == 0) return
+      if (lnxi == 0 .and. numbnp == 0) then
+         return
+      end if
 
       lnx = lnxi + numbnp ! add open boundary points
 
       call readyy('geominit-NODELINKS         ', 0.5_dp)
 
-      if (allocated(ln)) deallocate (ln, lncn, bob, bob0, dx, dxi, wu, wui, kcu, csu, snu, acl, iadv, teta, wu_mor, wu1D2D, hh1D2D)
+      if (allocated(ln)) then
+         deallocate (ln, lncn, bob, bob0, dx, dxi, wu, wui, kcu, csu, snu, acl, iadv, teta, wu_mor, wu1D2D, hh1D2D)
+      end if
       if (allocated(ibot)) then
          deallocate (ibot)
       end if
@@ -573,7 +581,9 @@ contains
       call realloc(ln0, [2, lnx])
       call realloc(onlyWetLinks, lnx, keepExisting=.false., fill=0)
 
-      if (allocated(xu)) deallocate (xu, yu, blu)
+      if (allocated(xu)) then
+         deallocate (xu, yu, blu)
+      end if
       allocate (xu(lnx), yu(lnx), blu(lnx), stat=ierr)
       call aerr('xu(lnx), yu(lnx) , blu(lnx)', ierr, 3 * lnx)
       blu = dmiss
@@ -582,7 +592,9 @@ contains
          call aerr('blup(lnx)', ierr, lnx)
       end if
 
-      if (allocated(ln2lne)) deallocate (ln2lne, lne2ln)
+      if (allocated(ln2lne)) then
+         deallocate (ln2lne, lne2ln)
+      end if
       nex = max(lnx, numl)
       allocate (ln2lne(nex), stat=ierr) ! local array
       call aerr('ln2lne (nex)', ierr, nex)
@@ -778,7 +790,9 @@ contains
 
       call readyy('geominit-METRICS               ', 0.92_dp)
 
-      if (allocated(cn)) deallocate (cn, ucnx, ucny, ban) ! vort
+      if (allocated(cn)) then
+         deallocate (cn, ucnx, ucny, ban) ! vort
+      end if
 
       allocate (cn(numk), stat=ierr) ! some cell corner related stuff
       call aerr(' cn (numk)', ierr, numk)
@@ -831,8 +845,12 @@ contains
             dx(L) = dx(L) * abs(xn * xt + yn * yt)
          else if (kcu(L) == 3 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1D2D internal link, some averaged 2D length
             k = 0
-            if (kcs(k1) == 21) k = k1
-            if (kcs(k2) == 21) k = k2
+            if (kcs(k1) == 21) then
+               k = k1
+            end if
+            if (kcs(k2) == 21) then
+               k = k2
+            end if
             if (k == 0) then
                write (msgbuf, '(a,i0,a)') '(netlink L=', ln2lne(L), ')'
                call qnerror('1d2d link kcu=3 or 5 not connected to kcs=21 ', trim(msgbuf), ' ')
@@ -1130,7 +1148,9 @@ contains
 
       avortho = 0.0_dp
       do L = lnx1D + 1, lnx ! for all links, check link orthogonality
-         if (abs(kcu(L)) == 1) cycle
+         if (abs(kcu(L)) == 1) then
+            cycle
+         end if
          k1 = ln(1, L)
          k2 = ln(2, L)
          k3 = lncn(1, L)
@@ -1161,7 +1181,9 @@ contains
 
       call readyy('geominit', -1.0_dp)
 
-      if (isimplefixedweirs == 0) call fixedweirs_on_flowgeom() ! Impose fixed weirs paths on all crossed flow links.
+      if (isimplefixedweirs == 0) then
+         call fixedweirs_on_flowgeom() ! Impose fixed weirs paths on all crossed flow links.
+      end if
 
       jaupdbndbl = 1
       if (network%loaded) then
@@ -1475,9 +1497,13 @@ contains
                ka = ka + 1 ! subarea nr
 
                kk1 = kk2 - 1
-               if (kk1 < 1) kk1 = nn
+               if (kk1 < 1) then
+                  kk1 = nn
+               end if
                kk3 = kk2 + 1
-               if (kk3 > nn) kk3 = 1
+               if (kk3 > nn) then
+                  kk3 = 1
+               end if
 
                K1 = netcell(k)%nod(kk1) ! k1 , k2, k3 subsequent netcell nrs
                K2 = netcell(k)%nod(kk2)
@@ -1539,7 +1565,9 @@ contains
             call qnerror('bed-level type and conveyance type do not match', ' ', ' ')
          else
 
-            if (allocated(aifu)) deallocate (aifu, bz)
+            if (allocated(aifu)) then
+               deallocate (aifu, bz)
+            end if
             allocate (aifu(lnx), bz(ndx))
 
             call setaifu()

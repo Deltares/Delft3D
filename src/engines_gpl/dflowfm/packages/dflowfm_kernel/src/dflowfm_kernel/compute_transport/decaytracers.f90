@@ -54,7 +54,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("decaytracers", ithndl)
+      if (timon) then
+         call timstrt("decaytracers", ithndl)
+      end if
 
       do i = ITRA1, ITRAN
          decaytime = decaytimetracers(i - itra1 + 1)
@@ -65,7 +67,9 @@ contains
          end if
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine decaytracers
 
 end module m_decaytracers

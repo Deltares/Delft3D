@@ -5342,7 +5342,9 @@ contains
 
 ! Allocate various arrays
 
-      if (allocated(p)) deallocate (p, qp, k, qk, svk)
+      if (allocated(p)) then
+         deallocate (p, qp, k, qk, svk)
+      end if
       allocate (p(nn), qp(nn), k(nn), qk(nn), svk(nn), temp(nn), pt(nn))
 
 ! Make a copy of the coefficients
@@ -5350,7 +5352,9 @@ contains
 
 ! Start the algorithm for one zero
 30    if (n <= 2) then
-         if (n < 1) return
+         if (n < 1) then
+            return
+         end if
 
 ! calculate the final zero or pair of zeros
          if (n /= 2) then
@@ -5368,8 +5372,12 @@ contains
       MIN = infin
       do i = 1, nn
          x = abs(real(p(i)))
-         if (x > MAX) MAX = x
-         if (x /= 0. .and. x < MIN) MIN = x
+         if (x > MAX) then
+            MAX = x
+         end if
+         if (x /= 0. .and. x < MIN) then
+            MIN = x
+         end if
       end do
 
 ! Scale if there are large or very small coefficients computes a scale
@@ -5379,10 +5387,16 @@ contains
 ! The factor is a power of the base
       sc = lo / MIN
       if (sc <= 1.0) then
-         if (MAX < 10.) GO TO 60
-         if (sc == 0.) sc = smalno
+         if (MAX < 10.) then
+            GO TO 60
+         end if
+         if (sc == 0.) then
+            sc = smalno
+         end if
       else
-         if (infin / sc < MAX) GO TO 60
+         if (infin / sc < MAX) then
+            GO TO 60
+         end if
       end if
       l = log(sc) / log(base) + .5
       factor = (base * 1.0_dp)**l
@@ -5399,7 +5413,9 @@ contains
       if (pt(n) /= 0.) then
 ! if newton step at the origin is better, use it.
          xm = -pt(nn) / pt(n)
-         if (xm < x) x = xm
+         if (xm < x) then
+            x = xm
+         end if
       end if
 
 ! chop the interval (0,x) until ff .le. 0
@@ -5492,7 +5508,9 @@ contains
             nn = nn - nz
             n = nn - 1
             p(1:nn) = qp(1:nn)
-            if (nz == 1) GO TO 30
+            if (nz == 1) then
+               GO TO 30
+            end if
             zeror(j + 1) = lzr
             zeroi(j + 1) = lzi
             GO TO 30
@@ -5543,19 +5561,29 @@ contains
 
 ! Estimate s
          ss = 0.
-         if (k(n) /= 0.0_dp) ss = -p(nn) / k(n)
+         if (k(n) /= 0.0_dp) then
+            ss = -p(nn) / k(n)
+         end if
          tv = 1.
          ts = 1.
          if (j /= 1 .and. type /= 3) then
 ! Compute relative measures of convergence of s and v sequences
-            if (vv /= 0.) tv = abs((vv - ovv) / vv)
-            if (ss /= 0.) ts = abs((ss - oss) / ss)
+            if (vv /= 0.) then
+               tv = abs((vv - ovv) / vv)
+            end if
+            if (ss /= 0.) then
+               ts = abs((ss - oss) / ss)
+            end if
 
 ! If decreasing, multiply two most recent convergence measures
             tvv = 1.
-            if (tv < otv) tvv = tv * otv
+            if (tv < otv) then
+               tvv = tv * otv
+            end if
             tss = 1.
-            if (ts < ots) tss = ts * ots
+            if (ts < ots) then
+               tss = ts * ots
+            end if
 
 ! Compare with convergence criteria
             vpass = tvv < betav
@@ -5572,9 +5600,13 @@ contains
 ! Choose iteration according to the fastest converging sequence
                vtry = .false.
                stry = .false.
-               if (spass .and. ((.not. vpass) .or. tss < tvv)) GO TO 40
+               if (spass .and. ((.not. vpass) .or. tss < tvv)) then
+                  GO TO 40
+               end if
 20             call quadit(ui, vi, nz)
-               if (nz > 0) return
+               if (nz > 0) then
+                  return
+               end if
 
 ! Quadratic iteration has failed. flag that it has
 ! been tried and decrease the convergence criterion.
@@ -5583,10 +5615,14 @@ contains
 
 ! Try linear iteration if it has not been tried and
 ! the s sequence is converging
-               if (stry .or. (.not. spass)) GO TO 50
+               if (stry .or. (.not. spass)) then
+                  GO TO 50
+               end if
                k(1:n) = svk(1:n)
 40             call realit(s, nz, iflag)
-               if (nz > 0) return
+               if (nz > 0) then
+                  return
+               end if
 
 ! Linear iteration has failed.  Flag that it has been
 ! tried and decrease the convergence criterion
@@ -5608,7 +5644,9 @@ contains
 
 ! Try quadratic iteration if it has not been tried
 ! and the v sequence is converging
-               if (vpass .and. (.not. vtry)) GO TO 20
+               if (vpass .and. (.not. vtry)) then
+                  GO TO 20
+               end if
 
 ! Recompute qp and scalar values to continue the second stage
                call quadsd(nn, u, v, p, qp, a, b)
@@ -5650,7 +5688,9 @@ contains
 
 ! Return if roots of the quadratic are real and not
 ! close to multiple or nearly equal and  of opposite sign.
-      if (abs(abs(szr) - abs(lzr)) > 0.01_dp * abs(lzr)) return
+      if (abs(abs(szr) - abs(lzr)) > 0.01_dp * abs(lzr)) then
+         return
+      end if
 
 ! Evaluate polynomial by quadratic synthetic division
       call quadsd(nn, u, v, p, qp, a, b)
@@ -5676,13 +5716,17 @@ contains
       j = j + 1
 
 ! Stop iteration after 20 steps
-      if (j > 20) return
+      if (j > 20) then
+         return
+      end if
       if (j >= 2) then
          if (.not. (relstp > .01 .or. mp < omp .or. tried)) then
 
 ! A cluster appears to be stalling the convergence.
 ! five fixed shift steps are taken with a u,v close to the cluster
-            if (relstp < eta) relstp = eta
+            if (relstp < eta) then
+               relstp = eta
+            end if
             relstp = sqrt(relstp)
             u = u - u * relstp
             v = v + v * relstp
@@ -5704,7 +5748,9 @@ contains
       call newest(type, ui, vi)
 
 ! If vi is zero the iteration is not converging
-      if (vi == 0.0_dp) return
+      if (vi == 0.0_dp) then
+         return
+      end if
       relstp = abs((vi - v) / vi)
       u = ui
       v = vi
@@ -5760,7 +5806,9 @@ contains
       j = j + 1
 
 ! Stop iteration after 10 steps
-      if (j > 10) return
+      if (j > 10) then
+         return
+      end if
       if (j >= 2) then
          if (abs(t) <= 0.001_dp * abs(s - t) .and. mp > omp) then
 ! A cluster of zeros near the real axis has been encountered,
@@ -5800,7 +5848,9 @@ contains
          kv = kv * s + k(i)
       end do
       t = 0.0_dp
-      if (abs(kv) > abs(k(n)) * 10.*eta) t = -pv / kv
+      if (abs(kv) > abs(k(n)) * 10.*eta) then
+         t = -pv / kv
+      end if
       s = s + t
       GO TO 10
    end subroutine realit
@@ -5860,7 +5910,9 @@ contains
 
       if (type /= 3) then
          temp = a
-         if (type == 1) temp = b
+         if (type == 1) then
+            temp = b
+         end if
          if (abs(a1) <= abs(temp) * eta * 10.) then
 ! If a1 is nearly zero then use a special form of the recurrence
             k(1) = 0.0_dp
@@ -5970,9 +6022,13 @@ contains
 
       real(kind=dp) :: b, d, e
 
-      if (a /= 0.0_dp) GO TO 20
+      if (a /= 0.0_dp) then
+         GO TO 20
+      end if
       sr = 0.0_dp
-      if (b1 /= 0.0_dp) sr = -c / b1
+      if (b1 /= 0.0_dp) then
+         sr = -c / b1
+      end if
       lr = 0.0_dp
 10    si = 0.0_dp
       li = 0.0_dp
@@ -5991,17 +6047,23 @@ contains
          d = sqrt(abs(e)) * abs(b)
       else
          e = a
-         if (c < 0.0_dp) e = -a
+         if (c < 0.0_dp) then
+            e = -a
+         end if
          e = b * (b / abs(c)) - e
          d = sqrt(abs(e)) * sqrt(abs(c))
       end if
       if (e >= 0.0_dp) then
 
 ! Real zeros
-         if (b >= 0.0_dp) d = -d
+         if (b >= 0.0_dp) then
+            d = -d
+         end if
          lr = (-b + d) / a
          sr = 0.0_dp
-         if (lr /= 0.0_dp) sr = (c / lr) / a
+         if (lr /= 0.0_dp) then
+            sr = (c / lr) / a
+         end if
          GO TO 10
       end if
 ! complex conjugate zeros

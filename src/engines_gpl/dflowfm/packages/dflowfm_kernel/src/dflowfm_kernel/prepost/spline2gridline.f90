@@ -53,7 +53,9 @@ contains
 
       integer :: kmax
 
-      if (mc < 2) return ! no curvigrid possible
+      if (mc < 2) then
+         return ! no curvigrid possible
+      end if
 
       startstop = [0.0_dp, real(num - 1, kind=dp)]
       call makespl(startstop, xsp, ysp, max(mc, num), num, 2, mc - 1, xc, yc, kmax, sc, h)

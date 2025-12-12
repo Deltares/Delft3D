@@ -80,7 +80,9 @@ contains
       real(kind=dp) :: Trefi
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("fill_constituents", ithndl)
+      if (timon) then
+         call timstrt("fill_constituents", ithndl)
+      end if
 
       const_sour = 0.0_dp
       const_sink = 0.0_dp
@@ -134,12 +136,16 @@ contains
       if (ISED1 /= 0) then
          do jsed = 1, mxgr
             iconst = ISED1 + jsed - 1
-            if (dicouv >= 0.0_dp) difsedu(iconst) = 0.0_dp
+            if (dicouv >= 0.0_dp) then
+               difsedu(iconst) = 0.0_dp
+            end if
             if (constant_dicoww >= 0) then
                molecular_diffusion_coeff(iconst) = 0.0_dp
                sigdifi(iconst) = 1.0_dp / sigsed(jsed)
             end if
-            if (jased < 4) wsf(iconst) = ws(jsed)
+            if (jased < 4) then
+               wsf(iconst) = ws(jsed)
+            end if
          end do
       end if
 
@@ -172,7 +178,9 @@ contains
          call getkbotktop(kk, kb, kt)
          do k = kb, kt
             dvoli = 1.0_dp / max(vol1(k), dtol)
-            if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
+            if (testdryflood == 2) then
+               dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
+            end if
 
 !        temperature
             if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
@@ -217,7 +225,9 @@ contains
                ! const_sink(ISPIR,kk) = 0.0_dp
             else
                fcoriocof = fcorio
-               if (icorio > 0 .and. jsferic == 1) fcoriocof = fcoris(kk)
+               if (icorio > 0 .and. jsferic == 1) then
+                  fcoriocof = fcoris(kk)
+               end if
                alpha = sqrt(ag) / vonkar / max(czssf(kk), 20.0_dp)
                spir_ce = fcorio * hs(kk) * 0.5_dp
                spir_be = hs(kk) * spircrv(kk) * spirucm(kk)
@@ -273,8 +283,12 @@ contains
       ! NOTE: apply_tracer_bc has been moved earlier to transport() routine,
       !       but apply_sediment_bc must still be done here, since above the boundary
       !       nodes's constituents(kb,:) = sed(kb,:) has reset it to 0.
-      if (stm_included) call apply_sediment_bc()
-      if (jas == 0) goto 1234 ! no sources from initialise
+      if (stm_included) then
+         call apply_sediment_bc()
+      end if
+      if (jas == 0) then
+         goto 1234 ! no sources from initialise
+      end if
 
       do n = 1, numsrc
          kk = ksrc(1, n) ! 2D pressure cell nr FROM
@@ -285,10 +299,14 @@ contains
          jamba_src = jamba
          if (jampi == 1) then
             if (kk > 0) then
-               if (idomain(kk) /= my_rank) jamba_src = 0
+               if (idomain(kk) /= my_rank) then
+                  jamba_src = 0
+               end if
             else
                if (kk2 > 0) then
-                  if (idomain(kk2) /= my_rank) jamba_src = 0
+                  if (idomain(kk2) /= my_rank) then
+                     jamba_src = 0
+                  end if
                else
                   jamba_src = 0
                end if
@@ -337,7 +355,9 @@ contains
 
 1234  continue
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
 
    contains
 

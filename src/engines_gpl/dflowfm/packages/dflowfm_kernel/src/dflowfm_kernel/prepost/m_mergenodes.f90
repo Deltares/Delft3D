@@ -105,14 +105,22 @@ contains
          if (KN(1, L) /= 0) then
             N = N + 1
             NODLIN(N) = L
-            if (KN(1, L) == K1) KN(1, L) = K2
-            if (KN(2, L) == K1) KN(2, L) = K2
+            if (KN(1, L) == K1) then
+               KN(1, L) = K2
+            end if
+            if (KN(2, L) == K1) then
+               KN(2, L) = K2
+            end if
          end if
       end do
       NMK(K2) = N
 
-      if (allocated(nod(k2)%lin)) deallocate (NOD(K2)%LIN)
-      if (allocated(nod(k1)%lin)) deallocate (NOD(K1)%lin)
+      if (allocated(nod(k2)%lin)) then
+         deallocate (NOD(K2)%LIN)
+      end if
+      if (allocated(nod(k1)%lin)) then
+         deallocate (NOD(K1)%lin)
+      end if
 
       allocate (NOD(K2)%LIN(NMK(K2)))
       NOD(K2)%LIN(1:NMK(K2)) = NODLIN(1:NMK(K2))

@@ -100,7 +100,9 @@ contains
       if (jased > 0 .and. stm_included .and. allocated(bndsf)) then
          do i = 1, numfracs ! only valid suspended fractions
             iconst = ifrac2const(i)
-            if (iconst == 0) cycle
+            if (iconst == 0) then
+               cycle
+            end if
             if (.not. allocated(bndsf(i)%z)) then
                allocate (bndsf(i)%z(0))
             end if

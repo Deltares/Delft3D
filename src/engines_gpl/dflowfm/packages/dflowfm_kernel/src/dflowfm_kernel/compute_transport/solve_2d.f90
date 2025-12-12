@@ -73,7 +73,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("solve_2D", ithndl)
+      if (timon) then
+         call timstrt("solve_2D", ithndl)
+      end if
 
       thetavert = 0.0_dp
 
@@ -101,7 +103,9 @@ contains
       end do
       !$OMP END PARALLEL DO
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine solve_2D
 

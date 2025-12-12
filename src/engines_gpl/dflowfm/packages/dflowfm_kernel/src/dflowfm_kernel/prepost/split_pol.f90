@@ -80,7 +80,9 @@ contains
 
       integer, parameter :: MAXLRWK = 1e9
 
-      if (NPL < 3) return
+      if (NPL < 3) then
+         return
+      end if
 
       call savepol()
 

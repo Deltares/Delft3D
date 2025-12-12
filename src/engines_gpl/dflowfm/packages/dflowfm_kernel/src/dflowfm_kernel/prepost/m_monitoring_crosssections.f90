@@ -137,7 +137,9 @@ contains
 
       integer :: i, n
 
-      if (.not. allocated(cs)) return
+      if (.not. allocated(cs)) then
+         return
+      end if
 
       n = size(cs)
       do i = 1, n
@@ -160,7 +162,9 @@ contains
       integer :: i, n
 
       n = size(rfrom)
-      if (n > size(rto) .or. n == 0) return
+      if (n > size(rto) .or. n == 0) then
+         return
+      end if
 
       do i = 1, n
          !maxnp  = size(rfrom(i)%path%xp)

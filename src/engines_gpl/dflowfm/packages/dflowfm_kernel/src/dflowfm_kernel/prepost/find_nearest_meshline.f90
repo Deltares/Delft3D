@@ -208,7 +208,9 @@ contains
          rLleft = 1.0_dp
          rLright = 0.0_dp
 
-         if (jstart < 1 .or. jstart > MXLAN .or. jstart > jend) return
+         if (jstart < 1 .or. jstart > MXLAN .or. jstart > jend) then
+            return
+         end if
 
          call masknodes(numseg) ! will set jleft, jright, rLleft and rLright
 
@@ -225,9 +227,13 @@ contains
 !     find start- and endnode
 !      call get_kstartend(jstart,jend,kstart,kend)   ! will use jleft, jright, rLleft and rLright
          call get_kstartend2(jend, kstart, kend) ! will use jleft, jright, rLleft and rLright
-         if (kstart < 1 .or. kend < 1) goto 1234 ! no start and/or end node found
+         if (kstart < 1 .or. kend < 1) then
+            goto 1234 ! no start and/or end node found
+         end if
 
-         if (kstart == kend) goto 1234 ! no path can be found
+         if (kstart == kend) then
+            goto 1234 ! no path can be found
+         end if
 
          call cirr(xk(kstart), yk(kstart), 191)
          call cirr(xk(kend), yk(kend), 191)
@@ -311,14 +317,22 @@ contains
             end if
 
 !        exit if the start node is reached
-            if (k == kstart) goto 1234
+            if (k == kstart) then
+               goto 1234
+            end if
 
 !        proceed to the next node
             L = klink(k)
-            if (L < 1 .or. L > numL) exit
-            if (netboundonly == 0 .or. lnn(L) == 1) call teklink(L, ncolhl)
+            if (L < 1 .or. L > numL) then
+               exit
+            end if
+            if (netboundonly == 0 .or. lnn(L) == 1) then
+               call teklink(L, ncolhl)
+            end if
             k = kn(1, L) + kn(2, L) - k
-            if (k < 1 .or. k > numk) exit
+            if (k < 1 .or. k > numk) then
+               exit
+            end if
          end do
 
 !     plot landboundary segment
@@ -396,7 +410,9 @@ contains
 
                N = netcell(kstart)%N
 
-               if (N < 1) cycle
+               if (N < 1) then
+                  cycle
+               end if
 
                if (N > M) then
                   call qnerror('masknodes: N>M', ' ', ' ')
@@ -407,7 +423,9 @@ contains
                call pinpok(xp, yp, N, xlist, ylist, in, jins, dmiss)
             end do
 
-            if (in == 0) jstart1 = jstart1 + 1
+            if (in == 0) then
+               jstart1 = jstart1 + 1
+            end if
          end do
 
 !     no startcell found that contains a land boundary point:
@@ -417,7 +435,9 @@ contains
             kstart = 0
             j = jstart
             do L = 1, numL
-               if (lnn(L) /= 1) cycle
+               if (lnn(L) /= 1) then
+                  cycle
+               end if
 !           get the boundary cell number
                k = lne(1, L)
 !           check the cell
@@ -470,7 +490,9 @@ contains
          do k = 1, numk
             if (nodemask(k) > 0) then
                call dbpinpol(xk(k), yk(k), in, dmiss, JINS, NPL, xpl, ypl, zpl)
-               if (in /= 1) nodemask(k) = 0
+               if (in /= 1) then
+                  nodemask(k) = 0
+               end if
             end if
          end do
 
@@ -519,11 +541,15 @@ contains
             if (kcell == 0) then
                j = 1
                do L = 1, numL
-                  if (lnn(L) /= 1) cycle
+                  if (lnn(L) /= 1) then
+                     cycle
+                  end if
                   kothercell = lne(1, L)
                   k1 = kn(1, L)
                   k2 = kn(2, L)
-                  if (k1 < 1 .or. k2 < 1) cycle
+                  if (k1 < 1 .or. k2 < 1) then
+                     cycle
+                  end if
                   !            cellmask(kothercell) = 1
 
                   !           proximity check
@@ -533,7 +559,9 @@ contains
                   do kk = 1, netcell(kothercell)%N
                      LL = netcell(kothercell)%lin(kk)
                      call linkcrossedbyland(LL, jstart, jend, j, jacross)
-                     if (jacross == 1) exit
+                     if (jacross == 1) then
+                        exit
+                     end if
                   end do
 
                   if (jacross == 1) then
@@ -546,7 +574,9 @@ contains
                j = jstart
 
                N = netcell(kcell)%N
-               if (N < 3) cycle ! not a valid cell
+               if (N < 3) then
+                  cycle ! not a valid cell
+               end if
                do i = 1, N ! Loop over all links (i.e. towards neighbouring cells)
                   L = netcell(kcell)%lin(i)
                   jacross = 0
@@ -696,11 +726,15 @@ contains
 
             do i = 1, nmk(kcur)
                L = nod(kcur)%lin(i)
-               if (kn(1, L) < 1 .or. kn(2, L) < 1) cycle
+               if (kn(1, L) < 1 .or. kn(2, L) < 1) then
+                  cycle
+               end if
 
                kneighbor = kn(1, L) + kn(2, L) - kcur
 
-               if (nodemask(kneighbor) < 1) cycle
+               if (nodemask(kneighbor) < 1) then
+                  cycle
+               end if
 
                x2 = xk(kneighbor)
                y2 = yk(kneighbor)
@@ -720,13 +754,17 @@ contains
                if (j1 < j2) then
                   do j = j1 + 1, j2
                      call dlinedis(xlan(j), ylan(j), x1, y1, x2, y2, ja, ddis3, xn3, yn3, jsferic, jasfer3D, dmiss)
-                     if (ddis3 > ddmax) ddmax = ddis3
+                     if (ddis3 > ddmax) then
+                        ddmax = ddis3
+                     end if
                   end do
                   dL = dL + dbdistance(xlan(j2), ylan(j2), xn2, yn2, jsferic, jasfer3D, dmiss)
                else if (j1 > j2) then
                   do j = j1, j2 + 1, -1
                      call dlinedis(xlan(j), ylan(j), x1, y1, x2, y2, ja, ddis3, xn3, yn3, jsferic, jasfer3D, dmiss)
-                     if (ddis3 > ddmax) ddmax = ddis3
+                     if (ddis3 > ddmax) then
+                        ddmax = ddis3
+                     end if
                   end do
                end if
 
@@ -735,7 +773,9 @@ contains
                end if
 
 !           in case of netboundaries only: set penalty on weights when the link is not a boundary link
-               if (netboundonly == 1 .and. lnn(L) /= 1) ddmax = 1.0e6_dp * ddmax
+               if (netboundonly == 1 .and. lnn(L) /= 1) then
+                  ddmax = 1.0e6_dp * ddmax
+               end if
 
                dist_alt = dist(kcur) + dlinklength * ddmax
 
@@ -746,7 +786,9 @@ contains
             end do
 
             kcur = minloc(dist, MASK=nodemask == numseg, DIM=1)
-            if (kcur < 1 .or. kcur > numk .or. dist(kcur) == DMAX .or. nodemask(kcur) < 1) exit
+            if (kcur < 1 .or. kcur > numk .or. dist(kcur) == DMAX .or. nodemask(kcur) < 1) then
+               exit
+            end if
 
          end do
 
@@ -828,7 +870,9 @@ contains
                continue
             end if
 
-            if (nodemask(k) < 1) cycle
+            if (nodemask(k) < 1) then
+               cycle
+            end if
 
             x3 = xk(k)
             y3 = yk(k)
@@ -942,9 +986,13 @@ contains
             ka = kn(1, L)
             kb = kn(2, L)
 
-            if (ka < 1 .or. kb < 1) cycle ! safety
+            if (ka < 1 .or. kb < 1) then
+               cycle ! safety
+            end if
 
-            if (nodemask(ka) < 1 .or. nodemask(kb) < 1) cycle
+            if (nodemask(ka) < 1 .or. nodemask(kb) < 1) then
+               cycle
+            end if
 
 !        compute distance from link to land boundary start- and end-point
             xa = xk(ka)
@@ -1024,7 +1072,9 @@ contains
 !     check if node itself is in selecting polygon
          in = -1
          call dbpinpol(x1, y1, in, dmiss, JINS, NPL, xpl, ypl, zpl)
-         if (in /= 1) return
+         if (in /= 1) then
+            return
+         end if
 
          dmeshwidth = 0.0_dp
          do kk = 1, nmk(k)
@@ -1036,7 +1086,9 @@ contains
 
 !        check if the connected node is in selecting polygon
             call dbpinpol(x2, y2, in, dmiss, JINS, NPL, xpl, ypl, zpl)
-            if (in /= 1) cycle
+            if (in /= 1) then
+               cycle
+            end if
 
             dmeshwidth = max(dmeshwidth, dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss))
          end do

@@ -103,9 +103,13 @@ contains
 
          ! do communication between domains
          if (jampi == 1) then
-            if (jatimer == 1) call starttimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call starttimer(IMPIREDUCE)
+            end if
             call reduce_atqh_all()
-            if (jatimer == 1) call stoptimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call stoptimer(IMPIREDUCE)
+            end if
          end if
 
          ! First step calculate the water level, using the QH-relation for a outflowing discharge + dQ

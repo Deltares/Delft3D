@@ -53,7 +53,9 @@ contains
       kk = 0
 
       do K = 1, ndx2D
-         if (.not. allocated(nd(K)%x)) cycle
+         if (.not. allocated(nd(K)%x)) then
+            cycle
+         end if
          NN = size(nd(K)%x)
          call PINPOK(xp, yp, NN, nd(K)%x, nd(K)%y, inn, jins, dmiss)
          if (inn == 1) then

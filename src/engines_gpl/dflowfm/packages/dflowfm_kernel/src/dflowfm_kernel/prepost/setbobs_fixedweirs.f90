@@ -50,7 +50,9 @@ contains
       integer :: i, ip, iL, Lf
       real(kind=dp) :: alpha, zc
 
-      if (nfxw == 0) return
+      if (nfxw == 0) then
+         return
+      end if
 
       do i = 1, nfxw
          do iL = 1, fxw(i)%lnx
