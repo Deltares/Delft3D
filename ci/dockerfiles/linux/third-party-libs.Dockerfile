@@ -319,8 +319,7 @@ pushd "/var/cache/src/${BASEDIR}"
     --enable-fortran \
     --enable-parallel \
     --disable-szlib \
-    --with-zlib=/usr/local/include,/usr/local/lib \
-    --with-szlib=/usr/local
+    --with-zlib=/usr/local/include,/usr/local/lib
 make --jobs=$(nproc)
 make install
 popd
@@ -357,11 +356,7 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_INSTALL_LIBDIR=lib \
-    -DENABLE_PARALLEL4=ON \
-    -DZLIB_INCLUDE_DIR=/usr/local/include \
-    -DZLIB_LIBRARY=/usr/local/lib/libz.so \
-    -DSzip_INCLUDE_DIRS=/usr/local/include \
-    -DSzip_RELEASE_LIBRARY=/usr/local/lib/libsz.so
+    -DENABLE_PARALLEL4=ON
 
 make --jobs=$(nproc)
 make install
