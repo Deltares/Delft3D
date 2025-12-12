@@ -29,7 +29,6 @@ export CFLAGS CXXFLAGS
 
 for BASEDIR_URL in \
     'zlib-1.3.1,https://github.com/madler/zlib/archive/refs/tags/v1.3.1.tar.gz' \
-    'libaec-0.3.2,https://swprojects.dkrz.de/redmine/attachments/download/453/libaec-0.3.2.tar.gz' \
     'zstd-1.5.6,https://github.com/facebook/zstd/archive/refs/tags/v1.5.6.tar.gz'
 do
     BASEDIR="${BASEDIR_URL%%,*}"
