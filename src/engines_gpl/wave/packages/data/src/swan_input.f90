@@ -2640,7 +2640,8 @@ contains
       real :: ylenfr
       real :: ypfr
       character(7), dimension(20) :: varnam1
-      character(7), dimension(11) :: varnam2
+      character(7), dimension(9)  :: varnam2
+      character(7), dimension(2)  :: varnam3
       character(8) :: casl_short
       character(15) :: tbegc
       character(15) :: tendc
@@ -2666,8 +2667,8 @@ contains
            &       'XP     ', 'YP     ', 'DIST   ', 'UBOT  ', 'STEEPW',     &
            &       'WLENGTH', 'FORCES ', 'RTP    ', 'PDIR  ', 'WIND  '/
       data varnam2/'TPS    ', 'TM02   ', 'TMM10  ', 'DHSIGN', 'DRTM01',     &
-           &       'SETUP  ', 'DISSURF', 'DISWCAP', 'DISBOT', 'DISVEG',     &
-           &       'NPLANTS'/
+           &       'SETUP  ', 'DISSURF', 'DISWCAP', 'DISBOT'/
+      data varnam3/'DISVEG', 'NPLANTS'/
 !
 !! executable statements -------------------------------------------------------
 !
@@ -3599,6 +3600,11 @@ contains
       do i = 1, size(varnam2)
          write (luninp, '(1X,3A)') 'QUANTITY ', varnam2(i), ' excv=-999.0'
       end do
+      if (sr%output_veg == 1) then
+         do i = 1, size(varnam3)
+            write (luninp, '(1X,3A)') 'QUANTITY ', varnam3(i), ' excv=-999.0'
+         end do
+      end if
       if (allocated(sr%add_out_names)) then
          do i = 1, size(sr%add_out_names)
             write (luninp, '(1X,3A)') 'QUANTITY ', sr%add_out_names(i), ' excv=-999.0'

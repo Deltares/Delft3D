@@ -418,6 +418,7 @@ contains
                else
                   czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
                end if
+               debugarr1d(L) = czu
             else
                if (frcu_mor(L) > 0) then
                   czu = get_chezy(hu(L), frcu_mor(L), u1(L), v(L), ifrcutp(L))

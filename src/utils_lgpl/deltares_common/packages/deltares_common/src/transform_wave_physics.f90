@@ -187,7 +187,7 @@ contains
       real(sp), dimension(m*n), intent(in) :: hs
       real(sp), dimension(m*n), intent(out) :: mx
       real(sp), dimension(m*n), intent(out) :: my
-      real(sp), dimension(m*n), intent(in) :: period
+      real(sp), dimension(m*n), intent(in) :: period     ! tm01
       real(sp), dimension(m*n), intent(out) :: tp
       real(sp), dimension(m*n) :: wsbodyu
       real(sp), dimension(m*n) :: wsbodyv

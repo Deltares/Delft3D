@@ -45,6 +45,7 @@ contains
       use m_flow, only: rnveg, hu, densvegminbap, jabaptist, frcu, u1, v, ifrcutp, diaveg, stemheight, jacdvegsp, cdvegsp, cdveg, uchistem, expchistem, uchileaf, expchileaf, cdleaf, arealeaf, ag, sag, vonkar, cfuhi, alfav, cfuveg, alfaveg
       use m_flowgeom, only: ln, lnx
       use m_get_chezy, only: get_chezy
+      use m_debug
 
       integer :: L, k1, k2
       real(kind=dp) :: ap, Cz, Czb, Czr, rnL, diaL, stemhL, gamhg, Cda, areastem, umag, fac, facL, Cdaleaf
@@ -57,24 +58,26 @@ contains
          if (hu(L) > 0 .and. rnL > densvegminbap) then ! overwrite cfuhi on veg locations with 2D Baptist
             if (jaBaptist <= 2) then ! compute Baptist on board
                Czb = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L)) ! standard Chezy coeff
-               if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
+               !if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
                   diaL = 0.5_dp * (diaveg(k1) + diaveg(k2))
-               else
-                  diaL = max(diaveg(k1), diaveg(k2))
-               end if
-               if (stemheight(k1) > 0 .and. stemheight(k2) > 0) then
+               !else
+               !   diaL = max(diaveg(k1), diaveg(k2))
+               !end if
+               !debugarr1d(L) = diaL
+               !if (stemheight(k1) > 0 .and. stemheight(k2) > 0) then
                   stemhL = 0.5_dp * (stemheight(k1) + stemheight(k2))
-               else
-                  stemhL = max(stemheight(k1), stemheight(k2))
-               end if
+               !else
+               !   stemhL = max(stemheight(k1), stemheight(k2))
+               !end if
                stemhL = min(stemhL, hu(L))
+               !debugarr1d(L) = stemhL
                areastem = diaL * stemhL
                if (jaCdvegsp == 1) then
-                  if (Cdvegsp(k1) > 0 .and. Cdvegsp(k2) > 0) then
+                  !if (Cdvegsp(k1) > 0 .and. Cdvegsp(k2) > 0) then
                      Cdveg = 0.5_dp * (Cdvegsp(k1) + Cdvegsp(k2))
-                  else
-                     Cdveg = max(Cdvegsp(k1), Cdvegsp(k2))
-                  end if
+                  !else
+                  !   Cdveg = max(Cdvegsp(k1), Cdvegsp(k2))
+                  !end if
                end if
                Cda = Cdveg * areastem
                if (uchistem > 0.0_dp .and. expchistem < 0.0_dp) then
@@ -111,10 +114,12 @@ contains
                end if
                if (jaBaptist == 1) then
                   cfuhi(L) = ag / (Czr * Czr * hu(L)) ! use as is, wrong morpho ?
+               !   debugarr1d(L) = cfuhi(L)
                else if (jaBaptist == 2) then
                   Cz = Czr * sqrt(1.0_dp + gamhg * Czb * Czb)
                   cfuhi(L) = ag / (Cz * Cz * hu(L)) ! better for morfo
                   alfav(L) = ag * (1.0_dp / (Czr * Czr) - 1.0_dp / (Cz * Cz)) / hu(L)
+                  !debugarr1d(L) = Cz
                end if
             else if (jaBaptist == 3) then ! by biologists through Python
                cfuhi(L) = cfuveg(L) / hu(L)
