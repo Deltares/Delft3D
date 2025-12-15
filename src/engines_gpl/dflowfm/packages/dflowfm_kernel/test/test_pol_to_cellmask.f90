@@ -3,7 +3,10 @@ module test_pol_to_cellmask
    use precision, only: dp
    use m_missing, only: dmiss
    use network_data, only: cellmask, npl, nump, xzw, yzw, xpl, ypl, zpl
-   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup, pinpok_elemental
+   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup
+   use geometry_module, only: pinpok
+   use m_point_in_polygon, only: pinpok_raycast
+
    implicit none
 
 contains
@@ -214,134 +217,110 @@ contains
    end subroutine test_nested_drypoint_polygons
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_compatibility_basic, test_pinpok_compatibility_basic,
-   subroutine test_pinpok_compatibility_basic() bind(C)
-      ! Test basic compatibility between original pinpok and pinpok_elemental
-      use geometry_module, only: pinpok
-      
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_raycast_basic, test_pinpok_raycast_basic,
+   subroutine test_pinpok_raycast_basic() bind(C)
+      ! Test basic ray-casting algorithm directly
       real(kind=dp), dimension(5) :: x_poly, y_poly
       real(kind=dp) :: x_test, y_test
-      integer :: inside_pinpok, inside_elemental, i_poly
+      integer :: inside_pinpok
+      logical :: inside_raycast
       integer, parameter :: jins_val = 1
       
       ! Setup simple square polygon: (0,0) -> (10,0) -> (10,10) -> (0,10) -> (0,0)
       x_poly = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp]
       y_poly = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
       
-      ! Initialize polygon data structures for pinpok_elemental
-      npl = 5
-      call realloc_polyline_arrays(1, npl)
-      xpl(1:5) = x_poly
-      ypl(1:5) = y_poly
-      zpl(1:5) = 1.0_dp
-      call cellmask_from_polygon_set_init(npl, xpl, ypl, zpl)
-      i_poly = 1
-      
       ! Test 1: Point clearly inside
       x_test = 5.0_dp
       y_test = 5.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "Inside point: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Inside point: pinpok vs raycast")
       
       ! Test 2: Point clearly outside
       x_test = 15.0_dp
       y_test = 15.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "Outside point: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Outside point: pinpok vs raycast")
       
       ! Test 3: Point on vertex
       x_test = 0.0_dp
       y_test = 0.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "On vertex: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On vertex: pinpok vs raycast")
       
       ! Test 4: Point on edge (horizontal)
       x_test = 5.0_dp
       y_test = 0.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "On horizontal edge: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On horizontal edge: pinpok vs raycast")
       
       ! Test 5: Point on edge (vertical)
       x_test = 0.0_dp
       y_test = 5.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "On vertical edge: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On vertical edge: pinpok vs raycast")
       
-      ! Cleanup
-      call cellmask_from_polygon_set_cleanup()
-      deallocate(xpl, ypl, zpl, cellmask, xzw, yzw)
-      
-   end subroutine test_pinpok_compatibility_basic
+   end subroutine test_pinpok_raycast_basic
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_compatibility_edge_cases, test_pinpok_compatibility_edge_cases,
-   subroutine test_pinpok_compatibility_edge_cases() bind(C)
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_raycast_edge_cases, test_pinpok_raycast_edge_cases,
+   subroutine test_pinpok_raycast_edge_cases() bind(C)
       ! Test edge cases and special geometries
-      use geometry_module, only: pinpok
-      
       real(kind=dp), dimension(5) :: x_poly, y_poly
       real(kind=dp) :: x_test, y_test
-      integer :: inside_pinpok, inside_elemental, i_poly
+      integer :: inside_pinpok
+      logical :: inside_raycast
       integer, parameter :: jins_val = 1
       
       ! Setup triangle polygon for edge intersection tests
       x_poly = [0.0_dp, 10.0_dp, 5.0_dp, 0.0_dp, 0.0_dp]
       y_poly = [0.0_dp, 0.0_dp, 10.0_dp, 0.0_dp, 0.0_dp]
       
-      npl = 5
-      call realloc_polyline_arrays(1, npl)
-      xpl(1:5) = x_poly
-      ypl(1:5) = y_poly
-      zpl(1:5) = 1.0_dp
-      i_poly = 1
-      
       ! Test 1: Point on diagonal edge
       x_test = 5.0_dp
       y_test = 5.0_dp
       call pinpok(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "On diagonal edge: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:4), y_poly(1:4), 4)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On diagonal edge: pinpok vs raycast")
       
       ! Test 2: Ray passing through vertex (classic edge case)
       x_test = 2.0_dp
       y_test = 0.0_dp
       call pinpok(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "Ray through vertex: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:4), y_poly(1:4), 4)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Ray through vertex: pinpok vs raycast")
       
       ! Test 3: Point just inside
       x_test = 5.0_dp
       y_test = 2.0_dp
       call pinpok(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "Just inside: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:4), y_poly(1:4), 4)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Just inside: pinpok vs raycast")
       
       ! Test 4: Point just outside
       x_test = 5.0_dp
       y_test = 7.0_dp
       call pinpok(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "Just outside: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:4), y_poly(1:4), 4)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Just outside: pinpok vs raycast")
       
-      deallocate(xpl, ypl, zpl, cellmask, xzw, yzw)
-      
-   end subroutine test_pinpok_compatibility_edge_cases
+   end subroutine test_pinpok_raycast_edge_cases
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_compatibility_jins_modes, test_pinpok_compatibility_jins_modes,
-   subroutine test_pinpok_compatibility_jins_modes() bind(C)
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_raycast_jins_modes, test_pinpok_raycast_jins_modes,
+   subroutine test_pinpok_raycast_jins_modes() bind(C)
       ! Test both jins=1 (inside) and jins=0 (outside) modes
-      use geometry_module, only: pinpok
       use m_missing, only: jins
       
       real(kind=dp), dimension(5) :: x_poly, y_poly
       real(kind=dp) :: x_test, y_test
-      integer :: inside_pinpok, inside_elemental, i_poly
+      integer :: inside_pinpok
+      logical :: inside_raycast
       integer :: original_jins
       
       ! Save original jins value
@@ -351,100 +330,77 @@ contains
       x_poly = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp]
       y_poly = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
       
-      npl = 5
-      call realloc_polyline_arrays(1, npl)
-      xpl(1:5) = x_poly
-      ypl(1:5) = y_poly
-      zpl(1:5) = 1.0_dp
-      i_poly = 1
-      
       ! Test with jins = 1 (inside mode)
       jins = 1
       
       x_test = 5.0_dp
       y_test = 5.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "jins=1, inside: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=1, inside: pinpok vs raycast")
       
       x_test = 15.0_dp
       y_test = 15.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "jins=1, outside: pinpok vs elemental")
-      
-      call cellmask_from_polygon_set_cleanup()
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=1, outside: pinpok vs raycast")
       
       ! Test with jins = 0 (outside mode)
       jins = 0
-      zpl(1:5) = 0.0_dp
-      call cellmask_from_polygon_set_init(npl, xpl, ypl, zpl)
       
       x_test = 5.0_dp
       y_test = 5.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "jins=0, inside: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=0, inside: pinpok vs raycast")
       
       x_test = 15.0_dp
       y_test = 15.0_dp
       call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "jins=0, outside: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=0, outside: pinpok vs raycast")
       
       ! Restore original jins
       jins = original_jins
       
-      deallocate(xpl, ypl, zpl, cellmask, xzw, yzw)
-      
-   end subroutine test_pinpok_compatibility_jins_modes
+   end subroutine test_pinpok_raycast_jins_modes
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_compatibility_complex, test_pinpok_compatibility_complex,
-   subroutine test_pinpok_compatibility_complex() bind(C)
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_pinpok_raycast_complex, test_pinpok_raycast_complex,
+   subroutine test_pinpok_raycast_complex() bind(C)
       ! Test complex polygon shapes (concave, with multiple crossings)
-      use geometry_module, only: pinpok
-      
       real(kind=dp), dimension(9) :: x_poly, y_poly
       real(kind=dp) :: x_test, y_test
-      integer :: inside_pinpok, inside_elemental, i_poly
+      integer :: inside_pinpok
+      logical :: inside_raycast
       integer, parameter :: jins_val = 1
       
       ! Setup L-shaped polygon (concave)
       x_poly = [0.0_dp, 10.0_dp, 10.0_dp, 5.0_dp, 5.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp]
       y_poly = [0.0_dp, 0.0_dp, 5.0_dp, 5.0_dp, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp, 0.0_dp]
       
-      npl = 9
-      call realloc_polyline_arrays(1, npl)
-      xpl(1:9) = x_poly
-      ypl(1:9) = y_poly
-      zpl(1:9) = 1.0_dp
-      i_poly = 1
-      
       ! Test 1: Inside the L-shape (bottom part)
       x_test = 2.0_dp
       y_test = 2.0_dp
       call pinpok(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "L-shape bottom: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:7), y_poly(1:7), 7)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape bottom: pinpok vs raycast")
       
       ! Test 2: Inside the L-shape (vertical part)
       x_test = 2.0_dp
       y_test = 7.0_dp
       call pinpok(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "L-shape vertical: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:7), y_poly(1:7), 7)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape vertical: pinpok vs raycast")
       
       ! Test 3: Inside the concave notch (should be outside)
       x_test = 7.0_dp
       y_test = 7.0_dp
       call pinpok(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
-      inside_elemental = merge(1, 0, pinpok_elemental(x_test, y_test, i_poly))
-      call f90_expect_eq(inside_pinpok, inside_elemental, "L-shape notch: pinpok vs elemental")
+      inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:7), y_poly(1:7), 7)
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape notch: pinpok vs raycast")
       
-      deallocate(xpl, ypl, zpl, cellmask, xzw, yzw)
-      
-   end subroutine test_pinpok_compatibility_complex
+   end subroutine test_pinpok_raycast_complex
    !$f90tw)
 
    subroutine realloc_polyline_arrays(nump,npl)

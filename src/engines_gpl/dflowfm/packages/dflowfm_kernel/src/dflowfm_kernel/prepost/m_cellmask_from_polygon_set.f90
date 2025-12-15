@@ -204,69 +204,27 @@ contains
 
    end subroutine cellmask_from_polygon_set_cleanup
 
-   !> Optimized elemental point-in-polygon test using ray casting algorithm.
-   !! Accesses polygon data via module arrays.
-   elemental function pinpok_elemental(x, y, i_poly) result(is_inside)
-      use m_polygon, only: xpl, ypl
-
-      real(kind=dp), intent(in) :: x, y !< Point coordinates (scalar)
-      integer, intent(in) :: i_poly !< Polygon index
-      logical :: is_inside !< Result: .true.=is_inside, .false.=outside
-
-      integer :: i, j, i_start, i_end, crossings
-      real(kind=dp) :: x_j, x_i, y_j, y_i, x_intersect
-
-      is_inside = .false.
-
-      ! Get polygon bounds from module variables
-      i_start = i_poly_start(i_poly)
-      i_end = i_poly_end(i_poly)
-
-      if (i_end - i_start + 1 <= 2) then
-         is_inside = .true.
-         goto 999
-      end if
-
-      ! Ray-casting algorithm
-      crossings = 0
-      j = i_end
-
-      do i = i_start, i_end
-         if (xpl(i) == dmiss) then
-            exit
-         end if
-
-         x_j = xpl(j)
-         y_j = ypl(j)
-         x_i = xpl(i)
-         y_i = ypl(i)
-
-         ! Check if point is on vertex
-         if (x == x_j .and. y == y_j) then
-            is_inside = .true.
-            goto 999
-         end if
-
-         ! Check if ray crosses edge
-         if ((y_j > y) .neqv. (y_i > y)) then
-            x_intersect = x_j + (y - y_j) * (x_i - x_j) / (y_i - y_j)
-
-            if (x < x_intersect) then
-               crossings = crossings + 1
-            else if (x == x_intersect) then
-               is_inside = .true.
-               goto 999
-            end if
-         end if
-         j = i
-      end do
-
-      is_inside = mod(crossings, 2) == 1
-999   continue
-      if (jins == 0) then
-         is_inside = .not. is_inside
-      end if
-
-   end function pinpok_elemental
+!> Elemental wrapper for cellmask operations using module-level polygon arrays
+elemental function pinpok_elemental(x, y, i_poly) result(is_inside)
+   use m_polygon, only: xpl, ypl
+   use m_point_in_polygon, only: pinpok_raycast
+   
+   implicit none
+   
+   real(kind=dp), intent(in) :: x, y    !< Point coordinates
+   integer, intent(in) :: i_poly         !< Polygon index
+   logical :: is_inside                  !< Result
+   
+   integer :: i_start, i_end, n_points
+   
+   ! Get bounds for this polygon from module arrays
+   i_start = i_poly_start(i_poly)
+   i_end = i_poly_end(i_poly)
+   n_points = i_end - i_start + 1
+   
+   ! Call the shared optimized algorithm with array slice
+   is_inside = pinpok_raycast(x, y, xpl(i_start:i_end), ypl(i_start:i_end), n_points)
+   
+end function pinpok_elemental
 
 end module m_cellmask_from_polygon_set
