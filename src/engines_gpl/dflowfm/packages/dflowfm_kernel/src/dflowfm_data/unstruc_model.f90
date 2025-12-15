@@ -1737,7 +1737,6 @@ contains
       call prop_get(md_ptr, 'Time', 'tZone', Tzone)
       call prop_get(md_ptr, 'Time', 'tUnit', md_tunit)
       call prop_get(md_ptr, 'Time', 'tStart', tstart_user)
-      tstart_user = max(tstart_user, 0.0_dp)
       call prop_get(md_ptr, 'Time', 'tStop', tstop_user)
       select case (md_tunit)
       case ('D')
