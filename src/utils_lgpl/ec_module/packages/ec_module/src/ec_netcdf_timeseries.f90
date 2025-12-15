@@ -275,7 +275,7 @@ contains
             ncptr%layerdimid = var_dimids(1, iVars) ! For convenience also store the dimension ID explicitly
             ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
             allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
-            if (ierr /= 0) return
+            if (ierr /= 0) cycle ! skip on error (UNST-9376 quick workaround, will be fixed properly later)
             ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
             if (ierr /= NF90_NOERR) return
             ierr = ncu_get_att(ncptr%ncid, iVars, 'units', zunits)
@@ -314,10 +314,10 @@ contains
       integer, dimension(:), allocatable, intent(out) :: dimids
       integer, intent(out), optional :: vectormax
 
-      character(len=NF90_MAX_NAME), dimension(4) :: ncstdnames          !< list with standard names to be filled
-      character(len=NF90_MAX_NAME), dimension(4) :: ncvarnames          !< list with variable names to be filled
-      character(len=NF90_MAX_NAME), dimension(1) :: ncstdnames_fallback !< list with fallback standard names to be filled
-      character(len=NF90_MAX_NAME) :: quantity_candidate
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< list with standard names to be filled
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< list with variable names to be filled
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
+      character(len=NF90_MAX_NAME) :: quantity_candidate !< quantity candidate name during search
       
       integer :: n_dims
       integer :: ivar, jvar, itim, ltl, iv
@@ -326,40 +326,25 @@ contains
       integer, dimension(:), allocatable :: dimids_check
 
       success = .false.
+      ivar = ncptr%nVars + 1 ! initialize ivar to an invalid value
 
       ! get candidate names for the quantity
       call ecSupportNetcdfGetQuantityCandidateNames(ncptr%ncfilename, quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
 
       ! search for standard_name
-      do jvar = 1, size(ncstdnames)
-         quantity_candidate = ncstdnames(jvar)
-         do ivar = 1, ncptr%nVars
-            ltl = len_trim(quantity_candidate)
-            if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity_candidate))) exit
-         end do
-      end do
+      if (allocated(ncptr%standard_names) .and. allocated(ncstdnames)) then
+         ivar = ecNetCdfSearchStdOrVarName(ncptr%standard_names, ncstdnames)
+      end if
       vmax = 1
 
       ! if standard_name not found, search for long_name
-      if (ivar > ncptr%nVars) then
-         do jvar = 1, size(ncstdnames_fallback)
-            quantity_candidate = ncstdnames_fallback(jvar)
-            do ivar = 1, ncptr%nVars
-               ltl = len_trim(quantity_candidate)
-               if (strcmpi(ncptr%long_names(ivar), quantity_candidate, ltl)) exit
-            end do
-         end do
+      if (ivar > ncptr%nVars .and. allocated(ncptr%long_names) .and. allocated(ncstdnames_fallback)) then
+         ivar = ecNetCdfSearchStdOrVarName(ncptr%long_names, ncstdnames_fallback)
       end if
 
       ! if also long_name not found, search for variable_name
-      if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
-         do jvar = 1, size(ncvarnames)
-            quantity_candidate = ncvarnames(jvar)
-            do ivar = 1, ncptr%nVars
-               ltl = len_trim(quantity_candidate)
-               if (strcmpi(ncptr%variable_names(ivar), quantity_candidate, ltl)) exit
-            end do
-         end do
+      if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names) .and. allocated(ncvarnames)) then
+         ivar = ecNetCdfSearchStdOrVarName(ncptr%variable_names, ncvarnames)
       end if
 
       if (ivar <= ncptr%nVars) then
@@ -472,5 +457,23 @@ contains
       if (ierr /= NF90_NOERR) return
       success = .true.
    end function ecNetCDFGetAttrib
+
+   !> =======================================================================
+   !> Search for a name in a list of candidate names, return index of first match
+   function ecNetCdfSearchStdOrVarName(search_names, candidate_names) result(ivar)
+      character(len=*), dimension(:), intent(in) :: search_names
+      character(len=*), dimension(:), intent(in) :: candidate_names
+      integer :: ivar
+      integer :: jvar
+
+      candidates: do jvar = 1, size(candidate_names)
+         do ivar = 1, size(search_names)
+            if (strcmpi(search_names(ivar), candidate_names(jvar))) then
+               exit candidates
+            end if
+         end do
+      end do candidates
+
+   end function
 
 end module m_ec_netcdf_timeseries

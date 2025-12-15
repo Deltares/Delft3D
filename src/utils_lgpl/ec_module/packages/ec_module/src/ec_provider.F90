@@ -2486,8 +2486,8 @@ contains
       character(len=NF90_MAX_NAME) :: coord_name !< helper variable
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: coord_names !< helper variable
       character(len=NF90_MAX_NAME) :: name !< helper variable
-      character(len=NF90_MAX_NAME), dimension(4) :: ncstdnames !< helper variable : temp. list of standard names to search for in netcdf
-      character(len=NF90_MAX_NAME), dimension(1) :: ncstdnames_fallback !< idem
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< helper variable : temp. list of standard names to search for in netcdf
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< idem
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< helper variable : temp. list of variable names to search for in netcdf
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: nccustomnames !< helper variable : temp. list of user-defined variables names to search for
       integer :: quantityId !< helper variable
@@ -2538,10 +2538,6 @@ contains
       ! (already stored in the filereader)
       ! For now assuming the MATROOS-definitions of variables, listed at
       ! https://publicwiki.deltares.nl/display/NETCDF/Matroos+Standard+names
-      ncstdnames(:) = ''
-      allocate (ncvarnames(4)) ! todo: error handling
-      ncvarnames(:) = ''
-      ncstdnames_fallback = ' '
       idvar = -1
 
       ! Look up the standard names and variable names according to quantityName to fill ncstdnames and ncvarnames
@@ -2570,7 +2566,11 @@ contains
          if (x_dimid > 0 .and. x_dimid == y_dimid) nod_dimid = x_dimid ! stations with x/y
       end if
 
-      expectedLength = count(ncstdnames > ' ')
+      if (allocated(ncstdnames)) then
+         expectedLength = size(ncstdnames)
+      else
+         expectedLength = 0
+      end if
 
       ! Fill a string array with user-defined variable names
       if (len_trim(varname) > 0) then
