@@ -35,7 +35,7 @@ module m_cellmask_from_polygon_set
 
    private
 
-   public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
+   public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
 
    integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
    real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
