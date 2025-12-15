@@ -42,6 +42,8 @@ subroutine decarr(lunmd     ,lundia    ,error     ,runid     , &
     !
     use globaldata
     use dfparall
+    use m_rdtrt, only: dimtrt
+    use trachytopes_data_module, only: trachy_type
     !
     implicit none
     !
@@ -92,6 +94,8 @@ subroutine decarr(lunmd     ,lundia    ,error     ,runid     , &
     logical          , pointer :: nfl
     logical          , pointer :: lfsdu
     logical          , pointer :: lfsdus1
+    type(trachy_type), pointer :: gdtrachy
+    type(griddimtype), pointer :: griddim
 !
 ! Global variables
 !
@@ -155,6 +159,8 @@ subroutine decarr(lunmd     ,lundia    ,error     ,runid     , &
     kc         => gdp%d%kc
     kcd        => gdp%d%kcd
     nopest     => gdp%d%nopest
+    gdtrachy   => gdp%gdtrachy
+    griddim    => gdp%griddim
     !
     nopest    = 0
     nmaxd     = 1
@@ -230,6 +236,11 @@ subroutine decarr(lunmd     ,lundia    ,error     ,runid     , &
     ! set grid dimensions (changed with the introduction of DDbounds)
     !
     call griddims(gdp)
+    !
+    ! re-read trachytopes dimensions (`dimtrt` from the common trachytope module uses `griddim`).
+    !
+    call dimtrt(lunmd    ,error     , gdtrachy   ,gdp%mdfile_ptr , &
+                & griddim)
     !
     ! calculate indices of real arrays
     !
