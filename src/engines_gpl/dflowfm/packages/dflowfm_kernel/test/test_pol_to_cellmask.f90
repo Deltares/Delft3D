@@ -4,7 +4,7 @@ module test_pol_to_cellmask
    use m_missing, only: dmiss
    use network_data, only: cellmask, npl, nump, xzw, yzw, xpl, ypl, zpl
    use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup
-   use geometry_module, only: pinpok, pinpok_raycast
+   use geometry_module, only: pinpok_legacy, pinpok_raycast
 
    implicit none
 
@@ -232,37 +232,37 @@ contains
       ! Test 1: Point clearly inside
       x_test = 5.0_dp
       y_test = 5.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Inside point: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Inside point: pinpok_legacy vs raycast")
       
       ! Test 2: Point clearly outside
       x_test = 15.0_dp
       y_test = 15.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Outside point: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Outside point: pinpok_legacy vs raycast")
       
       ! Test 3: Point on vertex
       x_test = 0.0_dp
       y_test = 0.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On vertex: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On vertex: pinpok_legacy vs raycast")
       
       ! Test 4: Point on edge (horizontal)
       x_test = 5.0_dp
       y_test = 0.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On horizontal edge: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On horizontal edge: pinpok_legacy vs raycast")
       
       ! Test 5: Point on edge (vertical)
       x_test = 0.0_dp
       y_test = 5.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On vertical edge: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On vertical edge: pinpok_legacy vs raycast")
       
    end subroutine test_pinpok_raycast_basic
    !$f90tw)
@@ -283,30 +283,30 @@ contains
       ! Test 1: Point on diagonal edge
       x_test = 5.0_dp
       y_test = 5.0_dp
-      call pinpok(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:4), y_poly(1:4), 4)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On diagonal edge: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "On diagonal edge: pinpok_legacy vs raycast")
       
       ! Test 2: Ray passing through vertex (classic edge case)
       x_test = 2.0_dp
       y_test = 0.0_dp
-      call pinpok(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:4), y_poly(1:4), 4)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Ray through vertex: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Ray through vertex: pinpok_legacy vs raycast")
       
       ! Test 3: Point just inside
       x_test = 5.0_dp
       y_test = 2.0_dp
-      call pinpok(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:4), y_poly(1:4), 4)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Just inside: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Just inside: pinpok_legacy vs raycast")
       
       ! Test 4: Point just outside
       x_test = 5.0_dp
       y_test = 7.0_dp
-      call pinpok(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 4, x_poly(1:4), y_poly(1:4), inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:4), y_poly(1:4), 4)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Just outside: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "Just outside: pinpok_legacy vs raycast")
       
    end subroutine test_pinpok_raycast_edge_cases
    !$f90tw)
@@ -334,30 +334,30 @@ contains
       
       x_test = 5.0_dp
       y_test = 5.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=1, inside: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=1, inside: pinpok_legacy vs raycast")
       
       x_test = 15.0_dp
       y_test = 15.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=1, outside: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=1, outside: pinpok_legacy vs raycast")
       
       ! Test with jins = 0 (outside mode)
       jins = 0
       
       x_test = 5.0_dp
       y_test = 5.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=0, inside: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=0, inside: pinpok_legacy vs raycast")
       
       x_test = 15.0_dp
       y_test = 15.0_dp
-      call pinpok(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
+      call pinpok_legacy(x_test, y_test, 5, x_poly, y_poly, inside_pinpok, jins, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly, y_poly, 5)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=0, outside: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "jins=0, outside: pinpok_legacy vs raycast")
       
       ! Restore original jins
       jins = original_jins
@@ -381,23 +381,23 @@ contains
       ! Test 1: Inside the L-shape (bottom part)
       x_test = 2.0_dp
       y_test = 2.0_dp
-      call pinpok(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:7), y_poly(1:7), 7)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape bottom: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape bottom: pinpok_legacy vs raycast")
       
       ! Test 2: Inside the L-shape (vertical part)
       x_test = 2.0_dp
       y_test = 7.0_dp
-      call pinpok(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:7), y_poly(1:7), 7)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape vertical: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape vertical: pinpok_legacy vs raycast")
       
       ! Test 3: Inside the concave notch (should be outside)
       x_test = 7.0_dp
       y_test = 7.0_dp
-      call pinpok(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
+      call pinpok_legacy(x_test, y_test, 7, x_poly(1:7), y_poly(1:7), inside_pinpok, jins_val, dmiss)
       inside_raycast = pinpok_raycast(x_test, y_test, x_poly(1:7), y_poly(1:7), 7)
-      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape notch: pinpok vs raycast")
+      call f90_expect_eq(inside_pinpok, merge(1, 0, inside_raycast), "L-shape notch: pinpok_legacy vs raycast")
       
    end subroutine test_pinpok_raycast_complex
    !$f90tw)

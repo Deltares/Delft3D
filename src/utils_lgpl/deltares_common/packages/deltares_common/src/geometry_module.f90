@@ -49,6 +49,7 @@ module geometry_module
    ! original function of the geometry_module
    public :: clockwise
 
+   public :: pinpok_legacy
    public :: pinpok
    public :: pinpok_raycast
    public :: dpinpok
@@ -252,6 +253,25 @@ contains
       cw = an > ap
    end function clockwise_hp
 
+pure subroutine pinpok(XL, YL, N, X, Y, INSIDE, jins, dmiss)
+
+      implicit none
+
+      integer, intent(in) :: N
+      integer, intent(out) :: INSIDE
+      integer, intent(in) :: jins
+      real(kind=dp), intent(in) :: dmiss
+      real(kind=dp), intent(in) :: X(N), Y(N), XL, YL
+
+      logical :: is_inside
+
+      is_inside = pinpok_raycast(XL, YL, X, Y, N)
+
+      INSIDE = 1
+      if (.not. is_inside) INSIDE = 0
+
+end subroutine
+   
 !> Optimized ray-casting point-in-polygon test.
 !! Pure function that works with array slices or full arrays.
    pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
@@ -326,7 +346,7 @@ contains
    !
    ! PINPOK
    !
-   pure subroutine pinpok(XL, YL, N, X, Y, INSIDE, jins, dmiss) ! basic subroutine
+   pure subroutine pinpok_legacy(XL, YL, N, X, Y, INSIDE, jins, dmiss) ! basic subroutine
 
       implicit none
 
@@ -395,7 +415,7 @@ contains
       end if
       if (jins == 0) INSIDE = 1 - INSIDE
       return
-   end subroutine PINPOK
+   end subroutine PINPOK_legacy
 
    !
    ! DPINPOK
