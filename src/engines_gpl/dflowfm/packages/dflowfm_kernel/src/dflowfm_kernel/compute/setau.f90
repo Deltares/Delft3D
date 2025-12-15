@@ -214,7 +214,9 @@ contains
          end if
       end do
 
-      if (nqbnd == 0) return
+      if (nqbnd == 0) then
+         return
+      end if
 
       huqbnd = 0.0_dp
 
@@ -245,9 +247,13 @@ contains
          end do
 
          if (jampi == 1 .and. japartqbnd == 1) then
-            if (jatimer == 1) call starttimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call starttimer(IMPIREDUCE)
+            end if
             call reduce_wwssav_all()
-            if (jatimer == 1) call stoptimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call stoptimer(IMPIREDUCE)
+            end if
          end if
       end if
 
@@ -313,9 +319,13 @@ contains
       end do
 
       if (jampi == 1 .and. japartqbnd == 1) then
-         if (jatimer == 1) call starttimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call starttimer(IMPIREDUCE)
+         end if
          call reduce_at_all()
-         if (jatimer == 1) call stoptimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call stoptimer(IMPIREDUCE)
+         end if
       end if
 
       do nq = 1, nqbnd

@@ -58,9 +58,13 @@ contains
       call fill_valobs()
 
       if (jampi == 1) then
-         if (jatimer == 1) call starttimer(IOUTPUTMPI)
+         if (jatimer == 1) then
+            call starttimer(IOUTPUTMPI)
+         end if
          call reduce_valobs(IPNT_NUM, numobs + nummovobs, valobs)
-         if (jatimer == 1) call stoptimer(IOUTPUTMPI)
+         if (jatimer == 1) then
+            call stoptimer(IOUTPUTMPI)
+         end if
       end if
 
       return

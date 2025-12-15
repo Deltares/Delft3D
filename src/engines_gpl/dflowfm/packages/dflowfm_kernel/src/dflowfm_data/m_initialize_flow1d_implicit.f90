@@ -1149,7 +1149,9 @@ contains
 !at junctions of more than 2 branches we set the same water level for
 !all SRE nodes.
       do kn = 1, network%nds%count
-         if (network%nds%node(kn)%numberofconnections < 3) cycle
+         if (network%nds%node(kn)%numberofconnections < 3) then
+            cycle
+         end if
          idx_fm = network%nds%node(kn)%gridnumber ! TODO: Not safe in parallel models (check gridpointsseq as introduced in UNST-5013)
          !we search for the SRE gridpoint associated to the FM ghost flownode.
          !the FM ghostflownode is found in <ln_mor> which is found in <nd>

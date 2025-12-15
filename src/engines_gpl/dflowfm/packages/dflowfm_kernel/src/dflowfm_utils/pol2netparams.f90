@@ -61,7 +61,9 @@ contains
       ierror = 0
 
 !  check if polygon exists
-      if (NPL < 3) return
+      if (NPL < 3) then
+         return
+      end if
 
       ierror = 1
 
@@ -72,7 +74,9 @@ contains
       end do
 
 !  check if point was found
-      if (i > NPL) goto 1234
+      if (i > NPL) then
+         goto 1234
+      end if
 
       xref = xpl(i)
       yref = ypl(i)

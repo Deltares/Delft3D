@@ -67,7 +67,9 @@ contains
       inhul = -1
       inall = 1
 
-      if (JASAVE == 1) call SAVENET()
+      if (JASAVE == 1) then
+         call SAVENET()
+      end if
 
       KEY = 3
       if (NPL <= 2) then

@@ -58,7 +58,9 @@ contains
 
       inhul = -1
 
-      if (JASAVE == 1) call SAVEgrd()
+      if (JASAVE == 1) then
+         call SAVEgrd()
+      end if
       KEY = 3
       if (NPL <= 2) then
          if (NPL >= 1) then
@@ -84,14 +86,18 @@ contains
          do J = 1, NC
             if (Xc(I, J) /= DXYMIS) then
                call dbpinpol(Xc(i, j), yc(i, j), INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
-               if (INHUL == 1) Xc(I, J) = XYMIS
+               if (INHUL == 1) then
+                  Xc(I, J) = XYMIS
+               end if
             end if
 
          end do
       end do
 
 !      CALL ADJUST(X, Y, MC, NC, WW1, WW2)
-      if (jadelpol == 1) call delpol()
+      if (jadelpol == 1) then
+         call delpol()
+      end if
       return
    end subroutine delgrd
 

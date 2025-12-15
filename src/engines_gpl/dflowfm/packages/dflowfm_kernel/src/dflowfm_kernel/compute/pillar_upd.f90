@@ -58,7 +58,9 @@ contains
          end do
       else if (japillar == 3) then
          do L = 1, lnx
-            if (Cpil(L) == 0.0_dp) cycle
+            if (Cpil(L) == 0.0_dp) then
+               cycle
+            end if
             CpilL = Cpil(L)
             uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
             advi(L) = advi(L) + CpilL * uv / dx(L)

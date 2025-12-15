@@ -65,7 +65,9 @@ contains
       jausedualnetcell = 0
 
       m = 3 * nd(n)%lnx + 1
-      if (nd(n)%lnx == 1) m = m + 1
+      if (nd(n)%lnx == 1) then
+         m = m + 1
+      end if
 
       allocate (nd(n)%x(m), nd(n)%y(m), stat=ierr)
       call aerr('nd(n)%x(m), nd(n)%y(m)', ierr, m * 2)

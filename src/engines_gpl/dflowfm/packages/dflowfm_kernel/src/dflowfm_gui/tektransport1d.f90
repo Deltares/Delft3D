@@ -65,7 +65,9 @@ contains
          end if
       end do
 
-      if (ndxi < 1) return
+      if (ndxi < 1) then
+         return
+      end if
 
       avedif = 0.0_dp
       do k = 1, ndxi

@@ -59,14 +59,18 @@ contains
 
       ierror = 1
 
-      if (NPL < 3) goto 1234
+      if (NPL < 3) then
+         goto 1234
+      end if
 
 !  get the first polygon
       call get_startend(NPL, XPL, YPL, jstart, jend, dmiss)
 
 !  number of points in the polygon
       num = jend - jstart + 1
-      if (num < 2) goto 1234 ! we need at least two points in the polygon
+      if (num < 2) then
+         goto 1234 ! we need at least two points in the polygon
+      end if
 
 !  set the grid sizes
       mc = num + 1
@@ -85,7 +89,9 @@ contains
       do i = 1, mc
 !     get the coordinates of the point on the polyline
          ipol = jstart + i - 1
-         if (ipol > jend) ipol = ipol - num
+         if (ipol > jend) then
+            ipol = ipol - num
+         end if
          x1 = xpl(ipol)
          y1 = ypl(ipol)
 

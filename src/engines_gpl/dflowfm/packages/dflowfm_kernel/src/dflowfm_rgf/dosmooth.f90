@@ -66,7 +66,9 @@ contains
 
       allocate (XH(MMAX, NMAX), YH(MMAX, NMAX))
 
-      if (NDRAW(8) == 0) call READYY('SMOOTHING GRID', 0.0_dp)
+      if (NDRAW(8) == 0) then
+         call READYY('SMOOTHING GRID', 0.0_dp)
+      end if
 !      CALL ISITU(      X,      Y,     MC,   NC,    IJC,  IJYES)!!!Oud
       ! Deze routine dosmooth wordt alleen uit editgridlineblock aangeroepen
       ! met de xc, ijyes, etc. uit m_grid. Diezelfde m_grid wordt in isitu gebruikt
@@ -281,7 +283,9 @@ contains
       call PUTARR(XH, Xc, MMAX, NMAX)
       call PUTARR(YH, Yc, MMAX, NMAX)
       deallocate (XH, YH)
-      if (NDRAW(8) == 0) call READYY(' ', -1.0_dp)
+      if (NDRAW(8) == 0) then
+         call READYY(' ', -1.0_dp)
+      end if
 
       return
    end subroutine dosmooth

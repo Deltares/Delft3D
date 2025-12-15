@@ -497,7 +497,9 @@ contains
 !    return
 ! endif
 
-      if (allocated(xe)) deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
+      if (allocated(xe)) then
+         deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
+      end if
 
       !mx1Dend = 0                                        ! count MAX nr of 1D endpoints
       !do L = 1,numl1D
@@ -1526,7 +1528,9 @@ contains
          qidfm = thrtq(i)
          if (qidfm == 'salinitybnd' .and. allocated(kbnds)) then
             nseg = kbnds(5, thrtn(i))
-            if (nseg /= i) cycle
+            if (nseg /= i) then
+               cycle
+            end if
             if (nseg == 0 .or. nseg > nopenbndsect) then
                write (msgbuf, '(i8,a)') thrtn(i), ' salinity boundary point is assigned to incorrect boundary segment'
                call err_flush()
@@ -1535,7 +1539,9 @@ contains
             threttim(ISALT, nseg) = thrtt(i)
          else if (qidfm == 'temperaturebnd' .and. allocated(kbndtm)) then
             nseg = kbndtm(5, thrtn(i))
-            if (nseg /= i) cycle
+            if (nseg /= i) then
+               cycle
+            end if
             if (nseg == 0 .or. nseg > nopenbndsect) then
                write (msgbuf, '(i8,a)') thrtn(i), ' temperature boundary point is assigned to incorrect boundary segment'
                call err_flush()
@@ -1544,7 +1550,9 @@ contains
             threttim(ITEMP, nseg) = thrtt(i)
          else if (qidfm == 'sedimentbnd' .and. allocated(kbndsd) .and. .not. stm_included) then
             nseg = kbndsd(5, thrtn(i))
-            if (nseg /= i) cycle
+            if (nseg /= i) then
+               cycle
+            end if
             if (nseg == 0 .or. nseg > nopenbndsect) then
                write (msgbuf, '(i8,a)') thrtn(i), ' sediment boundary point is assigned to incorrect boundary segment'
                call err_flush()
@@ -1558,7 +1566,9 @@ contains
             itrac = find_name(trnames, tracnam)
             if (allocated(bndtr) .and. thrtn(i) <= nbndtr(itrac)) then
                nseg = bndtr(itrac)%k(5, thrtn(i))
-               if (nseg /= i) cycle
+               if (nseg /= i) then
+                  cycle
+               end if
                if (nseg == 0 .or. nseg > nopenbndsect) then
                   write (msgbuf, '(i8,a)') thrtn(i), ' tracer boundary point is assigned to incorrect boundary segment'
                   call err_flush()
@@ -1580,7 +1590,9 @@ contains
                   ierr = 1
                end if
                iconst = ifrac2const(ifrac)
-               if (iconst == 0) cycle
+               if (iconst == 0) then
+                  cycle
+               end if
                threttim(iconst, nseg) = thrtt(i)
             else
                ierr = 1
@@ -1632,8 +1644,12 @@ contains
          do itrac = 1, numtracers
             iconst = itrac2const(itrac)
 
-            if (allocated(bndtr(itrac)%tht)) deallocate (bndtr(itrac)%tht)
-            if (allocated(bndtr(itrac)%thz)) deallocate (bndtr(itrac)%thz)
+            if (allocated(bndtr(itrac)%tht)) then
+               deallocate (bndtr(itrac)%tht)
+            end if
+            if (allocated(bndtr(itrac)%thz)) then
+               deallocate (bndtr(itrac)%thz)
+            end if
 
             n = nbndtr(itrac)
 
@@ -1649,8 +1665,12 @@ contains
 
       if (allocated(bndsf)) then
          do ifrac = 1, numfracs
-            if (allocated(bndsf(ifrac)%tht)) deallocate (bndsf(ifrac)%tht)
-            if (allocated(bndsf(ifrac)%thz)) deallocate (bndsf(ifrac)%thz)
+            if (allocated(bndsf(ifrac)%tht)) then
+               deallocate (bndsf(ifrac)%tht)
+            end if
+            if (allocated(bndsf(ifrac)%thz)) then
+               deallocate (bndsf(ifrac)%thz)
+            end if
 
             n = nbndsf(ifrac)
 
@@ -1811,7 +1831,9 @@ contains
          call timstop(handle_extra(49)) ! initialize_initial_fields
       end if
 
-      if (jatimespace == 0) return ! Just cleanup and close ext file.
+      if (jatimespace == 0) then
+         return ! Just cleanup and close ext file.
+      end if
 
       if (allocated(ec_pwxwy_x)) then
          deallocate (ec_pwxwy_x)
@@ -1822,7 +1844,9 @@ contains
       if (allocated(air_pressure)) then
          deallocate (air_pressure)
       end if
-      if (allocated(kbndz)) deallocate (xbndz, ybndz, xy2bndz, zbndz, kbndz, zbndz0)
+      if (allocated(kbndz)) then
+         deallocate (xbndz, ybndz, xy2bndz, zbndz, kbndz, zbndz0)
+      end if
       if (allocated(zkbndz)) then
          deallocate (zkbndz)
       end if
@@ -1835,7 +1859,9 @@ contains
          allocate (xbndz(nbndz), ybndz(nbndz), xy2bndz(2, nbndz), zbndz(nbndz), kbndz(N4, nbndz), zbndz0(nbndz), kdz(nbndz), stat=ierr)
          call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(N4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz * 10)
          if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
-            if (allocated(zkbndz)) deallocate (zkbndz, kbanz)
+            if (allocated(zkbndz)) then
+               deallocate (zkbndz, kbanz)
+            end if
             allocate (zkbndz(2, nbndz), stat=ierr)
             call aerr('zkbndz(2,nbndz)', ierr, 2 * nbndz)
             allocate (kbanz(2, nbndz), stat=ierr)
@@ -1913,7 +1939,9 @@ contains
          end do
       end if
 
-      if (allocated(kbndu)) deallocate (xbndu, ybndu, xy2bndu, zbndu, kbndu, zbndu0)
+      if (allocated(kbndu)) then
+         deallocate (xbndu, ybndu, xy2bndu, zbndu, kbndu, zbndu0)
+      end if
       if (allocated(zkbndu)) then
          deallocate (zkbndu)
       end if
@@ -1932,7 +1960,9 @@ contains
       allocate (xbndu(tmp_nbndu), ybndu(tmp_nbndu), xy2bndu(2, tmp_nbndu), kbndu(N4, tmp_nbndu), kdu(tmp_nbndu), stat=ierr)
       call aerr('xbndu(tmp_nbndu), ybndu(tmp_nbndu), xy2bndu(2,tmp_nbndu), kbndu(N4,tmp_nbndu), kdu(tmp_nbndu)', ierr, tmp_nbndu * (N4 + 5))
       if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
-         if (allocated(zkbndu)) deallocate (zkbndu, kbanu)
+         if (allocated(zkbndu)) then
+            deallocate (zkbndu, kbanu)
+         end if
          allocate (zkbndu(2, tmp_nbndu), stat=ierr)
          call aerr('zkbndu(2,tmp_nbndu)', ierr, 2 * tmp_nbndu)
          allocate (kbanu(2, tmp_nbndu), stat=ierr)
@@ -1991,7 +2021,9 @@ contains
          end do
       end if
 
-      if (allocated(kbnds)) deallocate (xbnds, ybnds, xy2bnds, zbnds, kbnds)
+      if (allocated(kbnds)) then
+         deallocate (xbnds, ybnds, xy2bnds, zbnds, kbnds)
+      end if
       if (jasal > 0) then
          if (allocated(sigmabnds)) then
             deallocate (sigmabnds)
@@ -2042,7 +2074,9 @@ contains
          end if
       end if
 
-      if (allocated(kbndTM)) deallocate (xbndTM, ybndTM, xy2bndTM, zbndTM, kbndTM)
+      if (allocated(kbndTM)) then
+         deallocate (xbndTM, ybndTM, xy2bndTM, zbndTM, kbndTM)
+      end if
       if (jatem > 0) then
          if (allocated(sigmabndTM)) then
             deallocate (sigmabndTM)
@@ -2104,7 +2138,9 @@ contains
       if (nbndw > 0) then
          numnos = 0
          call mess(LEVEL_INFO, 'Enabled wave forcing while reading external forcings.')
-         if (allocated(kbndw)) deallocate (xbndw, ybndw, xy2bndw, zbndw, kbndw)
+         if (allocated(kbndw)) then
+            deallocate (xbndw, ybndw, xy2bndw, zbndw, kbndw)
+         end if
          allocate (xbndw(nbndw), ybndw(nbndw), xy2bndw(2, nbndw), zbndw(ntheta, nbndw), kbndw(4, nbndw), kdw(nbndw), stat=ierr)
          call aerr('xbndw(nbndw), ybndw(nbndw), xy2bndw(2,nbndw), zbndw(ntheta,nbndw), kbndw(4,nbndw), kdw(nbndw)', ierr, nbndw * (9 + ntheta))
          kbndw = 0
@@ -2138,7 +2174,9 @@ contains
       end if
 ! ========================
 
-      if (allocated(kbndsd)) deallocate (xbndsd, ybndsd, xy2bndsd, zbndsd, kbndsd)
+      if (allocated(kbndsd)) then
+         deallocate (xbndsd, ybndsd, xy2bndsd, zbndsd, kbndsd)
+      end if
       if (allocated(sigmabndsd)) then
          deallocate (sigmabndsd)
       end if
@@ -2276,7 +2314,9 @@ contains
          end if
       end if
 
-      if (allocated(kbndt)) deallocate (xbndt, ybndt, xy2bndt, zbndt, kbndt)
+      if (allocated(kbndt)) then
+         deallocate (xbndt, ybndt, xy2bndt, zbndt, kbndt)
+      end if
       ! allocate the following even if not needed (for debugging purposes)
       tmp_nbndt = max(nbndt, 1)
       allocate (xbndt(tmp_nbndt), ybndt(tmp_nbndt), xy2bndt(2, tmp_nbndt), zbndt(tmp_nbndt), kbndt(4, tmp_nbndt), kdt(tmp_nbndt), stat=ierr)
@@ -2313,7 +2353,9 @@ contains
          end if
       end if
 
-      if (allocated(kbnduxy)) deallocate (xbnduxy, ybnduxy, xy2bnduxy, zbnduxy, kbnduxy)
+      if (allocated(kbnduxy)) then
+         deallocate (xbnduxy, ybnduxy, xy2bnduxy, zbnduxy, kbnduxy)
+      end if
       if (allocated(sigmabnduxy)) then
          deallocate (sigmabnduxy)
       end if
@@ -2360,7 +2402,9 @@ contains
          end if
       end if
 
-      if (allocated(kbndn)) deallocate (xbndn, ybndn, xy2bndn, zbndn, kbndn)
+      if (allocated(kbndn)) then
+         deallocate (xbndn, ybndn, xy2bndn, zbndn, kbndn)
+      end if
       ! allocate the following even if not needed (for debugging purposes)
       tmp_nbndn = max(nbndn, 1)
       allocate (xbndn(tmp_nbndn), ybndn(tmp_nbndn), xy2bndn(2, tmp_nbndn), zbndn(tmp_nbndn), kbndn(4, tmp_nbndn), kdn(tmp_nbndn), stat=ierr)
@@ -2402,7 +2446,9 @@ contains
       end if
 
       if (nshiptxy > 0) then
-         if (allocated(shx)) deallocate (xyship, shx, shy, shu, shv, shi, sho)
+         if (allocated(shx)) then
+            deallocate (xyship, shx, shy, shu, shv, shi, sho)
+         end if
          allocate (xyship(2 * nshiptxy), shx(nshiptxy), shy(nshiptxy), shu(nshiptxy), shv(nshiptxy), shi(nshiptxy), sho(nshiptxy), stat=ierr)
          call aerr('xyship(2*nshiptxy), shx(nshiptxy), shy(nshiptxy), shu(nshiptxy), shv(nshiptxy), shi(nshiptxy), sho(nshiptxy)', ierr, 4 * nshiptxy)
          iniship = 0
@@ -2672,7 +2718,9 @@ contains
                   rnveg(k) = stemdens(k)
                   diaveg(k) = stemdiam(k)
                end if
-               if (stemheight(k) == dmiss) stemheight(k) = 0.0_dp
+               if (stemheight(k) == dmiss) then
+                  stemheight(k) = 0.0_dp
+               end if
             end do
             deallocate (stemdiam, stemdens)
          end if
@@ -2702,7 +2750,9 @@ contains
       end if
 
       if (jagrounLay == 1) then
-         if (allocated(wigr)) deallocate (wigr, argr, pergr)
+         if (allocated(wigr)) then
+            deallocate (wigr, argr, pergr)
+         end if
          allocate (argr(lnx1D), stat=ierr)
          argr = 0.0_dp
          call aerr('argr(lnx1D)', ierr, Lnx1D)
@@ -2738,7 +2788,9 @@ contains
       if (jampi == 1) then
          ! see if one or more discharge boundaries are partioned
          call set_japartqbnd()
-         if (japartqbnd /= 0) call mess(LEVEL_WARN, 'One or more discharge boundaries are partitioned.')
+         if (japartqbnd /= 0) then
+            call mess(LEVEL_WARN, 'One or more discharge boundaries are partitioned.')
+         end if
       else
          japartqbnd = 0
       end if
@@ -2799,8 +2851,12 @@ contains
                   call GetCSParsTotal(network%adm%line2cross(L, 2), network%crs%cross, 1e3_dp, area, width, CS_TYPE_NORMAL, hyst_dummy)
 
                   hdx = 0.5_dp * dx(L)
-                  if (k1 > ndx2d) bare(k1) = bare(k1) + hdx * width
-                  if (k2 > ndx2d) bare(k2) = bare(k2) + hdx * width
+                  if (k1 > ndx2d) then
+                     bare(k1) = bare(k1) + hdx * width
+                  end if
+                  if (k2 > ndx2d) then
+                     bare(k2) = bare(k2) + hdx * width
+                  end if
                end if
             end do
          end if
@@ -2864,7 +2920,9 @@ contains
          do kk = 1, Ndxi
             if (jampi == 1) then
                ! do not include ghost cells
-               if (idomain(kk) /= my_rank) cycle
+               if (idomain(kk) /= my_rank) then
+                  cycle
+               end if
             end if
             mbadefdomain(kk) = mbadef(kk)
             call getkbotktop(kk, kb, kt)

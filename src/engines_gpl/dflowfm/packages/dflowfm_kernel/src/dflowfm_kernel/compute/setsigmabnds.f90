@@ -54,10 +54,16 @@ contains
       !   if (layertype == LAYTP_Z) return
 
       if (kmx == 0) then ! 2D, set dummy values
-         if (allocated(sigmabnds)) sigmabnds = 0.5_dp
-         if (allocated(sigmabndTM)) sigmabndTM = 0.5_dp
+         if (allocated(sigmabnds)) then
+            sigmabnds = 0.5_dp
+         end if
+         if (allocated(sigmabndTM)) then
+            sigmabndTM = 0.5_dp
+         end if
 !      if ( allocated(sigmabndtr) ) sigmabndtr = 0.5d0
-         if (allocated(sigmabndu)) sigmabndu = 0.5_dp
+         if (allocated(sigmabndu)) then
+            sigmabndu = 0.5_dp
+         end if
       else ! 3D
          do i = 1, nbnds
             ki = kbnds(2, i)

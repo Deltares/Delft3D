@@ -152,7 +152,9 @@ contains
 
          if (tooclose > 1.0e-16_dp .and. k0 > 0) then
             call CONFRM('MERGE NODES ? ', JA)
-            if (JA == 1) call MERGENODESINPOLYGON()
+            if (JA == 1) then
+               call MERGENODESINPOLYGON()
+            end if
          end if
 
          call readyy('Merging networks', -1.0_dp)

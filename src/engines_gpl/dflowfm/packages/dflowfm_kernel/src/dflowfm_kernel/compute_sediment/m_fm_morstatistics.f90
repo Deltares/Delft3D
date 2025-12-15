@@ -377,7 +377,9 @@ contains
       real(fp) :: rhol
       real(fp) :: wght
       !
-      if (nmorstatqnt == 0) return
+      if (nmorstatqnt == 0) then
+         return
+      end if
       !
       wght = max(dts / ti_sed, 0.0_dp) ! time weighted is default, as opposed to original D3D implementation which used accreted volume
       !
@@ -774,7 +776,9 @@ contains
       !
       sedids%id_tsp%idx_curtime = sedids%id_tsp%idx_curtime + 1
       itim = sedids%id_tsp%idx_curtime
-      if (itim == 1) return
+      if (itim == 1) then
+         return
+      end if
       !
       morfc = (stmpar%morpar%morft - morft0) / (time1 - hydrt0) * 86400.0_dp
       morft0 = stmpar%morpar%morft
@@ -843,7 +847,9 @@ contains
             idx = stmpar%morpar%moroutput%statflg(1, iq)
 
             if (iand(idx, MOR_STAT_MEAN) > 0 .or. iand(idx, MOR_STAT_STD) > 0) then
-               if (allocated(wghtfac)) deallocate (wghtfac, work2)
+               if (allocated(wghtfac)) then
+                  deallocate (wghtfac, work2)
+               end if
                allocate (wghtfac(1:ndx), work2(1:ndx))
                wghtfac = 1.0_dp
                work2 = 0.0_dp

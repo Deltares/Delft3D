@@ -60,7 +60,9 @@ contains
       do k0 = 1, numk
          if (nb(k0) == 2 .and. nmk(k0) > 0) then
             k = k_bc(k0) ! the nearest node in the original net, in previous iteration
-            if (nmk(k) == 0) cycle
+            if (nmk(k) == 0) then
+               cycle
+            end if
             x0 = xk(k0)
             y0 = yk(k0)
             nr = 0
@@ -94,11 +96,15 @@ contains
             if (dis2 < dis3) then
                x0 = xn2
                y0 = yn2
-               if ((r2 > 0.5_dp) .and. (nb(kL) /= 3)) k_bc(k0) = kL
+               if ((r2 > 0.5_dp) .and. (nb(kL) /= 3)) then
+                  k_bc(k0) = kL
+               end if
             else
                x0 = xn3
                y0 = yn3
-               if ((r3 > 0.5_dp) .and. (nb(kR) /= 3)) k_bc(k0) = kR
+               if ((r3 > 0.5_dp) .and. (nb(kR) /= 3)) then
+                  k_bc(k0) = kR
+               end if
             end if
 
             xk(k0) = x0

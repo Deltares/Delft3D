@@ -95,7 +95,9 @@ contains
          end if
       end do
 
-      if (.not. Lfound) goto 1234
+      if (.not. Lfound) then
+         goto 1234
+      end if
 
       if (kn(1, L) /= k .and. kn(2, L) /= k) then ! something wrong
          goto 1234
@@ -112,7 +114,9 @@ contains
          end if
       end do
 
-      if (.not. Lfound) goto 1234
+      if (.not. Lfound) then
+         goto 1234
+      end if
 
       if (kn(1, L) /= k .and. kn(2, L) /= k) then ! something wrong
          goto 1234
@@ -127,13 +131,17 @@ contains
       num = 1
       do while (lanseg_map(kother) < 1 .and. kk /= kk2 .and. lnn(L) > 1)
          kk = kk - 1
-         if (kk < 1) kk = kk + nmk(k)
+         if (kk < 1) then
+            kk = kk + nmk(k)
+         end if
          L = nod(k)%lin(kk)
          kother = kn(1, L) + kn(2, L) - k
          num = num + 1
       end do
 
-      if (lanseg_map(kother) > 0 .or. lnn(L) < 2) Lp1 = L ! first link in path
+      if (lanseg_map(kother) > 0 .or. lnn(L) < 2) then
+         Lp1 = L ! first link in path
+      end if
 
 !  if not all links are visited, count counterclockwise from the one connecting k2
       if (kk /= kk2) then
@@ -143,13 +151,19 @@ contains
          num = num + 1
          do while (lanseg_map(kother) < 1 .and. kk /= kk1 .and. L /= Lp1 .and. lnn(L) > 1)
             kk = kk + 1
-            if (kk > nmk(k)) kk = kk - nmk(k)
+            if (kk > nmk(k)) then
+               kk = kk - nmk(k)
+            end if
             L = nod(k)%lin(kk)
             kother = kn(1, L) + kn(2, L) - k
-            if (kk /= kk1 .and. L /= Lp1) num = num + 1 ! kk1 already visited
+            if (kk /= kk1 .and. L /= Lp1) then
+               num = num + 1 ! kk1 already visited
+            end if
          end do
 
-         if ((lanseg_map(kother) > 0 .or. lnn(L) < 2) .and. L /= lp1) Lp2 = L ! second link in path
+         if ((lanseg_map(kother) > 0 .or. lnn(L) < 2) .and. L /= lp1) then
+            Lp2 = L ! second link in path
+         end if
       end if
 
       if (num > nmk(k)) then ! should not happen

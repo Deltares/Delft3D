@@ -92,24 +92,32 @@ contains
 
       do Lf = 1, Lnx
          ! for cutcell
-         if (wu_mor(Lf) == 0.0_dp) cycle
+         if (wu_mor(Lf) == 0.0_dp) then
+            cycle
+         end if
          !
          ! no bed slope effects on links with bermslope adjustments
          ! fixfac and frac applied in bermslopenudging()
          if (stmpar%morpar%bermslopetransport) then
-            if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) cycle
+            if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) then
+               cycle
+            end if
          end if
          !
          if (hu(Lf) > 0.0_dp) then
             k1 = ln(1, Lf)
             k2 = ln(2, Lf)
             call getLbotLtop(Lf, Lb, Lt)
-            if (Lt < Lb) cycle
+            if (Lt < Lb) then
+               cycle
+            end if
             do l = 1, lsedtot
                if (has_bedload(tratyp(l))) then
                   di50 = sedd50(l)
                   di50spatial = .false.
-                  if (di50 < 0.0_fp .and. lsedtot == 1) di50spatial = .true.
+                  if (di50 < 0.0_fp .and. lsedtot == 1) then
+                     di50spatial = .true.
+                  end if
                   !
                   ! Initialize variables
                   !

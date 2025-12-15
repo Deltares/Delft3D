@@ -65,7 +65,9 @@ contains
             wlno = wlno + wu(L)
          end if
       end do
-      if (wlno > 0.0_dp) hunoweir = hunoweir / wlno
+      if (wlno > 0.0_dp) then
+         hunoweir = hunoweir / wlno
+      end if
 
       do LL = 1, nd(ku)%lnx
          Ls = nd(ku)%ln(LL)
@@ -91,7 +93,9 @@ contains
             end if
          else
             fac = 1.0_dp
-            if (hunoweir > 0.0_dp) fac = min(1.0_dp, hu(L) / hunoweir)
+            if (hunoweir > 0.0_dp) then
+               fac = min(1.0_dp, hu(L) / hunoweir)
+            end if
             if (jasfer3D == 0) then
                ucxku = ucxku + cs * u0(L) * fac
                ucyku = ucyku + sn * u0(L) * fac

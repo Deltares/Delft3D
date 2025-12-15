@@ -92,7 +92,9 @@ contains
 
       ja = 0
       call confrm('1D interpolation (no cross-sections)?', ja)
-      if (ja == 1) L1D = .true.
+      if (ja == 1) then
+         L1D = .true.
+      end if
 
 !  regularize the curvigrid
       call regularise_spline2curvigrid()
@@ -149,7 +151,9 @@ contains
          xiloc = xietas(1, i)
          etaloc = xietas(2, i)
 
-         if (xiloc == DMISS .or. etaloc == DMISS) cycle ! no (xi,eta) found
+         if (xiloc == DMISS .or. etaloc == DMISS) then
+            cycle ! no (xi,eta) found
+         end if
 
 !     note that current xiloc and etaloc serve as first iterate in call to bilin_interp_loc
          call bilin_interp_loc(mmax, nmax, mc, nc, 1, xc, yc, zc, xs(i), ys(i), xiloc, etaloc, zloc, ierror, dmiss, jsferic)
@@ -162,12 +166,16 @@ contains
 !  find network grid-coordinates
       jadl = 0
       jakdtree = 1
-      if (NPL > 0) call savegrd()
+      if (NPL > 0) then
+         call savegrd()
+      end if
 
       call TRIINTfast(xc, yc, xietac, mmax * nmax, 2, xk, yk, xietak, numk, jadl, jakdtree, &
                       jsferic, NPL, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef)
 
-      if (NPL > 0) call restoregrd()
+      if (NPL > 0) then
+         call restoregrd()
+      end if
 
       do k = 1, numk
 !     apply inside-curvigrid mask
@@ -183,7 +191,9 @@ contains
          xiloc = xietak(1, k)
          etaloc = xietak(2, k)
 
-         if (xiloc == DMISS .or. etaloc == DMISS) cycle ! no (xi,eta) found
+         if (xiloc == DMISS .or. etaloc == DMISS) then
+            cycle ! no (xi,eta) found
+         end if
 
 !     note that current xiloc and etaloc serve as first iterate in call to bilin_interp_loc
          call bilin_interp_loc(mmax, nmax, mc, nc, 1, xc, yc, zc, xk(k), yk(k), xiloc, etaloc, zloc, ierror, dmiss, jsferic)

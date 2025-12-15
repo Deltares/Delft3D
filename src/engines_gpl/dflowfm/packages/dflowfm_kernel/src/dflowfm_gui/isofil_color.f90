@@ -64,7 +64,9 @@ contains
 
       do I = 1, n4
          J = I + 1
-         if (I == n4) J = 1
+         if (I == n4) then
+            J = 1
+         end if
          DX(I) = X(J) - X(I)
          DY(I) = Y(J) - Y(I)
          DZ(I) = Z(J) - Z(I)
@@ -101,7 +103,9 @@ contains
                IH = 1
                do J1 = 1, n4
                   J2 = J1 + 1
-                  if (J1 == n4) J2 = 1
+                  if (J1 == n4) then
+                     J2 = 1
+                  end if
                   if (Z(J1) < ZNOW) then
                      if (Z(J2) > ZNOW) then
                         DZN = ZNOW - Z(J1)

@@ -263,7 +263,9 @@ contains
       integer :: L, k1, k2, n, i, lunfil
 
       if (t == 0.0_dp) then
-         if (allocated(uexa)) deallocate (uexa, zexa, xexa, iexa)
+         if (allocated(uexa)) then
+            deallocate (uexa, zexa, xexa, iexa)
+         end if
          allocate (uexa(ndx), zexa(ndx), xexa(ndx), iexa(ndx))
          xz_copy = xz(1:ndx)
          call sort_index(xz_copy, iexa)
@@ -593,7 +595,9 @@ contains
 
       end if
 
-      if (qweirana == 0.0_dp) return
+      if (qweirana == 0.0_dp) then
+         return
+      end if
 
       eup = zupstream + 0.5_dp * uupstream * uupstream / ag
       edo = zdownstream + 0.5_dp * udownstream * udownstream / ag
@@ -767,7 +771,9 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: sumba
 
-      if (abs(bedslope) < 1.0e-8_dp) bedslope = -0.0e-5_dp ! SPvdP: now old mdu-files still work
+      if (abs(bedslope) < 1.0e-8_dp) then
+         bedslope = -0.0e-5_dp ! SPvdP: now old mdu-files still work
+      end if
 
       hev = vicouv ! horizontal eddy viscosity
 

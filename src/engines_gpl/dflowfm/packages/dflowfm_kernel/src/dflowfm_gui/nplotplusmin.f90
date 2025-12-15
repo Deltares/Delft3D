@@ -43,11 +43,15 @@ contains
       if (IPM == 1) then
 !         nPLOT = MIN(nPLOT+1,ndx)
          nplot = nplot + 1
-         if (nplot > Ndx) nplot = nplot - Ndx
+         if (nplot > Ndx) then
+            nplot = nplot - Ndx
+         end if
       else if (ipm == -1) then
 !         nPLOT = MAX(nPLOT-1,1)
          nplot = nplot - 1
-         if (nplot < 1) nplot = nplot + Ndx
+         if (nplot < 1) then
+            nplot = nplot + Ndx
+         end if
       else
          nplot = ipm
       end if

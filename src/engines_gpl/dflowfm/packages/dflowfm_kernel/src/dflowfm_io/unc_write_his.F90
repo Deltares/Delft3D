@@ -173,7 +173,9 @@ contains
 
       nc_precision = netcdf_data_type(md_nc_his_precision)
 
-      if (timon) call timstrt("unc_write_his", handle_extra(54))
+      if (timon) then
+         call timstrt("unc_write_his", handle_extra(54))
+      end if
 
       ! Another time-partitioned file needs to start, reset iteration count (and file).
       if (ti_split > 0.0_dp .and. curtime_split /= time_split0) then
@@ -184,7 +186,9 @@ contains
       ! Close/reset any previous hisfile.
       if (ihisfile /= 0) then ! reset stord ncid to zero if file not open
          ierr = nf90_inquire(ihisfile, ndims)
-         if (ierr /= 0) ihisfile = 0
+         if (ierr /= 0) then
+            ihisfile = 0
+         end if
       end if
 
       if (ihisfile > 0 .and. it_his == 0) then
@@ -209,7 +213,9 @@ contains
 #endif
 
       if (ihisfile == 0) then
-         if (timon) call timstrt("unc_write_his INIT/DEF", handle_extra(61))
+         if (timon) then
+            call timstrt("unc_write_his INIT/DEF", handle_extra(61))
+         end if
 
          call realloc(id_tra, ITRAN - ITRA1 + 1, keepExisting=.false.)
 
@@ -335,7 +341,9 @@ contains
             ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
          end if
 
-         if (timon) call timstrt("unc_write_his DEF structures", handle_extra(60))
+         if (timon) then
+            call timstrt("unc_write_his DEF structures", handle_extra(60))
+         end if
 
          ! General structure (either via old .ext file or new structures.ini file)
          if (jaoldstr == 1) then
@@ -469,7 +477,9 @@ contains
          ierr = unc_def_his_structure_static_vars(ihisfile, ST_LATERAL, jahislateral, numlatsg, 'point', nNodesLat, id_strlendim, &
                                                   id_latdim, id_lat_id, id_latgeom_node_count, id_latgeom_node_coordx, id_latgeom_node_coordy)
          ! TODO: UNST-7239: remove separate average IDX?
-         if (timon) call timstop(handle_extra(60))
+         if (timon) then
+            call timstop(handle_extra(60))
+         end if
 
          if (dad_included) then ! Output for dredging and dumping
             call check_netcdf_error(nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim))
@@ -616,9 +626,13 @@ contains
                case (UNC_LOC_OBSCRS)
                   call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_crsdim, id_timedim], var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_GLOBAL)
-                  if (timon) call timstrt("unc_write_his DEF bal", handle_extra(59))
+                  if (timon) then
+                     call timstrt("unc_write_his DEF bal", handle_extra(59))
+                  end if
                   call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_timedim], var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
-                  if (timon) call timstop(handle_extra(59))
+                  if (timon) then
+                     call timstop(handle_extra(59))
+                  end if
                end select
 
                if (len_trim(var_standard_name) > 0) then
@@ -631,9 +645,13 @@ contains
          end do
 
          call check_netcdf_error(nf90_enddef(ihisfile))
-         if (timon) call timstop(handle_extra(61))
+         if (timon) then
+            call timstop(handle_extra(61))
+         end if
 
-         if (timon) call timstrt('unc_write_his timeindep data', handle_extra(63))
+         if (timon) then
+            call timstrt('unc_write_his timeindep data', handle_extra(63))
+         end if
          if (it_his == 0) then
             ! Observation stations
             do i = 1, numobs + nummovobs
@@ -645,9 +663,15 @@ contains
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs, start=[1], count=[nNodesCrs]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs, start=[1], count=[nNodesCrs]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_count, nodeCountCrs))
-               if (allocated(geomXCrs)) deallocate (geomXCrs)
-               if (allocated(geomYCrs)) deallocate (geomYCrs)
-               if (allocated(nodeCountCrs)) deallocate (nodeCountCrs)
+               if (allocated(geomXCrs)) then
+                  deallocate (geomXCrs)
+               end if
+               if (allocated(geomYCrs)) then
+                  deallocate (geomYCrs)
+               end if
+               if (allocated(nodeCountCrs)) then
+                  deallocate (nodeCountCrs)
+               end if
             end if
 
             ! Source-sinks
@@ -706,7 +730,9 @@ contains
             end if
 
             call unc_put_his_structure_static_vars(ihisfile)
-            if (timon) call timstop(handle_extra(63))
+            if (timon) then
+               call timstop(handle_extra(63))
+            end if
          end if
       end if
       ! Increment output counters in m_flowtimes.
@@ -716,13 +742,17 @@ contains
       time_his = tim
       it_his = it_his + 1
 
-      if (timon) call timstrt('unc_write_his time data', handle_extra(64))
+      if (timon) then
+         call timstrt('unc_write_his time data', handle_extra(64))
+      end if
 
       call check_netcdf_error(nf90_put_var(ihisfile, id_time, time_his, [it_his]))
       call check_netcdf_error(nf90_put_var(ihisfile, id_timebds, [time_his_prev, time_his], [1, it_his]))
       time_his_prev = time_his
       call check_netcdf_error(nf90_put_var(ihisfile, id_timestep, dts, [it_his]))
-      if (timon) call timstop(handle_extra(64))
+      if (timon) then
+         call timstop(handle_extra(64))
+      end if
 
 !   Observation points (fixed+moving)
 
@@ -801,9 +831,13 @@ contains
             case (UNC_LOC_DRED_LINK)
                call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=[1, 1, it_his], count=[dadpar%nalink, stmpar%lsedtot, 1]))
             case (UNC_LOC_GLOBAL)
-               if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
+               if (timon) then
+                  call timstrt('unc_write_his IDX data', handle_extra(67))
+               end if
                call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=[it_his]))
-               if (timon) call timstop(handle_extra(67))
+               if (timon) then
+                  call timstop(handle_extra(67))
+               end if
             end select
          end associate
       end do
@@ -832,7 +866,9 @@ contains
          call check_netcdf_error(nf90_sync(ihisfile)) ! Flush file
       end if
 
-      if (timon) call timstop(handle_extra(54))
+      if (timon) then
+         call timstop(handle_extra(54))
+      end if
 
    contains
       !> Define the static variables for a single structure type.

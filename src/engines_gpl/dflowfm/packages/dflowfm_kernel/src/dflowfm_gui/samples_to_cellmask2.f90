@@ -62,7 +62,9 @@ contains
 
       do k = 1, nump
          nn = netcell(k)%N
-         if (nn < 1) cycle
+         if (nn < 1) then
+            cycle
+         end if
 
          do n = 1, nn
             kk = netcell(k)%nod(n)

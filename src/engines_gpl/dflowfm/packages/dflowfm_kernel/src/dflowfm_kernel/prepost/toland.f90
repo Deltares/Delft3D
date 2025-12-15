@@ -70,7 +70,9 @@ contains
 
       jout = -999
       rlout = -1.0_dp
-      if (MXLAN == 0) return
+      if (MXLAN == 0) then
+         return
+      end if
 
       DISMIN = 9e+33
       inb = IMISS

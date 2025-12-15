@@ -58,7 +58,9 @@ contains
          ierr = flow_modelinit()
       end if
 
-      if (ndx == 0) return ! No valid flow network was initialized
+      if (ndx == 0) then
+         return ! No valid flow network was initialized
+      end if
 
       call inctime_user()
       if (time0 >= time_user) then
@@ -67,7 +69,9 @@ contains
       end if
       ! ipv time0
       tim1fld = max(time_user, tim1fld)
-      if (janudge == 1) call setzcs()
+      if (janudge == 1) then
+         call setzcs()
+      end if
       call set_external_forcings(tim1fld, .false., ierr) ! set field oriented forcings. boundary oriented forcings are in
 
       ! call flow_externalinput(time_user)                  ! receive RTC signals etc

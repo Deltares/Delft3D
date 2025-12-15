@@ -69,7 +69,9 @@ contains
             write (mout, '(A)') 'time0/60, dts, dtsc, kkcflmx, kcflmx-kbot(kkcflmx)+1, vol1(kcflmx), squ2D(kcflmx), squ(kcflmx), sqi(kcflmx) '
          end if
          if (kkcflmx > 0) then
-            if (kcflmx == 0) kcflmx = kkcflmx
+            if (kcflmx == 0) then
+               kcflmx = kkcflmx
+            end if
             if (autotimestep == AUTO_TIMESTEP_3D_HOR_OUT .or. autotimestep == AUTO_TIMESTEP_3D_HOR_INOUT) then
                write (mout, '(3F14.4,2I8,4F14.4)') time0 / 60.0_dp, dts, dtsc, kkcflmx, kcflmx - kbot(kkcflmx) + 1, vol1(kcflmx), squ2D(kkcflmx), squ(kcflmx), sqi(kcflmx)
             else

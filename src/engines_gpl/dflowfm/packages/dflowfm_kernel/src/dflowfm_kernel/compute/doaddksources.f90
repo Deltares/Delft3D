@@ -50,9 +50,13 @@ contains
       real(kind=dp) :: qsrck, dvoli, dtol = 1.0e-4_dp
 
       do n = 1, numsrc
-         if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) cycle ! due to initialisation
+         if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) then
+            cycle ! due to initialisation
+         end if
 
-         if (arsrc(n) == 0) cycle
+         if (arsrc(n) == 0) then
+            cycle
+         end if
          kk = ksrc(1, n) ! 2D pressure cell nr FROM
          kk2 = ksrc(4, n) ! 2D pressure cell nr TO
          qsrck = qsrc(n)
