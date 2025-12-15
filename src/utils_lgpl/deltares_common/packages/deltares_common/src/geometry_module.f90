@@ -36,6 +36,8 @@ module geometry_module
 !!--declarations----------------------------------------------------------------
    use precision, only: dp
    use MessageHandling, only: msgbox, mess, LEVEL_ERROR
+   use m_missing, only: jins, dmiss
+
    implicit none
 
    private
@@ -48,6 +50,7 @@ module geometry_module
    public :: clockwise
 
    public :: pinpok
+   public :: pinpok_raycast
    public :: dpinpok
    public :: dbdistance
    public :: getdx
@@ -249,6 +252,77 @@ contains
       cw = an > ap
    end function clockwise_hp
 
+!> Optimized ray-casting point-in-polygon test.
+!! Pure function that works with array slices or full arrays.
+   pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
+
+      real(kind=dp), intent(in) :: xl, yl !< Point coordinates to test
+      integer, intent(in) :: n !< Number of polygon points
+      real(kind=dp), intent(in) :: x(n), y(n) !< Polygon coordinates (at least n elements)
+      logical :: is_inside !< Result: true if inside (respecting jins mode)
+
+      ! Locals
+      integer :: i, j, crossings
+      real(kind=dp) :: x_j, y_j, x_i, y_i, x_intersect
+
+      is_inside = .false.
+
+      ! Degenerate polygon check
+      if (n <= 2) then
+         is_inside = .true.
+         if (jins == 0) is_inside = .not. is_inside
+         return
+      end if
+
+      ! Ray-casting algorithm: count crossings of horizontal ray from point to +infinity
+      crossings = 0
+      j = n ! Start with last point
+
+      do i = 1, n
+         ! Check for missing value (polygon separator)
+         if (x(i) == dmiss) exit
+
+         x_j = x(j)
+         y_j = y(j)
+         x_i = x(i)
+         y_i = y(i)
+
+         ! Check if point is exactly on a vertex
+         if (xl == x_j .and. yl == y_j) then
+            is_inside = .true.
+            if (jins == 0) is_inside = .not. is_inside
+            return
+         end if
+
+         ! Check if ray crosses this edge
+         ! Edge crosses horizontal line through test point if one endpoint is above and one below
+         if ((y_j > yl) .neqv. (y_i > yl)) then
+            ! Compute x-coordinate of edge-ray intersection
+            x_intersect = x_j + (yl - y_j) * (x_i - x_j) / (y_i - y_j)
+
+            if (xl < x_intersect) then
+               ! Ray crosses edge to the right of point
+               crossings = crossings + 1
+            else if (xl == x_intersect) then
+               ! Point is exactly on the edge
+               is_inside = .true.
+               if (jins == 0) is_inside = .not. is_inside
+               return
+            end if
+         end if
+
+         j = i ! Current point becomes previous for next iteration
+      end do
+
+      ! Odd number of crossings = inside, even = outside
+      is_inside = (mod(crossings, 2) == 1)
+
+      ! Respect jins mode
+      if (jins == 0) then
+         is_inside = .not. is_inside
+      end if
+
+   end function pinpok_raycast
    !
    ! PINPOK
    !

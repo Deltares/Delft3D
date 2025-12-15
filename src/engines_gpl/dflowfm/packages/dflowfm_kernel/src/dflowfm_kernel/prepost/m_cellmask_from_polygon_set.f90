@@ -207,7 +207,7 @@ contains
 !> Elemental wrapper for cellmask operations using module-level polygon arrays
 elemental function pinpok_elemental(x, y, i_poly) result(is_inside)
    use m_polygon, only: xpl, ypl
-   use m_point_in_polygon, only: pinpok_raycast
+   use geometry_module, only: pinpok_raycast
    
    implicit none
    

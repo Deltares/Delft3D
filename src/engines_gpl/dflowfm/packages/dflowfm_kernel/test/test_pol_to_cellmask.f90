@@ -4,8 +4,7 @@ module test_pol_to_cellmask
    use m_missing, only: dmiss
    use network_data, only: cellmask, npl, nump, xzw, yzw, xpl, ypl, zpl
    use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup
-   use geometry_module, only: pinpok
-   use m_point_in_polygon, only: pinpok_raycast
+   use geometry_module, only: pinpok, pinpok_raycast
 
    implicit none
 
