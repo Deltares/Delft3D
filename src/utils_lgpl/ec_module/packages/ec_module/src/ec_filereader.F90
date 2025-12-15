@@ -231,6 +231,12 @@ module m_ec_filereader
                      success = ecBCReadBlock(fileReaderPtr, fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%timesteps, &
                                                             fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arr1dPtr)
                      if (success) then
+                        ! TK_Temp: set z-value (mis)use ELEMENTSETPTR%Z to detrmine z-coordinate needed or not
+                        if (associated(fileReaderPtr%items(1)%ptr%ELEMENTSETPTR%Z)) then 
+                           fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arrzPtr = fileReaderPtr%BC%VP
+                        end if
+	 
+ 
                         fieldPtrA => fileReaderPtr%items(1)%ptr%sourceT1FieldPtr
                         fileReaderPtr%items(1)%ptr%sourceT1FieldPtr => fileReaderPtr%items(1)%ptr%sourceT0FieldPtr
                         fileReaderPtr%items(1)%ptr%sourceT0FieldPtr => fieldPtrA
