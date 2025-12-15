@@ -103,6 +103,7 @@ contains
          call precicef_create_with_communicator(precice_state%component_name, precice_config_name, my_rank, numranks, DFM_COMM_DFMWORLD, len(precice_state%component_name), len(precice_config_name))
       end if
       call register_flow_nodes_with_precice(precice_state%flow_vertex_ids)
+      call register_dummy_mesh_from_env(precice_state)
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then
          call precice_write_data(precice_state, bl, s1)
@@ -181,6 +182,88 @@ contains
       print *, '[FM] Registered ', num_triangles, ' triangles with preCICE'
    end subroutine register_flow_nodes_with_precice
 
+   subroutine register_dummy_mesh_from_env(precice_state)
+      !! Read number of dummy scalars from environment variable and register dummy mesh
+      use m_fm_precice_state_t, only: fm_precice_state_t
+      implicit none(type, external)
+
+      type(fm_precice_state_t), intent(inout) :: precice_state
+      character(len=100) :: env_value
+      integer :: num_scalars, ios
+
+      ! Read PRECICE_NUM_DUMMY_SCALARS environment variable (default: 100)
+      call get_environment_variable('PRECICE_NUM_DUMMY_SCALARS', env_value)
+      
+      if (len_trim(env_value) > 0) then
+         read(env_value, *, iostat=ios) num_scalars
+         if (ios /= 0) then
+            print *, '[FM] Warning: Invalid PRECICE_NUM_DUMMY_SCALARS value "', trim(env_value), '", using default 100'
+            num_scalars = 100
+         else if (num_scalars < 0) then
+            print *, '[FM] Warning: PRECICE_NUM_DUMMY_SCALARS must be non-negative, using 0 (disabled)'
+            num_scalars = 0
+         else if (num_scalars > 1000000) then
+            print *, '[FM] Warning: PRECICE_NUM_DUMMY_SCALARS too large (', num_scalars, '), capping at 1000000'
+            num_scalars = 1000000
+         else
+            print *, '[FM] Using PRECICE_NUM_DUMMY_SCALARS=', num_scalars, ' from environment'
+         end if
+      else
+         num_scalars = 0  ! Default value
+         print *, '[FM] PRECICE_NUM_DUMMY_SCALARS not set, using default:', num_scalars
+      end if
+
+      if (num_scalars > 0) then
+         call register_dummy_mesh_with_precice(precice_state, num_scalars)
+      else
+         print *, '[FM] Dummy mesh registration disabled (num_scalars=0)'
+      end if
+   end subroutine register_dummy_mesh_from_env
+
+   subroutine register_dummy_mesh_with_precice(precice_state, num_scalars)
+      use precice, only: precicef_set_vertices
+      use m_fm_precice_state_t, only: fm_precice_state_t
+      use, intrinsic :: iso_c_binding, only: c_int, c_double
+      implicit none(type, external)
+
+      type(fm_precice_state_t), intent(inout) :: precice_state
+      integer, intent(in) :: num_scalars
+
+      real(kind=c_double), dimension(2) :: dummy_coords
+      integer :: i
+      character(len=20) :: scalar_name_temp
+
+      ! Register single point at origin (0, 0)
+      dummy_coords(1) = 0.0_c_double
+      dummy_coords(2) = 0.0_c_double
+
+      allocate(precice_state%dummy_vertex_ids(1))
+      call precicef_set_vertices(precice_state%dummy_mesh_name, 1, dummy_coords, &
+                                 precice_state%dummy_vertex_ids, len(precice_state%dummy_mesh_name))
+      
+      print *, '[FM] Registered dummy mesh with 1 vertex at (0,0)'
+
+      ! Create scalar field names
+      precice_state%num_dummy_scalars = num_scalars
+      allocate(precice_state%dummy_scalar_names(num_scalars))
+      allocate(precice_state%dummy_scalar_values(num_scalars))
+      
+      do i = 1, num_scalars
+         write(scalar_name_temp, '(a,i7.7)') 'fm_scalar_', i
+         precice_state%dummy_scalar_names(i) = trim(scalar_name_temp)
+         ! Generate fixed value: equal to the scalar number
+         !call random_number(dummy_coords(1))  ! Reuse dummy_coords for random generation
+         !if (dummy_coords(1) < 0.5_c_double) then
+         !   precice_state%dummy_scalar_values(i) = 0.0_c_double
+         !else
+         !   precice_state%dummy_scalar_values(i) = 1.0_c_double
+         !end if
+         precice_state%dummy_scalar_values(i) = i
+      end do
+      
+      print *, '[FM] Created ', num_scalars, ' dummy scalar field names'
+   end subroutine register_dummy_mesh_with_precice
+
    function is_coupling_ongoing() result(is_ongoing)
       use precice, only: precicef_is_coupling_ongoing
       use, intrinsic :: iso_c_binding, only: c_int
@@ -227,7 +310,37 @@ contains
       call precice_write_flow_velocities(precice_state)
       call precice_write_wind(precice_state)
       call precice_write_vegetation(precice_state)
+      call precice_write_dummy_scalars(precice_state)  ! Write dummy scalars for testing
    end subroutine precice_write_data
+
+   subroutine precice_write_dummy_scalars(precice_state)
+      use m_fm_precice_state_t, only: fm_precice_state_t
+      use precice, only: precicef_write_data
+      use, intrinsic :: iso_c_binding, only: c_double
+      implicit none(type, external)
+
+      type(fm_precice_state_t), intent(in) :: precice_state
+      real(kind=c_double), dimension(1) :: scalar_value
+      integer :: i
+
+      if (precice_state%num_dummy_scalars == 0) return
+
+      do i = 1, precice_state%num_dummy_scalars
+         ! Use the fixed value that was set during initialization
+         scalar_value(1) = precice_state%dummy_scalar_values(i)
+         
+         ! Write to preCICE
+         call precicef_write_data(precice_state%dummy_mesh_name, &
+                                  precice_state%dummy_scalar_names(i), &
+                                  1, precice_state%dummy_vertex_ids, &
+                                  scalar_value, &
+                                  len(precice_state%dummy_mesh_name), &
+                                  len(precice_state%dummy_scalar_names(i)))
+      end do
+      
+      ! Print after writing all scalars
+      print *, '[FM] Wrote ', precice_state%num_dummy_scalars, ' dummy scalars, last value: ', scalar_value(1)
+   end subroutine precice_write_dummy_scalars
 
    subroutine precice_write_bed_levels(precice_state, bed_levels)
       use precision, only: dp

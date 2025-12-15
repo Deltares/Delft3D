@@ -80,6 +80,7 @@ contains
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
 
       call register_wave_nodes_with_precice(mdw_file_name, precice_state)
+      call register_dummy_mesh_from_env_wave(precice_state)
       call precicef_initialize()
    end subroutine initialize_fm_coupling
 
@@ -192,6 +193,79 @@ contains
       call precicef_set_mesh_triangles(precice_state%swan_mesh_name, num_triangles, precice_triangle_nodes, len(precice_state%swan_mesh_name))
       print *, '[Wave] Registered ', num_triangles, ' triangles with preCICE'
    end subroutine register_wave_nodes_with_precice
+
+   subroutine register_dummy_mesh_from_env_wave(precice_state)
+      !! Read number of dummy scalars from environment variable and register dummy mesh
+      use m_wave_precice_state_t, only: wave_precice_state_t
+      implicit none(type, external)
+
+      type(wave_precice_state_t), intent(inout) :: precice_state
+      character(len=100) :: env_value
+      integer :: num_scalars, ios
+
+      ! Read PRECICE_NUM_DUMMY_SCALARS environment variable (default: 100)
+      call get_environment_variable('PRECICE_NUM_DUMMY_SCALARS', env_value)
+      
+      if (len_trim(env_value) > 0) then
+         read(env_value, *, iostat=ios) num_scalars
+         if (ios /= 0) then
+            print *, '[Wave] Warning: Invalid PRECICE_NUM_DUMMY_SCALARS value "', trim(env_value), '", using default 100'
+            num_scalars = 100
+         else if (num_scalars < 0) then
+            print *, '[Wave] Warning: PRECICE_NUM_DUMMY_SCALARS must be non-negative, using 0 (disabled)'
+            num_scalars = 0
+         else if (num_scalars > 1000000) then
+            print *, '[Wave] Warning: PRECICE_NUM_DUMMY_SCALARS too large (', num_scalars, '), capping at 1000000'
+            num_scalars = 1000000
+         else
+            print *, '[Wave] Using PRECICE_NUM_DUMMY_SCALARS=', num_scalars, ' from environment'
+         end if
+      else
+         num_scalars = 0  ! Default value
+         print *, '[Wave] PRECICE_NUM_DUMMY_SCALARS not set, using default:', num_scalars
+      end if
+
+      if (num_scalars > 0) then
+         call register_dummy_mesh_wave(precice_state, num_scalars)
+      else
+         print *, '[Wave] Dummy mesh registration disabled (num_scalars=0)'
+      end if
+   end subroutine register_dummy_mesh_from_env_wave
+
+   subroutine register_dummy_mesh_wave(precice_state, num_scalars)
+      use precice, only: precicef_set_vertices
+      use m_wave_precice_state_t, only: wave_precice_state_t
+      use, intrinsic :: iso_c_binding, only: c_int, c_double
+      implicit none(type, external)
+
+      type(wave_precice_state_t), intent(inout) :: precice_state
+      integer, intent(in) :: num_scalars
+
+      real(kind=c_double), dimension(2) :: dummy_coords
+      integer :: i
+      character(len=17) :: scalar_name_temp
+
+      ! Register single point at origin (0, 0)
+      dummy_coords(1) = 0.0_c_double
+      dummy_coords(2) = 0.0_c_double
+
+      allocate(precice_state%dummy_vertex_ids(1))
+      call precicef_set_vertices(precice_state%dummy_mesh_name, 1, dummy_coords, &
+                                 precice_state%dummy_vertex_ids, len(precice_state%dummy_mesh_name))
+      
+      print *, '[Wave] Registered dummy mesh with 1 vertex at (0,0)'
+
+      ! Create scalar field names to read (matching FM's naming)
+      precice_state%num_dummy_scalars = num_scalars
+      allocate(precice_state%dummy_scalar_names(num_scalars))
+      
+      do i = 1, num_scalars
+         write(scalar_name_temp, '(a,i7.7)') 'fm_scalar_', i
+         precice_state%dummy_scalar_names(i) = trim(scalar_name_temp)
+      end do
+      
+      print *, '[Wave] Created ', num_scalars, ' dummy scalar field names for reading'
+   end subroutine register_dummy_mesh_wave
 
    function get_swan_grid(mdw_file, swan_grid, number_of_active_nodes) result(retval)
       use read_grids, only: read_grd

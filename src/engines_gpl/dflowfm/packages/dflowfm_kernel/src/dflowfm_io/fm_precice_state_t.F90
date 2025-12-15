@@ -1,5 +1,5 @@
 module m_fm_precice_state_t
-   use, intrinsic :: iso_c_binding, only: c_int, c_char
+   use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
    implicit none(type, external)
    private
    type, public :: fm_precice_state_t
@@ -25,6 +25,12 @@ module m_fm_precice_state_t
       character(kind=c_char, len=4) :: hrms_name = "hrms"
       character(kind=c_char, len=2) :: tp_name = "tp"
       character(kind=c_char, len=4) :: pdir_name = "pdir"
+      ! Dummy mesh for latency testing
+      character(kind=c_char, len=13) :: dummy_mesh_name = "fm_dummy_mesh"
+      integer(kind=c_int), dimension(:), allocatable :: dummy_vertex_ids
+      integer :: num_dummy_scalars = 0
+      character(kind=c_char, len=17), dimension(:), allocatable :: dummy_scalar_names
+      real(kind=c_double), dimension(:), allocatable :: dummy_scalar_values  
    end type fm_precice_state_t
    type(fm_precice_state_t), public :: global_fm_precice_state
 end module m_fm_precice_state_t

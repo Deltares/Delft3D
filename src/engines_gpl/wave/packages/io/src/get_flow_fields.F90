@@ -215,6 +215,12 @@ contains
                      & mudfilnam)
       end if
       !
+      ! Read dummy scalars for latency testing (only when reading from preCICE)
+      !
+      if (sr%flowgridfile /= ' ') then
+         call read_dummy_scalars_from_precice(precice_state)
+      end if
+      !
       ! Deallocate memory swan input fields defined on flow grid
       !
       call dealloc_input_fields(fif, wavedata%mode)
@@ -265,4 +271,37 @@ contains
          end do
       end do
    end subroutine precice_read_data
+
+   ! Read dummy scalars from FM for latency testing
+   subroutine read_dummy_scalars_from_precice(precice_state)
+      use m_wave_precice_state_t, only: wave_precice_state_t
+      use precice, only: precicef_read_data
+      use, intrinsic :: iso_c_binding, only: c_double
+      implicit none(type, external)
+
+      type(wave_precice_state_t), intent(in) :: precice_state
+      real(kind=c_double), dimension(1) :: scalar_value
+      integer :: i, mesh_name_len, scalar_name_len
+
+      if (precice_state%num_dummy_scalars == 0) return
+
+      mesh_name_len = len(precice_state%dummy_mesh_name)
+      
+      do i = 1, precice_state%num_dummy_scalars
+         ! Initialize with 0 before reading
+         scalar_value(1) = 0.0_c_double
+         
+         scalar_name_len = len(precice_state%dummy_scalar_names(i))
+         ! Read from preCICE
+         call precicef_read_data(precice_state%dummy_mesh_name, &
+                                 precice_state%dummy_scalar_names(i), &
+                                 1, precice_state%dummy_vertex_ids, &
+                                 0.0_c_double, scalar_value, &
+                                 mesh_name_len, &
+                                 scalar_name_len)
+      end do
+
+      print *, '[Wave] Read ', precice_state%num_dummy_scalars, ' dummy scalars'
+   end subroutine read_dummy_scalars_from_precice
+
 end module m_get_flow_fields
