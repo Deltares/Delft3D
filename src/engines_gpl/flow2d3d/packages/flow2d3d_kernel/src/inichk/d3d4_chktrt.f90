@@ -46,21 +46,13 @@ subroutine d3d4_chktrt(lundia, error, kcu, kcv, gdp)
     integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in) :: kcv
     
     ! Local variables
-    integer :: jdir, m, n, nm
-    integer, pointer :: nodir
+    integer :: m, n, nm
 
-    nodir => gdp%gdtrachy%gen%nodir
-
-    do jdir = 1, nodir
-        do m = gdp%d%mlb, gdp%d%mub
-            do n = gdp%d%nlb, gdp%d%nub
-                call n_and_m_to_nm(n, m, nm, gdp)
-                if (jdir == 1) then
-                    gdp%gdtrachy%dir(jdir)%kcu_trt(nm) = kcu(n, m)
-                else
-                    gdp%gdtrachy%dir(jdir)%kcu_trt(nm) = kcv(n, m)
-                end if
-            end do
+    do m = gdp%d%mlb, gdp%d%mub
+        do n = gdp%d%nlb, gdp%d%nub
+            call n_and_m_to_nm(n, m, nm, gdp)
+            gdp%gdtrachy%dir(1)%kcu_trt(nm) = kcu(n, m)
+            gdp%gdtrachy%dir(2)%kcu_trt(nm) = kcv(n, m)
         end do
     end do
 
