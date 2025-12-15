@@ -2465,7 +2465,7 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: realloc
-      use gridoperations, only: incells
+      use m_cellmask_from_polygon_set, only: init_netcell_incells_cache, incells_cellmask, cleanup_netcell_incells_cache
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2816,16 +2816,19 @@ contains
                end if
             end do
          end if
+         call init_netcell_incells_cache()
          !$OMP PARALLEL DO SCHEDULE(GUIDED)
          do n = ndx2D + 1, ndxi
-            if (kcs(n) == 1) then
-               call incells(Xz(n), Yz(n), ja)
+            if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
+               ja = incells_cellmask(Xz(n), Yz(n))
                if (ja >= 1) then
                   bare(n) = 0.0_dp
                end if
             end if
          end do
          !$OMP END PARALLEL DO
+         call cleanup_netcell_incells_cache()
+
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)
