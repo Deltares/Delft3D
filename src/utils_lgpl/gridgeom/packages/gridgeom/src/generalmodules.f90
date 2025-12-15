@@ -167,11 +167,10 @@ contains
       use m_missing
       implicit none
 
-      call realloc(xph, maxpol, keepExisting=.false.)
-      call realloc(yph, maxpol, keepExisting=.false.)
-      call realloc(zph, maxpol, keepExisting=.false.)
-
       if (NPL > 0) then
+         call realloc(xph, maxpol, keepExisting=.false.)
+         call realloc(yph, maxpol, keepExisting=.false.)
+         call realloc(zph, maxpol, keepExisting=.false.)
          XPH(1:NPL) = XPL(1:NPL)
          YPH(1:NPL) = YPL(1:NPL)
          ZPH(1:NPL) = ZPL(1:NPL)
@@ -198,8 +197,8 @@ contains
          XPL(1:NPH) = XPH(1:NPH)
          YPL(1:NPH) = YPH(1:NPH)
          ZPL(1:NPH) = ZPH(1:NPH)
+         deallocate(XPH, YPH, ZPH)
       end if
-
       MP = MPS
       NPL = NPH
 
