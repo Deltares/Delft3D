@@ -4483,7 +4483,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f015_c030_bedlev_xyz_netbnd" ref="dflowfm_default">
-      <path version="2025-10-15T15:17:32.522000">e02_dflowfm/f015_spatial_interpolation/c030_bedlev_xyz_netbnd</path>
+      <path version="2025-12-16T16:01:33.921000">e02_dflowfm/f015_spatial_interpolation/c030_bedlev_xyz_netbnd</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/bathymetry_map.nc" type="netCDF">
