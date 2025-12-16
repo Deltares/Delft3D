@@ -217,7 +217,7 @@ contains
       !
       ! Read dummy scalars for latency testing (only when reading from preCICE)
       !
-      if (sr%flowgridfile /= ' ') then
+      if (precice_state%num_dummy_scalars > 0) then
          call read_dummy_scalars_from_precice(precice_state)
       end if
       !

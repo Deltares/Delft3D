@@ -53,8 +53,8 @@ module m_wave_precice_state_t
       character(kind=c_char, len=5) :: setup_name = "setup"
       ! Dummy mesh for latency testing
       character(kind=c_char, len=15) :: dummy_mesh_name = "wave_dummy_mesh"
-      integer(kind=c_int), dimension(:), allocatable :: dummy_vertex_ids
-      integer :: num_dummy_scalars = 0
+      integer(kind=c_int), dimension(1) :: dummy_vertex_ids
+      integer :: num_dummy_scalars = 10
       character(kind=c_char, len=17), dimension(:), allocatable :: dummy_scalar_names
    end type wave_precice_state_t
 end module m_wave_precice_state_t
