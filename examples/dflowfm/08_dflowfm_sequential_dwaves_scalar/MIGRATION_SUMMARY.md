@@ -70,13 +70,17 @@ cp ../08_dflowfm_sequential_dwaves/run_precice.sh .
 
 ```
 08_dflowfm_sequential_dwaves_scalar/
-├── add_dummy_scalars.py          # Augmentation script (NEW - enhanced)
-├── precice_config.xml            # Generated config (augmented from base)
+├── add_dummy_scalars.py          # Config augmentation script (ACTIVE)
+├── precice_config_template.xml   # Base FM-SWAN config template (max-time=90000)
+├── precice_config.xml            # Generated config (augmented from template)
+├── run_precice.sh                # Test execution script (from base case)
+├── dflowfm/                      # FM model (from base case)
+├── dwaves/                       # SWAN model (from base case)
 ├── README.md                     # User guide
-├── QUICK_REFERENCE.md           # Quick start
-├── IMPLEMENTATION_SUMMARY.md    # This file
-└── generate_precice_config.py   # Old standalone generator (kept for reference)
+└── MIGRATION_SUMMARY.md          # This file
 ```
+
+**Note**: `generate_precice_config.py` was removed (deprecated standalone generator)
 
 **Base case** (unchanged):
 ```

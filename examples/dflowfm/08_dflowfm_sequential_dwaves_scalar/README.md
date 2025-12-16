@@ -1,249 +1,495 @@
-# preCICE Scalar Latency Testing for Delft3D FM-SWAN Coupling# preCICE Scalar Latency Testing
+# preCICE Scalar Latency Testing for Delft3D FM-SWAN Coupling# preCICE Scalar Latency Testing for Delft3D FM-SWAN Coupling# preCICE Scalar Latency Testing
 
 
 
-This example extends the `08_dflowfm_sequential_dwaves` test case with dummy scalar exchange infrastructure for measuring preCICE communication latency.This directory contains infrastructure for measuring preCICE latency when transferring many scalar values between Delft3D-FM and SWAN/Wave models.
+This example extends the `08_dflowfm_sequential_dwaves` test case with dummy scalar exchange infrastructure for measuring preCICE communication latency.
 
 
 
-## Purpose## Purpose
+## PurposeThis example extends the `08_dflowfm_sequential_dwaves` test case with dummy scalar exchange infrastructure for measuring preCICE communication latency.This directory contains infrastructure for measuring preCICE latency when transferring many scalar values between Delft3D-FM and SWAN/Wave models.
 
 
+
+Measure preCICE performance overhead when transferring many scalar values by:
+
+
+
+- Using minimal dummy meshes (single point at origin)## Purpose## Purpose
+
+- Transferring only scalar values (no complex physics)
+
+- Supporting configurable scalar counts for scaling tests
+
+- Providing statistical verification of data integrity
 
 Measure preCICE performance overhead when transferring many scalar values by:The dummy scalar exchange system isolates preCICE communication overhead by:
 
+## Quick Start
+
 - Using minimal dummy meshes (single point at origin)- Using minimal meshes (single point at origin)
 
-- Transferring only scalar values (no complex physics)  - Transferring only scalar values (no complex physics)
+```bash
 
-- Supporting runtime-configurable scalar counts for scaling tests- Supporting configurable scalar counts for scaling tests
+cd /workspaces/Delft3D/examples/dflowfm/08_dflowfm_sequential_dwaves_scalar- Transferring only scalar values (no complex physics)  - Transferring only scalar values (no complex physics)
+
+
+
+# 1. Add 10 dummy scalars to configuration (matches hardcoded value)- Supporting runtime-configurable scalar counts for scaling tests- Supporting configurable scalar counts for scaling tests
+
+python3 add_dummy_scalars.py 10
 
 - Providing statistical verification of data integrity- Providing statistical verification of data integrity
 
-
-
-## Quick Start## Implementation
-
-
-
-```bash### FM Side (Data Provider)
-
-cd /workspaces/Delft3D/examples/dflowfm/08_dflowfm_sequential_dwaves_scalar- **Mesh**: `fm_dummy_mesh` with 1 vertex at (0.0, 0.0)
-
-- **Operation**: Writes N scalars with random values (0-1)
-
-# 1. Add 100 dummy scalars to configuration- **Fields**: `fm_scalar_0000001` through `fm_scalar_NNNNNNN`
-
-python3 add_dummy_scalars.py 100- **Code**: `src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/unstruc_api.F90`
-
-  - `register_dummy_mesh_with_precice()` - mesh registration
-
-# 2. Set environment variable  - `precice_write_dummy_scalars()` - random value generation and writing
+# 2. Set environment variable
 
 source ~/.precice_env
 
+
+
+# 3. Run the coupled model## Quick Start## Implementation
+
+./run_precice.sh
+
+```
+
+
+
+## Implementation```bash### FM Side (Data Provider)
+
+
+
+### FM Side (Data Provider)cd /workspaces/Delft3D/examples/dflowfm/08_dflowfm_sequential_dwaves_scalar- **Mesh**: `fm_dummy_mesh` with 1 vertex at (0.0, 0.0)
+
+
+
+- **Mesh**: `fm_dummy_mesh` with 1 vertex at (0.0, 0.0)- **Operation**: Writes N scalars with random values (0-1)
+
+- **Operation**: Writes N scalars with fixed values (scalar index = value)
+
+- **Fields**: `fm_scalar_0000001` through `fm_scalar_NNNNNNN`# 1. Add 100 dummy scalars to configuration- **Fields**: `fm_scalar_0000001` through `fm_scalar_NNNNNNN`
+
+- **Code**: `src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/unstruc_api.F90`
+
+  - `register_dummy_mesh_with_precice()` - mesh registrationpython3 add_dummy_scalars.py 100- **Code**: `src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_manager/unstruc_api.F90`
+
+  - `precice_write_dummy_scalars()` - value writing
+
+  - `register_dummy_mesh_with_precice()` - mesh registration
+
 ### Wave Side (Data Receiver)
 
-# 3. Run the coupled model- **Mesh**: `wave_dummy_mesh` with 1 vertex at (0.0, 0.0)
+# 2. Set environment variable  - `precice_write_dummy_scalars()` - random value generation and writing
 
-cp ../08_dflowfm_sequential_dwaves/run_precice.sh .- **Operation**: Reads N scalars and computes statistics
+- **Mesh**: `wave_dummy_mesh` with 1 vertex at (0.0, 0.0)
 
-./run_precice.sh- **Fields**: Same as FM, read from `fm_dummy_mesh`
+- **Operation**: Reads N scalars from preCICEsource ~/.precice_env
 
-```- **Code**: 
+- **Fields**: Same as FM, read from `fm_dummy_mesh`
+
+- **Code**: ### Wave Side (Data Receiver)
 
   - `src/engines_gpl/wave/packages/manager/src/wave_main.F90`: `register_dummy_mesh_wave()`
 
-## How It Works  - `src/engines_gpl/wave/packages/manager/src/swan_tot.F90`: `read_dummy_scalars_from_precice()`
+  - `src/engines_gpl/wave/packages/io/src/get_flow_fields.F90`: `read_dummy_scalars_from_precice()`# 3. Run the coupled model- **Mesh**: `wave_dummy_mesh` with 1 vertex at (0.0, 0.0)
 
 
 
-### Configuration Script## Configuration Generation
+## Configuration Generationcp ../08_dflowfm_sequential_dwaves/run_precice.sh .- **Operation**: Reads N scalars and computes statistics
 
 
 
-`add_dummy_scalars.py` modifies the base preCICE configuration from `../08_dflowfm_sequential_dwaves/precice_config.xml` by adding:Use the Python script to generate preCICE configuration with desired scalar count:
+Use `add_dummy_scalars.py` to augment the base configuration with dummy scalars:./run_precice.sh- **Fields**: Same as FM, read from `fm_dummy_mesh`
 
 
 
-1. Dummy scalar declarations (`fm_scalar_0000001`, etc.)```bash
+```bash```- **Code**: 
 
-2. Dummy meshes (`fm_dummy_mesh`, `wave_dummy_mesh`)# Generate config for 100 scalars (default)
+# Generate config for 10 scalars (matches hardcoded default)
+
+python3 add_dummy_scalars.py 10  - `src/engines_gpl/wave/packages/manager/src/wave_main.F90`: `register_dummy_mesh_wave()`
+
+
+
+# Generate config for custom scalar count## How It Works  - `src/engines_gpl/wave/packages/manager/src/swan_tot.F90`: `read_dummy_scalars_from_precice()`
+
+python3 add_dummy_scalars.py 50
+
+
+
+# Generate config for 100 scalars
+
+python3 add_dummy_scalars.py 100### Configuration Script## Configuration Generation
+
+
+
+# Disable dummy scalars (production mode)
+
+python3 add_dummy_scalars.py 0
+
+````add_dummy_scalars.py` modifies the base preCICE configuration from `../08_dflowfm_sequential_dwaves/precice_config.xml` by adding:Use the Python script to generate preCICE configuration with desired scalar count:
+
+
+
+This script:
+
+- Reads from `precice_config_template.xml` (base FM-SWAN configuration with max-time=90000)
+
+- Adds dummy scalar declarations, meshes, and exchanges1. Dummy scalar declarations (`fm_scalar_0000001`, etc.)```bash
+
+- Writes to `precice_config.xml`
+
+- Removes VTK export to reduce I/O overhead2. Dummy meshes (`fm_dummy_mesh`, `wave_dummy_mesh`)# Generate config for 100 scalars (default)
+
+- Sets `PRECICE_NUM_DUMMY_SCALARS` environment variable
 
 3. FM write operations for all dummy scalarspython3 generate_precice_config.py
 
+## Configuration Structure
+
 4. Wave read operations for all dummy scalars
+
+The script modifies the base configuration by adding:
 
 5. Exchanges in the coupling scheme# Generate config for custom scalar count
 
-python3 generate_precice_config.py 500
+1. **Dummy scalar declarations** (`fm_scalar_0000001`, etc.)
 
-### Runtime Behavior
+2. **Dummy meshes** (`fm_dummy_mesh`, `wave_dummy_mesh`)python3 generate_precice_config.py 500
 
-# Generate config for 1000 scalars
+3. **FM write operations** for all dummy scalars
 
-**FM**: Generates random values (0-1) and writes to preCICE  python3 generate_precice_config.py 1000
+4. **Wave read operations** for all dummy scalars### Runtime Behavior
 
-**Wave**: Reads values and computes average (~0.5 expected)```
+5. **Exchanges** in the coupling scheme
+
+6. **Nearest-neighbor mapping** from `fm_dummy_mesh` to `wave_dummy_mesh`# Generate config for 1000 scalars
 
 
 
-### Environment VariableThis creates `precice-config.xml` with:
+## Hardcoded Scalar Count**FM**: Generates random values (0-1) and writes to preCICE  python3 generate_precice_config.py 1000
+
+
+
+The number of scalars is **hardcoded** in the source files:**Wave**: Reads values and computes average (~0.5 expected)```
+
+
+
+- **FM**: `src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_io/fm_precice_state_t.F90`
+
+  ```fortran
+
+  integer :: num_dummy_scalars = 10### Environment VariableThis creates `precice-config.xml` with:
+
+  ```
 
 - All scalar data declarations
 
-`PRECICE_NUM_DUMMY_SCALARS` controls the number at runtime (0-10000):- FM and Wave mesh definitions
+- **Wave**: `src/engines_gpl/wave/packages/io/src/wave_precice_state_t.F90`
 
-- Default: 100- Participant configurations (write/read data)
+  ```fortran`PRECICE_NUM_DUMMY_SCALARS` controls the number at runtime (0-10000):- FM and Wave mesh definitions
 
-- Set to 0 to disable for production runs- Nearest-neighbor mapping
+  integer :: num_dummy_scalars = 10
 
-- Must match the value used in `add_dummy_scalars.py`- Serial explicit coupling scheme
-
-
-
-## Usage Examples## Runtime Configuration
+  ```- Default: 100- Participant configurations (write/read data)
 
 
 
-**Test with 500 scalars:**The number of dummy scalars can be configured at runtime using the `PRECICE_NUM_DUMMY_SCALARS` environment variable:
+**Important**: The preCICE config must match the hardcoded value:- Set to 0 to disable for production runs- Nearest-neighbor mapping
 
-```bash
+- If code says `num_dummy_scalars = 10`, run `python3 add_dummy_scalars.py 10`
 
-python3 add_dummy_scalars.py 500```bash
+- After changing the hardcoded value, rebuild: `./build_install_fm_suite_unix.sh --mode precice --build-type debug`- Must match the value used in `add_dummy_scalars.py`- Serial explicit coupling scheme
 
-source ~/.precice_env# Use default (100 scalars)
 
-./run_precice.shexport PRECICE_NUM_DUMMY_SCALARS=100
+
+## Runtime Behavior
+
+
+
+**FM Process**:## Usage Examples## Runtime Configuration
+
+1. Registers `fm_dummy_mesh` with 1 vertex at (0,0)
+
+2. Creates N scalar field names
+
+3. Each timestep: Writes all scalars (value = scalar index)
+
+4. Logs: `[FM] Wrote N dummy scalars, last value: N.0`**Test with 500 scalars:**The number of dummy scalars can be configured at runtime using the `PRECICE_NUM_DUMMY_SCALARS` environment variable:
+
+
+
+**Wave Process**:```bash
+
+1. Registers `wave_dummy_mesh` with 1 vertex at (0,0)
+
+2. Creates N scalar field names for readingpython3 add_dummy_scalars.py 500```bash
+
+3. Each timestep: Reads all scalars from preCICE
+
+4. No explicit logging (values used for latency measurement only)source ~/.precice_env# Use default (100 scalars)
+
+
+
+## Directory Structure./run_precice.shexport PRECICE_NUM_DUMMY_SCALARS=100
+
+
+
+``````
+
+08_dflowfm_sequential_dwaves_scalar/
+
+├── add_dummy_scalars.py          # Config augmentation script (ACTIVE)# Test with 500 scalars
+
+├── precice_config_template.xml   # Base FM-SWAN config (max-time=90000)
+
+├── precice_config.xml            # Generated config (augmented from template)**Scaling study:**export PRECICE_NUM_DUMMY_SCALARS=500
+
+├── run_precice.sh                # Test execution script
+
+├── dflowfm/                      # FM model files```bash
+
+├── dwaves/                       # SWAN model files
+
+└── README.md                     # This filefor N in 10 50 100 500 1000; do# Disable dummy mesh (for production runs)
 
 ```
-
-# Test with 500 scalars
-
-**Scaling study:**export PRECICE_NUM_DUMMY_SCALARS=500
-
-```bash
-
-for N in 10 50 100 500 1000; do# Disable dummy mesh (for production runs)
 
     python3 add_dummy_scalars.py $Nexport PRECICE_NUM_DUMMY_SCALARS=0
 
+**Note**: `generate_precice_config.py` (if present) is deprecated and not used.
+
     source ~/.precice_env```
+
+## Testing Different Scalar Counts
 
     ./run_precice.sh
 
+To test with different numbers of scalars:
+
 done**Important**: The value must match the number of scalars in your generated `precice-config.xml`.
 
-```
+1. **Update hardcoded values** in both FM and Wave source files
 
-Features:
+2. **Rebuild** the code```
 
-**Disable for production:**- **Default**: 100 scalars if not set
+3. **Regenerate config** to match
 
-```bash- **Range**: 0 to 10000 (enforced with warnings)
+4. **Run test**Features:
 
-export PRECICE_NUM_DUMMY_SCALARS=0- **Disabled**: Set to 0 to skip dummy mesh registration
+
+
+Example for 50 scalars:**Disable for production:**- **Default**: 100 scalars if not set
+
+
+
+```bash```bash- **Range**: 0 to 10000 (enforced with warnings)
+
+# 1. Edit source files - change num_dummy_scalars = 10 to 50
+
+vim src/engines_gpl/dflowfm/packages/dflowfm_kernel/src/dflowfm_io/fm_precice_state_t.F90export PRECICE_NUM_DUMMY_SCALARS=0- **Disabled**: Set to 0 to skip dummy mesh registration
+
+vim src/engines_gpl/wave/packages/io/src/wave_precice_state_t.F90
 
 ```- **Validation**: Automatic bounds checking and error handling
 
+# 2. Rebuild
 
+cd /workspaces/Delft3D
+
+./build_install_fm_suite_unix.sh --mode precice --build-type debug
 
 ## Expected Output## Running Tests
 
+# 3. Regenerate config
+
+cd examples/dflowfm/08_dflowfm_sequential_dwaves_scalar
+
+python3 add_dummy_scalars.py 50
+
+source ~/.precice_env**FM**: `[FM] Using PRECICE_NUM_DUMMY_SCALARS= 100 from environment`  ### Prerequisites
 
 
-**FM**: `[FM] Using PRECICE_NUM_DUMMY_SCALARS= 100 from environment`  ### Prerequisites
 
-**FM**: `[FM] Wrote 100 dummy scalars, last value: 0.XXXX`1. Build Delft3D with preCICE support:
+# 4. Run test**FM**: `[FM] Wrote 100 dummy scalars, last value: 0.XXXX`1. Build Delft3D with preCICE support:
 
-   ```bash
+./run_precice.sh
 
-**Wave**: `[Wave] Using PRECICE_NUM_DUMMY_SCALARS= 100 from environment`     cd /workspaces/Delft3D
+```   ```bash
 
-**Wave**: `[Wave] Read 100 dummy scalars, average value: ~0.5`   ./build_install_fm_suite_unix.sh -DENABLE_PRECICE=ON
 
-   ```
 
-## Troubleshooting
+## Verification**Wave**: `[Wave] Using PRECICE_NUM_DUMMY_SCALARS= 100 from environment`     cd /workspaces/Delft3D
 
-2. Generate preCICE configuration:
+
+
+Check log files for confirmation:**Wave**: `[Wave] Read 100 dummy scalars, average value: ~0.5`   ./build_install_fm_suite_unix.sh -DENABLE_PRECICE=ON
+
+
+
+```bash   ```
+
+# FM log - should show N scalars written
+
+grep "dummy" dflowfm_*.log## Troubleshooting
+
+
+
+# Wave log - should show N scalars read2. Generate preCICE configuration:
+
+grep "dummy" wave_*.log
 
 | Issue | Solution |   ```bash
 
-|-------|----------|   cd examples/precice_scalar_latency_test
+# preCICE logs - check mapping and data exchange
+
+grep "fm_scalar" *.log|-------|----------|   cd examples/precice_scalar_latency_test
+
+```
 
 | "Data not defined" error | Regenerate config: `python3 add_dummy_scalars.py $PRECICE_NUM_DUMMY_SCALARS` |   python3 generate_precice_config.py 100
 
-| Average not ~0.5 | Check mesh registration (both at 0,0) |   ```
+Expected output:
 
-| Dummy scalars not running | Set and source environment variable |
+```| Average not ~0.5 | Check mesh registration (both at 0,0) |   ```
+
+[FM] Registered dummy mesh with 1 vertex at (0,0)
+
+[FM] Created N dummy scalar field names| Dummy scalars not running | Set and source environment variable |
+
+[FM] Wrote N dummy scalars, last value: N.0
 
 3. Ensure preCICE library is available:
 
-## Files   ```bash
+[Wave] Registered dummy mesh with 1 vertex at (0,0)
+
+[Wave] Created N dummy scalar field names for reading## Files   ```bash
+
+```
 
    export LD_LIBRARY_PATH=/path/to/precice/lib:$LD_LIBRARY_PATH
 
+## Performance Considerations
+
 - `add_dummy_scalars.py` - Configuration augmentation script   ```
+
+### Debug vs Release Build
 
 - `precice_config.xml` - Modified configuration (generated)
 
-- `QUICK_REFERENCE.md` - One-page quick start### Execution
+- **Debug build**: Higher memory overhead, slower execution
 
-- `IMPLEMENTATION_SUMMARY.md` - Technical detailsRun FM and Wave in separate terminals with preCICE configuration:
+  - Works well with ~10 scalars- `QUICK_REFERENCE.md` - One-page quick start### Execution
 
+  - May crash with 2+ scalars due to preCICE memory overhead
 
+  - `IMPLEMENTATION_SUMMARY.md` - Technical detailsRun FM and Wave in separate terminals with preCICE configuration:
+
+- **Release build**: Lower memory overhead, faster execution
+
+  - Can handle many more scalars
+
+  - Build with: `./build_install_fm_suite_unix.sh --mode precice --build-type release`
 
 **Base case**: `../08_dflowfm_sequential_dwaves/`**Terminal 1 (FM):**
 
+### Memory Overhead
+
 ```bash
 
-## Referencescd examples/precice_scalar_latency_test
+preCICE allocates internal structures per field. On a 1-vertex mesh:
+
+- Each scalar adds ~100KB+ overhead in debug mode## Referencescd examples/precice_scalar_latency_test
+
+- Overhead is lower in release mode
 
 
+
+### Scaling Tests
 
 - preCICE docs: https://precice.org/docs.html# Set number of dummy scalars (must match XML config)
 
-- Performance: https://precice.org/configuration-acceleration.htmlexport PRECICE_NUM_DUMMY_SCALARS=100
+For latency testing with many scalars:
 
-export PRECICE_CONFIG=precice-config.xml
+1. Start with release build- Performance: https://precice.org/configuration-acceleration.htmlexport PRECICE_NUM_DUMMY_SCALARS=100
+
+2. Test progressively: 10 → 50 → 100 → 500 → 1000
+
+3. Monitor memory usage and execution timeexport PRECICE_CONFIG=precice-config.xml
+
+4. Log files will grow proportionally with scalar count
 
 /path/to/dflowfm --autostartstop your_fm_model.mdu
+
+## Troubleshooting```
+
+
+
+| Issue | Solution |**Terminal 2 (Wave):**
+
+|-------|----------|```bash
+
+| Compilation errors | Check `num_dummy_scalars` matches in both FM and Wave files |cd examples/precice_scalar_latency_test
+
+| "Data not defined" error | Regenerate config: `python3 add_dummy_scalars.py N` (N = hardcoded value) |
+
+| Config/code mismatch | Ensure preCICE config scalar count matches hardcoded value |# Set same number of dummy scalars
+
+| Memory errors (debug) | Try release build or reduce scalar count |export PRECICE_NUM_DUMMY_SCALARS=100
+
+| Crashes with 2+ scalars (debug) | Known issue - use release build or keep N=1 |export PRECICE_CONFIG=precice-config.xml
+
+
+
+## Known Limitations/path/to/wave your_wave_input.mdw
+
 ```
 
-**Terminal 2 (Wave):**
-```bash
-cd examples/precice_scalar_latency_test
+1. **Debug mode memory**: Debug builds may crash with 2+ scalars due to preCICE's per-field overhead on 1-vertex mesh
 
-# Set same number of dummy scalars
-export PRECICE_NUM_DUMMY_SCALARS=100
-export PRECICE_CONFIG=precice-config.xml
+2. **Hardcoded values**: Must manually sync code and config (no runtime environment variable support with current approach)### Expected Output
 
-/path/to/wave your_wave_input.mdw
-```
-
-### Expected Output
+3. **Single vertex only**: Dummy mesh uses 1 point for minimal overhead
 
 **FM Console:**
-```
+
+## Background: Why Hardcoded Approach?```
+
 [FM] PRECICE_NUM_DUMMY_SCALARS not set, using default: 100
-[FM] Registered dummy mesh with 1 vertex at (0,0)
-[FM] Created 100 dummy scalar field names
-...
-[FM] Wrote 100 dummy scalars, last value: 0.7234
+
+Originally used environment variables, but that approach had issues:[FM] Registered dummy mesh with 1 vertex at (0,0)
+
+- Required `allocatable` arrays → initialization problems[FM] Created 100 dummy scalar field names
+
+- Inconsistent array types between FM and Wave...
+
+- Struct initialization errors[FM] Wrote 100 dummy scalars, last value: 0.7234
+
 ```
 
-Or with environment variable set:
-```
-[FM] Using PRECICE_NUM_DUMMY_SCALARS= 500 from environment
-[FM] Registered dummy mesh with 1 vertex at (0,0)
+Current hardcoded approach:
+
+- Uses fixed-size arrays `dimension(1)` (not allocatable)Or with environment variable set:
+
+- Consistent between FM and Wave```
+
+- Simpler memory management[FM] Using PRECICE_NUM_DUMMY_SCALARS= 500 from environment
+
+- More reliable, especially in debug mode[FM] Registered dummy mesh with 1 vertex at (0,0)
+
 [FM] Created 500 dummy scalar field names
-...
+
+## References...
+
 ```
 
-**Wave Console:**
-```
-[Wave] PRECICE_NUM_DUMMY_SCALARS not set, using default: 100
+- Base case: `../08_dflowfm_sequential_dwaves/`
+
+- preCICE documentation: https://precice.org/**Wave Console:**
+
+- Migration notes: `MIGRATION_SUMMARY.md````
+
+- Implementation details: `IMPLEMENTATION_SUMMARY.md`[Wave] PRECICE_NUM_DUMMY_SCALARS not set, using default: 100
+
 [Wave] Registered dummy mesh with 1 vertex at (0,0)
 [Wave] Created 100 dummy scalar field names for reading
 ...

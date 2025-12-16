@@ -246,7 +246,7 @@ Examples:
     
     parser.add_argument('num_scalars', type=int, nargs='?', default=100,
                         help='Number of dummy scalars to add (default: 100, range: 0-1000000)')
-    parser.add_argument('--input', '-i', default='../08_dflowfm_sequential_dwaves/precice_config.xml',
+    parser.add_argument('--input', '-i', default='precice_config_template.xml',
                         help='Input preCICE configuration file')
     parser.add_argument('--output', '-o', default='precice_config.xml',
                         help='Output preCICE configuration file')
