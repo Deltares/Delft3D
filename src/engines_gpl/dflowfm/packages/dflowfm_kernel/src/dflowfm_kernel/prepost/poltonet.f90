@@ -77,17 +77,25 @@ contains
       call SAVEPOL()
 
       if (L1 > L2) then
-         LL = L1; L1 = L2; L2 = LL
+         LL = L1
+         L1 = L2
+         L2 = LL
       end if
 
-      XP1 = XPL(L1); YP1 = YPL(L1)
-      XP2 = XPL(L2); YP2 = YPL(L2)
+      XP1 = XPL(L1)
+      YP1 = YPL(L1)
+      XP2 = XPL(L2)
+      YP2 = YPL(L2)
 
       NPL = 4 ! CHANGE POLYGON TO VISIBLE AREA
-      XPL(1) = X1; YPL(1) = Y1
-      XPL(2) = X2; YPL(2) = Y1
-      XPL(3) = X2; YPL(3) = Y2
-      XPL(4) = X1; YPL(4) = Y2
+      XPL(1) = X1
+      YPL(1) = Y1
+      XPL(2) = X2
+      YPL(2) = Y1
+      XPL(3) = X2
+      YPL(3) = Y2
+      XPL(4) = X1
+      YPL(4) = Y2
 
       call FINDCELLS(0)
 
@@ -101,11 +109,13 @@ contains
       end if
 
       do N = 1, L1 - 1
-         XPL(N) = XPH(N); YPL(N) = YPH(N)
+         XPL(N) = XPH(N)
+         YPL(N) = YPH(N)
       end do
 
       L = N2
-      K1 = KN(1, L); K2 = KN(2, L)
+      K1 = KN(1, L)
+      K2 = KN(2, L)
       XP1 = 0.5_dp * (XK(K1) + YK(K2))
       YP1 = 0.5_dp * (YK(K1) + YK(K2))
 
@@ -113,14 +123,17 @@ contains
 !      CALL TEKNODE(K1,31)
 
       L = N1
-      K1 = KN(1, L); K2 = KN(2, L)
+      K1 = KN(1, L)
+      K2 = KN(2, L)
       D1 = sqrt((XK(K1) - XP1)**2 + (YK(K1) - YP1)**2)
       D2 = sqrt((XK(K2) - XP1)**2 + (YK(K2) - YP1)**2)
 
       if (D1 > D2) then
-         K = K1; KNAAR = K2
+         K = K1
+         KNAAR = K2
       else
-         K = K2; KNAAR = K1
+         K = K2
+         KNAAR = K1
       end if
 
       N = L1 - 1
@@ -134,11 +147,15 @@ contains
                JA = 1
                L = LL
                call OTHERNODE(K, L, K2)
-               K = K2; LC(L) = -1
+               K = K2
+               LC(L) = -1
 
-               KL1 = KN(1, L); KL2 = KN(2, L)
-               XR1 = XK(KL1); XR2 = XK(KL2)
-               YR1 = YK(KL1); YR2 = YK(KL2)
+               KL1 = KN(1, L)
+               KL2 = KN(2, L)
+               XR1 = XK(KL1)
+               XR2 = XK(KL2)
+               YR1 = YK(KL1)
+               YR2 = YK(KL2)
 
                KN1 = LNE(1, L)
                call GETCELLSURFACE(KN1, AR1, XR, YR)

@@ -148,7 +148,8 @@ contains
             deallocate (area)
 
          else ! 2D/3D
-            ucxq_mor = 0.0_dp; ucyq_mor = 0.0_dp; 
+            ucxq_mor = 0.0_dp
+            ucyq_mor = 0.0_dp
             if (.not. maximumwaterdepth) then
                if (kmx == 0) then
                   do k = 1, ndx
@@ -170,7 +171,8 @@ contains
             if (kmx == 0) then
                do L = 1, lnx
                   if (u1(L) == 0.0_dp) cycle
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   wcxu = wcx1(L) * u1(L)
                   ucxq_mor(k1) = ucxq_mor(k1) + wcxu * hu(L)
                   wcyu = wcy1(L) * u1(L)
@@ -182,9 +184,11 @@ contains
                end do
 
                do L = lnxi + 1, lnx
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   if (jacstbnd == 0) then
-                     cs = csu(L); sn = snu(L)
+                     cs = csu(L)
+                     sn = snu(L)
                      uin = ucxq_mor(k2) * cs + ucyq_mor(k2) * sn
                      ucxq_mor(k1) = uin * cs
                      ucyq_mor(k1) = uin * sn
@@ -217,7 +221,8 @@ contains
                   call getLbotLtop(LL, Lb, Lt)
                   if (Lt < Lb) cycle
                   do L = Lb, Lt
-                     k1 = ln0(1, L); k2 = ln0(2, L)
+                     k1 = ln0(1, L)
+                     k2 = ln0(2, L)
                      huL = hu(L)
                      huL = huL - hu(L - 1)
                      ucxq_mor(k1) = ucxq_mor(k1) + wcx1(LL) * u1(L) * huL
@@ -228,10 +233,12 @@ contains
                end do
 
                do L = lnxi + 1, lnx
-                  cs = csu(L); sn = snu(L)
+                  cs = csu(L)
+                  sn = snu(L)
                   call getLbotLtop(L, Lb, Lt)
                   do LL = Lb, Lt
-                     k1 = ln0(1, LL); k2 = ln0(2, LL)
+                     k1 = ln0(1, LL)
+                     k2 = ln0(2, LL)
                      if (jacstbnd == 0) then
                         uin = ucxq_mor(k2) * cs + ucyq_mor(k2) * sn
                         ucxq_mor(k1) = uin * cs
@@ -262,7 +269,8 @@ contains
                   call getLbotLtop(LL, Lb, Lt)
                   if (Lt < Lb) cycle
                   do L = Lb, Lt
-                     k1 = ln0(1, L); k2 = ln0(2, L)
+                     k1 = ln0(1, L)
+                     k2 = ln0(2, L)
                      huL = hu(L) - hu(L - 1)
                      hs_mor(k1) = max(hs_mor(k1), huL)
                      hs_mor(k2) = max(hs_mor(k2), huL)

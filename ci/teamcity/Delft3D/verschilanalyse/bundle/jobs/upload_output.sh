@@ -46,7 +46,7 @@ find "${VAHOME}/input" -mindepth 1 -maxdepth 1 -type d '!' -empty -print0 \
 # Upload the archives to MinIO.
 docker run --rm \
     --volume="${HOME}/.aws:/root/.aws:ro" --volume="${TMP_ARCHIVE_DIR}:/data:ro" \
-    docker.io/amazon/aws-cli:2.22.7 \
+    docker.io/amazon/aws-cli:2.32.14 \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
     s3 sync --delete --no-progress /data "${BUCKET}/${CURRENT_PREFIX}/output"
 

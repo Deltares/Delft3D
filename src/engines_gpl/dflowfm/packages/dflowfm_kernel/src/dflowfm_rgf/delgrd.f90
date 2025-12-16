@@ -66,10 +66,16 @@ contains
             if (JA == 0) then
                KEY = 0
             else
-               XC = 0.0_dp; YC = 0.0_dp; MC = 0; NC = 0
+               XC = 0.0_dp
+               YC = 0.0_dp
+               MC = 0
+               NC = 0
             end if
          else
-            XC = 0.0_dp; YC = 0.0_dp; MC = 0; NC = 0
+            XC = 0.0_dp
+            YC = 0.0_dp
+            MC = 0
+            NC = 0
          end if
          return
       end if

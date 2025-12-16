@@ -90,15 +90,19 @@ contains
       i3 = i3_
 
 !  get grid size and orientation
-      Na = i2 - i1; if (Na < 1) Na = Na + numsubpol
-      Nb = i3 - i2; if (Nb < 1) Nb = Nb + numsubpol
+      Na = i2 - i1
+      if (Na < 1) Na = Na + numsubpol
+      Nb = i3 - i2
+      if (Nb < 1) Nb = Nb + numsubpol
       Ncc = numsubpol - (Na + Nb)
 
       if (Ncc < 1) then
          i2 = i3_
          i3 = i2_
-         Na = i2 - i1; if (Na < 1) Na = Na + numsubpol
-         Nb = i3 - i2; if (Nb < 1) Nb = Nb + numsubpol
+         Na = i2 - i1
+         if (Na < 1) Na = Na + numsubpol
+         Nb = i3 - i2
+         if (Nb < 1) Nb = Nb + numsubpol
          Ncc = numsubpol - (Na + Nb)
       end if
 
@@ -114,9 +118,12 @@ contains
       end if
 
 !  compute midpoint
-      ia = i1 + N1; if (ia > iend) ia = ia - numsubpol
-      ib = i2 + N3; if (ib > iend) ib = ib - numsubpol
-      ic = i3 + N2; if (ic > iend) ic = ic - numsubpol
+      ia = i1 + N1
+      if (ia > iend) ia = ia - numsubpol
+      ib = i2 + N3
+      if (ib > iend) ib = ib - numsubpol
+      ic = i3 + N2
+      if (ic > iend) ic = ic - numsubpol
 
 !  set dimensions of blocks
       M = [N1, N3, N2]
@@ -138,9 +145,9 @@ contains
 !   xib = dbdistance(XPL(i2),YPL(i2),XPL(ib),YPL(ib)) / dbdistance(XPL(i2),YPL(i2),XPL(i3),YPL(i3))
 !   xic = dbdistance(XPL(i3),YPL(i3),XPL(ic),YPL(ic)) / dbdistance(XPL(i3),YPL(i3),XPL(i1),YPL(i1))
 
-      xia = dble(N1) / dble(Na)
-      xib = dble(N3) / dble(Nb)
-      xic = dble(N2) / dble(Ncc)
+      xia = real(N1, kind=dp) / real(Na, kind=dp)
+      xib = real(N3, kind=dp) / real(Nb, kind=dp)
+      xic = real(N2, kind=dp) / real(Ncc, kind=dp)
 
       xm = (((1.0_dp - xia) * XPL(i1) + xia * XPL(i2)) * xic + (1.0_dp - xic) * XPL(i3) + &
             ((1.0_dp - xib) * XPL(i2) + xib * XPL(i3)) * xia + (1.0_dp - xia) * XPL(i1) + &
@@ -189,13 +196,13 @@ contains
          end do
 
          do i = 1, M(itri) + 1
-            xia = dble(i - 1) / dble(M(itri))
+            xia = real(i - 1, kind=dp) / real(M(itri), kind=dp)
             xh(i, 4) = (1.0_dp - xia) * XPL(ileft(itri)) + xia * xm
             yh(i, 4) = (1.0_dp - xia) * YPL(ileft(itri)) + xia * ym
          end do
 
          do i = 1, N(itri) + 1
-            xia = dble(i - 1) / dble(N(itri))
+            xia = real(i - 1, kind=dp) / real(N(itri), kind=dp)
             xh(i, 2) = (1.0_dp - xia) * XPL(iright(itri)) + xia * xm
             yh(i, 2) = (1.0_dp - xia) * YPL(iright(itri)) + xia * ym
          end do

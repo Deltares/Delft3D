@@ -89,7 +89,8 @@ contains
          do L = 1, lnx
             if (hu(L) <= epshu) cycle
             if (L > lnx1D) then
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                ac1 = acl(L)
                ac2 = 1.0_dp - ac1
 
@@ -133,8 +134,10 @@ contains
             if (hu(LL) <= epshu) cycle
             call getLbotLtop(LL, Lb, Lt)
             if (Lt < Lb) cycle
-            k1 = ln(1, LL); k2 = ln(2, LL)
-            ac1 = acL(LL); ac2 = 1.0_dp - ac1
+            k1 = ln(1, LL)
+            k2 = ln(2, LL)
+            ac1 = acL(LL)
+            ac2 = 1.0_dp - ac1
             !
             hwavL = max(ac1 * hwav(k1) + ac2 * hwav(k2), 0.01_dp)
             twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1_dp)

@@ -62,28 +62,50 @@ contains
 
       NLEVEL = 4
 !   OPTION( 1) = 'vicouv_filter                    (m2/s)' ; it(2* 1) = 6
-      OPTION(1) = 'filter                           ( )   '; it(2 * 1) = 2
-      OPTION(2) = 'filter order                     ( )   '; it(2 * 2) = 2
-      OPTION(3) = 'hh1DUNI                          (m)   '; it(2 * 3) = 6
-      OPTION(4) = 'Uniformtyp1D                     (m)   '; it(2 * 4) = 2
-      OPTION(5) = 'wu1DUNI5                         (m)   '; it(2 * 5) = 6
-      OPTION(6) = 'hh1DUNI5                         (m)   '; it(2 * 6) = 6
-      OPTION(7) = 'Uniformtyp1D5                    (m)   '; it(2 * 7) = 2
-      OPTION(8) = 'wu1DUNI7                         (m)   '; it(2 * 8) = 6
-      OPTION(9) = 'hh1DUNI7                         (m)   '; it(2 * 9) = 6
-      OPTION(10) = 'Uniformtyp1D7                    (m)   '; it(2 * 10) = 2
-      OPTION(11) = 'japiaczek33                      ( )   '; it(2 * 11) = 2
-      OPTION(12) = 'Expchistem                       ( )   '; it(2 * 12) = 6
-      OPTION(13) = 'Uchistem                         ( )   '; it(2 * 13) = 6
-      OPTION(14) = 'Expchileaf                       ( )   '; it(2 * 14) = 6
-      OPTION(15) = 'Uchileaf                         ( )   '; it(2 * 15) = 6
-      OPTION(16) = 'Cdleaf                           ( )   '; it(2 * 16) = 6
-      OPTION(17) = 'Arealeaf                         ( )   '; it(2 * 17) = 6
-      OPTION(18) = 'jaPure1D                         ( )   '; it(2 * 18) = 2
-      OPTION(19) = 'Bedslopedir                      ( )   '; it(2 * 19) = 6
-      OPTION(20) = 'Bedwidth                         (m)   '; it(2 * 20) = 6
-      OPTION(21) = 'Bedwaveamplitude                 (m)   '; it(2 * 21) = 6
-      OPTION(22) = 'Bedwavelength                    (m)   '; it(2 * 22) = 6
+      OPTION(1) = 'filter                           ( )   '
+      it(2 * 1) = 2
+      OPTION(2) = 'filter order                     ( )   '
+      it(2 * 2) = 2
+      OPTION(3) = 'hh1DUNI                          (m)   '
+      it(2 * 3) = 6
+      OPTION(4) = 'Uniformtyp1D                     (m)   '
+      it(2 * 4) = 2
+      OPTION(5) = 'wu1DUNI5                         (m)   '
+      it(2 * 5) = 6
+      OPTION(6) = 'hh1DUNI5                         (m)   '
+      it(2 * 6) = 6
+      OPTION(7) = 'Uniformtyp1D5                    (m)   '
+      it(2 * 7) = 2
+      OPTION(8) = 'wu1DUNI7                         (m)   '
+      it(2 * 8) = 6
+      OPTION(9) = 'hh1DUNI7                         (m)   '
+      it(2 * 9) = 6
+      OPTION(10) = 'Uniformtyp1D7                    (m)   '
+      it(2 * 10) = 2
+      OPTION(11) = 'japiaczek33                      ( )   '
+      it(2 * 11) = 2
+      OPTION(12) = 'Expchistem                       ( )   '
+      it(2 * 12) = 6
+      OPTION(13) = 'Uchistem                         ( )   '
+      it(2 * 13) = 6
+      OPTION(14) = 'Expchileaf                       ( )   '
+      it(2 * 14) = 6
+      OPTION(15) = 'Uchileaf                         ( )   '
+      it(2 * 15) = 6
+      OPTION(16) = 'Cdleaf                           ( )   '
+      it(2 * 16) = 6
+      OPTION(17) = 'Arealeaf                         ( )   '
+      it(2 * 17) = 6
+      OPTION(18) = 'jaPure1D                         ( )   '
+      it(2 * 18) = 2
+      OPTION(19) = 'Bedslopedir                      ( )   '
+      it(2 * 19) = 6
+      OPTION(20) = 'Bedwidth                         (m)   '
+      it(2 * 20) = 6
+      OPTION(21) = 'Bedwaveamplitude                 (m)   '
+      it(2 * 21) = 6
+      OPTION(22) = 'Bedwavelength                    (m)   '
+      it(2 * 22) = 6
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -181,9 +203,12 @@ contains
       call IFORMputinteger(2 * 1, jafilter)
       write (6, *) filterorder
       call IFORMputinteger(2 * 2, filterorder)
-      w1 = wu1DUNI; h1 = hh1DUNI
-      w5 = wu1DUNI5; h5 = hh1DUNI5
-      w7 = wu1DUNI7; h7 = hh1DUNI7
+      w1 = wu1DUNI
+      h1 = hh1DUNI
+      w5 = wu1DUNI5
+      h5 = hh1DUNI5
+      w7 = wu1DUNI7
+      h7 = hh1DUNI7
       call IFORMputdouble(2 * 3, hh1DUNI, '(F7.3)')
       call IFORMputinteger(2 * 4, iproftypuni)
       call IFORMputdouble(2 * 5, wu1DUNI5, '(F7.3)')

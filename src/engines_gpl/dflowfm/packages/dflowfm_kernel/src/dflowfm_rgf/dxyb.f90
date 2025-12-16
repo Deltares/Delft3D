@@ -72,7 +72,7 @@ contains
             YD = Y(II - IN, JJ - JN)
             dxy1 = dbdistance(X(II, JJ), Y(II, JJ), XD, YD, jsferic, jasfer3D, dmiss)
             NUM = NUM + 1
-            DXY0 = (DXY0 + DXY1) / dble(NUM)
+            DXY0 = (DXY0 + DXY1) / real(NUM, kind=dp)
          end if
       end if
 

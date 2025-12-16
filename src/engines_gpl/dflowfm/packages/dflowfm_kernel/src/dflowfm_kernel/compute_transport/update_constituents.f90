@@ -137,7 +137,8 @@ contains
       limtyp = max(limtypsa, limtyptm, limtypsed)
 
       if (jarhoonly == 1) then
-         call fill_rho(); numconst_store = numconst
+         call fill_rho()
+         numconst_store = numconst
       else if (jarhoonly == 2) then
          ! call fill_ucxucy() ; numconst_store = numconst
       else
@@ -280,7 +281,8 @@ contains
       dts = dts_store
 
       if (jarhoonly == 1) then
-         call extract_rho(); numconst = numconst_store
+         call extract_rho()
+         numconst = numconst_store
       else
          if (jadecaytracers > 0) then ! because tracerdecay is normally not done in DFM we do it here so as not to cause overhead elsewhere
             call decaytracers()

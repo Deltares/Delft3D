@@ -57,12 +57,17 @@ contains
          call ISNODEDB(KK(k), X(k), Y(k))
          if (kk(k) == 0) then
             numk = numk + 1
-            XK(numk) = X(K); YK(numk) = Y(K); ZK(numk) = Z(K); KC(numk) = 1; kk(k) = numk
+            XK(numk) = X(K)
+            YK(numk) = Y(K)
+            ZK(numk) = Z(K)
+            KC(numk) = 1
+            kk(k) = numk
          end if
       end do
 
       do K = 1, N
-         K2 = K + 1; if (K == N) K2 = 1
+         K2 = K + 1
+         if (K == N) K2 = 1
          call CONNECTDB(kk(k), kk(k2), lnu)
       end do
 

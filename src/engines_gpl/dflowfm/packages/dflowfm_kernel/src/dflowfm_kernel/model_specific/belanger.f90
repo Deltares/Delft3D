@@ -79,13 +79,15 @@ contains
       constant = 0.25_dp * h1**4 - h1 * hc**3 + x1 * cf * hc**3
 
       call movabs(x1, h1 + bot)
-      x = x1; h = h1
-      xx(mmax) = x1; ss(mmax) = h1 + bot
+      x = x1
+      h = h1
+      xx(mmax) = x1
+      ss(mmax) = h1 + bot
 
       if (slope == 0.0_dp) then ! analytic
 
          do k = 1, -num
-            a = 1.0_dp - dble(k - 1) / dble(num - 1)
+            a = 1.0_dp - real(k - 1, kind=dp) / real(num - 1, kind=dp)
             h = h0 * (1.0_dp - a) + h1 * a
             x = (constant - 0.25_dp * h**4 + h * hc**3) / (cf * hc**3)
             if (x > x0) then
@@ -111,7 +113,8 @@ contains
          end if
          bot = bot + slope
          call lnabs(x, h + bot)
-         xx(k) = x; ss(k) = h + bot
+         xx(k) = x
+         ss(k) = h + bot
       end do
 
       call compareanalytic(ss, xx, mmax)

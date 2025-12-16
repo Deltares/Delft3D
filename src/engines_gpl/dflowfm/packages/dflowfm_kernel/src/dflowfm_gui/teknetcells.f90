@@ -139,11 +139,11 @@ contains
             if (size(idomain) >= numcellstoplot) then
                if (netwhat == 15) then
                   do k = 1, numcellstoplot
-                     rlin(k) = dble(idomain(k))
+                     rlin(k) = real(idomain(k), kind=dp)
                   end do
                else if (netwhat == 16 .and. allocated(numndx)) then ! partitioning info
                   do k = 1, numcellstoplot
-                     rlin(k) = dble(numndx(idomain(k)))
+                     rlin(k) = real(numndx(idomain(k)), kind=dp)
                   end do
                end if
             end if
@@ -152,11 +152,11 @@ contains
                if (size(ighostlev) >= numcellstoplot) then
                   do k = 1, numcellstoplot
                      if (netwhat == 17) then
-                        rlin(k) = dble(ighostlev(k))
+                        rlin(k) = real(ighostlev(k), kind=dp)
                      else if (netwhat == 18) then
-                        rlin(k) = dble(ighostlev_cellbased(k))
+                        rlin(k) = real(ighostlev_cellbased(k), kind=dp)
                      else
-                        rlin(k) = dble(ighostlev_nodebased(k))
+                        rlin(k) = real(ighostlev_nodebased(k), kind=dp)
                      end if
                   end do
                end if
@@ -165,7 +165,7 @@ contains
             if (allocated(iglobal_s)) then
                if (size(iglobal_s) >= numcellstoplot) then
                   do k = 1, numcellstoplot
-                     rlin(k) = dble(iglobal_s(k))
+                     rlin(k) = real(iglobal_s(k), kind=dp)
                   end do
                end if
             end if
@@ -190,13 +190,13 @@ contains
                   if (netwhat == 2 .or. netwhat == 15) then ! cell numbers or domain numbers
                      call dhitext(int(rlin(k)), xzw(k) + RCIR, yzw(k) - RCIR)
                   else
-                     call dhtext(dble(rlin(k)), xzw(k) + RCIR, yzw(k) - RCIR, yzw(k))
+                     call dhtext(real(rlin(k), kind=dp), xzw(k) + RCIR, yzw(k) - RCIR, yzw(k))
                   end if
                end if
                if (nodemode == 3 .or. nodemode == 6) then ! isolines within cell
                   call ISOSMOOTHnet(k)
                else if (nodemode == 4 .or. nodemode == 7) then ! isofil= cellfill
-                  call isocol(dble(rlin(k)), ncol)
+                  call isocol(real(rlin(k), kind=dp), ncol)
                   nn = netcell(k)%n
                   do kk = 1, nn
                      xx(kk) = xk(netcell(k)%nod(kk))
@@ -204,8 +204,8 @@ contains
                   end do
                   call PFILLER(xx, yy, nn, NCol, NCol)
                else if (nodemode == 5 .or. nodemode == 8) then
-                  call isocol(dble(rlin(k)), ncol)
-                  call drcirc(xz(k), yz(k), dble(rlin(k)))
+                  call isocol(real(rlin(k), kind=dp), ncol)
+                  call drcirc(xz(k), yz(k), real(rlin(k), kind=dp))
                end if
             end if
          end do

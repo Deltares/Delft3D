@@ -299,6 +299,8 @@ call SOFLOW( &
         &   debug_wr                                   , &
 !units  
         &   juer                                       , &
+!derived type with all info
+        &   f1dimppar                                 , &
 !close
         &)
     

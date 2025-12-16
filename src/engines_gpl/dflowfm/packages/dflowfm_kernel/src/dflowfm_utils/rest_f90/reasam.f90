@@ -151,7 +151,7 @@ contains
             ZS(K) = ZZ
          end if
          if (mod(K - K0, KMOD) == 0) then
-            call READYY(' ', min(1.0_dp, dble(K) / NSM))
+            call READYY(' ', min(1.0_dp, real(K, kind=dp) / NSM))
          end if
       end if
       goto 10

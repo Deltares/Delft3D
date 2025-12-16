@@ -52,11 +52,14 @@ contains
 
       hs = s1 - bl
       call setbobs()
-      s1 = bl + hs; s0 = s1; s00 = s1
+      s1 = bl + hs
+      s0 = s1
+      s00 = s1
 
       call volsur() ! dropland_zk
       call flow_f0isf1() ! dropland_zk
-      volerr = 0; volerrcum = 0
+      volerr = 0
+      volerrcum = 0
 
       if (kmx > 0) then
          call set_kbot_ktop(jazws0=1) ! dropland_zk

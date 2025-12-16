@@ -61,10 +61,12 @@ contains
       end if
 
       do L = 1, lnx ! safe for 3D
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          call getLbotLtop(L, Lb, Lt)
          do LL = Lb, Lt
-            k1 = ln(1, LL); k2 = ln(2, LL)
+            k1 = ln(1, LL)
+            k2 = ln(2, LL)
             ustx_cc(k1) = ustx_cc(k1) + wcx1(L) * ustokes(LL)
             usty_cc(k1) = usty_cc(k1) + wcy1(L) * ustokes(LL)
             ustx_cc(k2) = ustx_cc(k2) + wcx2(L) * ustokes(LL)
@@ -78,7 +80,8 @@ contains
          do L = 1, lnx
             call getLbotLtop(L, Lb, Lt)
             do LL = Lb, Lt
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
                fwav_mag(k1) = fwav_mag(k1) + wcl(1, L) * hypot(wavfu(LL), wavfv(LL)) * rhomean * hu(L)
                fwav_mag(k2) = fwav_mag(k2) + wcl(2, L) * hypot(wavfu(LL), wavfv(LL)) * rhomean * hu(L)
             end do

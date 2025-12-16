@@ -100,9 +100,9 @@ contains
                            if (RN < RSX) then
                               FR = (RSX - RN) / RSX
                               if (IN == 1) then
-                                 TEKEN = dble(sign(1, II - I))
+                                 TEKEN = real(sign(1, II - I), kind=dp)
                               else if (JN == 1) then
-                                 TEKEN = dble(sign(1, JJ - J))
+                                 TEKEN = real(sign(1, JJ - J), kind=dp)
                               end if
                               call DXYB(X, Y, mmax, nmax, MC, &
                                         NC, II, JJ, IN, &
@@ -119,9 +119,9 @@ contains
                         else
                            call SMEERFUNCTIE(II, JJ, I, J, FR, IN, JN)
                            if (IN == 1) then
-                              TEKEN = dble(sign(1, II - I))
+                              TEKEN = real(sign(1, II - I), kind=dp)
                            else if (JN == 1) then
-                              TEKEN = dble(sign(1, JJ - J))
+                              TEKEN = real(sign(1, JJ - J), kind=dp)
                            end if
                            call DXYB(X, Y, mmax, nmax, MC, &
                                      NC, II, JJ, JN, &

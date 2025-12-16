@@ -60,8 +60,8 @@ contains
       iL = max(min(int(s) + 1, num - 1), 1)
       iR = max(iL + 1, 1)
 
-      A = dble(iR - 1) - s
-      B = s - dble(iL - 1)
+      A = real(iR - 1, kind=dp) - s
+      B = s - real(iL - 1, kind=dp)
 
       call splint(xsp, xsp2, num, s, x)
       call splint(ysp, ysp2, num, s, y)

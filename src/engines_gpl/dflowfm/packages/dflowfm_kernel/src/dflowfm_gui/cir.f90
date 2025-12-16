@@ -46,7 +46,7 @@ contains
       if (r == 0.0_dp) return
       if (InOpenGLRendering) then
          HR = 0.5_dp * R
-         call KREC5(dble(Xlast), dble(Ylast), HR, HR)
+         call KREC5(real(Xlast, kind=dp), real(Ylast, kind=dp), HR, HR)
          !CALL SetPointSize(real(5))
          !CALL DrawPoint(xlast,ylast)
          !CALL SetPointSize(real(1))

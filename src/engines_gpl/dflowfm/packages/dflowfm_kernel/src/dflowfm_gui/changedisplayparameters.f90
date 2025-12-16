@@ -83,39 +83,72 @@ contains
       integer, external :: infoinput
 !
       NLEVEL = 3
-      OPTION(1) = 'HARDCOPY DRIVER NUMBER                  '; IT(2 * 1) = 2
-      OPTION(2) = 'ENCAPSULATED POSTSCRIPT                 '; IT(2 * 2) = 2
-      OPTION(3) = 'LANDSCAPE                               '; IT(2 * 3) = 2
-      OPTION(4) = 'SIZE OF DOTS                            '; IT(2 * 4) = 6
-      OPTION(5) = 'SIZE OF NUMBERS                         '; IT(2 * 5) = 6
-      OPTION(6) = 'DEFAULT VALUE                           '; IT(2 * 6) = 6
-      OPTION(7) = 'LEFT SCREEN MARGIN                      '; IT(2 * 7) = 6
-      OPTION(8) = 'BOTTOM SCREEN MARGIN                    '; IT(2 * 8) = 6
-      OPTION(9) = 'PLOTTING AXIS YES/NO                    '; IT(2 * 9) = 2
-      OPTION(10) = 'SCALEFACTOR FOR VECTORS                 '; IT(2 * 10) = 6
-      OPTION(11) = 'VECTOR   INTERVAL                       '; IT(2 * 11) = 2
-      OPTION(12) = 'PLOTTING INTERVAL NTEK                  '; IT(2 * 12) = 2
-      OPTION(13) = 'PLOT TO FILE YES/NO                     '; IT(2 * 13) = 2
-      OPTION(14) = 'MINIMUM ZLEVEL RAAITEK                  '; IT(2 * 14) = 6
-      OPTION(15) = 'MAXIMUM ZLEVEL RAAITEK                  '; IT(2 * 15) = 6
-      OPTION(16) = 'PLOT TOP ROWS INFORMATION TEXT          '; IT(2 * 16) = 2
-      OPTION(17) = 'Number of zoomshift intervals, press ;  '; IT(2 * 17) = 2
-      OPTION(18) = 'Enable/disable minmax highlighting      '; IT(2 * 18) = 2
-      OPTION(19) = 'Highlight specific net node number      '; IT(2 * 19) = 2
-      OPTION(20) = 'Highlight specific net link number      '; IT(2 * 20) = 2
-      OPTION(21) = 'Highlight specific flow node number     '; IT(2 * 21) = 2
-      OPTION(22) = 'Highlight specific flow link number     '; IT(2 * 22) = 2
-      OPTION(23) = 'Node waterdepth plotting threshold      '; IT(2 * 23) = 6
-      OPTION(24) = 'Plot sideview in cheap perspective 1/0  '; IT(2 * 24) = 6
-      OPTION(25) = 'Grain size fraction nr to plot          '; IT(2 * 25) = 2
-      OPTION(26) = 'Show vertical reference profiles 1/0    '; IT(2 * 26) = 2
-      OPTION(27) = 'display flownodes minus plotlin: 1      '; IT(2 * 27) = 2
-      OPTION(28) = '                                        '; IT(2 * 28) = 2
-      OPTION(29) = 'use OpenGL (0:no, 1:yes)                '; IT(2 * 29) = 2
-      OPTION(30) = 'show bedlevels (0:no, 1:yes)            '; IT(2 * 30) = 2
-      OPTION(31) = 'show waterbal. on screen (0:no, 1:yes)  '; IT(2 * 31) = 2
-      OPTION(32) = 'kplotfrombedorsurface (1:bed, 2:surf)   '; IT(2 * 32) = 2
-      OPTION(33) = 'kplotordepthaveraged  (1:kplot, 2:averg)'; IT(2 * 33) = 2
+      OPTION(1) = 'HARDCOPY DRIVER NUMBER                  '
+      IT(2 * 1) = 2
+      OPTION(2) = 'ENCAPSULATED POSTSCRIPT                 '
+      IT(2 * 2) = 2
+      OPTION(3) = 'LANDSCAPE                               '
+      IT(2 * 3) = 2
+      OPTION(4) = 'SIZE OF DOTS                            '
+      IT(2 * 4) = 6
+      OPTION(5) = 'SIZE OF NUMBERS                         '
+      IT(2 * 5) = 6
+      OPTION(6) = 'DEFAULT VALUE                           '
+      IT(2 * 6) = 6
+      OPTION(7) = 'LEFT SCREEN MARGIN                      '
+      IT(2 * 7) = 6
+      OPTION(8) = 'BOTTOM SCREEN MARGIN                    '
+      IT(2 * 8) = 6
+      OPTION(9) = 'PLOTTING AXIS YES/NO                    '
+      IT(2 * 9) = 2
+      OPTION(10) = 'SCALEFACTOR FOR VECTORS                 '
+      IT(2 * 10) = 6
+      OPTION(11) = 'VECTOR   INTERVAL                       '
+      IT(2 * 11) = 2
+      OPTION(12) = 'PLOTTING INTERVAL NTEK                  '
+      IT(2 * 12) = 2
+      OPTION(13) = 'PLOT TO FILE YES/NO                     '
+      IT(2 * 13) = 2
+      OPTION(14) = 'MINIMUM ZLEVEL RAAITEK                  '
+      IT(2 * 14) = 6
+      OPTION(15) = 'MAXIMUM ZLEVEL RAAITEK                  '
+      IT(2 * 15) = 6
+      OPTION(16) = 'PLOT TOP ROWS INFORMATION TEXT          '
+      IT(2 * 16) = 2
+      OPTION(17) = 'Number of zoomshift intervals, press ;  '
+      IT(2 * 17) = 2
+      OPTION(18) = 'Enable/disable minmax highlighting      '
+      IT(2 * 18) = 2
+      OPTION(19) = 'Highlight specific net node number      '
+      IT(2 * 19) = 2
+      OPTION(20) = 'Highlight specific net link number      '
+      IT(2 * 20) = 2
+      OPTION(21) = 'Highlight specific flow node number     '
+      IT(2 * 21) = 2
+      OPTION(22) = 'Highlight specific flow link number     '
+      IT(2 * 22) = 2
+      OPTION(23) = 'Node waterdepth plotting threshold      '
+      IT(2 * 23) = 6
+      OPTION(24) = 'Plot sideview in cheap perspective 1/0  '
+      IT(2 * 24) = 6
+      OPTION(25) = 'Grain size fraction nr to plot          '
+      IT(2 * 25) = 2
+      OPTION(26) = 'Show vertical reference profiles 1/0    '
+      IT(2 * 26) = 2
+      OPTION(27) = 'display flownodes minus plotlin: 1      '
+      IT(2 * 27) = 2
+      OPTION(28) = '                                        '
+      IT(2 * 28) = 2
+      OPTION(29) = 'use OpenGL (0:no, 1:yes)                '
+      IT(2 * 29) = 2
+      OPTION(30) = 'show bedlevels (0:no, 1:yes)            '
+      IT(2 * 30) = 2
+      OPTION(31) = 'show waterbal. on screen (0:no, 1:yes)  '
+      IT(2 * 31) = 2
+      OPTION(32) = 'kplotfrombedorsurface (1:bed, 2:surf)   '
+      IT(2 * 32) = 2
+      OPTION(33) = 'kplotordepthaveraged  (1:kplot, 2:averg)'
+      IT(2 * 33) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6

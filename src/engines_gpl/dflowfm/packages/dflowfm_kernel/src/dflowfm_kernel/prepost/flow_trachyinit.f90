@@ -132,9 +132,12 @@ contains
       end if
 
       kmaxtrt = max(kmx, 1)
-      allocate (sig(kmaxtrt)); sig = 0.0_dp
-      allocate (umag(ndx)); umag = 0.0_dp
-      allocate (z0rou(ndx)); z0rou = 0.0_dp
+      allocate (sig(kmaxtrt))
+      sig = 0.0_dp
+      allocate (umag(ndx))
+      umag = 0.0_dp
+      allocate (z0rou(ndx))
+      z0rou = 0.0_dp
       !
       ! Allocate arrays for moving data from flow links to net links
       !
@@ -149,7 +152,8 @@ contains
       !
       z0rou = 0.0_dp
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L)
          z0rou(k2) = z0rou(k2) + wcl(2, L) * z0urou(L)
       end do
@@ -279,7 +283,8 @@ contains
       end if
 
       do L = 1, numl
-         kL = lne(1, L); kR = lne(2, L)
+         kL = lne(1, L)
+         kR = lne(2, L)
          if (kL == 0 .and. kR == 0) cycle
          LF = lne2ln(L)
          if (LF > 0) then

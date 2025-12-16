@@ -64,19 +64,26 @@ contains
       call increasesam(npl + ndx)
 
       if (allocated(indlaynod)) deallocate (indlaynod, wflaynod)
-      allocate (indlaynod(3, ndxi), stat=ierr); indlaynod = 0
+      allocate (indlaynod(3, ndxi), stat=ierr)
+      indlaynod = 0
       call aerr('indlaynod(3,ndxi)', ierr, ndxi)
-      allocate (wflaynod(3, ndxi), stat=ierr); wflaynod = 0.0_dp
+      allocate (wflaynod(3, ndxi), stat=ierr)
+      wflaynod = 0.0_dp
       call aerr(' wflaynod(3,ndxi)', ierr, ndxi)
 
       allocate (ndn(ndxi + npl), stat=ierr)
-      call aerr('ndn(ndxi+npl)', ierr, ndxi + npl); ndn = 0
+      call aerr('ndn(ndxi+npl)', ierr, ndxi + npl)
+      ndn = 0
 
       allocate (zz(ndxi), stat=ierr)
-      call aerr('zz(ndxi)', ierr, ndxi); zz = dmiss
+      call aerr('zz(ndxi)', ierr, ndxi)
+      zz = dmiss
 
-      mxlaydefs = 0; ipoint = 1 ! first count and allocate
-      jstart = 0; jend = 0; k = 0
+      mxlaydefs = 0
+      ipoint = 1 ! first count and allocate
+      jstart = 0
+      jend = 0
+      k = 0
       do while (ipoint <= npl) ! nr of layers in first polygonpoint, layertype in second point
          call get_startend(npl - ipoint + 1, xpl(ipoint:npl), ypl(ipoint:npl), jstart, jend, dmiss)
          jstart = ipoint + jstart - 1
@@ -88,8 +95,11 @@ contains
       allocate (laymx(mxlaydefs), laytyp(mxlaydefs), stat=ierr)
       call aerr('laymx(mxlaydefs), laytyp(mxlaydefs)', ierr, mxlaydefs)
 
-      mxlaydefs = 0; ipoint = 1 ! then fill
-      jstart = 0; jend = 0; k = 0
+      mxlaydefs = 0
+      ipoint = 1 ! then fill
+      jstart = 0
+      jend = 0
+      k = 0
 
       do while (ipoint <= npl) ! nr of layers in first polygonpoint, layertype in second point
 
@@ -124,12 +134,18 @@ contains
          call inwhichpolygon(xz(n), yz(n), in)
          if (in > 0) then
             k = k + 1
-            xs(k) = xz(n); ys(k) = yz(n); zs(k) = in; laydefnr(n) = in; ndn(k) = n
+            xs(k) = xz(n)
+            ys(k) = yz(n)
+            zs(k) = in
+            laydefnr(n) = in
+            ndn(k) = n
          end if
       end do
       ns = k
 
-      jdla = 1; jakdtree = 1; ndim = 1
+      jdla = 1
+      jakdtree = 1
+      ndim = 1
 
       jagetwf = 1
       allocate (indxx(3, ndxi), wfxx(3, ndxi)) ! if module variable jagetw == 1, make weightfactor_index arrays
@@ -161,7 +177,8 @@ contains
          end if
       end do
 
-      ns = 0; npl = 0
+      ns = 0
+      npl = 0
       deallocate (indxx, wfxx, zz, nds, ndn, iistart, iiend)
 
    end subroutine polygonlayering

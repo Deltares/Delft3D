@@ -51,15 +51,18 @@ contains
       if (allocated(NB)) then
          deallocate (NB)
       end if
-      allocate (NB(NUMK)); NB = 0
+      allocate (NB(NUMK))
+      NB = 0
 
       do L = 1, NUML ! NODE BOUNDARY ADMINISTRATION
-         K1 = KN(1, L); K2 = KN(2, L)
+         K1 = KN(1, L)
+         K2 = KN(2, L)
          if (k1 < 1 .or. k2 < 1) cycle ! SPvdP: safety
          if (KN(3, L) == 2 .or. KN(3, L) == 0) then
             if (NB(K1) /= -1 .and. NB(K2) /= -1) then
                if (LNN(L) == 0) then ! LINK ZONDER BUURCELLEN
-                  NB(K1) = -1; NB(K2) = -1
+                  NB(K1) = -1
+                  NB(K2) = -1
                else if (LNN(L) == 1) then ! LINK MET 1 BUURCEL
                   NB(K1) = NB(K1) + 1
                   NB(K2) = NB(K2) + 1
@@ -79,7 +82,8 @@ contains
                   NB(K) = 3 ! HOEKPUNT 'bolle hoek'
                else
                   ! NMK(K) > 2: find the two edge links (and connected neighbour nodes K1 and K2)
-                  K1 = 0; K2 = 0
+                  K1 = 0
+                  K2 = 0
                   do L = 1, NMK(K)
                      LL = nod(K)%lin(L)
                      if (LNN(LL) == 1) then

@@ -84,7 +84,8 @@ contains
       else
 
          do n = ndxi, 1, -1
-            nn = size(nd(n)%x); if (nn == 0) cycle
+            nn = size(nd(n)%x)
+            if (nn == 0) cycle
             call PINPOK(Xp, Yp, Nn, nd(n)%x, nd(n)%y, IN, jins, dmiss)
             if (in == 1) then
                s10 = s1(n)
@@ -101,7 +102,8 @@ contains
       hs = s1 - bl
       call volsur() ! dropwater
       call flow_f0isf1() ! dropwater
-      volerr = 0; volerrcum = 0
+      volerr = 0
+      volerrcum = 0
 
       if (kmx > 0) then
          call set_kbot_ktop(jazws0=1) ! dropwater

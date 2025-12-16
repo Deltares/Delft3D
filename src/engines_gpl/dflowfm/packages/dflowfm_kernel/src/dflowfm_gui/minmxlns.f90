@@ -51,8 +51,10 @@ contains
       integer :: i, l, k1, k2
 
       if (jaauto > 0) then
-         rmin = 1.0e30_dp; lnmin = 0
-         rmax = -1.0e30_dp; lnmax = 0
+         rmin = 1.0e30_dp
+         lnmin = 0
+         rmax = -1.0e30_dp
+         lnmax = 0
          do L = 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)
@@ -60,10 +62,12 @@ contains
                zn = zlin(L)
                if (zn == DMISS) cycle
                if (zn < rmin) then
-                  rmin = zn; lnmin = L
+                  rmin = zn
+                  lnmin = L
                end if
                if (zn > rmax) then
-                  rmax = zn; lnmax = L
+                  rmax = zn
+                  lnmax = L
                end if
             end if
          end do

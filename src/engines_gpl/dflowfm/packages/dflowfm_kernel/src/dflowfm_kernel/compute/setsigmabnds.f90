@@ -51,7 +51,7 @@ contains
 
       integer :: i, k, ki, kb, kt, itrac, isf
 
-      !   if (layertype == 2) return
+      !   if (layertype == LAYTP_Z) return
 
       if (kmx == 0) then ! 2D, set dummy values
          if (allocated(sigmabnds)) sigmabnds = 0.5_dp

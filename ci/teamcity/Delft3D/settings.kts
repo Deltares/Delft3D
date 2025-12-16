@@ -4,6 +4,7 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Delft3D.*
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
+import Delft3D.linux.container_smoketest.*
 import Delft3D.windows.*
 import Delft3D.template.*
 
@@ -48,6 +49,16 @@ project {
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
+            )
+        }        
+        subProject {
+            id("SmokeTestsContainerH7")
+            name = "Smoke tests container on H7"
+            buildType(LinuxSubmitH7ContainerSmokeTest)
+            buildType(LinuxReceiveH7ContainerSmokeTest)
+            buildTypesOrder = listOf(
+                LinuxSubmitH7ContainerSmokeTest,
+                LinuxReceiveH7ContainerSmokeTest,
             )
         }        
         buildType(LinuxBuild)
@@ -113,11 +124,12 @@ project {
 
         buildType(TestPythonCiTools)
         buildType(TestBenchValidation)
+        buildType(TestFortranStyler)
         buildType(CopyExamples)
         buildType(SigCi)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, CopyExamples, SigCi
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi
         )
     }
 

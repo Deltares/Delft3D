@@ -121,9 +121,15 @@ contains
 
       ny = 4 * nump
       allocate (nnq(ny), nadjq(nx, ny), L1adjq(ny), LLadjq(ny), L2adjq(nx, ny))
-      nnq = 0; nadjq = 0; L1adjq = 0; LLadjq = 0; L2adjq = 0
+      nnq = 0
+      nadjq = 0
+      L1adjq = 0
+      LLadjq = 0
+      L2adjq = 0
       allocate (merg(2, ny), kins(2 * nx), kins2(2 * nx))
-      merg = 0; kins = 0; kins2 = 0
+      merg = 0
+      kins = 0
+      kins2 = 0
 
       allocate (dist(2 * nx))
       dist = 0.0_dp
@@ -144,7 +150,12 @@ contains
       ny = n
 
       allocate (nnp(ny), nnl(ny), nrl(ny), nnl2(nx, ny), k1L(ny), k2L(ny))
-      nnp = 0; nnl = 0; nrl = 0; nnl2 = 0; k1L = 0; k2L = 0
+      nnp = 0
+      nnl = 0
+      nrl = 0
+      nnl2 = 0
+      k1L = 0
+      k2L = 0
 
       n = 0
       do L = 1, numl ! locally store potential link nrs and their face nrs, only those with four edges
@@ -152,7 +163,8 @@ contains
             np = lne(1, L)
             if (netcell(np)%n == 4) then
                n = n + 1
-               nnp(n) = np; nnl(n) = L
+               nnp(n) = np
+               nnl(n) = L
             end if
          end if
       end do
@@ -168,7 +180,8 @@ contains
             if (L /= LL) then
                call islinkadjacenttolink(L1, L2, ja, k1k, k2k)
                if (ja == 1) then
-                  nrl(L) = nrl(L) + 1; nnl2(nrl(L), L) = LL ! nr of adj lnks      adj lnk nrs
+                  nrl(L) = nrl(L) + 1
+                  nnl2(nrl(L), L) = LL ! nr of adj lnks      adj lnk nrs
                   if (k1k > 0) k1L(L) = k1k ! merg nod 1 to nod k1k
                   if (k2k > 0) k2L(L) = k2k ! merg nod 2 to nod k2k
                end if
@@ -179,8 +192,10 @@ contains
       mer = 0
       do L = 1, nlinks
          if (nrl(L) >= 1) then
-            L1 = nnl(L); np = nnp(L)
-            k1 = kn(1, L1); k2 = kn(2, L1)
+            L1 = nnl(L)
+            np = nnp(L)
+            k1 = kn(1, L1)
+            k2 = kn(2, L1)
 
             xkkn1 = xk(k1)
             ykkn1 = yk(k1)
@@ -190,33 +205,46 @@ contains
             do Li = 1, nrl(L)
                LL = nnl2(Li, L)
                L2 = nnl(LL)
-               k3 = kn(1, L2); k4 = kn(2, L2)
+               k3 = kn(1, L2)
+               k4 = kn(2, L2)
                if (nrl(L) >= nrl(LL)) then
                   km1 = k1L(L) ! k merge 1
                   if (km1 > 0) then
                      if (kc(k1) == 1) then
-                        mer = mer + 1; merg(1, mer) = k1; merg(2, mer) = km1; kc(k1) = -1
+                        mer = mer + 1
+                        merg(1, mer) = k1
+                        merg(2, mer) = km1
+                        kc(k1) = -1
                      end if
                   end if
 
                   km2 = k2L(L) ! k merge 2
                   if (km2 > 0) then
                      if (kc(k2) == 1) then
-                        mer = mer + 1; merg(1, mer) = k2; merg(2, mer) = km2; kc(k2) = -1
+                        mer = mer + 1
+                        merg(1, mer) = k2
+                        merg(2, mer) = km2
+                        kc(k2) = -1
                      end if
                   end if
 
                   if (nrl(L) > nrl(LL)) then
                      if (kc(k3) == 1 .and. k3 /= km1 .and. k3 /= km2) then
-                        ins = ins + 1; kins(ins) = k3; kc(k3) = 0
+                        ins = ins + 1
+                        kins(ins) = k3
+                        kc(k3) = 0
                      end if
                      if (kc(k4) == 1 .and. k4 /= km1 .and. k4 /= km2) then
-                        ins = ins + 1; kins(ins) = k4; kc(k4) = 0
+                        ins = ins + 1
+                        kins(ins) = k4
+                        kc(k4) = 0
                      end if
                   end if
 
                   if (Lc(L1) == 1 .and. lc(L2) == 1) then
-                     Lc(L1) = 0; kn(1, L1) = 0; kn(2, L1) = 0
+                     Lc(L1) = 0
+                     kn(1, L1) = 0
+                     kn(2, L1) = 0
                   end if
                end if
             end do
@@ -394,7 +422,8 @@ contains
       end do
 
       do m = 1, mer
-         k1 = merg(1, m); k2 = merg(2, m)
+         k1 = merg(1, m)
+         k2 = merg(2, m)
          if (kc(k2) /= 0) then
             call mergenodes(k1, k2, ja, .false.)
             kc(k2) = 0
@@ -411,11 +440,14 @@ contains
       do np = 1, nump
          if (nnq(np) >= 1) then ! cell with neighbours
             L1 = L1adjq(np)
-            K1 = kn(1, L1); K2 = kn(2, L1)
+            K1 = kn(1, L1)
+            K2 = kn(2, L1)
 
             jab = 0
             if (lc(L1) == 1) then ! eigen link bestaat nog
-               kn(1, L1) = 0; kn(2, L1) = 0; jab = 1 ! direct link grote cel opheffen
+               kn(1, L1) = 0
+               kn(2, L1) = 0
+               jab = 1 ! direct link grote cel opheffen
             end if
 
             ins = 0 ! nr of 'inside' points of small cell (i.e. not cornering points)
@@ -426,22 +458,33 @@ contains
                end if
 
                L2 = L2adjq(num, np)
-               k3 = kn(1, L2); k4 = kn(2, L2)
+               k3 = kn(1, L2)
+               k4 = kn(2, L2)
 
                if (k3 == 0 .or. k4 == 0) exit
 
-               r2 = DBDISTANCE(XK(K3), YK(K3), XK(K4), YK(K4), jsferic, jasfer3D, dmiss); r2 = 0.3_dp * r2
+               r2 = DBDISTANCE(XK(K3), YK(K3), XK(K4), YK(K4), jsferic, jasfer3D, dmiss)
+               r2 = 0.3_dp * r2
 
                if (kc(k3) > 0) then
                   call closeenough(XK(K3), YK(K3), XK(K1), YK(K1), r2, ja1)
                   call closeenough(XK(K3), YK(K3), XK(K2), YK(K2), r2, ja2)
                   if (ja1 == 1) then
-                     mer = mer + 1; merg(1, mer) = k1; merg(2, mer) = k3; kc(k3) = -1
+                     mer = mer + 1
+                     merg(1, mer) = k1
+                     merg(2, mer) = k3
+                     kc(k3) = -1
                   else if (ja2 == 1) then
-                     mer = mer + 1; merg(1, mer) = k2; merg(2, mer) = k3; kc(k3) = -1; ip = -1
+                     mer = mer + 1
+                     merg(1, mer) = k2
+                     merg(2, mer) = k3
+                     kc(k3) = -1
+                     ip = -1
                   else
                      if (nnq(np) > 1) then
-                        ins = ins + 1; kins(ins) = k3; kc(k3) = -k3
+                        ins = ins + 1
+                        kins(ins) = k3
+                        kc(k3) = -k3
                      end if
                   end if
                end if
@@ -450,12 +493,21 @@ contains
                   call closeenough(XK(K4), YK(K4), XK(K1), YK(K1), r2, ja1)
                   call closeenough(XK(K4), YK(K4), XK(K2), YK(K2), r2, ja2)
                   if (ja1 == 1) then
-                     mer = mer + 1; merg(1, mer) = k1; merg(2, mer) = k4; kc(k4) = -1; ip = -1
+                     mer = mer + 1
+                     merg(1, mer) = k1
+                     merg(2, mer) = k4
+                     kc(k4) = -1
+                     ip = -1
                   else if (ja2 == 1) then
-                     mer = mer + 1; merg(1, mer) = k2; merg(2, mer) = k4; kc(k4) = -1
+                     mer = mer + 1
+                     merg(1, mer) = k2
+                     merg(2, mer) = k4
+                     kc(k4) = -1
                   else
                      if (nnq(np) > 1) then
-                        ins = ins + 1; kins(ins) = k4; kc(k4) = -k4
+                        ins = ins + 1
+                        kins(ins) = k4
+                        kc(k4) = -k4
                      end if
                   end if
                end if
@@ -595,7 +647,8 @@ contains
       end do
 
       do m = 1, mer
-         k1 = merg(1, m); k2 = merg(2, m)
+         k1 = merg(1, m)
+         k2 = merg(2, m)
          if (kc(k2) /= 0) then
             call mergenodes(k2, k1, ja, .false.)
          end if

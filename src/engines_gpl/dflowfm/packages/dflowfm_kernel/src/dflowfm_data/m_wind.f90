@@ -103,10 +103,21 @@ module m_wind
 
    real(kind=dp) :: cdb(3) !< breakpoints cd function cd coefficient
    real(kind=dp) :: wdb(3) !< breakpoints cd function windspeed
-   integer :: ICdtyp !< 1=Const; 2=Smith&Banke (2 pts); 3=S&B (3 pts); 4=Charnock 1955; 5=Hwang 2005; 6=Wuest 2005; 7=Hersbach 2010 (2 pts), 8: 4+viscous), 9=Garratt 1977.
+   integer :: wind_drag_type !< 1=Const; 2=Smith&Banke (2 pts); 3=S&B (3 pts); 4=Charnock 1955; 5=Hwang 2005; 6=Wuest 2005; 7=Hersbach 2010 (2 pts), 8: 4+viscous), 9=Garratt 1977.
    real(kind=dp) :: relativewind !< factor for top layer speed in relative wind, 0=no, 1 =full top layer speed
    integer :: jawindhuorzwsbased !< 1 = finite volume , 0 = hu
    integer :: jawindpartialdry !< Reduce windstress on water if link partially dry, only for bedlevtyp=3, 0 = no, 1 = yes
+
+   integer, parameter :: CD_TYPE_CONST = 1
+   integer, parameter :: CD_TYPE_SMITHBANKE_2PT = 2
+   integer, parameter :: CD_TYPE_SMITHBANKE_3PT = 3
+   integer, parameter :: CD_TYPE_CHARNOCK1955 = 4
+   integer, parameter :: CD_TYPE_HWANG2005 = 5
+   integer, parameter :: CD_TYPE_WUEST2003 = 6
+   integer, parameter :: CD_TYPE_HERSBACH2011 = 7
+   integer, parameter :: CD_TYPE_CHARNOCK_PLUS_VISCOUS = 8
+   integer, parameter :: CD_TYPE_GARRATT1977 = 9
+
 contains
 
 !> Sets ALL (scalar) variables in this module to their default values.
@@ -127,7 +138,7 @@ contains
       wdb(2) = 100
       cdb(3) = 0.003_dp !< third  wind breakpoint
       wdb(3) = 30
-      icdtyp = 2
+      wind_drag_type = CD_TYPE_SMITHBANKE_2PT
       relativewind = 0.0_dp !< factor for top layer speed in wind relative wind, 0=no, 1 =full top layer speed
       jawindhuorzwsbased = 0 !< default: HU-based both in 2D and 3D (and not zws-based)
       jawindpartialdry = 1 !< default: partially dry cells switched off

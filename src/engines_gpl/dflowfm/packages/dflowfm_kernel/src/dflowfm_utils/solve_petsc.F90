@@ -651,8 +651,8 @@ contains
 
       PetscErrorCode :: ierr = PETSC_OK
       PetscInt, parameter :: maxits = 4000
-      real(kind=dp), parameter :: RelTol = 1d-14
-      real(kind=dp), parameter :: AbsTol = 1d-14
+      real(kind=dp), parameter :: RelTol = 1.0e-14_dp
+      real(kind=dp), parameter :: AbsTol = 1.0e-14_dp
       real(kind=dp), parameter :: dTol = PETSC_DEFAULT_REAL
 
       jasucces = 0
@@ -758,7 +758,7 @@ contains
 !     fill vector rhs
       if (ierr == PETSC_OK) call VecGetArray(rhs, dum, idum, ierr)
       i = 0
-      rhs_val = 0d0
+      rhs_val = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          if (iglobal(ndn) > 0) then
@@ -772,7 +772,7 @@ contains
 !     fill vector sol
       if (ierr == PETSC_OK) call VecGetArray(sol, dum, idum, ierr)
 
-      sol_val = 0d0
+      sol_val = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          if (iglobal(ndn) > 0) then

@@ -110,8 +110,8 @@ contains
 
       do I = 1, MM
          do J = 1, NN
-            RI = dble(I - 1) / dble(MFAC) ! INDEXWEGING I
-            RJ = dble(J - 1) / dble(NFAC) ! INDEXWEGING J
+            RI = real(I - 1, kind=dp) / real(MFAC, kind=dp) ! INDEXWEGING I
+            RJ = real(J - 1, kind=dp) / real(NFAC, kind=dp) ! INDEXWEGING J
 
             SI(I, J) = (1.0_dp - RJ) * D3(I) + RJ * D4(I) ! AFSTANDSWEGING I
             SJ(I, J) = (1.0_dp - RI) * D1(J) + RI * D2(J) ! AFSTANDSWEGING J

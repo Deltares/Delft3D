@@ -71,16 +71,25 @@ contains
             LL = L
             if (qa(LL) /= 0.0_dp) then
 
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
 
                if (qa(LL) > 0) then
                   !   ->      ds1   ds2
-                  k = k1; kd = k2; is = 1; half = acl(LL); ip = 0 !   ->   ku     k     kd
+                  k = k1
+                  kd = k2
+                  is = 1
+                  half = acl(LL)
+                  ip = 0 !   ->   ku     k     kd
                   n12 = 1
                   ib = 0
                else
                   !   <-      ds2   ds1
-                  k = k2; kd = k1; is = -1; half = 1.0_dp - acl(LL); ip = 3 !   <-   kd     k     ku
+                  k = k2
+                  kd = k1
+                  is = -1
+                  half = 1.0_dp - acl(LL)
+                  ip = 3 !   <-   kd     k     ku
                   n12 = 2
                   ib = 2
                end if
@@ -104,7 +113,8 @@ contains
 
                else
 
-                  kku = klnup(1 + ip, LL); if (kku == 0) cycle
+                  kku = klnup(1 + ip, LL)
+                  if (kku == 0) cycle
                   ku = abs(kku)
 
                   if (kku < 0) then
@@ -118,8 +128,10 @@ contains
                      end if
                   else
 
-                     ku2 = abs(klnup(2 + ip, LL)); if (ku2 == 0) cycle
-                     sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)
+                     ku2 = abs(klnup(2 + ip, LL))
+                     if (ku2 == 0) cycle
+                     sl1 = slnup(1 + ip, LL)
+                     sl2 = slnup(2 + ip, LL)
                      if (jasfer3D == 0) then
                         ucxku = ucx(ku) * sl1 + ucx(ku2) * sl2
                         ucyku = ucy(ku) * sl1 + ucy(ku2) * sl2
@@ -184,17 +196,26 @@ contains
 
                do L = Lb, Lt
 
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
 
                   if (qa(L) > 0) then
                      !   ->      ds1   ds2
-                     k = k1; kd = k2; is = 1; half = acl(LL); ip = 0 !   ->   ku     k     kd
+                     k = k1
+                     kd = k2
+                     is = 1
+                     half = acl(LL)
+                     ip = 0 !   ->   ku     k     kd
                      n12 = 1
                      ib = 0
 
                   else
                      !   <-      ds2   ds1
-                     k = k2; kd = k1; is = -1; half = 1.0_dp - acl(LL); ip = 3 !   <-   kd     k     ku
+                     k = k2
+                     kd = k1
+                     is = -1
+                     half = 1.0_dp - acl(LL)
+                     ip = 3 !   <-   kd     k     ku
                      n12 = 2
                      ib = 2
 
@@ -217,8 +238,11 @@ contains
 
                   else
 
-                     kku = klnup(1 + ip, LL); if (kku == 0) cycle; kkua = abs(kku)
-                     ku = kbot(kkua) + kmxn(kkua) - (Lb + kmxL(LL) - L); if (ku < kbot(kkua) .or. ku > ktop(kkua)) cycle
+                     kku = klnup(1 + ip, LL)
+                     if (kku == 0) cycle
+                     kkua = abs(kku)
+                     ku = kbot(kkua) + kmxn(kkua) - (Lb + kmxL(LL) - L)
+                     if (ku < kbot(kkua) .or. ku > ktop(kkua)) cycle
 
                      if (kku < 0) then
 
@@ -233,9 +257,11 @@ contains
                      else
 
                         kkub = abs(klnup(2 + ip, LL))
-                        ku2 = kbot(kkub) + kmxn(kkub) - (Lb + kmxL(LL) - L); if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) cycle
+                        ku2 = kbot(kkub) + kmxn(kkub) - (Lb + kmxL(LL) - L)
+                        if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) cycle
 
-                        sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)
+                        sl1 = slnup(1 + ip, LL)
+                        sl2 = slnup(2 + ip, LL)
 
                         if (jasfer3D == 0) then
                            ucxku = ucx(ku) * sl1 + ucx(ku2) * sl2

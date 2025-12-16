@@ -179,7 +179,7 @@ contains
                         !
                         ! 4: Formulation according Parker & Andrews (1985)
                         !
-                        ust2avg = (ust2(k1) + ust2(k2)) / 2d0
+                        ust2avg = (ust2(k1) + ust2(k2)) / 2.0_dp
                         if (di50spatial) then
                            di50 = sqrt(sedd50fld(k1) * sedd50fld(k2))
                         end if
@@ -189,7 +189,7 @@ contains
                         if (shield /= 0.0_fp) then
                            if (islope == 3) then
                               dmloc = sqrt(dm(k1) * dm(k2))
-                              if (comparereal(dmloc, 0d0) == 0) then
+                              if (comparereal(dmloc, 0.0_dp) == 0) then
                                  if (kcs(k1) > 0) then
                                     dmloc = dm(k1)
                                  elseif (kcs(k2) > 0) then

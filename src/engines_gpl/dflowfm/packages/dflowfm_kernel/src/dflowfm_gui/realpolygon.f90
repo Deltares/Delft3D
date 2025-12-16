@@ -30,6 +30,8 @@
 !
 !
 module m_realpolygon
+
+   use precision, only: dp
    implicit none
 contains
    subroutine realPOLYGON(X, Y, N, NCOL)
@@ -43,11 +45,11 @@ contains
       real :: X(N), Y(N)
 
       call SETCOL(NCOL)
-      call PTABS(dble(X(1)), dble(Y(1)))
+      call PTABS(real(X(1), kind=dp), real(Y(1), kind=dp))
       do I = 2, N
-         call LNABS(dble(X(I)), dble(Y(I)))
+         call LNABS(real(X(I), kind=dp), real(Y(I), kind=dp))
       end do
-      call LNABS(dble(X(1)), dble(Y(1)))
+      call LNABS(real(X(1), kind=dp), real(Y(1), kind=dp))
       return
    end
 end module m_realpolygon

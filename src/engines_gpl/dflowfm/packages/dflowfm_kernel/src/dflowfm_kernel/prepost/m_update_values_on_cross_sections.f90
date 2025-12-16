@@ -158,7 +158,8 @@ contains
             do num = 1, NUMCONST_MDU
                IP = IP + 1
                do LL = Lbot(L), Ltop(L)
-                  k1 = ln(1, LL); k2 = ln(2, LL)
+                  k1 = ln(1, LL)
+                  k2 = ln(2, LL)
                   crs_values(IP, icrs) = crs_values(IP, icrs) + real(sign(1, Lf), dp) * (max(q1(LL), 0.0_dp) * constituents(num, k1) &
                                                                                          + min(q1(LL), 0.0_dp) * constituents(num, k2))
                end do
