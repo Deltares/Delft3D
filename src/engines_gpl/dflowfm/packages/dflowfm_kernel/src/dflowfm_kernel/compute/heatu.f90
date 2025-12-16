@@ -40,7 +40,7 @@ contains
    subroutine heatu(time_in_hours)
       use precision, only: dp
       use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, jamapheatflux, jahisheatflux, &
-                        jatem, hs, epshstem, chktempdep
+                        temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, epshstem, chktempdep
       use m_flowgeom, only: ndxi, nd
       use m_sferic, only: anglon, anglat
       use m_wind, only: heatsrc0
@@ -56,9 +56,9 @@ contains
       heatsrc0(:) = 0.0_dp ! 2D or 3D heat source per cell, only set at timeuser (Km3/s)
 
       if (jamapheatflux > 0 .or. jahisheatflux > 0) then
-         if (jatem == 3) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS) then
             qtotmap(:) = 0.0_dp
-         else if (jatem == 5) then
+         else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
             qtotmap(:) = 0.0_dp
             qsunmap(:) = 0.0_dp
             qevamap(:) = 0.0_dp

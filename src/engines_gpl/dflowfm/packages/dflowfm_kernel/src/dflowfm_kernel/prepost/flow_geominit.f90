@@ -405,7 +405,7 @@ contains
       end do
       ! jacenterinside = 0
 
-      fwind = (5.0e6_dp / max(sarea, 1.0e4_dp))**0.05_dp ! Only for jatem == 3, excess model.
+      fwind = (5.0e6_dp / max(sarea, 1.0e4_dp))**0.05_dp ! Only for temperature_model == TEMPERATURE_MODEL_EXCESS.
 
       do L = 1, NUML1D ! get cell center coordinates 1D
          if (KN(3, L) == 1 .or. KN(3, L) >= 3 .and. KN(3, L) <= 7) then

@@ -390,7 +390,7 @@ contains
                vmin = vmin - 1.0e-5_dp
             end if
             call TEKFN(7, 13, 1, dijdij(0:km), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'Bruva', 0, 2, 0.0_dp, kplot + 1)
-         else if (jatem > 0) then
+         else if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (jafahrenheit > 0) then
                dijdij(1:km) = 32.0_dp + constituents(itemp, kb:kt) * 1.8_dp
                vmin = 70.0_dp

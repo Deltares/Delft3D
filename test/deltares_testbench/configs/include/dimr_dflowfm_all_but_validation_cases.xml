@@ -4953,6 +4953,22 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f020_c050_cooling_to_backgroundwatertemperature" ref="dflowfm_default">
+        <path version="2025-12-10T14:38:38.173000">e02_dflowfm/f020_heat_flux/c050_cooling_to_backgroundwatertemperature</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="DFM_OUTPUT_excess/excess_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="tem1" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="DFM_OUTPUT_excess/excess_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="temperature" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f022_c01_trench_VanRijn1993" ref="dflowfm_default">
       <path version="2025-10-15T15:17:50.706000">e02_dflowfm/f022_morphology_2D/c01_trench_VanRijn1993</path>
       <maxRunTime>15000.0000000</maxRunTime>
