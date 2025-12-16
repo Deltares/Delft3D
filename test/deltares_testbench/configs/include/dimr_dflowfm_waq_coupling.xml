@@ -222,7 +222,7 @@
         </file>
         <file name="DFM_DELWAQ_f34/f34.table" type="ASCII">
           <parameters>
-            <parameter name="contents" toleranceAbsolute="0.0001" toleranceRelative="1.0e+2"/>
+            <parameter name="contents" toleranceAbsolute="0.0001"/>
           </parameters>
         </file>
         <file name="DFM_DELWAQ_f34/f34-relerrvavg.txt" type="ASCII">
@@ -444,7 +444,7 @@
         </file>
         <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01.table" type="ASCII">
           <parameters>
-            <parameter name="contents" toleranceAbsolute="0.0001" toleranceRelative="1.0e+2"/>
+            <parameter name="contents" toleranceAbsolute="0.0001"/>
           </parameters>
         </file>
         <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01-relerrvavg.txt" type="ASCII">
@@ -529,7 +529,7 @@
         </file>
         <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01.table" type="ASCII">
           <parameters>
-            <parameter name="contents" toleranceAbsolute="0.0001" toleranceRelative="1.0e+2"/>
+            <parameter name="contents" toleranceAbsolute="0.0001"/>
           </parameters>
         </file>
         <file name="DFM_DELWAQ_westerscheldt01/westerscheldt01-relerrvavg.txt" type="ASCII">
