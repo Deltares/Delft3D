@@ -470,14 +470,14 @@ contains
                   success = .true. ! We allow to disable salinity without removing the quantity.
                end if
 
-            else if (jatem > 0 .and. qid == 'initialtemperature') then
+            else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialtemperature') then
 
                success = timespaceinitialfield(xz, yz, tem1, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                if (success) then
                   initem2D = 1
                end if
 
-            else if (jatem > 0 .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
+            else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
 
                call setinitialverticalprofile(tem1, ndkx, filename)
                success = .true.

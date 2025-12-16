@@ -559,7 +559,7 @@ contains
       write (lunhyd, '(a,a)') 'salinity-file               ', trim(stmp)
 
       stmp = ' '
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          stmp = ''''//trim(defaultFilename('tem', prefixWithDirectory=.false.))//''''
       else
          stmp = 'none'
@@ -1800,7 +1800,7 @@ contains
       end if
 
       ! Temperature file (salinity of computational cells)
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          call waq_wri_tem(itim, defaultFilename('tem'), waqpar%luntem)
       end if
 

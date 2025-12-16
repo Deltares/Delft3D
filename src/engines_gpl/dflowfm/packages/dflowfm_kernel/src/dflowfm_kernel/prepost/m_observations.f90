@@ -80,7 +80,8 @@ contains
 !! IPNT_XXX are the pointers in the "valobs" array,
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
-      use m_flowparameters, only: jawave, jahistaucurrent, jatem, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
+      use m_flowparameters, only: jawave, jahistaucurrent, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
+         TEMPERATURE_MODEL_COMPOSITE, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
       use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
@@ -238,13 +239,13 @@ contains
          IVAL_TAUX = next_index(i)
          IVAL_TAUY = next_index(i)
       end if
-      if (jatem > 1) then
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          IVAL_TAIR = next_index(i)
       end if
       if (jawind > 0) then
          IVAL_WIND = next_index(i)
       end if
-      if (jatem == 5) then
+      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          IVAL_RHUM = next_index(i)
          IVAL_CLOU = next_index(i)
          IVAL_QSUN = next_index(i)
@@ -254,7 +255,7 @@ contains
          IVAL_QFRE = next_index(i)
          IVAL_QFRC = next_index(i)
       end if
-      if (jatem > 1) then
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          IVAL_QTOT = next_index(i)
       end if
       call set_value_indices_for_ice(i)
@@ -336,7 +337,7 @@ contains
       if (jasal > 0) then
          IVAL_SA1 = next_index(i)
       end if
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          IVAL_TEM1 = next_index(i)
       end if
       IVAL_UMAG = next_index(i)

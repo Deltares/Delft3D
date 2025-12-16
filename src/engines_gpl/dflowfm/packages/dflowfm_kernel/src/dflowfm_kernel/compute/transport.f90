@@ -50,13 +50,14 @@ contains
       use m_density, only: set_potential_density, set_pressure_dependent_density
       use m_getverticallyaveraged
       use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban
-      use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
-                        limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, kbndu, nbndsd, kbndsd, &
-                        kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, &
-                        vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, &
-                        potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
+      use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, temperature_model, TEMPERATURE_MODEL_NONE, &
+         maxitverticalforestertem, limtyptm, limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, &
+         kbndu, nbndsd, kbndsd, kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, vol1, &
+         eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, potential_density, in_situ_density, rho, jacreep, lbot, &
+         ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
       use Timers, only: timstrt, timstop
-      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
+      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, &
+         rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
       use m_netw, only: zk
       use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
       use m_flowparameters, only: jadiagnostictransport
@@ -84,7 +85,7 @@ contains
          ! limtypsa = 0
          maxitverticalforestersal = 0
       end if
-      if (jatem == 0) then
+      if (temperature_model == TEMPERATURE_MODEL_NONE) then
          limtypTM = 0
          maxitverticalforestertem = 0
       end if
@@ -127,7 +128,7 @@ contains
 
       end if
 
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          do k = 1, nbndtm ! set 1D or 3D temp boundary conditions
             LL = kbndTM(3, k)
             call getLbotLtop(LL, Lb, Lt)
@@ -407,7 +408,7 @@ contains
                if (jasal > 0 .and. keepstbndonoutflow == 0) then
                   constituents(isalt, kb) = constituents(isalt, ki)
                end if
-               if (jatem > 0 .and. keepstbndonoutflow == 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE .and. keepstbndonoutflow == 0) then
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
                if (jased > 0) then

@@ -51,8 +51,8 @@ module m_heatfluxes
    real(kind=dp) :: qfrconav !< Free convection heat loss (W/m2)
    real(kind=dp) :: qfrevaav !< Free evaporation heat loss (W/m2)
 
-   real(kind=dp) :: sarea !< Only for excess temp model jatem=3, lake area
-   real(kind=dp) :: fwind !< Only for excess temp model jatem=3, wind factor
+   real(kind=dp) :: sarea !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, lake area
+   real(kind=dp) :: fwind !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, wind factor
 
    integer :: jamapheatflux !< write heatfluxes to map
    integer :: jarichardsononoutput !< write Richardson nr to his

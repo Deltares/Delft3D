@@ -31,18 +31,25 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use timers, only: timstrt, timstop
    use m_flowtimes, only: handle_ext, irefdate, tunit, time1
    use m_flowgeom, only: ndx
-   use m_meteo, only: ec_gettimespacevalue, ecgetvalues, twav, success, air_pressure, pavbnd, ja_airdensity, item_air_density, air_density, ja_computed_airdensity, item_atmosphericpressure, &
-                      item_air_temperature, air_temperature, item_dew_point_temperature, dew_point_temperature, update_wind_stress_each_time_step, jatem, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
-                      ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, item_pump, qpump, item_longculvert_valve_relative_opening, &
-                      nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, item_lateraldischarge, npumpswithlevels, numsrc, item_discharge_salinity_temperature_sorsin, qstss, item_sourcesink_discharge, &
-                      item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, &
-                      item_relative_humidity, btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, item_long_wave_radiation, btempforcingtypd, &
-                      relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, dumpecmessagestack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, &
-                      dwcap, mxwav, mywav, hs, epshu, twavcom, flowwithoutwaves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, item_fy, item_wsbu, &
-                      item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, &
-                      item_rainfall_rate, item_pump_capacity, item_culvert_valveopeningheight, item_weir_crestlevel, item_orifice_crestlevel, item_orifice_gateloweredgelevel, item_gate_crestlevel, &
-                      item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, item_general_structure_gateloweredgelevel, item_general_structure_crestwidth, &
-                      item_general_structure_gateopeningwidth, sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt
+   use m_meteo, only: ec_gettimespacevalue, ecgetvalues, twav, success, air_pressure, pavbnd, ja_airdensity, item_air_density, &
+      air_density, ja_computed_airdensity, item_atmosphericpressure, item_air_temperature, air_temperature, &
+      item_dew_point_temperature, dew_point_temperature, update_wind_stress_each_time_step, temperature_model, &
+      TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
+      ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, &
+      item_pump, qpump, item_longculvert_valve_relative_opening, nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, &
+      item_lateraldischarge, npumpswithlevels, numsrc, item_discharge_salinity_temperature_sorsin, qstss, &
+      item_sourcesink_discharge, item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, &
+      jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, item_relative_humidity, &
+      btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, &
+      item_long_wave_radiation, btempforcingtypd, relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
+      dumpecmessagestack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
+      twavcom, flowwithoutwaves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, &
+      item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, &
+      item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, item_rainfall_rate, item_pump_capacity, &
+      item_culvert_valveopeningheight, item_weir_crestlevel, item_orifice_crestlevel, item_orifice_gateloweredgelevel, &
+      item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
+      item_general_structure_gateloweredgelevel, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
+      sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
    use dfm_error, only: dfm_noerr, dfm_extforcerror
@@ -146,8 +153,9 @@ contains
          end if
       end if
 
-      if (jatem == 5) then ! Do only for composite heat flux model
-         call set_temperature_models(time_in_seconds)
+      ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
+      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         call update_temperature_forcings(time_in_seconds)
       end if
 
       if (ja_friction_coefficient_time_dependent > 0) then
@@ -224,8 +232,10 @@ contains
          return
       end if
 
-      if (jatem > 1 .and. jaheat_eachstep == 0) then
-         call heatu(time_in_seconds / 3600.0_dp)
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         if (jaheat_eachstep == 0) then
+            call heatu(time_in_seconds / 3600.0_dp)
+         end if
       end if
 
       if (bfm_included .and. .not. initialization) then
@@ -272,10 +282,10 @@ contains
 
    end subroutine set_external_forcings
 
-!> set_temperature_models
-   subroutine set_temperature_models(time_in_seconds)
+   !> Update the relative humidity, dew point temperature, air temperature, cloudiness, solar radiation, and long wave radiation forcings used in the composite heat flux model
+   subroutine update_temperature_forcings(time_in_seconds)
       use precision, only: dp
-      use messagehandling, only: LEVEL_WARN, mess
+      use messagehandling, only: LEVEL_ERROR, mess
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
@@ -323,13 +333,14 @@ contains
          relative_humidity = calculate_relative_humidity(dew_point_temperature, air_temperature)
       end if
 
+      ! Raise error if neither of the required forcings for the composite heat flux model have been provided
       if (.not. foundtempforcing) then
-         call mess(LEVEL_WARN, &
-                   'No humidity or dewpoint, airtemperature and cloudiness forcing found, setting temperature model [physics:Temperature] = 1 (Only transport)')
-         jatem = 1
+         call mess(LEVEL_ERROR, &
+                   'Missing humidity or dewpoint, airtemperature and cloudiness forcing required by composite heat flux model.')
+         success = .false.
       end if
 
-   end subroutine set_temperature_models
+   end subroutine update_temperature_forcings
 
 !> get_timespace_value_by_name_and_consider_success_value
    subroutine get_timespace_value_by_name_and_consider_success_value(name, time_in_seconds)
