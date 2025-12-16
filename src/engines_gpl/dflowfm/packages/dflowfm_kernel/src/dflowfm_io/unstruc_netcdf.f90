@@ -2949,7 +2949,12 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
+      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, & 
+         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, &
+         jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, &
+         jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
+         fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
+         thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: tudunitstr, refdat, dts
       use m_flowgeom, only: lnx, ndx, ndxi, ndx2d, xz, yz, bl, xu, yu, ln, lnxi
@@ -2968,7 +2973,8 @@ contains
       use m_get_layer_indices_l_max, only: getlayerindiceslmax
       use m_get_Lbot_Ltop_max, only: getlbotltopmax
       use m_reconstruct_ucz, only: reconstructucz
-      use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units, ifrac2const
+      use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, &
+         const_units, ifrac2const
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot
       use m_xbeach_data, only: E, thetamean, sigmwav
       use unstruc_channel_flow, only: network
@@ -3146,7 +3152,7 @@ contains
                ierr = nf90_def_dim(irstfile, 'salbndpt', nbnds, id_bndsaldim)
             end if
          end if
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (max_threttim(ITEMP) > 0.0_dp) then
                ierr = nf90_def_dim(irstfile, 'tembndpt', nbndtm, id_bndtemdim)
             end if
@@ -3493,7 +3499,7 @@ contains
       end if
 
       ! Definition and attributes of flow data on centres: temperature
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          if (kmx > 0) then
             ierr = nf90_def_var(irstfile, 'tem1', nf90_double, [id_laydim, id_flowelemdim, id_timedim], id_tem1)
          else
@@ -3745,7 +3751,7 @@ contains
                ierr = nf90_put_att(irstfile, id_zsalbnd, 'units', '1e-3')
             end if
          end if
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (max_threttim(ITEMP) > 0.0_dp) then
                ierr = nf90_def_var(irstfile, 'ttembnd', nf90_double, [id_bndtemdim, id_timedim], id_ttembnd)
                ierr = nf90_put_att(irstfile, id_ttembnd, 'long_name', 'Thatcher-Harleman time interval for temperature')
@@ -4180,7 +4186,7 @@ contains
       end if
 
       !
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          ierr = nf90_inq_varid(irstfile, 'tem1', id_tem1)
       end if
       !
@@ -4536,7 +4542,7 @@ contains
          end if
       end if
 
-      if (jatem > 0) then ! Write the data: temperature
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then ! Write the data: temperature
          if (kmx > 0) then
             !do kk=1,Ndxi
             !   call getkbotktop(kk,kb,kt)
@@ -4771,7 +4777,7 @@ contains
                ierr = nf90_put_var(irstfile, id_zsalbnd, thzbnds, [1, itim], [nbnds * kmxd, 1])
             end if
          end if
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (max_threttim(ITEMP) > 0.0_dp) then
                ierr = nf90_put_var(irstfile, id_ttembnd, thtbndtm, [1, itim], [nbndtm, 1])
                ierr = nf90_put_var(irstfile, id_ztembnd, thzbndtm, [1, itim], [nbndtm * kmxd, 1])
@@ -5674,7 +5680,7 @@ contains
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sa1, nc_precision, iLocS, 'sa1', 'sea_water_salinity', 'Salinity in flow element', '1e-3', jabndnd=jabndnd_)
          end if
 
-         if (jamaptem > 0 .and. jatem > 0) then
+         if (jamaptem > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tem1, nc_precision, iLocS, 'tem1', 'sea_water_temperature', 'Temperature in flow element', 'degC', jabndnd=jabndnd_)
          end if
 
@@ -5854,23 +5860,24 @@ contains
          end if
 
          ! Heat fluxes
-         if (jamapheatflux > 0 .and. jatem > 1) then ! here less verbose
+         if (jamapheatflux > 0) then ! here less verbose
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, nc_precision, UNC_LOC_S, 'Rhum', 'surface_specific_humidity', 'Relative humidity near surface', '', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, nc_precision, UNC_LOC_S, 'Clou', 'cloud_area_fraction', 'Cloudiness', '1', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, nc_precision, UNC_LOC_S, 'Rhum', 'surface_specific_humidity', 'Relative humidity near surface', '', jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, nc_precision, UNC_LOC_S, 'Clou', 'cloud_area_fraction', 'Cloudiness', '1', jabndnd=jabndnd_)
 
-            if (jatem == 5) then
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, nc_precision, UNC_LOC_S, 'Qsun', 'surface_net_downward_shortwave_flux', 'Solar influx', 'W m-2', jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qeva, nc_precision, UNC_LOC_S, 'Qeva', 'surface_downward_latent_heat_flux', 'Evaporative heat flux', 'W m-2', jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qcon, nc_precision, UNC_LOC_S, 'Qcon', 'surface_downward_sensible_heat_flux', 'Sensible heat flux', 'W m-2', jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qlong, nc_precision, UNC_LOC_S, 'Qlong', 'surface_net_downward_longwave_flux', 'Long wave back radiation', 'W m-2', jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qfreva, nc_precision, UNC_LOC_S, 'Qfreva', 'downward_latent_heat_flux_in_sea_water_due_to_convection', 'Free convection evaporative heat flux', 'W m-2', jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qfrcon, nc_precision, UNC_LOC_S, 'Qfrcon', 'surface_downward_sensible_heat_flux_due_to_convection', 'Free convection sensible heat flux', 'W m-2', jabndnd=jabndnd_)
+               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, nc_precision, UNC_LOC_S, 'Qsun', 'surface_net_downward_shortwave_flux', 'Solar influx', 'W m-2', jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qeva, nc_precision, UNC_LOC_S, 'Qeva', 'surface_downward_latent_heat_flux', 'Evaporative heat flux', 'W m-2', jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qcon, nc_precision, UNC_LOC_S, 'Qcon', 'surface_downward_sensible_heat_flux', 'Sensible heat flux', 'W m-2', jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qlong, nc_precision, UNC_LOC_S, 'Qlong', 'surface_net_downward_longwave_flux', 'Long wave back radiation', 'W m-2', jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qfreva, nc_precision, UNC_LOC_S, 'Qfreva', 'downward_latent_heat_flux_in_sea_water_due_to_convection', 'Free convection evaporative heat flux', 'W m-2', jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qfrcon, nc_precision, UNC_LOC_S, 'Qfrcon', 'surface_downward_sensible_heat_flux_due_to_convection', 'Free convection sensible heat flux', 'W m-2', jabndnd=jabndnd_)
+               end if
+
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qtot, nc_precision, UNC_LOC_S, 'Qtot', 'surface_downward_heat_flux_in_sea_water', 'Total heat flux', 'W m-2', jabndnd=jabndnd_)
             end if
-
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_Qtot, nc_precision, UNC_LOC_S, 'Qtot', 'surface_downward_heat_flux_in_sea_water', 'Total heat flux', 'W m-2', jabndnd=jabndnd_)
-
          end if
 
          ! Turbulence.
@@ -6809,7 +6816,7 @@ contains
       end if
 
       ! Temperature
-      if (jatem > 0 .and. jamaptem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jamaptem > 0) then
          do k = 1, ndkx
             tem1(k) = constituents(itemp, k)
          end do
@@ -7697,19 +7704,24 @@ contains
       end if
 
       ! Heat flux models
-      if (jamapheatflux > 0 .and. jatem > 1) then ! here less verbose
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, UNC_LOC_S, air_temperature, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, UNC_LOC_S, relative_humidity, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, UNC_LOC_S, cloudiness, jabndnd=jabndnd_)
-         if (jatem == 5) then
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, UNC_LOC_S, Qsunmap, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qeva, UNC_LOC_S, Qevamap, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qcon, UNC_LOC_S, Qconmap, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qlong, UNC_LOC_S, Qlongmap, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qfreva, UNC_LOC_S, Qfrevamap, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qfrcon, UNC_LOC_S, Qfrconmap, jabndnd=jabndnd_)
+      if (jamapheatflux > 0) then ! here less verbose
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, UNC_LOC_S, air_temperature, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_relative_humidity, UNC_LOC_S, relative_humidity, jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_cloudiness, UNC_LOC_S, cloudiness, jabndnd=jabndnd_)
+
+            if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qsun, UNC_LOC_S, Qsunmap, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qeva, UNC_LOC_S, Qevamap, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qcon, UNC_LOC_S, Qconmap, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qlong, UNC_LOC_S, Qlongmap, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qfreva, UNC_LOC_S, Qfrevamap, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qfrcon, UNC_LOC_S, Qfrconmap, jabndnd=jabndnd_)
+            end if
+
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
          end if
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_qtot, UNC_LOC_S, Qtotmap, jabndnd=jabndnd_)
       end if
 
       if (jawave > NO_WAVES .and. jamapwav > 0) then
@@ -8238,7 +8250,8 @@ contains
       use m_missing
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
-      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, &
+         ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -8422,21 +8435,23 @@ contains
                call definencvar(imapfile, id_hs(iid), nf90_double, idims, 'waterdepth', 'water depth', 'm', 'FlowElem_xcc FlowElem_ycc')
             end if
 
-            if (jamapheatflux > 0 .and. jatem > 1) then ! Heat modelling only
-               call definencvar(imapfile, id_air_temperature(iid), nf90_double, idims, 'Tair', 'air temperature', 'degC', 'FlowElem_xcc FlowElem_ycc')
-               call definencvar(imapfile, id_relative_humidity(iid), nf90_double, idims, 'rhum', 'Relative humidity', ' ', 'FlowElem_xcc FlowElem_ycc')
-               call definencvar(imapfile, id_cloudiness(iid), nf90_double, idims, 'clou', 'cloudiness', ' ', 'FlowElem_xcc FlowElem_ycc')
+            if (jamapheatflux > 0) then ! Heat modelling only
+               if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                  call definencvar(imapfile, id_air_temperature(iid), nf90_double, idims, 'Tair', 'air temperature', 'degC', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile, id_relative_humidity(iid), nf90_double, idims, 'rhum', 'Relative humidity', ' ', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile, id_cloudiness(iid), nf90_double, idims, 'clou', 'cloudiness', ' ', 'FlowElem_xcc FlowElem_ycc')
 
-               if (jatem == 5) then
-                  call definencvar(imapfile, id_qsun(iid), nf90_double, idims, 'Qsun', 'solar influx', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile, id_Qeva(iid), nf90_double, idims, 'Qeva', 'evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile, id_Qcon(iid), nf90_double, idims, 'Qcon', 'sensible heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile, id_Qlong(iid), nf90_double, idims, 'Qlong', 'long wave back radiation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile, id_Qfreva(iid), nf90_double, idims, 'Qfreva', 'free convection evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile, id_Qfrcon(iid), nf90_double, idims, 'Qfrcon', 'free convection sensible heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                     call definencvar(imapfile, id_qsun(iid), nf90_double, idims, 'Qsun', 'solar influx', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                     call definencvar(imapfile, id_Qeva(iid), nf90_double, idims, 'Qeva', 'evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                     call definencvar(imapfile, id_Qcon(iid), nf90_double, idims, 'Qcon', 'sensible heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                     call definencvar(imapfile, id_Qlong(iid), nf90_double, idims, 'Qlong', 'long wave back radiation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                     call definencvar(imapfile, id_Qfreva(iid), nf90_double, idims, 'Qfreva', 'free convection evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                     call definencvar(imapfile, id_Qfrcon(iid), nf90_double, idims, 'Qfrcon', 'free convection sensible heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  end if
+
+                  call definencvar(imapfile, id_Qtot(iid), nf90_double, idims, 'Qtot', 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
                end if
-
-               call definencvar(imapfile, id_Qtot(iid), nf90_double, idims, 'Qtot', 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
             end if
 
             if (jamapnumlimdt > 0) then
@@ -8690,7 +8705,7 @@ contains
                ierr = nf90_put_att(imapfile, id_sa1(iid), '_FillValue', dmiss)
             end if
 
-            if (jamaptem > 0 .and. jatem > 0) then
+            if (jamaptem > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
                if (kmx > 0) then !        3D
                   ierr = nf90_def_var(imapfile, 'tem1', nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)], id_tem1(iid))
                else
@@ -9764,7 +9779,7 @@ contains
             ierr = nf90_inq_varid(imapfile, 'sa1', id_sa1(iid))
          end if
 
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             ierr = nf90_inq_varid(imapfile, 'tem1', id_tem1(iid))
          end if
 
@@ -10394,7 +10409,7 @@ contains
             end if
          end if
 
-         if (jamaptem > 0 .and. jatem > 0) then
+         if (jamaptem > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (kmx > 0) then ! 3D
                !do kk=1,ndxndxi
                !   call getkbotktop(kk,kb,kt)
@@ -11056,20 +11071,24 @@ contains
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
       end if
+      
+      if (jamapheatflux > 0) then ! Heat modelling only
+         if (temperature_model  == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
+            ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
+            ierr = nf90_put_var(imapfile, id_cloudiness(iid), cloudiness, [1, itim], [ndxndxi, 1])
 
-      if (jamapheatflux > 0 .and. jatem > 1) then ! Heat modelling only
-         ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
-         ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
-         ierr = nf90_put_var(imapfile, id_cloudiness(iid), cloudiness, [1, itim], [ndxndxi, 1])
-         if (jatem == 5) then
-            ierr = nf90_put_var(imapfile, id_qsun(iid), Qsunmap, [1, itim], [ndxndxi, 1])
-            ierr = nf90_put_var(imapfile, id_qeva(iid), Qevamap, [1, itim], [ndxndxi, 1])
-            ierr = nf90_put_var(imapfile, id_qcon(iid), Qconmap, [1, itim], [ndxndxi, 1])
-            ierr = nf90_put_var(imapfile, id_qlong(iid), Qlongmap, [1, itim], [ndxndxi, 1])
-            ierr = nf90_put_var(imapfile, id_qfreva(iid), Qfrevamap, [1, itim], [ndxndxi, 1])
-            ierr = nf90_put_var(imapfile, id_qfrcon(iid), Qfrconmap, [1, itim], [ndxndxi, 1])
+            if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+               ierr = nf90_put_var(imapfile, id_qsun(iid), Qsunmap, [1, itim], [ndxndxi, 1])
+               ierr = nf90_put_var(imapfile, id_qeva(iid), Qevamap, [1, itim], [ndxndxi, 1])
+               ierr = nf90_put_var(imapfile, id_qcon(iid), Qconmap, [1, itim], [ndxndxi, 1])
+               ierr = nf90_put_var(imapfile, id_qlong(iid), Qlongmap, [1, itim], [ndxndxi, 1])
+               ierr = nf90_put_var(imapfile, id_qfreva(iid), Qfrevamap, [1, itim], [ndxndxi, 1])
+               ierr = nf90_put_var(imapfile, id_qfrcon(iid), Qfrconmap, [1, itim], [ndxndxi, 1])
+            end if
+
+            ierr = nf90_put_var(imapfile, id_qtot(iid), Qtotmap, [1, itim], [ndxndxi, 1])
          end if
-         ierr = nf90_put_var(imapfile, id_qtot(iid), Qtotmap, [1, itim], [ndxndxi, 1])
       end if
       call realloc(numlimdtdbl, ndxndxi, keepExisting=.false.)
       numlimdtdbl = real(numlimdt, kind=dp) ! To prevent stack overflow. TODO: remove once integer version is available.
@@ -14060,7 +14079,7 @@ contains
       call readyy('Reading map data', 0.90_dp)
 
       ! Read the temperature (flow elem)
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          if (kmx > 0) then
             tmp_loc = UNC_LOC_S3D
          else
@@ -14496,7 +14515,7 @@ contains
                ierr = nf90_get_var(imapfile, id_zsalbnd, thzbnds(1:nbnds * kmxd), start=[1, it_read], count=[nbnds * kmxd, 1])
             end if
          end if
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (max_threttim(ITEMP) > 0.0_dp) then
                ierr = nf90_inq_varid(imapfile, 'ttembnd', id_ttembnd)
                ierr = nf90_get_var(imapfile, id_ttembnd, thtbndtm(1:nbndtm), start=[1, it_read], count=[nbndtm, 1])
