@@ -10,6 +10,8 @@
   <data:vector name="flow_velocity" />
   <data:vector name="wind_velocity" />
 
+  <!-- Dummy scalars for testing (added by add_dummy_scalars.py) -->
+
   <data:scalar name="hs" />
   <data:scalar name="dir" />
   <data:scalar name="dirc" />
@@ -139,6 +141,11 @@
     <use-data name="setup" />
   </mesh>
 
+  <!-- Dummy mesh for testing scalar exchange overhead -->
+  <mesh name="fm_dummy_mesh" dimensions="2">
+    <!-- Dummy scalar use-data entries added by add_dummy_scalars.py -->
+  </mesh>
+
   <participant name="fm">
     <provide-mesh name="fm_flow_nodes" />
     <receive-mesh name="wave_nodes" from="wave" />
@@ -184,13 +191,19 @@
     <read-data name="dhsign" mesh="fm_flow_nodes" />
     <read-data name="drtm01" mesh="fm_flow_nodes" />
     <read-data name="setup" mesh="fm_flow_nodes" />
+    <!-- Dummy mesh for testing -->
+    <provide-mesh name="fm_dummy_mesh" />
+    <!-- Dummy scalar write-data entries added by add_dummy_scalars.py -->
     <mapping:linear-cell-interpolation direction="read" from="wave_nodes" to="fm_flow_nodes" constraint="consistent" />
     <export:vtu directory="precice-exports" />
   </participant>
 
   <participant name="wave">
     <provide-mesh name="wave_nodes" />
-    <receive-mesh name="fm_flow_nodes" from="fm" />
+    <receive-mesh name="fm_flow_nodes" from="fm"  />
+    <!-- Direct mesh access for dummy scalars -->
+    <receive-mesh name="fm_dummy_mesh" from="fm" api-access="true" />
+    <!-- Dummy scalar read-data entries added by add_dummy_scalars.py -->
     <read-data name="bed_levels" mesh="wave_nodes" />
     <read-data name="water_levels" mesh="wave_nodes" />
     <read-data name="flow_velocity" mesh="wave_nodes" />
@@ -285,5 +298,6 @@
     <exchange data="dhsign" mesh="wave_nodes" from="wave" to="fm" />
     <exchange data="drtm01" mesh="wave_nodes" from="wave" to="fm" />
     <exchange data="setup" mesh="wave_nodes" from="wave" to="fm" />
+    <!-- Dummy scalar exchanges added by add_dummy_scalars.py -->
   </coupling-scheme:serial-explicit>
 </precice-configuration>

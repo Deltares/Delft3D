@@ -83,11 +83,16 @@ contains
       !call register_dummy_mesh_from_env_wave(precice_state)
       
       if (precice_state%num_dummy_scalars > 0) then
-         call register_dummy_mesh_wave(precice_state)
+         call set_dummy_mesh_access_region(precice_state)
       else
          print *, '[Wave] Dummy mesh registration disabled (num_scalars=0)'
       end if
+      
       call precicef_initialize()
+      
+      if (precice_state%num_dummy_scalars > 0) then
+         call register_dummy_mesh_wave(precice_state)
+      end if
    end subroutine initialize_fm_coupling
 
    function is_fm_coupling_ongoing() result(is_ongoing)
@@ -238,32 +243,75 @@ contains
    !    end if
    ! end subroutine register_dummy_mesh_from_env_wave
 
+   subroutine set_dummy_mesh_access_region(precice_state)
+      use precice, only: precicef_set_mesh_access_region
+      use m_wave_precice_state_t, only: wave_precice_state_t
+      use, intrinsic :: iso_c_binding, only: c_double
+      implicit none(type, external)
+
+      type(wave_precice_state_t), intent(in) :: precice_state
+      real(kind=c_double), dimension(4) :: bounding_box
+
+      ! Set a bounding box for the dummy mesh access region
+      ! Using a simple box that covers the dummy point at (0,0)
+      ! Format: [xmin, xmax, ymin, ymax]
+      bounding_box = (/ -1.0_c_double, 1.0_c_double, -1.0_c_double, 1.0_c_double /)
+      
+      call precicef_set_mesh_access_region(precice_state%dummy_mesh_name, &
+                                           bounding_box, &
+                                           len(precice_state%dummy_mesh_name))
+      
+      print *, '[Wave] Set mesh access region for dummy mesh: [-1,1] x [-1,1]'
+   end subroutine set_dummy_mesh_access_region
+
    subroutine register_dummy_mesh_wave(precice_state)
-      use precice, only: precicef_set_vertices
+      use precice, only: precicef_get_mesh_vertex_size, precicef_get_mesh_dimensions, &
+                         precicef_get_data_dimensions, precicef_get_mesh_vertex_ids_and_coordinates
       use m_wave_precice_state_t, only: wave_precice_state_t
       use, intrinsic :: iso_c_binding, only: c_int, c_double
       implicit none(type, external)
 
       type(wave_precice_state_t), intent(inout) :: precice_state
-      !integer, intent(in) :: num_scalars
 
-      real(kind=c_double), dimension(2) :: dummy_coords
+      integer(kind=c_int) :: mesh_vertex_size, mesh_dimensions, data_dimensions
+      real(kind=c_double), dimension(:), allocatable :: dummy_coords
       integer :: i
       character(len=17) :: scalar_name_temp
 
-      ! Register single point at origin (0, 0)
-      dummy_coords(1) = 0.0_c_double
-      dummy_coords(2) = 0.0_c_double
-
-      !allocate(precice_state%dummy_vertex_ids(1))
-      call precicef_set_vertices(precice_state%dummy_mesh_name, 1, dummy_coords, &
-                                 precice_state%dummy_vertex_ids, len(precice_state%dummy_mesh_name))
+      ! Use direct mesh access - receive FM's mesh instead of creating our own
+      ! First get the mesh properties
+      call precicef_get_mesh_vertex_size(precice_state%dummy_mesh_name, &
+                                         mesh_vertex_size, &
+                                         len(precice_state%dummy_mesh_name))
       
-      print *, '[Wave] Registered dummy mesh with 1 vertex at (0,0)'
+      call precicef_get_mesh_dimensions(precice_state%dummy_mesh_name, &
+                                        mesh_dimensions, &
+                                        len(precice_state%dummy_mesh_name))
+      
+      print *, '[Wave] Dummy mesh properties: vertex_size=', mesh_vertex_size, &
+               ', dimensions=', mesh_dimensions
+      
+      ! Allocate arrays based on actual mesh size
+      if (allocated(precice_state%dummy_vertex_ids)) deallocate(precice_state%dummy_vertex_ids)
+      allocate(precice_state%dummy_vertex_ids(mesh_vertex_size))
+      allocate(dummy_coords(mesh_vertex_size * mesh_dimensions))
+      
+      ! Get the vertex IDs and coordinates from the shared mesh provided by FM
+      call precicef_get_mesh_vertex_ids_and_coordinates(precice_state%dummy_mesh_name, &
+                                                         mesh_vertex_size, &
+                                                         precice_state%dummy_vertex_ids, &
+                                                         dummy_coords, &
+                                                         len(precice_state%dummy_mesh_name))
+      
+      print *, '[Wave] Received shared dummy mesh from FM with', mesh_vertex_size, 'vertices'
+      if (mesh_vertex_size > 0) then
+         print *, '[Wave] First vertex at (', dummy_coords(1), ',', dummy_coords(2), ')'
+      end if
+      
+      deallocate(dummy_coords)
 
       ! Create scalar field names to read (matching FM's naming)
-      !precice_state%num_dummy_scalars = num_scalars
-      allocate(precice_state%dummy_scalar_names(precice_state%num_dummy_scalars ))
+      allocate(precice_state%dummy_scalar_names(precice_state%num_dummy_scalars))
       
       do i = 1, precice_state%num_dummy_scalars
          write(scalar_name_temp, '(a,i7.7)') 'fm_scalar_', i
