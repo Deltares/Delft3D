@@ -3,7 +3,7 @@ module m_get_flow_fields
    private
    public :: get_flow_fields
 contains
-   subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowVelocityType, precice_state)
+   subroutine get_flow_fields(i_swan, sif, sg, wavedata, sr, flowVelocityType, precice_state)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2025.
@@ -42,17 +42,15 @@ contains
       use flow_data
       use wave_data
       use m_wave_precice_state_t, only: wave_precice_state_t
+      use m_get_params, only: get_params
       implicit none
 !
 ! Global variables
 !
-      integer :: i_flow
       integer :: i_swan
       integer :: flowVelocityType
       type(input_fields) :: sif ! input fields defined on swan grid
-      type(grid) :: fg ! flow grid
       type(grid) :: sg ! swan grid
-      type(grid_map) :: f2s ! flow to swn grid mapper
       integer, dimension(:, :), pointer :: covered
       type(wave_data_type) :: wavedata
       type(swan_type) :: sr ! swan input structure
@@ -67,152 +65,44 @@ contains
       real :: maxval
       logical :: clbot = .true.
       character(256) :: mudfilnam = ' '
-      type(input_fields) :: fif ! input fields defined on flow grid
-
-      interface
-         subroutine grmap_esmf(i1, f1, n1, f2, mmax, nmax, f2s, f2g)
-            use swan_flow_grid_maps
-            integer, intent(in) :: i1
-            integer, intent(in) :: n1
-            integer, intent(in) :: mmax
-            integer, intent(in) :: nmax
-            real, dimension(n1), intent(in) :: f1
-            real, dimension(mmax, nmax) :: f2
-            type(grid_map), intent(in) :: f2s
-            type(grid) :: f2g ! f2 grid
-         end subroutine grmap_esmf
-
-         subroutine get_var_netcdf(i_flow, wavetime, varname, vararr, mmax, nmax, basename, &
-                                 & lastvalidflowfield, kmax, flowVelocityType)
-            use wave_data
-            integer, intent(in) :: i_flow
-            type(wave_time_type) :: wavetime
-            character(*), intent(in) :: varname
-            real, dimension(mmax, nmax), intent(out) :: vararr
-            integer, intent(in) :: mmax
-            integer, intent(in) :: nmax
-            character(*) :: basename
-            integer :: lastvalidflowfield
-            integer, optional, intent(in) :: kmax
-            integer, optional, intent(in) :: flowVelocityType
-         end subroutine
-      end interface
       !
    !! executable statements -------------------------------------------------------
-      !
-      ! Allocate memory swan input fields defined on flow grid
-      !
-      call alloc_input_fields(fg, fif, wavedata%mode)
-      !
       if (sr%dom(i_swan)%qextnd(q_bath) > 0) then
-         if (sr%flowgridfile == ' ') then
-            !
-            ! Read depth from com-file (Delft3d4)
-            !
-            call get_dep(fif%dps, fif%mmax, fif%nmax, &
-                        & fg%grid_name)
-         else
-            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%bed_levels_name, sif%dps)
-         end if
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%bed_levels_name, sif%dps)
       end if
-      !
+
       if (sr%dom(i_swan)%qextnd(q_wl) > 0) then
-         if (sr%flowgridfile == ' ') then
-            !
-            ! Read water level from com-file (Delft3d4)
-            !
-            call get_lev(wavedata%time, &
-                        & fif%s1, fif%mmax, fif%nmax, &
-                        & fg%grid_name)
-         else
-            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%water_levels_name, sif%s1)
-         end if
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%water_levels_name, sif%s1)
       end if
-      !
+
       if (sr%dom(i_swan)%qextnd(q_cur) > 0) then
-         if (sr%flowgridfile == ' ') then
-            !
-            ! Read velocity from com-file
-            !
-            call get_cur(wavedata%time, &
-                        & fif%kfu, fif%kfv, fif%u1, fif%v1, fif%mmax, fif%nmax, &
-                        & fg%kmax, fg%grid_name, fg%layer_model, flowVelocityType, &
-                        & fif%dps, fif%s1)
-            !
-            ! Convert to Cartesian, cell centres
-            !
-            call flow2wav(fif%u1, fif%v1, &
-                         & fg%alfas, fg%guu, fg%gvv, fg%mmax, fg%nmax, fg%kcs, &
-                         & fif%kfu, fif%kfv, alpb, clbot)
-         else
-            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%flow_velocity_name, sif%u1, sif%v1)
-         end if
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%flow_velocity_name, sif%u1, sif%v1)
       end if
-      !
+
       if (sr%dom(i_swan)%qextnd(q_wind) >= 1) then
-         if (sr%flowgridfile == ' ') then
-            !
-            ! Read wind from com-file
-            !
-            call get_wind(wavedata%time, &
-                         & fif%windu, fif%windv, fif%mmax, fif%nmax, &
-                         & fg%grid_name)
-         else
-            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%wind_velocity_name, sif%windu, sif%windv)
-         end if
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%wind_velocity_name, sif%windu, sif%windv)
       end if
-      !
+
       if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
-         if (sr%flowgridfile == ' ') then
-            !
-            ! There is no vegetation on the Delf3D4-FLOW com file
-            !
-            write (*, '(a)') "ERROR: trying to read vegetation from Delft3D4-FLOW com-file. Not implemented yet."
-            call wavestop(1, "ERROR: trying to read vegetation from Delft3D4-FLOW com-file. Not implemented yet.")
-         else
-            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_stem_density_name, sif%veg)
-            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_diameter_name, sif%diaveg)
-            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_height_name, sif%veg_stemheight)
-            ! It seems that SWAN only accepts constant values for diaveg and veg_stemheight
-            !
-            maxval = -1.0e10
-            do i = 1, fif%mmax
-               do j = 1, fif%nmax
-                  maxval = max(maxval, fif%diaveg(i, j))
-               end do
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_stem_density_name, sif%veg)
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_diameter_name, sif%diaveg)
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_height_name, sif%veg_stemheight)
+         ! It seems that SWAN only accepts constant values for diaveg and veg_stemheight
+         !
+         maxval = -1.0e10
+         do i = 1, sif%mmax
+            do j = 1, sif%nmax
+               maxval = max(maxval, sif%diaveg(i, j))
             end do
-            sr%veg_diamtr = maxval
-            maxval = -1.0e10
-            do i = 1, fif%mmax
-               do j = 1, fif%nmax
-                  maxval = max(maxval, fif%veg_stemheight(i, j))
-               end do
+         end do
+         sr%veg_diamtr = maxval
+         maxval = -1.0e10
+         do i = 1, sif%mmax
+            do j = 1, sif%nmax
+               maxval = max(maxval, sif%veg_stemheight(i, j))
             end do
-            sr%veg_height = maxval
-         end if
-      end if
-      if (wavedata%mode == flow_mud_online) then
-         write (*, '(4x,a)') 'Mud:'
-         write (mudfilnam, '(a,a)') 'com-', trim(mudids(1))
-         !
-         ! Read mud parameters needed by SWAN
-         !
-         call get_params(dummy, sr%rhomud, mudfilnam)
-         call get_visc(wavedata%time, sr%viscmud, fif%mmax, fif%nmax, mudfilnam)
-         !
-         ! Read depth from mud-com-file
-         ! ASSUMPTIONS:
-         ! - Only one mud domain
-         ! - Mud grid is identical to the grid of the only water domain
-         !
-         call get_dep(fif%dpsmud, fif%mmax, fif%nmax, &
-                     & mudfilnam)
-         !
-         ! Map depth to SWAN grid
-         !
-         call get_lev(wavedata%time, &
-                     & fif%s1mud, fif%mmax, fif%nmax, &
-                     & mudfilnam)
+         end do
+         sr%veg_height = maxval
       end if
       !
       ! Read dummy scalars for latency testing (only when reading from preCICE)
@@ -220,10 +110,6 @@ contains
       if (precice_state%num_dummy_scalars > 0) then
          call read_dummy_scalars_from_precice(precice_state)
       end if
-      !
-      ! Deallocate memory swan input fields defined on flow grid
-      !
-      call dealloc_input_fields(fif, wavedata%mode)
    end subroutine get_flow_fields
 
    subroutine precice_read_data(swan_grid_mask, m_max, n_max, precice_state, field_name, output_field_x, output_field_y)

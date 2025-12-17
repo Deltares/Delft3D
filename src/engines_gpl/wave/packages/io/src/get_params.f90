@@ -1,3 +1,8 @@
+module m_get_params
+    implicit none
+    private
+    public :: get_params
+contains
 subroutine get_params(tscale, rho, filnam)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -114,3 +119,4 @@ subroutine get_params(tscale, rho, filnam)
     endif
     deallocate(rbuff, stat=ierr)
 end subroutine get_params
+end module m_get_params

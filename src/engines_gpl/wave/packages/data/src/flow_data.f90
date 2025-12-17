@@ -36,7 +36,6 @@ use precision_basics
 !
 integer                                 , save :: num_subdomains        = 0
 integer                                 , save :: num_muddomains        = 0
-logical                                 , save :: flow_data_initialized = .false.
 character(256), dimension(:),allocatable, save :: runids
 character(256), dimension(:),allocatable, save :: mudids
 !
@@ -54,7 +53,6 @@ subroutine flow_init (mode, it01, tscale)
    use sync_flowwave
    use wave_data
    use string_module, only: str_token, count_words
-   !
    implicit none
 !
 ! Global variables
@@ -90,7 +88,6 @@ subroutine flow_init (mode, it01, tscale)
             write(*,'(2a)')     '             Base name: ', trim(swan_run%flowgridfile)
             write(*,'(a,i4.4)')  '             Partition range: 0000 - ', num_subdomains-1
          endif
-         flow_data_initialized = .true.
       endif
    elseif (mode==stand_alone) then
       !
@@ -110,12 +107,6 @@ subroutine flow_init (mode, it01, tscale)
             call str_token(swan_run%comfile,runids(idom))
             write(*,'(13x,a)') trim(runids(idom))
          enddo
-         !
-         ! Obtain time settings from first com file
-         !
-         write(filnam,'(2a)') 'com-',trim(runids(1))
-         call get_params(tscale, dummy, filnam)
-         flow_data_initialized = .true.
       endif
    else ! mode/=stand_alone .and. swan_run%flowgridfile==' '
       !
@@ -164,7 +155,6 @@ subroutine flow_init (mode, it01, tscale)
          endif
          call wave_to_flow_status(flow_wave_comm_result_ok, mud)
       endif
-      flow_data_initialized = .true.
    endif
 end subroutine flow_init
 !
