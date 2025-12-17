@@ -112,7 +112,7 @@ subroutine write_swan_data_to_precice(my_swan_output_fields, swan_run, my_swan_g
    !
 end subroutine write_swan_data_to_precice
 
-subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_state)
+subroutine swan_tot(n_swan_grids, wavedata, selectedtime, precice_state)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2025.
@@ -163,7 +163,6 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_
 !
 ! Global variables
 !
-   integer, intent(in) :: n_flow_grids
    integer, intent(in) :: n_swan_grids
    type(wave_data_type) :: wavedata
    integer, intent(in) :: selectedtime ! <=0: no time selected, >0: only compute for swan_run%timwav(selectedtime)
@@ -276,12 +275,8 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_
          ! If flow results are used
          !
          if (swan_run%useflowdata) then
-            do i_flow = 1, n_flow_grids
-               write (*, '(a,i0,a)') '  Get flow fields, domain ', i_flow, ' :'
-               call get_flow_fields(i_flow, i_swan, swan_input_fields, flow_grids(i_flow), swan_grids(i_swan), &
-                                   & flow2swan_maps(i_swan, i_flow), wavedata, &
-                                   & swan_run, dom%flowVelocityType, precice_state)
-            end do
+            call get_flow_fields(i_swan, swan_input_fields, swan_grids(i_swan), wavedata, &
+                                 swan_run, dom%flowVelocityType, precice_state)
          end if
          !
          ! Get meteo data from file?
