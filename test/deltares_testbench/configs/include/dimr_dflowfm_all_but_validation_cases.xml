@@ -712,7 +712,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c032_discharge_tim_mismatchstart" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:06.991000">e02_dflowfm/f005_boundary_conditions/c032_discharge_tim_mismatchstart</path>
+      <path version="2025-12-15T10:17:46.244000">e02_dflowfm/f005_boundary_conditions/c032_discharge_tim_mismatchstart</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
