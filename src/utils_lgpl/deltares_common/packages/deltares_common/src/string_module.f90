@@ -54,6 +54,7 @@ module string_module
    public :: remove_leading_spaces
    public :: remove_all_spaces
    public :: replace_multiple_spaces_by_single_spaces
+   public :: find_candidate_in_array
    public :: find_first_word
    public :: find_first_letter
    public :: find_first_char
@@ -1220,5 +1221,27 @@ contains
    end if
 
    end subroutine convert_to_real_dp
+
+   !> Find candidate (from candidate_array) in target_array, return index of first match
+   function find_candidate_in_array(target_array, candidate_array) result(i)
+      character(len=*), dimension(:), intent(in) :: target_array
+      character(len=*), dimension(:), intent(in) :: candidate_array
+      integer :: i
+      integer :: j
+
+      candidates: do j = 1, size(candidate_array)
+         do i = 1, size(target_array)
+            if (strcmpi(target_array(i), candidate_array(j))) then
+               exit candidates
+            end if
+         end do
+      end do candidates
+
+      ! If no match found, return -1
+      if (j > size(candidate_array)) then
+         i = -1
+      end if
+
+   end function find_candidate_in_array
    
 end module string_module

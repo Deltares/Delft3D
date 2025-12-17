@@ -50,7 +50,6 @@ module array_module
    public array_div_const
    public convert_start_index
    public convert_mask_to_indices
-   public find_candidate_in_array
 
    interface array_div_const
       module procedure arraySp1_div_constSp
@@ -177,27 +176,5 @@ contains
  
       indices = pack(temp_array, mask)
    end function convert_mask_to_indices
-
-   !> Find candidate (from candidate_array) in target_array, return index of first match
-   function find_candidate_in_array(target_array, candidate_array) result(i)
-      character(len=*), dimension(:), intent(in) :: target_array
-      character(len=*), dimension(:), intent(in) :: candidate_array
-      integer :: i
-      integer :: j
-
-      candidates: do j = 1, size(candidate_array)
-         do i = 1, size(target_array)
-            if (strcmpi(target_array(i), candidate_array(j))) then
-               exit candidates
-            end if
-         end do
-      end do candidates
-
-      ! If no match found, return -1
-      if (j > size(candidate_array)) then
-         i = -1
-      end if
-
-   end function find_candidate_in_array
 
 end module array_module

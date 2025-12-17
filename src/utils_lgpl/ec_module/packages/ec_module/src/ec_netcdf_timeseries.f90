@@ -28,7 +28,7 @@
 
 !> Reading/writing timeseries files in NetCDF format
 module m_ec_netcdf_timeseries
-   use array_module, only: find_candidate_in_array
+   use string_module, only: find_candidate_in_array
    use m_ec_parameters
    use m_ec_support
    use m_ec_message
@@ -64,12 +64,14 @@ contains
       logical :: success
 
       success = .false.
+
       allocate (netcdf_ptr, stat=istat)
       if (istat /= 0) then
          call setECMessage("ec_netcdf_timeseries::ecNetCDFCreate: Unable to allocate additional memory.")
          netcdf_ptr => null()
          return
       end if
+
       ! initialization
       netcdf_ptr%id = netcdf_id
    end function ecNetCDFCreate
@@ -83,19 +85,24 @@ contains
       integer :: ierr
 
       success = .false.
+
       ierr = nf90_close(netcdf%id)
       if (ierr /= NF90_NOERR) then
          call setECMessage("ec_netcdf_timeseries::ecNetCDFFree: Unable to close file")
       end if
+
       if (allocated(netcdf%dimlen)) then
          deallocate (netcdf%dimlen)
       end if
+
       if (allocated(netcdf%standard_names)) then
          deallocate (netcdf%standard_names)
       end if
+
       if (allocated(netcdf%tsid)) then
          deallocate (netcdf%tsid)
       end if
+
       if (allocated(netcdf%vp)) then
          deallocate (netcdf%vp)
       end if
@@ -114,22 +121,29 @@ contains
       integer :: istat
 
       success = .true.
+
       if (associated(ptr)) then
          ! Free and deallocate all tEcFileReaderPtrs in the 1d array.
          do i = 1, n_nc_objs
             if (ecNetCDFFree(ptr(i)%ptr)) then
                deallocate (ptr(i)%ptr, stat=istat)
-               if (istat /= 0) success = .false.
+               if (istat /= 0) then
+                  success = .false.
+               end if
             else
                success = .false.
             end if
          end do
+
          ! Finally deallocate the tEcNetCDFPtr(:) pointer.
          if (success) then
             deallocate (ptr, stat=istat)
-            if (istat /= 0) success = .false.
+            if (istat /= 0) then
+               success = .false.
+            end if
          end if
       end if
+
       n_nc_objs = 0
    end function ecNetCDFFree1dArray
 
@@ -139,12 +153,12 @@ contains
    !! Open only if this file is not already opened, so check the list of nc-objects first and return a pointer ....
    function ecNetCDFInit(ncname, ncptr, iostat) result(success)
       logical :: success
-      logical :: station_id_found
-      logical :: time_found
       character(len=*), intent(in) :: ncname
       type(tEcNetCDF), pointer, intent(inout) :: ncptr
       integer, optional, intent(out) :: iostat
 
+      logical :: station_id_found
+      logical :: time_found
       character(len=nf90_max_name) :: name
       character(len=:), allocatable :: cf_role, positive, zunits
       integer :: i_dim, n_dims, iVars, iTims, nVars, nTims, nGlobalAtts, unlimdimid, ierr
@@ -167,6 +181,7 @@ contains
          call setECmessage("ec_netcdf_timeseries::ecNetCDFInit: Error opening "//trim(ncname))
          return
       end if
+
       ierr = nf90_inquire(ncptr%ncid, n_dims, nVars, nGlobalAtts, unlimdimid)
       ncptr%nDIms = n_dims
       ncptr%nVars = nVars
@@ -177,55 +192,98 @@ contains
       do i_dim = 1, n_dims
          ierr = nf90_inquire_dimension(ncptr%ncid, i_dim, name, ncptr%dimlen(i_dim))
       end do
+
       allocate (ncptr%standard_names(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then 
+         return
+      end if
+
       allocate (ncptr%long_names(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then
+         return
+      end if
+
       allocate (ncptr%variable_names(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then
+         return
+      end if
+
       allocate (ncptr%vector_definitions(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then
+         return
+      end if
+
       allocate (ncptr%fillvalues(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then
+         return
+      end if
+
       allocate (ncptr%scales(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then 
+         return
+      end if
+
       allocate (ncptr%offsets(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then
+         return
+      end if
+
       ncptr%standard_names = ' '
       ncptr%long_names = ' '
       ncptr%variable_names = ' '
       ncptr%fillvalues = -huge(dp)
       ncptr%scales = 1.0_dp
       ncptr%offsets = 0.0_dp
+
       allocate (var_dimids(n_dims, nVars), stat=ierr) ! NOTE: n_dims is only an upper bound here!
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then 
+         return
+      end if
+
       allocate (var_ndims(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= NF90_NOERR) then 
+         return
+      end if
+
       var_ndims = 0
       do iVars = 1, nVars ! Inventorize variables
          ierr = nf90_inquire_attribute(ncptr%ncid, iVars, 'vector', len=len_vectordef) ! Check if this variable is just a reference to vector
          if (ierr == NF90_NOERR) then
             isVector = .true.
             allocate (character(len=len_vectordef) :: ncptr%vector_definitions(iVars)%s, stat=ierr)
-            if (ierr /= 0) return
+            if (ierr /= NF90_NOERR) then 
+               return
+            end if
             ierr = nf90_get_att(ncptr%ncid, iVars, 'vector', ncptr%vector_definitions(iVars)%s)
          else
             isVector = .false.
          end if
+
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, name=ncptr%variable_names(iVars)) ! Variable name
          ierr = nf90_get_att(ncptr%ncid, iVars, 'standard_name', ncptr%standard_names(iVars)) ! Standard name if available
-         if (ierr /= NF90_NOERR) ncptr%standard_names(iVars) = ncptr%variable_names(iVars) ! Variable name as fallback for standard_name
+         if (ierr /= NF90_NOERR) then
+            ncptr%standard_names(iVars) = ncptr%variable_names(iVars) ! Variable name as fallback for standard_name
+         end if
          ierr = nf90_get_att(ncptr%ncid, iVars, 'long_name', ncptr%long_names(iVars)) ! Long name for non CF names
-
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
-         if (ierr /= NF90_NOERR) ncptr%fillvalues(iVars) = -huge(dp)
+         if (ierr /= NF90_NOERR) then
+            ncptr%fillvalues(iVars) = -huge(dp)
+         end if
+
          ierr = nf90_get_att(ncptr%ncid, iVars, 'scale_factor', ncptr%scales(iVars))
-         if (ierr /= NF90_NOERR) ncptr%scales(iVars) = 1.0_dp
+         if (ierr /= NF90_NOERR) then
+            ncptr%scales(iVars) = 1.0_dp
+         end if
+
          ierr = nf90_get_att(ncptr%ncid, iVars, 'add_offset', ncptr%offsets(iVars))
-         if (ierr /= NF90_NOERR) ncptr%offsets(iVars) = 0.0_dp
+         if (ierr /= NF90_NOERR) then
+            ncptr%offsets(iVars) = 0.0_dp
+         end if
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims=var_ndims(iVars), dimids=var_dimids(:, iVars))
 
-         if (isVector) cycle ! vector placeholder, not a real variable with data in the file
+         if (isVector) then
+            cycle ! vector placeholder, not a real variable with data in the file
+         end if
 
          ! Check for important var: was it the stations?
          cf_role = ''
@@ -234,17 +292,25 @@ contains
             if (var_ndims(iVars)==2 .and. ncptr%variable_names(iVars)=='station_id') then  ! Check dims and var_name
                ! Compose an index timeseries id's 
                ierr = nf90_inquire_variable(ncptr%ncid, iVars, dimids=dimids_tsid)
-               if (ierr /= NF90_NOERR) return
+               if (ierr /= NF90_NOERR) then 
+                  return
+               end if
+
                tslen = ncptr%dimlen(dimids_tsid(1)) ! timeseries ID length
                nTims = ncptr%dimlen(dimids_tsid(2)) ! number of timeseries IDs
                ncptr%nTims = nTims
                allocate (ncptr%tsid(nTims), stat=ierr)
-               if (ierr /= 0) return
+               if (ierr /= NF90_NOERR) then 
+                  return
+               end if
+
                tslen = min(tslen, len(ncptr%tsid(1)))
                ncptr%tsid = ''
                do iTims = 1, nTims
                   ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid(iTims), (/1, iTims/), (/tslen, 1/))
-                  if (ierr /= NF90_NOERR) return
+                  if (ierr /= NF90_NOERR) then
+                     return
+                  end if
                   call replace_char(ncptr%tsid(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
                end do
                ncptr%tsidvarid = iVars ! For convenience also store the Station ID explicitly
@@ -258,7 +324,10 @@ contains
             ierr = nf90_inquire_dimension(ncptr%ncid, var_dimids(1,iVars), name = name)
             if (var_ndims(iVars) == 1 .and. name == 'time') then ! ndims must be 1 and dimName must be "time"
                ierr = nf90_get_att(ncptr%ncid, iVars, 'units', ncptr%timeunit) ! Store the unit string of the time variable
-               if (ierr /= NF90_NOERR) return
+               if (ierr /= NF90_NOERR) then
+                  return
+               end if
+
                ncptr%timevarid = iVars ! For convenience also store the ID explicitly
                ncptr%timedimid = var_dimids(1, iVars)
                time_found = .true.
@@ -317,7 +386,6 @@ contains
    ! =======================================================================
    !> Scan netcdf instance for a specific quantity name and location label
    recursive function ecNetCDFScan(ncptr, quantity, location, q_id, l_id, dimids, vectormax) result(success)
-      ! Declare input and output variabels
       logical :: success
       type(tEcNetCDF), pointer, intent(inout) :: ncptr !< NetCDF instance
       character(len=*), intent(in) :: quantity !< Quantity to search for
@@ -327,7 +395,6 @@ contains
       integer, dimension(:), allocatable, intent(out) :: dimids !< Dimension ids of the found quantity
       integer, intent(out), optional :: vectormax !< Maximum vector size if quantity is vectorial
 
-      ! Declare locals
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< list with standard names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< list with variable names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
@@ -343,10 +410,8 @@ contains
       character(len=30), dimension(:), allocatable :: elmnames
       integer, dimension(:), allocatable :: dimids_check
 
-      ! Initialization
       success = .false.
       vmax = 1
-
 
       ! get candidate names for the quantity
       call ecSupportNetcdfGetQuantityCandidateNames(ncptr%ncfilename, quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
@@ -426,10 +491,12 @@ contains
          end if
          
          ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids)
-         if (ierr /= NF90_NOERR) return
+         if (ierr /= NF90_NOERR) then
+            return
+         end if
       else
          allocate (dimids_check(n_dims), stat=ierr)
-         if (ierr /= 0) then
+         if (ierr /= NF90_NOERR) then
             return
          end if
 
@@ -467,20 +534,28 @@ contains
       real(dp), dimension(:), intent(out) :: ncvalue
       real(dp), dimension(:), intent(inout), allocatable :: buffer
 
-      integer :: vectormax, iv, il, ierr
+      integer :: vectormax
+      integer :: iv
+      integer :: il
+      integer :: ierr
 
       success = .false.
       vectormax = size(q_id)
+
       if (ncptr%nLayer < 0) then ! no 3rd dimension, get single data value, maybe should be <=0
          do iv = 1, vectormax
             ierr = nf90_get_var(ncptr%ncid, q_id(iv), ncvalue(iv:iv), (/l_id, timelevel/), (/1, 1/))
-            if (ierr /= NF90_NOERR) return
+            if (ierr /= NF90_NOERR) then
+               return
+            end if
          end do
       else ! yes 3rd dimension, get a rank-1 vector, num. of layers
          call realloc(buffer, ncptr%nLayer)
          do iv = 1, vectormax
             ierr = nf90_get_var(ncptr%ncid, q_id(iv), buffer(1:ncptr%nLayer), (/1, l_id, timelevel/), (/ncptr%nLayer, 1, 1/))
-            if (ierr /= NF90_NOERR) return
+            if (ierr /= NF90_NOERR) then
+               return
+            end if
             do il = 1, ncptr%nLayer
                ncvalue(iv + (il - 1) * vectormax) = buffer(il) ! interleaving three quantities from netCDF into one array
             end do
@@ -488,7 +563,10 @@ contains
       end if
 
       ierr = nf90_get_var(ncptr%ncid, ncptr%timevarid, nctime(1:1), (/timelevel/), (/1/)) ! get one single time value
-      if (ierr /= NF90_NOERR) return
+      if (ierr /= NF90_NOERR) then
+         return
+      end if
+
       success = .true.
    end function ecNetCDFGetTimeseriesValue
 
@@ -505,8 +583,12 @@ contains
       integer :: ierr
 
       success = .false.
+
       ierr = nf90_get_att(ncptr%ncid, q_id, trim(attribute_name), attribute_value)
-      if (ierr /= NF90_NOERR) return
+      if (ierr /= NF90_NOERR) then
+         return
+      end if
+
       success = .true.
    end function ecNetCDFGetAttrib
 
