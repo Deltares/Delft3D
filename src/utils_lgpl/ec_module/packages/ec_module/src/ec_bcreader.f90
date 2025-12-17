@@ -112,6 +112,7 @@ contains
        !TK_Temp: Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
        do nrVar = 1, size(bc%ncptr%variable_names)
           if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) exit
+
        enddo
                               
        if (bc%ncptr%variable_dimension(nrVar) == 2) then

@@ -294,8 +294,8 @@ contains
       jdla     = 1
       jagetwf  = 1
            
-      call realloc(indxx, (/3, numobs + nummovobs/), keepexisting=.false., fill=0)
-      call realloc(wfxx, (/3, numobs + nummovobs/), keepexisting=.false., fill=0.0_dp)
+      call realloc(indxx, [3, numobs + nummovobs], keepexisting=.false., fill=0)
+      call realloc(wfxx, [3, numobs + nummovobs], keepexisting=.false., fill=0.0_dp)
             
       call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
                                 jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
