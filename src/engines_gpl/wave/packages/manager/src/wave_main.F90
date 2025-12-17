@@ -77,6 +77,7 @@ contains
       character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
 
+      precice_state = wave_precice_state_t()
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
 
       call register_wave_nodes_with_precice(mdw_file_name, precice_state)

@@ -94,7 +94,7 @@ contains
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
       integer(kind=c_int) :: is_initial_data_required
 
-      ! Note: precice_state is already initialized by intent(out)
+      precice_state = fm_precice_state_t()
       if (jampi == 0) then
          print *, '[FM] Initializing preCICE for serial execution'
          call precicef_create(precice_state%component_name, precice_config_name, my_rank, numranks, len(precice_state%component_name), len(precice_config_name))
