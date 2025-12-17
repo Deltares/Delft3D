@@ -985,7 +985,7 @@
       WRITE (VERTXT, '(F5.2)') VERNUM                                     40.03
 !      CALL BUGFIX ('A')
 !      CALL BUGFIX ('B')
-      VERTXT ='41.51.3'
+      VERTXT ='41.51.8'
       IF (SIZEOF(GRAV) == 8) THEN
         VERTXT = TRIM(VERTXT) // " Double-Prec."
       END IF
@@ -4968,6 +4968,8 @@
             IF (JWLV1.GT.1) COMPDA(INDX,JWLV1) = WLVL                     40.00
             IF (JWLV3.GT.1) COMPDA(INDX,JWLV3) = WLVL                     40.00
             DEP = DEP + WLVL
+          ELSE
+            COMPDA(INDX,JWLV2) = WLEV
           ENDIF
 !         add constant water level
           DEPW = DEP + WLEV                                               30.70
@@ -5154,6 +5156,8 @@
             IF (JWLV1.GT.1) COMPDA(INDX,JWLV1) = WLVL                     40.80
             IF (JWLV3.GT.1) COMPDA(INDX,JWLV3) = WLVL                     40.80
             DEP = DEP + WLVL
+         ELSE
+            COMPDA(INDX,JWLV2) = WLEV
          ENDIF
 !        add constant water level
          DEPW = DEP + WLEV                                                40.80
@@ -7178,6 +7182,9 @@
               COMPDA(INDX,JDP1) = COMPDA(INDX,JDP2)
               WLVL = COMPDA(INDX,JWLV2)
               DEPW = DEP + WLVL + WLEV
+              IF (DEPW>100000.) THEN
+                DEPW = 0.
+              ENDIF
               COMPDA(INDX,JDP2) = DEPW
               IF (LSETUP.GT.0) THEN                                       40.14
                 COMPDA(INDX,JDPSAV) = COMPDA(INDX,JDP2)                   40.14
@@ -7202,6 +7209,9 @@
            COMPDA(INDX,JDP1) = COMPDA(INDX,JDP2)
            WLVL = COMPDA(INDX,JWLV2)
            DEPW = DEP + WLVL + WLEV
+           IF (DEPW>100000.) THEN
+              DEPW = 0.
+           ENDIF
            COMPDA(INDX,JDP2) = DEPW
            IF (LSETUP.GT.0) THEN
               COMPDA(INDX,JDPSAV) = COMPDA(INDX,JDP2)
