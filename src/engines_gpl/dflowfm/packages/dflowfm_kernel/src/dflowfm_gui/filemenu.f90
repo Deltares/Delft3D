@@ -219,7 +219,9 @@ contains
          goto 9999
       else if (KEY == 27) then ! Tab
          JATAB = JATAB + 1
-         if (JATAB == 3) JATAB = 0
+         if (JATAB == 3) then
+            JATAB = 0
+         end if
       else if (KEY == 21 .or. KEY == 22) then !Linker of rechter muis
 
          if (JATAB == 0) then
@@ -236,7 +238,9 @@ contains
          end if
 
          L = len_trim(FILNAM)
-         if (L == 0) goto 20
+         if (L == 0) then
+            goto 20
+         end if
          inquire (FILE=FILNAM(1:L), EXIST=JA)
 
          if (MRGF == 0) then
@@ -254,8 +258,12 @@ contains
          end if
 !
          if (JAZEKR == 1) then
-            if (index(FILNAM, '*') /= 0) goto 20
-            if (DIR /= CURDIR) call IOSDIRCHANGE(DIR)
+            if (index(FILNAM, '*') /= 0) then
+               goto 20
+            end if
+            if (DIR /= CURDIR) then
+               call IOSDIRCHANGE(DIR)
+            end if
             if (jaopen == 1) then
                call NEWFIL(MRGF, FILNAM)
             else
@@ -271,7 +279,9 @@ contains
 !
 9999  continue
       if (KEEPSTARTDIR == 1) then
-         if (DIR /= CURDIR) call IOSDIRCHANGE(CURDIR)
+         if (DIR /= CURDIR) then
+            call IOSDIRCHANGE(CURDIR)
+         end if
       end if
       call IWinClose(1)
       call IWinClose(1)

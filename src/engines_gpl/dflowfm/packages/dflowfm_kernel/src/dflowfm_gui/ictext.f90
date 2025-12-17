@@ -50,8 +50,8 @@ contains
       real(kind=dp) :: y
 !     grafische tekst op normale text posities
       character TEX * (*)
-      X = X1 + (X2 - X1) * dble(NX) / dble(IWS)
-      Y = Y2 + (Y1 - Y2) * dble(NY) / dble(IHS)
+      X = X1 + (X2 - X1) * real(NX, kind=dp) / real(IWS, kind=dp)
+      Y = Y2 + (Y1 - Y2) * real(NY, kind=dp) / real(IHS, kind=dp)
       call SETCOL(NCOL)
       L = len_trim(TEX)
       call DRAWTEXT(real(X), real(Y), TEX(1:L))

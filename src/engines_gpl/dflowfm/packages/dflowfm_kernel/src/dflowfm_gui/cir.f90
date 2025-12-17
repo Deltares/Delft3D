@@ -43,10 +43,12 @@ contains
       implicit none
       real(kind=dp) :: r, Hr
 
-      if (r == 0.0_dp) return
+      if (r == 0.0_dp) then
+         return
+      end if
       if (InOpenGLRendering) then
          HR = 0.5_dp * R
-         call KREC5(dble(Xlast), dble(Ylast), HR, HR)
+         call KREC5(real(Xlast, kind=dp), real(Ylast, kind=dp), HR, HR)
          !CALL SetPointSize(real(5))
          !CALL DrawPoint(xlast,ylast)
          !CALL SetPointSize(real(1))

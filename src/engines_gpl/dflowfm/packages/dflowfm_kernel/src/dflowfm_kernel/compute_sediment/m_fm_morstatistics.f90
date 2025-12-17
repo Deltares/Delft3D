@@ -377,7 +377,9 @@ contains
       real(fp) :: rhol
       real(fp) :: wght
       !
-      if (nmorstatqnt == 0) return
+      if (nmorstatqnt == 0) then
+         return
+      end if
       !
       wght = max(dts / ti_sed, 0.0_dp) ! time weighted is default, as opposed to original D3D implementation which used accreted volume
       !
@@ -728,16 +730,38 @@ contains
             !
             select case (iq)
             case (1)
-               sedids%id_hs_mean = id_mean_x; sedids%id_hs_std = id_std_x; sedids%id_hs_min = id_min_x; sedids%id_hs_max = id_max_x; 
+               sedids%id_hs_mean = id_mean_x
+               sedids%id_hs_std = id_std_x
+               sedids%id_hs_min = id_min_x
+               sedids%id_hs_max = id_max_x
             case (2)
-               sedids%id_ucx_mean = id_mean_x; sedids%id_ucx_std = id_std_x; sedids%id_ucx_min = id_min_x; sedids%id_ucx_max = id_max_x; 
-               sedids%id_ucy_mean = id_mean_y; sedids%id_ucy_min = id_min_y; sedids%id_ucy_max = id_max_y; 
+               sedids%id_ucx_mean = id_mean_x
+               sedids%id_ucx_std = id_std_x
+               sedids%id_ucx_min = id_min_x
+               sedids%id_ucx_max = id_max_x
+               sedids%id_ucy_mean = id_mean_y
+               sedids%id_ucy_min = id_min_y
+               sedids%id_ucy_max = id_max_y
             case (3)
-               sedids%id_sbx_mean = id_mean_x; sedids%id_sbx_std = id_std_x; sedids%id_sbx_min = id_min_x; sedids%id_sbx_max = id_max_x; sedids%id_netsbx = id_net_x
-               sedids%id_sby_mean = id_mean_y; sedids%id_sby_min = id_min_y; sedids%id_sby_max = id_max_y; sedids%id_netsby = id_net_y
+               sedids%id_sbx_mean = id_mean_x
+               sedids%id_sbx_std = id_std_x
+               sedids%id_sbx_min = id_min_x
+               sedids%id_sbx_max = id_max_x
+               sedids%id_netsbx = id_net_x
+               sedids%id_sby_mean = id_mean_y
+               sedids%id_sby_min = id_min_y
+               sedids%id_sby_max = id_max_y
+               sedids%id_netsby = id_net_y
             case (4)
-               sedids%id_ssx_mean = id_mean_x; sedids%id_ssx_std = id_std_x; sedids%id_ssx_min = id_min_x; sedids%id_ssx_max = id_max_x; sedids%id_netssx = id_net_x
-               sedids%id_ssy_mean = id_mean_y; sedids%id_ssy_min = id_min_y; sedids%id_ssy_max = id_max_y; sedids%id_netssy = id_net_y
+               sedids%id_ssx_mean = id_mean_x
+               sedids%id_ssx_std = id_std_x
+               sedids%id_ssx_min = id_min_x
+               sedids%id_ssx_max = id_max_x
+               sedids%id_netssx = id_net_x
+               sedids%id_ssy_mean = id_mean_y
+               sedids%id_ssy_min = id_min_y
+               sedids%id_ssy_max = id_max_y
+               sedids%id_netssy = id_net_y
             end select
 
          end do
@@ -752,7 +776,9 @@ contains
       !
       sedids%id_tsp%idx_curtime = sedids%id_tsp%idx_curtime + 1
       itim = sedids%id_tsp%idx_curtime
-      if (itim == 1) return
+      if (itim == 1) then
+         return
+      end if
       !
       morfc = (stmpar%morpar%morft - morft0) / (time1 - hydrt0) * 86400.0_dp
       morft0 = stmpar%morpar%morft
@@ -778,16 +804,42 @@ contains
       do iq = 1, 4
          select case (iq)
          case (1)
-            id_mean_x = sedids%id_hs_mean; id_std_x = sedids%id_hs_std; id_min_x = sedids%id_hs_min; id_max_x = sedids%id_hs_max; dim = 1
+            id_mean_x = sedids%id_hs_mean
+            id_std_x = sedids%id_hs_std
+            id_min_x = sedids%id_hs_min
+            id_max_x = sedids%id_hs_max
+            dim = 1
          case (2)
-            id_mean_x = sedids%id_ucx_mean; id_std_x = sedids%id_ucx_std; id_min_x = sedids%id_ucx_min; id_max_x = sedids%id_ucx_max; dim = 2
-            id_mean_y = sedids%id_ucy_mean; id_min_y = sedids%id_ucy_min; id_max_y = sedids%id_ucy_max; 
+            id_mean_x = sedids%id_ucx_mean
+            id_std_x = sedids%id_ucx_std
+            id_min_x = sedids%id_ucx_min
+            id_max_x = sedids%id_ucx_max
+            dim = 2
+            id_mean_y = sedids%id_ucy_mean
+            id_min_y = sedids%id_ucy_min
+            id_max_y = sedids%id_ucy_max
          case (3)
-            id_mean_x = sedids%id_sbx_mean; id_std_x = sedids%id_sbx_std; id_min_x = sedids%id_sbx_min; id_max_x = sedids%id_sbx_max; id_net_x = sedids%id_netsbx; dim = 2
-            id_mean_y = sedids%id_sby_mean; id_min_y = sedids%id_sby_min; id_max_y = sedids%id_sby_max; id_net_y = sedids%id_netsby
+            id_mean_x = sedids%id_sbx_mean
+            id_std_x = sedids%id_sbx_std
+            id_min_x = sedids%id_sbx_min
+            id_max_x = sedids%id_sbx_max
+            id_net_x = sedids%id_netsbx
+            dim = 2
+            id_mean_y = sedids%id_sby_mean
+            id_min_y = sedids%id_sby_min
+            id_max_y = sedids%id_sby_max
+            id_net_y = sedids%id_netsby
          case (4)
-            id_mean_x = sedids%id_ssx_mean; id_std_x = sedids%id_ssx_std; id_min_x = sedids%id_ssx_min; id_max_x = sedids%id_ssx_max; id_net_x = sedids%id_netssx; dim = 2
-            id_mean_y = sedids%id_ssy_mean; id_min_y = sedids%id_ssy_min; id_max_y = sedids%id_ssy_max; id_net_y = sedids%id_netssy
+            id_mean_x = sedids%id_ssx_mean
+            id_std_x = sedids%id_ssx_std
+            id_min_x = sedids%id_ssx_min
+            id_max_x = sedids%id_ssx_max
+            id_net_x = sedids%id_netssx
+            dim = 2
+            id_mean_y = sedids%id_ssy_mean
+            id_min_y = sedids%id_ssy_min
+            id_max_y = sedids%id_ssy_max
+            id_net_y = sedids%id_netssy
          end select
          !
          if (stmpar%morpar%moroutput%statflg(1, iq) > 0) then
@@ -795,9 +847,12 @@ contains
             idx = stmpar%morpar%moroutput%statflg(1, iq)
 
             if (iand(idx, MOR_STAT_MEAN) > 0 .or. iand(idx, MOR_STAT_STD) > 0) then
-               if (allocated(wghtfac)) deallocate (wghtfac, work2)
+               if (allocated(wghtfac)) then
+                  deallocate (wghtfac, work2)
+               end if
                allocate (wghtfac(1:ndx), work2(1:ndx))
-               wghtfac = 1.0_dp; work2 = 0.0_dp
+               wghtfac = 1.0_dp
+               work2 = 0.0_dp
                if (stmpar%morpar%moroutput%weightflg == MOR_STAT_BODS) then
                   wghtfac = 1.0_dp / max(morstatqnt(:, 1), eps10)
                end if

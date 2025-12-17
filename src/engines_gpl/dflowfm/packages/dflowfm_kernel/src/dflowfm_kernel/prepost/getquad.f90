@@ -56,22 +56,30 @@ contains
       integer :: ll
       integer :: lll
 
-      K3N = 0; K4N = 0
+      K3N = 0
+      K4N = 0
 
       do K = 1, NMK(K2)
          L = NOD(K2)%LIN(K)
-         if (L == LN) cycle
+         if (L == LN) then
+            cycle
+         end if
          call OTHERNODE(K2, L, K3)
          do KK = 1, NMK(K3)
             LL = NOD(K3)%LIN(KK)
-            if (LL == L) cycle
+            if (LL == L) then
+               cycle
+            end if
             call OTHERNODE(K3, LL, K4)
             do KKK = 1, NMK(K4)
                LLL = NOD(K4)%LIN(KKK)
-               if (LLL == LL) cycle
+               if (LLL == LL) then
+                  cycle
+               end if
                call OTHERNODE(K4, LLL, K1A)
                if (K1A == K1) then
-                  K3N = K3; K4N = K4
+                  K3N = K3
+                  K4N = K4
                end if
             end do
          end do

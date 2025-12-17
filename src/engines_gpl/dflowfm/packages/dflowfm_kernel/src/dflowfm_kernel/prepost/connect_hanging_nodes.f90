@@ -75,14 +75,22 @@ contains
 
          num = 0
          do kk = 1, N
-            kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-            kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+            kkm1 = kk - 1
+            if (kkm1 < 1) then
+               kkm1 = kkm1 + N
+            end if
+            kkp1 = kk + 1
+            if (kkp1 > N) then
+               kkp1 = kkp1 - N
+            end if
             L = netcell(ic)%lin(kk)
             Lm1 = netcell(ic)%lin(kkm1)
             Lp1 = netcell(ic)%lin(kkp1)
             if (linkbrother(L) /= Lp1) then
                num = num + 1
-               if (num > MMAX) goto 1234
+               if (num > MMAX) then
+                  goto 1234
+               end if
 
 !           store ccw end node of this link
                call find_common_node(L, Lp1, knode(num))
@@ -94,15 +102,26 @@ contains
             end if
          end do ! do kk=1,N
 
-         if (num == N) cycle ! no hanging nodes
+         if (num == N) then
+            cycle ! no hanging nodes
+         end if
 
          if (num == 4) then ! quads
             if (N - num == 1) then ! quad with one hanging node
                do kk = 1, num
                   if (khang(kk) /= 0) then
-                     kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + num
-                     kkm2 = kk - 2; if (kkm2 < 1) kkm2 = kkm2 + num
-                     kkp1 = kk + 1; if (kkp1 > num) kkp1 = kkp1 - num
+                     kkm1 = kk - 1
+                     if (kkm1 < 1) then
+                        kkm1 = kkm1 + num
+                     end if
+                     kkm2 = kk - 2
+                     if (kkm2 < 1) then
+                        kkm2 = kkm2 + num
+                     end if
+                     kkp1 = kk + 1
+                     if (kkp1 > num) then
+                        kkp1 = kkp1 - num
+                     end if
                      call newlink(knode(kkm2), khang(kk), Lnew)
                      call newlink(knode(kkp1), khang(kk), Lnew)
                      exit ! done with this cell
@@ -111,9 +130,18 @@ contains
             else if (N - num == 2) then ! quad with two hanging nodes
                do kk = 1, num
                   if (khang(kk) /= 0) then
-                     kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + num
-                     kkp1 = kk + 1; if (kkp1 > num) kkp1 = kkp1 - num
-                     kkp2 = kk + 2; if (kkp2 > num) kkp2 = kkp2 - num
+                     kkm1 = kk - 1
+                     if (kkm1 < 1) then
+                        kkm1 = kkm1 + num
+                     end if
+                     kkp1 = kk + 1
+                     if (kkp1 > num) then
+                        kkp1 = kkp1 - num
+                     end if
+                     kkp2 = kk + 2
+                     if (kkp2 > num) then
+                        kkp2 = kkp2 - num
+                     end if
 !                 check if the two hanging nodes are neighbors
                      if (khang(kkm1) /= 0) then ! left neighbor
                         call newlink(khang(kkm1), khang(kk), Lnew)
@@ -136,7 +164,10 @@ contains
             if (N - num == 1) then ! triangle with one hanging node
                do kk = 1, num
                   if (khang(kk) /= 0) then
-                     kkp1 = kk + 1; if (kkp1 > num) kkp1 = kkp1 - num
+                     kkp1 = kk + 1
+                     if (kkp1 > num) then
+                        kkp1 = kkp1 - num
+                     end if
                      call newlink(khang(kk), knode(kkp1), Lnew)
                      exit ! done with this cell
                   end if ! if ( khang(kk).ne.0 ) then
@@ -145,8 +176,14 @@ contains
 !           split_cell should prevent this
                do kk = 1, num
                   if (khang(kk) /= 0) then
-                     kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + num
-                     kkp1 = kk + 1; if (kkp1 > num) kkp1 = kkp1 - num
+                     kkm1 = kk - 1
+                     if (kkm1 < 1) then
+                        kkm1 = kkm1 + num
+                     end if
+                     kkp1 = kk + 1
+                     if (kkp1 > num) then
+                        kkp1 = kkp1 - num
+                     end if
                      if (khang(kkm1) /= 0) then
                         call newlink(khang(kk), khang(kkm1), Lnew)
                      else

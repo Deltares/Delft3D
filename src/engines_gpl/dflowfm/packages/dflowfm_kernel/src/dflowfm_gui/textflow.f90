@@ -66,9 +66,13 @@ contains
       character(len=7) :: c_numnonglobal
       character(len=15) :: c_lts
 
-      if (jtextflow < 1) return
+      if (jtextflow < 1) then
+         return
+      end if
 
-      if (ndx < 1) return
+      if (ndx < 1) then
+         return
+      end if
 
 ! erase previous text
       if (trim(tex1) /= '@') then
@@ -86,7 +90,9 @@ contains
       solrest = 0
       tsteps = tim_get_wallclock(handle_steps)
       tsol = tim_get_wallclock(handle_sol)
-      if (tsteps - tsol /= 0) solrest = tsol / (tsteps - tsol)
+      if (tsteps - tsol /= 0) then
+         solrest = tsol / (tsteps - tsol)
+      end if
       tstepinc = tim_get_wallclock_inc(handle_steps)
       cpuperstep = max(0.0_dp, min(100.0_dp, tstepinc))
 

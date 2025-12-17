@@ -75,21 +75,31 @@ contains
                      i = iR
                   else
                      i = i + 1
-                     if (i >= mc) exit
+                     if (i >= mc) then
+                        exit
+                     end if
                   end if
 
-                  if (xc(i, j) == DMISS) cycle
+                  if (xc(i, j) == DMISS) then
+                     cycle
+                  end if
 
                   call get_LR(mc, xc(:, j), yc(:, j), i, iL, iR)
 
-                  if (dbdistance(xc(i, j), yc(i, j), xc(iR, j), yc(iR, j), jsferic, jasfer3D, dmiss) < dtol) cycle
+                  if (dbdistance(xc(i, j), yc(i, j), xc(iR, j), yc(iR, j), jsferic, jasfer3D, dmiss) < dtol) then
+                     cycle
+                  end if
 
                   !        detect triangular cell
-                  if (xc(i, j + 1) == DMISS) cycle
+                  if (xc(i, j + 1) == DMISS) then
+                     cycle
+                  end if
 
                   call get_LR(mc, xc(:, j + 1), yc(:, j + 1), i, iL0, iR0)
 
-                  if (dbdistance(xc(iL, j), yc(iL, j), xc(i, j), yc(i, j), jsferic, jasfer3D, dmiss) < dtol) iL = i
+                  if (dbdistance(xc(iL, j), yc(iL, j), xc(i, j), yc(i, j), jsferic, jasfer3D, dmiss) < dtol) then
+                     iL = i
+                  end if
 
                   if (xc(iR, j + 1) /= DMISS) then
                      if (dbdistance(xc(i, j + 1), yc(i, j + 1), xc(iR, j + 1), yc(iR, j + 1), jsferic, jasfer3D, dmiss) < dtol .and. &
@@ -128,7 +138,9 @@ contains
                   end if
                end do
                write (6, *)
-               if (numchanged == 0) exit
+               if (numchanged == 0) then
+                  exit
+               end if
             end do
             write (6, *) iter, numchanged
          end do

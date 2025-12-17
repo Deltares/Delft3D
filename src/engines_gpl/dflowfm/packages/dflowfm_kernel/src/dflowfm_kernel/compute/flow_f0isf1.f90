@@ -209,14 +209,18 @@ contains
          if (kmx == 0) then
             do kk = 1, ndxi
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
                volerror(kk) = vol1(kk) - vol0(kk) - dts * (sqi(kk) - squ(kk)) ! array transfer
             end do
          else
             do kk = 1, ndxi
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
 
                call getkbotktop(kk, kb, kt)

@@ -61,7 +61,7 @@ contains
                           ntid_start, ntid_end, &
                           ug_clone_network_definition, ug_clone_network_data, &
                           ug_is_link_topology, &
-                          t_ug_contacts, ug_clone_contact_definition, cdim_ncontacts
+                          t_ug_contact, ug_clone_contact_definition, cdim_ncontacts
       implicit none
 
       character(len=MAXNAMELEN), intent(inout) :: infiles(:) !< Input files names, will be sorted if not sorted already.
@@ -130,7 +130,7 @@ contains
       integer :: id_network ! ID of 'network1d' in one input file
       integer :: varid
       type(t_ug_network) :: netids_input, netids_output
-      type(t_ug_contacts) :: cids_input, cids_output
+      type(t_ug_contact) :: cids_input, cids_output
       integer :: idom, n1, n2, n3, k1, k2
       integer :: tmpdimids(NF90_MAX_VAR_DIMS)
 
@@ -217,7 +217,7 @@ contains
 
       integer, allocatable :: links1d2dnodes(:, :, :), links1d2dtype(:, :), numl1d2d(:, :), nlink1d2dcount(:), numl1d2d_icontact(:)
       integer :: maxNcontacts, nLinks1d2d, numl1d2dMax, icontact
-      character(len=NF90_MAX_NAME) :: contactname
+      character(len=NF90_MAX_NAME) :: contactsname
       integer, allocatable, target :: link1d2d_domain(:, :)
       integer, allocatable :: link1d2d_c2g(:, :), links1d2dnodes_g(:, :, :), nlink1d2dglob(:)
       integer :: numl1d2dt
@@ -1874,9 +1874,9 @@ contains
                      cycle
                   end if
                   ierr = ionc_get_mesh_contact_links(ioncids(ii), icontact, links1d2dnodes(:, nlink1d2dcount(icontact) + 1:nlink1d2dcount(icontact) + numl1d2d(icontact, ii), icontact), links1d2dtype(:, icontact), 1)
-                  ierr = ionc_get_contact_name(ioncids(ii), icontact, contactname)
+                  ierr = ionc_get_contact_name(ioncids(ii), icontact, contactsname)
                   if (ierr /= nf90_noerr) then
-                     write (*, '(a)') 'Error: mapmerge: could not retrieve `'//trim(contactname)//''' from `'//infiles(ii)//'''.'
+                     write (*, '(a)') 'Error: mapmerge: could not retrieve `'//trim(contactsname)//''' from `'//infiles(ii)//'''.'
                      if (.not. verbose_mode) goto 888
                   end if
 

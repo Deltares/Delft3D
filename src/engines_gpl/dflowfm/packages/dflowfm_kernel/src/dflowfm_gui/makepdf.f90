@@ -43,7 +43,9 @@ contains
       integer :: n
       real :: r(n), s
       integer :: k, L
-      if (n == 0) return
+      if (n == 0) then
+         return
+      end if
       xpdf = 0.0_dp
       do L = 1, n
          do k = 1, npdf
@@ -58,7 +60,9 @@ contains
       do k = 1, npdf
          s = s + xpdf(k)
       end do
-      if (s == 0) return
+      if (s == 0) then
+         return
+      end if
       xpdf = xpdf / s
       do k = 2, npdf
          xpdf(k) = xpdf(k) + xpdf(k - 1)

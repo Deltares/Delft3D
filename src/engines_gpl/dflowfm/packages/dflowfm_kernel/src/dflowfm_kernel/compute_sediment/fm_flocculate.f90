@@ -78,7 +78,9 @@ contains
       !
       ! if no flocculation is active, skip this routine
       !
-      if (flocmod == FLOC_NONE) return
+      if (flocmod == FLOC_NONE) then
+         return
+      end if
       !
       ! flocculation happens in the water column and hence it evolves at the flow time scale (no morfac)
       !
@@ -88,7 +90,9 @@ contains
       allocate (cfloc(nflocpop, nflocsizes), stat=istat)
 
       do k = 1, ndx
-         if (s1(k) - bl(k) < epshs) cycle
+         if (s1(k) - bl(k) < epshs) then
+            cycle
+         end if
          !
          ! loop over the layers in the vertical
          !

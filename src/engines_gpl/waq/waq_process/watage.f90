@@ -60,30 +60,50 @@ contains
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
                 IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IFLUX, ISEG
-        REAL(kind = real_wp) :: CONCWA, CONCTR, DECAYR, ARGUM, AGE, FDECAY
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IFLUX, ISEG, count_conc
+        REAL(kind = real_wp) :: CONCWA, CONCTR, DECAYR, ARGUM, AGE, FDECAY, temp_conc, threshold
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
         IP3 = IPOINT(3)
         IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
         !
         IFLUX = 0
+
+        !
+        ! Determine the overall average concentration
+        !
+        count_conc = 0
+        temp_conc  = 0.0
+        do iseg = 1, num_cells
+            if (btest(iknmrk(iseg), 0)) then
+                concwa     = process_space_real(ip1)
+                temp_conc  = temp_conc + concwa
+                count_conc = count_conc + 1
+                ip1        = ip1 + increm(1)
+            endif
+        end do
+        temp_conc = temp_conc / max( count_conc, 1)
+
+        ip1 = ipoint(1)
+
         DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                CONCWA = process_space_real(IP1)
-                CONCTR = process_space_real(IP2)
-                DECAYR = process_space_real(IP3)
+                CONCWA    = process_space_real(IP1)
+                CONCTR    = process_space_real(IP2)
+                DECAYR    = process_space_real(IP3)
+                THRESHOLD = max( 1.0e-20, process_space_real(IP4) * temp_conc )
                 !
                 IF (DECAYR < 1E-20) CALL write_error_message ('RCDECTR in WATAGE zero')
 
                 !     Calculate age
                 !
-                IF (CONCWA <= 1.0E-20) THEN
+                IF (CONCWA <= THRESHOLD) THEN
                     AGE = -999.
-                ELSEIF (CONCTR <= 1.0E-20) THEN
+                ELSEIF (CONCTR <= THRESHOLD) THEN
                     AGE = -999.
                 ELSEIF (CONCTR > CONCWA) THEN
                     AGE = -999.
@@ -104,7 +124,7 @@ contains
                 !
                 !     Output
                 !
-                process_space_real(IP4) = AGE
+                process_space_real(IP5) = AGE
                 FL(1 + IFLUX) = FDECAY
                 !
             ENDIF
@@ -114,6 +134,7 @@ contains
             IP2 = IP2 + INCREM (2)
             IP3 = IP3 + INCREM (3)
             IP4 = IP4 + INCREM (4)
+            IP5 = IP5 + INCREM (5)
             !
         end do
         !

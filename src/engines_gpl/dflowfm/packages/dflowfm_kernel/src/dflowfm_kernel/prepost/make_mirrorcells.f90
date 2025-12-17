@@ -64,7 +64,8 @@ contains
       ierror = 1
 
       do L = 1, numL ! candidate points and distance tolerance of closed (u) points
-         k3 = kn(1, L); k4 = kn(2, L)
+         k3 = kn(1, L)
+         k4 = kn(2, L)
 
 !      if ( abs(xk(k3)+11.5d0)+abs(xk(k4)+11.5d0) .lt. 1d-8 ) then
 !         continue
@@ -83,7 +84,8 @@ contains
             kce(L) = 1
             ke(L) = ind
          else if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! 1D links
-            k1 = k3; k2 = k4
+            k1 = k3
+            k2 = k4
             if (is_1d_boundary_candidate(L, 1)) then
                xe(L) = xk(k1)
                ye(L) = yk(k1)

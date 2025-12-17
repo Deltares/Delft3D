@@ -133,8 +133,16 @@ contains
          b51 = 0.0000293_dp
          b15 = 0.0000291_dp
 
-         dx = urd; dx2 = dx * dx; dx3 = dx * dx2; dx4 = dx * dx3; dx5 = dx * dx4
-         dy = vrd; dy2 = dy * dy; dy3 = dy * dy2; dy4 = dy * dy3; dy5 = dy * dy4
+         dx = urd
+         dx2 = dx * dx
+         dx3 = dx * dx2
+         dx4 = dx * dx3
+         dx5 = dx * dx4
+         dy = vrd
+         dy2 = dy * dy
+         dy3 = dy * dy2
+         dy4 = dy * dy3
+         dy5 = dy * dy4
 
          yd = a01 * dy + a20 * dx2 + a02 * dy2 + a21 * dx2 * dy + a03 * dy3 + &
               a40 * dx4 + a22 * dx2 * dy2 + a04 * dy4 + a41 * dx4 * dy + &

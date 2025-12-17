@@ -1,0 +1,17 @@
+[General]
+fileVersion           = 1.01                
+fileType              = boundConds          
+
+[Forcing]
+name                  = L1_1_0001           
+function              = timeSeries          
+timeInterpolation     = linear              
+quantity              = time                
+unit                  = seconds since 1990-08-05 00:00:00
+quantity              = tracerbndOXY        
+unit                  = -
+0          8
+84000      8
+168000     8
+599999940  8
+

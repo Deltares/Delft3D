@@ -160,7 +160,7 @@ contains
    end subroutine set_pressure_dependent_density
 
    pure subroutine salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
-      use m_flow, only: jasal, jatem, backgroundsalinity, backgroundwatertemperature
+      use m_flow, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, backgroundsalinity, backgroundwatertemperature
       use m_transportdata, only: isalt, itemp, constituents
       use m_physcoef, only: temperature_min
 
@@ -174,7 +174,7 @@ contains
          salinity = backgroundsalinity
       end if
 
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          temperature = max(temperature_min, constituents(itemp, cell_index_3d))
       else
          temperature = backgroundwatertemperature

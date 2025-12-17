@@ -41,12 +41,24 @@ contains
       implicit none
       real(kind=dp) :: dster, taucr, thetcr, pclay, g, d50, rhos, rhow, FCR
       real(kind=dp) :: dsand, dsilt, cmaxs, fch1, cmax, fpack, fclay
-      if (DSTER <= 1.) THETCR = .24 ! this line added by hk and svdp: critical shields parameter
-      if (DSTER <= 4.) THETCR = 0.115 / (DSTER)**0.5
-      if (4. < DSTER .and. DSTER <= 10.) THETCR = .14 * DSTER**(-.64)
-      if (10. < DSTER .and. DSTER <= 20.) THETCR = .04 * DSTER**(-.1)
-      if (20. < DSTER .and. DSTER <= 150.) THETCR = .013 * DSTER**(.29)
-      if (DSTER > 150.) THETCR = .055
+      if (DSTER <= 1.) then
+         THETCR = .24 ! this line added by hk and svdp: critical shields parameter
+      end if
+      if (DSTER <= 4.) then
+         THETCR = 0.115 / (DSTER)**0.5
+      end if
+      if (4. < DSTER .and. DSTER <= 10.) then
+         THETCR = .14 * DSTER**(-.64)
+      end if
+      if (10. < DSTER .and. DSTER <= 20.) then
+         THETCR = .04 * DSTER**(-.1)
+      end if
+      if (20. < DSTER .and. DSTER <= 150.) then
+         THETCR = .013 * DSTER**(.29)
+      end if
+      if (DSTER > 150.) then
+         THETCR = .055
+      end if
 !Soulsby gives one single formula
 !THETCR=(0.24/DSTER)+0.055*(1.0-exp(-0.02*DSTER))
       dsand = 0.000062
@@ -55,15 +67,27 @@ contains
       fch1 = (dsand / d50)**1.5
       cmax = (d50 / dsand) * cmaxs
 !cmaxs=maximum bed concentration in case of sandy bottom (=0.65)
-      if (cmax < 0.05) cmax = 0.05
-      if (cmax > cmaxs) cmax = cmaxs
+      if (cmax < 0.05) then
+         cmax = 0.05
+      end if
+      if (cmax > cmaxs) then
+         cmax = cmaxs
+      end if
       fpack = cmax / cmaxs
-      if (fch1 < 1.) fch1 = 1.
-      if (fpack > 1.) fpack = 1.
+      if (fch1 < 1.) then
+         fch1 = 1.
+      end if
+      if (fpack > 1.) then
+         fpack = 1.
+      end if
       fclay = 1.
-      if (pclay >= 0.) fclay = (1.+Pclay)**3.
+      if (pclay >= 0.) then
+         fclay = (1.+Pclay)**3.
+      end if
 !  if(pclay.ge.0..and.d50.ge.dsand)fclay=(1.+Pclay)**3.
-      if (fclay >= 2.) fclay = 2.
+      if (fclay >= 2.) then
+         fclay = 2.
+      end if
 
       thetcr = FCR * fpack * fch1 * fclay * THETCR
 

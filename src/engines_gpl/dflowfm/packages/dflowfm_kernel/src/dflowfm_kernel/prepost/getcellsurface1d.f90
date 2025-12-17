@@ -63,8 +63,12 @@ contains
          if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
             k1 = ln(1, L)
             k2 = ln(2, L)
-            if (k1 > ndx2d) ba(k1) = 0
-            if (k2 > ndx2d) ba(k2) = 0
+            if (k1 > ndx2d) then
+               ba(k1) = 0
+            end if
+            if (k2 > ndx2d) then
+               ba(k2) = 0
+            end if
          end if
       end do
 
@@ -74,8 +78,12 @@ contains
             hdx = 0.5_dp * dx(L)
             k1 = ln(1, L)
             k2 = ln(2, L)
-            if (k1 > ndx2d) ba(k1) = ba(k1) + hdx * wu(L) ! todo, on 1d2d nodes, choose appropriate wu1DUNI = min ( wu1DUNI, intersected 2D face)
-            if (k2 > ndx2d) ba(k2) = ba(k2) + hdx * wu(L)
+            if (k1 > ndx2d) then
+               ba(k1) = ba(k1) + hdx * wu(L) ! todo, on 1d2d nodes, choose appropriate wu1DUNI = min ( wu1DUNI, intersected 2D face)
+            end if
+            if (k2 > ndx2d) then
+               ba(k2) = ba(k2) + hdx * wu(L)
+            end if
          end if
       end do
 

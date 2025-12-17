@@ -53,7 +53,9 @@ contains
       end do
       do i = 1, MC
          do j = 1, NC
-            if (D(I, J) == RMIS) D(I, J) = dmiss
+            if (D(I, J) == RMIS) then
+               D(I, J) = dmiss
+            end if
          end do
       end do
       call doclose(minp)

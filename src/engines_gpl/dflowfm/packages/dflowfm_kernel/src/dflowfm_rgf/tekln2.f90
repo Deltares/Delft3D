@@ -48,8 +48,12 @@ contains
 
       call SETCOL(NCOL)
       ISTART = 0
-      if (M1 /= 0) call CIRR(X(M1, N1), Y(M1, N1), NCOL)
-      if (M2 /= 0) call CIRR(X(M2, N2), Y(M2, N2), NCOL)
+      if (M1 /= 0) then
+         call CIRR(X(M1, N1), Y(M1, N1), NCOL)
+      end if
+      if (M2 /= 0) then
+         call CIRR(X(M2, N2), Y(M2, N2), NCOL)
+      end if
       if (M1 /= 0 .and. M2 /= 0) then
          IN = sign(1, M2 - M1)
          JN = sign(1, N2 - N1)

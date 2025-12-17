@@ -39,26 +39,27 @@ contains
    subroutine heatun(n, time_in_hours, nominal_solar_radiation)
       use precision, only: dp, comparereal, fp
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
-      use m_physcoef, only: ag, rhomean, backgroundsalinity, dalton, epshstem, stanton, sfr, soiltempthick, &
-                            BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, secchidepth2, surftempsmofac, &
-                            jadelvappos, zab
-      use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
-                              fwind, qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, &
-                              qevaav, qfrconav, qfrevaav
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, sfr, &
+         soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, secchidepth2, surftempsmofac, &
+         jadelvappos, zab
+      use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
+         qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
-      use m_flowparameters, only: jahisheatflux, jatem, ja_solar_radiation_factor
+      use m_flowparameters, only: jahisheatflux, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
+         ja_solar_radiation_factor
       use m_missing, only: dmiss
       use m_flowgeom, only: ba, nd, ln, yz, xz
       use m_sferic, only: jsferic
       use m_flowtimes, only: dts
       use m_transport, only: constituents, itemp, isalt
-      use m_fm_icecover, only: ja_icecover, ice_area_fraction, ice_albedo, ice_thickness, ice_temperature, snow_albedo, snow_thickness, snow_temperature, &
-                               qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
+      use m_fm_icecover, only: ja_icecover, ice_area_fraction, ice_albedo, ice_thickness, ice_temperature, snow_albedo, &
+         snow_thickness, snow_temperature, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_link1, only: getlink1
-      use m_wind, only: air_pressure_available, jaevap, long_wave_radiation_available, relativewind, air_temperature, wx, wy, relative_humidity, cloudiness, &
-                        air_pressure, heatsrc0, solar_radiation, solar_radiation_available, net_solar_radiation, net_solar_radiation_available, tbed, rhoair, long_wave_radiation, evap, cdwcof, &
-                        air_density, ja_airdensity, ja_computed_airdensity
+      use m_wind, only: air_pressure_available, jaevap, long_wave_radiation_available, relativewind, air_temperature, wx, wy, &
+         relative_humidity, cloudiness, air_pressure, heatsrc0, solar_radiation, solar_radiation_available, net_solar_radiation, &
+         net_solar_radiation_available, tbed, rhoair, long_wave_radiation, evap, cdwcof, air_density, ja_airdensity, &
+         ja_computed_airdensity
       use m_qsun_nominal, only: calculate_nominal_solar_radiation
 
       integer, intent(in) :: n
@@ -131,11 +132,11 @@ contains
 
       air_temperature_in_cell = air_temperature(n)
 
-      if (jatem == 3) then ! Excess model
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS) then
 
          heat_transfer_coefficient = 4.48_dp + 0.049_dp * water_temperature_in_cell + fwind * (3.5_dp + 2.05_dp * wind_speed_in_cell) * (1.12_dp + 0.018_dp * water_temperature_in_cell + 0.00158_dp * water_temperature_in_cell**2)
 
-         total_heat_flux = -heat_transfer_coefficient * (water_temperature_in_cell - air_temperature_in_cell)
+         total_heat_flux = -heat_transfer_coefficient * (water_temperature_in_cell - backgroundwatertemperature)
          heat_capacity_water_cell_area = rcpi * ba(n)
          heatsrc0(k_top) = heatsrc0(k_top) + total_heat_flux * heat_capacity_water_cell_area * ice_free_area_fraction ! fill heat source array
 
@@ -143,7 +144,7 @@ contains
             qtotmap(n) = total_heat_flux
          end if
 
-      else if (jatem == 5) then ! Composite (ocean) model
+      else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
          ! Set surface_temperature either to water_temperature_in_cell or to ice_temperature(n) or to snow_temperature(n) and change albedo parameter in case of ice and/or snow
          if (ja_icecover == ICECOVER_SEMTNER) then

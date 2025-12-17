@@ -60,7 +60,9 @@ contains
       else
          call SETXOR(1)
          call SETCOL(KLANK)
-         call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
+         call dPROJECT(xa, ya, xx, yy, 1)
+         xr = xx
+         yr = yy
          call IGrMARKER(xr, yr, 2)
          call SETXOR(0)
          XA = X
@@ -68,11 +70,15 @@ contains
       end if
 
       call inflowcell(XA, YA, k, 1, INDTP_ALL) ! Use anchor for new nplot point (vertical profile)
-      if (k > 0) nplot = k
+      if (k > 0) then
+         nplot = k
+      end if
 
       call SETXOR(1)
       call SETCOL(KLANK)
-      call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
+      call dPROJECT(xa, ya, xx, yy, 1)
+      xr = xx
+      yr = yy
       call IGrMARKER(xr, yr, 2)
       call SETXOR(0)
 

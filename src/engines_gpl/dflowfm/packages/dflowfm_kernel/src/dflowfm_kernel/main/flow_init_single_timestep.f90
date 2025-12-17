@@ -64,7 +64,9 @@ contains
 
       call timstrt('Time steps', handle_steps)
 
-      if (jatimer == 1) call starttimer(ITIMESTEP)
+      if (jatimer == 1) then
+         call starttimer(ITIMESTEP)
+      end if
 
       call flow_initimestep(JAZWS0, SET_HU, USE_U1, iresult) ! initialise timestep
 

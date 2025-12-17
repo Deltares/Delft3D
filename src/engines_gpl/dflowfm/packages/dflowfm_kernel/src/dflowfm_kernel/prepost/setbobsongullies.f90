@@ -69,7 +69,7 @@ contains
          return
       end if
 
-      call readyy('Setbobsongullies', 0d0)
+      call readyy('Setbobsongullies', 0.0_dp)
 
       call oldfil(minp, md_gulliesfile)
       call reapol(minp, 0)
@@ -90,7 +90,8 @@ contains
          numLL = Lnxi
       end if
 
-      kint = max(numLL / 100, 1); nt = 0
+      kint = max(numLL / 100, 1)
+      nt = 0
       do iL = 1, numLL
 
          jacros = 0
@@ -99,25 +100,32 @@ contains
          else
             L = crossed_links(iL)
             ! L = lne2ln( crossed_links(iL) )
-            if (L <= 0) cycle
+            if (L <= 0) then
+               cycle
+            end if
             k = polygon_nodes(iL)
          end if
 
          if (mod(iL, kint) == 0) then
-            AF = dble(iL) / dble(numLL)
+            AF = real(iL, kind=dp) / real(numLL, kind=dp)
             call readyy('Setbobsongullies', af)
          end if
 
-         n1 = ln(1, L); n2 = ln(2, L)
+         n1 = ln(1, L)
+         n2 = ln(2, L)
          if (jakdtree == 0) then
 
-            xa = xz(n1); ya = yz(n1)
-            xb = xz(n2); yb = yz(n2)
+            xa = xz(n1)
+            ya = yz(n1)
+            xb = xz(n2)
+            yb = yz(n2)
 
             iloop: do i = 1, 2
 
                if (i == 1) then
-                  if (Lastfoundk == 0) cycle
+                  if (Lastfoundk == 0) then
+                     cycle
+                  end if
                   kf = max(1, Lastfoundk - 100)
                   kL = min(npl - 1, Lastfoundk + 100)
                else
@@ -146,8 +154,9 @@ contains
          end if
 
          if (jacros == 1) then !        dig the gullies
-            zc = sl * zpL(k + 1) + (1d0 - sl) * zpL(k)
-            bob(1, L) = min(zc, bob(1, L), bob(2, L)); bob(2, L) = bob(1, L)
+            zc = sl * zpL(k + 1) + (1.0_dp - sl) * zpL(k)
+            bob(1, L) = min(zc, bob(1, L), bob(2, L))
+            bob(2, L) = bob(1, L)
             bob0(:, L) = bob(:, L)
 
             bl(n1) = min(bl(n1), zc)

@@ -83,7 +83,9 @@ contains
       in = 0
 
       maindo: do
-         if (nump < 1) exit maindo
+         if (nump < 1) then
+            exit maindo
+         end if
 
 ! allocate and initialize cellmask array
          call realloc(cellmask, numP)
@@ -98,7 +100,9 @@ contains
 ! assigns node-based indices (ic,jc)
 !---------------------------------------------------------
          call assign_icjc(xp, yp, ic, jc, iexit)
-         if (iexit /= 1) exit maindo
+         if (iexit /= 1) then
+            exit maindo
+         end if
 !---------------------------------------------------------
 ! generate the curvi-grid
 !---------------------------------------------------------
@@ -112,11 +116,15 @@ contains
 !---------------------------------------------------------
          do link = 1, numL
             lremovelink = .false.
-            if (lnn(link) > 0) &
+            if (lnn(link) > 0) then
                lremovelink = (cellmask(lne(1, link)) == -1)
-            if (lnn(link) > 1) &
+            end if
+            if (lnn(link) > 1) then
                lremovelink = lremovelink .and. (cellmask(lne(2, link)) == -1)
-            if (lremovelink) kn(1:2, link) = 0
+            end if
+            if (lremovelink) then
+               kn(1:2, link) = 0
+            end if
          end do
 
          call setnodadm(0)

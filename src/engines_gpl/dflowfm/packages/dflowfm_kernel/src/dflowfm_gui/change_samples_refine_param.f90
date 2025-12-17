@@ -81,22 +81,38 @@ contains
       text = ''
       write (text, "('TYPE: RIDGES (', I1, '), WAVE COURANT NUMBER (', I1,  ')')") ITYPE_RIDGE, ITYPE_WAVECOURANT
 
-      OPTION(1) = text; IT(1 * 2) = 2
-      OPTION(2) = ''; IT(2 * 2) = 0
-      OPTION(3) = 'RIDGE DETECTION'; IT(3 * 2) = 0
-      OPTION(4) = 'CELL SIZE * TYPICAL OBSTACLE HEIGHT   [m2]'; IT(4 * 2) = 6
-      OPTION(5) = 'MINIMUM     TYPICAL OBSTACLE HEIGHT   [m] '; IT(5 * 2) = 6
-      OPTION(6) = 'MINIMUM CELL EDGE LENGTH              [m] '; IT(6 * 2) = 6
-      OPTION(7) = 'NUMBER OF SAMPLE SMOOTHING ITERATIONS [-] '; IT(7 * 2) = 2
-      OPTION(8) = '                                          '; IT(8 * 2) = 0
-      OPTION(9) = 'WAVE COURANT NUMBER                       '; IT(9 * 2) = 0
-      OPTION(10) = 'MAXIMUM TIME-STEP        Dt_maxcour   [s] '; IT(10 * 2) = 6
-      OPTION(11) = 'MINIMUM CELL EDGE LENGTH Dx_mincour   [m] '; IT(11 * 2) = 6
-      OPTION(12) = 'DIRECTIONAL REFINEMENT (1) OR NOT (0)     '; IT(12 * 2) = 2
-      OPTION(13) = 'USE SAMPLES OUTSIDE CELL (1) OR NOT (0)   '; IT(13 * 2) = 2
-      OPTION(14) = 'Number of non-interactive refine cycles ()'; IT(14 * 2) = 2
-      OPTION(15) = 'Interpolationtype 2 or 4                ()'; IT(15 * 2) = 2
-      OPTION(16) = 'numitcourant smoothing cycles           ()'; IT(16 * 2) = 2
+      OPTION(1) = text
+      IT(1 * 2) = 2
+      OPTION(2) = ''
+      IT(2 * 2) = 0
+      OPTION(3) = 'RIDGE DETECTION'
+      IT(3 * 2) = 0
+      OPTION(4) = 'CELL SIZE * TYPICAL OBSTACLE HEIGHT   [m2]'
+      IT(4 * 2) = 6
+      OPTION(5) = 'MINIMUM     TYPICAL OBSTACLE HEIGHT   [m] '
+      IT(5 * 2) = 6
+      OPTION(6) = 'MINIMUM CELL EDGE LENGTH              [m] '
+      IT(6 * 2) = 6
+      OPTION(7) = 'NUMBER OF SAMPLE SMOOTHING ITERATIONS [-] '
+      IT(7 * 2) = 2
+      OPTION(8) = '                                          '
+      IT(8 * 2) = 0
+      OPTION(9) = 'WAVE COURANT NUMBER                       '
+      IT(9 * 2) = 0
+      OPTION(10) = 'MAXIMUM TIME-STEP        Dt_maxcour   [s] '
+      IT(10 * 2) = 6
+      OPTION(11) = 'MINIMUM CELL EDGE LENGTH Dx_mincour   [m] '
+      IT(11 * 2) = 6
+      OPTION(12) = 'DIRECTIONAL REFINEMENT (1) OR NOT (0)     '
+      IT(12 * 2) = 2
+      OPTION(13) = 'USE SAMPLES OUTSIDE CELL (1) OR NOT (0)   '
+      IT(13 * 2) = 2
+      OPTION(14) = 'Number of non-interactive refine cycles ()'
+      IT(14 * 2) = 2
+      OPTION(15) = 'Interpolationtype 2 or 4                ()'
+      IT(15 * 2) = 2
+      OPTION(16) = 'numitcourant smoothing cycles           ()'
+      IT(16 * 2) = 2
 
       HELPM(1) = 'INTEGER VALUE <                                             '
       HELPM(2) = '                                                            '
@@ -121,10 +137,14 @@ contains
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 100
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 100
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
 
          if (IT(IR) == 0) then

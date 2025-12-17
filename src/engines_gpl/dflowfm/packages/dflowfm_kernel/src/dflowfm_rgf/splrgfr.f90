@@ -226,10 +226,18 @@ contains
                   end do
                end do
                NO = 0
-               if (X1(2) == XYMIS) NO = 1
-               if (X2(2) == XYMIS) NO = 1
-               if (X3(2) == XYMIS) NO = 1
-               if (X4(2) == XYMIS) NO = 1
+               if (X1(2) == XYMIS) then
+                  NO = 1
+               end if
+               if (X2(2) == XYMIS) then
+                  NO = 1
+               end if
+               if (X3(2) == XYMIS) then
+                  NO = 1
+               end if
+               if (X4(2) == XYMIS) then
+                  NO = 1
+               end if
                if (NO == 0) then
                   call TRANFN2(X1, X2, X3, X4, &
                                Y1, Y2, Y3, Y4, &

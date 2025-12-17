@@ -65,7 +65,9 @@ contains
       jausedualnetcell = 0
 
       m = 3 * nd(n)%lnx + 1
-      if (nd(n)%lnx == 1) m = m + 1
+      if (nd(n)%lnx == 1) then
+         m = m + 1
+      end if
 
       allocate (nd(n)%x(m), nd(n)%y(m), stat=ierr)
       call aerr('nd(n)%x(m), nd(n)%y(m)', ierr, m * 2)
@@ -73,7 +75,8 @@ contains
       ! Sort nd%ln in counterclockwise order
       allocate (linnrs(nd(n)%lnx), arglins(nd(n)%lnx), arglin(nd(n)%lnx))
       do L = 1, nd(n)%lnx
-         K1 = LN(1, abs(nd(n)%ln(L))); K2 = LN(2, abs(nd(n)%ln(L)))
+         K1 = LN(1, abs(nd(n)%ln(L)))
+         K2 = LN(2, abs(nd(n)%ln(L)))
          if (K2 == n) then
             K2 = K1
             K1 = n
@@ -117,7 +120,8 @@ contains
 
 ! Use last link to prepare connection for 1st link in following loop:
       La = abs(linnrs(nd(n)%lnx))
-      cs = csu(La); sn = snu(La)
+      cs = csu(La)
+      sn = snu(La)
       hwu = 0.5_dp * wu(La)
       if (jsferic == 1) then
          hwu = rd2dg * hwu / ra
@@ -141,8 +145,10 @@ contains
             cycle ! Only use real 1D links in the flow node contour, no 1d2d links
          end if
 
-         n1 = ln(1, La); n2 = ln(2, La)
-         cs = csu(La); sn = snu(La)
+         n1 = ln(1, La)
+         n2 = ln(2, La)
+         cs = csu(La)
+         sn = snu(La)
          hwu = 0.5_dp * wu(La)
          if (jsferic == 1) then
             hwu = rd2dg * hwu / ra
@@ -161,7 +167,8 @@ contains
          x2a = x2 + sn * hwu
          y2a = y2 - cs * hwu
 
-         SL = dmiss; SM = dmiss
+         SL = dmiss
+         SM = dmiss
          call dCROSS(x1b, y1b, x2b, y2b, x1a, y1a, x2a, y2a, JACROS, SL, SM, XCR, YCR, CRP)
          !if (SL /= dmiss .and. SM /= dmiss) then
          if (JACROS == 1) then

@@ -41,8 +41,11 @@ contains
       integer NR
       L1 = index(OPTION, '(')
       L2 = index(OPTION, ')')
-      UNIT(NR) = ' '; PARAMTEX(NR) = ' '
-      if (L1 /= 0) write (UNIT(NR) (1:L2 - L1 + 1), '(A)') OPTION(L1:L2)
+      UNIT(NR) = ' '
+      PARAMTEX(NR) = ' '
+      if (L1 /= 0) then
+         write (UNIT(NR) (1:L2 - L1 + 1), '(A)') OPTION(L1:L2)
+      end if
       write (PARAMTEX(NR) (1:14), '(A)') OPTION(1:14)
       return
    end subroutine PARAMTEXT

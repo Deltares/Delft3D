@@ -75,7 +75,8 @@ contains
       integer, parameter :: MAXCROSS = 100
       real(kind=dp), dimension(MAXCROSS) :: xcross, ycross
 
-      K1 = KN(1, L); K2 = KN(2, L)
+      K1 = KN(1, L)
+      K2 = KN(2, L)
 
 ! initialization
       xm = 0.0_dp
@@ -95,14 +96,20 @@ contains
          if (num == 0) then
             k = k_
          else
-            if (pdxL(k_) /= ipoly) cycle
+            if (pdxL(k_) /= ipoly) then
+               cycle
+            end if
             k = jdxL(k_)
          end if
 
          KU = K + 1
-         if (K == NPL) KU = 1
-         XP1 = XPL(K); YP1 = YPL(K)
-         XP2 = XPL(KU); YP2 = YPL(KU)
+         if (K == NPL) then
+            KU = 1
+         end if
+         XP1 = XPL(K)
+         YP1 = YPL(K)
+         XP2 = XPL(KU)
+         YP2 = YPL(KU)
 
 ! Formerly:
 !     CALL DCROSS (XP1, YP1, XP2, YP2, XK(K1), YK(K1), XK(K2), YK(K2), JACROS, SL, SM, XM, YM, CRP)

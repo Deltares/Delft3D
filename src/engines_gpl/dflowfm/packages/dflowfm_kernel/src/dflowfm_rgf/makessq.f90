@@ -43,7 +43,7 @@ contains
 
       if (NT == 2) then
          do K = 1, MFAC + 1
-            SSQ(K) = S(1) + (S(2) - S(1)) * (dble(K - 1)) / dble(MFAC)
+            SSQ(K) = S(1) + (S(2) - S(1)) * (real(K - 1, kind=dp)) / real(MFAC, kind=dp)
          end do
       else if (NT >= 3) then
          do I = 2, NT - 1
@@ -53,13 +53,13 @@ contains
          A(NT) = A(NT - 1)
 
          do I = 1, NT - 1
-            AR = A(I + 1)**(1.0 / dble(MFAC))
+            AR = A(I + 1)**(1.0 / real(MFAC, kind=dp))
             call MAKESR(AR, S(I), S(I + 1), SR, MFAC)
-            AL = A(I)**(1.0 / dble(MFAC))
+            AL = A(I)**(1.0 / real(MFAC, kind=dp))
             call MAKESR(AL, S(I), S(I + 1), SL, MFAC)
             do k = 1, MFAC + 1
                KR = (I - 1) * MFAC + K
-               AR = dble(K - 1) / dble(MFAC)
+               AR = real(K - 1, kind=dp) / real(MFAC, kind=dp)
                AL = 1 - AR
                SSQ(KR) = AR * SR(K) + AL * SL(K)
 

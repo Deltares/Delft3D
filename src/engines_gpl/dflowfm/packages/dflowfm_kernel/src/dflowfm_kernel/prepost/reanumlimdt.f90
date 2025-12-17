@@ -72,7 +72,8 @@ contains
          end do
 999      continue
          call doclose(mlim)
-         allocate (knum(ndx)); knum = 0
+         allocate (knum(ndx))
+         knum = 0
          kk = kk - 1
          call find_nearest_flownodes(kk, xs, ys, nams, knum, jakdtree, jaoutside, INDTP_ALL)
          do k = 1, kk

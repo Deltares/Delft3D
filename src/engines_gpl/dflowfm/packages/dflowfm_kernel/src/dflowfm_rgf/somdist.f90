@@ -78,7 +78,9 @@ contains
 20             continue
                K = K + II
                I2 = K
-               if (IJC(K, J) == 10) goto 20
+               if (IJC(K, J) == 10) then
+                  goto 20
+               end if
                do K = I, I2, II
                   IJC(K, J) = 21
                end do
@@ -144,7 +146,9 @@ contains
 120            continue
                L = L + JJ
                J2 = L
-               if (IJC(I, L) == 10) goto 120
+               if (IJC(I, L) == 10) then
+                  goto 120
+               end if
                do L = J, J2, JJ
                   IJC(I, L) = 22
                end do

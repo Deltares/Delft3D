@@ -85,7 +85,9 @@ contains
       end if
 
       call DLINEDIS(Xzw(n), Yzw(n), X3, Y3, X4, Y4, JA, DIS, Xd, Yd, jsferic, jasfer3D, dmiss) ! dis is half cell size in boundary normal dir
-      if (jadismxbnd == 1) dis = max(dis, 0.5_dp * sqrt(ba(n)))
+      if (jadismxbnd == 1) then
+         dis = max(dis, 0.5_dp * sqrt(ba(n)))
+      end if
       ! dis = max(dis,0.5d0*sqrt(ba(n)))
 
 ! (rx,ry) outward normal in reference frame of half(x3,y3,x4,y4)
@@ -147,15 +149,23 @@ contains
 
 ! store ordered contour of cell
       if (dout > 0.0_dp) then
-         xx(1) = x3; yy(1) = y3
-         xx(2) = x5; yy(2) = y5
-         xx(3) = x6; yy(3) = y6
-         xx(4) = x4; yy(4) = y4
+         xx(1) = x3
+         yy(1) = y3
+         xx(2) = x5
+         yy(2) = y5
+         xx(3) = x6
+         yy(3) = y6
+         xx(4) = x4
+         yy(4) = y4
       else
-         xx(4) = x3; yy(4) = y3
-         xx(3) = x5; yy(3) = y5
-         xx(2) = x6; yy(2) = y6
-         xx(1) = x4; yy(1) = y4
+         xx(4) = x3
+         yy(4) = y3
+         xx(3) = x5
+         yy(3) = y5
+         xx(2) = x6
+         yy(2) = y6
+         xx(1) = x4
+         yy(1) = y4
       end if
    end subroutine mirrorcell
 

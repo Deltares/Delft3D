@@ -111,7 +111,9 @@ contains
 
       if (jased > 0 .and. stm_included) then
          if (time1 >= tstart_user + ti_sedtrans * tfac) then
-            if (jatimer == 1) call starttimer(IEROSED)
+            if (jatimer == 1) then
+               call starttimer(IEROSED)
+            end if
             !
             call setucxucy_mor(u1)
             call fm_flocculate() ! fraction transitions due to flocculation
@@ -125,7 +127,9 @@ contains
             call timstop(handle_extra(88))
 
             call comp_bedload_fluxmba()
-            if (jatimer == 1) call stoptimer(IEROSED)
+            if (jatimer == 1) then
+               call stoptimer(IEROSED)
+            end if
          end if
       end if
 
@@ -139,9 +143,13 @@ contains
 
       !SPvdP: timestep is now based on u0, q0
       !       transport is with u1,q1 with timestep based on u0,q0
-      if (jatimer == 1) call starttimer(ITRANSPORT)
+      if (jatimer == 1) then
+         call starttimer(ITRANSPORT)
+      end if
       call transport()
-      if (jatimer == 1) call stoptimer(ITRANSPORT)
+      if (jatimer == 1) then
+         call stoptimer(ITRANSPORT)
+      end if
 
       if (jased > 0 .and. stm_included) then
          call fm_bott3d() ! bottom update

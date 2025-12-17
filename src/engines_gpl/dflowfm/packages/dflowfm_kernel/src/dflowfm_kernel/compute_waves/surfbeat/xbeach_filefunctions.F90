@@ -30,10 +30,12 @@
 !
 !
 module m_xbeach_filefunctions
+
 !! Contains logging functions and file administration functions
 !! Merge of logging_module and filefunctions_module
    use m_xbeach_typesandkinds
 
+use precision, only: dp
    implicit none
 
    integer, save :: logfileid
@@ -126,10 +128,14 @@ contains
          open (newunit=warningfileid, file='surfbeatwarning'//'_'//sdmn//'.txt', status='replace', iostat=warnerr)
       end if
 
-      if (logerr > 0 .or. errerr > 0 .or. warnerr > 0) error = 1
+      if (logerr > 0 .or. errerr > 0 .or. warnerr > 0) then
+         error = 1
+      end if
 
       ! newunit returns negative file id's
-      if (logfileid > 0 .or. errorfileid > 0 .or. warningfileid > 0) error = 1
+      if (logfileid > 0 .or. errorfileid > 0 .or. warningfileid > 0) then
+         error = 1
+      end if
 
       if (error == 1) then
          write (*, *) 'Error: not able to open log file. Stopping simulation'
@@ -154,12 +160,12 @@ contains
       integer(4) :: count, count_rate, count_max
 
       if (initialize) then
-         lastper = 0.d0
+         lastper = 0.0_dp
          call system_clock(count, count_rate, count_max)
-         lastt = dble(count) / count_rate
+         lastt = real(count, kind=dp) / count_rate
       else
          call system_clock(count, count_rate, count_max)
-         tnow = dble(count) / count_rate
+         tnow = real(count, kind=dp) / count_rate
          if (curper >= lastper + dper .or. tnow >= lastt + dt) then
             call writelog('ls', '(f0.1,a)', curper, '% done')
             if (curper >= lastper + dper) then
@@ -1214,7 +1220,9 @@ contains
       i = 0
       do while (ier == 0)
          read (fid, '(a)', iostat=ier) ch
-         if (ier == 0) i = i + 1
+         if (ier == 0) then
+            i = i + 1
+         end if
       end do
       nlines = i
       rewind (fid)
@@ -1242,7 +1250,9 @@ contains
             ier = 0
             do while (ier == 0)
                read (fid2, '(a)', iostat=ier) ch
-               if (ier == 0) i = i + 1
+               if (ier == 0) then
+                  i = i + 1
+               end if
             end do
             close (fid2)
             bcfiles(ifid)%nlines = i
@@ -1274,11 +1284,11 @@ contains
             filetype = 3
          end if
 
-         total = 0.d0
+         total = 0.0_dp
          i = 0
          select case (filetype)
          case (0)
-            total = 2.d0 * tstop
+            total = 2.0_dp * tstop
          case (1)
             do while (total < tstop .and. i < bcfiles(ifid)%nlines)
                read (fid, *, iostat=ier) t, dt, dummy

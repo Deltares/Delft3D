@@ -573,8 +573,12 @@ contains
 
       nlatnd = nlatnd + nlat
 
-      if (allocated(x_coordinates)) deallocate (x_coordinates, stat=ierr)
-      if (allocated(y_coordinates)) deallocate (y_coordinates, stat=ierr)
+      if (allocated(x_coordinates)) then
+         deallocate (x_coordinates, stat=ierr)
+      end if
+      if (allocated(y_coordinates)) then
+         deallocate (y_coordinates, stat=ierr)
+      end if
 
       ! [lateral]
       ! Flow = 1.23 | test.tim | REALTIME

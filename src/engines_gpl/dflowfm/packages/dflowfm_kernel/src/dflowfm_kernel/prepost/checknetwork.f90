@@ -73,14 +73,15 @@ contains
 
       lprog = 0
       nSearchRange = 3 !< For a given link, search at most three connected links ahead
-      E = 1e-6; E1 = 1 - E
+      E = 1e-6
+      E1 = 1 - E
 
-      call readyy('Checking net link crossings', 0d0)
+      call readyy('Checking net link crossings', 0.0_dp)
 !! Check crossing links
       do L = 1, numl
 
          if (L >= lprog) then
-            call readyy('Checking net link crossings', dble(L) / dble(numl))
+            call readyy('Checking net link crossings', real(L, kind=dp) / real(numl, kind=dp))
             lprog = lprog + int(numl / 100.0)
          end if
          K1 = kn(1, L)
@@ -91,9 +92,12 @@ contains
             call findLinks(kn(k, L))
             do LL = 1, nLink
                jaLinkVisited(linkQueue(LL)) = 0
-               KA = KN(1, linkQueue(LL)); KB = KN(2, linkQueue(LL))
+               KA = KN(1, linkQueue(LL))
+               KB = KN(2, linkQueue(LL))
                ! If interfaces share same node, no further action:
-               if (k1 == ka .or. k1 == kb .or. k2 == ka .or. k2 == kb) cycle
+               if (k1 == ka .or. k1 == kb .or. k2 == ka .or. k2 == kb) then
+                  cycle
+               end if
                call cross(XK(K1), YK(K1), XK(K2), YK(K2), XK(KA), YK(KA), XK(KB), YK(KB), JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
                if (jacros == 1 .and. SL > E .and. SL < E1 .and. SM > E .and. SM < E1) then
                   if (nlinkcross >= ncrossmax) then
@@ -128,17 +132,25 @@ contains
          integer :: L, LL, k2, nQmax
          integer, save :: nSearchDepth = 0
 
-         if (k < 1 .or. k > numk) return
+         if (k < 1 .or. k > numk) then
+            return
+         end if
 
-         if (nSearchDepth >= nSearchRange) return
+         if (nSearchDepth >= nSearchRange) then
+            return
+         end if
 
          nQmax = size(linkQueue)
 
          nSearchDepth = nSearchDepth + 1
          do L = 1, nmk(k)
             LL = nod(k)%lin(L)
-            if (LL <= 0) exit
-            if (nLink > nQmax) exit ! Impossible to realloc in this recursive subroutine
+            if (LL <= 0) then
+               exit
+            end if
+            if (nLink > nQmax) then
+               exit ! Impossible to realloc in this recursive subroutine
+            end if
             if (jaLinkVisited(LL) == 1) then ! Walk links only once.
                cycle
             else

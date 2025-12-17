@@ -46,7 +46,8 @@ contains
       use m_linkstocentercartcomp, only: linkstocentercartcomp
       use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, jahistaucurrent, jahisvelocity, jahisvelvec, ucmag, jaeulervel, &
                         flowwithoutwaves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, jahistur, javiusp, viclu, viusp, &
-                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, jatem, jahisrho, &
+                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
+                        TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jahisrho, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
                         rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
@@ -55,7 +56,8 @@ contains
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
-      use m_observations_data, only : valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, ipnt_sscx1, ival_sscy1, ival_sscyn, ipnt_sscy1, ival_sbwx1, ival_sbwxn, ipnt_sbwx1, ival_sbwy1, ival_sbwyn, ipnt_sbwy1, ival_sswx1, ival_sswxn, ipnt_sswx1, ival_sswy1, ival_sswyn, ipnt_sswy1, ipnt_taub, ival_bodsed1, ival_bodsedn, ipnt_bodsed1, ipnt_dpsed, ival_msed1, ival_msedn, ipnt_msed1, ival_lyrfrac1, ival_lyrfracn, ipnt_lyrfrac1, ipnt_poros, ipnt_thlyr, ival_frac1, ival_fracn, ipnt_frac1, ipnt_mudfrac, ipnt_sandfrac, ival_mfluff1, ival_mfluffn, ipnt_mfluff1, ival_fixfac1, ival_fixfacn, ipnt_fixfac1, ival_hidexp1, ival_hidexpn, ipnt_hidexp1, ival_sour1, ival_sourn, ipnt_sour1, ival_sink1, ival_sinkn, ipnt_sink1, ival_wqb1, ival_wqbn, ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot,neighbour_nodes_obs,neighbour_weights_obs, intobs
+      use m_observations_data, only : valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, ipnt_sscx1, ival_sscy1, ival_sscyn, ipnt_sscy1, ival_sbwx1, ival_sbwxn, ipnt_sbwx1, ival_sbwy1, ival_sbwyn, ipnt_sbwy1, ival_sswx1, ival_sswxn, ipnt_sswx1, ival_sswy1, ival_sswyn, ipnt_sswy1, ipnt_taub, ival_bodsed1, ival_bodsedn, ipnt_bodsed1, ipnt_dpsed, ival_msed1, ival_msedn, ipnt_msed1, ival_lyrfrac1, ival_lyrfracn, ipnt_lyrfrac1, ipnt_poros, ipnt_thlyr, ival_frac1, ival_fracn, ipnt_frac1, ipnt_mudfrac, ipnt_sandfrac, ival_mfluff1, ival_mfluffn, ipnt_mfluff1, ival_fixfac1, ival_fixfacn, ipnt_fixfac1, ival_hidexp1, ival_hidexpn, ipnt_hidexp1, ival_sour1, ival_sourn, ipnt_sour1, ival_sink1, ival_sinkn, ipnt_sink1, ival_wqb1, ival_wqbn, ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipn
+t_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot,neighbour_nodes_obs,neighbour_weights_obs, intobs
       use m_sediment, only: jahissigwav, stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
       use Timers, only: timon, timstrt, timstop
       use m_gettaus, only: gettaus
@@ -90,14 +92,16 @@ contains
       real(kind=dp), allocatable :: ueuy(:)
       real(kind=dp), allocatable :: tmp_interp(:)
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
-      
+
       kmx_const = kmx
       if (kmx == 0) then
          kmx_const = 1 ! to make numbering work
       end if
       nlyrs = 0
 
-      if (timon) call timstrt("fill_valobs", handle_extra(55))
+      if (timon) then
+         call timstrt("fill_valobs", handle_extra(55))
+      end if
       !
       if (.not. allocated(ueux)) then
          call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
@@ -140,7 +144,8 @@ contains
             else
                do k = 1, ndx
                   call getkbotktop(k, kb, kt)
-                  ux = ueux(kb); uy = ueuy(kb)
+                  ux = ueux(kb)
+                  uy = ueuy(kb)
                   um = max(hypot(ux, uy), 1.0e-4_dp)
                   workx(k) = taus(k) * ux / um
                   worky(k) = taus(k) * uy / um
@@ -224,9 +229,9 @@ contains
             !              (water levells, velocities, sality and temperature). Treat other quanitities (water quality, morpholgy, turbulence) as before (snapped)
             !
             ! Water levels
-            
-            call interpolate_horizontal (s1,i,IPNT_S1,UNC_LOC_S) 
-            
+
+            call interpolate_horizontal (s1,i,IPNT_S1,UNC_LOC_S)
+
            if (nshiptxy > 0) then
                if (allocated(zsp)) then
                   tmp_interp = s1 + zsp
@@ -266,25 +271,25 @@ contains
             if (model_is_3D()) then
                call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
                call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
-            end if                    
-            
+            end if
+
             ! Salinity (interpolated)
             if (jasal > 0) then
                tmp_interp = constituents(isalt,:)
                call interpolate_horizontal (tmp_interp,i,IPNT_SA1,UNC_LOC_S3D)
             end if
-            
+
             ! Temperature
             if (jatem > 0) then
                tmp_interp = constituents(itemp,:)
                call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
             end if
-            
+
             ! Finally; vertical positions
             ! Maybe not the right place to do this, fille interfaces with bed level and water surface in case of 2d model
- 
-            
-            if (model_is_3D()) then       
+
+
+            if (model_is_3D()) then
                !       interface
                call interpolate_horizontal (zws,i,IPNT_ZWS,UNC_LOC_W)
                !       centre: make temporary array with cellcentres
@@ -292,11 +297,11 @@ contains
                   tmp_interp(j) = 0.5_dp * (zws(j) + zws(j - 1))
                end do
                call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
-            else 
+            else
                 ! TK_Temp: Fill interfaces with surface and bed, centre with average (woulde be nicer to fill zws with correct values)
                 valobs(i,IPNT_ZWS)     = valobs(i,IPNT_BL)
                 valobs(i,IPNT_ZWS + 1) = valobs(i,IPNT_S1)
-                valobs(i,IPNT_ZCS)     =  0.5_dp * (valobs(i,IPNT_BL) + valobs(i,IPNT_S1)) 
+                valobs(i,IPNT_ZCS)     =  0.5_dp * (valobs(i,IPNT_BL) + valobs(i,IPNT_S1))
             end if
 
             ! Frome here: everything as snapped!!!
@@ -305,8 +310,12 @@ contains
                valobs(i, IPNT_wy) = 0.0_dp
                do LL = 1, nd(k)%lnx
                   LLL = abs(nd(k)%ln(LL))
-                  k1 = ln(1, LLL); k2 = ln(2, LLL)
-                  k3 = 1; if (nd(k)%ln(LL) > 0) k3 = 2
+                  k1 = ln(1, LLL)
+                  k2 = ln(2, LLL)
+                  k3 = 1
+                  if (nd(k)%ln(LL) > 0) then
+                     k3 = 2
+                  end if
                   valobs(i, IPNT_wx) = valobs(i, IPNT_wx) + wx(LLL) * wcL(k3, LLL)
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
@@ -502,6 +511,7 @@ contains
 !               if (jatem > 0) then
 !                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
 !               end if
+
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
@@ -511,7 +521,7 @@ contains
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
-               
+
                ! Taken care of by interpolate_horizontal
                !if (jahisvelocity > 0) then
                !   valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
@@ -638,32 +648,29 @@ contains
             end if
 
 !        Heatflux
-            if (jatem > 0 .and. jahisheatflux > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jahisheatflux > 0) then
                call getlink1(k, LL)
                if (jawind > 0) then
                   valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
                end if
 
-               if (jatem > 1) then ! also heat modelling involved
+               if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
                   valobs(i, IPNT_TAIR) = air_temperature(k)
+                  valobs(i, IPNT_QTOT) = Qtotmap(k)
                end if
 
-               if (jatem == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
-                  valobs(i, IPNT_RHUM) = relative_humidity(k)
-                  valobs(i, IPNT_CLOU) = cloudiness(k)
-               end if
+               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                  if (allocated(relative_humidity) .and. allocated(cloudiness)) then
+                     valobs(i, IPNT_RHUM) = relative_humidity(k)
+                     valobs(i, IPNT_CLOU) = cloudiness(k)
+                  end if
 
-               if (jatem == 5) then
                   valobs(i, IPNT_QSUN) = Qsunmap(k)
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)
                   valobs(i, IPNT_QLON) = Qlongmap(k)
                   valobs(i, IPNT_QFRE) = Qfrevamap(k)
                   valobs(i, IPNT_QFRC) = Qfrconmap(k)
-               end if
-
-               if (jatem > 1) then
-                  valobs(i, IPNT_QTOT) = Qtotmap(k)
                end if
             end if
          else
@@ -677,7 +684,9 @@ contains
          deallocate (wa)
       end if
 
-      if (timon) call timstop(handle_extra(55))
+      if (timon) then
+         call timstop(handle_extra(55))
+      end if
    end subroutine fill_valobs
 
    !> Support routine to collect the values of the ice quantities at the observation stations
@@ -693,7 +702,9 @@ contains
       integer, intent(in) :: i !< index of the observation station
       integer, intent(in) :: k !< face index associated with the observation station
 
-      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) return
+      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) then
+         return
+      end if
 
       call conditional_assign(valobs, i, IPNT_ICE_S1, ice_s1, k)
       call conditional_assign(valobs, i, IPNT_ICE_ZMIN, ice_zmin, k)
@@ -720,7 +731,7 @@ contains
          valobs(i, ipnt) = real(array(k), dp)
       end if
    end subroutine conditional_assign
-   
+
    subroutine interpolate_horizontal (rarray,istat,IPNT,locType)
 
       ! Interpolate (horizontally, within a computational layer) to a position from 3 surrounding snapped points
@@ -780,6 +791,6 @@ contains
          end do
          valobs(istat, IPNT + klay - 1) = value/weighttot
       end do
-   end subroutine interpolate_horizontal           
+   end subroutine interpolate_horizontal
 
 end module m_fill_valobs

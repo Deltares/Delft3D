@@ -56,9 +56,15 @@ contains
 
       ierror = 1
 
-      if (.not. allocated(adm%icell)) allocate (adm%icell(nmkx))
-      if (.not. allocated(adm%kk2)) allocate (adm%kk2(nmkx2))
-      if (.not. allocated(adm%kkc)) allocate (adm%kkc(M, nmkx))
+      if (.not. allocated(adm%icell)) then
+         allocate (adm%icell(nmkx))
+      end if
+      if (.not. allocated(adm%kk2)) then
+         allocate (adm%kk2(nmkx2))
+      end if
+      if (.not. allocated(adm%kkc)) then
+         allocate (adm%kkc(M, nmkx))
+      end if
 
       Nsize = ubound(adm%icell, 1) ! array size of icell
       Ksize = ubound(adm%kk2, 1) ! array size of adm%kk2
@@ -74,7 +80,9 @@ contains
       do k1 = 1, nmk(k0)
          L1 = nod(k0)%lin(k1)
          k2 = k1 + 1
-         if (k2 > nmk(k0)) k2 = 1
+         if (k2 > nmk(k0)) then
+            k2 = 1
+         end if
 
 !      do while ( k2.ne.k1 ) ! try to find a common cell and the shared link (no folds: the next link)
          L2 = nod(k0)%lin(k2)
@@ -102,7 +110,9 @@ contains
 !      end do
 
          if (nmk(k0) == 2 .and. k1 == 2 .and. nb(k0) == 3) then
-            if (inewcell == adm%icell(1)) inewcell = -1234 ! cornercell
+            if (inewcell == adm%icell(1)) then
+               inewcell = -1234 ! cornercell
+            end if
          end if
 
          adm%Ncell = adm%Ncell + 1
@@ -115,10 +125,14 @@ contains
       end do
 
 !  check if any cells are found and terminate otherwise
-      if (adm%Ncell < 1) goto 1234
+      if (adm%Ncell < 1) then
+         goto 1234
+      end if
 
 !  reallocate kkc if necessary
-      if (adm%Ncell > ubound(adm%kkc, 2)) call realloc(adm%kkc, [M, adm%Ncell])
+      if (adm%Ncell > ubound(adm%kkc, 2)) then
+         call realloc(adm%kkc, [M, adm%Ncell])
+      end if
 
 !  make the node administration kk2 and kkc
       adm%kk2 = 0
@@ -144,7 +158,9 @@ contains
 
       do ic = 1, adm%Ncell
          kcell = adm%icell(ic)
-         if (kcell < 1) cycle ! for fictitious boundary cells
+         if (kcell < 1) then
+            cycle ! for fictitious boundary cells
+         end if
 
 !     forward to center node
          k1 = 0
@@ -156,7 +172,9 @@ contains
          N = netcell(kcell)%n
          do i = 1, N
             k1 = k1 + 1
-            if (k1 > N) k1 = k1 - N
+            if (k1 > N) then
+               k1 = k1 - N
+            end if
 
             knode = netcell(kcell)%nod(k1)
 

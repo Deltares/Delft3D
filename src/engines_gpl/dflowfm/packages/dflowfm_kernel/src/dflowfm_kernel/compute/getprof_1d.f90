@@ -170,7 +170,8 @@ contains
 
 ! No flow1d cross input, OR a 1d2d link. Proceed with conventional prof1D approach.
       if (prof1D(1, LL) >= 0) then ! direct profile based upon link value
-         ka = 0; kb = 0 ! do not use profiles
+         ka = 0
+         kb = 0 ! do not use profiles
          profw = prof1D(1, LL)
          profh = prof1D(2, LL)
          itp = prof1D(3, LL)
@@ -179,7 +180,8 @@ contains
             friction_type = ifrcutp(LL)
          end if
       else
-         ka = -prof1D(1, LL); kb = -prof1D(2, LL)
+         ka = -prof1D(1, LL)
+         kb = -prof1D(2, LL)
          profw = profiles1D(ka)%width
          profh = profiles1D(ka)%height
          itp = profiles1D(ka)%ityp
