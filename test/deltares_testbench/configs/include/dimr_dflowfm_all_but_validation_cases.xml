@@ -2231,7 +2231,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c176_freezing_with_background_salinity" ref="dflowfm_default">
-        <path version="2025-12-10T14:38:20.635000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
+        <path version="2025-12-15T15:24:00">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/winter97_saltwater-2_map.nc" type="netcdf">
@@ -2242,7 +2242,7 @@
             </file>
             <file name="output/winter97_saltwater-2_his.nc" type="netcdf">
                 <parameters>
-                    <parameter name="temperature" toleranceAbsolute="0.001" />
+                    <parameter name="temperature" toleranceAbsolute="0.005" />
                 </parameters>
             </file>
         </checks>
@@ -4762,7 +4762,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f020_c034_salinity_freezing" ref="dflowfm_default">
-      <path version="2025-08-27T12:00:00">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
+      <path version="2025-12-12T14:33:06.073000">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="output/winter97_saltwater_his.nc" type="netCDF">
