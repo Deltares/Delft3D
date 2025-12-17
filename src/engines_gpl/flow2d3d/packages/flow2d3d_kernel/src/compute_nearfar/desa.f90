@@ -71,6 +71,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     real(fp),dimension(:)          , pointer :: q_diff
     real(fp),dimension(:,:)        , pointer :: const_diff
 	logical                        , pointer :: nf_src_mom
+	logical                        , pointer :: nf_src_weight	
     logical , dimension(:)         , pointer :: flbcktemp
     logical                        , pointer :: zmodel
 !
@@ -137,6 +138,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     integer                              :: n
     integer                              :: m
     integer                              :: ndis_track
+    integer                              :: col_cnt
     integer                              :: sink_cnt
     integer                              :: sour_cnt
     integer                              :: src_index
@@ -504,8 +506,18 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                    icur               = ndis_track
                 endif
              endif
-             weight(icur) = weight(icur) + 1.0_fp
-             wght_tot     = wght_tot     + 1.0_fp
+			 
+			 col_cnt = size(nf_sour,2)
+			 if (col_cnt == 6 .or. col_cnt == 8)  then
+				! Each source has a weight of one
+				 weight(icur) = weight(icur) + 1.0_fp
+				 wght_tot     = wght_tot     + 1.0_fp
+			 elseif (col_cnt == 7 .or. col_cnt == 9) then
+				! Weight is defined in last column (7 or 9)
+				 weight(icur) = weight(icur) + 1.0_fp * nf_sour(itrack,col_cnt)
+				 wght_tot     = wght_tot     + 1.0_fp * nf_sour(itrack,col_cnt)
+		     endif
+	   
           enddo
        endif
        !
