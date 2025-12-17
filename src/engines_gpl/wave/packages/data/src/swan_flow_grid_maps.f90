@@ -152,30 +152,20 @@ module swan_flow_grid_maps
    end type output_fields
    !
    type(grid), dimension(:), pointer, save :: swan_grids ! pointer array swan grids
-   type(grid), dimension(:), pointer, save :: flow_grids ! pointer array flow grids
-   type(grid_map), dimension(:, :), pointer, save :: flow2swan_maps ! mappers flow->swan
-   type(grid_map), dimension(:, :), pointer, save :: swan2flow_maps ! mappers swan->flow
    type(input_fields), save :: swan_input_fields ! pointer to input fields, swan grid
    type(output_fields), save :: swan_output_fields ! pointer array to output fields, swan grid
-   type(output_fields), dimension(:), pointer, save :: flow_output_fields ! pointer array to output fields, flow grid
-   !
 contains
 !
 !
 !==============================================================================
-   subroutine init_grids(n_swan_grids, n_flow_grids)
+   subroutine init_grids(n_swan_grids)
       implicit none
       !
       ! parameters
       integer, intent(in) :: n_swan_grids
-      integer, intent(in) :: n_flow_grids
       !
       ! body
       allocate (swan_grids(n_swan_grids))
-      allocate (flow_grids(n_flow_grids))
-      allocate (swan2flow_maps(n_swan_grids, n_flow_grids))
-      allocate (flow2swan_maps(n_swan_grids, n_flow_grids))
-      allocate (flow_output_fields(n_flow_grids))
    end subroutine Init_grids
 !
 !

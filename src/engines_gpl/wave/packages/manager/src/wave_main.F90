@@ -59,7 +59,6 @@ module wave_main
 ! Module variables
 !
    integer                                      :: n_swan_grids ! number of SWAN grids
-   integer                                      :: n_flow_grids ! number of FLOW grids
    type(wave_data_type),target                  :: wavedata
    integer :: tmpchar
 
@@ -486,15 +485,7 @@ function wave_init(mode_in, mdw_file) result(retval)
    !
    ! Read wave grids and flow grids; make grid-maps
    !
-   call grids_and_gridmaps(n_swan_grids, n_flow_grids, swan_run, wavedata%mode)
-   !
-   ! Allocate swan output fields defined on flow grids; they have to be
-   ! stored and updated over multiple nested swan runs
-   !
-   do i_flow=1,n_flow_grids
-      flow_output_fields(i_flow)%n_outpars = 0
-      call alloc_output_fields(flow_grids(i_flow),flow_output_fields(i_flow))
-   enddo
+   call grids_and_gridmaps(n_swan_grids, swan_run, wavedata%mode)
    !
    ! Set mode to spherical if first swan grid is spherical
    !
@@ -721,7 +712,7 @@ function wave_master_step(stepsize, precice_state) result(retval)
          !
          ! Run n_swan nested SWAN runs
          !
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
+         call swan_tot(n_swan_grids, wavedata, 0, precice_state)
          write(*,'(a)')'*  End of Delft3D-WAVE'
          write(*,'(a)')'*****************************************************************'
          !
@@ -740,14 +731,14 @@ function wave_master_step(stepsize, precice_state) result(retval)
       ! Standalone swan computation
       !
       if (swan_run%flowgridfile == ' ') then
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
+         call swan_tot(n_swan_grids, wavedata, 0, precice_state)
       elseif (swan_run%timwav(1) < 0.0) then
          !
          ! No times specified in mdw file: just do one computation with specified timestep
          !
          swan_run%timwav(1) = wavedata%time%timsec + stepsize / 60.0_hp
          swan_run%nttide    = 1
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
+         call swan_tot(n_swan_grids, wavedata, 0, precice_state)
       else
          !
          ! Times specified in mdw file: compute all specified times between tcur en tcur+tstep
@@ -774,7 +765,7 @@ function wave_master_step(stepsize, precice_state) result(retval)
                ! iold is needed when timwav(i)="current time" or "step_end_time",
                ! to avoid doing the same computation twice
                !
-               call swan_tot(n_swan_grids, n_flow_grids, wavedata, i, precice_state)
+               call swan_tot(n_swan_grids, wavedata, i, precice_state)
                iold = i
             else
                !

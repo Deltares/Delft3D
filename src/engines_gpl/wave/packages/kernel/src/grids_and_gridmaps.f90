@@ -1,4 +1,4 @@
-subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
+subroutine grids_and_gridmaps (n_swan_grids, sr, mode)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -46,7 +46,6 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
 ! Global variables
 !
    integer                             :: n_swan_grids     ! number of SWAN grids
-   integer                             :: n_flow_grids     ! number of FLOW grids
    integer                             :: mode
    type(swan_type)                     :: sr
 !
@@ -76,21 +75,6 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
    else
       netcdf_files = .false.
    endif
-   ! Find out number of FLOW domains
-   !
-   write(*,'(a)') '  Initialising grids and grid mappings'
-   if (mode == stand_alone) then
-      !
-      ! If flow results are used
-      !
-      if (sr%useflowdata .or. sr%swwav) then
-         n_flow_grids = num_subdomains
-      else
-         n_flow_grids = 0
-      endif
-   else
-      n_flow_grids=num_subdomains
-   endif
 
 ! Find out number of SWAN grids
    i_swan=1
@@ -114,7 +98,7 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
    endif
 
    ! Allocate pointer arrays grid structures
-   call Init_Grids (n_swan_grids, n_flow_grids)
+   call Init_Grids(n_swan_grids)
    
    do i=1,n_swan_grids
       grid_name = swangrid(i)
@@ -122,8 +106,5 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
       xy_loc         ='CORNER'
       call Alloc_and_get_grid(i, swan_grids(i),grid_name,grid_file_type,xy_loc, sr%flowLinkConnectivity)
       call write_bnd_loc(i,swan_grids(i))
-      if (netcdf_files) then
-         call write_wave_grid_netcdf(i, swan_grids(i), grid_name, flow2swan_maps(i,1)%r_tmp_filename)
-      endif
    enddo
 end subroutine grids_and_gridmaps
