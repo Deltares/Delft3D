@@ -44,7 +44,9 @@ contains
       integer :: j
       NUMPI = 0
       do J = 1, NMAX
-         if (X(MP, J) /= XYMIS) NUMPI = J
+         if (X(MP, J) /= XYMIS) then
+            NUMPI = J
+         end if
       end do
       return
    end subroutine numpold

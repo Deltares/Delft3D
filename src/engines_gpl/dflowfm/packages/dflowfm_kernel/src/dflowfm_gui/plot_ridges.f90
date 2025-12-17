@@ -56,7 +56,9 @@ contains
 
       ierror = 1
 
-      if (iHesstat /= iHesstat_OK) goto 1234
+      if (iHesstat /= iHesstat_OK) then
+         goto 1234
+      end if
 
 !  plot ridge
       do i = 1, MXSAM
@@ -66,7 +68,9 @@ contains
 
             ip = i + (j - 1) * MXSAM
 
-            if (abs(zss(5, i, j)) > 0.5_dp * Dh .or. zss(4, i, j) > -1.0e-8_dp .or. zss(5, i, j) == DMISS) cycle
+            if (abs(zss(5, i, j)) > 0.5_dp * Dh .or. zss(4, i, j) > -1.0e-8_dp .or. zss(5, i, j) == DMISS) then
+               cycle
+            end if
 
             Dx = zss(3, i, j)
             Dy = -zss(2, i, j)

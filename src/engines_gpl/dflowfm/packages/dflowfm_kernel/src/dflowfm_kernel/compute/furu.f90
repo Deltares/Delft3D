@@ -323,7 +323,9 @@ contains
          if (Lt > Lb) then ! true 3D
             u1(LL) = zbndun
             jaustarintsave = jaustarint
-            if (jaustarint == 0 .or. jaustarint == 3) jaustarint = 1
+            if (jaustarint == 0 .or. jaustarint == 3) then
+               jaustarint = 1
+            end if
             vLL = v(LL)
             v(LL) = 0.0_dp
             call getustbcfuhi(LL, LL, ustbLL, cfuhi(LL), hdzb, z00, cfuhi3D) ! call with Lb = LL => layer integral profile
@@ -359,7 +361,9 @@ contains
                   end if
                   qk1 = hu(L) * ustbLL * sqcfi ! integral flux till level k
                   ru(L) = (qk1 - qk0) / (hu(L) - hu(L - 1))
-                  if (zbndun < 0.0_dp) ru(L) = -1.0_dp * ru(L)
+                  if (zbndun < 0.0_dp) then
+                     ru(L) = -1.0_dp * ru(L)
+                  end if
                   qk0 = qk1
                end if
             end if
@@ -379,7 +383,9 @@ contains
          else ! to check: vertical distribution
             do L = lnxi + 1, lnx
                call getLbotLtop(L, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do LL = Lb, Lt
                   ru(LL) = ru(LL) + wavmubnd(LL)
                end do

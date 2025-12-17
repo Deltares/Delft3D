@@ -93,9 +93,13 @@ contains
          L = L_
       end if
 
-      if (L == 0) goto 1234
+      if (L == 0) then
+         goto 1234
+      end if
 
-      if (jatek == 1) call teklink(L, 0)
+      if (jatek == 1) then
+         call teklink(L, 0)
+      end if
       k1 = kn(1, L)
       k2 = kn(2, L)
       k3 = kn(3, L)
@@ -119,10 +123,14 @@ contains
          call dsetnewpoint(0.5_dp * (xk(k1) + xk(k2)), 0.5_dp * (yk(k1) + yk(k2)), kp)
 
          call connectdbn(k1, kp, LnL)
-         if (jatek == 1) call teklink(LnL, ncoldn)
+         if (jatek == 1) then
+            call teklink(LnL, ncoldn)
+         end if
          kn(3, LnL) = k3
          call connectdbn(kp, k2, LnR)
-         if (jatek == 1) call teklink(LnR, ncoldn)
+         if (jatek == 1) then
+            call teklink(LnR, ncoldn)
+         end if
          kn(3, LnR) = k3
 
          !     set lnn and lne for new links
@@ -138,7 +146,9 @@ contains
          lne(2, LnL) = 0
          lne(1, LnR) = 0
          lne(2, LnR) = 0
-         if (jatek == 1) call dcirr(xk(kp), yk(kp), zk(kp), ncoldn)
+         if (jatek == 1) then
+            call dcirr(xk(kp), yk(kp), zk(kp), ncoldn)
+         end if
       end if
 
 !  insert and connect new node
@@ -158,15 +168,23 @@ contains
 
 !     find the left and right connected links and cells
          kkL = kk1 - 1
-         if (kkL < 1) kkL = kkL + N
+         if (kkL < 1) then
+            kkL = kkL + N
+         end if
          kkR = kk1 + 1
-         if (kkR > N) kkR = kkR - N
+         if (kkR > N) then
+            kkR = kkR - N
+         end if
          LL = netcell(ic1)%lin(kkL)
          LR = netcell(ic1)%lin(kkR)
          icL = 0
-         if (lnn(LL) > 1) icL = lne(1, LL) + lne(2, LL) - ic1
+         if (lnn(LL) > 1) then
+            icL = lne(1, LL) + lne(2, LL) - ic1
+         end if
          icR = 0
-         if (lnn(LR) > 1) icR = lne(1, LR) + lne(2, LR) - ic1
+         if (lnn(LR) > 1) then
+            icR = lne(1, LR) + lne(2, LR) - ic1
+         end if
 
 !     find the left and right original nodes (either k1 or k2)
          if (kn(1, LL) == k1 .or. kn(2, LL) == k1) then
@@ -182,12 +200,18 @@ contains
             !  add node
             call dsetnewpoint(0.5_dp * (xk(kL) + xk(kR)), 0.5_dp * (yk(kL) + yk(kR)), kp)
             call connectdbn(kL, kp, LnL)
-            if (jatek == 1) call teklink(LnL, ncoldn)
+            if (jatek == 1) then
+               call teklink(LnL, ncoldn)
+            end if
             kn(3, LnL) = k3
             call connectdbn(kp, kR, LnR)
-            if (jatek == 1) call teklink(LnR, ncoldn)
+            if (jatek == 1) then
+               call teklink(LnR, ncoldn)
+            end if
             kn(3, LnR) = k3
-            if (jatek == 1) call dcirr(xk(kp), yk(kp), zk(kp), ncoldn)
+            if (jatek == 1) then
+               call dcirr(xk(kp), yk(kp), zk(kp), ncoldn)
+            end if
          else ! swap orientation: switch new links LnL and LnR
             idum = LnL
             LnL = LnR
@@ -200,12 +224,16 @@ contains
 
          call connectdbn(kLL, kp, LnLL)
          kn(3, LnLL) = kn(3, L)
-         if (jatek == 1) call teklink(LnLL, ncoldn)
+         if (jatek == 1) then
+            call teklink(LnLL, ncoldn)
+         end if
 
          if (kLL /= kRR) then
             call connectdbn(kRR, kp, LnRR)
             kn(3, LnRR) = kn(3, L)
-            if (jatek == 1) call teklink(LnRR, ncoldn)
+            if (jatek == 1) then
+               call teklink(LnRR, ncoldn)
+            end if
          else
             LnRR = LnLL
          end if
@@ -221,7 +249,9 @@ contains
 !     make new cells
          call makecell(3, [kLL, kL, kp], [LL, LnL, LnLL], icLL, ierror)
          call makecell(3, [kR, kRR, kp], [LnR, LR, LnRR], icRR, ierror)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
 
 !     set lnn and lne for new links
 !     reallocate if necessary

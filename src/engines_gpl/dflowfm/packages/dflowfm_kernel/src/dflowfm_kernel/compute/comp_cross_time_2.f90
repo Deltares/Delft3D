@@ -73,7 +73,9 @@ contains
       t2 = 1.0e99_dp
 
 !  only take nodes into account that are at the right-hand-side of the edge
-      if (-(x1(1) - x3(1)) * (x4(2) - x3(2)) + (x1(2) - x3(2)) * (x4(1) - x3(1)) < 0.0_dp) return
+      if (-(x1(1) - x3(1)) * (x4(2) - x3(2)) + (x1(2) - x3(2)) * (x4(1) - x3(1)) < 0.0_dp) then
+         return
+      end if
 
       if (dnow <= dclear .and. dclear > 0.0_dp) then
          t2 = comp_cross_time_1(x1, x3, x4, v1, v3, v4, 0.0_dp)
@@ -97,7 +99,9 @@ contains
 
       t1 = comp_cross_time_1(x1, x3, x4, v1, v3, v4, dclear)
 
-      if (t1 == DMISS .or. t1 <= 0.0_dp) t1 = 1.0e99_dp
+      if (t1 == DMISS .or. t1 <= 0.0_dp) then
+         t1 = 1.0e99_dp
+      end if
 
 !   if ( dbdistance(x1(1),x1(2),x3(1),x3(2)).gt.dclear ) then
       a = dot_product(v1 - v3, v1 - v3)
@@ -107,7 +111,9 @@ contains
       coeffs = [0.0_dp, 0.0_dp, a, b, c - dclear * dclear]
       call comp_roots4(coeffs, x)
       do i = 1, 4
-         if (x(i) == DMISS .or. x(i) <= 0.0_dp .or. x(i) > t1) cycle
+         if (x(i) == DMISS .or. x(i) <= 0.0_dp .or. x(i) > t1) then
+            cycle
+         end if
 !        check if intersection is in the right regime
          if (dot_product(x1 - x3 + (v1 - v3) * x(i), x4 - x3 + (v4 - v3) * x(i)) > 0.0_dp) then
             cycle
@@ -124,7 +130,9 @@ contains
             end if
          end if
 !        take minimum time
-         if (x(i) /= DMISS .and. x(i) > 0.0_dp .and. DdDt < 0.0_dp) t1 = min(t1, x(i))
+         if (x(i) /= DMISS .and. x(i) > 0.0_dp .and. DdDt < 0.0_dp) then
+            t1 = min(t1, x(i))
+         end if
       end do
 !   end if
 !
@@ -136,7 +144,9 @@ contains
       coeffs = [0.0_dp, 0.0_dp, a, b, c - dclear * dclear]
       call comp_roots4(coeffs, x)
       do i = 1, 4
-         if (x(i) == DMISS .or. x(i) <= 0.0_dp .or. x(i) > t1) cycle
+         if (x(i) == DMISS .or. x(i) <= 0.0_dp .or. x(i) > t1) then
+            cycle
+         end if
 !        check if intersection is in the right regime
          if (dot_product(x1 - x4 + (v1 - v4) * x(i), x3 - x4 + (v3 - v4) * x(i)) > 0.0_dp) then
             cycle
@@ -152,7 +162,9 @@ contains
             end if
          end if
 !        take minimum time
-         if (x(i) /= DMISS .and. x(i) > 0.0_dp .and. DdDt < 0.0_dp) t1 = min(t1, x(i))
+         if (x(i) /= DMISS .and. x(i) > 0.0_dp .and. DdDt < 0.0_dp) then
+            t1 = min(t1, x(i))
+         end if
       end do
 !   end if
 

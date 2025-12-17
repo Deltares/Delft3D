@@ -39,26 +39,27 @@ contains
    subroutine heatun(n, time_in_hours, nominal_solar_radiation)
       use precision, only: dp, comparereal, fp
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
-      use m_physcoef, only: ag, rhomean, backgroundsalinity, dalton, epshstem, stanton, sfr, soiltempthick, &
-                            BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, secchidepth2, surftempsmofac, &
-                            jadelvappos, zab
-      use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
-                              fwind, qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, &
-                              qevaav, qfrconav, qfrevaav
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, sfr, &
+         soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, secchidepth2, surftempsmofac, &
+         jadelvappos, zab
+      use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
+         qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
-      use m_flowparameters, only: jahisheatflux, jatem, ja_solar_radiation_factor
+      use m_flowparameters, only: jahisheatflux, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
+         ja_solar_radiation_factor
       use m_missing, only: dmiss
       use m_flowgeom, only: ba, nd, ln, yz, xz
       use m_sferic, only: jsferic
       use m_flowtimes, only: dts
       use m_transport, only: constituents, itemp, isalt
-      use m_fm_icecover, only: ja_icecover, ice_area_fraction, ice_albedo, ice_thickness, ice_temperature, snow_albedo, snow_thickness, snow_temperature, &
-                               qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
+      use m_fm_icecover, only: ja_icecover, ice_area_fraction, ice_albedo, ice_thickness, ice_temperature, snow_albedo, &
+         snow_thickness, snow_temperature, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_link1, only: getlink1
-      use m_wind, only: air_pressure_available, jaevap, long_wave_radiation_available, relativewind, air_temperature, wx, wy, relative_humidity, cloudiness, &
-                        air_pressure, heatsrc0, solar_radiation, solar_radiation_available, net_solar_radiation, net_solar_radiation_available, tbed, rhoair, long_wave_radiation, evap, cdwcof, &
-                        air_density, ja_airdensity, ja_computed_airdensity
+      use m_wind, only: air_pressure_available, jaevap, long_wave_radiation_available, relativewind, air_temperature, wx, wy, &
+         relative_humidity, cloudiness, air_pressure, heatsrc0, solar_radiation, solar_radiation_available, net_solar_radiation, &
+         net_solar_radiation_available, tbed, rhoair, long_wave_radiation, evap, cdwcof, air_density, ja_airdensity, &
+         ja_computed_airdensity
       use m_qsun_nominal, only: calculate_nominal_solar_radiation
 
       integer, intent(in) :: n
@@ -82,6 +83,7 @@ contains
       real(kind=dp) :: ice_free_area_fraction !< area fraction of ice cover (-)
       real(kind=dp) :: qlong_ice !< coefficient for long wave radiation of ice (J m-2 s-1 K-4)
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
+      real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
 
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
@@ -131,11 +133,11 @@ contains
 
       air_temperature_in_cell = air_temperature(n)
 
-      if (jatem == 3) then ! Excess model
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS) then
 
          heat_transfer_coefficient = 4.48_dp + 0.049_dp * water_temperature_in_cell + fwind * (3.5_dp + 2.05_dp * wind_speed_in_cell) * (1.12_dp + 0.018_dp * water_temperature_in_cell + 0.00158_dp * water_temperature_in_cell**2)
 
-         total_heat_flux = -heat_transfer_coefficient * (water_temperature_in_cell - air_temperature_in_cell)
+         total_heat_flux = -heat_transfer_coefficient * (water_temperature_in_cell - backgroundwatertemperature)
          heat_capacity_water_cell_area = rcpi * ba(n)
          heatsrc0(k_top) = heatsrc0(k_top) + total_heat_flux * heat_capacity_water_cell_area * ice_free_area_fraction ! fill heat source array
 
@@ -143,17 +145,19 @@ contains
             qtotmap(n) = total_heat_flux
          end if
 
-      else if (jatem == 5) then ! Composite (ocean) model
+      else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
-         ! Set surface_temperature either to water_temperature_in_cell or to ice_temperature(n) or to snow_temperature(n) and change albedo parameter in case of ice and/or snow
+         ! Set surface_temperature either to water_temperature_in_cell or to ice_temperature(n) or to snow_temperature(n)
+         ! and use a local surface_albedo so we do not overwrite the module variable `albedo`.
+         surface_albedo = albedo
          if (ja_icecover == ICECOVER_SEMTNER) then
             if (snow_thickness(n) > MIN_THICK) then
                ! ice and snow
-               albedo = snow_albedo
+               surface_albedo = snow_albedo
                surface_temperature = kelvin_to_celsius(snow_temperature(n))
             elseif (ice_thickness(n) > MIN_THICK) then
                ! ice but no snow
-               albedo = ice_albedo
+               surface_albedo = ice_albedo
                surface_temperature = kelvin_to_celsius(ice_temperature(n))
             else
                ! no ice and no snow, but ice_modelling switched on
@@ -175,13 +179,13 @@ contains
          if (net_solar_radiation_available) then
             net_solar_radiation_in_cell = solar_radiation(n)
          else if (solar_radiation_available) then
-            net_solar_radiation_in_cell = solar_radiation(n) * (1.0_dp - albedo)
+            net_solar_radiation_in_cell = solar_radiation(n) * (1.0_dp - surface_albedo)
          else ! Calculate solar radiation from cloud coverage specified in file
             if (jsferic == 1) then
                nominal_solar_radiation_in_cell = calculate_nominal_solar_radiation(xz(n), yz(n), time_in_hours)
             end if
             if (nominal_solar_radiation_in_cell > 0.0_dp) then
-               net_solar_radiation_in_cell = nominal_solar_radiation_in_cell * (1.0_dp - 0.40_dp * cloudiness_in_cell - 0.38_dp * cloudiness_in_cell * cloudiness_in_cell) * (1.0_dp - albedo)
+               net_solar_radiation_in_cell = nominal_solar_radiation_in_cell * (1.0_dp - 0.40_dp * cloudiness_in_cell - 0.38_dp * cloudiness_in_cell * cloudiness_in_cell) * (1.0_dp - surface_albedo)
             else
                net_solar_radiation_in_cell = 0.0_dp
             end if

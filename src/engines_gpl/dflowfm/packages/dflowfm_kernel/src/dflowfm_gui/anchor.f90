@@ -70,7 +70,9 @@ contains
       end if
 
       call inflowcell(XA, YA, k, 1, INDTP_ALL) ! Use anchor for new nplot point (vertical profile)
-      if (k > 0) nplot = k
+      if (k > 0) then
+         nplot = k
+      end if
 
       call SETXOR(1)
       call SETCOL(KLANK)

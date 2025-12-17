@@ -49,8 +49,12 @@ contains
 !  default value
       nmk_opt = 6
 
-      if (nb(k) == 2) nmk_opt = 4
-      if (nb(k) == 3) nmk_opt = 3
+      if (nb(k) == 2) then
+         nmk_opt = 4
+      end if
+      if (nb(k) == 3) then
+         nmk_opt = 3
+      end if
 
       return
    end function nmk_opt

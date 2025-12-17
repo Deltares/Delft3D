@@ -252,7 +252,9 @@ contains
          call qnerror('Error occurs when reading the restart file.', ' ', ' ')
          return
       end if
-      if (jawelrestart) jarestart = ON ! in the module
+      if (jawelrestart) then
+         jarestart = ON ! in the module
+      end if
 
       call flow_setstarttime() ! the flow time0 and time1 are managed by flow
       ! this is the only function that a user can use to influence the flow times
@@ -314,7 +316,9 @@ contains
 
       nonlin = max(nonlin1D, nonlin2D)
       if (nonlin >= 2) then
-         if (allocated(s1m)) deallocate (s1m, a1m)
+         if (allocated(s1m)) then
+            deallocate (s1m, a1m)
+         end if
          allocate (s1m(ndx), a1m(ndx), STAT=ierror)
          call aerr('s1m(ndx), a1m(ndx)', ierror, ndx)
          s1m(:) = s1(:)
@@ -505,12 +509,12 @@ contains
 
 !> initialize_temperature_with_uniform_value
    subroutine initialize_temperature_with_uniform_value()
-      use m_flowparameters, only: jatem, temini
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_NONE, temini
       use m_flow, only: tem1
 
       implicit none
 
-      if (jatem > OFF) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          tem1(:) = temini
       end if
 
@@ -1510,7 +1514,7 @@ contains
 !> Initialize salinity and temperature on boundaries
    subroutine initialize_salinity_temperature_on_boundary()
       use m_flowtimes, only: keepstbndonoutflow
-      use m_flowparameters, only: jasal, jatem
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE
       use m_flowgeom, only: ln
       use m_flow, only: sa1, q1, tem1, kbnds, kbndtm, kmxd, nbnds, nbndtm, zbnds, zbndtm
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -1545,7 +1549,7 @@ contains
          end do
       end if ! jasal
 
-      if (jatem /= OFF) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          do i_boundary = 1, nbndtm
             link = kbndtm(3, i_boundary)
             call getLbotLtop(link, bottom_link, top_link)
@@ -1563,7 +1567,7 @@ contains
                end if
             end do
          end do
-      end if ! jatem
+      end if
 
    end subroutine initialize_salinity_temperature_on_boundary
 
@@ -1913,24 +1917,24 @@ contains
                else
                   if (xz(k) > 0.5_dp * (xzmin + xzmax) .and. (kk - kb + 1) <= locsaltlev * kmx) then
                      sa1(kk) = locsaltmax
-                     if (jatem > 0) then
+                     if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                         tem1(kk) = 5.0_dp
                      end if
                   else
                      sa1(kk) = locsaltmin
-                     if (jatem > 0) then
+                     if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                         tem1(kk) = 10.0_dp
                      end if
                   end if
                end if
                sa1(k) = sa1(k) + vol1(kk) * sa1(kk)
 
-               if (jatem > 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   tem1(k) = tem1(k) + vol1(kk) * tem1(kk)
                end if
             end do
             sa1(k) = sa1(k) / vol1(k)
-            if (jatem > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                tem1(k) = tem1(k) / vol1(k)
             end if
          end do
@@ -2019,8 +2023,12 @@ contains
          call dminmax(xk, numk, xkmin, xkmax, numk)
 
          n = 2
-         if (index(md_ident, '4') > 0) n = 4
-         if (index(md_ident, '8') > 0) n = 8
+         if (index(md_ident, '4') > 0) then
+            n = 4
+         end if
+         if (index(md_ident, '8') > 0) then
+            n = 8
+         end if
 
          xli = 1.0_dp / (xkmax - xkmin)
          amp = .01_dp
@@ -2044,7 +2052,9 @@ contains
             yy = yz(k) * xli
             s1(k) = dep + amp * amp * (cos(2 * pin * xx) + cos(2 * pin * yy)) / (8 * ag * pin * pin)
             if (jasal > 0) then
-               if (yy > 0.20 .and. yy < 0.30) sa1(k) = 30.
+               if (yy > 0.20 .and. yy < 0.30) then
+                  sa1(k) = 30.
+               end if
             end if
          end do
 
@@ -2141,7 +2151,9 @@ contains
       else if (md_netfile == 'rec10x10.net') then
 
          do n = 1, ndx
-            if (xz(n) < 1) s1(n) = s1(n) + 1.0_dp
+            if (xz(n) < 1) then
+               s1(n) = s1(n) + 1.0_dp
+            end if
          end do
 
       else if (md_netfile == 'g04.net') then

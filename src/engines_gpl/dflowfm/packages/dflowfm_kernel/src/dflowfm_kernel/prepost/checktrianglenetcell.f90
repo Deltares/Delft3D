@@ -58,9 +58,13 @@ contains
       phimax = 0.0_dp
       do NN = 1, 3
          N0 = NN - 1
-         if (N0 < 1) N0 = N0 + 3
+         if (N0 < 1) then
+            N0 = N0 + 3
+         end if
          N2 = NN + 1
-         if (N2 > 3) N2 = N2 - 3
+         if (N2 > 3) then
+            N2 = N2 - 3
+         end if
          K0 = netcell(n)%nod(n0)
          K1 = netcell(n)%nod(nn)
          K2 = netcell(n)%nod(n2)

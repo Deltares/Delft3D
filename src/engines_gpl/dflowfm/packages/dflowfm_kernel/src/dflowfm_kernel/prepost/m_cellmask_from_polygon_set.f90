@@ -190,13 +190,27 @@ contains
    !> Clean up module-level cellmask polygon data structures.
    subroutine cellmask_from_polygon_set_cleanup()
 
-      if (allocated(x_poly_min)) deallocate (x_poly_min)
-      if (allocated(x_poly_max)) deallocate (x_poly_max)
-      if (allocated(y_poly_min)) deallocate (y_poly_min)
-      if (allocated(y_poly_max)) deallocate (y_poly_max)
-      if (allocated(polygon_type)) deallocate (polygon_type)
-      if (allocated(i_poly_start)) deallocate (i_poly_start)
-      if (allocated(i_poly_end)) deallocate (i_poly_end)
+      if (allocated(x_poly_min)) then
+         deallocate (x_poly_min)
+      end if
+      if (allocated(x_poly_max)) then
+         deallocate (x_poly_max)
+      end if
+      if (allocated(y_poly_min)) then
+         deallocate (y_poly_min)
+      end if
+      if (allocated(y_poly_max)) then
+         deallocate (y_poly_max)
+      end if
+      if (allocated(polygon_type)) then
+         deallocate (polygon_type)
+      end if
+      if (allocated(i_poly_start)) then
+         deallocate (i_poly_start)
+      end if
+      if (allocated(i_poly_end)) then
+         deallocate (i_poly_end)
+      end if
 
       polygons = 0
       cellmask_initialized = .false.

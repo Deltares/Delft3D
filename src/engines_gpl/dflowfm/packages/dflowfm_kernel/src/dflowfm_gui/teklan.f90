@@ -59,7 +59,9 @@ contains
       integer :: ncold
       real(kind=dp) :: rh
 
-      if (NDRAW(3) == 0) return
+      if (NDRAW(3) == 0) then
+         return
+      end if
 
       if (NDRAW(3) == 4 .or. NDRAW(3) == 8) then
          call linewidth(3)

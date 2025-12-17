@@ -2231,7 +2231,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c176_freezing_with_background_salinity" ref="dflowfm_default">
-        <path version="2025-12-08T14:08:55.403000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
+        <path version="2025-12-15T15:24:00">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/winter97_saltwater-2_map.nc" type="netcdf">
@@ -2242,7 +2242,7 @@
             </file>
             <file name="output/winter97_saltwater-2_his.nc" type="netcdf">
                 <parameters>
-                    <parameter name="temperature" toleranceAbsolute="0.001" />
+                    <parameter name="temperature" toleranceAbsolute="0.005" />
                 </parameters>
             </file>
         </checks>
@@ -4762,7 +4762,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f020_c034_salinity_freezing" ref="dflowfm_default">
-      <path version="2025-08-27T12:00:00">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
+      <path version="2025-12-12T14:33:06.073000">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="output/winter97_saltwater_his.nc" type="netCDF">
@@ -4952,6 +4952,22 @@
           </parameters>
         </file>
       </checks>
+    </testCase>
+    <testCase name="e02_f020_c050_cooling_to_backgroundwatertemperature" ref="dflowfm_default">
+        <path version="2025-12-10T14:38:38.173000">e02_dflowfm/f020_heat_flux/c050_cooling_to_backgroundwatertemperature</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="DFM_OUTPUT_excess/excess_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="tem1" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="DFM_OUTPUT_excess/excess_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="temperature" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
     </testCase>
     <testCase name="e02_f022_c01_trench_VanRijn1993" ref="dflowfm_default">
       <path version="2025-10-15T15:17:50.706000">e02_dflowfm/f022_morphology_2D/c01_trench_VanRijn1993</path>

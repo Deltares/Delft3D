@@ -71,10 +71,14 @@ contains
 !  check for self-crossing
       edge_incr = 1.0e99_dp
       do i = 1, mc - 1
-         if (xc(i) == DMISS .or. xc(i + 1) == DMISS) cycle
+         if (xc(i) == DMISS .or. xc(i + 1) == DMISS) then
+            cycle
+         end if
 
          edge_width(i) = dbdistance(xc(i), yc(i), xc(i + 1), yc(i + 1), jsferic, jasfer3D, dmiss)
-         if (edge_width(i) < dtol) cycle
+         if (edge_width(i) < dtol) then
+            cycle
+         end if
          edge_incr(i) = dprodin(xc(i), yc(i), xc(i + 1), yc(i + 1), xc(i) + dt * vel(1, i), yc(i) + dt * vel(2, i), xc(i + 1) + dt * vel(1, i + 1), yc(i + 1) + dt * vel(2, i + 1)) / edge_width(i) - edge_width(i)
          edge_incr(i) = edge_incr(i) / dt
       end do

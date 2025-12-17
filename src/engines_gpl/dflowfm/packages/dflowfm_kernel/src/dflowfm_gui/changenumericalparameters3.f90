@@ -264,11 +264,17 @@ contains
             call IFORMGETdouble(2 * 4, Cbveg)
             call IFORMGETdouble(2 * 5, stemheightstd)
             call IFORMGETdouble(2 * 6, hwavuni)
-            if (hwavuni > 0.0_dp) hwav = hwavuni
+            if (hwavuni > 0.0_dp) then
+               hwav = hwavuni
+            end if
             call IFORMGETdouble(2 * 7, twavuni)
-            if (twavuni > 0.0_dp) twav = twavuni
+            if (twavuni > 0.0_dp) then
+               twav = twavuni
+            end if
             call IFORMGETdouble(2 * 8, phiwavuni)
-            if (phiwavuni > 0.0_dp) phiwav = phiwavuni
+            if (phiwavuni > 0.0_dp) then
+               phiwav = phiwavuni
+            end if
             call IFORMGETinteger(2 * 9, modind)
             call IFORMGETdouble(2 * 10, Slotw1D)
             call IFORMGETdouble(2 * 11, Slotw2D)

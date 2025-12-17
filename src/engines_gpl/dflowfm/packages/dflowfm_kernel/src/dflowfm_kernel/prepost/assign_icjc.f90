@@ -87,7 +87,9 @@ contains
       end if
       call realloc(ijc, [3, 3], [0, 0], fill=IMISS)
 
-      if (nump < 1) return
+      if (nump < 1) then
+         return
+      end if
 
 !---------------------------------------------------------
 ! find first cell k from input (xh, yh)
@@ -101,13 +103,17 @@ contains
             call pinpok(xp, yp, 4, xh, yh, in, jins, dmiss)
             if (in == 1) then
                in = k
-               if (netcell(k)%n /= 4) in = 0
+               if (netcell(k)%n /= 4) then
+                  in = 0
+               end if
                exit
             end if
          end if
       end do
 
-      if (in == 0) return
+      if (in == 0) then
+         return
+      end if
 !---------------------------------------------------------
 ! initialize cellmask
 !---------------------------------------------------------
@@ -125,7 +131,9 @@ contains
                exit
             end if
          end do
-         if (.not. linpoly) cellmask(k) = 0
+         if (.not. linpoly) then
+            cellmask(k) = 0
+         end if
       end do
 
 !---------------------------------------------------------

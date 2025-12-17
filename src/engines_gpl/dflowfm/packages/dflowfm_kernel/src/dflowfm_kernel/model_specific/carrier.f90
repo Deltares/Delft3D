@@ -109,7 +109,9 @@ contains
          do iter = 1, 100
             uold = u
             u = A1(ic) * cos(A2 * u - A3(it))
-            if (abs(uold - u) < tol) exit
+            if (abs(uold - u) < tol) then
+               exit
+            end if
          end do
          x = .5 * u * u / sg + C * C / sg - A / s * J0(ic) * sin(A2 * u - A3(it))
 

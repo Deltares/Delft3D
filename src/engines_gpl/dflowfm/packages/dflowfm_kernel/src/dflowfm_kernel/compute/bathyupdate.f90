@@ -51,8 +51,12 @@ contains
       integer :: L, k, kk, kkk, k1, k2, n, nn, ierr, ja, k3, k4
       real(kind=dp) :: znn, bobm, zki
 
-      if (jamorf == 0) return
-      if (stm_included) return ! Done in fm_bott3d
+      if (jamorf == 0) then
+         return
+      end if
+      if (stm_included) then
+         return ! Done in fm_bott3d
+      end if
 
       if (.not. (ibedlevtyp == 1 .or. ibedlevtyp == 6) .and. jaceneqtr == 1 .and. .not. allocated(zn2rn)) then ! netnode depth + netcell fluxes                                                        !
 

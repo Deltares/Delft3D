@@ -68,7 +68,9 @@ contains
 
       call get_startend(N, XX, YY, jstart, jend, dmiss)
 
-      if (jend <= jstart) return
+      if (jend <= jstart) then
+         return
+      end if
 
       call comp_masscenter(jend - jstart + 1, xx(jstart), yy(jstart), xcg, ycg, darea, jacounterclockwise, jsferic, jasfer3D, dmiss)
 
@@ -86,7 +88,9 @@ contains
       do I = jstart, jend
          IU = I + 1
 
-         if (iu > jend) iu = jstart
+         if (iu > jend) then
+            iu = jstart
+         end if
 
          !     IF (IU .GT. NEND) IU = 1
          !     IF (JSFERIC .EQ. 0) THEN

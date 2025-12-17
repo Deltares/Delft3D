@@ -95,7 +95,9 @@ contains
       ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES
       ! ndraw(29)= show what on links   ndraw(11)=how to show on links , NDRAW(7) = SHOW WHAT ON NETLINKS
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
 ! nplot = min(ndxi, nplot)
 
@@ -109,7 +111,9 @@ contains
       call tekbathy(ja)
 
       if (nodemode > 1 .and. nodewhat > 1) then
-         if (NDRAW(8) == 1) call minmxnds() ! ONLY ADAPT VERTICAL LIMITS FOR FLOW NODES IF NO NET NODES ASKED
+         if (NDRAW(8) == 1) then
+            call minmxnds() ! ONLY ADAPT VERTICAL LIMITS FOR FLOW NODES IF NO NET NODES ASKED
+         end if
 
          call tekflownodes(ja)
          if (ja > 0) then
@@ -266,14 +270,18 @@ contains
          do kk = 1, ndx, nvec
             if (mod(kk, 200) == 0) then
                call halt2(ja)
-               if (ja == 1) return
+               if (ja == 1) then
+                  return
+               end if
             end if
 
             if (inview(xz(kk), yz(kk))) then
                k = kk
                if (kmx > 0) then
                   call getktoplot(kk, k)
-                  if (k < 0) cycle
+                  if (k < 0) then
+                     cycle
+                  end if
                end if
 
                if (ndraw(13) == 2) then
@@ -327,7 +335,9 @@ contains
 
       ! call tekcflmx()
 
-      if (jased > 0 .and. jased <= 3) call tekbanfs()
+      if (jased > 0 .and. jased <= 3) then
+         call tekbanfs()
+      end if
 
       call tekship()
 

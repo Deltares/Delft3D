@@ -49,12 +49,16 @@ contains
       integer :: i, istart, in
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET CIRKELS
 
-      if (N <= 0) return
+      if (N <= 0) then
+         return
+      end if
       call SETCOL(NCOL)
 
       call JGRLINE8(x, y, N)
 
-      if (rcir == 0) return
+      if (rcir == 0) then
+         return
+      end if
 
       if (NCOL /= 0) then
 
@@ -64,7 +68,9 @@ contains
                call MOVABS(X(I), Y(I))
                call CIR(RCIR)
                in = in + 1
-               if (in > 5000) exit
+               if (in > 5000) then
+                  exit
+               end if
             end if
          end do
 

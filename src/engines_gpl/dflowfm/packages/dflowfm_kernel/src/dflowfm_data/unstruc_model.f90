@@ -222,7 +222,7 @@ module unstruc_model
    integer :: md_jagridgen = 0 !< Commandline-based simple grid generation.
    integer :: md_jarefine = 0 !< sample based mesh refinement or not
    integer :: md_jamake1d2dlinks = 0 !< Make 1D2D links from commandline (1) or not (0)
-   integer :: md_numthreads = 0 !< sample based mesh refinement or not
+   integer :: md_numthreads = 0 !< number of openmp threads to set (0: default)
    integer :: md_jatest = 0 !< only perform a (speed)test (1), or not (0)
    integer :: md_M = 1024 !< size of x in Axpy
    integer :: md_N = 2048 !< size of y in Axpy
@@ -510,8 +510,12 @@ contains
       ! fill bed levels from values based on links
       do L = 1, network%numl
          tempbob = getbobs(network, L)
-         if (tempbob(1) > 0.5_dp * huge(1.0_dp)) tempbob(1) = dmiss
-         if (tempbob(2) > 0.5_dp * huge(1.0_dp)) tempbob(2) = dmiss
+         if (tempbob(1) > 0.5_dp * huge(1.0_dp)) then
+            tempbob(1) = dmiss
+         end if
+         if (tempbob(2) > 0.5_dp * huge(1.0_dp)) then
+            tempbob(2) = dmiss
+         end if
 
          k1 = kn(1, L)
          k2 = kn(2, L)
@@ -530,10 +534,14 @@ contains
          call strsplit(md_ldbfile, 1, fnames, 1)
          call oldfil(minp, fnames(1))
          ntot_lb = 0
-         if (minp /= 0) call realan(minp, ntot_lb)
+         if (minp /= 0) then
+            call realan(minp, ntot_lb)
+         end if
          do ifil = 2, size(fnames)
             call oldfil(minp, fnames(ifil))
-            if (minp /= 0) call realan(minp, ntot_lb)
+            if (minp /= 0) then
+               call realan(minp, ntot_lb)
+            end if
          end do
          deallocate (fnames)
       end if
@@ -1391,7 +1399,7 @@ contains
       call prop_get(md_ptr, 'physics', 'thermobaricityInPressureGradient', thermobaricity_in_pressure_gradient)
       call validate_density_and_thermobaricity_settings(idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient)
 
-      call prop_get(md_ptr, 'physics', 'Temperature', jatem)
+      call prop_get(md_ptr, 'physics', 'Temperature', temperature_model)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
       call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
       call prop_get(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
@@ -1565,7 +1573,9 @@ contains
 
             ti_st_array = 0.0_dp
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
-            if (ti_st_array(1) > 0.0_dp) ti_st_array(1) = max(ti_st_array(1), dt_user)
+            if (ti_st_array(1) > 0.0_dp) then
+               ti_st_array(1) = max(ti_st_array(1), dt_user)
+            end if
             call getOutputTimeArrays(ti_st_array, ti_sts, ti_st, ti_ste, success)
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
 
@@ -1872,7 +1882,9 @@ contains
       call prop_get(md_ptr, 'trachytopes', 'TrtDef', md_trtdfile, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtL', md_trtlfile, success)
       call prop_get(md_ptr, 'trachytopes', 'DtTrt', dt_trach, success)
-      if (.not. success) dt_trach = dt_user
+      if (.not. success) then
+         dt_trach = dt_user
+      end if
       call prop_get(md_ptr, 'trachytopes', 'TrtMxR', md_mxrtrach, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtCll', md_trtcllfile, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtMnH', md_mnhtrach, success)
@@ -2018,7 +2030,7 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', jahisdred, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', jahiswaq, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
-      if (success .and. jahistem == 1 .and. jatem < 1) then
+      if (success .and. jahistem == 1 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
          write (msgbuf, '(a)') 'MDU setting "Wrihis_temperature = 1" asks to write temperature to the output his file, ' &
             //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrihis_temperature = 0" ' &
             //' and do not write temperature to his file.'
@@ -2098,7 +2110,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', jamap_chezy_input, success)
 
       call prop_get(md_ptr, 'output', 'Wrimap_temperature', jamaptem, success)
-      if (success .and. jamaptem == 1 .and. jatem < 1) then
+      if (success .and. jamaptem == 1 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
          write (msgbuf, '(a)') 'MDU setting "Wrimap_temperature = 1" asks to write temperature to the output map file, ' &
             //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrimap_temperature = 0"' &
             //'and do not write temperature to map file.'
@@ -2159,15 +2171,19 @@ contains
       !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
       !endif
 
-      if (jatem <= 1) then
+      if (temperature_model == TEMPERATURE_MODEL_NONE .or. temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
          jamapheatflux = 0
          jahisheatflux = 0
       end if
-      if (jatem < 1) then ! If no temperature is involved, then do not write temperature to output map/his files.
+
+      ! If no temperature is involved, then do not write temperature to output map/his files
+      if (temperature_model == TEMPERATURE_MODEL_NONE) then 
          jamaptem = 0
          jahistem = 0
       end if
-      if (jasal < 1) then ! If no salinity is involved, then do not write salinity to output map/his files.
+
+      ! If no salinity is involved, then do not write salinity to output map/his files
+      if (jasal < 1) then 
          jamapsal = 0
          jahissal = 0
       end if
@@ -2589,7 +2605,9 @@ contains
       end if
 
       allocate (map_classes_ucdir(n - 1), stat=ierr)
-      if (ierr /= 0) call aerr('map_classes_ucdir', ierr, n + 1)
+      if (ierr /= 0) then
+         call aerr('map_classes_ucdir', ierr, n + 1)
+      end if
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
@@ -3171,7 +3189,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal, 'Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)')
       end if
 
-      if (writeall .or. (kmx > 0 .and. jatem > 0)) then
+      if (writeall .or. (kmx > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE)) then
          call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem, 'Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)')
       end if
 
@@ -3411,11 +3429,11 @@ contains
          end if
       end if
 
-      if (writeall .or. (jasal == 0 .and. (jatem > 0 .or. jased > 0))) then
+      if (writeall .or. (jasal == 0 .and. (temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0))) then
          call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
       end if
 
-      if (writeall .or. (jatem == 0 .and. (jasal > 0 .or. jased > 0))) then
+      if (writeall .or. (temperature_model == TEMPERATURE_MODEL_NONE .and. (jasal > 0 .or. jased > 0))) then
          call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
       end if
 
@@ -3423,8 +3441,8 @@ contains
          call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
       end if
 
-      call prop_set(prop_ptr, 'physics', 'Temperature', jatem, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
-      if (writeall .or. (jatem > 0)) then
+      call prop_set(prop_ptr, 'physics', 'Temperature', temperature_model, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
+      if (writeall .or. (temperature_model /= TEMPERATURE_MODEL_NONE)) then
          call prop_set(prop_ptr, 'physics', 'InitialTemperature', temini, 'Uniform initial water temperature (degC)')
          call prop_set(prop_ptr, 'physics', 'Secchidepth', Secchidepth, 'Water clarity parameter (m)')
          if (Secchidepth2 > 0) then
@@ -4082,7 +4100,9 @@ contains
          call setmdia(mdia)
          call initMessaging(mdia)
 
-         if (line_copied) write (MDIA, *) 'Until here copy of previous diagnostic file'
+         if (line_copied) then
+            write (MDIA, *) 'Until here copy of previous diagnostic file'
+         end if
       end if
 
    end subroutine switch_dia_file

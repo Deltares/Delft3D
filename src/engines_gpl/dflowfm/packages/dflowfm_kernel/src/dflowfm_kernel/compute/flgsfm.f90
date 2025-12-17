@@ -281,9 +281,15 @@ contains
                ff3(:, 0) = 0.0_dp
                do LL = Lb, Lt
                   kk = ln(iup, LL)
-                  if (ausav(1, n) > 0) ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
-                  if (ausav(2, n) > 0) ff3(2, LL - Lb + 1) = max(0.0_dp, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
-                  if (ausav(3, n) > 0) ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
+                  if (ausav(1, n) > 0) then
+                     ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
+                  end if
+                  if (ausav(2, n) > 0) then
+                     ff3(2, LL - Lb + 1) = max(0.0_dp, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
+                  end if
+                  if (ausav(3, n) > 0) then
+                     ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
+                  end if
                end do
 
                au0 = 0.0_dp

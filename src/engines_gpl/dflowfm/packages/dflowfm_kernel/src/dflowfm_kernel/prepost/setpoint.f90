@@ -57,7 +57,9 @@ contains
       else if (JVIEW == 3) then
          YK(K1) = XYZ
       end if
-      if (KC(K1) == 0) KC(K1) = 1
+      if (KC(K1) == 0) then
+         KC(K1) = 1
+      end if
       return
    end subroutine SETPOINT
 

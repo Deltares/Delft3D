@@ -199,7 +199,9 @@ contains
                   wfac = wfac * (1.0_dp - 0.5_dp * (ice_area_fraction(ln(1, LL)) + ice_area_fraction(ln(2, LL))))
                end if
                call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do L = Lb, Lt
                   adve(L) = adve(L) - wfac * wavfu(L) ! Dimensions [m/s^2]
                end do

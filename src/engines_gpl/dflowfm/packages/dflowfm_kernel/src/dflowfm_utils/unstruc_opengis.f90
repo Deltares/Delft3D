@@ -154,7 +154,9 @@ contains
                lc(i) = 1
                ! We started a new path, now trace connected links as long as possible.
                do
-                  if (mod(i + iloc - 2, LMOD) == 1) call READYY('SAVE KML', half * real(i + iloc - 2, kind=dp) / real(NUML, kind=dp))
+                  if (mod(i + iloc - 2, LMOD) == 1) then
+                     call READYY('SAVE KML', half * real(i + iloc - 2, kind=dp) / real(NUML, kind=dp))
+                  end if
                   lcur = 0
                   ! Find an outgoing link of current net node that wasn't yet written and has correct link type.
                   do L = 1, nmk(kcur)
@@ -213,7 +215,9 @@ contains
          write (kmlunit, '(a)') '    <name>FM depth grid</name>'
          LMOD = max(1, NUML / 100)
          do n = 1, nump
-            if (mod(n, LMOD) == 1) call READYY('SAVE KML', half + (1.0_dp - half) * real(n, kind=dp) / real(nump, kind=dp))
+            if (mod(n, LMOD) == 1) then
+               call READYY('SAVE KML', half + (1.0_dp - half) * real(n, kind=dp) / real(nump, kind=dp))
+            end if
 
             zp = 0.0_dp
             do i = 1, netcell(n)%n
@@ -640,7 +644,9 @@ contains
       maxkeylength = inputdata(2)
 
       level = tree_traverse_level()
-      if (level == 0) return
+      if (level == 0) then
+         return
+      end if
 
       call tree_get_data_ptr(tree, data_ptr, type_string)
       if (associated(data_ptr)) then

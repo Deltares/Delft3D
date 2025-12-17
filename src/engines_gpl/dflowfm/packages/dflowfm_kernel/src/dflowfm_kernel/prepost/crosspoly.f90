@@ -62,7 +62,9 @@ contains
          YP2 = YPL(KU)
          currentSegmentLength = dbdistance(xp1, yp1, xp2, yp2, jsferic, jasfer3D, dmiss)
 
-         if (xp1 == DMISS .or. yp1 == DMISS .or. xp2 == DMISS .or. yp2 == DMISS) cycle ! SPvdP: added
+         if (xp1 == DMISS .or. yp1 == DMISS .or. xp2 == DMISS .or. yp2 == DMISS) then
+            cycle ! SPvdP: added
+         end if
 
          call CROSSinbox(XP1, YP1, XP2, YP2, Xa, Ya, Xb, Yb, jacros, sl, sm, XCR, YCR, CRP, jsferic, dmiss)
 

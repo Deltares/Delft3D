@@ -2466,8 +2466,12 @@ contains
       ! Store time series in internal memory
       !
       ! First deallocate arrays if necessary
-      if (allocated(waveBoundaryTimeSeries(ibnd)%eebct)) deallocate (waveBoundaryTimeSeries(ibnd)%eebct)
-      if (allocated(waveBoundaryTimeSeries(ibnd)%tbc)) deallocate (waveBoundaryTimeSeries(ibnd)%tbc)
+      if (allocated(waveBoundaryTimeSeries(ibnd)%eebct)) then
+         deallocate (waveBoundaryTimeSeries(ibnd)%eebct)
+      end if
+      if (allocated(waveBoundaryTimeSeries(ibnd)%tbc)) then
+         deallocate (waveBoundaryTimeSeries(ibnd)%tbc)
+      end if
       !
       ! Allocate in the correct size
       allocate (waveBoundaryTimeSeries(ibnd)%eebct(npb, wp%tslenbc + 2, ntheta))
@@ -2481,7 +2485,9 @@ contains
       ! series generation and interpolation at each time step
       waveBoundaryTimeSeries(ibnd)%tbc(1) = -1.0_dp * huge(0.0_dp)
       waveBoundaryTimeSeries(ibnd)%tbc(wp%tslenbc + 2) = 1.0_dp * huge(0.0_dp)
-      if (.not. allocated(E_t)) allocate (E_t(wp%tslen))
+      if (.not. allocated(E_t)) then
+         allocate (E_t(wp%tslen))
+      end if
       if (wp%dtchanged) then
          ! Interpolate from internal time axis to output time axis
          do itheta = 1, ntheta
@@ -2744,7 +2750,9 @@ contains
 
          ! Exclude interactions with components that are cut-off by the fcutoff
          ! parameter
-         if (deltaf <= waveBoundaryParameters(ibnd)%fcutoff) D(m, :) = 0.0_dp
+         if (deltaf <= waveBoundaryParameters(ibnd)%fcutoff) then
+            D(m, :) = 0.0_dp
+         end if
 
          ! Determine phase of bound long wave assuming a local equilibrium with
          ! forcing of interacting primary waves according to Van Dongeren et al.
@@ -2879,8 +2887,12 @@ contains
          end if
          !
          !
-         if (allocated(waveBoundaryTimeSeries(ibnd)%qxbct)) deallocate (waveBoundaryTimeSeries(ibnd)%qxbct)
-         if (allocated(waveBoundaryTimeSeries(ibnd)%qybct)) deallocate (waveBoundaryTimeSeries(ibnd)%qybct)
+         if (allocated(waveBoundaryTimeSeries(ibnd)%qxbct)) then
+            deallocate (waveBoundaryTimeSeries(ibnd)%qxbct)
+         end if
+         if (allocated(waveBoundaryTimeSeries(ibnd)%qybct)) then
+            deallocate (waveBoundaryTimeSeries(ibnd)%qybct)
+         end if
          allocate (waveBoundaryTimeSeries(ibnd)%qxbct(npb, wp%tslenbc + 2))
          allocate (waveBoundaryTimeSeries(ibnd)%qybct(npb, wp%tslenbc + 2))
          if (wp%dtchanged) then
@@ -2937,8 +2949,12 @@ contains
 
       call writelog('ls', '', 'Writing short wave time series to ', wp%nhfilename)
 
-      if (allocated(waveBoundaryTimeSeries(ibnd)%zsbct)) deallocate (waveBoundaryTimeSeries(ibnd)%zsbct)
-      if (allocated(waveBoundaryTimeSeries(ibnd)%ubct)) deallocate (waveBoundaryTimeSeries(ibnd)%ubct)
+      if (allocated(waveBoundaryTimeSeries(ibnd)%zsbct)) then
+         deallocate (waveBoundaryTimeSeries(ibnd)%zsbct)
+      end if
+      if (allocated(waveBoundaryTimeSeries(ibnd)%ubct)) then
+         deallocate (waveBoundaryTimeSeries(ibnd)%ubct)
+      end if
       allocate (waveBoundaryTimeSeries(ibnd)%zsbct(npb, wp%tslen + 2))
       allocate (waveBoundaryTimeSeries(ibnd)%ubct(npb, wp%tslen + 2))
 

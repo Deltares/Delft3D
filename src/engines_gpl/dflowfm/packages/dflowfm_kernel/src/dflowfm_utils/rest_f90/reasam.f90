@@ -72,9 +72,15 @@ contains
       NSM = NSM + 1
       goto 11
 31    NSMAX = 1.2_dp * (NSM + JADOORLADEN * NS)
-      if (NSMAX > 100000) NDRAW(32) = 7
-      if (NSMAX > 500000) NDRAW(32) = 3
-      if (allocated(XS)) deallocate (XS, YS, ZS)
+      if (NSMAX > 100000) then
+         NDRAW(32) = 7
+      end if
+      if (NSMAX > 500000) then
+         NDRAW(32) = 3
+      end if
+      if (allocated(XS)) then
+         deallocate (XS, YS, ZS)
+      end if
       allocate (XS(NSMAX), YS(NSMAX), ZS(NSMAX), STAT=IERR)
       call AERR('XS(NSMAX),YS(NSMAX),ZS(NSMAX)', IERR, NSMAX)
       if (allocated(ipsam)) then
@@ -102,7 +108,9 @@ contains
 !    check of dit een PHAROS file is
       JFLOW = 1
 14    read (MSAM, '(A)', end=30) REC1
-      if (rec1(1:1) == '*') goto 14
+      if (rec1(1:1) == '*') then
+         goto 14
+      end if
 
       if (.not. (THISISANUMBER(REC1))) then
          read (MSAM, '(A)', end=30) REC
@@ -122,7 +130,9 @@ contains
       KMOD = max(1, NSM / 100)
 10    continue
       read (MSAM, '(A)', end=30) REC
-      if (REC(1:1) == '*') goto 10
+      if (REC(1:1) == '*') then
+         goto 10
+      end if
       if (.not. (THISISANUMBER(REC))) then
 !        we nemen aan dat er net een blokcode is gelezen
 !        en we lezen meteen de nrow ncol regel, maar checken die regel niet

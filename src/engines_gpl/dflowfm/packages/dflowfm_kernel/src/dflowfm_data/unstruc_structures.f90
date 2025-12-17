@@ -1477,28 +1477,44 @@ contains
       select case (structuretype)
       case (ST_WEIR)
          numstructs = network%sts%numweirs
-         if (numstructs > 0) structindex => network%sts%WEIRINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%WEIRINDICES
+         end if
       case (ST_UNI_WEIR)
          numstructs = network%sts%numuniweirs
-         if (numstructs > 0) structindex => network%sts%uniWEIRINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%uniWEIRINDICES
+         end if
       case (ST_CULVERT)
          numstructs = network%sts%numculverts
-         if (numstructs > 0) structindex => network%sts%culvertINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%culvertINDICES
+         end if
       case (ST_BRIDGE)
          numstructs = network%sts%numBRIDGEs
-         if (numstructs > 0) structindex => network%sts%BRIDGEINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%BRIDGEINDICES
+         end if
       case (ST_PUMP)
          numstructs = network%sts%numPUMPs
-         if (numstructs > 0) structindex => network%sts%PUMPINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%PUMPINDICES
+         end if
       case (ST_ORIFICE)
          numstructs = network%sts%numORIFICEs
-         if (numstructs > 0) structindex => network%sts%ORIFICEINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%ORIFICEINDICES
+         end if
       case (ST_GATE)
          numstructs = network%sts%numGATEs
-         if (numstructs > 0) structindex => network%sts%GATEINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%GATEINDICES
+         end if
       case (ST_GENERAL_ST)
          numstructs = network%sts%numgeneralstructures
-         if (numstructs > 0) structindex => network%sts%generalstructureINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%generalstructureINDICES
+         end if
       case default
          return
       end select

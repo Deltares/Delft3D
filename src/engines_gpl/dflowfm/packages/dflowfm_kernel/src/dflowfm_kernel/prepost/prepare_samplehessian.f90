@@ -65,7 +65,9 @@ contains
 
 !     compute sample Hessians
          call comp_sampleHessian(ierror)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
       end if
 
       iHesstat = iHesstat_OK

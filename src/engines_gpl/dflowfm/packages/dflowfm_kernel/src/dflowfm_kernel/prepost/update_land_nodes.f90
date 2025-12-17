@@ -53,7 +53,9 @@ contains
       integer :: k, ncol, j
       real(kind=dp) :: old_zk
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
       k = node_index
 

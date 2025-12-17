@@ -156,7 +156,9 @@ contains
          do kk = 1, 2
 !        get cell number
             k = ln(kk, Lf)
-            if (k == 0) cycle
+            if (k == 0) then
+               cycle
+            end if
 
 !        add to upper bound
             num(Lf) = num(Lf) + nd(k)%lnx
@@ -202,7 +204,9 @@ contains
 
             k = ln(kk, Lf)
 
-            if (k == 0) cycle
+            if (k == 0) then
+               cycle
+            end if
 
             dfac = dfacDiv / ba(k)
 
@@ -237,7 +241,9 @@ contains
             n = lncn(nn, Lf)
 
 !        boundary condition: curl u = 0
-            if (nb(n) /= 1) cycle
+            if (nb(n) /= 1) then
+               cycle
+            end if
 
             if (n == 0) then
                call mess(LEVEL_ERROR, 'ini_filter: zero node number')
@@ -253,7 +259,9 @@ contains
 !           get flowlink number
                Lf2 = lne2ln(L2)
 
-               if (Lf2 <= 0) cycle ! boundary
+               if (Lf2 <= 0) then
+                  cycle ! boundary
+               end if
 
                if (n == lncn(2, Lf2)) then
                   val = dfac * Dx(Lf2)
@@ -307,7 +315,9 @@ contains
 
 !  allocate solver arrays
       call allocSolver(solver_filter, ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       if (filterorder == 1) then
          solver_filter%ia = iLvec
@@ -318,7 +328,9 @@ contains
 
 !     compute biharmonic operator
          call amub(Lnx, Lnx, 1, ALvec, jLvec, iLvec, ALvec, jLvec, iLvec, ALvec2, solver_filter%ja, solver_filter%ia, N, iwork, ierror)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
       end if
 
 !  safety: check if diagonal entry exists
@@ -387,7 +399,9 @@ contains
 !   if ( allocated(iLvec) ) deallocate(iLvec)
 !   if ( allocated(jLvec) ) deallocate(jLvec)
 !   if ( allocated(ALvec) ) deallocate(ALvec)
-      if (allocated(iwork)) deallocate (iwork)
+      if (allocated(iwork)) then
+         deallocate (iwork)
+      end if
 
       return
    end subroutine ini_filter
@@ -400,22 +414,50 @@ contains
 
       call deallocSolver(solver_filter)
 
-      if (allocated(ALvec2)) deallocate (ALvec2)
-      if (allocated(iLvec)) deallocate (iLvec)
-      if (allocated(jLvec)) deallocate (jLvec)
-      if (allocated(ALvec)) deallocate (ALvec)
-      if (allocated(sol)) deallocate (sol)
-      if (allocated(ustar)) deallocate (ustar)
-      if (allocated(eps)) deallocate (eps)
-      if (allocated(Deltax)) deallocate (Deltax)
+      if (allocated(ALvec2)) then
+         deallocate (ALvec2)
+      end if
+      if (allocated(iLvec)) then
+         deallocate (iLvec)
+      end if
+      if (allocated(jLvec)) then
+         deallocate (jLvec)
+      end if
+      if (allocated(ALvec)) then
+         deallocate (ALvec)
+      end if
+      if (allocated(sol)) then
+         deallocate (sol)
+      end if
+      if (allocated(ustar)) then
+         deallocate (ustar)
+      end if
+      if (allocated(eps)) then
+         deallocate (eps)
+      end if
+      if (allocated(Deltax)) then
+         deallocate (Deltax)
+      end if
 
-      if (allocated(dtmaxeps)) deallocate (dtmaxeps)
-      if (allocated(checkmonitor)) deallocate (checkmonitor)
-      if (allocated(workin)) deallocate (workin)
-      if (allocated(workout)) deallocate (workout)
+      if (allocated(dtmaxeps)) then
+         deallocate (dtmaxeps)
+      end if
+      if (allocated(checkmonitor)) then
+         deallocate (checkmonitor)
+      end if
+      if (allocated(workin)) then
+         deallocate (workin)
+      end if
+      if (allocated(workout)) then
+         deallocate (workout)
+      end if
 
-      if (allocated(num)) deallocate (num)
-      if (allocated(dum)) deallocate (dum)
+      if (allocated(num)) then
+         deallocate (num)
+      end if
+      if (allocated(dum)) then
+         deallocate (dum)
+      end if
 
       return
    end subroutine dealloc_filter
@@ -501,7 +543,9 @@ contains
 
       real(kind=dp), parameter :: facmax = 0.9_dp ! safety factor for maximum allowed sub time step
 
-      if (itype == 0) return
+      if (itype == 0) then
+         return
+      end if
 
       call starttimer(IFILT)
 
@@ -578,7 +622,9 @@ contains
                L = Lb + klay - 1
 
 !           fill right-hand side
-               if (L >= Lb .and. L <= Lt) solver_filter%rhs(LL) = u0(L)
+               if (L >= Lb .and. L <= Lt) then
+                  solver_filter%rhs(LL) = u0(L)
+               end if
             end do
          else
             do LL = 1, Lnx
@@ -668,7 +714,9 @@ contains
 !        solve system for r (reuse preconditioner)
             call solveSystem(solver_filter, sol, japrecond, iters, ierror)
             japrecond = 0
-            if (ierror /= 0) goto 1234
+            if (ierror /= 0) then
+               goto 1234
+            end if
          else
 !        unsupported option
             goto 1234
@@ -685,7 +733,9 @@ contains
             L = Lb + klay - 1
 
 !        fill layer data
-            if (L >= Lb .and. L <= Lt) ustar(L) = sol(LL)
+            if (L >= Lb .and. L <= Lt) then
+               ustar(L) = sol(LL)
+            end if
          end do
 
          call stoptimer(IFILT_COPYBACK)
@@ -785,7 +835,9 @@ contains
             L1 = solver_filter%ja(j)
 
 !        exclude self
-            if (L1 == L) cycle
+            if (L1 == L) then
+               cycle
+            end if
 
 !        account for orientation
             dinpr = abs(csu(L) * csu(L1) + snu(L) * snu(L1))
@@ -945,7 +997,9 @@ contains
 !           compare with vector Laplacian
                do i = iLvec(LL), ILvec(LL + 1) - 1
                   j = jLvec(i)
-                  if (j == LL1) exit
+                  if (j == LL1) then
+                     exit
+                  end if
                end do
 
                if (j /= LL1) then ! safety

@@ -68,8 +68,9 @@ contains
             X2 = Xc(I, J - 1)
             X3 = Xc(I, J)
             X4 = Xc(I - 1, J)
-            if (X1 /= XYMIS .and. X2 /= XYMIS .and. &
-                X3 /= XYMIS .and. X4 /= XYMIS) IJYES(I, J) = 1
+            if (X1 /= XYMIS .and. X2 /= XYMIS .and. X3 /= XYMIS .and. X4 /= XYMIS) then
+               IJYES(I, J) = 1
+            end if
          end do
       end do
 
@@ -114,8 +115,12 @@ contains
 
       deallocate (ma, na, mb, nb, ijyes)
 
-      if (mbnd /= 0) call doclose(mbnd)
-      if (mbca /= 0) call doclose(mbca)
+      if (mbnd /= 0) then
+         call doclose(mbnd)
+      end if
+      if (mbca /= 0) then
+         call doclose(mbca)
+      end if
 
       return
    end subroutine reabnd2pol

@@ -73,7 +73,9 @@ contains
       real(kind=dp), allocatable :: zsp2(:)
       real(kind=dp) :: xxm, delx, Cf, Cf2, Rex, h1, h2, clear, vnu, Ar, aav, aa, fac, yyk, xxk, dxxx, zspk, exx, eyy
 
-      if (nshiptxy == 0) return
+      if (nshiptxy == 0) then
+         return
+      end if
 
       prptot = 0
 
@@ -177,8 +179,12 @@ contains
                   rela = exp(-dts / Trelax) ! time relax for force
                   if (.not. (abs(shv(n)) < 1.0e-8_dp .and. abs(shu(n)) < 1.0e-8_dp)) then
                      phi = atan2(shv(n), shu(n))
-                     if (phi - shi(n) >= pi) phi = phi - twopi
-                     if (phi - shi(n) <= -pi) phi = phi + twopi
+                     if (phi - shi(n) >= pi) then
+                        phi = phi - twopi
+                     end if
+                     if (phi - shi(n) <= -pi) then
+                        phi = phi + twopi
+                     end if
                      shi(n) = (1.0_dp - rela) * phi + rela * shi(n)
                   end if
                end if
@@ -260,8 +266,12 @@ contains
                end if
             end do
 
-            if (fx /= 0) armx = xm / fx
-            if (fy /= 0) army = ym / fy
+            if (fx /= 0) then
+               armx = xm / fx
+            end if
+            if (fy /= 0) then
+               army = ym / fy
+            end if
             fx2(n) = (1.0_dp - rela) * fx2(n) + rela * fx
             fy2(n) = (1.0_dp - rela) * fy2(n) + rela * fy
             fm2(n) = (1.0_dp - rela) * fm2(n) + rela * (ym + xm)

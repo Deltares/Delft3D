@@ -75,12 +75,10 @@ contains
          jaqin = 1
       end if
 
-      if (jatem > 0) then
-         if (jatem > 1) then
-            heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
-         else
-            heatsrc = 0.0_dp ! just prior to setsorsin that may add to heatsrc
-         end if
+      if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
+         heatsrc = 0.0_dp ! just prior to setsorsin that may add to heatsrc
+      else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
       end if
 
       if (jaqin > 0) then ! sources and sinks through meteo
@@ -248,12 +246,13 @@ contains
                if (kmx > 0) then
                   qin(kt) = qin(kt) + qin(k)
                end if
-               if (jatem >= 1) then
+
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   if (qin(kt) > 0) then
-                     if (jatem > 1) then
-                        heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k) ! rain has temp of air time varying specified
-                     else if (jatem == 1) then
+                     if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
                         heatsrc(kt) = heatsrc(kt) + qin(kt) * BACKGROUND_AIR_TEMPERATURE ! or constant
+                     else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                        heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k) ! rain has temp of air time varying specified
                      end if
                   else
                      heatsrc(kt) = heatsrc(kt) + qin(kt) * constituents(itemp, kt) ! extract top layer temp

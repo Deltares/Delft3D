@@ -60,9 +60,13 @@ contains
       integer :: MET
 !     TEKEN SAMPLES
 
-      if (MET == 0) return
+      if (MET == 0) then
+         return
+      end if
 
-      if (MET == 4 .or. MET == 5) call SETTEXTSIZE()
+      if (MET == 4 .or. MET == 5) then
+         call SETTEXTSIZE()
+      end if
       RC = 1.7_dp * RCIR
       HRC = RCIR / 2
       KMOD = max(1, NS / 100)
@@ -83,14 +87,18 @@ contains
 
          if (mod(I, KMOD) == 0) then
             call HALT2(KEY)
-            if (KEY == 1) return
+            if (KEY == 1) then
+               return
+            end if
          end if
 
          X = XS(I)
          Y = YS(I)
          Z = ZS(I)
 
-         if (Z == DMISS) cycle ! SPvdP: structured sample data may comprise missing values
+         if (Z == DMISS) then
+            cycle ! SPvdP: structured sample data may comprise missing values
+         end if
 
          call tek1sample(x, y, z, met, hrc, i)
 
@@ -115,7 +123,9 @@ contains
       real(kind=dp) :: hrc, rc, x, y, z
       integer :: met, m, n, key
 
-      if (MET == 4 .or. MET == 5) call SETTEXTSIZE()
+      if (MET == 4 .or. MET == 5) then
+         call SETTEXTSIZE()
+      end if
       RC = 1.7_dp * RCIR
       HRC = RCIR / 2
 
@@ -128,11 +138,15 @@ contains
       do n = 1, nca
 
          call HALT2(KEY)
-         if (KEY == 1) return
+         if (KEY == 1) then
+            return
+         end if
          do m = 1, mca
 
             z = d(m, n)
-            if (z == dmiss) cycle
+            if (z == dmiss) then
+               cycle
+            end if
             x = x0 + dxa * (m - 1)
             y = y0 + dya * (n - 1)
             call tek1sample(x, y, z, met, hrc, m)

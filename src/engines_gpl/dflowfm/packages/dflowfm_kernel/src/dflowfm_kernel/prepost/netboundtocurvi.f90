@@ -88,10 +88,14 @@ contains
 !  set default
 !   nfac = 1
 
-      if (netstat /= netstat_OK) call findcells(0)
+      if (netstat /= netstat_OK) then
+         call findcells(0)
+      end if
       call netboundtopoly_makemasks()
 
-      if (kc(kp) /= 1) goto 1234 ! invalid point
+      if (kc(kp) /= 1) then
+         goto 1234 ! invalid point
+      end if
 
       call savepol()
       call delpol()
@@ -109,7 +113,9 @@ contains
       mc = NPL
       nc = nfac + 1
 
-      if (mc < 2) goto 1234 ! no curvigrid
+      if (mc < 2) then
+         goto 1234 ! no curvigrid
+      end if
 
       call savegrd()
       call increasegrid(mc, nc)
@@ -122,21 +128,29 @@ contains
          k1 = int(zpl(i))
          k2 = int(zpl(i + 1))
 
-         if (k1 < 1 .or. k2 < 1) cycle ! no netnodes found
+         if (k1 < 1 .or. k2 < 1) then
+            cycle ! no netnodes found
+         end if
 
 !     determine the link
          L = 0
          do j = 1, nmk(k1)
             Lloc = nod(k1)%lin(j)
-            if (kn(3, Lloc) /= 2) cycle ! not a 2D link
+            if (kn(3, Lloc) /= 2) then
+               cycle ! not a 2D link
+            end if
             kother = kn(1, Lloc) + kn(2, Lloc) - k1
             if (kother == k2) then
                L = Lloc
                exit
             end if
          end do
-         if (L == 0) cycle ! no link found
-         if (lnn(L) /= 1) cycle ! not a boundary link
+         if (L == 0) then
+            cycle ! no link found
+         end if
+         if (lnn(L) /= 1) then
+            cycle ! not a boundary link
+         end if
 
 !     determine the adjacent net cell
          ic = lne(1, L)
@@ -161,7 +175,9 @@ contains
          end if
       end do
 !  swith orientation if necessary
-      if (iorient /= 0) call flippo(0)
+      if (iorient /= 0) then
+         call flippo(0)
+      end if
 
 !  copy polygon to first gridline
       jc = 1
@@ -198,21 +214,29 @@ contains
             k1 = int(zpl(i))
             k2 = int(zpl(i + 1))
 
-            if (k1 < 1 .or. k2 < 1) cycle ! no netnodes found
+            if (k1 < 1 .or. k2 < 1) then
+               cycle ! no netnodes found
+            end if
 
             !     determine the link
             L = 0
             do j = 1, nmk(k1)
                Lloc = nod(k1)%lin(j)
-               if (kn(3, Lloc) /= 2) cycle ! not a 2D link
+               if (kn(3, Lloc) /= 2) then
+                  cycle ! not a 2D link
+               end if
                kother = kn(1, Lloc) + kn(2, Lloc) - k1
                if (kother == k2) then
                   L = Lloc
                   exit
                end if
             end do
-            if (L == 0) cycle ! no link found
-            if (lnn(L) /= 1) cycle ! not a boundary link
+            if (L == 0) then
+               cycle ! no link found
+            end if
+            if (lnn(L) /= 1) then
+               cycle ! not a boundary link
+            end if
 
             !     determine the adjacent net cell
             ic = lne(1, L)
@@ -250,7 +274,9 @@ contains
             edgevel(i) = dgrow * edgevel(i)
          end do
 
-         if (dt < 1.0e-8_dp .or. istop == 1) exit
+         if (dt < 1.0e-8_dp .or. istop == 1) then
+            exit
+         end if
       end do
 
       ierror = 0
