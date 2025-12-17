@@ -28,8 +28,8 @@
 
 !> Reading/writing timeseries files in NetCDF format
 module m_ec_netcdf_timeseries
+   use array_module, only: find_candidate_in_array
    use m_ec_parameters
-   use m_ec_provider
    use m_ec_support
    use m_ec_message
    use m_ec_typedefs
@@ -268,18 +268,29 @@ contains
          ! Check for important var: was it vertical layering?
          positive = ''
          zunits = ''
-         ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
+         ! Dirty workaround line below for UNST-9376: disabled 3D support, will be properly fixed in a later issue
+         ! ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
          if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
             ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
             ncptr%layervarid = iVars
             ncptr%layerdimid = var_dimids(1, iVars) ! For convenience also store the dimension ID explicitly
             ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
+
             allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
-            if (ierr /= 0) cycle ! skip on error (UNST-9376 quick workaround, will be fixed properly later)
-            ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
-            if (ierr /= NF90_NOERR) return
+            if (ierr /= NF90_NOERR) then
+               return
+            end if
+
+            ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, [1], [ncptr%nLayer])
+            if (ierr /= NF90_NOERR) then
+               return
+            end if
+
             ierr = ncu_get_att(ncptr%ncid, iVars, 'units', zunits)
-            if (ierr /= NF90_NOERR) return
+            if (ierr /= NF90_NOERR) then
+               return
+            end if
+
             if (strcmpi(zunits, 'm')) then
                if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
                if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
@@ -287,6 +298,7 @@ contains
                if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
                if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
             end if
+
             if (ncptr%vptyp < 1) then
                call setECMessage("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
             end if
@@ -305,100 +317,140 @@ contains
    ! =======================================================================
    !> Scan netcdf instance for a specific quantity name and location label
    recursive function ecNetCDFScan(ncptr, quantity, location, q_id, l_id, dimids, vectormax) result(success)
+      ! Declare input and output variabels
       logical :: success
-      type(tEcNetCDF), pointer, intent(inout) :: ncptr
-      character(len=*), intent(in) :: quantity
-      character(len=*), intent(in) :: location
+      type(tEcNetCDF), pointer, intent(inout) :: ncptr !< NetCDF instance
+      character(len=*), intent(in) :: quantity !< Quantity to search for
+      character(len=*), intent(in) :: location !< Location label to search for
       integer, dimension(:), allocatable, intent(inout) :: q_id !< Awkward recursive construction, using q_id(1), forcing the calling routine to allocate it
-      integer, intent(out) :: l_id
-      integer, dimension(:), allocatable, intent(out) :: dimids
-      integer, intent(out), optional :: vectormax
+      integer, intent(out) :: l_id !< Location id found
+      integer, dimension(:), allocatable, intent(out) :: dimids !< Dimension ids of the found quantity
+      integer, intent(out), optional :: vectormax !< Maximum vector size if quantity is vectorial
 
+      ! Declare locals
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< list with standard names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< list with variable names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
       character(len=NF90_MAX_NAME) :: quantity_candidate !< quantity candidate name during search
-      
       integer :: n_dims
-      integer :: ivar, jvar, itim, ltl, iv
-      integer :: ierr, vmax
+      integer :: ivar
+      integer :: jvar
+      integer :: itim
+      integer :: ltl 
+      integer :: iv
+      integer :: ierr
+      integer :: vmax
       character(len=30), dimension(:), allocatable :: elmnames
       integer, dimension(:), allocatable :: dimids_check
 
+      ! Initialization
       success = .false.
-      ivar = ncptr%nVars + 1 ! initialize ivar to an invalid value
+      vmax = 1
+
 
       ! get candidate names for the quantity
       call ecSupportNetcdfGetQuantityCandidateNames(ncptr%ncfilename, quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
-
+      
       ! search for standard_name
       if (allocated(ncptr%standard_names) .and. allocated(ncstdnames)) then
-         ivar = ecNetCdfSearchStdOrVarName(ncptr%standard_names, ncstdnames)
+         ivar = find_candidate_in_array(ncptr%standard_names, ncstdnames)
       end if
-      vmax = 1
 
       ! if standard_name not found, search for long_name
       if (ivar > ncptr%nVars .and. allocated(ncptr%long_names) .and. allocated(ncstdnames_fallback)) then
-         ivar = ecNetCdfSearchStdOrVarName(ncptr%long_names, ncstdnames_fallback)
+         ivar = find_candidate_in_array(ncptr%long_names, ncstdnames_fallback)
       end if
 
       ! if also long_name not found, search for variable_name
       if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names) .and. allocated(ncvarnames)) then
-         ivar = ecNetCdfSearchStdOrVarName(ncptr%variable_names, ncvarnames)
+         ivar = find_candidate_in_array(ncptr%variable_names, ncvarnames)
       end if
 
-      if (ivar <= ncptr%nVars) then
+      ! If quantity is found in (std,long,var)_names, set q_id and check if quantity is a vector
+      if (ivar > 0) then
          q_id(1) = ivar
+
+         ! Check if quantity is a vector
          if (allocated(ncptr%vector_definitions(ivar)%s)) then
+            ! Get vector element names
             call strsplit(ncptr%vector_definitions(ivar)%s, 1, elmnames, 1, sep=",")
             vmax = size(elmnames)
-            if (allocated(q_id)) deallocate (q_id)
+
+            ! Reallocate q_id to the correct size
+            if (allocated(q_id)) then 
+               deallocate (q_id)
+            end if
             allocate (q_id(vmax), stat=ierr)
-            if (ierr /= 0) return
+            if (ierr /= 0) then 
+               return
+            end if
+
+            ! Scan for all vector element variable ids
             do iv = vmax, 1, -1
-               if (.not. ecNetCDFScan(ncptr, trim(elmnames(iv)), location, &
-                                      q_id, l_id, dimids)) return
+               if (.not. ecNetCDFScan(ncptr, trim(elmnames(iv)), location, q_id, l_id, dimids)) then
+                  return
+               end if
                q_id(iv) = q_id(1)
             end do
          end if
       else
+         ! If quantity not found, give error message and set q_id to -1
          call setECMessage("ec_netcdf_timeseries::ecNetCDFScan: Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")
          q_id(1) = -1
       end if
+
       do itim = 1, ncptr%nTims
          ltl = len_trim(location)
          if (strcmpi(ncptr%tsid(itim), location)) exit ! Found
       end do
+
       if (itim <= ncptr%nTims) then
          l_id = itim
       else
          l_id = -1
       end if
+
       if (l_id <= 0 .or. q_id(1) <= 0) then
          return ! l_id<0 means : location not found, q_id<0 means quantity not found
       end if
+
       ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), ndims=n_dims)
-      if (ierr /= NF90_NOERR) return
+      if (ierr /= NF90_NOERR) then
+         return
+      end if
+
       if (.not. allocated(dimids)) then
          allocate (dimids(n_dims), stat=ierr)
-         if (ierr /= 0) return
+         if (ierr /= 0) then
+            return
+         end if
+         
          ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids)
          if (ierr /= NF90_NOERR) return
       else
          allocate (dimids_check(n_dims), stat=ierr)
-         if (ierr /= 0) return
+         if (ierr /= 0) then
+            return
+         end if
+
          ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids_check)
-         if (ierr /= NF90_NOERR) return
+         if (ierr /= NF90_NOERR) then
+            return
+         end if
+
          if (.not. (all(dimids == dimids_check) .and. n_dims == size(dimids))) then
             ! sanity check: all elements should have the same dimensions vector
             return ! unsuccessfully
          end if
       end if
+
       !  TODO: Retrieve relevant variable attributes and store them in the bc-instance this netcdf is connected to
 
       if (present(vectormax)) then
          vectormax = vmax
       end if
+
+      ! Set success to true if we reached this point
       success = .true.
    end function ecNetCDFScan
 
@@ -457,23 +509,5 @@ contains
       if (ierr /= NF90_NOERR) return
       success = .true.
    end function ecNetCDFGetAttrib
-
-   !> =======================================================================
-   !> Search for a name in a list of candidate names, return index of first match
-   function ecNetCdfSearchStdOrVarName(search_names, candidate_names) result(ivar)
-      character(len=*), dimension(:), intent(in) :: search_names
-      character(len=*), dimension(:), intent(in) :: candidate_names
-      integer :: ivar
-      integer :: jvar
-
-      candidates: do jvar = 1, size(candidate_names)
-         do ivar = 1, size(search_names)
-            if (strcmpi(search_names(ivar), candidate_names(jvar))) then
-               exit candidates
-            end if
-         end do
-      end do candidates
-
-   end function
 
 end module m_ec_netcdf_timeseries

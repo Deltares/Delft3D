@@ -313,13 +313,12 @@ module m_ec_support
 
       !> Look up the variable and standard names for a given quantity name from predefined lists
       subroutine ecSupportNetcdfGetQuantityCandidateNames(fileName, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
-         character(len=*),               intent(in)    :: fileName            !< name of the file, used for error messages
-         character(len=*),               intent(in)    :: quantityName        !< name of the quantity to look up
+         character(len=*), intent(in) :: fileName !< name of the file, used for error messages
+         character(len=*), intent(in) :: quantityName !< name of the quantity to look up
          character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames !< list with standard names to be filled
          character(len=*), dimension(:), intent(inout), allocatable :: ncvarnames !< list with variable names to be filled
          character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
-         character(len=*), optional,     intent(in)    :: varname             !< user-supplied name of variabele, required for 'waveperiod' quantity
-
+         character(len=*), optional, intent(in) :: varname !< user-supplied name of variabele, required for 'waveperiod' quantity
 
          select case (str_tolower(trim(quantityName)))
          case ('rainfall')
