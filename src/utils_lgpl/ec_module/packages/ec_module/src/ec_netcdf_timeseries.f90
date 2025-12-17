@@ -89,9 +89,6 @@ contains
       if (allocated(netcdf%dimlen)) then
          deallocate (netcdf%dimlen)
       end if
-      if (allocated(netcdf%standard_names)) then
-         deallocate (netcdf%standard_names)
-      end if
       if (allocated(netcdf%tsid)) then
          deallocate (netcdf%tsid)
       end if
@@ -145,7 +142,7 @@ contains
       integer, optional, intent(out) :: iostat
 
       character(len=nf90_max_name) :: name
-      character(len=:), allocatable :: cf_role, positive, zunits
+      character(len=:), allocatable :: positive, zunits
       integer :: i_dim, n_dims, iVars, iTims, nVars, nTims, nGlobalAtts, unlimdimid, ierr
       integer :: tslen
       integer :: dimids_tsid(2)
@@ -157,9 +154,17 @@ contains
       success = .false.
       station_id_found = .false.
       time_found = .false.
-      allocate (character(len=0) :: cf_role)
+            
       allocate (character(len=0) :: positive)
       allocate (character(len=0) :: zunits)
+      
+      ! TK_Temp, first determine old or new (his) nc file
+      !          dont ljke using file name to identify type but see no other way  
+      if (index(ncname,'_his.nc') > 0) then
+          ncptr%ncType = 2
+      else
+          ncptr%ncType = 1
+      endif
 
       ierr = nf90_open(trim(ncname), NF90_NOWRITE, ncptr%ncid)
       if (ierr /= NF90_NOERR) then
@@ -176,11 +181,10 @@ contains
       do i_dim = 1, n_dims
          ierr = nf90_inquire_dimension(ncptr%ncid, i_dim, name, ncptr%dimlen(i_dim))
       end do
-      allocate (ncptr%standard_names(nVars), stat=ierr)
-      if (ierr /= 0) return
-      allocate (ncptr%long_names(nVars), stat=ierr)
-      if (ierr /= 0) return
+ 
       allocate (ncptr%variable_names(nVars), stat=ierr)
+      if (ierr /= 0) return
+      allocate (ncptr%variable_dimension(nVars), stat=ierr)
       if (ierr /= 0) return
       allocate (ncptr%vector_definitions(nVars), stat=ierr)
       if (ierr /= 0) return
@@ -190,8 +194,7 @@ contains
       if (ierr /= 0) return
       allocate (ncptr%offsets(nVars), stat=ierr)
       if (ierr /= 0) return
-      ncptr%standard_names = ' '
-      ncptr%long_names = ' '
+      
       ncptr%variable_names = ' '
       ncptr%fillvalues = -huge(dp)
       ncptr%scales = 1.0_dp
@@ -201,6 +204,7 @@ contains
       allocate (var_ndims(nVars), stat=ierr)
       if (ierr /= 0) return
       var_ndims = 0
+      
       do iVars = 1, nVars ! Inventorize variables
          ierr = nf90_inquire_attribute(ncptr%ncid, iVars, 'vector', len=len_vectordef) ! Check if this variable is just a reference to vector
          if (ierr == NF90_NOERR) then
@@ -212,10 +216,6 @@ contains
             isVector = .false.
          end if
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, name=ncptr%variable_names(iVars)) ! Variable name
-         ierr = nf90_get_att(ncptr%ncid, iVars, 'standard_name', ncptr%standard_names(iVars)) ! Standard name if available
-         if (ierr /= NF90_NOERR) ncptr%standard_names(iVars) = ncptr%variable_names(iVars) ! Variable name as fallback for standard_name
-         ierr = nf90_get_att(ncptr%ncid, iVars, 'long_name', ncptr%long_names(iVars)) ! Long name for non CF names
-
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
          if (ierr /= NF90_NOERR) ncptr%fillvalues(iVars) = -huge(dp)
          ierr = nf90_get_att(ncptr%ncid, iVars, 'scale_factor', ncptr%scales(iVars))
@@ -223,76 +223,78 @@ contains
          ierr = nf90_get_att(ncptr%ncid, iVars, 'add_offset', ncptr%offsets(iVars))
          if (ierr /= NF90_NOERR) ncptr%offsets(iVars) = 0.0_dp
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims=var_ndims(iVars), dimids=var_dimids(:, iVars))
-
+         ncptr%variable_dimension(iVars) = var_ndims(iVars)
+                  
          if (isVector) cycle ! vector placeholder, not a real variable with data in the file
 
          ! Check for important var: was it the stations?
-         cf_role = ''
-         ierr = ncu_get_att(ncptr%ncid, iVars, 'cf_role', cf_role)
-         if (cf_role == 'timeseries_id') then ! Multiple variables might have cf_role=timeseries_id
-            if (var_ndims(iVars)==2 .and. ncptr%variable_names(iVars)=='station_id') then  ! Check dims and var_name
-               ! Compose an index timeseries id's 
-               ierr = nf90_inquire_variable(ncptr%ncid, iVars, dimids=dimids_tsid)
+         if (strcmpi(ncptr%variable_names(iVars),'station_id') .or. strcmpi(ncptr%variable_names(iVars),'location') ) then        
+            ! Compose an index timeseries id's 
+            ierr = nf90_inquire_variable(ncptr%ncid, iVars, dimids=dimids_tsid)
+            if (ierr /= NF90_NOERR) return
+            tslen = ncptr%dimlen(dimids_tsid(1)) ! timeseries ID length
+            nTims = ncptr%dimlen(dimids_tsid(2)) ! number of timeseries IDs
+            ncptr%nTims = nTims
+            allocate (ncptr%tsid(nTims), stat=ierr)
+            if (ierr /= 0) return
+            tslen = min(tslen, len(ncptr%tsid(1)))
+            ncptr%tsid = ''
+            do iTims = 1, nTims
+               ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid(iTims), (/1, iTims/), (/tslen, 1/))
                if (ierr /= NF90_NOERR) return
-               tslen = ncptr%dimlen(dimids_tsid(1)) ! timeseries ID length
-               nTims = ncptr%dimlen(dimids_tsid(2)) ! number of timeseries IDs
-               ncptr%nTims = nTims
-               allocate (ncptr%tsid(nTims), stat=ierr)
-               if (ierr /= 0) return
-               tslen = min(tslen, len(ncptr%tsid(1)))
-               ncptr%tsid = ''
-               do iTims = 1, nTims
-                  ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid(iTims), (/1, iTims/), (/tslen, 1/))
-                  if (ierr /= NF90_NOERR) return
-                  call replace_char(ncptr%tsid(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
-               end do
-               ncptr%tsidvarid = iVars ! For convenience also store the Station ID explicitly
-               ncptr%tsiddimid = dimids_tsid(2) ! For convenience also store the Station's dimension ID explicitly
-               station_id_found = .true.
-            end if
+               call replace_char(ncptr%tsid(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
+            end do
+            ncptr%tsidvarid = iVars ! For convenience also store the Station ID explicitly
+            ncptr%tsiddimid = dimids_tsid(2) ! For convenience also store the Station's dimension ID explicitly
+            station_id_found = .true.
          end if
 
          ! Check for important var: was it time?
-         if (ncptr%standard_names(iVars) == 'time') then ! Multiple variables might have standard_name "time"
-            ierr = nf90_inquire_dimension(ncptr%ncid, var_dimids(1,iVars), name = name)
-            if (var_ndims(iVars) == 1 .and. name == 'time') then ! ndims must be 1 and dimName must be "time"
+         if (strcmpi(ncptr%variable_names(iVars),'time')) then 
                ierr = nf90_get_att(ncptr%ncid, iVars, 'units', ncptr%timeunit) ! Store the unit string of the time variable
                if (ierr /= NF90_NOERR) return
                ncptr%timevarid = iVars ! For convenience also store the ID explicitly
                ncptr%timedimid = var_dimids(1, iVars)
                time_found = .true.
-            end if
          end if
 
          ! Check for important var: was it vertical layering?
          positive = ''
          zunits = ''
-         ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
-         if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
-            ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
-            ncptr%layervarid = iVars
-            ncptr%layerdimid = var_dimids(1, iVars) ! For convenience also store the dimension ID explicitly
-            ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
-            allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
-            if (ierr /= 0) return
-            ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
-            if (ierr /= NF90_NOERR) return
-            ierr = ncu_get_att(ncptr%ncid, iVars, 'units', zunits)
-            if (ierr /= NF90_NOERR) return
-            if (strcmpi(zunits, 'm')) then
-               if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
-               if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
-            else
-               if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
-               if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
-            end if
-            if (ncptr%vptyp < 1) then
-               call setECMessage("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
-            end if
+         
+         !TK_Temp: First read general information, then
+         !         only for old files, read z values 
+         !     
+         if (strcmpi(trim(ncptr%variable_names(iVars)),'z') .or. strcmpi(trim(ncptr%variable_names(iVars)),'zcoordinate_c')) then 
+             ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
+             if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
+                ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
+                ncptr%layervarid = iVars
+                ncptr%layerdimid = var_dimids(1, iVars) ! For convenience also store the dimension ID explicitly
+                ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
+                allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
+                if (ierr /= 0) return
+                ierr = ncu_get_att(ncptr%ncid, iVars, 'units', zunits)
+                if (ierr /= NF90_NOERR) return
+                if (strcmpi(zunits, 'm')) then
+                   if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
+                   if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
+                else
+                   if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
+                   if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
+                end if
+                if (ncptr%vptyp < 1) then
+                   call setECMessage("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
+                end if
+             end if
          end if
+         
+         if (strcmpi(trim(ncptr%variable_names(iVars)),'z')) then
+             ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
+             if (ierr /= NF90_NOERR) return
+         endif 
       end do
 
-      deallocate (cf_role)
       deallocate (positive)
       deallocate (zunits)
 
@@ -320,23 +322,9 @@ contains
       integer, dimension(:), allocatable :: dimids_check
 
       success = .false.
-
-      ! search for standard_name
-      do ivar = 1, ncptr%nVars
-         ltl = len_trim(quantity)
-         if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity))) exit
-      end do
       vmax = 1
 
-      ! if standard_name not found, search for long_name
-      if (ivar > ncptr%nVars) then
-         do ivar = 1, ncptr%nVars
-            ltl = len_trim(quantity)
-            if (strcmpi(ncptr%long_names(ivar), quantity, ltl)) exit
-         end do
-      end if
-
-      ! if also long_name not found, search for variable_name
+      ! if search for variable_name
       if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
          do ivar = 1, ncptr%nVars
             ltl = len_trim(quantity)
@@ -401,13 +389,14 @@ contains
 
    ! =======================================================================
    !> Reader of timeseries to be implemented here ....
-   function ecNetCDFGetTimeseriesValue(ncptr, q_id, l_id, dims, timelevel, nctime, ncvalue, buffer) result(success)
+   function ecNetCDFGetTimeseriesValue(ncptr, q_id, l_id, dims, timelevel, nctime, ncvalue, buffer,func) result(success)
       logical :: success
       type(tEcNetCDF), pointer, intent(inout) :: ncptr
       integer, dimension(:), intent(in) :: q_id
       integer, intent(in) :: l_id
       integer, dimension(:), intent(in) :: dims
       integer, intent(in) :: timelevel
+      integer, intent(in) :: func
       real(dp), dimension(:), intent(out) :: nctime
       real(dp), dimension(:), intent(out) :: ncvalue
       real(dp), dimension(:), intent(inout), allocatable :: buffer
@@ -416,7 +405,9 @@ contains
 
       success = .false.
       vectormax = size(q_id)
-      if (ncptr%nLayer < 0) then ! no 3rd dimension, get single data value, maybe should be <=0
+!     TK_Temp: use func in stead of number of layers      
+!      if (ncptr%nLayer < 0)  then ! no 3rd dimension, get single data value, maybe should be <=0
+      if (func == BC_FUNC_TSERIES) then
          do iv = 1, vectormax
             ierr = nf90_get_var(ncptr%ncid, q_id(iv), ncvalue(iv:iv), (/l_id, timelevel/), (/1, 1/))
             if (ierr /= NF90_NOERR) return
