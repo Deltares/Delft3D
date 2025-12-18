@@ -68,8 +68,8 @@ object LinuxBuild : BuildType({
             name = "Build"
             scriptContent = """
                 #!/usr/bin/env bash
-                set -eo pipefail
                 source /opt/bashrc
+                set -eo pipefail
 
                 cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install
                 cmake --build build_%product% --parallel --config %build_type%
