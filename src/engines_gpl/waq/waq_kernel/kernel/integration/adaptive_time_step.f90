@@ -23,6 +23,7 @@
 module m_locally_adaptive_time_step
     use m_waq_precision
     use m_string_utils
+    use omp_lib
 
     implicit none
 
@@ -125,6 +126,12 @@ contains
         integer(kind = int_wp), intent(in) :: num_constants                  !< Number of constants used
         character(20), intent(in) :: coname(num_constants)          !< Constant names
         real(kind = real_wp), intent(in) :: const(num_constants)           !< Constants
+
+        integer                            :: ith, noth
+        real(kind = dp), allocatable, save :: rhs_thread(:,:,:)
+        real(kind = dp), allocatable, save :: amass2_thread(:,:,:)
+        real(kind = dp), allocatable, save :: dmpq_thread(:,:,:,:)
+        real(kind = dp), allocatable, save :: dconc2_thread(:,:,:)
 
         ! Local variables
         integer(kind = int_wp) :: i, j, k                     !< General loop counter
@@ -325,6 +332,13 @@ contains
             !                    nosegl = num_cells. Since nvert(1,num_cells+1) is out of range, you will find statements that deal with this.
             write (file_unit, '(A)') ' '
             init = 1    !   do this only once per simulation
+
+            noth = omp_get_max_threads()
+            allocate( rhs_thread(num_substances_total, nosss, noth) )
+            allocate( dconc2_thread(num_substances_total, nosss, noth) )
+            allocate( amass2_thread(num_substances_total, 5, noth) )
+            allocate( dmpq_thread(num_substances_transported, ndmpq, 2, noth) )
+
         end if
 
         ! PART 1 : make the administration for the variable time step approach
@@ -794,7 +808,7 @@ contains
                 end if
             end do
 
-            ! PART2a2: apply all outfluxes to the outer world from 
+            ! PART2a2: apply all outfluxes to the outer world from
             ! these cells that should have reasonable concentrations
             ! and enough volume now
             do i = if1, if2
@@ -1018,10 +1032,24 @@ contains
             ! PART2c: apply the horizontal flux correction for all cells in the boxes of this time step
 
             if (timon) call timstrt("flux correction", ithand4)
+
+            amass2_thread = 0.0
+            dmpq_thread   = 0.0
+            rhs_thread    = 0.0_dp
+            dconc2_thread = 0.0_dp
+
             do ibox = fbox, nbox, -1
                 if1 = itf(ibox + 1) + 1
                 if2 = iqsep(ibox)
+
+                !$omp parallel
+                !$omp do private(ith, iq, ifrom, ito, q, ifrom_1, ito_1, a, ipb, &
+                !$omp            e, al, f1, f2, d, dq, vfrom, vto, e2, s, cfrm_1, cto_1, &
+                !$omp            e1, e3)
+
                 do i = if1, if2
+
+                    ith = omp_get_thread_num()
 
                     ! initialisations
                     iq = iordf(i)
@@ -1067,19 +1095,19 @@ contains
                         d = d * dt(ibox)
                         do substance_i = 1, num_substances_transported
                             dq = d * (bound(substance_i, -ifrom) - conc(substance_i, ito))
-                            rhs(substance_i, ito) = rhs(substance_i, ito) + dq
-                            dconc2(substance_i, ito) = dconc2(substance_i, ito) + dq / vto
+                            rhs_thread(substance_i, ito, ith) = rhs_thread(substance_i, ito, ith) + dq
+                            dconc2_thread(substance_i, ito, ith) = dconc2_thread(substance_i, ito, ith) + dq / vto
                             if (q > 0.0d0) then
                                 dq = dq + q * bound(substance_i, -ifrom) * dt(ibox)
                             else
                                 dq = dq + q * conc(substance_i, ito) * dt(ibox)
                             end if
                             if (dq > 0.0d0) then
-                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                                if (massbal) amass2_thread(substance_i, 4, ith) = amass2_thread(substance_i, 4, ith) + dq
+                                if (ipb > 0) dmpq_thread(substance_i, ipb, 1, ith) = dmpq_thread(substance_i, ipb, 1, ith) + dq
                             else
-                                if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) - dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                if (massbal) amass2_thread(substance_i, 5, ith) = amass2_thread(substance_i, 5, ith) - dq
+                                if (ipb > 0) dmpq_thread(substance_i, ipb, 2, ith) = dmpq_thread(substance_i, ipb, 2, ith) - dq
                             end if
                         end do
                         cycle
@@ -1097,19 +1125,19 @@ contains
                         d = d * dt(ibox)
                         do substance_i = 1, num_substances_transported
                             dq = d * (conc(substance_i, ifrom) - bound(substance_i, -ito))
-                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                            dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dq / vfrom
+                            rhs_thread(substance_i, ifrom, ith) = rhs_thread(substance_i, ifrom, ith) - dq
+                            dconc2_thread(substance_i, ifrom, ith) = dconc2_thread(substance_i, ifrom, ith) - dq / vfrom
                             if (q > 0.0d0) then
                                 dq = dq + q * conc(substance_i, ifrom) * dt(ibox)
                             else
                                 dq = dq + q * bound(substance_i, -ito) * dt(ibox)
                             end if
                             if (dq > 0.0d0) then
-                                if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) + dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                                if (massbal) amass2_thread(substance_i, 5, ith) = amass2_thread(substance_i, 5, ith) + dq
+                                if (ipb > 0) dmpq_thread(substance_i, ipb, 1, ith) = dmpq_thread(substance_i, ipb, 1, ith) + dq
                             else
-                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) - dq
-                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                if (massbal) amass2_thread(substance_i, 4, ith) = amass2_thread(substance_i, 4, ith) - dq
+                                if (ipb > 0) dmpq_thread(substance_i, ipb, 2, ith) = dmpq_thread(substance_i, ipb, 2, ith) - dq
                             end if
                         end do
                         cycle
@@ -1127,38 +1155,38 @@ contains
                             s = sign(1.0d0, e2)
                             select case (ifrom_1)
                             case (1:)
-                                cfrm_1 = dconc2(substance_i, ifrom_1)
+                                cfrm_1 = dconc2_thread(substance_i, ifrom_1, ith)
                             case (0)
                                 if (s > 0) then
                                     cfrm_1 = 0.0d0
                                 else
-                                    cfrm_1 = 2.0d0 * dconc2(substance_i, ifrom)
+                                    cfrm_1 = 2.0d0 * dconc2_thread(substance_i, ifrom, ith)
                                 end if
                             case (:-1)
                                 cfrm_1 = bound(substance_i, -ifrom_1)
                             end select
                             select case (ito_1)
                             case (1:)
-                                cto_1 = dconc2(substance_i, ito_1)
+                                cto_1 = dconc2_thread(substance_i, ito_1, ith)
                             case (0)
                                 if (s > 0) then
-                                    cto_1 = 2.0 * dconc2(substance_i, ito)
+                                    cto_1 = 2.0 * dconc2_thread(substance_i, ito, ith)
                                 else
                                     cto_1 = 0.0d0
                                 end if
                             case (:-1)
                                 cto_1 = bound(substance_i, -ito_1)
                             end select
-                            e1 = (dconc2(substance_i, ifrom) - cfrm_1) * vfrom
-                            e3 = (cto_1 - dconc2(substance_i, ito)) * vto
+                            e1 = (dconc2_thread(substance_i, ifrom, ith) - cfrm_1) * vfrom
+                            e3 = (cto_1 - dconc2_thread(substance_i, ito, ith)) * vto
                             dq = s * max(0.0d0, min(s * e1, s * e2, s * e3))
                         else
-                            dq = d * (dconc2(substance_i, ifrom) - dconc2(substance_i, ito))
+                            dq = d * (dconc2_thread(substance_i, ifrom, ith) - dconc2_thread(substance_i, ito, ith))
                         end if
-                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
-                        rhs(substance_i, ito) = rhs(substance_i, ito) + dq
-                        dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dq / vfrom
-                        dconc2(substance_i, ito) = dconc2(substance_i, ito) + dq / vto
+                        rhs_thread(substance_i, ifrom, ith) = rhs_thread(substance_i, ifrom, ith) - dq
+                        rhs_thread(substance_i, ito, ith) = rhs_thread(substance_i, ito, ith) + dq
+                        dconc2_thread(substance_i, ifrom, ith) = dconc2_thread(substance_i, ifrom, ith) - dq / vfrom
+                        dconc2_thread(substance_i, ito, ith) = dconc2_thread(substance_i, ito, ith) + dq / vto
                         if (ipb > 0) then
                             if (q > 0.0d0) then
                                 dq = dq + q * conc(substance_i, ifrom) * dt(ibox)
@@ -1166,14 +1194,26 @@ contains
                                 dq = dq + q * conc(substance_i, ito) * dt(ibox)
                             end if
                             if (dq > 0.0d0) then
-                                dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
+                                dmpq_thread(substance_i, ipb, 1, ith) = dmpq_thread(substance_i, ipb, 1, ith) + dq
                             else
-                                dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
+                                dmpq_thread(substance_i, ipb, 2, ith) = dmpq_thread(substance_i, ipb, 2, ith) - dq
                             end if
                         end if
                     end do
                 end do
+
+                !$omp end do
+                !$omp end parallel
+
             end do
+
+
+            rhs    = sum(rhs_thread, dim = 3)
+            dconc2 = sum(dconc2_thread, dim = 3)
+            amass2 = sum(amass2_thread, dim = 3)
+            dmpq   = sum(dmpq_thread, dim = 4)
+
+
             if (timon) call timstop(ithand4)
 
             ! PART2c1: Set the vertical advection of water only for all cells in the boxes of this time step
