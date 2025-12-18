@@ -232,7 +232,9 @@ contains
             write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
             call err_flush()
          end if
-         if (success) call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         if (success) then
+            call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         end if
          if (success) then
 
             call tree_create_node(prop_ptr, 'Definition', block_ptr)
@@ -491,7 +493,9 @@ contains
             write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
             call err_flush()
          end if
-         if (success) call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         if (success) then
+            call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         end if
          if (success) then
             longculverts(nlongculverts)%id = st_id
 

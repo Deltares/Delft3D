@@ -90,7 +90,9 @@ contains
          call ITEXTCOLOUR('BLACK', 'WHITE')
       end if
       call IOUTMenuHoriz(OPTION, MAXOPT, 1, 1, IW, 0, 1)
-      if (JA /= 1) return
+      if (JA /= 1) then
+         return
+      end if
 !
       KEY = InfoInput(55)
       if (KEY /= 23) then
@@ -100,7 +102,9 @@ contains
       if (KEY == 21 .or. KEY == 22) then
 !        INS KEY
          call MENUV1(NUM, NWHAT)
-         if (NWHAT == 0) goto 20
+         if (NWHAT == 0) then
+            goto 20
+         end if
          call IOUTSTRINGXY(1, 2, ' OPTION : '//WRDKEY)
          return
       else if (KEY == 23 .or. KEY == -2) then
@@ -109,7 +113,9 @@ contains
          return
       else
          call FKEYS(KEY)
-         if (KEY == 3) return
+         if (KEY == 3) then
+            return
+         end if
       end if
       goto 10
 !

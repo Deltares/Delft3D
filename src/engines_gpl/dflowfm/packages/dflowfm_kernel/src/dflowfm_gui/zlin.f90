@@ -63,7 +63,9 @@ contains
       L = LL
       if (kmx > 0) then
          call getLtoplot(LL, L)
-         if (L < 0) return
+         if (L < 0) then
+            return
+         end if
       end if
 
       linval = ndraw(29)
@@ -199,19 +201,25 @@ contains
          if (kmx > 0) then
             zlin = turkin0(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(1, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(1, LL)
+            end if
          end if
       else if (linval == 42) then
          if (kmx > 0) then
             zlin = tureps0(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(2, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(2, LL)
+            end if
          end if
       else if (linval == 43) then
          if (kmx > 0) then
             zlin = vicwwu(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(3, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(3, LL)
+            end if
          end if
       else if (linval == 44) then
          zlin = ustb(LL)

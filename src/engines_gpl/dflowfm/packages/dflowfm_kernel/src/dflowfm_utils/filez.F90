@@ -107,7 +107,9 @@ contains
       integer, intent(inout) :: minp !< File unit of a (probably open) file. Will be set to 0 upon return.
       integer :: i
 
-      if (minp == 0) return
+      if (minp == 0) then
+         return
+      end if
       close (minp)
       do i = 1, maxnum
          if (lunfils(i) == minp) then
@@ -314,7 +316,9 @@ contains
       read (minp, '(a)', end=9999, err=999) rec
       rec0 = trim(rec)
       call lowcas(rec0)
-      if (rec(1:1) == '*') goto 10
+      if (rec(1:1) == '*') then
+         goto 10
+      end if
       if (index(rec0, trim(key2)) /= 0) then
          ja = 1
          return
@@ -345,7 +349,9 @@ contains
       read (minp, '(a)', end=9999, err=999) rec
       rec0 = trim(rec)
       call lowcas(rec0)
-      if (rec(1:1) == '*') goto 10
+      if (rec(1:1) == '*') then
+         goto 10
+      end if
       if (index(rec0, trim(key2)) /= 0) then
          ja = 1
          return
@@ -367,7 +373,9 @@ contains
       nlen = len(word)
       do i = 1, nlen
          ic = ichar(word(i:i))
-         if (ic >= 65 .and. ic < 90) word(i:i) = char(ic + 32)
+         if (ic >= 65 .and. ic < 90) then
+            word(i:i) = char(ic + 32)
+         end if
       end do
    end subroutine lowcas
 
@@ -435,7 +443,9 @@ contains
 10    continue
       read (minp, '(a255)', end=999, err=998, iostat=iostat) rec
       call lowcas(rec)
-      if (rec(1:1) == '*') goto 10
+      if (rec(1:1) == '*') then
+         goto 10
+      end if
       if (index(rec, trim(key2)) /= 0) then
          ja = 1
          l1 = index(rec, '=') + 1

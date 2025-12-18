@@ -242,7 +242,9 @@ contains
       allocate (allowednames(2), oldnames(0))
       allowednames = ['abs_1d', 'abs_2d']
       absgentype = readkey_str(md_surfbeatfile, 'absgentype', 'abs_1d', 2, 0, allowednames, oldnames)
-      if (allocated(allowednames)) deallocate (allowednames, oldnames)
+      if (allocated(allowednames)) then
+         deallocate (allowednames, oldnames)
+      end if
       allocate (allowednames(2), oldnames(0))
       allowednames = ['instant ', 'velocity']
       tidetype = readkey_str(md_surfbeatfile, 'tidetype', 'velocity', 2, 0, allowednames, oldnames)
@@ -428,12 +430,9 @@ contains
       integer, parameter :: np = 12
 
       ! Set some initial values
-      if (trim(instat) == 'jons' .or. &
-          trim(instat) == 'jons_table' .or. &
-          trim(instat) == 'swan' .or. &
-          trim(instat) == 'vardens' .or. &
-          trim(instat) == 'reuse' &
-          ) Trep = 10.0_dp
+      if (trim(instat) == 'jons' .or. trim(instat) == 'jons_table' .or. trim(instat) == 'swan' .or. trim(instat) == 'vardens' .or. trim(instat) == 'reuse') then
+         Trep = 10.0_dp
+      end if
 
       ! Init values water levels and velocities
       hhw = hs
@@ -1190,10 +1189,14 @@ contains
       !endif !windmodel
 
       if (jampi == 1) then
-         if (jatimer == 1) call starttimer(IXBEACH)
+         if (jatimer == 1) then
+            call starttimer(IXBEACH)
+         end if
          call update_ghosts(ITYPE_Sall, Ntheta, Ndx, ee1, ierr)
          call update_ghosts(ITYPE_Sall, Ntheta, Ndx, rr, ierr)
-         if (jatimer == 1) call stoptimer(IXBEACH)
+         if (jatimer == 1) then
+            call stoptimer(IXBEACH)
+         end if
       end if
 
       !   OUTPUT Bulk quantities
@@ -1225,7 +1228,9 @@ contains
          !
          ! Copy thetamean to first dry cells next to waterline by simple averaging
          do k = 1, ndx
-            if (hs(k) > epshu) cycle
+            if (hs(k) > epshu) then
+               cycle
+            end if
             n = 0
             cost = 0.0_dp
             sint = 0.0_dp
@@ -1234,13 +1239,17 @@ contains
                k1 = ln(1, Lf)
                if (k1 == k) then
                   k2 = ln(2, Lf)
-                  if (hs(k2) <= epshu) cycle
+                  if (hs(k2) <= epshu) then
+                     cycle
+                  end if
                   n = n + 1
                   cost = cost + cos(thetamean(k2))
                   sint = sint + sin(thetamean(k2))
                else
                   k2 = k
-                  if (hs(k1) <= epshu) cycle
+                  if (hs(k1) <= epshu) then
+                     cycle
+                  end if
                   n = n + 1
                   cost = cost + cos(thetamean(k1))
                   sint = sint + sin(thetamean(k1))
@@ -1380,10 +1389,14 @@ contains
       end do
 
       if (jampi == 1) then
-         if (jatimer == 1) call starttimer(IXBEACH)
+         if (jatimer == 1) then
+            call starttimer(IXBEACH)
+         end if
          call update_ghosts(ITYPE_SALL, 1, ndx, Fx_cc, ierror)
          call update_ghosts(ITYPE_SALL, 1, ndx, Fy_cc, ierror)
-         if (jatimer == 1) call stoptimer(IXBEACH)
+         if (jatimer == 1) then
+            call stoptimer(IXBEACH)
+         end if
       end if
 
       ! Compute wavfu for 2D runs;
@@ -1428,7 +1441,9 @@ contains
       do k = 1, ndx
          if (jampi == 1) then
             !            do not include ghost cells
-            if (idomain(k) /= my_rank) cycle
+            if (idomain(k) /= my_rank) then
+               cycle
+            end if
          end if
          do itheta = 1, ntheta
             dum = 0.0_dp
@@ -1440,7 +1455,9 @@ contains
                cgwavL = acL(L) * cgwav(k1) + (1 - acL(L)) * cgwav(k2)
                cwuL = cgwavL * (csu(L) * csx(itheta) + snu(L) * snx(itheta))
 
-               if (ln(2, L) == k) cwuL = -cwuL
+               if (ln(2, L) == k) then
+                  cwuL = -cwuL
+               end if
 
                if (cwuL >= 0.) then ! outgoing velocities only
                   dum = dum + cwuL * wu(L)
@@ -1698,7 +1715,9 @@ contains
       integer :: LL1, LL2, n, lunfil
 
       ierror = 1
-      if (.not. allocated(dist)) allocate (dist(1:ntheta), factor(1:ntheta), e01(1:ntheta))
+      if (.not. allocated(dist)) then
+         allocate (dist(1:ntheta), factor(1:ntheta), e01(1:ntheta))
+      end if
       !
       eeout = 0.0_dp
       uin = 0.0_dp
@@ -1745,7 +1764,9 @@ contains
             Trep = 1.0e-1_dp ! safety for max reduction below
             LL1 = L1wbnd(n)
             LL2 = L2wbnd(n)
-            if (LL1 > LL2) cycle
+            if (LL1 > LL2) then
+               cycle
+            end if
             if (jampi == 1) then
                !k = ln(2,LL1)
                !if (.not.(idomain(k)==my_rank) .or. LL2==0) then     ! then not a boundary domain, second check is safety
@@ -1815,7 +1836,9 @@ contains
                if (ier /= 0) then
                   call report_file_read_error('bc/gen.ezs')
                end if
-               if (bline == '*') goto 5
+               if (bline == '*') then
+                  goto 5
+               end if
                read (lunfil, *, iostat=ier) nt ! no of timesteps
                if (ier /= 0) then
                   call report_file_read_error('bc/gen.ezs')
@@ -1840,7 +1863,9 @@ contains
                if (ier /= 0) then
                   call report_file_read_error('bc/gen.ezs')
                end if
-               if (bline == '*') goto 6
+               if (bline == '*') then
+                  goto 6
+               end if
                read (lunfil, *, iostat=ier) nt
                if (ier /= 0) then
                   call report_file_read_error('bc/gen.ezs')
@@ -1868,8 +1893,12 @@ contains
                Hrms = Hm0 / sqrt(2.0_dp)
                m = 2.0_dp * spreadpar
                theta0 = (1.5_dp * pi) - dir0 * atan(1.0_dp) / 45.0_dp
-               if (theta0 > pi) theta0 = theta0 - 2.0_dp * pi
-               if (theta0 < -pi) theta0 = theta0 + 2.0_dp * pi
+               if (theta0 > pi) then
+                  theta0 = theta0 - 2.0_dp * pi
+               end if
+               if (theta0 < -pi) then
+                  theta0 = theta0 + 2.0_dp * pi
+               end if
                newstatbc = 1
 
                do itheta = 1, ntheta
@@ -1932,8 +1961,12 @@ contains
                bcendtime = bcendtime + bcdur
                theta0 = (1.5_dp * pi) - dir0 * atan(1.0_dp) / 45.0_dp
 
-               if (theta0 > 2.0_dp * pi) theta0 = theta0 - 2.0_dp * pi
-               if (theta0 < -2.0_dp * pi) theta0 = theta0 + 2.0_dp * pi
+               if (theta0 > 2.0_dp * pi) then
+                  theta0 = theta0 - 2.0_dp * pi
+               end if
+               if (theta0 < -2.0_dp * pi) then
+                  theta0 = theta0 + 2.0_dp * pi
+               end if
                newstatbc = 1
 
                !if (windmodel==0) then
@@ -2124,9 +2157,15 @@ contains
       end if
 
       ! safety on processes included
-      if (allocated(uin)) uin = lwave * (order - 1) * uin
-      if (allocated(vin)) vin = lwave * (order - 1) * vin
-      if (allocated(zbndw)) zbndw = swave * zbndw
+      if (allocated(uin)) then
+         uin = lwave * (order - 1) * uin
+      end if
+      if (allocated(vin)) then
+         vin = lwave * (order - 1) * vin
+      end if
+      if (allocated(zbndw)) then
+         zbndw = swave * zbndw
+      end if
 
       ierror = 0
 
@@ -2602,7 +2641,9 @@ contains
                fluxtheta(itheta) = quan(itheta, k) * ctheta_between
             else
                eeup = 1.5_dp * quan(itheta + 1, k) - .5 * quan(itheta + 2, k)
-               if (eeup < 0.0_dp) eeup = quan(itheta + 1, k)
+               if (eeup < 0.0_dp) then
+                  eeup = quan(itheta + 1, k)
+               end if
                fluxtheta(itheta) = eeup * ctheta_between
             end if
 
@@ -2610,7 +2651,9 @@ contains
             ctheta_between = .5 * (veloc(itheta + 1, k) + veloc(itheta, k))
             if (ctheta_between > 0) then
                eeup = 1.5_dp * quan(itheta, k) - .5 * quan(itheta - 1, k)
-               if (eeup < 0.0_dp) eeup = quan(itheta, k)
+               if (eeup < 0.0_dp) then
+                  eeup = quan(itheta, k)
+               end if
                fluxtheta(itheta) = eeup * ctheta_between
             else
                eeup = quan(itheta + 1, k)
@@ -2646,7 +2689,9 @@ contains
 
       ierror = 1
 
-      if (nbndu < 1 .and. jampi == 0) goto 1234
+      if (nbndu < 1 .and. jampi == 0) then
+         goto 1234
+      end if
 
       call xbeach_absgen_bc()
 
@@ -2711,10 +2756,18 @@ contains
       if (.not. bccreated) then
          bccreated = .true.
          allocate (waveBoundaryParameters(nwbnd), stat=ierr)
-         if (ierr == 0) allocate (randomseed(nwbnd), stat=ierr)
-         if (ierr == 0) allocate (waveBoundaryAdministration(nwbnd), stat=ierr)
-         if (ierr == 0) allocate (waveBoundaryTimeSeries(nwbnd), stat=ierr)
-         if (ierr == 0) allocate (waveSpectrumAdministration(nwbnd), stat=ierr)
+         if (ierr == 0) then
+            allocate (randomseed(nwbnd), stat=ierr)
+         end if
+         if (ierr == 0) then
+            allocate (waveBoundaryAdministration(nwbnd), stat=ierr)
+         end if
+         if (ierr == 0) then
+            allocate (waveBoundaryTimeSeries(nwbnd), stat=ierr)
+         end if
+         if (ierr == 0) then
+            allocate (waveSpectrumAdministration(nwbnd), stat=ierr)
+         end if
       end if
 
       if (random == 1) then
@@ -2796,7 +2849,9 @@ contains
       do ibnd = 1, nwbnd
          LL1 = L1wbnd(ibnd)
          LL2 = L2wbnd(ibnd)
-         if (LL1 > LL2) cycle
+         if (LL1 > LL2) then
+            cycle
+         end if
 
          waveBoundaryParameters(ibnd)%masterFileName = bcfile
          waveBoundaryParameters(ibnd)%np = LL2 - LL1 + 1
@@ -2806,10 +2861,18 @@ contains
          waveBoundaryParameters(ibnd)%y0 = yref0
          waveBoundaryParameters(ibnd)%hboundary = hboundary(ibnd)
 
-         if (allocated(waveBoundaryParameters(ibnd)%xb)) deallocate (waveBoundaryParameters(ibnd)%xb)
-         if (allocated(waveBoundaryParameters(ibnd)%yb)) deallocate (waveBoundaryParameters(ibnd)%yb)
-         if (allocated(waveBoundaryParameters(ibnd)%theta)) deallocate (waveBoundaryParameters(ibnd)%theta)
-         if (allocated(waveBoundaryParameters(ibnd)%theta_s)) deallocate (waveBoundaryParameters(ibnd)%theta_s)
+         if (allocated(waveBoundaryParameters(ibnd)%xb)) then
+            deallocate (waveBoundaryParameters(ibnd)%xb)
+         end if
+         if (allocated(waveBoundaryParameters(ibnd)%yb)) then
+            deallocate (waveBoundaryParameters(ibnd)%yb)
+         end if
+         if (allocated(waveBoundaryParameters(ibnd)%theta)) then
+            deallocate (waveBoundaryParameters(ibnd)%theta)
+         end if
+         if (allocated(waveBoundaryParameters(ibnd)%theta_s)) then
+            deallocate (waveBoundaryParameters(ibnd)%theta_s)
+         end if
 
          ! Now allocate arrays to the correct size and set values
          allocate (waveBoundaryParameters(ibnd)%xb(waveBoundaryParameters(ibnd)%np))
@@ -3118,7 +3181,9 @@ contains
          do n = 1, nwbnd
             LL1 = L1wbnd(n)
             LL2 = L2wbnd(n)
-            if (LL1 > LL2) cycle
+            if (LL1 > LL2) then
+               cycle
+            end if
             do i = LL1, LL2
                k2 = kbndw(2, i)
                if (idomain(k2) == my_rank) then
@@ -3493,8 +3558,12 @@ contains
                   vert = v(Lb) - vmean - vin_loc ! tangential component along cell face
                   !
                   alphanew = atan2(vert, (ur + 1.0e-16_dp))
-                  if (alphanew > (pi * 0.5_dp)) alphanew = alphanew - pi
-                  if (alphanew <= (-pi * 0.5_dp)) alphanew = alphanew + pi
+                  if (alphanew > (pi * 0.5_dp)) then
+                     alphanew = alphanew - pi
+                  end if
+                  if (alphanew <= (-pi * 0.5_dp)) then
+                     alphanew = alphanew + pi
+                  end if
                   !
                   if (abs(alphanew - alpha2) < 1.0e-3_dp) then
                      exit
@@ -4223,8 +4292,9 @@ contains
       !
       ierr = 1
       !
-      if (allocated(costemp)) deallocate (costemp, costemp2, sintemp, sintemp2, hh, &
-                                          eebc, gammax_correct, stat=ierr)
+      if (allocated(costemp)) then
+         deallocate (costemp, costemp2, sintemp, sintemp2, hh, eebc, gammax_correct, stat=ierr)
+      end if
       allocate (costemp(1:ndx), costemp2(1:ndx), sintemp(1:ndx), sintemp2(1:ndx), hh(1:ndx), stat=ierr)
       allocate (gammax_correct(1:numk), RH(1:numk), stat=ierr)
       costemp = 0.0_dp
@@ -4751,7 +4821,9 @@ contains
             do k = 1, mn
                dee(:, k) = ee(:, k) - eeold(:, k)
                diff(k) = maxval(abs(dee(:, k)))
-               if (diff(k) / eemax < crit) ok(k) = solverConverged
+               if (diff(k) / eemax < crit) then
+                  ok(k) = solverConverged
+               end if
             end do
             !
             ! Percentage of converged points
@@ -5057,7 +5129,9 @@ contains
          end do
       end if
       ! nothing to order
-      if (n < 2) return
+      if (n < 2) then
+         return
+      end if
       ! initialize indices for hiring and retirement-promotion phase
       l = n / 2 + 1
 
@@ -5161,7 +5235,9 @@ contains
 
       ierr = 1
 
-      if (allocated(no_connected_cells)) deallocate (no_connected_cells, connected_cells)
+      if (allocated(no_connected_cells)) then
+         deallocate (no_connected_cells, connected_cells)
+      end if
       allocate (no_connected_cells(no_nodes))
       allocate (connected_cells(no_nodes, 12))
       no_connected_cells = 0
@@ -5358,7 +5434,9 @@ contains
       ! Normalize weights
       do k = 1, numk
          sumw = wmask(1, k) + wmask(3, k)
-         if (sumw == 0.0_dp) cycle
+         if (sumw == 0.0_dp) then
+            cycle
+         end if
          wmask(1, k) = wmask(1, k) / sumw
          wmask(3, k) = wmask(3, k) / sumw
       end do
@@ -5366,7 +5444,9 @@ contains
       !> get indexes of edge nodes with wave boundary
       noseapts = 0
       do k = 1, numk
-         if (wmask(2, k) > 0 .or. wmask(4, k) > 0) noseapts = noseapts + 1
+         if (wmask(2, k) > 0 .or. wmask(4, k) > 0) then
+            noseapts = noseapts + 1
+         end if
       end do
       !
       ! allocate seapts array and fill
@@ -5384,7 +5464,9 @@ contains
 
       !> non-wave open u and z boundaries get neumann flag
       do k = 1, nbndz
-         if (kbndz2kbndw(k) /= 0) cycle ! then wave dirichlet bnd
+         if (kbndz2kbndw(k) /= 0) then
+            cycle ! then wave dirichlet bnd
+         end if
          L = kbndz(3, k)
          cn1 = lncn(1, L)
          cn2 = lncn(2, L)
@@ -5393,38 +5475,56 @@ contains
          !! network_data::NB values: 1=INTERN, 2=RAND, 3=HOEK, 0/-1=DOET NIET MEE OF 1D
          !  (KN(3,L) == 2) 2D
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) cycle ! not 2d link
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+               cycle ! not 2d link
+            end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle ! not inner net node
+            if (nb(ko) /= 1) then
+               cycle ! not inner net node
+            end if
             nmmask(ko) = cn1
          end do
          !
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn2
          end do
       end do
       !
       do k = 1, nbndu
-         if (kbndu2kbndw(k) /= 0) cycle ! then wave dirichlet bnd
+         if (kbndu2kbndw(k) /= 0) then
+            cycle ! then wave dirichlet bnd
+         end if
          L = kbndu(3, k)
          cn1 = lncn(1, L)
          cn2 = lncn(2, L)
          !
          ! Find internal node
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn1
          end do
          !
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn2
          end do
       end do
@@ -5434,19 +5534,29 @@ contains
          cn1 = walls(2, iwalls) ! first corner
          cn2 = walls(3, iwalls) ! second corner
          ! Find internal node
-         if (wmask(2, cn1) > 0 .or. wmask(4, cn1) > 0) goto 10 ! do next node
+         if (wmask(2, cn1) > 0 .or. wmask(4, cn1) > 0) then
+            goto 10 ! do next node
+         end if
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn1
          end do
          !
 10       if (wmask(2, cn2) > 0 .or. wmask(4, cn2) > 0) cycle
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn2
          end do
       end do
@@ -5538,10 +5648,14 @@ contains
          call aerr('Drstat  (numk)', ierr, numk)
       end if
       !
-      if (ierr > 0) goto 1234
+      if (ierr > 0) then
+         goto 1234
+      end if
       ierr = 0
 1234  continue
-      if (ierr > 0) write (*, *) 'xbeachwaves::allocstatsolverarrays :: Error.'
+      if (ierr > 0) then
+         write (*, *) 'xbeachwaves::allocstatsolverarrays :: Error.'
+      end if
       return
    end subroutine allocstatsolverarrays
 
@@ -5582,7 +5696,9 @@ contains
       ! open boundaries that are not wave energy bnds get inner domain value
       do k = 1, nbndz
          if (skipnbndw .and. allocated(zbndw)) then
-            if (kbndz2kbndw(k) > 0) cycle
+            if (kbndz2kbndw(k) > 0) then
+               cycle
+            end if
          end if
          kb = kbndz(1, k)
          ki = kbndz(2, k)
@@ -5591,7 +5707,9 @@ contains
 
       do k = 1, nbndu
          if (skipnbndw .and. allocated(zbndw)) then
-            if (kbndu2kbndw(k) > 0) cycle
+            if (kbndu2kbndw(k) > 0) then
+               cycle
+            end if
          end if
          kb = kbndu(1, k)
          ki = kbndu(2, k)

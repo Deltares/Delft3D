@@ -72,7 +72,9 @@ contains
       integer :: in, idmn
 
 !     check for spherical coordinates
-      if (jsferic /= 1 .or. NPL <= 2) return
+      if (jsferic /= 1 .or. NPL <= 2) then
+         return
+      end if
 
       call mess(LEVEL_INFO, 'fixing global polygon... ')
 
@@ -104,9 +106,13 @@ contains
                i = i + 1
 
                im1 = i - 2
-               if (im1 < jstart) im1 = im1 + jend - jstart + 1
+               if (im1 < jstart) then
+                  im1 = im1 + jend - jstart + 1
+               end if
                ip1 = i + 1
-               if (ip1 > jend) ip1 = ip1 - (jend - jstart + 1)
+               if (ip1 > jend) then
+                  ip1 = ip1 - (jend - jstart + 1)
+               end if
 
 !              shift current node above previous node
                xpl(i - 1) = xpl(im1)
@@ -136,10 +142,14 @@ contains
          japole = 0
          do i = jstart, jend
             ip1 = i + 1
-            if (ip1 > jend) ip1 = ip1 - (jend - jstart + 1)
+            if (ip1 > jend) then
+               ip1 = ip1 - (jend - jstart + 1)
+            end if
 
 !           check if the linesegment (i,i+1) exists
-            if (xpl(i) == DMISS .or. ypl(i) == DMISS .or. xpl(ip1) == DMISS .or. ypl(ip1) == DMISS) cycle
+            if (xpl(i) == DMISS .or. ypl(i) == DMISS .or. xpl(ip1) == DMISS .or. ypl(ip1) == DMISS) then
+               cycle
+            end if
 
 !           compute two other canditates for xpl(i+1)
             x1 = xpl(ip1) - 360
@@ -298,7 +308,9 @@ contains
             jpoint = jpoint + 2 * num + 2
          end if
 
-         if (jpoint > NPL) exit
+         if (jpoint > NPL) then
+            exit
+         end if
       end do
 
       if (japartpols == 1) then

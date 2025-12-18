@@ -55,7 +55,9 @@ contains
          rmax = -1.0e30_dp
 
          do k = 1, ns
-            if (zs(k) == DMISS) cycle
+            if (zs(k) == DMISS) then
+               cycle
+            end if
             if (inview(xs(k), ys(k))) then
                if (zs(k) < rmin) then
                   rmin = zs(k)

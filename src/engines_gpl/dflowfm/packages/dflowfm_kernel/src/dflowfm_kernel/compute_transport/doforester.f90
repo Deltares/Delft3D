@@ -56,7 +56,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("doforester", ithndl)
+      if (timon) then
+         call timstrt("doforester", ithndl)
+      end if
 
       do kk = 1, ndxi
          kb = kbot(kk)
@@ -69,7 +71,9 @@ contains
          end if
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine doforester
 
 end module m_doforester

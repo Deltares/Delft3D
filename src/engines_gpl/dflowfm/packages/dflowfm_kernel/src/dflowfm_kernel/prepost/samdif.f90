@@ -60,7 +60,9 @@ contains
       real(kind=dp), parameter :: VAL_NOPNT = 1234.0_dp
       real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
-      if (NS < 1 .or. NS3 < 2) goto 1234
+      if (NS < 1 .or. NS3 < 2) then
+         goto 1234
+      end if
 
 !  build kdtree
       call build_kdtree(treeglob, NS3, xs3, ys3, ierror, jsferic, dmiss)
@@ -68,7 +70,9 @@ contains
 !  reallocate results vector (fixed size)
       call realloc_results_kdtree(treeglob, 1)
 
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       call savesam()
 
@@ -124,7 +128,9 @@ contains
 1234  continue
 
 !  deallocate kdtree if it was created
-      if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+      if (treeglob%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeglob)
+      end if
 
       return
    end subroutine samdif

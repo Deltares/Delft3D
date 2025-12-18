@@ -70,7 +70,9 @@ contains
          sq = sqrt(hpr * (dia - hpr))
          area = fi * r * r - sq * are
          width = 2 * sq
-         if (japerim == 1) perim = 2 * fi * r
+         if (japerim == 1) then
+            perim = 2 * fi * r
+         end if
       else
          area = 0.5_dp * pi * r * r + (hpr - r) * dia
          width = dia

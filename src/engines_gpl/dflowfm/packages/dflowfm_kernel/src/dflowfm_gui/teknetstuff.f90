@@ -54,17 +54,25 @@ contains
       real(kind=dp) :: XP, YP
       integer :: key, K1, K2
 
-      if (NDRAW(7) >= 2) call TEKLINKVALS(NDRAW(11))
+      if (NDRAW(7) >= 2) then
+         call TEKLINKVALS(NDRAW(11))
+      end if
 
-      if (NDRAW(8) >= 2) call TEKNODEVALS(NDRAW(19))
+      if (NDRAW(8) >= 2) then
+         call TEKNODEVALS(NDRAW(19))
+      end if
 
       call TEKNET(key)
 
       call TEKPREVIOUSNET(NCOLRN)
 
-      if (NDRAW(7) >= 2) call TEKLINKNUMS(NDRAW(11), NCOLLN)
+      if (NDRAW(7) >= 2) then
+         call TEKLINKNUMS(NDRAW(11), NCOLLN)
+      end if
 
-      if (NDRAW(8) >= 2) call TEKNODENUMS(NDRAW(19), NCOLDN)
+      if (NDRAW(8) >= 2) then
+         call TEKNODENUMS(NDRAW(19), NCOLDN)
+      end if
 
       call TEKNETCELLS(NDRAW(33), 0, 1)
 

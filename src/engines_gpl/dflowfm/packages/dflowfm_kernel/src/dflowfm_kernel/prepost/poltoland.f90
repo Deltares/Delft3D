@@ -55,7 +55,9 @@ contains
       real(kind=dp) :: xp, yp, xpn, ypn, dis, rL
 
       IN = 1
-      if (L2 < L1) IN = -1
+      if (L2 < L1) then
+         IN = -1
+      end if
       do L = L1, L2, IN
          XP = XPL(L)
          if (XP /= XYMIS) then

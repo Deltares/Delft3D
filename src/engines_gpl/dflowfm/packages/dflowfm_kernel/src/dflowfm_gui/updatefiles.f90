@@ -186,10 +186,14 @@ contains
 
          call IOsFileDate(IFDATE(I), IYEAR, IMONTH, IDAY)
          write (FILIST(I) (70:79), '(I2,A1,I2,A1,I4)') IDAY, '-', IMONTH, '-', IYEAR
-         if (IMONTH <= 9) write (FILIST(I) (73:73), '(A1)') '0'
+         if (IMONTH <= 9) then
+            write (FILIST(I) (73:73), '(A1)') '0'
+         end if
          call IOsFileTime(IFDATE(I), IHOUR, MINUTE, ISECND)
          write (FILIST(I) (82:86), '(I2,A1,I2)') IHOUR, ':', MINUTE
-         if (MINUTE <= 9) write (FILIST(I) (85:85), '(A1)') '0'
+         if (MINUTE <= 9) then
+            write (FILIST(I) (85:85), '(A1)') '0'
+         end if
       end do
       call ITEXTCOLOUR('WHITE', 'BLU')
       call IOUTMenuScroll(FILIST, NUMFIL, IXP, IYP + 10, ' ', IH - 7, 0, 1)

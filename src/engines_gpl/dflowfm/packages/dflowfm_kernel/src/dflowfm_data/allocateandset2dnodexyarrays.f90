@@ -51,9 +51,15 @@ contains
       nn = netcell(n)%n
 
 ! GD: memory leak
-      if (allocated(nd(n)%x)) deallocate (nd(n)%x)
-      if (allocated(nd(n)%y)) deallocate (nd(n)%y)
-      if (allocated(nd(n)%nod)) deallocate (nd(n)%nod)
+      if (allocated(nd(n)%x)) then
+         deallocate (nd(n)%x)
+      end if
+      if (allocated(nd(n)%y)) then
+         deallocate (nd(n)%y)
+      end if
+      if (allocated(nd(n)%nod)) then
+         deallocate (nd(n)%nod)
+      end if
 
       allocate (nd(n)%x(nn), nd(n)%y(nn), nd(n)%nod(nn), stat=ierr)
       call aerr('nd(n)%x(nn), nd(n)%y(nn), nd(n)%nod(nn)', ierr, nn * 3)

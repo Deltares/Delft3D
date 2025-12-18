@@ -58,15 +58,16 @@ contains
    subroutine extract_constituents()
       use precision, only: dp, fp
       use m_doforester, only: doforester
-      use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, jatem, &
-                                  maxitverticalforestersal, maxitverticalforestertem
+      use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, temperature_model, &
+         TEMPERATURE_MODEL_NONE, maxitverticalforestersal, maxitverticalforestertem
       use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
       use m_flowgeom, only: ndx, ndxi, bai_mor
       use m_flowtimes, only: dts
       use m_fm_icecover, only: freezing_temperature
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
-      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, temperature_min
+      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, &
+         temperature_min
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
       use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed
@@ -76,6 +77,7 @@ contains
       integer :: iconst, grain, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
       real(kind=dp) :: minimum_salinity_value
       real(kind=dp) :: freezing_point_temperature ! freezing point temperature [degC]
+      real(kind=dp) :: salinity ! salinity [psu]
       integer(4) :: ithndl = 0
 
       integer, parameter :: IDX_SSC_MIN = 1 ! index of suspended sediment concentration messages for min limits
@@ -122,7 +124,7 @@ contains
          end if
       end if
 
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          if (temperature_max /= dmiss) then
             cells_with_max_limit = 0
             do k = 1, ndkx
@@ -137,25 +139,28 @@ contains
          cells_with_min_limit = 0
 
          if (use_salinity_freezing_point) then
-            if (isalt > 0) then ! if salinity is modeled, use local salinity to determine freezing point
-               do kk = 1, ndx
-                  k = ktop(kk) ! only the top layer is checked for freezing point
-                  freezing_point_temperature = real(freezing_temperature(real(constituents(isalt, k), fp)), dp)
-                  if (constituents(itemp, k) < freezing_point_temperature) then
-                     constituents(itemp, k) = freezing_point_temperature
-                     cells_with_min_limit = cells_with_min_limit + 1
-                  end if
-               end do
-            else ! if salinity is not modeled, use background salinity to determine freezing point
-               freezing_point_temperature = real(freezing_temperature(backgroundsalinity), dp)
-               do kk = 1, ndx
-                  k = ktop(kk) ! only the top layer is checked for freezing point
-                  if (constituents(itemp, k) < freezing_point_temperature) then
-                     constituents(itemp, k) = freezing_point_temperature
-                     cells_with_min_limit = cells_with_min_limit + 1
-                  end if
-               end do
-            end if
+
+            do kk = 1, ndx
+
+               k = ktop(kk) ! Only the top layer is checked for freezing point
+
+               ! Choose salinity source
+               if (isalt > 0) then
+                  salinity = real(constituents(isalt, k), fp)
+               else
+                  salinity = backgroundsalinity
+               end if
+
+               ! Compute freezing point temperature
+               freezing_point_temperature = real(freezing_temperature(salinity), dp)
+
+               ! Apply limit
+               if (constituents(itemp, k) < freezing_point_temperature) then
+                  constituents(itemp, k) = freezing_point_temperature
+                  cells_with_min_limit = cells_with_min_limit + 1
+               end if
+            end do
+
          end if
 
          if (temperature_min /= dmiss) then
@@ -199,7 +204,7 @@ contains
          call print_message(IDX_SAL_MIN, 'Minimum salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
-      if (jasal > 0 .and. maxitverticalforestersal > 0 .or. jatem > 0 .and. maxitverticalforestertem > 0) then
+      if (jasal > 0 .and. maxitverticalforestersal > 0 .or. temperature_model /= TEMPERATURE_MODEL_NONE .and. maxitverticalforestertem > 0) then
          call doforester()
       end if
       !

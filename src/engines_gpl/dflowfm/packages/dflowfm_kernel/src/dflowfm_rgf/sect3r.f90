@@ -165,7 +165,9 @@ contains
       TIO = TI0 ! SPvdP: TIO and TJO uninitialized, may be typing error
       TJO = TJ0
 
-      if (NUMCRO == 0) return
+      if (NUMCRO == 0) then
+         return
+      end if
 
       NUMCRO = 0
 
@@ -250,7 +252,9 @@ contains
             if (abs(TI - TIO) > EPS .or. abs(TJ - TJO) > EPS) then
 !                DIS = SQRT((XCR-XO)*(XCR-XO)+(YCR-YO)*(YCR-YO))
                dis = dbdistance(xo, yo, xcr, ycr, jsferic, jasfer3D, dmiss)
-               if (DIS > EPS2) goto 20 ! NIET VERDER VERKLEINEN ALS PUNTEN AL BIJNA IDENTIEK
+               if (DIS > EPS2) then
+                  goto 20 ! NIET VERDER VERKLEINEN ALS PUNTEN AL BIJNA IDENTIEK
+               end if
             end if
          end if
       end if

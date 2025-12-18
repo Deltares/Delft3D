@@ -85,7 +85,9 @@ contains
                K1 = KN(1, L)
                K2 = KN(2, L)
                if (K1 /= 0 .and. K2 /= 0) then
-                  if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) cycle
+                  if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) then
+                     cycle
+                  end if
                   XX1 = XK(K1)
                   YY1 = YK(K1)
                   ZZ1 = ZK(K1)

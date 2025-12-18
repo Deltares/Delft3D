@@ -56,7 +56,9 @@ contains
       call READYY('Reading md-Dept File', 0.0_dp)
 5     continue
       read (MMDD, '(A)', end=999) REC
-      if (REC(1:1) == '*') goto 5
+      if (REC(1:1) == '*') then
+         goto 5
+      end if
       backspace (MMDD)
 
       do N = 1, NC

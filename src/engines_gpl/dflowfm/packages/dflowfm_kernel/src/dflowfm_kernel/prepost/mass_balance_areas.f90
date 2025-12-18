@@ -215,8 +215,12 @@ contains
          ! check on ghosts!
          if (jampi == 1) then
 !        if neither is in my domain, don't use it
-            if (idomain(kk1) /= my_rank .and. idomain(kk2) /= my_rank) cycle
-            if (idomain(kk1) < my_rank .or. idomain(kk2) < my_rank) cycle
+            if (idomain(kk1) /= my_rank .and. idomain(kk2) /= my_rank) then
+               cycle
+            end if
+            if (idomain(kk1) < my_rank .or. idomain(kk2) < my_rank) then
+               cycle
+            end if
          end if
          if (ba1 /= ba2) then
             nombaln = nombaln + 1
@@ -240,7 +244,9 @@ contains
                Lf = lne2ln(L)
                ! check on ghosts!
                if (jampi == 1) then
-                  if (idomain(ln(2, Lf)) /= my_rank) cycle
+                  if (idomain(ln(2, Lf)) /= my_rank) then
+                     cycle
+                  end if
                end if
                nombaln = nombaln + 1
                call realloc(mbalnlist, nombaln, keepExisting=.true., fill=Lf)
@@ -276,13 +282,17 @@ contains
          if (kk1 > 0) then
             mbasorsin(1, isrc) = mbadef(kk1)
             if (jampi == 1) then
-               if (idomain(kk1) /= my_rank) mbasorsin(1, isrc) = 0
+               if (idomain(kk1) /= my_rank) then
+                  mbasorsin(1, isrc) = 0
+               end if
             end if
          end if
          if (kk2 > 0) then
             mbasorsin(2, isrc) = mbadef(kk2)
             if (jampi == 1) then
-               if (idomain(kk2) /= my_rank) mbasorsin(2, isrc) = 0
+               if (idomain(kk2) /= my_rank) then
+                  mbasorsin(2, isrc) = 0
+               end if
             end if
          end if
          mbasorsinout(1, isrc) = mbasorsin(1, isrc)
@@ -429,7 +439,9 @@ contains
 !  If in parallel mode, reduce arrays
       write_balance = .true.
       if (jampi == 1) then
-         if (my_rank /= 0) write_balance = .false.
+         if (my_rank /= 0) then
+            write_balance = .false.
+         end if
 
          call reduce_double_sum(nomba, mbavolumeend, mbavolumereduce)
          mbavolumeend(:) = mbavolumereduce(:)
@@ -562,7 +574,9 @@ contains
 
       write_balance = .true.
       if (jampi == 1) then
-         if (my_rank /= 0) write_balance = .false.
+         if (my_rank /= 0) then
+            write_balance = .false.
+         end if
       end if
 
       if (write_balance) then
@@ -607,7 +621,9 @@ contains
       do kk = 1, ndxi
          if (jampi == 1) then
 !        do not include ghost cells
-            if (idomain(kk) /= my_rank) cycle
+            if (idomain(kk) /= my_rank) then
+               cycle
+            end if
          end if
          imba = mbadef(kk)
          call getkbotktop(kk, kb, kt)
@@ -653,7 +669,9 @@ contains
       do nm = 1, ndxi
          if (jampi == 1) then
 !        do not include ghost cells
-            if (idomain(nm) /= my_rank) cycle
+            if (idomain(nm) /= my_rank) then
+               cycle
+            end if
          end if
          imba = mbadef(nm)
          ! bed stratigraphy
@@ -707,7 +725,9 @@ contains
       do kk = 1, ndxi
          if (jampi == 1) then
 !        do not include ghost cells
-            if (idomain(kk) /= my_rank) cycle
+            if (idomain(kk) /= my_rank) then
+               cycle
+            end if
          end if
          imba = mbadef(kk)
          mbaba(imba) = mbaba(imba) + ba(kk)
@@ -726,7 +746,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_horflowmba", ithndl)
+      if (timon) then
+         call timstrt("comp_horflowmba", ithndl)
+      end if
 
       do i = 1, nombaln
          LL = mbalnlist(i)
@@ -758,7 +780,9 @@ contains
          end if
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine comp_horflowmba
 
    subroutine comp_horfluxmba()
@@ -781,7 +805,9 @@ contains
 
       integer(4) :: ithndl = 0 !< timer handle
 
-      if (timon) call timstrt("comp_horfluxmba", ithndl)
+      if (timon) then
+         call timstrt("comp_horfluxmba", ithndl)
+      end if
 
       do iconst = 1, numconst
          if (imbs2sed(iconst) > 0) then
@@ -810,7 +836,9 @@ contains
          ! Note: mbafluxsorsin updated in fill_constitents ... uses always dts
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine comp_horfluxmba
 
    subroutine comp_bedload_fluxmba()
@@ -1175,7 +1203,7 @@ contains
    end subroutine mba_prepare_values
 
    subroutine mba_prepare_names_flows(imba)
-      use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc, srcname
       use m_mass_balance_areas
@@ -1248,13 +1276,13 @@ contains
       end if
 
       ! computed evaporation
-      if (jaevap > 0 .and. jatem > 3) then
+      if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_name(balance, labelext, labeleva)
       end if
    end subroutine mba_prepare_names_flows
 
    subroutine mba_prepare_values_flows(imba, overall_balance)
-      use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc
       use m_mass_balance_areas
@@ -1329,7 +1357,7 @@ contains
       end if
 
       ! computed evaporation
-      if (jaevap > 0 .and. jatem > 3) then
+      if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_values(flows, imbf, [0.0_dp, p_mbafloweva(imba)])
       end if
 
@@ -1338,7 +1366,7 @@ contains
    end subroutine mba_prepare_values_flows
 
    subroutine mba_prepare_names_flows_whole_model()
-      use m_flowparameters, only: jatem, jambalumpbnd, jambalumpsrc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc, srcname
       use m_mass_balance_areas
@@ -1388,13 +1416,13 @@ contains
       end if
 
       ! computed evaporation
-      if (jaevap > 0 .and. jatem > 3) then
+      if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_name(balance, labelext, labeleva)
       end if
    end subroutine mba_prepare_names_flows_whole_model
 
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
-      use m_flowparameters, only: jatem, jambalumpbnd, jambalumpsrc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc
       use m_mass_balance_areas
@@ -1460,7 +1488,7 @@ contains
       end if
 
       ! computed evaporation
-      if (jaevap > 0 .and. jatem > 3) then
+      if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_values(flows, imbf, [0.0_dp, sum(p_mbafloweva(:))])
       end if
 
@@ -1469,9 +1497,9 @@ contains
    end subroutine mba_prepare_values_flows_whole_model
 
    subroutine mba_prepare_names_fluxes(imbs, imba)
-      use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
+         jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc, srcname
-      use m_flowparameters, only: jatem
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1559,8 +1587,10 @@ contains
       end if
 
       ! heat flux
-      if (imbs == itemp .and. jatem > 1) then
-         call add_name(balance, labelext, labelheatflux)
+      if (imbs == itemp) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call add_name(balance, labelext, labelheatflux)
+         end if
       end if
 
       ! processes
@@ -1620,9 +1650,9 @@ contains
    end subroutine mba_prepare_names_fluxes
 
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
-      use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
+         jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc
-      use m_flowparameters, only: jatem
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
@@ -1735,8 +1765,10 @@ contains
       end if
 
       ! heat flux
-      if (imbs == itemp .and. jatem > 1) then
-         call add_values(fluxes, imbf, p_mbafluxheat(1:2, imba))
+      if (imbs == itemp) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call add_values(fluxes, imbf, p_mbafluxheat(1:2, imba))
+         end if
       end if
 
       ! processes
@@ -1793,9 +1825,9 @@ contains
    end subroutine mba_prepare_values_fluxes
 
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
-      use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
+         jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc, srcname
-      use m_flowparameters, only: jatem
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1861,8 +1893,10 @@ contains
       end if
 
       ! heat flux
-      if (imbs == itemp .and. jatem > 1) then
-         call add_name(balance, labelext, labelheatflux)
+      if (imbs == itemp) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call add_name(balance, labelext, labelheatflux)
+         end if
       end if
 
       ! processes
@@ -1909,9 +1943,9 @@ contains
    end subroutine mba_prepare_names_fluxes_whole_model
 
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
-      use m_flowparameters, only: jatem, jambalumpbnd, jambalumpsrc, jambalumpproc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, &
+         jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc
-      use m_flowparameters, only: jatem
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
@@ -2015,8 +2049,10 @@ contains
       end if
 
       ! heat flux
-      if (imbs == itemp .and. jatem > 1) then
-         call add_values(fluxes, imbf, sum(p_mbafluxheat(1:2, :), 2))
+      if (imbs == itemp) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call add_values(fluxes, imbf, sum(p_mbafluxheat(1:2, :), 2))
+         end if
       end if
 
       ! processes

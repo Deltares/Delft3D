@@ -126,7 +126,6 @@ contains
       use m_set_frcu_mor
       use m_flow_obsinit
       use m_set_model_boundingbox, only: set_model_boundingbox
-      use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
       use m_fill_constituents, only: fill_constituents
@@ -222,11 +221,15 @@ contains
 
          if (Ndx > 0) then
             call mess(LEVEL_INFO, 'Start partitioning model...')
-            if (jatimer == 1) call starttimer(IPARTINIT)
+            if (jatimer == 1) then
+               call starttimer(IPARTINIT)
+            end if
 
             call partition_init_1D2D(md_ident, iresult) ! 1D & 2D (hence the name, thanks to Herman for pointing this out)
 
-            if (jatimer == 1) call stoptimer(IPARTINIT)
+            if (jatimer == 1) then
+               call stoptimer(IPARTINIT)
+            end if
             call mess(LEVEL_INFO, 'Done partitioning model.')
 
             if (iresult == 0) then
@@ -322,9 +325,13 @@ contains
          call update_vertadmin()
 
          !3D: partition_init needs kmxn and kmxL arrays for 3D send- and ghostlists
-         if (jatimer == 1) call starttimer(IPARTINIT)
+         if (jatimer == 1) then
+            call starttimer(IPARTINIT)
+         end if
          call partition_init_3D(iresult)
-         if (jatimer == 1) call stoptimer(IPARTINIT)
+         if (jatimer == 1) then
+            call stoptimer(IPARTINIT)
+         end if
 
          if (iresult /= DFM_NOERR) then
             call mess(LEVEL_WARN, 'Error in 3D partitioning initialization.')
@@ -333,10 +340,6 @@ contains
 
       end if
       call timstop(handle_extra(12)) ! vertical administration
-
-#ifdef _OPENMP
-      ierr = init_openmp(md_numthreads, jampi)
-#endif
 
       call timstrt('Net link tree 0     ', handle_extra(13)) ! netlink tree 0
       if ((jatrt == 1) .or. (jacali == 1)) then

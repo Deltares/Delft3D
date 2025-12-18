@@ -50,7 +50,9 @@ contains
       integer, save :: iyp
       integer :: naf
 
-      if (jaGUI /= 1) return
+      if (jaGUI /= 1) then
+         return
+      end if
 
       if (INI == 0) then
          INI = 1

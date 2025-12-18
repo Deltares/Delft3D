@@ -55,7 +55,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("get_ndeltasteps", ithndl)
+      if (timon) then
+         call timstrt("get_ndeltasteps", ithndl)
+      end if
 
       numnonglobal = 0
 
@@ -92,7 +94,9 @@ contains
 
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine get_ndeltasteps
 

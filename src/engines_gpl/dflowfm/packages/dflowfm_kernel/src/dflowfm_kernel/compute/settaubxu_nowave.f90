@@ -65,7 +65,9 @@ contains
 
       do L = 1, lnx
          call getLbotLtop(L, Lb, Lt)
-         if (Lt < Lb) cycle
+         if (Lt < Lb) then
+            cycle
+         end if
          if (hu(L) > epshu) then
             if (frcu(L) > 0.0_dp) then ! input, or result from trachytopes
                cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))

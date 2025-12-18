@@ -44,10 +44,18 @@ contains
       real(kind=dp) :: sx2, sy2
       i = 0
       j = 0
-      if (sx2 > xmxs) i = 1
-      if (sx2 < xmns) i = -1
-      if (sy2 > ymxs) j = 1
-      if (sy2 < ymns) j = -1
+      if (sx2 > xmxs) then
+         i = 1
+      end if
+      if (sx2 < xmns) then
+         i = -1
+      end if
+      if (sy2 > ymxs) then
+         j = 1
+      end if
+      if (sy2 < ymns) then
+         j = -1
+      end if
       if (i /= 0 .or. j /= 0) then
          i = i + 1
          i = i - 1

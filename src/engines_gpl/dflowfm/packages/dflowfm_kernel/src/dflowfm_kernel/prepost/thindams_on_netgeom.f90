@@ -70,7 +70,9 @@ contains
       integer :: jakdtree ! use kdtree (1) or not (0)
       logical :: cache_read
 
-      if (nthd == 0) return
+      if (nthd == 0) then
+         return
+      end if
 
       ierror = 1
       jakdtree = 1
@@ -145,10 +147,18 @@ contains
             write (mesg, "('thin dams with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
             call mess(LEVEL_INFO, trim(mesg))
 
-            if (allocated(crossed_links)) deallocate (crossed_links)
-            if (allocated(polygon_nodes)) deallocate (polygon_nodes)
-            if (allocated(polygon_segment_weights)) deallocate (polygon_segment_weights)
-            if (allocated(idum)) deallocate (idum)
+            if (allocated(crossed_links)) then
+               deallocate (crossed_links)
+            end if
+            if (allocated(polygon_nodes)) then
+               deallocate (polygon_nodes)
+            end if
+            if (allocated(polygon_segment_weights)) then
+               deallocate (polygon_segment_weights)
+            end if
+            if (allocated(idum)) then
+               deallocate (idum)
+            end if
          end if ! if (jakdtree == 1) then
 
          if (jakdtree == 0) then ! no kdtree, or kdtree gave error
@@ -169,7 +179,9 @@ contains
 
          ierror = 0
 
-         if (NPL > 0) call delpol()
+         if (NPL > 0) then
+            call delpol()
+         end if
 
          call cache_thin_dams(thd)
 

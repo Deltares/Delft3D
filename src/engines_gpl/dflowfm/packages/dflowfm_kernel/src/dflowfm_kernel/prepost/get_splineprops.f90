@@ -65,7 +65,9 @@ contains
 
 !  allocate
       allocate (xlist(1), ylist(1))
-      if (allocated(splineprops)) call deallocate_splineprops()
+      if (allocated(splineprops)) then
+         call deallocate_splineprops()
+      end if
       call allocate_splineprops()
 
       do is = 1, mcs
@@ -101,11 +103,15 @@ contains
 ! then, check the cross splines; the center spline is the middle spline that crosses the cross spline
       do js = 1, mcs
          call nump(js, num)
-         if (num /= 2) cycle ! cross splines only
+         if (num /= 2) then
+            cycle ! cross splines only
+         end if
 
          ncs = splineprops(js)%ncs
 
-         if (ncs < 1) cycle
+         if (ncs < 1) then
+            cycle
+         end if
 
 !     determine the middle
          imiddle = min(ncs / 2 + 1, ncs)

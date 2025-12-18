@@ -47,7 +47,9 @@ contains
 
       integer :: i
 
-      if (numdots < 1) return
+      if (numdots < 1) then
+         return
+      end if
 
       call increasesam(Ns + numdots)
 

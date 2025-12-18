@@ -343,7 +343,9 @@ contains
                   call ADDMAZE(X, -Y, Z, NN, JAFIVE)
                end if
             end do
-            if (jaklaar == 1) exit
+            if (jaklaar == 1) then
+               exit
+            end if
 
             yy = yy + dy0
          end do

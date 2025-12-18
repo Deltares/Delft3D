@@ -86,12 +86,16 @@ contains
             if (ja == 1) then
 
                cfl = abs(qa(LLLL)) * dts / volu
-               if (nd(k12)%lnx == 3) cfl = 1.4_dp * cfl
+               if (nd(k12)%lnx == 3) then
+                  cfl = 1.4_dp * cfl
+               end if
                if (cfl > 0) then
                   tet = max(0.0_dp, 1.0_dp - 1.0_dp / cfl)
                   if (jasfer3D == 1) then
                      nn12 = 1
-                     if (LLL > 0) nn12 = 2
+                     if (LLL > 0) then
+                        nn12 = 2
+                     end if
                      ucinx = lin2nodx(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
                      uciny = lin2nody(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
                      ucin = nod2linx(L, n12, ucinx, uciny) * cs + nod2liny(L, n12, ucinx, uciny) * sn - u1(L) * (1.0_dp - tet)

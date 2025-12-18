@@ -68,8 +68,12 @@ contains
       L = ln2lne(Lf)
       k1 = kn(1, L)
       k2 = kn(2, L)
-      if (nmk(k1) == 1) k = k2
-      if (nmk(k2) == 1) k = k1
+      if (nmk(k1) == 1) then
+         k = k2
+      end if
+      if (nmk(k2) == 1) then
+         k = k1
+      end if
       do kk = 1, nmk(k)
          LL = abs(nod(k)%lin(kk))
          if (kn(3, LL) == 1 .or. kn(3, LL) == 6) then ! on second thought, only true 1D links should influence lateral inflow width ! .or. kn(3,LL) == 4) then

@@ -77,8 +77,8 @@ contains
       use m_physcoef, only: ag, vonkar, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
-      use m_flow, only: s0, s1, u1, v, kmx, zws, hs, &
-                        iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
+      use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
+         u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -89,17 +89,24 @@ contains
       use m_alloc
       use m_missing
       use m_turbulence, only: vicwws, turkinws, rhowat
-      use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
-      use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
-      use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
+         flowWithoutWaves, epshu
+      use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
+         kmxsed, taub, uuu, vvv
+      use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, &
+         sxtot, sytot, ucxq_mor, ucyq_mor
       use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
-      use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
-      use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
-      use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc
+      use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, &
+         sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
+      use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, &
+         sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
+      use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, &
+         dzbdt, tratyp, ws, wslc
       use m_fm_erosed, only: max_integers, max_strings, dll_integers, dll_strings, dll_function, dll_handle
       use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
       use m_fm_erosed, only: i10, i15, i50, i90
-      use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau
+      use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, &
+         factsd, pmcrit, uau
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -240,16 +247,26 @@ contains
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
       !
       error = .false.
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
       ubot_from_com = jauorbfromswan > 0
       timhr = time1 / 3600.0_fp
       !
       ! Allocate memory
       allocate (dzdx(1:ndx), dzdy(1:ndx), stat=istat)
-      if (istat == 0) allocate (localpar(npar), stat=istat)
-      if (istat == 0) allocate (ua(1:ndx), va(1:ndx), stat=istat)
-      if (istat == 0) allocate (z0rouk(1:ndx), z0curk(1:ndx), deltas(1:ndx), stat=istat)
-      if ((istat == 0) .and. (.not. allocated(u1_tmp))) allocate (u1_tmp(1:lnx), ucxq_tmp(1:ndx), ucyq_tmp(1:ndx), stat=ierr)
+      if (istat == 0) then
+         allocate (localpar(npar), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (ua(1:ndx), va(1:ndx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (z0rouk(1:ndx), z0curk(1:ndx), deltas(1:ndx), stat=istat)
+      end if
+      if ((istat == 0) .and. (.not. allocated(u1_tmp))) then
+         allocate (u1_tmp(1:lnx), ucxq_tmp(1:ndx), ucyq_tmp(1:ndx), stat=ierr)
+      end if
 
       localpar = 0.0_fp
       ua = 0.0_dp
@@ -644,7 +661,9 @@ contains
          ! do not calculate sediment sources, sinks, and bed load
          ! transport in areas with very shallow water.
          !
-         if ((s1(nm) - bl(nm)) <= epshu) cycle ! dry
+         if ((s1(nm) - bl(nm)) <= epshu) then
+            cycle ! dry
+         end if
          !
          call getkbotktop(nm, kb, kt)
          if (kfsed(nm) == 0) then ! shallow but not dry, ie ]epshu sedthresh]
@@ -783,7 +802,7 @@ contains
          else
             salinity = backgroundsalinity
          end if
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             temperature = constituents(itemp, kbed) ! r0(nm, kbed, ltem)
          else
             temperature = backgroundwatertemperature
@@ -948,7 +967,9 @@ contains
                !
                fracf = 0.0_fp
                if (iflufflyr > 0) then
-                  if (mfltot > 0.0_fp) fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
+                  if (mfltot > 0.0_fp) then
+                     fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
+                  end if
                end if
                !
                kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
@@ -1329,8 +1350,12 @@ contains
       !
       allocate (evel(lsed), stat=istat)
       do nm = 1, ndx
-         if (pmcrit(nm) < 0.0_fp) cycle
-         if (mudfrac(nm) <= 0.0_fp .or. mudfrac(nm) >= 1.0_fp) cycle
+         if (pmcrit(nm) < 0.0_fp) then
+            cycle
+         end if
+         if (mudfrac(nm) <= 0.0_fp .or. mudfrac(nm) >= 1.0_fp) then
+            cycle
+         end if
          !
          ! compute erosion velocities
          !
@@ -1338,7 +1363,9 @@ contains
          do l = 1, lsed
             ll = lstart + l
             kmaxsd = kmxsed(nm, l) ! meaning of kmaxsd changes here!
-            if (frac(nm, l) > 0.0_fp) evel(l) = (sourse(nm, l) - sour_im(nm, l) * constituents(ll, kmaxsd)) / (cdryb(l) * frac(nm, l))
+            if (frac(nm, l) > 0.0_fp) then
+               evel(l) = (sourse(nm, l) - sour_im(nm, l) * constituents(ll, kmaxsd)) / (cdryb(l) * frac(nm, l))
+            end if
          end do
          !
          ! recompute erosion velocities
@@ -1378,7 +1405,9 @@ contains
       !
 
       deallocate (dzdx, dzdy, stat=istat)
-      if (istat == 0) deallocate (localpar, stat=istat)
+      if (istat == 0) then
+         deallocate (localpar, stat=istat)
+      end if
       if (istat /= 0) then
          error = .true.
          write (errmsg, '(a)') 'fm_erosed::error deallocating memory.'

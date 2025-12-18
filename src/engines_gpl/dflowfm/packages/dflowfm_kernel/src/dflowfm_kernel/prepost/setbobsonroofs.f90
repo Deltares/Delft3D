@@ -134,7 +134,9 @@ contains
                L = iL
             else
                L = crossed_links(iL)
-               if (L <= 0) cycle
+               if (L <= 0) then
+                  cycle
+               end if
                k = polygon_nodes(iL)
             end if
 
@@ -159,7 +161,9 @@ contains
                iloop: do i = 1, 2
 
                   if (i == 1) then
-                     if (Lastfoundk == 0) cycle
+                     if (Lastfoundk == 0) then
+                        cycle
+                     end if
                      kf = max(1, Lastfoundk - 100)
                      kL = min(npl - 1, Lastfoundk + 100)
                   else
@@ -246,7 +250,9 @@ contains
             L = iL
          else
             L = crossed_links(iL)
-            if (L <= 0) cycle
+            if (L <= 0) then
+               cycle
+            end if
             k = polygon_nodes(iL)
          end if
 
@@ -271,7 +277,9 @@ contains
             iloop2: do i = 1, 2
 
                if (i == 1) then
-                  if (Lastfoundk == 0) cycle
+                  if (Lastfoundk == 0) then
+                     cycle
+                  end if
                   kf = max(1, Lastfoundk - 100)
                   kL = min(npl - 1, Lastfoundk + 100)
                else
@@ -369,7 +377,9 @@ contains
       end if
 
       call deallocpoladm()
-      if (allocated(blav)) deallocate (blav, nblav)
+      if (allocated(blav)) then
+         deallocate (blav, nblav)
+      end if
 
    end subroutine setbobsonroofs
 

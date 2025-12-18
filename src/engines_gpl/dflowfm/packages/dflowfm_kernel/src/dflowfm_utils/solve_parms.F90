@@ -151,7 +151,9 @@ subroutine iniparms(ierr)
 !        off-diagonal elements
          do i = 1, row(ndn)%l
             j = row(ndn)%j(i)
-            if (iglobal(j) == 0) cycle
+            if (iglobal(j) == 0) then
+               cycle
+            end if
             nummat = nummat + 1
          end do
 
@@ -200,7 +202,9 @@ subroutine iniparms(ierr)
 !        off-diagonal elements
          do i = 1, row(ndn)%l
             j = row(ndn)%j(i)
-            if (iglobal(j) == 0) cycle
+            if (iglobal(j) == 0) then
+               cycle
+            end if
 
             jmat(idxmat) = iglobal(j)
             guusidx(idxmat) = row(ndn)%a(i)
@@ -220,19 +224,27 @@ subroutine iniparms(ierr)
 !  create map object
    if (jampi == 1) then
       call parms_MapCreateFromDist(map, p2nodes, part, MPI_COMM_WORLD, 1, 1, NONINTERLACED, ierr)
-      if (ierr /= 0) goto 1234
+      if (ierr /= 0) then
+         goto 1234
+      end if
    else
       call parms_MapCreateFromLocal(map, numloc, 1, ierr)
-      if (ierr /= 0) goto 1234
+      if (ierr /= 0) then
+         goto 1234
+      end if
    end if
 
 !  create matrix object
    call parms_MatCreate(mat, map, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
 
 !  create preconditioner
    call parms_pccreate(pc, mat, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
 
 !  set preconditioner parameters
    select case (iparms(IPARMS_ILUTYPE))
@@ -250,17 +262,23 @@ subroutine iniparms(ierr)
 
    if (dparms(IPARMS_DTOL) > 0.0_dp) then
       call parms_pcsettol(pc, dparms(IPARMS_DTOL), ierr)
-      if (ierr /= 0) goto 1234
+      if (ierr /= 0) then
+         goto 1234
+      end if
    end if
 
    if (iparms(IPARMS_NLEVEL) > 0) then
       call parms_pcsetNlevels(pc, iparms(IPARMS_NLEVEL), ierr)
-      if (ierr /= 0) goto 1234
+      if (ierr /= 0) then
+         goto 1234
+      end if
    end if
 
 !  create solver
    call parms_solvercreate(ksp, mat, pc, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
 
 !  set tolerance
    write (param, '(e15.5)') epscg
@@ -273,7 +291,9 @@ subroutine iniparms(ierr)
 
 !  reset matrix to be re-used
    call parms_matreset(mat, SAME_NONZERO_STRUCTURE, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
 
    iparmsstat = IPARMS_OK
    ierr = 0
@@ -284,9 +304,15 @@ subroutine iniparms(ierr)
    end if
 
 !  deallocate
-   if (allocated(mask)) deallocate (mask)
-   if (allocated(p2nodes)) deallocate (p2nodes)
-   if (allocated(part)) deallocate (part)
+   if (allocated(mask)) then
+      deallocate (mask)
+   end if
+   if (allocated(p2nodes)) then
+      deallocate (p2nodes)
+   end if
+   if (allocated(part)) then
+      deallocate (part)
+   end if
 
 #endif
 
@@ -345,9 +371,13 @@ subroutine conjugategradient_parms(s1, Ndx, its)
 
 !   call parms_MatResetRowValues(mat, numloc, irows, imat, jmat, amat, ierr)
    call parms_MatSetValues(mat, numloc, irows, imat, jmat, amat, INSERT, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
    call parms_MatSetup(mat, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
 
 !  fill right-hand side and set initial values
    rhs = 0.0_dp
@@ -369,15 +399,21 @@ subroutine conjugategradient_parms(s1, Ndx, its)
 
 !  solve system
    call parms_solverapply(ksp, rhs, sol, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
 
 !  get residual norm
    call parms_solvergetresidualnorm2(ksp, rhs, sol, res, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
 
 !  get number of iterations
    call parms_solvergetits(ksp, its, ierr)
-   if (ierr /= 0) goto 1234
+   if (ierr /= 0) then
+      goto 1234
+   end if
 
 !  print residual norm
    if (my_rank == 0) then
@@ -425,16 +461,34 @@ subroutine deallocparms()
       call parms_solverfree(ksp, ierr)
    end if
 
-   if (allocated(imat)) deallocate (imat)
-   if (allocated(jmat)) deallocate (jmat)
-   if (allocated(amat)) deallocate (amat)
-   if (allocated(guusidx)) deallocate (guusidx)
+   if (allocated(imat)) then
+      deallocate (imat)
+   end if
+   if (allocated(jmat)) then
+      deallocate (jmat)
+   end if
+   if (allocated(amat)) then
+      deallocate (amat)
+   end if
+   if (allocated(guusidx)) then
+      deallocate (guusidx)
+   end if
 !   if ( allocated(izerorow)  ) deallocate(izerorow)
-   if (allocated(irows)) deallocate (irows)
-   if (allocated(rowtoelem)) deallocate (rowtoelem)
-   if (allocated(irowglob)) deallocate (irowglob)
-   if (allocated(sol)) deallocate (sol)
-   if (allocated(rhs)) deallocate (rhs)
+   if (allocated(irows)) then
+      deallocate (irows)
+   end if
+   if (allocated(rowtoelem)) then
+      deallocate (rowtoelem)
+   end if
+   if (allocated(irowglob)) then
+      deallocate (irowglob)
+   end if
+   if (allocated(sol)) then
+      deallocate (sol)
+   end if
+   if (allocated(rhs)) then
+      deallocate (rhs)
+   end if
 
    iparmsstat = IPARMS_EMPTY
 

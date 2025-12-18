@@ -170,7 +170,9 @@ contains
 
             if (kmx == 0) then
                do L = 1, lnx
-                  if (u1(L) == 0.0_dp) cycle
+                  if (u1(L) == 0.0_dp) then
+                     cycle
+                  end if
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   wcxu = wcx1(L) * u1(L)
@@ -217,9 +219,13 @@ contains
                end do
             else ! 3D, max waterdepth
                do LL = 1, lnx
-                  if (abs(u1(LL)) < eps10) cycle
+                  if (abs(u1(LL)) < eps10) then
+                     cycle
+                  end if
                   call getLbotLtop(LL, Lb, Lt)
-                  if (Lt < Lb) cycle
+                  if (Lt < Lb) then
+                     cycle
+                  end if
                   do L = Lb, Lt
                      k1 = ln0(1, L)
                      k2 = ln0(2, L)
@@ -267,7 +273,9 @@ contains
                ! This is potentially not consistent for Z/mixed sigma approach, to check JRE
                do LL = 1, lnx
                   call getLbotLtop(LL, Lb, Lt)
-                  if (Lt < Lb) cycle
+                  if (Lt < Lb) then
+                     cycle
+                  end if
                   do L = Lb, Lt
                      k1 = ln0(1, L)
                      k2 = ln0(2, L)

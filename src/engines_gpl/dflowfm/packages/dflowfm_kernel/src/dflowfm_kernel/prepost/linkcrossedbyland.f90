@@ -106,19 +106,25 @@ contains
             if (dis <= dtol) then
                jacross = 1
                jland = j
-               if (rL1 >= 0.0_dp .and. rL1 <= 1.0_dp) jastop = 1
+               if (rL1 >= 0.0_dp .and. rL1 <= 1.0_dp) then
+                  jastop = 1
+               end if
             else
                call dlinedis3(x2, y2, x3, y3, x4, y4, ja, dis, xn, yn, rL2)
                if (dis <= dtol) then
                   jacross = 1
                   jland = j
-                  if (rL2 >= 0.0_dp .and. rL2 <= 1.0_dp) jastop = 1
+                  if (rL2 >= 0.0_dp .and. rL2 <= 1.0_dp) then
+                     jastop = 1
+                  end if
                end if
             end if
 
             dismin = min(dis, dismin)
 
-            if (jastop == 1) exit
+            if (jastop == 1) then
+               exit
+            end if
          end if
 
 !     move pointer left-right-left-right-left-right etc.
@@ -132,7 +138,9 @@ contains
             end if
             j = j + j_
          end do
-         if (iter == 3) exit
+         if (iter == 3) then
+            exit
+         end if
       end do
 
 !   if ( jacross.eq.1 .and. max(rL1,rL2).gt.0d0 .and. min(rL1,rL2).le.1d0 ) then

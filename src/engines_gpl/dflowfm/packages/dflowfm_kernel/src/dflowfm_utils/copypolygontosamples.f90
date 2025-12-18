@@ -73,7 +73,9 @@ contains
                XS(N) = XPL(K)
                YS(N) = YPL(K)
                ZS(N) = ZPL(K)
-               if (ZS(N) == DMISS) ZS(N) = 1.0_dp
+               if (ZS(N) == DMISS) then
+                  ZS(N) = 1.0_dp
+               end if
             end if
 
             if (JAKOL45 > 0 .and. ZPL(K) /= DMISS) then
@@ -178,7 +180,9 @@ contains
                   XS(N) = XPL(KU)
                   YS(N) = YPL(KU)
                   ZS(N) = ZPL(KU)
-                  if (ZS(N) == DMISS) ZS(N) = 1.0_dp
+                  if (ZS(N) == DMISS) then
+                     ZS(N) = 1.0_dp
+                  end if
                end if
 
                if (JAKOL45 > 0 .and. ZPL(KU) /= DMISS) then
