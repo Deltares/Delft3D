@@ -2590,7 +2590,7 @@ contains
 
       do i = 1, expectedLength
          call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames, ncvarnames, uservarnames=nccustomnames)
-         if (idvar <= 0 .and. ncstdnames_fallback(1) /= ' ') then
+         if (idvar <= 0 .and. allocated(ncstdnames_fallback)) then
             call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames_fallback, ncvarnames)
          end if
          if (idvar <= 0) then ! Variable not found among standard names and variable names either
