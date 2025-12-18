@@ -28,7 +28,7 @@
 
 !> Reading/writing timeseries files in NetCDF format
 module m_ec_netcdf_timeseries
-   use string_module, only: find_candidate_in_array
+   use string_module, only: find_candidates_in_targets
    use m_ec_parameters
    use m_ec_support
    use m_ec_message
@@ -418,17 +418,17 @@ contains
       
       ! search for standard_name
       if (allocated(ncptr%standard_names) .and. allocated(ncstdnames)) then
-         ivar = find_candidate_in_array(ncptr%standard_names, ncstdnames)
+         ivar = find_candidates_in_targets(ncptr%standard_names, ncstdnames)
       end if
 
       ! if standard_name not found, search for long_name
-      if (ivar > ncptr%nVars .and. allocated(ncptr%long_names) .and. allocated(ncstdnames_fallback)) then
-         ivar = find_candidate_in_array(ncptr%long_names, ncstdnames_fallback)
+      if (ivar < 0 .and. allocated(ncptr%long_names) .and. allocated(ncstdnames_fallback)) then
+         ivar = find_candidates_in_targets(ncptr%long_names, ncstdnames_fallback)
       end if
 
       ! if also long_name not found, search for variable_name
-      if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names) .and. allocated(ncvarnames)) then
-         ivar = find_candidate_in_array(ncptr%variable_names, ncvarnames)
+      if (ivar < 0 .and. allocated(ncptr%variable_names) .and. allocated(ncvarnames)) then
+         ivar = find_candidates_in_targets(ncptr%variable_names, ncvarnames)
       end if
 
       ! If quantity is found in (std,long,var)_names, set q_id and check if quantity is a vector
