@@ -122,7 +122,7 @@ contains
 
          return
 
-      else if (abs(kcu(ll)) == 1 .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
+      else if (abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5 .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
          cz = 0.0_dp
 
          if (japerim == 0) then ! calculate total area and volume
@@ -144,7 +144,12 @@ contains
                else
                   factor = 1.0_dp
                end if
-               call getconveyance(network, dpt, u1L, q1L, s1L, LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
+               if (abs(kcu(ll)) == 1) then
+                  call getconveyance(network, dpt, u1L, q1L, s1L, LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
+               else ! 1D2Dlink
+                  cz = frcu(L)
+                  conv = cz * af_sub(1) * sqrt(af_sub(1) / af_sub(1))
+               end if
 
                ! For sediment transport the discharge in the main channel is required:
                ! Qmain/ QT = Kmain/KT -> u_main = Kmain/KT * (AT/Amain)
