@@ -300,7 +300,7 @@ contains
 
       ! ray-casting algorithm: count crossings of horizontal ray from point to +infinity
       crossings = 0
-      j = n ! start with last point
+      j = n ! In order to check the entire polygon, start the first link which lies between the last point (n) and the first point
 
       do i = 1, n
          ! check for missing value (polygon separator)
