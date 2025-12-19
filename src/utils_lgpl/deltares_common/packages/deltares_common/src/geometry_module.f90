@@ -254,12 +254,12 @@ contains
    end function clockwise_hp
 
 !> wrapper for optimized ray-casting point-in-polygon test that maintains old interface
-pure subroutine pinpok(xl, yl, n, x, y, inside, jins_dummy, dmiss_dummy)
+   pure subroutine pinpok(xl, yl, n, x, y, inside, jins_dummy, dmiss_dummy)
 
       integer, intent(in) :: n !< number of polygon points
       integer, intent(out) :: inside !> result: 1 if inside, 0 if outside
       integer, intent(in) :: jins_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
-      real(kind=dp), intent(in) :: dmiss_dummy!> dummy argument to maintain old interface, internal routine will use value from m_missing
+      real(kind=dp), intent(in) :: dmiss_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
       real(kind=dp), intent(in) :: xl, yl !> point to check if it is inside polygon
       real(kind=dp), intent(in) :: x(n), y(n) !> polygon coordinates (n elements)
 
@@ -269,11 +269,11 @@ pure subroutine pinpok(xl, yl, n, x, y, inside, jins_dummy, dmiss_dummy)
 
       inside = 1
       if (.not. is_inside) then
-          inside = 0
+         inside = 0
       end if
 
-end subroutine
-   
+   end subroutine
+
 !> optimized ray-casting point-in-polygon test.
 !! pure function that works with array slices or full arrays.
    pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
@@ -292,7 +292,9 @@ end subroutine
       ! degenerate polygon check
       if (n <= 2) then
          is_inside = .true.
-         if (jins == 0) is_inside = .not. is_inside
+         if (jins == 0) then
+            is_inside = .not. is_inside
+         end if
          return
       end if
 
@@ -302,7 +304,9 @@ end subroutine
 
       do i = 1, n
          ! check for missing value (polygon separator)
-         if (x(i) == dmiss) exit
+         if (x(i) == dmiss) then
+            exit
+         end if
 
          x_j = x(j)
          y_j = y(j)
@@ -312,7 +316,9 @@ end subroutine
          ! check if point is exactly on a vertex
          if (xl == x_j .and. yl == y_j) then
             is_inside = .true.
-            if (jins == 0) is_inside = .not. is_inside
+            if (jins == 0) then
+               is_inside = .not. is_inside
+            end if
             return
          end if
 
@@ -328,7 +334,9 @@ end subroutine
             else if (xl == x_intersect) then
                ! point is exactly on the edge
                is_inside = .true.
-               if (jins == 0) is_inside = .not. is_inside
+               if (jins == 0) then
+                  is_inside = .not. is_inside
+               end if
                return
             end if
          end if
