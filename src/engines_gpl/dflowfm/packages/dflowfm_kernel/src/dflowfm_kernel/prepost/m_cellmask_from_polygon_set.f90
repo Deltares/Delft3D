@@ -37,7 +37,7 @@ module m_cellmask_from_polygon_set
    private
 
    public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
-   public :: init_netcell_incells_cache, incells_cellmask, cleanup_netcell_incells_cache
+   public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
 
    integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
    real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
@@ -228,7 +228,7 @@ contains
    end function pinpok_elemental
 
    !> Initialize xpl, ypl, zpl arrays with all netcell geometries (called once)
-   subroutine init_netcell_incells_cache()
+   subroutine init_cell_geom_as_polylines()
       use network_data
       use m_alloc
 
@@ -276,25 +276,26 @@ contains
       ! this builds bounding boxes and polygon indices
       call cellmask_from_polygon_set_init(npl, xpl, ypl, zpl)
 
-   end subroutine init_netcell_incells_cache
+   end subroutine init_cell_geom_as_polylines
 
-   subroutine cleanup_netcell_incells_cache()
+   !> call general polygon cleanup and restore previous polygon data
+   subroutine cleanup_cell_geom_polylines()
       call cellmask_from_polygon_set_cleanup()
-      maxpol = 0
+      maxpol = 0 !< reset maxpol to prevent unnecessarily large realloc
       call restorepol()
-   end subroutine cleanup_netcell_incells_cache
+   end subroutine cleanup_cell_geom_polylines
 
-!> Fast replacement for INCELLS using cached geometry
-   elemental function incells_cellmask(x, y) result(kin)
+!> Fast replacement for INCELLS using cached geometry in global polygon arrays
+   elemental function point_find_netcell(x, y) result(k)
       use m_polygon, only: xpl, ypl, zpl
 
-      real(kind=dp), intent(in) :: x, y
-      integer :: kin
+      real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
+      integer :: k !< cell number of enclosing netcell, or 0 if not found
 
       integer :: i_poly
       logical :: is_inside
 
-      kin = 0
+      k = 0
 
       ! Loop over all netcell polygons with fast bounding box checks
       do i_poly = 1, polygons
@@ -310,11 +311,11 @@ contains
 
          if (is_inside) then
             ! cell index equals polygon index
-            kin = i_poly
+            k = i_poly
             return
          end if
       end do
 
-   end function incells_cellmask
+   end function point_find_netcell
 
 end module m_cellmask_from_polygon_set
