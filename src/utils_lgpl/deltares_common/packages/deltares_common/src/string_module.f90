@@ -54,6 +54,7 @@ module string_module
    public :: remove_leading_spaces
    public :: remove_all_spaces
    public :: replace_multiple_spaces_by_single_spaces
+   public :: find_candidates_in_targets
    public :: find_first_word
    public :: find_first_letter
    public :: find_first_char
@@ -1220,5 +1221,28 @@ contains
    end if
 
    end subroutine convert_to_real_dp
+
+   !> Find the first index in `targets` where an element of `candidates` match (case insensitive).
+   !> `targets` and `candidates` are both arrays of strings.
+   !> When no match is found, -1 is returned
+   function find_candidates_in_targets(targets, candidates) result(return_value)
+      character(len=*), dimension(:), intent(in) :: targets
+      character(len=*), dimension(:), intent(in) :: candidates
+      integer :: return_value
+      integer :: i_candidate
+      integer :: i_target
+
+      return_value = -1
+
+      candidates_loop: do i_candidate = 1, size(candidates)
+         do i_target = 1, size(targets)
+            if (strcmpi(targets(i_target), candidates(i_candidate))) then
+               return_value = i_target
+               exit candidates_loop
+            end if
+         end do
+      end do candidates_loop
+
+   end function find_candidates_in_targets
    
 end module string_module
