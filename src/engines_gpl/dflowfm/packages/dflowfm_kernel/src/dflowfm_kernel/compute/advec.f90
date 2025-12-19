@@ -115,9 +115,11 @@ contains
          do L = 1, lnxi
             if (iadv(L) == IADV_SUBGRID_WEIR) then
                if (u0(L) > 0) then
-                  kd = ln(2, L); ku = ln(1, L)
+                  kd = ln(2, L)
+                  ku = ln(1, L)
                else
-                  kd = ln(1, L); ku = ln(2, L)
+                  kd = ln(1, L)
+                  ku = ln(2, L)
                end if
                call getucxucyweironly(kd, ucx(kd), ucy(kd))
                call getucxucyweironly(ku, ucx(ku), ucy(ku))
@@ -128,8 +130,10 @@ contains
       if (jabarrieradvection == 2) then
          do n = 1, ngatesg
             do L = L1gatesg(n), L2gatesg(n)
-               LL = kgate(3, L); LL = abs(LL)
-               kd = ln(1, LL); ku = ln(2, LL)
+               LL = kgate(3, L)
+               LL = abs(LL)
+               kd = ln(1, LL)
+               ku = ln(2, LL)
                call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
                call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
             end do
@@ -139,7 +143,8 @@ contains
                associate (pstru => network%sts%struct(network%sts%gateIndices(n)))
                   do i = 1, pstru%numlinks
                      L = pstru%linknumbers(i)
-                     kd = ln(1, L); ku = ln(2, L)
+                     kd = ln(1, L)
+                     ku = ln(2, L)
                      call getucxucybarrierzero(L, kd, ucx(kd), ucy(kd))
                      call getucxucybarrierzero(L, ku, ucx(ku), ucy(ku))
                   end do
@@ -149,8 +154,10 @@ contains
             do n = 1, ngategen
                i = gate2cgen(n)
                do L = L1cgensg(i), L2cgensg(i)
-                  LL = kcgen(3, L); LL = abs(LL)
-                  kd = ln(1, LL); ku = ln(2, LL)
+                  LL = kcgen(3, L)
+                  LL = abs(LL)
+                  kd = ln(1, LL)
+                  ku = ln(2, LL)
                   call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
                   call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
                end do
@@ -160,14 +167,17 @@ contains
 
       call sethigherorderadvectionvelocities()
 
-      uqcx = 0.0_dp; uqcy = 0.0_dp; sqa = 0.0_dp
+      uqcx = 0.0_dp
+      uqcy = 0.0_dp
+      sqa = 0.0_dp
 
       if (kmx == 0) then
 
          if (jasfer3d == 1) then
 
             do L = Lnx, 1, -1
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                qL = qa(L)
                uqcx(k1) = uqcx(k1) + qL * lin2nodx(L, 1, ucxu(L), ucyu(L))
                uqcx(k2) = uqcx(k2) - qL * lin2nodx(L, 2, ucxu(L), ucyu(L))
@@ -180,7 +190,8 @@ contains
          else
 
             do L = Lnx, 1, -1
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                qL = qa(L)
                uqcx(k1) = uqcx(k1) + qL * ucxu(L)
                uqcx(k2) = uqcx(k2) - qL * ucxu(L)
@@ -195,7 +206,8 @@ contains
       else
 
          do LL = Lnx, 1, -1
-            Lb = lbot(LL); Lt = ltop(LL)
+            Lb = lbot(LL)
+            Lt = ltop(LL)
             do L = Lb, Lt
                k1 = ln(1, L) !; k1 = min(k1, ktop(ln(1,LL) ) )
                k2 = ln(2, L) !; k2 = min(k2, ktop(ln(2,LL) ) )
@@ -364,12 +376,15 @@ contains
 
             if (hu(L) > 0) then
 
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                iadvL = iadv(L)
 
                if (L > lnxi) then
                   if (iadvL == 77) then
-                     if (u0(L) < 0) iadvL = 0
+                     if (u0(L) < 0) then
+                        iadvL = 0
+                     end if
                   else if (u0(L) > 0) then
                      iadvL = 0 ! switch off advection for inflowing waterlevel bnd's, if not normalvelocitybnds
                   end if
@@ -388,20 +403,20 @@ contains
 
                   if (jarhoxu == 0) then
                      if (kcu(L) == 1) then
-                        volu = acl(L) * vol1_f(k1) + (1d0 - acl(L)) * vol1_f(k2)
+                        volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
                      else
-                        volu = acl(L) * vol1(k1) + (1d0 - acl(L)) * vol1(k2)
+                        volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                      end if
                   else
                      if (kcu(L) == 1) then
-                        volu = acl(L) * vol1_f(k1) * rho(k1) + (1d0 - acl(L)) * vol1_f(k2) * rho(k2)
+                        volu = acl(L) * vol1_f(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1_f(k2) * rho(k2)
                      else
-                        volu = acl(L) * vol1(k1) * rho(k1) + (1d0 - acl(L)) * vol1(k2) * rho(k2)
+                        volu = acl(L) * vol1(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1(k2) * rho(k2)
                      end if
                   end if
 
                   if (volu > 0) then
-                     advel = (acl(L) * qu1 + (1d0 - acl(L)) * qu2) / volu
+                     advel = (acl(L) * qu1 + (1.0_dp - acl(L)) * qu2) / volu
 
                      !if ( japiaczek33 == 1) then
                      !   expl = ( acl(L)*sqa(k1) + (1d0-acl(L))*sqa(k2) ) / volu
@@ -429,7 +444,7 @@ contains
                      else
                         qu2 = csu(L) * uqcx(k2) + snu(L) * uqcy(k2) - u1(L) * sqa(k2)
                      end if
-                     advel = advel + (1d0 - acl(L)) * qu2 / vol1(k2)
+                     advel = advel + (1.0_dp - acl(L)) * qu2 / vol1(k2)
                   end if
 
                else if (iadvL == 3) then ! explicit first order mom conservative
@@ -442,9 +457,9 @@ contains
                   qu2 = 0
                   if (vol1(k2) > 0) then
                      qu2 = QucPer(2, L) ! excess momentum in/out u(L) dir. from k2
-                     qu2 = qu2 * (1d0 - acl(L)) ! Perot weigthing
+                     qu2 = qu2 * (1.0_dp - acl(L)) ! Perot weigthing
                   end if
-                  volu = acl(L) * vol1(k1) + (1d0 - acl(L)) * vol1(k2)
+                  volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                   if (volu > 0) then
                      advel = (qu1 + qu2) / volu ! dimension: ((m4/s2) / m3) =   (m/s2)
                   end if
@@ -468,11 +483,11 @@ contains
                   end if
                   if (vol_k2 > 0) then
                      qu2 = QucPerPure1D(2, L) ! excess momentum in/out u(L) dir. from k2
-                     qu2 = qu2 * (1d0 - acl(L)) ! Perot weigthing
+                     qu2 = qu2 * (1.0_dp - acl(L)) ! Perot weigthing
                   else
                      qu2 = 0
                   end if
-                  volu = acl(L) * vol_k1 + (1d0 - acl(L)) * vol_k2
+                  volu = acl(L) * vol_k1 + (1.0_dp - acl(L)) * vol_k2
                   if (volu > 0) then
                      advel = (qu1 + qu2) / volu ! dimension: ((m4/s2) / m3) =   (m/s2)
                   end if
@@ -480,49 +495,49 @@ contains
                else if (iadvL == IADV_PURE1D_SOBEK) then
                   ! Pure1D implementation SOBEK style
 
-                  advel = 0d0
+                  advel = 0.0_dp
                   ! weight of momentum versus energy conservation
                   select case (jaPure1D)
                   case (3) ! momentum conserving
-                     am = 1d0
+                     am = 1.0_dp
                   case (4) ! weighted
-                     am = min(au1d(1, L), au1d(2, L)) / max(1d-4, au1d(1, L), au1d(2, L))
+                     am = min(au1d(1, L), au1d(2, L)) / max(1.0e-4_dp, au1d(1, L), au1d(2, L))
                   case (5) ! weighted in contractions, otherwise momentum conserving
-                     if ((u1(L) > 0d0 .and. au1D(1, L) > au1D(2, L)) .or. &
-                       & (u1(L) < 0d0 .and. au1D(1, L) < au1D(2, L))) then
-                        am = min(au1d(1, L), au1d(2, L)) / max(1d-4, au1d(1, L), au1d(2, L))
+                     if ((u1(L) > 0.0_dp .and. au1D(1, L) > au1D(2, L)) .or. &
+                       & (u1(L) < 0.0_dp .and. au1D(1, L) < au1D(2, L))) then
+                        am = min(au1d(1, L), au1d(2, L)) / max(1.0e-4_dp, au1d(1, L), au1d(2, L))
                      else
-                        am = 1d0
+                        am = 1.0_dp
                      end if
                   case (6) ! weighted in expansions, otherwise momentum conserving
-                     if ((u1(L) > 0d0 .and. au1D(1, L) < au1D(2, L)) .or. &
-                       & (u1(L) < 0d0 .and. au1D(1, L) > au1D(2, L))) then
-                        am = min(au1d(1, L), au1d(2, L)) / max(1d-4, au1d(1, L), au1d(2, L))
+                     if ((u1(L) > 0.0_dp .and. au1D(1, L) < au1D(2, L)) .or. &
+                       & (u1(L) < 0.0_dp .and. au1D(1, L) > au1D(2, L))) then
+                        am = min(au1d(1, L), au1d(2, L)) / max(1.0e-4_dp, au1d(1, L), au1d(2, L))
                      else
-                        am = 1d0
+                        am = 1.0_dp
                      end if
                   case (7) ! energy conserving
-                     am = 0d0
+                     am = 0.0_dp
                   end select
 
                   if (q1D(1, L) > 0) then
                      ! flow entering link at node 1
-                     qv = q1D(1, L) / max(1d-5, volu1D(L))
+                     qv = q1D(1, L) / max(1.0e-5_dp, volu1D(L))
                      u_mom = alpha_mom_1D(k1) * q1D(1, L) / au1D(1, L)
                      u_ene = alpha_ene_1D(k1) * q1D(1, L) / au1D(1, L)
                      advel = advel - am * (u_mom - u1(L)) * qv &
-                                 & - (1d0 - am) * (u_ene - u1(L)) * qv
+                                 & - (1.0_dp - am) * (u_ene - u1(L)) * qv
                   else
                      ! flow leaving link at node 1
                      ! outflow u = local u, so no contribution
                   end if
 
                   if (q1D(2, L) < 0) then ! flow entering link at node 2
-                     qv = q1D(2, L) / max(1d-5, volu1D(L))
+                     qv = q1D(2, L) / max(1.0e-5_dp, volu1D(L))
                      u_mom = alpha_mom_1D(k2) * q1D(2, L) / au1D(2, L)
                      u_ene = alpha_ene_1D(k2) * q1D(2, L) / au1D(2, L)
                      advel = advel + am * (u_mom - u1(L)) * qv &
-                                 & + (1d0 - am) * (u_ene - u1(L)) * qv
+                                 & + (1.0_dp - am) * (u_ene - u1(L)) * qv
                   else
                      ! flow leaving link at node 2
                      ! outflow u = local u, so no contribution
@@ -538,7 +553,7 @@ contains
                   qu2 = 0
                   if (volau(k2) > 0) then
                      qu2 = QucPer(2, L) ! excess momentum in/out u(L) dir. from k2
-                     qu2 = qu2 * (1d0 - acl(L)) / volau(k2) ! Perot weigthing
+                     qu2 = qu2 * (1.0_dp - acl(L)) / volau(k2) ! Perot weigthing
                   end if
                   advel = qu1 + qu2 ! dimension: ((m4/s2) / m3) =   (m/s2)
 
@@ -566,7 +581,7 @@ contains
                      qu1 = csu(L) * uqcx(k1) + snu(L) * uqcy(k1)
                      qu2 = csu(L) * uqcx(k2) + snu(L) * uqcy(k2)
                   end if
-                  advel = acl(L) * qu1 + (1d0 - acl(L)) * qu2
+                  advel = acl(L) * qu1 + (1.0_dp - acl(L)) * qu2
 
                else if (iadvL == 40) then !
 
@@ -577,10 +592,10 @@ contains
                      qu1 = csu(L) * uqcx(k1) + snu(L) * uqcy(k1) - u1(L) * sqa(k1)
                      qu2 = csu(L) * uqcx(k2) + snu(L) * uqcy(k2) - u1(L) * sqa(k2)
                   end if
-                  volu = acl(L) * voldhu(k1) + (1d0 - acl(L)) * voldhu(k2)
+                  volu = acl(L) * voldhu(k1) + (1.0_dp - acl(L)) * voldhu(k2)
 
                   if (volu > 0) then
-                     advel = (acl(L) * qu1 + (1d0 - acl(L)) * qu2) / volu
+                     advel = (acl(L) * qu1 + (1.0_dp - acl(L)) * qu2) / volu
                   end if
 
                else if (iadvL == 1) then ! explicit first order mom conservative
@@ -622,10 +637,10 @@ contains
                   qu2 = 0
                   if (vol1(k2) > 0) then
                      qu2 = QucPeri(2, L) ! excess momentum in u(L) dir. from of k2
-                     qu2 = qu2 * (1d0 - acl(L)) ! Perot weigthing
+                     qu2 = qu2 * (1.0_dp - acl(L)) ! Perot weigthing
                   end if
 
-                  volu = acl(L) * vol1(k1) + (1d0 - acl(L)) * vol1(k2)
+                  volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                   if (volu > 0) then
                      advel = (qu1 + qu2) / volu ! dimension: ((m4/s2) / m3) =   (m/s2)
                   end if
@@ -634,20 +649,20 @@ contains
 
                   if (jarhoxu == 0) then
                      if (kcu(L) == 1) then
-                        volu = acl(L) * vol1_f(k1) + (1d0 - acl(L)) * vol1_f(k2)
+                        volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
                      else
-                        volu = acl(L) * vol1(k1) + (1d0 - acl(L)) * vol1(k2)
+                        volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                      end if
                   else
                      if (kcu(L) == 1) then
-                        volu = acl(L) * vol1_f(k1) * rho(k1) + (1d0 - acl(L)) * vol1_f(k2) * rho(k2)
+                        volu = acl(L) * vol1_f(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1_f(k2) * rho(k2)
                      else
-                        volu = acl(L) * vol1(k1) * rho(k1) + (1d0 - acl(L)) * vol1(k2) * rho(k2)
+                        volu = acl(L) * vol1(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1(k2) * rho(k2)
                      end if
                   end if
 
                   if (volu > 0) then
-                     volui = 1d0 / volu
+                     volui = 1.0_dp / volu
                      if (vol1(k1) > 0) then
                         call QucPeripiaczekteta(1, L, ai, ae, volu, iadvL - 2) ! excess momentum in u(L) dir. out of k1, include own
                         abh = acl(L) * volui
@@ -656,7 +671,7 @@ contains
                      end if
                      if (vol1(k2) > 0) then
                         call QucPeripiaczekteta(2, L, ai, ae, volu, iadvL - 2) ! excess momentum in u(L) dir. out of k2
-                        abh = (1d0 - acl(L)) * volui
+                        abh = (1.0_dp - acl(L)) * volui
                         adveL = adveL + abh * ae
                         advi(L) = advi(L) + abh * ai
                      end if
@@ -671,15 +686,15 @@ contains
                   end if
 
                   if (kcu(L) == 1) then
-                     volu = acl(L) * vol1_f(k1) + (1d0 - acl(L)) * vol1_f(k2)
+                     volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
                   else if (kcu(L) == 3 .and. iadveccorr1D2D == 1) then
                      volu = au(L) * dx(L) ! Use volume weighting based on approximated "lateral volume", to avoid large 1D river volumes.
                   else
-                     volu = acl(L) * vol1(k1) + (1d0 - acl(L)) * vol1(k2)
+                     volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                   end if
 
                   if (volu > 0) then
-                     volui = 1d0 / volu
+                     volui = 1.0_dp / volu
                      if (hs(k1) > 0) then
                         call QucPeripiaczek(1, L, ai, ae, iad) ! excess momentum in u(L) dir. out of k1, include own
                         abh = acl(L) * volui
@@ -688,7 +703,7 @@ contains
                      end if
                      if (hs(k2) > 0) then
                         call QucPeripiaczek(2, L, ai, ae, iad) ! excess momentum in u(L) dir. out of k2
-                        abh = (1d0 - acl(L)) * volui
+                        abh = (1.0_dp - acl(L)) * volui
                         adveL = adveL + abh * ae
                         advi(L) = advi(L) + abh * ai
                      end if
@@ -700,10 +715,16 @@ contains
 
                   !advel = 0.5d0*(  u0(L)*u0(L) - u0(L-1)*u0(L-1) ) / dx(L)
 
-                  if (u0(L) > 0d0) then
-                     ku = k1; kd = k2; isg = 1; n12 = 1
+                  if (u0(L) > 0.0_dp) then
+                     ku = k1
+                     kd = k2
+                     isg = 1
+                     n12 = 1
                   else
-                     ku = k2; kd = k1; isg = -1; n12 = 2
+                     ku = k2
+                     kd = k1
+                     isg = -1
+                     n12 = 2
                   end if
 
                   call getucxucynoweirs(ku, ucxku, ucyku)
@@ -713,7 +734,7 @@ contains
                      ucin = ucxku * csu(L) + ucyku * snu(L)
                   end if
 
-                  fdx = 0.5d0 * dxi(L) * isg
+                  fdx = 0.5_dp * dxi(L) * isg
 
                   advi(L) = advi(L) + fdx * u0(L)
                   advel = advel - fdx * ucin * ucin
@@ -740,7 +761,7 @@ contains
                   qu2 = 0
                   if (vol1(k2) > 0) then
                      qu2 = QucPercu(2, L) ! excess momentum in/out uc(k2) dir. from k2
-                     qu2 = qu2 * (1d0 - acl(L)) / volau(k2) ! Perot weigthing
+                     qu2 = qu2 * (1.0_dp - acl(L)) / volau(k2) ! Perot weigthing
                   end if
                   advel = qu1 + qu2 ! dimension: ((m4/s2) / m3) =   (m/s2)
 
@@ -754,7 +775,7 @@ contains
                   qu2 = 0
                   if (vol1(k2) > 0) then
                      qu2 = QucPer(2, L) ! excess momentum in/out u(L) dir. from k2
-                     qu2 = qu2 * (1d0 - acl(L)) * bai(k2) ! Perot weigthing
+                     qu2 = qu2 * (1.0_dp - acl(L)) * bai(k2) ! Perot weigthing
                   end if
                   advel = (qu1 + qu2) * huvli(L) ! dimension: ((m4/s2) / m3) =   (m/s2)
 
@@ -768,9 +789,9 @@ contains
                   qu2 = 0
                   if (vol1(k2) > 0) then
                      qu2 = QufPer(2, L) ! excess momentum in/out u(L) dir. from k2
-                     qu2 = qu2 * (1d0 - acl(L)) ! Perot weigthing
+                     qu2 = qu2 * (1.0_dp - acl(L)) ! Perot weigthing
                   end if
-                  volu = acl(L) * vol1(k1) + (1d0 - acl(L)) * vol1(k2)
+                  volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                   if (volu > 0) then
                      advel = (qu1 + qu2) / volu ! dimension: ((m4/s2) / m3) =   (m/s2)
                   end if
@@ -785,18 +806,18 @@ contains
                   qu2 = 0
                   if (vol1(k2) > 0) then
                      qu2 = QucPerq1(2, L) ! excess momentum in/out uc(k2) dir. from k2
-                     qu2 = qu2 * (1d0 - acl(L)) / vol1(k2) ! Perot weigthing
+                     qu2 = qu2 * (1.0_dp - acl(L)) / vol1(k2) ! Perot weigthing
                   end if
                   advel = qu1 + qu2 ! dimension: ((m4/s2) / m3) =   (m/s2)
 
                else if (iadvL == 37) then ! Kramer Stelling
-                  qu1 = 0d0
+                  qu1 = 0.0_dp
                   if (vol1(k1) > 0) then
                      qu1 = acl(L) * QucPerq1(1, L) / ba(k1) ! excess momentum in/out u(L) dir. from k1
                   end if
-                  qu2 = 0d0
+                  qu2 = 0.0_dp
                   if (vol1(k2) > 0) then
-                     qu2 = (1d0 - acl(L)) * QucPerq1(2, L) / ba(k2) ! excess momentum in/out u(L) dir. from k1
+                     qu2 = (1.0_dp - acl(L)) * QucPerq1(2, L) / ba(k2) ! excess momentum in/out u(L) dir. from k1
                   end if
                   advel = huvli(L) * (qu1 + qu2)
 
@@ -819,14 +840,19 @@ contains
                iadvL = iadv(LL)
                if (LL > lnxi) then
                   if (iadvL == 77) then
-                     if (u0(LL) < 0) cycle
+                     if (u0(LL) < 0) then
+                        cycle
+                     end if
                   else if (u0(LL) > 0) then
                      cycle ! switch off advection for inflowing waterlevel bnd's, if not normalvelocitybnds
                   end if
                end if
-               cs = csu(LL); sn = snu(LL)
-               Lb = Lbot(LL); Lt = Ltop(LL)
-               ac1 = acl(LL); ac2 = 1.0_dp - ac1
+               cs = csu(LL)
+               sn = snu(LL)
+               Lb = Lbot(LL)
+               Lt = Ltop(LL)
+               ac1 = acl(LL)
+               ac2 = 1.0_dp - ac1
 
                if (iadv(LL) == 3) then
                   call QucPer3Dsigma(1, LL, Lb, Lt, cs, sn, quk1) ! sum of (Q*uc cell centre upwind normal) at side 1 of basis link LL
@@ -834,7 +860,8 @@ contains
 
                   do L = Lb, Lt
                      advel = 0.0_dp ! advi (1/s), adve (m/s2)
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      qu1 = 0.0_dp
                      if (vol1(k1) > 0) then
                         qu1 = quk1(1, L - Lb + 1) * ac1 ! Perot weigthing
@@ -891,7 +918,8 @@ contains
                      else
 
                         do L = Lb, Lt
-                           k1 = ln(1, L); k2 = ln(2, L)
+                           k1 = ln(1, L)
+                           k2 = ln(2, L)
                            if (jasfer3D == 1) then
                               qu1 = cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1)) - u1(L) * sqa(k1)
                               qu2 = cs * nod2linx(LL, 2, uqcx(k2), uqcy(k2)) + sn * nod2liny(LL, 2, uqcx(k2), uqcy(k2)) - u1(L) * sqa(k2)
@@ -936,7 +964,8 @@ contains
                      Ltx = Lt - Lb + 1
                      volukk(1:Ltx) = 0.0_dp
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L)
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
                         if (jarhoxu > 0) then
                            volukk(L - Lb + 1) = volukk(L - Lb + 1) + ac1 * vol1(k1) * rho(k1) + ac2 * vol1(k2) * rho(k2)
                         else
@@ -959,7 +988,8 @@ contains
                      end do
 
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L)
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
                         if (jasfer3D == 1) then
                            qu1 = cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1)) - u1(L) * sqa(k1)
                            qu2 = cs * nod2linx(LL, 2, uqcx(k2), uqcy(k2)) + sn * nod2liny(LL, 2, uqcx(k2), uqcy(k2)) - u1(L) * sqa(k2)
@@ -985,15 +1015,20 @@ contains
 
                   else if (layertype == LAYTP_Z .and. jahazlayer == 1) then
 
-                     n1 = ln(1, LL); n2 = ln(2, LL)
-                     call getkbotktop(n1, kb1, kt1); ktx1 = kt1 - kb1 + 1
-                     call getkbotktop(n2, kb2, kt2); ktx2 = kt2 - kb2 + 1
+                     n1 = ln(1, LL)
+                     n2 = ln(2, LL)
+                     call getkbotktop(n1, kb1, kt1)
+                     ktx1 = kt1 - kb1 + 1
+                     call getkbotktop(n2, kb2, kt2)
+                     ktx2 = kt2 - kb2 + 1
                      Ltx = Lt - Lb + 1
 
                      volukk(1:Ltx) = 0.0_dp
 
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L); L1 = L - Lb + 1
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
+                        L1 = L - Lb + 1
                         volukk(L1) = volukk(L1) + ac1 * vol1(k1) + ac2 * vol1(k2)
                      end do
 
@@ -1006,7 +1041,9 @@ contains
                      end do
 
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L); L1 = L - Lb + 1
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
+                        L1 = L - Lb + 1
                         if (volukk(L1) > 0) then
                            if (jasfer3D == 1) then
                               qu1 = cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1)) - u1(L) * sqa(k1)
@@ -1022,7 +1059,8 @@ contains
 
                   else if (layertype == LAYTP_Z .and. jahazlayer == 2) then ! lineinterp
 
-                     n1 = ln(1, LL); n2 = ln(2, LL)
+                     n1 = ln(1, LL)
+                     n2 = ln(2, LL)
                      call getkbotktop(n1, kb1, kt1)
                      call getkbotktop(n2, kb2, kt2)
                      hs1 = max(epshs, zws(kt1) - zws(kb1 - 1))
@@ -1031,7 +1069,10 @@ contains
                      ktx01 = kt1 - kb1 + 1
                      ktx02 = kt2 - kb2 + 1
 
-                     volk1(0) = 0.0_dp; quuk1(0) = 0.0_dp; sqak1(0) = 0.0_dp; sigk1(0) = 0.0_dp
+                     volk1(0) = 0.0_dp
+                     quuk1(0) = 0.0_dp
+                     sqak1(0) = 0.0_dp
+                     sigk1(0) = 0.0_dp
                      do k = kb1, kt1
                         volk1(k - kb1 + 1) = volk1(k - kb1) + vol1(k)
                         if (jasfer3D == 1) then
@@ -1043,7 +1084,10 @@ contains
                         sigk1(k - kb1 + 1) = (zws(k) - zws(kb1 - 1)) / hs1
                      end do
 
-                     volk2(0) = 0.0_dp; quuk2(0) = 0.0_dp; sqak2(0) = 0.0_dp; sigk2(0) = 0.0_dp
+                     volk2(0) = 0.0_dp
+                     quuk2(0) = 0.0_dp
+                     sqak2(0) = 0.0_dp
+                     sigk2(0) = 0.0_dp
                      do k = kb2, kt2
                         volk2(k - kb2 + 1) = volk2(k - kb2) + vol1(k)
                         if (jasfer3D == 1) then
@@ -1055,7 +1099,9 @@ contains
                         sigk2(k - kb2 + 1) = (zws(k) - zws(kb2 - 1)) / hs2
                      end do
 
-                     do L = Lb, Lt; Ltx0 = Lt - Lb + 1; siguL(0) = 0.0_dp
+                     do L = Lb, Lt
+                     Ltx0 = Lt - Lb + 1
+                     siguL(0) = 0.0_dp
                         siguL(L - Lb + 1) = hu(L) / hu(LL)
                      end do
 
@@ -1077,13 +1123,18 @@ contains
 
                   else if (layertype == LAYTP_Z .and. jahazlayer == 4) then
 
-                     n1 = ln(1, LL); n2 = ln(2, LL)
-                     call getkbotktop(n1, kb1, kt1); ktx1 = kb1 + kmxn(n1) - 1
-                     call getkbotktop(n2, kb2, kt2); ktx2 = kb2 + kmxn(n2) - 1
+                     n1 = ln(1, LL)
+                     n2 = ln(2, LL)
+                     call getkbotktop(n1, kb1, kt1)
+                     ktx1 = kb1 + kmxn(n1) - 1
+                     call getkbotktop(n2, kb2, kt2)
+                     ktx2 = kb2 + kmxn(n2) - 1
 
                      Ltx = Lt - Lb + 1
 
-                     volukk(1:Ltx) = 0.0_dp; quuk1(1:Ltx) = 0.0_dp; sqak1(1:Ltx) = 0.0_dp
+                     volukk(1:Ltx) = 0.0_dp
+                     quuk1(1:Ltx) = 0.0_dp
+                     sqak1(1:Ltx) = 0.0_dp
 
                      do k = kb1, ln(1, Lb) - 1 ! below Lb n1
                         volukk(1) = volukk(1) + ac1 * vol1(k)
@@ -1106,7 +1157,9 @@ contains
                      end do
 
                      do L = Lb, Lt ! intermediate
-                        k1 = ln(1, L); k2 = ln(2, L); L1 = L - Lb + 1
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
+                        L1 = L - Lb + 1
                         volukk(L1) = volukk(L1) + ac1 * vol1(k1) + ac2 * vol1(k2)
                         if (jasfer3D == 1) then
                            quuk1(L1) = quuk1(L1) + ac1 * (cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1))) + &
@@ -1158,7 +1211,8 @@ contains
                   baik2 = bai(ln(2, LL))
                   do L = Lb, Lt
                      advel = 0 ! advi (1/s), adve (m/s2)
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      qu1 = 0.0_dp
                      if (vol1(k1) > 0) then
                         qu1 = quk1(1, L - Lb + 1) * ac1 * baik1
@@ -1186,7 +1240,8 @@ contains
                else if (iadv(LL) == 44) then
 
                   do L = Lb, Lt
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      if (vol1(k1) > 0) then
                         if (jasfer3D == 1) then
                            qu1 = cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1)) - u1(L) * sqa(k1)

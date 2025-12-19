@@ -75,11 +75,13 @@ contains
 
       qcrit = sqrt(2.0_dp * g * (h1 - hg) / (hg**(-2) - h1**(-2)))
 
-      ha = hg; hb = h2
+      ha = hg
+      hb = h2
       call qorifdif12(ha, d, a, h1, h2, qda)
       call qorifdif12(hb, d, a, h1, h2, qdb)
 
-      num = 0; qdc = 1.0e9_dp
+      num = 0
+      qdc = 1.0e9_dp
       do while (abs(qdc) > 1.0e-6_dp .and. abs(qda - qdb) > 1.0e-6_dp .and. num < 50)
 
          num = num + 1
@@ -89,9 +91,11 @@ contains
          hc = min(hc, h2)
          call qorifdif12(hc, d, a, h1, h2, qdc)
          if (qda * qdc > 0) then
-            ha = hc; qda = qdc
+            ha = hc
+            qda = qdc
          else if (qdb * qdc > 0) then
-            hb = hc; qdb = qdc
+            hb = hc
+            qdb = qdc
          end if
 
       end do

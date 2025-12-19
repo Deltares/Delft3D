@@ -60,7 +60,9 @@ contains
       do k0 = 1, numk
          if (nb(k0) == 2 .and. nmk(k0) > 0) then
             k = k_bc(k0) ! the nearest node in the original net, in previous iteration
-            if (nmk(k) == 0) cycle
+            if (nmk(k) == 0) then
+               cycle
+            end if
             x0 = xk(k0)
             y0 = yk(k0)
             nr = 0
@@ -74,13 +76,15 @@ contains
                      if (kL == 0) then
                         return !  should not happen
                      end if
-                     x2 = xkb(kl); y2 = ykb(kl)
+                     x2 = xkb(kl)
+                     y2 = ykb(kl)
                   else if (nr == 2) then
                      kR = kk1(kk, k)
                      if (kR == 0) then
                         return !  should not happen
                      end if
-                     x3 = xkb(kr); y3 = ykb(kr)
+                     x3 = xkb(kr)
+                     y3 = ykb(kr)
                   end if
                end if
             end do
@@ -90,14 +94,21 @@ contains
             call dlinedis3(x0, y0, xkb(k), ykb(k), x2, y2, ja2, dis2, xn2, yn2, r2)
             call dlinedis3(x0, y0, xkb(k), ykb(k), x3, y3, ja3, dis3, xn3, yn3, r3)
             if (dis2 < dis3) then
-               x0 = xn2; y0 = yn2
-               if ((r2 > 0.5_dp) .and. (nb(kL) /= 3)) k_bc(k0) = kL
+               x0 = xn2
+               y0 = yn2
+               if ((r2 > 0.5_dp) .and. (nb(kL) /= 3)) then
+                  k_bc(k0) = kL
+               end if
             else
-               x0 = xn3; y0 = yn3
-               if ((r3 > 0.5_dp) .and. (nb(kR) /= 3)) k_bc(k0) = kR
+               x0 = xn3
+               y0 = yn3
+               if ((r3 > 0.5_dp) .and. (nb(kR) /= 3)) then
+                  k_bc(k0) = kR
+               end if
             end if
 
-            xk(k0) = x0; yk(k0) = y0
+            xk(k0) = x0
+            yk(k0) = y0
 
          end if
       end do

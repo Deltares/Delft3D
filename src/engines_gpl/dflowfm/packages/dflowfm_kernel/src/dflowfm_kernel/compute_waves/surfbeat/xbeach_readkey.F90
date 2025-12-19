@@ -148,7 +148,9 @@ contains
             call xbeach_errorhandler()
          else
             value_dbl = defval
-            if (.not. lsilent) call writelog('l', '(a12,a,f0.4,a)', (printkey), ' = ', value_dbl, ' (no record found, default value used)')
+            if (.not. lsilent) then
+               call writelog('l', '(a12,a,f0.4,a)', (printkey), ' = ', value_dbl, ' (no record found, default value used)')
+            end if
          end if
       end if
 
@@ -226,7 +228,9 @@ contains
             call xbeach_errorhandler()
          else
             value_int = defval
-            if (.not. lsilent) call writelog('l', '(a12,a,i0,a)', (printkey), ' = ', value_int, ' (no record found, default value used)')
+            if (.not. lsilent) then
+               call writelog('l', '(a12,a,i0,a)', (printkey), ' = ', value_int, ' (no record found, default value used)')
+            end if
          end if
       end if
    end function readkey_int
@@ -296,8 +300,9 @@ contains
          else
             value_vec(1:vlength) = defval
             do i = 1, vlength
-               if (.not. lsilent) call writelog('l', '(a,a,i0,a)', (printkey), ' = ', &
-                                                value_vec(i), ' (no record found, default value used)')
+               if (.not. lsilent) then
+                  call writelog('l', '(a,a,i0,a)', (printkey), ' = ', value_vec(i), ' (no record found, default value used)')
+               end if
             end do
          end if
       end if
@@ -350,7 +355,9 @@ contains
             call xbeach_errorhandler()
          else
             value_str = defval
-            if (.not. lsilent) call writelog('l', '(a12,a,a,a)', (printkey), ' = ', trim(value_str), ' (no record found, default value used)')
+            if (.not. lsilent) then
+               call writelog('l', '(a12,a,a,a)', (printkey), ' = ', trim(value_str), ' (no record found, default value used)')
+            end if
          end if
       else
          value = adjustl(value)
@@ -420,7 +427,9 @@ contains
             call xbeach_errorhandler()
          else
             value_str = ' '
-            if (.not. lsilent) call writelog('l', ' (a12,a)', printkey, ' = None specified')
+            if (.not. lsilent) then
+               call writelog('l', ' (a12,a)', printkey, ' = None specified')
+            end if
             ! write to basic params data file
             !    write(pardatfileid,*)'c ',key,' ','none'
          end if
@@ -564,14 +573,18 @@ contains
          open (newunit=lun, file=fname)
          do while (ier == 0)
             read (lun, '(a)', iostat=ier) ch
-            if (ier == 0) i = i + 1
+            if (ier == 0) then
+               i = i + 1
+            end if
          end do
          close (lun)
          nlines = i
          ! reset keyword values and readindex
          keyword = ''
          values = ''
-         if (allocated(readindex)) deallocate (readindex)
+         if (allocated(readindex)) then
+            deallocate (readindex)
+         end if
          ! Read through the file to fill all the keyword = value combinations
          open (newunit=lun, file=fname)
          ikey = 0

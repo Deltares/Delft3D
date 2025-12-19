@@ -69,7 +69,9 @@ contains
 
       call find_surrounding_cells(k, NMAX, ndirect, nindirect, kdirect, kindirect, kne)
 
-      if (ndirect < 1 .or. nindirect < 1) return
+      if (ndirect < 1 .or. nindirect < 1) then
+         return
+      end if
 
       area_tot = 0.0_dp
       funct = 0.0_dp
@@ -95,7 +97,9 @@ contains
       end do
 
       coarsening_info = -funct
-      if (coarsening_info <= 0.0_dp) coarsening_info = DMISS
+      if (coarsening_info <= 0.0_dp) then
+         coarsening_info = DMISS
+      end if
 
       return
    end function

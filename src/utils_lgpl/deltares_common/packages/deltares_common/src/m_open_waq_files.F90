@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_open_waq_files
-    use m_logger_helper, only : stop_with_error
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
 
     implicit none
     private
@@ -232,8 +232,9 @@ contains
         character(len=*), intent(in) :: file_name     !< name of the file to be opened
         integer, intent(in) :: file_id    !< Delwaq number of the file to be opened
 
-        integer ierr_cwd  !< Error flag for obtaining current working directory
-        character(256) wd_path   !< Current working directory path
+        integer             :: ierr_cwd  !< Error flag for obtaining current working directory
+        integer             :: lunrep    !< Logical unit umber of reporting errors
+        character(256)      :: wd_path   !< Current working directory path
 
         wd_path = ''
         ierr_cwd = getCWD(wd_path)
@@ -241,11 +242,13 @@ contains
             wd_path = 'Current working directory not found!'
         endif
 
-        write (*, 2000) file_id, file_unit, trim(file_name), trim(wd_path)
+        call get_log_unit_number( lunrep )
+        write (lunrep, 2000) trim(file_name), trim(wd_path)
+        write (*, 2000)      trim(file_name), trim(wd_path)
         call stop_with_error()
 
 
-        2000 format (' ERROR opening file number:', I3, ' on unit:', I3, &
+        2000 format (' ERROR opening file', &
                 /, ' Filename is: ', A, &
                 /, ' Searching in working directory: ', /, '  ' A)
     end subroutine report_error_and_stop

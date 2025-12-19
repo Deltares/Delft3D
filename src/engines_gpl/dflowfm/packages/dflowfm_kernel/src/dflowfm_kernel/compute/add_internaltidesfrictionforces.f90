@@ -107,7 +107,9 @@ contains
 
 !           add to total internal tides dissipation rate
             if (jampi == 1) then
-               if (idomain(k) /= my_rank) cycle
+               if (idomain(k) /= my_rank) then
+                  cycle
+               end if
             end if
 
             if (k <= Ndxi) then ! do not add fictitious boundary nodes

@@ -136,7 +136,9 @@ contains
          allocate (czn(1:ndx), stat=ierr)
          allocate (u1eul(1:lnkx), stat=ierr)
       end if
-      czn = 0.0_dp; czu = 0.0_dp; u1eul = 0.0_dp
+      czn = 0.0_dp
+      czu = 0.0_dp
+      u1eul = 0.0_dp
       !
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          u1eul = u1 - ustokes
@@ -144,7 +146,8 @@ contains
       end if
       !
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          if (frcu(L) > 0) then
             czu = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
          end if
@@ -250,7 +253,7 @@ contains
                !
                ! Power relation -- can be used for verification.
                !
-               duneheightequi(nm) = hdpar(1) * (abs(depth)**hdpar(2)); 
+               duneheightequi(nm) = hdpar(1) * (abs(depth)**hdpar(2))
             end if
             !
             ! Calculate dune lengths.
@@ -456,14 +459,16 @@ contains
                      umean = sum(u1(Lb:Lt) * (hu(Lb:Lt) - hu(Lb - 1:Lt - 1))) / hu(L)
                      vmean = sum(v(Lb:Lt) * (hu(Lb:Lt) - hu(Lb - 1:Lt - 1))) / hu(L)
                   else
-                     umean = u1(L); vmean = v(L)
+                     umean = u1(L)
+                     vmean = v(L)
                   end if
                   utot2 = umean**2 + vmean**2 ! has to be depth-averaged value
                   qbedformn(L) = cdpar(1) * (utot2**hpow) * umean / hu(L)
                   qbedformt(L) = cdpar(1) * (utot2**hpow) * vmean / hu(L)
                   ubedformu(L) = qbedformn(L)
                   ! to nodes
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   uxbf(k1) = uxbf(k1) + qbedformn(L) * wcx1(L)
                   uybf(k1) = uybf(k1) + qbedformn(L) * wcy1(L)
                   uxbf(k2) = uxbf(k2) + qbedformn(L) * wcx2(L)
@@ -497,7 +502,8 @@ contains
                   umean = sum(u1(Lb:Lt) * (hu(Lb:Lt) - hu(Lb - 1:Lt - 1))) / hu(L)
                   vmean = sum(v(Lb:Lt) * (hu(Lb:Lt) - hu(Lb - 1:Lt - 1))) / hu(L)
                else
-                  umean = u1(L); vmean = v(L)
+                  umean = u1(L)
+                  vmean = v(L)
                end if
                fr_loc2 = umean**2 + vmean**2
                fr_loc2 = fr_loc2 / ag / hu(L)
@@ -510,7 +516,8 @@ contains
                qbedformn(L) = gamma * bdfC_Hn * sbu / hu(L) / max(1.0_fp - fr_loc2, 0.1_fp)
                qbedformt(L) = gamma * bdfC_Hn * sbv / hu(L) / max(1.0_fp - fr_loc2, 0.1_fp)
                ubedformu(L) = qbedformn(L)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                uxbf(k1) = uxbf(k1) + qbedformn(L) * wcx1(L)
                uybf(k1) = uybf(k1) + qbedformn(L) * wcy1(L)
                uxbf(k2) = uxbf(k2) + qbedformn(L) * wcx2(L)
@@ -557,7 +564,9 @@ contains
                k1 = ln(1, L)
                k2 = ln(2, L)
                qbf = qbedformn(L)
-               if (ln(2, L) == k) qbf = -qbedformn(L)
+               if (ln(2, L) == k) then
+                  qbf = -qbedformn(L)
+               end if
 
                if (qbf >= 0.) then ! sum the outgoing courants
                   dum = dum + qbf
@@ -636,7 +645,8 @@ contains
       dts = hdtb
       do n = 1, nsteps
          do L = lnxi + 1, lnx ! Neumann conditions
-            kb = ln(1, L); ki = ln(2, L)
+            kb = ln(1, L)
+            ki = ln(2, L)
             dh(kb) = dh(ki)
          end do
          call fm_advec_diff_2d(dh, ubedformu, qbedformn, sour, sink, diff, BEDFORM_BACKGROUND_DIFFUSION_FACTOR, LIMITER_TYPE, ierror)
@@ -728,7 +738,8 @@ contains
          allocate (z0rou(1:ndx), stat=ierr)
          allocate (deltas(1:ndx), stat=ierr)
       end if
-      z0rou = 0.0_dp; deltas = 0.0_dp
+      z0rou = 0.0_dp
+      deltas = 0.0_dp
       !
       ! Calculate Eulerian velocities at old time level
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -742,7 +753,8 @@ contains
       end if
       !
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L)
          z0rou(k2) = z0rou(k2) + wcl(2, L) * z0urou(L)
       end do
@@ -773,7 +785,8 @@ contains
          if (v2dwbl > 0 .and. jawave > NO_WAVES .and. kmx > 0) then
             deltas = 0.0_dp
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                deltas(k1) = deltas(k1) + wcl(1, L) * wblt(L)
                deltas(k2) = deltas(k2) + wcl(2, L) * wblt(L)
             end do

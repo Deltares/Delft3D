@@ -1292,8 +1292,8 @@ contains
 
       use m_flow, only: s1, hs, sabot, satop, sa1, ndkx, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
-      use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, jatem, &
-                                  initem2D, inivel
+      use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, temperature_model, &
+                                  TEMPERATURE_MODEL_NONE, initem2D, inivel
 
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
@@ -1432,7 +1432,7 @@ contains
          end if
 
       case ('initialtemperature')
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             target_location_type = UNC_LOC_S
             target_array => tem1
             initem2D = 1
@@ -1484,7 +1484,7 @@ contains
          end if
 
       case ('initialverticaltemperatureprofile')
-         if (jatem > 0 .and. kmx > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE .and. kmx > 0) then
             target_location_type = UNC_LOC_3DV
             target_array => tem1
          end if
@@ -2240,7 +2240,8 @@ contains
             if (kmx == 0) then
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
             else
-               kb = kbot(n); kt = ktop(n)
+               kb = kbot(n)
+               kt = ktop(n)
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
                do k = kb, kt
                   level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))

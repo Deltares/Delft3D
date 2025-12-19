@@ -106,7 +106,9 @@ contains
 
       jaCourantnetwork = 0
 
-      if (mxsam == 0) mxsam = mca ! mca was there first
+      if (mxsam == 0) then
+         mxsam = mca ! mca was there first
+      end if
 
       if (npl > 0) then
          irefinetype = ITYPE_MESHWIDTH ! Polygon refinement:
@@ -115,7 +117,9 @@ contains
          irefinetype = ITYPE_WAVECOURANT
       else ! Interactive:
          call change_samples_refine_param(jacancelled) ! get the settings from a parameter screen
-         if (jacancelled == 1) goto 1234
+         if (jacancelled == 1) then
+            goto 1234
+         end if
       end if
 
       if ((ns > 0 .or. mxsam > 0) .and. (irefinetype == ITYPE_WAVECOURANT .or. irefinetype == ITYPE_RIDGE)) then
@@ -138,7 +142,9 @@ contains
 
          if (irefinetype == ITYPE_RIDGE) then
             call prepare_sampleHessian(ierror)
-            if (ierror /= 0) goto 1234
+            if (ierror /= 0) then
+               goto 1234
+            end if
          end if
 
       end if
@@ -154,15 +160,21 @@ contains
 !  allocate
       allocate (jarefine(nump), stat=ierror)
       call aerr('jarefine(nump)', ierror, nump)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       allocate (jalink(numL), stat=ierror)
       call aerr('jalink(numL)', ierror, numL)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       allocate (linkbrother(numL), stat=ierror)
       call aerr('linkbrother(numL)', ierror, numL)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
       linkbrother = 0
 
 !  get mesh bounds for spherical, periodic coordinates
@@ -190,7 +202,9 @@ contains
             !     compute cell refinement mask (cells outside polygon will be marked by -1)
             call compute_jarefine(jarefine, jalink, jakdtree, ierror)
             jalink = -jalink ! unset but remember link refinement mask
-            if (ierror == 1) goto 1234
+            if (ierror == 1) then
+               goto 1234
+            end if
             !     smooth the cell refinement mask
             call smooth_jarefine(jarefine, jalink, linkbrother)
          else
@@ -213,7 +227,9 @@ contains
             iclp: do ic = 1, nump
                do kk = 1, netcell(ic)%N
                   k = netcell(ic)%nod(kk)
-                  if (kc(k) /= 0 .and. kc(k) /= -2) cycle iclp ! active node found: discard this cell and continue with next
+                  if (kc(k) /= 0 .and. kc(k) /= -2) then
+                     cycle iclp ! active node found: discard this cell and continue with next
+                  end if
                end do
                jarefine(ic) = 0
                !call cirr(xzw(ic), yzw(ic), 204)
@@ -229,7 +245,9 @@ contains
 
          numrefine = 0
          do k = 1, nump
-            if (jarefine(k) /= 0) numrefine = numrefine + 1
+            if (jarefine(k) /= 0) then
+               numrefine = numrefine + 1
+            end if
          end do
 
          if (numrefine == 0) then
@@ -244,12 +262,18 @@ contains
 !     rearrange worldmesh
          call rearrange_worldmesh(xboundmin, xboundmax)
 
-         if (ierror == 1) goto 1234
+         if (ierror == 1) then
+            goto 1234
+         end if
 
 !     update cell administration
-         if (NPL > 0) call store_and_set_kc()
+         if (NPL > 0) then
+            call store_and_set_kc()
+         end if
          call findcells(1000) ! do not update node mask (kc)
-         if (NPL > 0) call restore_kc()
+         if (NPL > 0) then
+            call restore_kc()
+         end if
 !      call findcells(0) ! update node mask (kc)
          call mess(LEVEL_INFO, 'refinement efficiency factor', real(real(nump_virtual, kind=dp) / real(max(nump, 1), kind=dp)))
 
@@ -258,7 +282,8 @@ contains
 
          if (jagui == 1) then
             ja = 1
-            dxxmax = -huge(1.0_dp); dxxmin = -dxxmax
+            dxxmax = -huge(1.0_dp)
+            dxxmin = -dxxmax
             do L = 1, numL
                dl = dlinklength(L)
                dxxmin = min(dxxmin, dl)
@@ -267,18 +292,26 @@ contains
             write (tex, '(2F14.3,I14)') dxxmin, dxxmax, nump
             if (numrefcycles == 0) then
                call confrm('Smallest and largest netlinks and number of cells: '//trim(tex)//' Continue? ', ja)
-               if (ja /= 1) exit ! done
+               if (ja /= 1) then
+                  exit ! done
+               end if
             else
                numrefcyc = numrefcyc + 1
-               if (numrefcyc == numrefcycles) exit
+               if (numrefcyc == numrefcycles) then
+                  exit
+               end if
             end if
          end if
 
 !     reallocate
          call realloc(jarefine, nump, stat=ierror, keepExisting=.false.)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
          call realloc(jalink, numL, stat=ierror, keepExisting=.false.)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
 !      call realloc(linkbrother, numL, stat=ierror, keepExisting=.true., fill=0)
 !      if ( ierror.ne.0 ) gofto 1234
 
@@ -295,10 +328,14 @@ contains
       end if
       if (jaconnect == 1) then
          where (kc == -1) kc = 1
-         if (NPL > 0) call store_and_set_kc()
+         if (NPL > 0) then
+            call store_and_set_kc()
+         end if
          call findcells(1000) !     take dry cells into account (after findcells)
          call delete_dry_points_and_areas(update_blcell=.false.)
-         if (NPL > 0) call restore_kc()
+         if (NPL > 0) then
+            call restore_kc()
+         end if
 
 !     remove isolated hanging nodes and update netcell administration (no need for setnodadm)
          call remove_isolated_hanging_nodes(linkbrother, num)
@@ -341,7 +378,9 @@ contains
       IAV = IAV_old
 
 !  deallocate kdtree if it was created
-      if (Ns >= 1 .and. treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+      if (Ns >= 1 .and. treeglob%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeglob)
+      end if
 
       return
 
@@ -356,13 +395,17 @@ contains
             deallocate (kc_sav)
          end if
 
-         if (numk < 1) goto 1234
+         if (numk < 1) then
+            goto 1234
+         end if
 
          allocate (kc_sav(numk))
 
          do k = 1, numk
             kc_sav(k) = kc(k)
-            if (kc(k) /= 0) kc(k) = 1
+            if (kc(k) /= 0) then
+               kc(k) = 1
+            end if
          end do
 
 1234     continue
@@ -375,11 +418,19 @@ contains
 
          integer k
 
-         if (.not. allocated(kc_sav)) goto 1234
-         if (.not. allocated(kc)) goto 1234
+         if (.not. allocated(kc_sav)) then
+            goto 1234
+         end if
+         if (.not. allocated(kc)) then
+            goto 1234
+         end if
 
-         if (ubound(kc_sav, 1) < numk) goto 1234
-         if (ubound(kc, 1) < numk) goto 1234
+         if (ubound(kc_sav, 1) < numk) then
+            goto 1234
+         end if
+         if (ubound(kc, 1) < numk) then
+            goto 1234
+         end if
 
          do k = 1, numk
             kc(k) = kc_sav(k)
@@ -420,7 +471,10 @@ contains
                jacross = 0
                do kk = 1, N
                   k = netcell(ic)%nod(kk)
-                  kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+                  kkp1 = kk + 1
+                  if (kkp1 > N) then
+                     kkp1 = kkp1 - N
+                  end if
                   L = netcell(ic)%lin(kk)
                   Lp1 = netcell(ic)%lin(kkp1)
 
@@ -636,9 +690,13 @@ contains
 
          dmincellsize = 1.0e99_dp
          dmaxcellsize = 0.0_dp
-         xc(1) = 0.0_dp; yc(1) = 0.0_dp
+         xc(1) = 0.0_dp
+         yc(1) = 0.0_dp
          do k = 1, N
-            kp1 = k + 1; if (kp1 > N) kp1 = kp1 - N
+            kp1 = k + 1
+            if (kp1 > N) then
+               kp1 = kp1 - N
+            end if
             dsize = dbdistance(x(k), y(k), x(kp1), y(kp1), jsferic, jasfer3D, dmiss)
             dlinklength(k) = dsize
             dmincellsize = min(dmincellsize, dsize)
@@ -667,7 +725,9 @@ contains
                             dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo)
 
             do ivar = 1, 3
-               if (zc(ivar) == DMISS) goto 1234
+               if (zc(ivar) == DMISS) then
+                  goto 1234
+               end if
             end do
 
             zsloc = zc(1)
@@ -705,11 +765,14 @@ contains
                zc = DMISS
                if (interpolationtype == 1) then
                   if (ic == 1) then
-                     jdla = 1; jakdtree = 1
+                     jdla = 1
+                     jakdtree = 1
                   else
-                     jdla = 0; jakdtree = 2
+                     jdla = 0
+                     jakdtree = 2
                   end if
-                  mxsam = mca; mysam = nca
+                  mxsam = mca
+                  mysam = nca
                   call triinterp2(Xc, Yc, zc, 1, JDLA, & !attemp to allow for smooth refinement used to be ok through jdla, does not work anymore icw kdtree
                                   XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
                else if (interpolationtype == 2) then
@@ -718,18 +781,22 @@ contains
                else if (interpolationtype == 4) then
                   !landsea = 0
 
-                  zmx = -1.0e9_dp; zmn = 1.0e9_dp
+                  zmx = -1.0e9_dp
+                  zmn = 1.0e9_dp
                   do m = 1, N
                      call bilinarcinfo(x(m), y(m), z(m))
                      zmx = max(zmx, z(m))
                      zmn = min(zmn, z(m))
                   end do
                   if (zmn > 0.0_dp) then ! land
-                     zc(1) = 9.0e9_dp; landsea = 3 ! no refine
+                     zc(1) = 9.0e9_dp
+                     landsea = 3 ! no refine
                   else if (zmx >= 0.0_dp .and. zmn <= 0.0_dp) then ! land/sea
-                     zc(1) = 0.0e9_dp; landsea = 1 ! always refine
+                     zc(1) = 0.0e9_dp
+                     landsea = 1 ! always refine
                   else
-                     call bilinarcinfo(xc(1), yc(1), zc(1)); landsea = 2
+                     call bilinarcinfo(xc(1), yc(1), zc(1))
+                     landsea = 2
                   end if
                end if
 
@@ -739,7 +806,9 @@ contains
                   if (ierror /= 0) then
                      jakdtree = 0
                   else
-                     if (isam(1) > 0 .and. isam(1) < Ns + 1) zc(1) = zs(isam(1))
+                     if (isam(1) > 0 .and. isam(1) < Ns + 1) then
+                        zc(1) = zs(isam(1))
+                     end if
                   end if
                end if
                dval = zc(1)
@@ -879,7 +948,9 @@ contains
 
          integer :: iter, ic, kk, L, N
 
-         if (numitcourant < 1) return ! nothing to do
+         if (numitcourant < 1) then
+            return ! nothing to do
+         end if
 
          if (jadirectional /= 0) then
             call qnerror('directional refinement not allowed in combination with smoothing', ' ', ' ')
@@ -898,7 +969,9 @@ contains
             jalin = 0
 
             do ic = 1, nump
-               if (jarefine(ic) /= 1) cycle
+               if (jarefine(ic) /= 1) then
+                  cycle
+               end if
 
                N = netcell(ic)%N
 !            do kk=1,N
@@ -910,8 +983,14 @@ contains
                   L = netcell(ic)%lin(kk)
 
 !              do not pass on mask to already refined cells
-                  kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-                  kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+                  kkp1 = kk + 1
+                  if (kkp1 > N) then
+                     kkp1 = kkp1 - N
+                  end if
+                  kkm1 = kk - 1
+                  if (kkm1 < 1) then
+                     kkm1 = kkm1 + N
+                  end if
 
                   if (linkbrother(L) /= netcell(ic)%lin(kkp1) .and. linkbrother(L) /= netcell(ic)%lin(kkm1)) then
                      jalin(L) = 1
@@ -941,8 +1020,14 @@ contains
             if (jarefine(ic) == 1) then
                N = netcell(ic)%N
                do kk = 1, N
-                  kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-                  kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+                  kkm1 = kk - 1
+                  if (kkm1 < 1) then
+                     kkm1 = kkm1 + N
+                  end if
+                  kkp1 = kk + 1
+                  if (kkp1 > N) then
+                     kkp1 = kkp1 - N
+                  end if
 
                   L = netcell(ic)%lin(kk)
 
@@ -1060,7 +1145,9 @@ contains
          do k = 1, nump
 !         write(6,*) k, jacell(k)
 
-            if (jarefine(k) == 0) cycle
+            if (jarefine(k) == 0) then
+               cycle
+            end if
 
             N = netcell(k)%N
 
@@ -1085,18 +1172,30 @@ contains
 !    kklp:do kk=1,N
             do kk = 1, nn
 !            kkm1 = kk-1; if ( kkm1.lt.1 ) kkm1 = kkm1+N
-               kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + nn
+               kkm1 = kk - 1
+               if (kkm1 < 1) then
+                  kkm1 = kkm1 + nn
+               end if
 !            kkp1 = kk+1; if ( kkp1.gt.N ) kkp1 = kkp1-N
-               kkp1 = kk + 1; if (kkp1 > nn) kkp1 = kkp1 - nn
+               kkp1 = kk + 1
+               if (kkp1 > nn) then
+                  kkp1 = kkp1 - nn
+               end if
 !            L  = netcell(k)%lin(kk)
 !            Lm1 = netcell(k)%lin(kkm1)
 !            Lp1 = netcell(k)%lin(kkp1)
                L = Lorg(kk)
-               if (L > 0) L = netcell(k)%lin(L)
+               if (L > 0) then
+                  L = netcell(k)%lin(L)
+               end if
                Lm1 = Lorg(kkm1)
-               if (Lm1 > 0) Lm1 = netcell(k)%lin(Lm1)
+               if (Lm1 > 0) then
+                  Lm1 = netcell(k)%lin(Lm1)
+               end if
                Lp1 = Lorg(kkp1)
-               if (Lp1 > 0) Lp1 = netcell(k)%lin(Lp1)
+               if (Lp1 > 0) then
+                  Lp1 = netcell(k)%lin(Lp1)
+               end if
 
                if (L == 0) then
 !              fictitious link at pole
@@ -1116,7 +1215,9 @@ contains
                      nods(num) = jalink(L)
                   end if
                end if
-               if (num > MMAX) goto 1234
+               if (num > MMAX) then
+                  goto 1234
+               end if
 
 !           check if start of this link is hanging
                if (Linkbrother(L) == Lm1 .and. Lm1 > 0) then
@@ -1125,7 +1226,9 @@ contains
             end do
 
 !        check if this cell needs to be refined
-            if (.not. Lrefine) cycle
+            if (.not. Lrefine) then
+               cycle
+            end if
 
 !        compute new center node: circumcenter without hanging nodes for quads, c/g otherwise
             Np = 0
@@ -1220,7 +1323,10 @@ contains
                end if
             else
                do kk = 1, num
-                  kkp1 = kk + 1; if (kkp1 > num) kkp1 = kkp1 - num
+                  kkp1 = kk + 1
+                  if (kkp1 > num) then
+                     kkp1 = kkp1 - num
+                  end if
                   call newlink(nods(kk), nods(kkp1), Lnew)
                end do
             end if
@@ -1301,18 +1407,24 @@ contains
          num = 1
          do while (num /= 0)
             iter = iter + 1
-            if (iter > MAXITER) goto 1234
+            if (iter > MAXITER) then
+               goto 1234
+            end if
 
             num = 0
             do ic = 1, nump
-               if (cellmask(ic) /= 0 .and. cellmask(ic) /= -1) cycle
+               if (cellmask(ic) /= 0 .and. cellmask(ic) /= -1) then
+                  cycle
+               end if
 
                call find_hangingnodes(ic, linkmask, linkbrother, numhang, Lhang, numhangnod, ishangingnod, numrefine)
 
                jasplit = 0
 
                N = netcell(ic)%N
-               if (N > MMAX) goto 1234
+               if (N > MMAX) then
+                  goto 1234
+               end if
 
                do kk = 1, N
                   L = netcell(ic)%lin(kk)
@@ -1331,9 +1443,15 @@ contains
                end if
 
 !           prevent certain cell types
-               if (N + numrefine > MMAX) jasplit = 1 ! would result in unsupported cells after refinement
-               if (N - numhang - numrefine <= 1) jasplit = 1 ! cells with only one unrefined edge
-               if (N_eff == numrefine) jasplit = 1 ! all links refined
+               if (N + numrefine > MMAX) then
+                  jasplit = 1 ! would result in unsupported cells after refinement
+               end if
+               if (N - numhang - numrefine <= 1) then
+                  jasplit = 1 ! cells with only one unrefined edge
+               end if
+               if (N_eff == numrefine) then
+                  jasplit = 1 ! all links refined
+               end if
 
                if (jasplit == 1) then
                   if (cellmask(ic) /= -1) then
@@ -1350,7 +1468,7 @@ contains
 
                         if (iter == MAXITER) then
 !                        call adddot(xzw(ic),yzw(ic))
-                           call adddot(0.5d0 * (xk(kn(1, L)) + xk(kn(2, L))), 0.5d0 * (yk(kn(1, L)) + yk(kn(2, L))))
+                           call adddot(0.5_dp * (xk(kn(1, L)) + xk(kn(2, L))), 0.5_dp * (yk(kn(1, L)) + yk(kn(2, L))))
                         end if
 
                      end if
@@ -1410,15 +1528,22 @@ contains
 
 !       check all combinations of connected links
             do kk = 1, nmk(k)
-               kkp1 = kk + 1; if (kkp1 > nmk(k)) kkp1 = kkp1 - nmk(k)
+               kkp1 = kk + 1
+               if (kkp1 > nmk(k)) then
+                  kkp1 = kkp1 - nmk(k)
+               end if
 
                L = nod(k)%lin(kk)
-               if (lnn(L) < 1) cycle
+               if (lnn(L) < 1) then
+                  cycle
+               end if
 !           if ( lnn(L).ne.2 )         cycle  ! inner links only
 !           if ( linkbrother(L).ne.0 ) cycle  ! allready has a brother link
 
                Lp1 = nod(k)%lin(kkp1)
-               if (lnn(Lp1) < 1) cycle
+               if (lnn(Lp1) < 1) then
+                  cycle
+               end if
 !           if ( lnn(L).ne.2 )           cycle   ! inner links only
 !           if ( linkbrother(Lp1).ne.0 ) cycle   ! allready has a brother link
 
@@ -1434,8 +1559,8 @@ contains
 !          check if node k is in the middle
                k1 = kn(1, L) + kn(2, L) - k
                k2 = kn(1, Lp1) + kn(2, Lp1) - k
-               xkc = 0.5d0 * (xk(k1) + xk(k2))
-               ykc = 0.5d0 * (yk(k1) + yk(k2))
+               xkc = 0.5_dp * (xk(k1) + xk(k2))
+               ykc = 0.5_dp * (yk(k1) + yk(k2))
 
                if (jsferic == 1) then
                   call comp_middle_latitude(yk(k1), yk(k2), ykc, ierr)
@@ -1447,10 +1572,10 @@ contains
 !             check for poles
                   Lpole1 = .false.
                   Lpole2 = .false.
-                  if (abs(abs(yk(k1)) - 90d0) < dtol_pole) then
+                  if (abs(abs(yk(k1)) - 90.0_dp) < dtol_pole) then
                      Lpole1 = .true.
                   end if
-                  if (abs(abs(yk(k2)) - 90d0) < dtol_pole) then
+                  if (abs(abs(yk(k2)) - 90.0_dp) < dtol_pole) then
                      Lpole2 = .true.
                   end if
 
@@ -1462,14 +1587,14 @@ contains
                      xmn = min(xk(k1), xk(k2))
                      xmx = max(xk(k1), xk(k2))
 
-                     if (xmx - xmn > 180d0) then
-                        xkc = xkc + 180d0
+                     if (xmx - xmn > 180.0_dp) then
+                        xkc = xkc + 180.0_dp
                      end if
                   end if
                end if
 
 !          compute tolerance
-               dtol = 1d-4 * max(dbdistance(xk(k1), yk(k1), xk(k), yk(k), jsferic, jasfer3D, dmiss), &
+               dtol = 1.0e-4_dp * max(dbdistance(xk(k1), yk(k1), xk(k), yk(k), jsferic, jasfer3D, dmiss), &
                                  dbdistance(xk(k2), yk(k2), xk(k), yk(k), jsferic, jasfer3D, dmiss))
                if (dbdistance(xk(k), yk(k), xkc, ykc, jsferic, jasfer3D, dmiss) < dtol) then ! brother links found
                   linkbrother(L) = Lp1
@@ -1536,8 +1661,14 @@ contains
 
                   if (N_eff /= 4) then ! non-quads
                      do kk = 1, N
-                        kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-                        kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+                        kkp1 = kk + 1
+                        if (kkp1 > N) then
+                           kkp1 = kkp1 - N
+                        end if
+                        kkm1 = kk - 1
+                        if (kkm1 < 1) then
+                           kkm1 = kkm1 + N
+                        end if
 
                         L = netcell(k)%lin(kk)
 
@@ -1556,9 +1687,14 @@ contains
                      do kk = 1, N
                         L = netcell(k)%lin(kk)
                         numlink(kk) = num
-                        if (jalink(L) /= 0) jaquadlink(num) = jalink(L)
+                        if (jalink(L) /= 0) then
+                           jaquadlink(num) = jalink(L)
+                        end if
 
-                        kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+                        kkp1 = kk + 1
+                        if (kkp1 > N) then
+                           kkp1 = kkp1 - N
+                        end if
                         if (kk /= N .and. linkbrother(L) /= netcell(k)%lin(kkp1)) then
                            num = num + 1
                         else if (linkbrother(L) == netcell(k)%lin(kkp1)) then
@@ -1602,14 +1738,24 @@ contains
                      end if
 
                      do kk = 1, N
-                        kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-                        kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+                        kkp1 = kk + 1
+                        if (kkp1 > N) then
+                           kkp1 = kkp1 - N
+                        end if
+                        kkm1 = kk - 1
+                        if (kkm1 < 1) then
+                           kkm1 = kkm1 + N
+                        end if
 
                         L = netcell(k)%lin(kk)
 
-                        if (jalink(L) > 0) cycle ! link already marked for refinement
+                        if (jalink(L) > 0) then
+                           cycle ! link already marked for refinement
+                        end if
 
-                        if (ja_doall /= 1 .and. jalink(L) /= -1) cycle
+                        if (ja_doall /= 1 .and. jalink(L) /= -1) then
+                           cycle
+                        end if
 
                         num = numlink(kk)
                         if (num == numlink(kkm1) .or. num == numlink(kkp1)) then
@@ -1633,7 +1779,9 @@ contains
 
 !     only keep jalink=1, set other values to 0
          do L = 1, numL
-            if (jalink(L) /= 1) jalink(L) = 0
+            if (jalink(L) /= 1) then
+               jalink(L) = 0
+            end if
          end do
 
 1234     continue
@@ -1662,7 +1810,9 @@ contains
          integer :: L, Lm1, Lp1, N
 
          N = netcell(ic)%N
-         if (N > MMAX) goto 1234
+         if (N > MMAX) then
+            goto 1234
+         end if
 
          Lhang = .false.
          ishangingnod = 0
@@ -1672,12 +1822,20 @@ contains
          numrefine = 0
          do kk = 1, N
             L = netcell(ic)%lin(kk)
-            if (linkmask(L) /= 0) numrefine = numrefine + 1
+            if (linkmask(L) /= 0) then
+               numrefine = numrefine + 1
+            end if
 !        check if the link has a brother link and needs to be refined
             if (linkbrother(L) /= 0) then
 !        check if the brother link is in the cell
-               kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-               kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+               kkm1 = kk - 1
+               if (kkm1 < 1) then
+                  kkm1 = kkm1 + N
+               end if
+               kkp1 = kk + 1
+               if (kkp1 > N) then
+                  kkp1 = kkp1 - N
+               end if
                Lm1 = netcell(ic)%lin(kkm1)
                Lp1 = netcell(ic)%lin(kkp1)
 
@@ -1697,7 +1855,10 @@ contains
 
 !              find node pointer in cell
                   do i = 1, N
-                     kknod = kknod + 1; if (kknod > N) kknod = kknod - N
+                     kknod = kknod + 1
+                     if (kknod > N) then
+                        kknod = kknod - N
+                     end if
 
                      if (netcell(ic)%nod(kknod) == k .and. ishangingnod(kknod) == 0) then
                         numhangnod = numhangnod + 1

@@ -69,7 +69,9 @@ contains
       real(kind=dp) :: xkb, ykb, zkb, SL, SL0, sl1, sl2, SM, XCR, YCR, CRP, xcg, ycg
       real(kind=dp), allocatable :: xpn(:), ypn(:), zpn(:)
 
-      if (numL < 1) return ! nothing to do
+      if (numL < 1) then
+         return ! nothing to do
+      end if
 
       allocate (jalinkvisited(numl))
       allocate (isegstart(numl)) ! (much less than numl needed, generally)
@@ -85,26 +87,41 @@ contains
          xpl = dmiss
          ypl = dmiss
          zpl = dmiss
-         if (needfindcells == 1) call findcells(0)
+         if (needfindcells == 1) then
+            call findcells(0)
+         end if
          call restorepol()
       else
-         if (needfindcells == 1) call findcells(0)
+         if (needfindcells == 1) then
+            call findcells(0)
+         end if
       end if
 
-      inhul1 = -1; inhul2 = -1
+      inhul1 = -1
+      inhul2 = -1
 ! Construct the new polygon set in XPH (backup pol is not used anway during this operation)
       XPH = dmiss
       NPH = 0
       maxpolh = size(xph)
       nseg = 0
       do L = 1, numl
-         if (jalinkvisited(L) == 1) cycle
-         if (kn(3, L) /= 2 .and. kn(3, L) /= 0) cycle ! No 1D nor 1D2D
-         if (lnn(L) /= 1) cycle
-         if (kn(1, L) < 1 .or. kn(2, L) < 1) cycle ! safety
+         if (jalinkvisited(L) == 1) then
+            cycle
+         end if
+         if (kn(3, L) /= 2 .and. kn(3, L) /= 0) then
+            cycle ! No 1D nor 1D2D
+         end if
+         if (lnn(L) /= 1) then
+            cycle
+         end if
+         if (kn(1, L) < 1 .or. kn(2, L) < 1) then
+            cycle ! safety
+         end if
          call dbpinpol(XK(kn(1, L)), YK(kn(1, L)), inhul1, dmiss, JINS, NPL, xpl, ypl, zpl)
          call dbpinpol(XK(kn(2, L)), YK(kn(2, L)), inhul2, dmiss, JINS, NPL, xpl, ypl, zpl)
-         if (inhul1 /= 1 .and. inhul2 /= 1) cycle
+         if (inhul1 /= 1 .and. inhul2 /= 1) then
+            cycle
+         end if
 
          if (NPH + 3 > maxpolh) then
             maxpolh = max(NPH + 3, ceiling(maxpolh * 1.2))
@@ -152,7 +169,9 @@ contains
          end if
          do LI = 1, NMK(kcur)
             LL = NOD(kcur)%lin(LI)
-            if (jalinkvisited(LL) == 1) cycle
+            if (jalinkvisited(LL) == 1) then
+               cycle
+            end if
             if (LNN(LL) == 1) then
                if (kn(2, LL) == kcur) then
                   kcur = kn(1, LL)
@@ -259,19 +278,31 @@ contains
             if (jacros == 1) then
                inland = abs(inland - 1)
                if (ia0 == -999 .and. iseg < nseg) then
-                  ia0 = ia; ib0 = ib; ic0 = ic; idir0 = idir; sl0 = sl
+                  ia0 = ia
+                  ib0 = ib
+                  ic0 = ic
+                  idir0 = idir
+                  sl0 = sl
                   iseg0 = iseg
                   cycle ! Allow a second crossing
                else
                   if (ia0 /= -999 .and. sl0 > sl) then
-                     ia = ia0; ib = ib0; ic = ic0; idir = idir0; sl = sl0
+                     ia = ia0
+                     ib = ib0
+                     ic = ic0
+                     idir = idir0
+                     sl = sl0
                      isegc = iseg0
                   end if
                end if
             else ! jacross == 0
                if (iseg == nseg) then
                   if (ia0 /= -999) then
-                     ia = ia0; ib = ib0; ic = ic0; idir = idir0; sl = sl0
+                     ia = ia0
+                     ib = ib0
+                     ic = ic0
+                     idir = idir0
+                     sl = sl0
                      isegc = iseg0
                      jacros = 1
                   end if

@@ -71,7 +71,9 @@ contains
       type(t_observCrossSection), pointer :: pCrs
       logical :: success
 
-      if (ncrs < 1) return
+      if (ncrs < 1) then
+         return
+      end if
 
       intersection_count = 0
 
@@ -174,7 +176,9 @@ contains
          if (allocated(istartcrs)) then
             deallocate (istartcrs)
          end if
-         if (allocated(xx)) deallocate (xx, yy)
+         if (allocated(xx)) then
+            deallocate (xx, yy)
+         end if
 
          call wall_clock_time(t1)
          write (mesg, "('cross sections with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0

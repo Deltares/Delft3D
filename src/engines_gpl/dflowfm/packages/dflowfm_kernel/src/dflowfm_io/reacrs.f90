@@ -67,10 +67,14 @@ contains
          read (REC(21:), *, ERR=999) M1, N1, M2, N2
 
          if (M1 > M2) then
-            MH = M2; M2 = M1; M1 = MH
+            MH = M2
+            M2 = M1
+            M1 = MH
          end if
          if (N1 > N2) then
-            NH = N2; N2 = N1; N1 = NH
+            NH = N2
+            N2 = N1
+            N1 = NH
          end if
 
          !     WRITE(MOUT,'(A  )') REC(1:20)

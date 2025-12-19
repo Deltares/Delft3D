@@ -50,13 +50,14 @@ contains
       use m_density, only: set_potential_density, set_pressure_dependent_density
       use m_getverticallyaveraged
       use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban
-      use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
-                        limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, kbndu, nbndsd, kbndsd, &
-                        kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, &
-                        vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, &
-                        potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
+      use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, temperature_model, TEMPERATURE_MODEL_NONE, &
+         maxitverticalforestertem, limtyptm, limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, &
+         kbndu, nbndsd, kbndsd, kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, vol1, &
+         eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, potential_density, in_situ_density, rho, jacreep, lbot, &
+         ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
       use Timers, only: timstrt, timstop
-      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
+      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, &
+         rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
       use m_netw, only: zk
       use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
       use m_flowparameters, only: jadiagnostictransport
@@ -84,8 +85,9 @@ contains
          ! limtypsa = 0
          maxitverticalforestersal = 0
       end if
-      if (jatem == 0) then
-         limtypTM = 0; maxitverticalforestertem = 0
+      if (temperature_model == TEMPERATURE_MODEL_NONE) then
+         limtypTM = 0
+         maxitverticalforestertem = 0
       end if
       if (jased == 0) then
          limtypsed = 0
@@ -104,7 +106,8 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             kb = 0
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) >= 0 .or. keepstbndonoutflow == 1) then
                   kk = kmxd * (k - 1) + L - Lb + 1
                   constituents(isalt, kb) = zbnds(kk) ! inflow
@@ -125,13 +128,14 @@ contains
 
       end if
 
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          do k = 1, nbndtm ! set 1D or 3D temp boundary conditions
             LL = kbndTM(3, k)
             call getLbotLtop(LL, Lb, Lt)
             kb = 0
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) >= 0 .or. keepstbndonoutflow == 1) then
                   kk = kmxd * (k - 1) + L - Lb + 1
                   constituents(itemp, kb) = zbndTM(kk) ! inflow
@@ -193,8 +197,12 @@ contains
          !$OMP REDUCTION(+:sam1tot)
          do cell_index_2d = 1, ndxi
             call getkbotktop(cell_index_2d, kb, kt)
-            if (kt < kb) cycle
-            if (vol1(kb) < eps10) cycle
+            if (kt < kb) then
+               cycle
+            end if
+            if (vol1(kb) < eps10) then
+               cycle
+            end if
             km = kt - kb + 1
 
             do cell_index_3d = kb, kt
@@ -203,7 +211,8 @@ contains
          end do
          !$OMP END PARALLEL DO
 
-         saminbnd = 0.0_dp; samoutbnd = 0.0_dp
+         saminbnd = 0.0_dp
+         samoutbnd = 0.0_dp
 
          do LL = lnxi + 1, 0 !  lnx                                ! copy on outflow
             call getLbotLtop(LL, Lb, Lt)
@@ -211,7 +220,8 @@ contains
                cycle
             end if
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) > 0) then
                   saminbnd = saminbnd + q1(L) * constituents(isalt, kb) * dts ! mass in
                else
@@ -254,7 +264,8 @@ contains
       if (jarhoxu > 0 .and. jacreep == 1) then
          do LL = 1, lnx
             do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                rhou(L) = 0.5_dp * (rho(k1) + rho(k2))
             end do
          end do
@@ -392,11 +403,12 @@ contains
          end if
          do L = Lb, Lt
             if (q1(L) < 0) then
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (jasal > 0 .and. keepstbndonoutflow == 0) then
                   constituents(isalt, kb) = constituents(isalt, ki)
                end if
-               if (jatem > 0 .and. keepstbndonoutflow == 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE .and. keepstbndonoutflow == 0) then
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
                if (jased > 0) then

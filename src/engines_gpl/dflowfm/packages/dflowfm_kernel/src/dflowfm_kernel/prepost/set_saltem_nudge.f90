@@ -64,8 +64,12 @@ contains
          end do
 
          do k = kt + 1, kb + kmxn(kk) - 1
-            if (ITEMP > 0) tem1(k) = tem1(kt)
-            if (ISALT > 0) sa1(k) = sa1(kt)
+            if (ITEMP > 0) then
+               tem1(k) = tem1(kt)
+            end if
+            if (ISALT > 0) then
+               sa1(k) = sa1(kt)
+            end if
          end do
 
       end do

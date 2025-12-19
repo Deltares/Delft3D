@@ -15,3 +15,12 @@ f90twtest(test_3d_layer_administration
     LIBRARIES dflowfm_kernel
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
+
+f90twtest(test_pol_to_cellmask
+    CFILES test_pol_to_cellmask.cpp
+    F90FILES test_pol_to_cellmask.f90
+    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_pol_to_cellmask.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES dflowfm_kernel
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)

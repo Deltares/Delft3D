@@ -51,7 +51,9 @@ contains
 
       integer :: i
 
-      if (NCRA <= 0) return
+      if (NCRA <= 0) then
+         return
+      end if
 
       call increasepol(NPL + NCRA + 1, 1)
 

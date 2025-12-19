@@ -58,7 +58,7 @@ contains
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4
+      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, eps4
       use m_bedform, only: bfmpar, bfm_included
       use unstruc_channel_flow
       use m_oned_functions, only: gridpoint2cross
@@ -97,7 +97,9 @@ contains
 !
 !   activate morphology if sediment file has been specified in the mdu file
 !
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
 
       !
       inquire (file=trim(md_sedfile), exist=ex)
@@ -143,7 +145,7 @@ contains
          ln_mor = ln
       end if
 
-      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=jatem, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
+      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
       if (error) then
          call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
          return
@@ -187,10 +189,14 @@ contains
       morbnd => stmpar%morpar%morbnd
       do k = 1, nopenbndsect
          j0 = 0
-         if (k > 1) j0 = nopenbndlin(k - 1)
+         if (k > 1) then
+            j0 = nopenbndlin(k - 1)
+         end if
          npnt = nopenbndlin(k) - j0
          morbnd(k)%npnt = npnt
-         if (associated(morbnd(k)%nm)) deallocate (morbnd(k)%nm, morbnd(k)%nxmx, morbnd(k)%lm)
+         if (associated(morbnd(k)%nm)) then
+            deallocate (morbnd(k)%nm, morbnd(k)%nxmx, morbnd(k)%lm)
+         end if
          allocate (morbnd(k)%nm(npnt))
          allocate (morbnd(k)%nxmx(npnt))
          allocate (morbnd(k)%lm(npnt))
@@ -263,7 +269,9 @@ contains
                      node_processed(k1) = node_processed(k1) + 1
                      j = node_processed(k1)
                      ic = gridpoint2cross(k1)%cross(j)
-                     if (ic == -999) cycle
+                     if (ic == -999) then
+                        cycle
+                     end if
                      if (network%crs%cross(ic)%itabdef == icd) then
                         write (chstr, '(F12.3)') network%crs%cross(ic)%chainage
                         call mess(LEVEL_WARN, '  It is used for grid point '//trim(pbr%gridPointIDs(i))//' via cross section '//trim(network%crs%cross(ic)%csid)//' on branch '//trim(pbr%id)//' at chainage '//trim(adjustl(chstr))//' m.')

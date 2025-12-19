@@ -170,7 +170,8 @@ contains
       xsrc(numsrc, 1:num_points) = x_points(1:num_points)
       ysrc(numsrc, 1:num_points) = y_points(1:num_points)
       nxsrc(numsrc) = num_points
-      kk = 0; kk2 = 0
+      kk = 0
+      kk2 = 0
 
       ! Store sink/source name for waq
       srcname(numsrc) = name
@@ -180,7 +181,8 @@ contains
       jakdtree = 0
       kdum(1) = 0
       if (xsrc(numsrc, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, xsrc(numsrc, num_points), ysrc(numsrc, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL); kk2 = kdum(1)
+         call find_nearest_flownodes(1, xsrc(numsrc, num_points), ysrc(numsrc, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+         kk2 = kdum(1)
       end if
 
       ! Support point source/sinks in a single cell if polyline has just one point (npl==1)
@@ -198,7 +200,8 @@ contains
          tmpname = name//' sink'
          kdum(1) = 0
          if (xsrc(numsrc, 1) /= dmiss) then
-            call find_nearest_flownodes(1, xsrc(numsrc, 1), ysrc(numsrc, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL); kk = kdum(1)
+            call find_nearest_flownodes(1, xsrc(numsrc, 1), ysrc(numsrc, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+            kk = kdum(1)
          end if
 
          if (kk /= 0 .or. kk2 /= 0) then
@@ -234,9 +237,11 @@ contains
 
          do i = 1, numsrc - 1
             if (ksrc(1, i) /= 0 .and. kk == ksrc(1, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(numsrc)), ' coincides with FROM point of ', trim(srcname(i)); call warn_flush()
+               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(numsrc)), ' coincides with FROM point of ', trim(srcname(i))
+               call warn_flush()
             else if (ksrc(4, i) /= 0 .and. kk == ksrc(4, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(numsrc)), ' coincides with TO   point of ', trim(srcname(i)); call warn_flush()
+               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(numsrc)), ' coincides with TO   point of ', trim(srcname(i))
+               call warn_flush()
             end if
          end do
 
@@ -255,9 +260,11 @@ contains
 
          do i = 1, numsrc - 1
             if (ksrc(1, i) /= 0 .and. kk2 == ksrc(1, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(numsrc)), ' coincides with FROM point of ', trim(srcname(i)); call warn_flush()
+               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(numsrc)), ' coincides with FROM point of ', trim(srcname(i))
+               call warn_flush()
             else if (ksrc(4, i) /= 0 .and. kk2 == ksrc(4, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(numsrc)), ' coincides with TO   point of ', trim(srcname(i)); call warn_flush()
+               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(numsrc)), ' coincides with TO   point of ', trim(srcname(i))
+               call warn_flush()
             end if
          end do
 

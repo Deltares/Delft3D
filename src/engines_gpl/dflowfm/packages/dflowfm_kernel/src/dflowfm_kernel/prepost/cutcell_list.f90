@@ -92,7 +92,8 @@ contains
 777      read (MLIST, *, end=888)
          NUMFIL = NUMFIL + 1
          goto 777
-888      allocate (FILIST(NUMFIL)); filist = ' '
+888      allocate (FILIST(NUMFIL))
+filist = ' '
          rewind (MLIST)
          do N = 1, NUMFIL
             read (MLIST, '(A)') FILIST(N)
@@ -233,7 +234,9 @@ contains
 
          do L = 1, NUML
             if (LNE(1, L) == 0 .and. LNE(2, L) == 0) then
-               KN(1, L) = 0; KN(2, L) = 0; KN(3, L) = -1
+               KN(1, L) = 0
+               KN(2, L) = 0
+               KN(3, L) = -1
             end if
          end do
 
@@ -257,7 +260,9 @@ contains
       if (n12 == 5) then
 !    SPvdP: disable flow-links that are associated to disabled net-links
          do Lf = 1, Lnx
-            if (kcu(Lf) /= 2) cycle
+            if (kcu(Lf) /= 2) then
+               cycle
+            end if
             L = abs(ln2lne(Lf))
             if (L > 0) then
                if (lnn(L) == 0) then
@@ -271,11 +276,15 @@ contains
          call realloc(cellmask, nump, fill=1, keepExisting=.false.)
 !    disable cells with only "lnn<0" links
          do L = 1, numL
-            if (kn(3, L) /= 2) cycle
+            if (kn(3, L) /= 2) then
+               cycle
+            end if
             if (lnn(L) > 0) then
 !          unmask neighboring cell(s)
                cellmask(lne(1, L)) = 0
-               if (lnn(L) > 1) cellmask(lne(2, L)) = 0
+               if (lnn(L) > 1) then
+                  cellmask(lne(2, L)) = 0
+               end if
             else if (lnn(L) < 0) then
 !          reset lnn
                lnn(L) = -lnn(L)
@@ -394,7 +403,9 @@ contains
 !       find crossed links
          call find_crossed_links_kdtree2(kdtree, num, x, y, ITYPE_NETLINK, numL, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
          deallocate (x, y)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
 
 !       (re)alloc
          call realloc(idxL, numL + 1, keepExisting=.false., fill=0)

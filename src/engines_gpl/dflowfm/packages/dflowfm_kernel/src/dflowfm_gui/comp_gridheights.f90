@@ -92,7 +92,9 @@ contains
       do is = 1, mcs
          mfac = splineprops(is)%mfac
 !      if ( mfac.lt.1 ) cycle
-         if (splineprops(is)%id /= 0) cycle
+         if (splineprops(is)%id /= 0) then
+            cycle
+         end if
 
          igL = splineprops(is)%iL
          igR = splineprops(is)%iR
@@ -110,8 +112,12 @@ contains
          NsubL = minval(splineprops(is)%NsubL(1:ncs))
          NsubR = minval(splineprops(is)%NsubR(1:ncs))
 
-         if (NsubL == 0) hgL(1, 1:mfac) = splineprops(is)%hmax
-         if (NsubR == 0) hgR(1, 1:mfac) = splineprops(is)%hmax
+         if (NsubL == 0) then
+            hgL(1, 1:mfac) = splineprops(is)%hmax
+         end if
+         if (NsubR == 0) then
+            hgR(1, 1:mfac) = splineprops(is)%hmax
+         end if
 
 !     interpolate the gridheight
 !     use default settings
@@ -197,7 +203,9 @@ contains
                         tL = tR
                         iR = iR + 1
                         tR = t(idx(iR))
-                        if (iR == ndx) exit
+                        if (iR == ndx) then
+                           exit
+                        end if
                      end do
 
                      if (abs(tR - tL) > 1.0e-8_dp) then
@@ -245,7 +253,9 @@ contains
                         tL = tR
                         iR = iR + 1
                         tR = t(idx(iR))
-                        if (iR == ndx) exit
+                        if (iR == ndx) then
+                           exit
+                        end if
                      end do
 
                      if (abs(tR - tL) > 1.0e-8_dp) then
@@ -304,15 +314,27 @@ contains
       mfac = mfacmax
 
 !  deallocate
-      if (allocated(hL)) deallocate (hL, hR)
-      if (allocated(hL2)) deallocate (hL2, hR2)
+      if (allocated(hL)) then
+         deallocate (hL, hR)
+      end if
+      if (allocated(hL2)) then
+         deallocate (hL2, hR2)
+      end if
       if (allocated(sc)) then
          deallocate (sc)
       end if
-      if (allocated(hgL)) deallocate (hgL, hgR)
-      if (allocated(hgL_loc)) deallocate (hgL_loc, hgR_loc)
-      if (allocated(xlist)) deallocate (xlist, ylist, hlist, nlistL, nlistR, nlist_loc)
-      if (allocated(ics)) deallocate (ics, idx)
+      if (allocated(hgL)) then
+         deallocate (hgL, hgR)
+      end if
+      if (allocated(hgL_loc)) then
+         deallocate (hgL_loc, hgR_loc)
+      end if
+      if (allocated(xlist)) then
+         deallocate (xlist, ylist, hlist, nlistL, nlistR, nlist_loc)
+      end if
+      if (allocated(ics)) then
+         deallocate (ics, idx)
+      end if
       if (allocated(t)) then
          deallocate (t)
       end if

@@ -55,7 +55,9 @@ contains
          L1 = NOD(K1)%LIN(N1)
          do N2 = 1, NMK(K2)
             L2 = NOD(K2)%LIN(N2)
-            if (L1 == L2) return
+            if (L1 == L2) then
+               return
+            end if
          end do
       end do
       L1 = 0

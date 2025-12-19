@@ -45,7 +45,9 @@ contains
 
       integer :: mh, nh, m1, n1, m2, n2, i
 
-      if (NPT <= 1) return
+      if (NPT <= 1) then
+         return
+      end if
 
 !     IF (ITYPE .EQ. 1) THEN
       if (MB(2) < MB(1)) then

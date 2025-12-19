@@ -39,7 +39,7 @@ module m_inquire_link_type
 
    private
 
-   public :: linktypeToInt, is_valid_1d2d_netlink, is_valid_1d_netlink, count_1d_edges, count_1d_nodes
+   public :: linktypeToInt, is_valid_2d2d_netlink, is_valid_1d2d_netlink, is_valid_1d_netlink, count_1d_edges, count_1d_nodes
 
 contains
 
@@ -77,14 +77,25 @@ contains
       res = is_1d_link_type(kn(3, link)) .and. lnn(link) == 2
    end function is_valid_1d_netlink
 
-   !> Determine whether a netlink is of type 1D of type 1D2D and the link has 2 nodes of which one 1D node.
+   !> Determine whether a netlink is of type 1D2D and the link has 2 nodes of which one 1D node.
    elemental function is_valid_1d2d_netlink(link) result(res)
       use network_data, only: nump, lne
       logical :: res
       integer, intent(in) :: link !< Net link number, present in the current network_data state.
 
-      res = is_1d2d_link_type(kn(3, link)) .and. lnn(link) == 2 .and. max(abs(lne(1, link)), abs(lne(2, link))) > nump
+      res = is_1d2d_link_type(kn(3, link)) .and. lnn(link) == 2 &
+            .and. min(abs(lne(1, link)), abs(lne(2, link))) <= nump .and. max(abs(lne(1, link)), abs(lne(2, link))) > nump
    end function is_valid_1d2d_netlink
+
+   !> Determine whether a netlink is of type 1D2D but the link has 2 2D nodes (2D-2D contact)
+   elemental function is_valid_2d2d_netlink(link) result(res)
+      use network_data, only: nump, lne
+      logical :: res
+      integer, intent(in) :: link !< Net link number, present in the current network_data state.
+
+      res = is_1d2d_link_type(kn(3, link)) .and. lnn(link) == 2 &
+            .and. abs(lne(1, link)) <= nump .and. abs(lne(2, link)) <= nump
+   end function is_valid_2d2d_netlink
 
    !> Determine whether the link_type is of type 1D2D.
    elemental function is_1d2d_link_type(link_type) result(res)

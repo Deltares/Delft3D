@@ -65,7 +65,9 @@ contains
             do i = 1, 4, 3 ! 1 and 4
 !              get 2D flow nodes
                kk = ksrc(i, n)
-               if (kk <= 0) cycle ! 0: not in whole domain, -1: not in own subdomain, but can be in ghostregion
+               if (kk <= 0) then
+                  cycle ! 0: not in whole domain, -1: not in own subdomain, but can be in ghostregion
+               end if
 
 !              loop over all attached flow links
                do iL = 1, nd(kk)%lnx
@@ -106,7 +108,7 @@ contains
 
       if (jampi == 1) then
 !        source/sink could have been in ghost region
-         allocate (dum(6, Lnx)); 
+         allocate (dum(6, Lnx))
          do LL = 1, Lnx
             do i = 1, 6
                dum(i, LL) = klnup(i, LL)

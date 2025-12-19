@@ -61,8 +61,10 @@ contains
 
       call FINDCELLS(0) ! ALL FACES INSIDE LANDBOUNDARY PIECE
 
-      allocate (KNP(NUMP)); KNP = 0
-      allocate (KNEW(NUML)); KNEW = 0
+      allocate (KNP(NUMP))
+      KNP = 0
+      allocate (KNEW(NUML))
+      KNEW = 0
 
       do N = 1, NUMP
          NN = netcell(N)%N
@@ -79,7 +81,9 @@ contains
       KMOD = max(1, NUMP / 100)
       do N = 1, NUMP
 
-         if (mod(n, KMOD) == 0) call READYY('CUTCELLS', real(n, kind=dp) / real(nump, kind=dp))
+         if (mod(n, KMOD) == 0) then
+            call READYY('CUTCELLS', real(n, kind=dp) / real(nump, kind=dp))
+         end if
 
          if (KNP(N) == 0) then ! AT LEAST 1 POINT OUTSIDE POLYGON
 
@@ -113,7 +117,8 @@ contains
          do LL = 1, NN
 
             L = netcell(N)%LIN(LL)
-            K1 = KN(1, L); K2 = KN(2, L)
+            K1 = KN(1, L)
+            K2 = KN(2, L)
 
             if (KNP(N) == 0) then ! SHOULD BE HANDLED
 
@@ -151,10 +156,12 @@ contains
 
       if (N12 /= 4) then
          do L = 1, NUML
-            K1 = KN(1, L); K2 = KN(2, L) ! NETPUNTEN DIE NIET IN NUMP VOORKWAMEN OOK MAAR GELIJK WEG
+            K1 = KN(1, L)
+            K2 = KN(2, L) ! NETPUNTEN DIE NIET IN NUMP VOORKWAMEN OOK MAAR GELIJK WEG
             if (K1 /= 0 .and. K2 /= 0) then
                if (KC(K1) == 1 .or. KC(K2) == 1) then
-                  KN(1, L) = 0; KN(2, L) = 0
+                  KN(1, L) = 0
+                  KN(2, L) = 0
                end if
             end if
          end do

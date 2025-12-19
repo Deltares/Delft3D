@@ -117,7 +117,9 @@ contains
             end if
 
             time_fetch = max(tim, time_fetch + tifetch)
-            if (tifetch == 0.0_dp) time_fetch = 1.0e30_dp
+            if (tifetch == 0.0_dp) then
+               time_fetch = 1.0e30_dp
+            end if
 
             if (use_fetch_proc == 0 .or. my_rank == fetch_proc_rank) then
                call calculate_fetch_values_for_all_wind_directions(total_nr_cells)
@@ -244,7 +246,9 @@ contains
             nr_cells_done = nr_cells_done_red
          end if
 
-         if (jagui > 0) call setcol(31)
+         if (jagui > 0) then
+            call setcol(31)
+         end if
 
          call make_list_of_upwind_cells(u_wind, v_wind)
 
@@ -285,10 +289,15 @@ contains
          if (calculate_for(cell)) then
             do cell_link = 1, nd(cell)%lnx
                link = abs(nd(cell)%ln(cell_link))
-               cell2 = ln(1, link); if (cell2 == cell) cell2 = ln(2, link)
+               cell2 = ln(1, link)
+               if (cell2 == cell) then
+                  cell2 = ln(2, link)
+               end if
                if (kcs(cell2) == 2) then ! internal
                   cs = u_wind * csu(link) + v_wind * snu(link)
-                  if (link /= nd(cell)%ln(cell_link)) cs = -cs
+                  if (link /= nd(cell)%ln(cell_link)) then
+                     cs = -cs
+                  end if
 
                   if (cs > 0) then ! internal upwind cell
                      number_of_upwind_cells(cell) = number_of_upwind_cells(cell) + 1
@@ -320,10 +329,15 @@ contains
             index = 0
             do cell_link = 1, nd(cell)%lnx
                link = abs(nd(cell)%ln(cell_link))
-               cell2 = ln(1, link); if (cell2 == cell) cell2 = ln(2, link)
+               cell2 = ln(1, link)
+               if (cell2 == cell) then
+                  cell2 = ln(2, link)
+               end if
                if (kcs(cell2) == 2) then ! internal
                   cs = u_wind * csu(link) + v_wind * snu(link)
-                  if (link /= nd(cell)%ln(cell_link)) cs = -cs
+                  if (link /= nd(cell)%ln(cell_link)) then
+                     cs = -cs
+                  end if
 
                   if (cs > 0) then ! internal upwind cell
                      index = index + 1
@@ -397,7 +411,9 @@ contains
             max_cell_size = max(max_cell_size, dbdistance(xk(node1), yk(node1), xk(node2), yk(node2), jsferic, jasfer3D, dmiss))
             node2 = node1
          end do
-         if (jsferic == 1) max_cell_size = max_cell_size * rd2dg / ra
+         if (jsferic == 1) then
+            max_cell_size = max_cell_size * rd2dg / ra
+         end if
 
          jaopen = 0
          do cell_link = 1, nd(cell)%lnx
@@ -408,7 +424,8 @@ contains
             end if
          end do
 
-         min_distance_node = 0; min_distance = 1.0e10_dp; 
+         min_distance_node = 0
+         min_distance = 1.0e10_dp
          do index_cell_node = 1, netcell(cell)%n
             link = netcell(cell)%lin(index_cell_node)
             node1 = netcell(cell)%nod(index_cell_node)
@@ -422,7 +439,9 @@ contains
                call normalout(xk(node1), yk(node1), xk(node2), yk(node2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
                prin = u_wind * xn + v_wind * yn
                if (prin < 0.0_dp) then ! if upwind
-                  crp = xn; xn = -yn; yn = crp
+                  crp = xn
+                  xn = -yn
+                  yn = crp
                   crp = 0.0_dp
                   xnode1 = xk(node1) - 2 * max_cell_size * xn
                   ynode1 = yk(node1) - 2 * max_cell_size * yn
@@ -433,7 +452,8 @@ contains
                   if (jacros == 1) then
                      dist = dbdistance(xz(cell), yz(cell), xcr, ycr, jsferic, jasfer3D, dmiss)
                      if (dist < min_distance) then
-                        min_distance = dist; min_distance_node = index_cell_node ! closest crossed upwind edge
+                        min_distance = dist
+                        min_distance_node = index_cell_node ! closest crossed upwind edge
                      end if
                   end if
                end if
@@ -553,9 +573,11 @@ contains
 
       call realloc(wxc, ndx, keepExisting=.false.)
       call realloc(wyc, ndx, keepExisting=.false.)
-      wxc = 0.0_dp; wyc = 0.0_dp
+      wxc = 0.0_dp
+      wyc = 0.0_dp
       do link = 1, lnx
-         k1 = ln(1, link); k2 = ln(2, link)
+         k1 = ln(1, link)
+         k2 = ln(2, link)
          wxc(k1) = wxc(k1) + wcL(1, link) * wx(link)
          wxc(k2) = wxc(k2) + wcL(2, link) * wx(link)
          wyc(k1) = wyc(k1) + wcL(1, link) * wy(link)

@@ -46,17 +46,25 @@ contains
 
       key_local = key
 
-      if (MET == 0 .or. MC == 0) return
+      if (MET == 0 .or. MC == 0) then
+         return
+      end if
       JA = 0
 
       call SETCOL(NCOL)
-      if (MET == 2 .or. MET == 4) call IGRLINETYPE(1)
+      if (MET == 2 .or. MET == 4) then
+         call IGRLINETYPE(1)
+      end if
 
       KMAX = 8
       do J = N1, N2
-         if (mod(J, 10) == 0) call HALT2(JA)
+         if (mod(J, 10) == 0) then
+            call HALT2(JA)
+         end if
          if (JA == 1) then
-            if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
+            if (MET == 2 .or. MET == 4) then
+               call IGRLINETYPE(0)
+            end if
             return
          end if
 
@@ -64,9 +72,13 @@ contains
       end do
 
       do I = M1, M2
-         if (mod(I, 10) == 0) call HALT2(JA)
+         if (mod(I, 10) == 0) then
+            call HALT2(JA)
+         end if
          if (JA == 1) then
-            if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
+            if (MET == 2 .or. MET == 4) then
+               call IGRLINETYPE(0)
+            end if
             return
          end if
 
@@ -75,7 +87,9 @@ contains
          call JGRLINE8(xlist, ylist, N2 - N1 + 1)
       end do
 
-      if (MET == 2 .or. MET == 4) call IGRLINETYPE(0)
+      if (MET == 2 .or. MET == 4) then
+         call IGRLINETYPE(0)
+      end if
       if (MET == 5) then
          call TEKnumnetcells(0)
       end if

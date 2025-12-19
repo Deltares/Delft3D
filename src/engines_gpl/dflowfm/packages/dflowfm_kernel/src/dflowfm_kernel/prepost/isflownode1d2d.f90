@@ -55,7 +55,8 @@ contains
       do K = ndx2D + 1, ndx
          dis = dbdistance(xz(k), yz(k), xp, yp, jsferic, jasfer3D, dmiss)
          if (dis < rcir) then
-            kk = k; return
+            kk = k
+            return
          end if
       end do
 
@@ -64,11 +65,14 @@ contains
       end if
 
       do K = 1, ndx2D
-         if (.not. allocated(nd(K)%x)) cycle
+         if (.not. allocated(nd(K)%x)) then
+            cycle
+         end if
          NN = size(nd(K)%x)
          call PINPOK(xp, yp, NN, nd(K)%x, nd(K)%y, inn, jins, dmiss)
          if (inn == 1) then
-            KK = K; return
+            KK = K
+            return
          end if
       end do
 

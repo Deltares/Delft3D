@@ -99,7 +99,9 @@ contains
             ICHANGE = NWHAT
             if (A == dmiss) then
                call GETREAL('FIRST SPECIFY UNIFORM VALUE = ', A)
-               if (A /= dmiss) JA = 1
+               if (A /= dmiss) then
+                  JA = 1
+               end if
                goto 10
             else
                JA = 1
@@ -133,7 +135,9 @@ contains
          end if
          K1 = KN(1, L)
          K2 = KN(2, L)
-         if (K1 == 0 .or. K2 == 0) cycle
+         if (K1 == 0 .or. K2 == 0) then
+            cycle
+         end if
          XI = (XK(K1) + XK(K2)) / 2
          YI = (YK(K1) + YK(K2)) / 2
          ZI = (ZK(K1) + ZK(K2)) / 2
@@ -141,7 +145,9 @@ contains
          JA = 0
          if (NPL >= 3) then
             call DPINPOK(XI, YI, ZI, NPL, XPL, YPL, INHUL, jins, dmiss)
-            if (INHUL == 1) JA = 1
+            if (INHUL == 1) then
+               JA = 1
+            end if
          else
             JA = 1
          end if
@@ -154,13 +160,21 @@ contains
             else if (ICHANGE == 2) then
                kn(3, L) = IA
             else if (ICHANGE == 3) then
-               if (RD == dmiss) kn(3, L) = max(kn(3, L), IA)
+               if (RD == dmiss) then
+                  kn(3, L) = max(kn(3, L), IA)
+               end if
             else if (ICHANGE == 4) then
-               if (RD == dmiss) kn(3, L) = min(kn(3, L), IA)
+               if (RD == dmiss) then
+                  kn(3, L) = min(kn(3, L), IA)
+               end if
             else if (ICHANGE == 5) then
-               if (RD == dmiss) kn(3, L) = kn(3, L) + IA
+               if (RD == dmiss) then
+                  kn(3, L) = kn(3, L) + IA
+               end if
             else if (ICHANGE == 6) then
-               if (RD == dmiss) kn(3, L) = kn(3, L) * IA
+               if (RD == dmiss) then
+                  kn(3, L) = kn(3, L) * IA
+               end if
             else if (ICHANGE == 7) then
                kn(3, L) = int(dmiss)
             end if

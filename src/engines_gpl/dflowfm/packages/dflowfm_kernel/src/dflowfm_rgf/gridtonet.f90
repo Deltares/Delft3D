@@ -89,7 +89,8 @@ contains
       if (allocated(mn)) then
          deallocate (mn)
       end if
-      allocate (mn(mc, nc), stat=ierr); mn = 0
+      allocate (mn(mc, nc), stat=ierr)
+      mn = 0
       call aerr('mn(mc,nc)', ierr, mc * nc)
 
       do I = 1, MC
@@ -151,7 +152,9 @@ contains
 
          if (tooclose > 1.0e-16_dp .and. k0 > 0) then
             call CONFRM('MERGE NODES ? ', JA)
-            if (JA == 1) call MERGENODESINPOLYGON()
+            if (JA == 1) then
+               call MERGENODESINPOLYGON()
+            end if
          end if
 
          call readyy('Merging networks', -1.0_dp)

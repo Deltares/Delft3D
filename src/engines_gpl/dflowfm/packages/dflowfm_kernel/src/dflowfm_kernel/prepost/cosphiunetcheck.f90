@@ -73,7 +73,9 @@ contains
                nlinkbadortho = nlinkbadortho + 1
                linkbadqual(nlinkbadortho) = L
             end if
-            if (nlinkbadortho >= 1000) exit
+            if (nlinkbadortho >= 1000) then
+               exit
+            end if
          end do
       else
 

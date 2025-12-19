@@ -63,11 +63,15 @@ contains
 
       integer, parameter :: MAXITER = 10000
 
-      if (MXSAM * MYSAM /= NS) goto 1234 ! no structured sample data
+      if (MXSAM * MYSAM /= NS) then
+         goto 1234 ! no structured sample data
+      end if
 
 !  find first sample point
       call ispoi1(xs, ys, NS, xp, yp, ip0)
-      if (ip0 < 1 .or. ip0 > NS) return
+      if (ip0 < 1 .or. ip0 > NS) then
+         return
+      end if
 
 !  allocate
       Nsub = 1
@@ -93,9 +97,13 @@ contains
             end do
 
 !        remember first step
-            if (iter == 1) ip1 = ipnext
+            if (iter == 1) then
+               ip1 = ipnext
+            end if
 
-            if (ipnext < 1 .or. ipnext == ipcur) exit
+            if (ipnext < 1 .or. ipnext == ipcur) then
+               exit
+            end if
 
 !        add trajectory to polygon
             if (iter == 1) then

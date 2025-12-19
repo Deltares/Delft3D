@@ -55,7 +55,9 @@ contains
       real(kind=dp) X(N), Y(N), Z(N)
       integer NCL(N), ja, jacol
 
-      if (N <= 0) return
+      if (N <= 0) then
+         return
+      end if
       call SETCOL(NCOL)
 
       jacol = 0
@@ -89,7 +91,9 @@ contains
             end if
             if (mod(I, 50) == 0) then
                call HALT2(ja)
-               if (ja == 1) return
+               if (ja == 1) then
+                  return
+               end if
             end if
          end do
 

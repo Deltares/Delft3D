@@ -279,8 +279,12 @@ contains
             YPL(i) = yout(i)
             ZPL(i) = real(ipoLout(i), kind=dp)
          end do
-         if (allocated(xin)) deallocate (xin, yin)
-         if (allocated(xout)) deallocate (xout, yout)
+         if (allocated(xin)) then
+            deallocate (xin, yin)
+         end if
+         if (allocated(xout)) then
+            deallocate (xout, yout)
+         end if
          if (allocated(ipoLout)) then
             deallocate (ipoLout)
          end if

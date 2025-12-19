@@ -64,7 +64,9 @@ contains
 
       integer :: ierr
 
-      if (k0 < kmax) return
+      if (k0 < kmax) then
+         return
+      end if
 
       call sedtrails_savenet()
 
@@ -76,7 +78,8 @@ contains
          allocate (xk(kmax), yk(kmax), stat=ierr)
          call aerr('xk (kmax), yk (kmax)', ierr, 2 * kmax)
 
-         xk = xymis; yk = xymis
+         xk = xymis
+         yk = xymis
       end if
 
       call sedtrails_restore()
@@ -89,7 +92,9 @@ contains
       implicit none
       integer :: kx
 
-      if (.not. allocated(xk0)) return
+      if (.not. allocated(xk0)) then
+         return
+      end if
 
       kx = size(xk0) ! restore everything present (in case numk/numk0 has not yet been increased)
 
@@ -107,11 +112,15 @@ contains
       integer :: ierr
       integer :: kx
 
-      if (.not. allocated(xk)) return
+      if (.not. allocated(xk)) then
+         return
+      end if
 
       kx = kmax ! backup everything present (in case numk has not yet been increased) ! kx = numk
 
-      if (allocated(xk0)) deallocate (xk0, yk0, zk0)
+      if (allocated(xk0)) then
+         deallocate (xk0, yk0, zk0)
+      end if
       allocate (xk0(kx), yk0(kx), zk0(kx), stat=ierr)
 
       xk0(1:kx) = xk(1:kx)
@@ -185,7 +194,9 @@ contains
          istart = istart + ipoint - 1
          iend = iend + ipoint - 1
 
-         if (istart >= iend .or. iend > npl) exit ! done
+         if (istart >= iend .or. iend > npl) then
+            exit ! done
+         end if
 
          iistart(ipoly) = istart
          iiend(ipoly) = iend

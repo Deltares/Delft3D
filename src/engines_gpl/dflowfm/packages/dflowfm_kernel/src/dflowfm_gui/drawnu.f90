@@ -73,7 +73,9 @@ contains
       integer :: KEY, nsiz
 
 !
-      if (KEY /= 3) return
+      if (KEY /= 3) then
+         return
+      end if
 
       METDRAW = NDRAW(9)
 
@@ -84,10 +86,18 @@ contains
       end if
 
       if (jaOpengl == 0) then
-         if (METDRAW == 1) call FULLSCREEN()
-         if (NDRAW(1) == 1 .and. jaOpenGL == 0) call CLS1()
-         if (NDRAW(26) == 1) call SHOWBITMAP(0)
-         if (METDRAW == 1) call SMALLSCREEN()
+         if (METDRAW == 1) then
+            call FULLSCREEN()
+         end if
+         if (NDRAW(1) == 1 .and. jaOpenGL == 0) then
+            call CLS1()
+         end if
+         if (NDRAW(26) == 1) then
+            call SHOWBITMAP(0)
+         end if
+         if (METDRAW == 1) then
+            call SMALLSCREEN()
+         end if
       else
          call BEGINRENDER()
       end if
@@ -96,7 +106,9 @@ contains
       ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES
       ! ndraw(29)= show what on links   ndraw(11)=how to show on links , NDRAW(7) = SHOW WHAT ON NETLINKS
 
-      if (ndraw(3) > 4) call TEKLAN(NCOLLN)
+      if (ndraw(3) > 4) then
+         call TEKLAN(NCOLLN)
+      end if
 
       if (NDRAW(7) >= 2) then
          call NETLINKVALS(NDRAW(7))
@@ -132,7 +144,9 @@ contains
             call TEKNET(key) ! network on top
          end if
 
-         if (ndraw(3) <= 4) call TEKLAN(NCOLLN)
+         if (ndraw(3) <= 4) then
+            call TEKLAN(NCOLLN)
+         end if
 
          call plotObservations()
 
@@ -175,13 +189,19 @@ contains
 
       call ENDRENDER()
 
-      if (METDRAW == 1) call FULLSCREEN()
+      if (METDRAW == 1) then
+         call FULLSCREEN()
+      end if
       call ISOSCALE()
       call ISOSCALE2()
       call TXTLINES()
 
-      if (METDRAW == 1) call SMALLSCREEN()
-      if (METDRAW == 1) call AXES()
+      if (METDRAW == 1) then
+         call SMALLSCREEN()
+      end if
+      if (METDRAW == 1) then
+         call AXES()
+      end if
       call ANCHORCLS()
       call DISPOS()
 

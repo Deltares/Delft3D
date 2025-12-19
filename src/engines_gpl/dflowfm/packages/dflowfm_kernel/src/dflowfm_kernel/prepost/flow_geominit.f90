@@ -183,7 +183,9 @@ contains
       noncrossinglink = .false.
 
       do L = 1, numL ! isolated 1D netlink not allowed for now, crash in parallel, please check and repair
-         k1 = kn(1, L); k2 = kn(2, L); k3 = kn(3, L)
+         k1 = kn(1, L)
+         k2 = kn(2, L)
+         k3 = kn(3, L)
          if (k3 == 1 .or. k3 == 6) then
             if (nmk(k1) == 1 .and. nmk(k2) == 1) then
                call dumpnetlink('isolated_1Dnetlink ', L)
@@ -217,7 +219,9 @@ contains
       end if
 
       do k = 1, numk
-         if (kc(k) /= 0) kc(k) = 1 ! all active grid nodes are now kc = 1 : only to cure old net files
+         if (kc(k) /= 0) then
+            kc(k) = 1 ! all active grid nodes are now kc = 1 : only to cure old net files
+         end if
       end do
 
       call timstrt('Findcells/preparecells', handle_extra(46)) ! findcells/preparecells
@@ -239,7 +243,9 @@ contains
       end if
 
       if (md_findcells == 1 .or. ierr /= DFM_NOERR) then ! Either force findcells, or if cells have not been found in file.
-         if (ierr == DFM_NOERR) call mess(LEVEL_WARN, 'Domain numbers read from file, but overwriting cell numbering by enforcing findcells.', my_rank)
+         if (ierr == DFM_NOERR) then
+            call mess(LEVEL_WARN, 'Domain numbers read from file, but overwriting cell numbering by enforcing findcells.', my_rank)
+         end if
 
          call findcells(0) ! shortest walks in network (0 means: look for all shapes, tris, quads, pentas, hexas)
          call find1dcells()
@@ -339,7 +345,8 @@ contains
          deallocate (nd, bl, bai, kcs, bai_mor, ba_mor) ! and allocate geometry related node arrays
       end if
       allocate (nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx), stat=ierr)
-      call aerr('nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx); kcs = 1
+      call aerr('nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx)
+      kcs = 1
       bl = dmiss
       ba_mor = 0.0_dp
 
@@ -364,14 +371,16 @@ contains
       if (allocated(kfs)) then
          deallocate (kfs)
       end if
-      allocate (kfs(ndx)); kfs = 0
+      allocate (kfs(ndx))
+      kfs = 0
 
       ! Reallocate circumcenters with extra space for 1D nodes, but keep existing 2D data.
       call realloc(xz, ndx)
       call realloc(yz, ndx)
       call realloc(xzw, ndx)
       call realloc(yzw, ndx)
-      call realloc(ba, ndx); ba = 0.0_dp
+      call realloc(ba, ndx)
+      ba = 0.0_dp
 
       do k = 1, ndx
          nd(k)%lnx = 0
@@ -396,13 +405,16 @@ contains
       end do
       ! jacenterinside = 0
 
-      fwind = (5.0e6_dp / max(sarea, 1.0e4_dp))**0.05_dp ! Only for jatem == 3, excess model.
+      fwind = (5.0e6_dp / max(sarea, 1.0e4_dp))**0.05_dp ! Only for temperature_model == TEMPERATURE_MODEL_EXCESS.
 
       do L = 1, NUML1D ! get cell center coordinates 1D
          if (KN(3, L) == 1 .or. KN(3, L) >= 3 .and. KN(3, L) <= 7) then
-            K1n = KN(1, L); K2n = KN(2, L)
-            nc1 = lne(1, L); nc2 = lne(2, L)
-            N1 = abs(NC1); N2 = abs(NC2)
+            K1n = KN(1, L)
+            K2n = KN(2, L)
+            nc1 = lne(1, L)
+            nc2 = lne(2, L)
+            N1 = abs(NC1)
+            N2 = abs(NC2)
             if (n1 == 0) then
                call dumpnetlink('flownode 1 not found for netlink = ', L)
             end if
@@ -413,7 +425,11 @@ contains
             if (nc1 < 0) then
                k1 = netcell(n1)%nod(1)
                ! TODO: duplicated codes: xz, yz, xzw, yzw are already computed in subroutine find1Dcells.
-               xz(N1) = xk(k1); yz(N1) = yk(k1); BL(N1) = ZK(K1); xzw(n1) = xz(n1); yzw(n1) = yz(n1)
+               xz(N1) = xk(k1)
+               yz(N1) = yk(k1)
+               BL(N1) = ZK(K1)
+               xzw(n1) = xz(n1)
+               yzw(n1) = yz(n1)
                if (.not. allocated(nd(n1)%nod)) then
                   allocate (nd(n1)%nod(1), stat=ierr) ! Store original net node with this flow node
                   call aerr('nd(n1)%nod(1)', ierr, 1)
@@ -427,7 +443,11 @@ contains
 
             if (nc2 < 0) then
                k2 = netcell(n2)%nod(1)
-               xz(n2) = xk(k2); yz(n2) = yk(k2); BL(N2) = ZK(K2); xzw(n2) = xz(n2); yzw(n2) = yz(n2)
+               xz(n2) = xk(k2)
+               yz(n2) = yk(k2)
+               BL(N2) = ZK(K2)
+               xzw(n2) = xz(n2)
+               yzw(n2) = yz(n2)
                if (.not. allocated(nd(n2)%nod)) then
                   allocate (nd(n2)%nod(1), stat=ierr)
                   call aerr('nd(n2)%nod(1)', ierr, 1)
@@ -446,7 +466,8 @@ contains
       nlinktoosmall = 0
 
       do L = 1, numl ! count nr of edges that connect cells, ie. have nd1 and nd2
-         n1 = abs(lne(1, L)); n2 = abs(lne(2, L))
+         n1 = abs(lne(1, L))
+         n2 = abs(lne(2, L))
          if (n1 /= 0 .and. n2 /= 0 .and. KN(3, L) /= 0) then ! so that you know the nr of lins to be allocated
 
             isbadlink = .false.
@@ -470,7 +491,9 @@ contains
                   call realloc(linkbadqual, ceiling(1.2 * nlinkbadortho + nlinktoosmall))
                end if
                linkbadqual(nlinkbadortho + nlinktoosmall) = L
-               lne(1, L) = 0; lne(2, L) = 0; LNN(L) = 0
+               lne(1, L) = 0
+               lne(2, L) = 0
+               LNN(L) = 0
             end if
          else
             continue
@@ -496,13 +519,17 @@ contains
          end if
          NDRAW(2) = 5 !< Automatically set 'Display > Network + crossing/quality checks'
       end if
-      if (lnxi == 0 .and. numbnp == 0) return
+      if (lnxi == 0 .and. numbnp == 0) then
+         return
+      end if
 
       lnx = lnxi + numbnp ! add open boundary points
 
       call readyy('geominit-NODELINKS         ', 0.5_dp)
 
-      if (allocated(ln)) deallocate (ln, lncn, bob, bob0, dx, dxi, wu, wui, kcu, csu, snu, acl, iadv, teta, wu_mor, wu1D2D, hh1D2D)
+      if (allocated(ln)) then
+         deallocate (ln, lncn, bob, bob0, dx, dxi, wu, wui, kcu, csu, snu, acl, iadv, teta, wu_mor, wu1D2D, hh1D2D)
+      end if
       if (allocated(ibot)) then
          deallocate (ibot)
       end if
@@ -554,7 +581,9 @@ contains
       call realloc(ln0, [2, lnx])
       call realloc(onlyWetLinks, lnx, keepExisting=.false., fill=0)
 
-      if (allocated(xu)) deallocate (xu, yu, blu)
+      if (allocated(xu)) then
+         deallocate (xu, yu, blu)
+      end if
       allocate (xu(lnx), yu(lnx), blu(lnx), stat=ierr)
       call aerr('xu(lnx), yu(lnx) , blu(lnx)', ierr, 3 * lnx)
       blu = dmiss
@@ -563,7 +592,9 @@ contains
          call aerr('blup(lnx)', ierr, lnx)
       end if
 
-      if (allocated(ln2lne)) deallocate (ln2lne, lne2ln)
+      if (allocated(ln2lne)) then
+         deallocate (ln2lne, lne2ln)
+      end if
       nex = max(lnx, numl)
       allocate (ln2lne(nex), stat=ierr) ! local array
       call aerr('ln2lne (nex)', ierr, nex)
@@ -576,8 +607,10 @@ contains
       Lf = 0
 
       do L = 1, numl ! again count nr of edges and fill in links
-         n1 = lne(1, L); n2 = lne(2, L)
-         n1a = abs(n1); n2a = abs(n2)
+         n1 = lne(1, L)
+         n2 = lne(2, L)
+         n1a = abs(n1)
+         n2a = abs(n2)
 !    if (n1 .ne. 0 .and. n2 .ne. 0) then              ! L=net, Lf=flow
          if (n1 /= 0 .and. n2 /= 0 .and. KN(3, L) /= 0) then ! L=net, Lf=flow
             Lf = Lf + 1
@@ -588,7 +621,8 @@ contains
             if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! 1D link
                kcu(Lf) = 1
             else if (kn(3, L) == 4) then
-               k1 = kn(1, L); k2 = kn(2, L)
+               k1 = kn(1, L)
+               k2 = kn(2, L)
                jaend = 0
                if (nmk(k1) == 1 .or. nmk(k2) == 1) then
                   jaend = 1
@@ -756,7 +790,9 @@ contains
 
       call readyy('geominit-METRICS               ', 0.92_dp)
 
-      if (allocated(cn)) deallocate (cn, ucnx, ucny, ban) ! vort
+      if (allocated(cn)) then
+         deallocate (cn, ucnx, ucny, ban) ! vort
+      end if
 
       allocate (cn(numk), stat=ierr) ! some cell corner related stuff
       call aerr(' cn (numk)', ierr, numk)
@@ -809,8 +845,12 @@ contains
             dx(L) = dx(L) * abs(xn * xt + yn * yt)
          else if (kcu(L) == 3 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1D2D internal link, some averaged 2D length
             k = 0
-            if (kcs(k1) == 21) k = k1
-            if (kcs(k2) == 21) k = k2
+            if (kcs(k1) == 21) then
+               k = k1
+            end if
+            if (kcs(k2) == 21) then
+               k = k2
+            end if
             if (k == 0) then
                write (msgbuf, '(a,i0,a)') '(netlink L=', ln2lne(L), ')'
                call qnerror('1d2d link kcu=3 or 5 not connected to kcs=21 ', trim(msgbuf), ' ')
@@ -820,7 +860,7 @@ contains
             if (kcu(L) == 3 .and. fixedweirtopwidth > 0.0_dp) then
                weirheight = fixedweirtopwidth ! we don't have bl nor bobs yet !max(0d0, 0.5d0*(bob(1,L) + bob(2,L)) - 0.5d0*(bl(k1) + bl(k2)) )
                weirlength = fixedweirtopwidth
-               dx(L) = min(dx(L), max(weirlength + 2d0 * weirheight * fixedweirtalud, 0.5d0 * sqrt(ba(k))))
+               dx(L) = min(dx(L), max(weirlength + 2.0_dp * weirheight * fixedweirtalud, 0.5_dp * sqrt(ba(k))))
             end if
          end if
 
@@ -831,7 +871,8 @@ contains
             call normalout(xk(k3), yk(k3), xk(k4), yk(k4), rn, rt, jsferic, jasfer3D, dmiss, dxymis) ! 1D2D
          end if
 
-         csu(L) = rn; snu(L) = rt
+         csu(L) = rn
+         snu(L) = rt
       end do
 
       if (allocated(dxe) .and. izbndpos /= 0) then
@@ -843,7 +884,7 @@ contains
                if (izbndpos == 0) then ! full grid cell outward
                   dx(Lf) = dxe(L)
                else if (izbndpos == 1) then ! half a grid cell outward
-                  dx(Lf) = .5d0 * dxe(L)
+                  dx(Lf) = 0.5_dp * dxe(L)
                else ! izbndpos==2                           ! on specified boundary polyline
                   continue ! nowhere supported yet
                end if
@@ -901,21 +942,23 @@ contains
       if (allocated(Lbnd1D)) then
          deallocate (Lbnd1D)
       end if
-      allocate (Lbnd1D(lnxi + 1:lnx), stat=ierr); Lbnd1D = 0
+      allocate (Lbnd1D(lnxi + 1:lnx), stat=ierr)
+      Lbnd1D = 0
       call aerr('Lbnd1D(lnxi+1:lnx)', ierr, lnx - lnxi + 1)
 
       if (allocated(grounlay)) then
          deallocate (grounlay)
       end if
       if (lnx1D > 0) then
-         allocate (grounLay(lnx1D), stat=ierr); grounLay = dmiss
+         allocate (grounLay(lnx1D), stat=ierr)
+         grounLay = dmiss
          call aerr('grounLay(lnx1D)', ierr, Lnx1D)
       end if
 
       teta = abs(teta0) ! set spatially constant teta. Override only in setdt for ivariableteta = 2
-      if (teta0 == 1d0) then
+      if (teta0 == 1.0_dp) then
          ivariableteta = 0 ! fully implicit
-         teta = 1d0
+         teta = 1.0_dp
       else if (teta0 < 0) then
          ivariableteta = 2 ! variable teta
       else
@@ -949,8 +992,10 @@ contains
                if (prof1D(1, LL) >= 0) then
                   wu(L) = prof1d(1, LL) ! todo, wu1DUNI from max width of profile interpolations
                else
-                  KA = -PROF1D(1, LL); KB = -PROF1D(2, LL); ALFA = PROF1D(3, LL)
-                  WU(L) = (1d0 - ALFA) * PROFILES1D(KA)%WIDTH + ALFA * PROFILES1D(KB)%WIDTH
+                  KA = -PROF1D(1, LL)
+                  KB = -PROF1D(2, LL)
+                  ALFA = PROF1D(3, LL)
+                  WU(L) = (1.0_dp - ALFA) * PROFILES1D(KA)%WIDTH + ALFA * PROFILES1D(KB)%WIDTH
                end if
             end if
          else
@@ -966,7 +1011,8 @@ contains
       k = 0 ! count MAX nr of 1D endpoints, dir zijn dead ends
       do L = 1, lnx
          if (kcu(L) == 1) then
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (nd(k1)%lnx == 1) then
                k = k + 1
             end if
@@ -980,13 +1026,15 @@ contains
       if (allocated(n1Dend)) then
          deallocate (n1Dend)
       end if
-      allocate (n1Dend(mx1Dend), stat=ierr); n1Dend = 0
+      allocate (n1Dend(mx1Dend), stat=ierr)
+      n1Dend = 0
       call aerr('n1Dend(mx1Dend)', ierr, mx1Dend)
 
       k = 0
       do L = 1, lnx
          if (kcu(L) == 1) then
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (nd(k1)%lnx == 1) then
                k = k + 1
                n1Dend(k) = k1
@@ -1002,9 +1050,10 @@ contains
       call getcellsurface1d(ba, bai)
 
       ! fraction of dist(nd1->edge) to link lenght dx
-      call readyy('geominit', 0.94d0)
+      call readyy('geominit', 0.94_dp)
 
-      acl = 0.5d0; acn = 0.5d0 ! for pipes
+      acl = 0.5_dp
+      acn = 0.5_dp ! for pipes
       do L = 1, lnx ! for all links,
          k1 = ln(1, L)
          k2 = ln(2, L)
@@ -1021,9 +1070,9 @@ contains
             call DLINEDIS2(xz(k1), yz(k1), xk(k3), yk(k3), xk(k4), yk(k4), JA, dxn1e, XN, YN, RL)
             call DLINEDIS2(xz(k2), yz(k2), xk(k3), yk(k3), xk(k4), yk(k4), JA, dxn2e, XN, YN, RL)
 
-            if (abs(dxn1e + dxn2e) < 1d-15) then
-               dxn1e = 5d-16
-               dxn2e = 5d-16
+            if (abs(dxn1e + dxn2e) < 1.0e-15_dp) then
+               dxn1e = 5.0e-16_dp
+               dxn2e = 5.0e-16_dp
             end if
 
             acl(L) = dxn1e / (dxn1e + dxn2e) ! weight factor of nd1
@@ -1045,14 +1094,15 @@ contains
             call normalout(xk(k3), yk(k3), xk(k4), yk(k4), rn, rt, jsferic, jasfer3D, dmiss, dxymis) ! 1D2D
          end if
 
-         csu(L) = rn; snu(L) = rt !
+         csu(L) = rn
+         snu(L) = rt !
       end do
 
       do L = 1, lnx
          ! the max func after setting dx1 fraction
-         dxi(L) = 1d0 / dx(L) ! dxi to minimise nr. of divisions
+         dxi(L) = 1.0_dp / dx(L) ! dxi to minimise nr. of divisions
          if (wu(L) > 0) then
-            wui(L) = 1d0 / wu(L)
+            wui(L) = 1.0_dp / wu(L)
          else
             write (msgbuf, '(a,i0,a)') 'flow_geominit(): wu(', L, ') = 0'
             call qnerror(trim(msgbuf), ' ', ' ')
@@ -1060,14 +1110,14 @@ contains
       end do
 
       do n = 1, ndx2D ! internal 2d nodes
-         if (ba(n) > 0d0) then
-            bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
+         if (ba(n) > 0.0_dp) then
+            bai(n) = 1.0_dp / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
          end if
       end do
 
       do n = ndx1Db + 1, ndx ! boundary 2d nodes
-         if (ba(n) > 0d0) then
-            bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
+         if (ba(n) > 0.0_dp) then
+            bai(n) = 1.0_dp / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
          end if
       end do
 
@@ -1077,7 +1127,8 @@ contains
       end if
       fnam = '*.cut'
       n12 = 4
-      allocate (kfs(ndx)); kfs = 0
+      allocate (kfs(ndx))
+      kfs = 0
       call cutcell_list(n12, 2) ! CUT CELLS, N12 = 4, flag cells to be cut in kfs, prior to setlinktocenter/CORNERweights calls below
 
       call setcentertolinkorientations()
@@ -1091,13 +1142,15 @@ contains
          call allocateandset1Dnodexyarrays(n) ! na  csu en snu
       end do
 
-      call readyy('geominit', 0.98d0)
+      call readyy('geominit', 0.98_dp)
 
       call iadvecini() ! set desired advection for non (-1) links
 
-      avortho = 0d0
+      avortho = 0.0_dp
       do L = lnx1D + 1, lnx ! for all links, check link orthogonality
-         if (abs(kcu(L)) == 1) cycle
+         if (abs(kcu(L)) == 1) then
+            cycle
+         end if
          k1 = ln(1, L)
          k2 = ln(2, L)
          k3 = lncn(1, L)
@@ -1109,13 +1162,15 @@ contains
       end do
       avortho = avortho / lnx
 
-      n12 = 5; fnam = '*.cut'
+      n12 = 5
+      fnam = '*.cut'
       ! call message ('cutcell call 5',' ',' ')
 
       if (allocated(numlimdt)) then
          deallocate (numlimdt)
       end if
-      allocate (numlimdt(ndx), stat=ierr); numlimdt = 0
+      allocate (numlimdt(ndx), stat=ierr)
+      numlimdt = 0
       call aerr('numlimdt(ndx)', ierr, ndx)
       if (numlimdt_baorg > 0) then ! if prev_numlimdt(k) > numlimdt_baorg then ba(k) = baorg(k) in cutcell
          call reanumlimdt()
@@ -1124,9 +1179,11 @@ contains
       numlimdt = 0
 ! deallocate(kfs) ; allocate(kfs(ndx)) ! SPvdP: removed, since (1) uninitialized and (2) kfs needed in "setlinktocenterweights" later
 
-      call readyy('geominit', -1d0)
+      call readyy('geominit', -1.0_dp)
 
-      if (isimplefixedweirs == 0) call fixedweirs_on_flowgeom() ! Impose fixed weirs paths on all crossed flow links.
+      if (isimplefixedweirs == 0) then
+         call fixedweirs_on_flowgeom() ! Impose fixed weirs paths on all crossed flow links.
+      end if
 
       jaupdbndbl = 1
       if (network%loaded) then
@@ -1178,7 +1235,8 @@ contains
       if (allocated(walls)) then
          deallocate (walls)
       end if
-      allocate (walls(17, nw), stat=ierr); walls = 0
+      allocate (walls(17, nw), stat=ierr)
+      walls = 0
       call aerr('walls(17,nw)', ierr, nw * 17)
 
       nw = 0 ! number of closed walls
@@ -1229,16 +1287,18 @@ contains
             walls(8, nw) = sn ! sinus              ( )
             walls(9, nw) = rrr ! length of the wall (m)
 
-            L1 = 0; L2 = 0
+            L1 = 0
+            L2 = 0
             do LL = 1, nd(k1)%lnx
-               LLL = nd(k1)%ln(LL); LLA = abs(LLL)
+               LLL = nd(k1)%ln(LL)
+               LLA = abs(LLL)
                if (lncn(1, LLA) == k3 .or. lncn(2, LLA) == k3) then
                   L1 = LLA
                   walls(4, nw) = L1 ! link 1 to which this wall contributes
                   if (LLL < 0) then ! outflowing link: use alfa1
                      walls(10, nw) = acl(L1)
                   else
-                     walls(10, nw) = (1d0 - acl(L1))
+                     walls(10, nw) = (1.0_dp - acl(L1))
                   end if
                end if
                if (lncn(1, LLA) == k4 .or. lncn(2, LLA) == k4) then
@@ -1247,12 +1307,12 @@ contains
                   if (LLL < 0) then
                      walls(11, nw) = acl(L2)
                   else
-                     walls(11, nw) = (1d0 - acl(L2))
+                     walls(11, nw) = (1.0_dp - acl(L2))
                   end if
                end if
             end do
 
-            walls(12, nw) = 0.5d0 * dis ! half of distance circumcentre to the wall (m)
+            walls(12, nw) = 0.5_dp * dis ! half of distance circumcentre to the wall (m)
             walls(13, nw) = bl(k1) ! cell bottom level (m)
             walls(14, nw) = abs(zk(k4) - zk(k3)) ! bottom level difference (m)
             walls(15, nw) = walls(14, nw) / walls(9, nw) ! bottom level inclination()
@@ -1344,20 +1404,23 @@ contains
       end do
 
       do icn = 1, nrcnw
-         sf = 0d0; n = 0
+         sf = 0.0_dp
+         n = 0
          if (abs(nwalcnw(1, icn)) > 0) then
-            sf = walls(6, abs(nwalcnw(1, icn))); n = n + 1
+            sf = walls(6, abs(nwalcnw(1, icn)))
+            n = n + 1
          end if
          if (abs(nwalcnw(2, icn)) > 0) then
-            sf = walls(6, abs(nwalcnw(2, icn))) + sf; n = n + 1
+            sf = walls(6, abs(nwalcnw(2, icn))) + sf
+            n = n + 1
          end if
-         if (sf > 0d0) then
-            sfcnw(icn) = sf / dble(n) ! averaged
+         if (sf > 0.0_dp) then
+            sfcnw(icn) = sf / real(n, kind=dp) ! averaged
          end if
       end do
 
       dx = max(dx, dxmin)
-      dxi = 1d0 / dx
+      dxi = 1.0_dp / dx
 
       if (allocated(jaduiktmp)) then
          do L = 1, Lnx1D
@@ -1411,16 +1474,20 @@ contains
             mxban = mxban + netcell(k)%n
          end do
          allocate (banf(mxban), stat=ierr) ! for keeps, netnode/flownode subarea
-         call aerr('banf(mxban)', ierr, mxban); banf = 0.0_dp
+         call aerr('banf(mxban)', ierr, mxban)
+         banf = 0.0_dp
          allocate (nban(4, mxban), stat=ierr) ! for keeps, banf admin
-         call aerr('nban(4,mxban)', ierr, mxban); nban = 0
+         call aerr('nban(4,mxban)', ierr, mxban)
+         nban = 0
 
          allocate (rr(mxban), nr(mxban), stat=ierr) ! for temp
          call aerr('rr(mxban), nr(mxban)', ierr, mxban)
          allocate (banh(mxban), stat=ierr)
-         call aerr('banh (mxban)', ierr, mxban); banh = 0.0_dp
+         call aerr('banh (mxban)', ierr, mxban)
+         banh = 0.0_dp
          allocate (nbanh(4, mxban), stat=ierr)
-         call aerr('nbanh(4,mxban)', ierr, mxban); nbanh = 0
+         call aerr('nbanh(4,mxban)', ierr, mxban)
+         nbanh = 0
 
          ka = 0 ! set netnode/flownode subarea array ban
          do k = 1, ndx2D ! nump
@@ -1429,17 +1496,25 @@ contains
             do kk2 = 1, nn ! walk in netcells
                ka = ka + 1 ! subarea nr
 
-               kk1 = kk2 - 1; if (kk1 < 1) kk1 = nn
-               kk3 = kk2 + 1; if (kk3 > nn) kk3 = 1
+               kk1 = kk2 - 1
+               if (kk1 < 1) then
+                  kk1 = nn
+               end if
+               kk3 = kk2 + 1
+               if (kk3 > nn) then
+                  kk3 = 1
+               end if
 
                K1 = netcell(k)%nod(kk1) ! k1 , k2, k3 subsequent netcell nrs
                K2 = netcell(k)%nod(kk2)
                K3 = netcell(k)%nod(kk3)
 
-               xx(1) = xz(k); yy(1) = yz(k)
+               xx(1) = xz(k)
+               yy(1) = yz(k)
 !         xx(2) = 0.5d0*( xk(k1)+xk(k2) )  ;  yy(2) = 0.5d0*( yk(k1)+yk(k2) )
                call half(xk(k1), yk(k1), xk(k2), yk(k2), xx(2), yy(2), jsferic, jasfer3D)
-               xx(3) = xk(k2); yy(3) = yk(k2)
+               xx(3) = xk(k2)
+               yy(3) = yk(k2)
 !         xx(4) = 0.5d0*( xk(k2)+xk(k3) )  ;  yy(4) = 0.5d0*( yk(k2)+yk(k3) )
                call half(xk(k2), yk(k2), xk(k3), yk(k3), xx(4), yy(4), jsferic, jasfer3D)
 
@@ -1490,7 +1565,9 @@ contains
             call qnerror('bed-level type and conveyance type do not match', ' ', ' ')
          else
 
-            if (allocated(aifu)) deallocate (aifu, bz)
+            if (allocated(aifu)) then
+               deallocate (aifu, bz)
+            end if
             allocate (aifu(lnx), bz(ndx))
 
             call setaifu()
@@ -1515,7 +1592,8 @@ contains
                dxorgL = dx(L)
                dx(L) = dxwuimin2D * wu(L)
                dxi(L) = 1.0_dp / dx(L)
-               write (Msgbuf, '(A,4F15.6)') 'Circumcentre distance dx(L)  < dxwuimin2D*wu(L) : xu, yu, old dx, new dx: ', xu(L), yu(L), dxorgL, dx(L); call msg_flush()
+               write (Msgbuf, '(A,4F15.6)') 'Circumcentre distance dx(L)  < dxwuimin2D*wu(L) : xu, yu, old dx, new dx: ', xu(L), yu(L), dxorgL, dx(L)
+               call msg_flush()
             end if
          end do
       end if

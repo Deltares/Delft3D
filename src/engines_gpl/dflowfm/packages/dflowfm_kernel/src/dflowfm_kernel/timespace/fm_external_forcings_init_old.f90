@@ -104,7 +104,9 @@ contains
 
       allocate (xdum(1), ydum(1), kdum(1), stat=ierr)
       call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
-      xdum = 1.0_dp; ydum = 1.0_dp; kdum = 1
+      xdum = 1.0_dp
+      ydum = 1.0_dp
+      kdum = 1
 
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
@@ -383,14 +385,30 @@ contains
                      allocate (sedh(ndx))
                   end if
                   isednum = 1
-                  if (qid(16:16) == '2') isednum = 2
-                  if (qid(16:16) == '3') isednum = 3
-                  if (qid(16:16) == '4') isednum = 4
-                  if (qid(16:16) == '5') isednum = 5
-                  if (qid(16:16) == '6') isednum = 6
-                  if (qid(16:16) == '7') isednum = 7
-                  if (qid(16:16) == '8') isednum = 8
-                  if (qid(16:16) == '9') isednum = 9
+                  if (qid(16:16) == '2') then
+                     isednum = 2
+                  end if
+                  if (qid(16:16) == '3') then
+                     isednum = 3
+                  end if
+                  if (qid(16:16) == '4') then
+                     isednum = 4
+                  end if
+                  if (qid(16:16) == '5') then
+                     isednum = 5
+                  end if
+                  if (qid(16:16) == '6') then
+                     isednum = 6
+                  end if
+                  if (qid(16:16) == '7') then
+                     isednum = 7
+                  end if
+                  if (qid(16:16) == '8') then
+                     isednum = 8
+                  end if
+                  if (qid(16:16) == '9') then
+                     isednum = 9
+                  end if
 
                   sedh(1:ndx) = sed(isednum, 1:ndx)
                   success = timespaceinitialfield(xz, yz, sedh, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
@@ -428,7 +446,8 @@ contains
                   end if
                   success = timespaceinitialfield(xz, yz, satop, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                   if (success) then
-                     inisal2D = 2; uniformsalinityabovez = transformcoef(3)
+                     inisal2D = 2
+                     uniformsalinityabovez = transformcoef(3)
                   end if
                else
                   success = .true. ! We allow to disable salinity without removing the quantity.
@@ -444,26 +463,29 @@ contains
                   end if
                   success = timespaceinitialfield(xz, yz, sabot, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                   if (success .and. transformcoef(3) /= dmiss) then
-                     inisal2D = 3; uniformsalinitybelowz = transformcoef(4)
+                     inisal2D = 3
+                     uniformsalinitybelowz = transformcoef(4)
                   end if
                else
                   success = .true. ! We allow to disable salinity without removing the quantity.
                end if
 
-            else if (jatem > 0 .and. qid == 'initialtemperature') then
+            else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialtemperature') then
 
                success = timespaceinitialfield(xz, yz, tem1, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
                if (success) then
                   initem2D = 1
                end if
 
-            else if (jatem > 0 .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
+            else if (temperature_model /= TEMPERATURE_MODEL_NONE .and. qid == 'initialverticaltemperatureprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(tem1, ndkx, filename); success = .true.
+               call setinitialverticalprofile(tem1, ndkx, filename)
+               success = .true.
 
             else if (jasal > 0 .and. qid == 'initialverticalsalinityprofile' .and. kmx > 0) then
 
-               call setinitialverticalprofile(sa1, ndkx, filename); success = .true.
+               call setinitialverticalprofile(sa1, ndkx, filename)
+               success = .true.
 
             else if (janudge > 0 .and. qid == 'nudgetime') then
 
@@ -523,7 +545,8 @@ contains
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
                   tt = dmiss
-                  call setinitialverticalprofile(tt, ndkx, filename); success = .true.
+                  call setinitialverticalprofile(tt, ndkx, filename)
+                  success = .true.
                   constituents(iconst, :) = tt
                   deallocate (tt)
                end if
@@ -537,7 +560,8 @@ contains
                if (iconst > 0) then
                   allocate (tt(1:ndkx))
                   tt = dmiss
-                  call setinitialverticalprofilesigma(tt, ndkx, filename); success = .true.
+                  call setinitialverticalprofilesigma(tt, ndkx, filename)
+                  success = .true.
                   constituents(iconst, :) = tt
                   deallocate (tt)
                end if
@@ -710,7 +734,9 @@ contains
             else if (qid == 'groundlayerthickness') then
 
                success = timespaceinitialfield(xu, yu, grounlay, Lnx1D, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
-               if (success) jagrounlay = 1
+               if (success) then
+                  jagrounlay = 1
+               end if
 
             else if (.not. stm_included .and. qid == 'erodablelayerthicknessgrainsize1' .and. mxgr >= 1) then
 
@@ -807,7 +833,8 @@ contains
                if (.not. allocated(ec_pwxwy_x)) then
                   allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr)
                   call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
-                  ec_pwxwy_x = 0.0_dp; ec_pwxwy_y = 0.0_dp
+                  ec_pwxwy_x = 0.0_dp
+                  ec_pwxwy_y = 0.0_dp
                end if
 
                if (jaspacevarcharn == 1) then
@@ -847,7 +874,8 @@ contains
             else if (qid == 'humidity_airtemperature_cloudiness') then
 
                ! Meteo1
-               kx = 3; itempforcingtyp = 1
+               kx = 3
+               itempforcingtyp = 1
                if (allocated(mask)) then
                   deallocate (mask)
                end if
@@ -858,7 +886,8 @@ contains
             else if (qid == 'dewpoint_airtemperature_cloudiness') then
 
                ! Meteo1
-               kx = 3; itempforcingtyp = 3
+               kx = 3
+               itempforcingtyp = 3
                if (allocated(mask)) then
                   deallocate (mask)
                end if
@@ -869,7 +898,8 @@ contains
             else if (qid == 'humidity_airtemperature_cloudiness_solarradiation') then
 
                ! Meteo1
-               kx = 4; itempforcingtyp = 2
+               kx = 4
+               itempforcingtyp = 2
                if (allocated(mask)) then
                   deallocate (mask)
                end if
@@ -883,7 +913,8 @@ contains
             else if (qid == 'dewpoint_airtemperature_cloudiness_solarradiation') then
 
                ! Meteo1
-               kx = 4; itempforcingtyp = 4
+               kx = 4
+               itempforcingtyp = 4
                if (allocated(mask)) then
                   deallocate (mask)
                end if
@@ -1014,8 +1045,12 @@ contains
                end if
                ! update the administration
                if (success) then
-                  if (qid == 'sea_ice_area_fraction') ja_ice_area_fraction_read = 1
-                  if (qid == 'sea_ice_thickness') ja_ice_thickness_read = 1
+                  if (qid == 'sea_ice_area_fraction') then
+                     ja_ice_area_fraction_read = 1
+                  end if
+                  if (qid == 'sea_ice_thickness') then
+                     ja_ice_thickness_read = 1
+                  end if
                end if
 
             else if (qid == 'cloudiness') then
@@ -1119,11 +1154,14 @@ contains
 
                call selectelset_internal_links(lnx, keg(ngate + 1:numl), numg, LOCTP_POLYLINE_FILE, filename)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numg, ' nr of gate links'; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numg, ' nr of gate links'
+               call msg_flush()
 
                ngatesg = ngatesg + 1
-               call realloc(L1gatesg, ngatesg); L1gatesg(ngatesg) = ngate + 1
-               call realloc(L2gatesg, ngatesg); L2gatesg(ngatesg) = ngate + numg
+               call realloc(L1gatesg, ngatesg)
+               L1gatesg(ngatesg) = ngate + 1
+               call realloc(L2gatesg, ngatesg)
+               L2gatesg(ngatesg) = ngate + numg
 
                ngate = ngate + numg
 
@@ -1131,11 +1169,14 @@ contains
 
                call selectelset_internal_links(lnx, ked(ncdam + 1:numl), numd, LOCTP_POLYLINE_FILE, filename)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numd, ' nr of dam level cells'; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numd, ' nr of dam level cells'
+               call msg_flush()
 
                ncdamsg = ncdamsg + 1
-               call realloc(L1cdamsg, ncdamsg); L1cdamsg(ncdamsg) = ncdam + 1
-               call realloc(L2cdamsg, ncdamsg); L2cdamsg(ncdamsg) = ncdam + numd
+               call realloc(L1cdamsg, ncdamsg)
+               L1cdamsg(ncdamsg) = ncdam + 1
+               call realloc(L2cdamsg, ncdamsg)
+               L2cdamsg(ncdamsg) = ncdam + numd
 
                ncdam = ncdam + numd
 
@@ -1143,11 +1184,14 @@ contains
 
                call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, filename, sortLinks=1)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numgen, ' nr of general structure cells'; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numgen, ' nr of general structure cells'
+               call msg_flush()
 
                ncgensg = ncgensg + 1
-               call realloc(L1cgensg, ncgensg); L1cgensg(ncgensg) = ncgen + 1
-               call realloc(L2cgensg, ncgensg); L2cgensg(ncgensg) = ncgen + numgen
+               call realloc(L1cgensg, ncgensg)
+               L1cgensg(ncgensg) = ncgen + 1
+               call realloc(L2cgensg, ncgensg)
+               L2cgensg(ncgensg) = ncgen + numgen
 
                ncgen = ncgen + numgen
 
@@ -1159,11 +1203,14 @@ contains
                   call selectelset_internal_links(lnx, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, filename, linktype=LINK_ALL, sortLinks=1)
                end if
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), npum, ' nr of pump links'; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), npum, ' nr of pump links'
+               call msg_flush()
 
                npumpsg = npumpsg + 1
-               call realloc(L1pumpsg, npumpsg); L1pumpsg(npumpsg) = npump + 1
-               call realloc(L2pumpsg, npumpsg); L2pumpsg(npumpsg) = npump + npum
+               call realloc(L1pumpsg, npumpsg)
+               L1pumpsg(npumpsg) = npump + 1
+               call realloc(L2pumpsg, npumpsg)
+               L2pumpsg(npumpsg) = npump + npum
 
                npump = npump + npum
 
@@ -1171,19 +1218,24 @@ contains
 
                call selectelset_internal_links(lnx, keklep(nklep + 1:numl), numklep, LOCTP_POLYLINE_FILE, filename)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numklep, ' nr of checkvalves '; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numklep, ' nr of checkvalves '
+               call msg_flush()
 
                nklep = nklep + numklep
-               call realloc(Lklep, nklep); Lklep = keklep(1:nklep)
+               call realloc(Lklep, nklep)
+               Lklep = keklep(1:nklep)
 
             else if (jaoldstr > 0 .and. qid == 'valve1D') then
 
                call selectelset_internal_links(lnx1D, kevalv(nvalv + 1:numl), numvalv, LOCTP_POLYLINE_FILE, filename, linktype=LINK_1D)
                success = .true.
-               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numvalv, ' nr of valves '; call msg_flush()
+               write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numvalv, ' nr of valves '
+               call msg_flush()
 
                nvalv = nvalv + numvalv
-               call realloc(Lvalv, nvalv); Lvalv = kevalv(1:nvalv); call realloc(valv, nvalv)
+               call realloc(Lvalv, nvalv)
+               Lvalv = kevalv(1:nvalv)
+               call realloc(valv, nvalv)
 
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
@@ -1261,7 +1313,9 @@ contains
 
             else if (qid(1:25) == 'bedrock_surface_elevation') then
                kx = 1
-               if (allocated(subsupl)) deallocate (subsupl, subsupl_t0, subsupl_tp, subsout, sdu_blp)
+               if (allocated(subsupl)) then
+                  deallocate (subsupl, subsupl_t0, subsupl_tp, subsout, sdu_blp)
+               end if
 
                select case (ibedlevtyp)
                case (1)
@@ -1461,7 +1515,9 @@ contains
 
       allocate (xdum(1), ydum(1), kdum(1), stat=ierr)
       call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
-      xdum = 1.0_dp; ydum = 1.0_dp; kdum = 1
+      xdum = 1.0_dp
+      ydum = 1.0_dp
+      kdum = 1
 
       success = .true. ! default return code
 
@@ -1492,7 +1548,9 @@ contains
 
          allocate (xgate(ngatesg), ygate(ngatesg), zgate(ngatesg), xy2gate(2, ngatesg), kgate(3, ngate), kdg(ngatesg), stat=ierr)
          call aerr('xgate(ngatesg), ygate(ngatesg), zgate(ngatesg), xy2gate(2,ngatesg), kgate(3,ngate), kdg(ngatesg)', ierr, ngate * 10)
-         kgate = 0.0_dp; zgate = 1d10; kdg = 1
+         kgate = 0.0_dp
+         zgate = 1.0e10_dp
+         kdg = 1
 
          if (allocated(gate_ids)) then
             deallocate (gate_ids)
@@ -1563,7 +1621,9 @@ contains
          end if
          allocate (xcdam(ncdamsg), ycdam(ncdamsg), zcdam(ncdamsg), xy2cdam(2, ncdamsg), kcdam(3, ncdam), kdd(ncdamsg), stat=ierr)
          call aerr('xcdam(ncdamsg), ycdam(ncdamsg), zcdam(ncdamsg), xy2cdam(2,ncdamsg), kcdam(3,ncdam), kdd(ncdamsg)', ierr, ncdam * 10)
-         kcdam = 0.0_dp; zcdam = 1d10; kdd = 1
+         kcdam = 0.0_dp
+         zcdam = 1.0e10_dp
+         kdd = 1
 
          if (allocated(cdam_ids)) then
             deallocate (cdam_ids)
@@ -1589,7 +1649,9 @@ contains
             end do
          end do
 
-         ja = 1; rewind (mext); kx = 1
+         ja = 1
+         rewind (mext)
+         kx = 1
          ncdamsg = 0
          do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
@@ -1614,7 +1676,10 @@ contains
       end if
 
       if (nvalv > 0) then
-         ja = 1; rewind (mext); kx = 1; nvalv = 0
+         ja = 1
+         rewind (mext)
+         kx = 1
+         nvalv = 0
 
          do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
@@ -1650,7 +1715,10 @@ contains
          if (jampi == 1) then
             call reduce_sum(numlatsg, balat)
          end if
-         ja = 1; rewind (mext); kx = 1; numlatsg = 0
+         ja = 1
+         rewind (mext)
+         kx = 1
+         numlatsg = 0
 
          do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
@@ -1672,14 +1740,18 @@ contains
       end if
 
       if (jaoldstr > 0 .and. ncgensg > 0) then
-         if (allocated(xcgen)) deallocate (xcgen, ycgen, zcgen)
+         if (allocated(xcgen)) then
+            deallocate (xcgen, ycgen, zcgen)
+         end if
          if (allocated(kcgen)) then
             deallocate (kcgen)
          end if
          kx = 3
          allocate (xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg * kx), xy2cgen(2, ncgensg), kcgen(4, ncgen), kdgen(ncgensg), stat=ierr)
          call aerr('xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg*kx), xy2cgen(2,ncgensg), kcgen(4,ncgen), kdgen(ncgensg)', ierr, ncgen * 10)
-         kcgen = 0.0_dp; zcgen = 1d10; kdgen = 1
+         kcgen = 0.0_dp
+         zcgen = 1.0e10_dp
+         kdgen = 1
 
          if (allocated(fusav)) then
             deallocate (fusav)
@@ -1690,7 +1762,10 @@ contains
          if (allocated(ausav)) then
             deallocate (ausav)
          end if
-         allocate (Fusav(3, ncgen), Rusav(3, ncgen), Ausav(3, ncgen), stat=ierr); Fusav = 0.0_dp; Rusav = 0.0_dp; ausav = 0.0_dp
+         allocate (Fusav(3, ncgen), Rusav(3, ncgen), Ausav(3, ncgen), stat=ierr)
+         Fusav = 0.0_dp
+         Rusav = 0.0_dp
+         ausav = 0.0_dp
 
          if (allocated(cgen_ids)) then
             deallocate (cgen_ids)
@@ -1727,7 +1802,8 @@ contains
             end do
          end do
 
-         allocate (hulp(26, ncgensg)); hulp = dmiss
+         allocate (hulp(26, ncgensg))
+         hulp = dmiss
 
          ja = 1
          rewind (mext)
@@ -1798,13 +1874,16 @@ contains
          end if
          allocate (xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2, npumpsg), kpump(3, npump), kdp(npumpsg), stat=ierr)
          call aerr('xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg)', ierr, npump * 10)
-         kpump = 0; qpump = 0.0_dp; kdp = 1
+         kpump = 0
+         qpump = 0.0_dp
+         kdp = 1
 
          if (allocated(pump_ids)) then
             deallocate (pump_ids)
          end if
          allocate (pump_ids(npumpsg)) ! TODO: names are not stored here yet (they are in init_structure_control, but not for old ext file)
-         allocate (pumponoff(5, npumpsg)); pumponoff = dmiss
+         allocate (pumponoff(5, npumpsg))
+         pumponoff = dmiss
 
          do n = 1, npumpsg
             pumponoff(5, n) = 0
@@ -1829,7 +1908,9 @@ contains
             end do
          end do
 
-         ja = 1; rewind (mext); kx = 1
+         ja = 1
+         rewind (mext)
+         kx = 1
          npumpsg = 0
          do while (ja == 1) ! for pumps again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
@@ -1838,10 +1919,18 @@ contains
                qid = 'pump'
                npumpsg = npumpsg + 1
                success = ec_addtimespacerelation(qid, xpump, ypump, kdp, kx, filename, filetype, method, operand, xy2pump, targetIndex=npumpsg)
-               if (transformcoef(4) /= dmiss) pumponoff(1, npumpsg) = transformcoef(4)
-               if (transformcoef(5) /= dmiss) pumponoff(2, npumpsg) = transformcoef(5)
-               if (transformcoef(6) /= dmiss) pumponoff(3, npumpsg) = transformcoef(6)
-               if (transformcoef(7) /= dmiss) pumponoff(4, npumpsg) = transformcoef(7)
+               if (transformcoef(4) /= dmiss) then
+                  pumponoff(1, npumpsg) = transformcoef(4)
+               end if
+               if (transformcoef(5) /= dmiss) then
+                  pumponoff(2, npumpsg) = transformcoef(5)
+               end if
+               if (transformcoef(6) /= dmiss) then
+                  pumponoff(3, npumpsg) = transformcoef(6)
+               end if
+               if (transformcoef(7) /= dmiss) then
+                  pumponoff(4, npumpsg) = transformcoef(7)
+               end if
             end if
          end do
       end if

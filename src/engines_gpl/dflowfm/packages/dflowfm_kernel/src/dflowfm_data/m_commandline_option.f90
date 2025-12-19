@@ -75,17 +75,23 @@ contains
       !  ignore leading dashes -/--/... (but dashes inside option names/values are allowed)
       ipoint = 1
       do while (ipoint <= Lenstr)
-         if (str(ipoint:ipoint) /= '-') exit
+         if (str(ipoint:ipoint) /= '-') then
+            exit
+         end if
          ipoint = ipoint + 1
       end do
 
       !  proceed if argument is option only
-      if (ipoint == 1) return
+      if (ipoint == 1) then
+         return
+      end if
 
       !  read option
       ibegin = ipoint
       iend = index(str(ipoint:Lenstr), ':') + ibegin - 2
-      if (iend < ibegin) iend = Lenstr
+      if (iend < ibegin) then
+         iend = Lenstr
+      end if
       Soption = trim(adjustl(str(ibegin:iend)))
       ipoint = iend + 1
 
@@ -96,7 +102,9 @@ contains
 
          !     find end of this substring, that preceeds the next colon or end of string
          iend = index(str(ibegin:Lenstr), ':') + ibegin - 2
-         if (iend <= ibegin) iend = Lenstr
+         if (iend <= ibegin) then
+            iend = Lenstr
+         end if
 
          !     find equal sign
          iequal = index(str(ibegin:iend), '=') + ibegin - 1

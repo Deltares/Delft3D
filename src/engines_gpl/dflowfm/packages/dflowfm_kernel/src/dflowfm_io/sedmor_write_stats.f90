@@ -54,8 +54,12 @@ contains
       integer :: ierr
       real(kind=dp) :: tem_dif
 
-      if (.not. stm_included) return
-      if (.not. stmpar%morpar%moroutput%morstats) return
+      if (.not. stm_included) then
+         return
+      end if
+      if (.not. stmpar%morpar%moroutput%morstats) then
+         return
+      end if
 
       ierr = 1
       if (stmpar%morpar%moroutput%morstats .and. ti_sed > 0) then

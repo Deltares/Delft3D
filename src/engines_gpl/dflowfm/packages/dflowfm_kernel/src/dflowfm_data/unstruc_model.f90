@@ -222,7 +222,7 @@ module unstruc_model
    integer :: md_jagridgen = 0 !< Commandline-based simple grid generation.
    integer :: md_jarefine = 0 !< sample based mesh refinement or not
    integer :: md_jamake1d2dlinks = 0 !< Make 1D2D links from commandline (1) or not (0)
-   integer :: md_numthreads = 0 !< sample based mesh refinement or not
+   integer :: md_numthreads = 0 !< number of openmp threads to set (0: default)
    integer :: md_jatest = 0 !< only perform a (speed)test (1), or not (0)
    integer :: md_M = 1024 !< size of x in Axpy
    integer :: md_N = 2048 !< size of y in Axpy
@@ -492,7 +492,7 @@ contains
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
          call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
-         call initialize_long_culverts(md_1dfiles, md_convertlongculverts)
+         call initialize_long_culverts(md_1dfiles, md_convertlongculverts, write_converted_files=(md_japartition == 1))
       end if
 
       call timstop(timerHandle)
@@ -510,8 +510,12 @@ contains
       ! fill bed levels from values based on links
       do L = 1, network%numl
          tempbob = getbobs(network, L)
-         if (tempbob(1) > 0.5_dp * huge(1.0_dp)) tempbob(1) = dmiss
-         if (tempbob(2) > 0.5_dp * huge(1.0_dp)) tempbob(2) = dmiss
+         if (tempbob(1) > 0.5_dp * huge(1.0_dp)) then
+            tempbob(1) = dmiss
+         end if
+         if (tempbob(2) > 0.5_dp * huge(1.0_dp)) then
+            tempbob(2) = dmiss
+         end if
 
          k1 = kn(1, L)
          k2 = kn(2, L)
@@ -530,10 +534,14 @@ contains
          call strsplit(md_ldbfile, 1, fnames, 1)
          call oldfil(minp, fnames(1))
          ntot_lb = 0
-         if (minp /= 0) call realan(minp, ntot_lb)
+         if (minp /= 0) then
+            call realan(minp, ntot_lb)
+         end if
          do ifil = 2, size(fnames)
             call oldfil(minp, fnames(ifil))
-            if (minp /= 0) call realan(minp, ntot_lb)
+            if (minp /= 0) then
+               call realan(minp, ntot_lb)
+            end if
          end do
          deallocate (fnames)
       end if
@@ -600,10 +608,14 @@ contains
          do ifil = 1, size(fnames)
             call oldfil(minp, fnames(ifil))
             call reapol(minp, 1)
-            allocate (pillar(ifil)%xcor(npl)); pillar(ifil)%xcor = dmiss
-            allocate (pillar(ifil)%ycor(npl)); pillar(ifil)%ycor = dmiss
-            allocate (pillar(ifil)%dia(npl)); pillar(ifil)%dia = dmiss
-            allocate (pillar(ifil)%cd(npl)); pillar(ifil)%cd = dmiss
+            allocate (pillar(ifil)%xcor(npl))
+            pillar(ifil)%xcor = dmiss
+            allocate (pillar(ifil)%ycor(npl))
+            pillar(ifil)%ycor = dmiss
+            allocate (pillar(ifil)%dia(npl))
+            pillar(ifil)%dia = dmiss
+            allocate (pillar(ifil)%cd(npl))
+            pillar(ifil)%cd = dmiss
             pillar(ifil)%np = npl
             do i = 1, npl
                pillar(ifil)%xcor(i) = xpl(i)
@@ -1032,7 +1044,8 @@ contains
       !call prop_get( md_ptr, 'numerics', 'CFLWaveFrac'     , cflw)
       call prop_get(md_ptr, 'numerics', 'AdvecType', iadvec)
       if (Layertype /= LAYTP_SIGMA) then
-         iadvec = 33; iadvec1D = 33
+         iadvec = 33
+         iadvec1D = 33
       end if
       call prop_get(md_ptr, 'numerics', 'AdvecCorrection1D2D', iadveccorr1D2D)
       call prop_get(md_ptr, 'numerics', 'TimeStepType', itstep)
@@ -1054,8 +1067,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'Limtypmom', limtypmom)
       call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
       call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
-      if (kmx > 1) then ! package deal
-         ja_timestep_auto = 5
+
+      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
+      if (kmx > 1) then
+         autotimestep = AUTO_TIMESTEP_3D_INOUT
       end if
 
       call prop_get(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
@@ -1384,14 +1399,17 @@ contains
       call prop_get(md_ptr, 'physics', 'thermobaricityInPressureGradient', thermobaricity_in_pressure_gradient)
       call validate_density_and_thermobaricity_settings(idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient)
 
-      call prop_get(md_ptr, 'physics', 'Temperature', jatem)
+      call prop_get(md_ptr, 'physics', 'Temperature', temperature_model)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
       call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
       call prop_get(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
       call prop_get(md_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction)
-      zab(1) = Secchidepth / 1.7_dp; sfr(1) = 1.0_dp
+      zab(1) = Secchidepth / 1.7_dp
+      sfr(1) = 1.0_dp
       if (Secchidepth2 > 0) then
-         zab(2) = Secchidepth2 / 1.7_dp; sfr(2) = Secchidepth2fraction; sfr(1) = 1.0_dp - sfr(2)
+         zab(2) = Secchidepth2 / 1.7_dp
+         sfr(2) = Secchidepth2fraction
+         sfr(1) = 1.0_dp - sfr(2)
       end if
 
       call prop_get(md_ptr, 'physics', 'Stanton', Stanton)
@@ -1555,7 +1573,9 @@ contains
 
             ti_st_array = 0.0_dp
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
-            if (ti_st_array(1) > 0.0_dp) ti_st_array(1) = max(ti_st_array(1), dt_user)
+            if (ti_st_array(1) > 0.0_dp) then
+               ti_st_array(1) = max(ti_st_array(1), dt_user)
+            end if
             call getOutputTimeArrays(ti_st_array, ti_sts, ti_st, ti_ste, success)
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
 
@@ -1717,7 +1737,6 @@ contains
       call prop_get(md_ptr, 'Time', 'tZone', Tzone)
       call prop_get(md_ptr, 'Time', 'tUnit', md_tunit)
       call prop_get(md_ptr, 'Time', 'tStart', tstart_user)
-      tstart_user = max(tstart_user, 0.0_dp)
       call prop_get(md_ptr, 'Time', 'tStop', tstop_user)
       select case (md_tunit)
       case ('D')
@@ -1735,10 +1754,12 @@ contains
       call setTUDUnitString()
 
       call prop_get(md_ptr, 'Time', 'dtUser', dt_user)
+
+      ! Set default values if not specified in MDU
       if (dt_user <= 0) then
          dt_user = 300.0_dp
          dt_max = 60.0_dp
-         ja_timestep_auto = 1
+         autotimestep = AUTO_TIMESTEP_2D_OUT
       end if
 
       call prop_get(md_ptr, 'Time', 'dtNodal', dt_nodal)
@@ -1750,9 +1771,8 @@ contains
          call msg_flush()
       end if
 
-      ! 1.02: Don't read [time] AutoTimestep (ja_timestep_auto) from MDU anymore.
       ! ibuf = 1
-      call prop_get(md_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, success)
+      call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
       call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
       if (success .and. jadum /= 0) then
          call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
@@ -1861,7 +1881,9 @@ contains
       call prop_get(md_ptr, 'trachytopes', 'TrtDef', md_trtdfile, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtL', md_trtlfile, success)
       call prop_get(md_ptr, 'trachytopes', 'DtTrt', dt_trach, success)
-      if (.not. success) dt_trach = dt_user
+      if (.not. success) then
+         dt_trach = dt_user
+      end if
       call prop_get(md_ptr, 'trachytopes', 'TrtMxR', md_mxrtrach, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtCll', md_trtcllfile, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtMnH', md_mnhtrach, success)
@@ -2007,7 +2029,7 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', jahisdred, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', jahiswaq, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
-      if (success .and. jahistem == 1 .and. jatem < 1) then
+      if (success .and. jahistem == 1 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
          write (msgbuf, '(a)') 'MDU setting "Wrihis_temperature = 1" asks to write temperature to the output his file, ' &
             //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrihis_temperature = 0" ' &
             //' and do not write temperature to his file.'
@@ -2087,7 +2109,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', jamap_chezy_input, success)
 
       call prop_get(md_ptr, 'output', 'Wrimap_temperature', jamaptem, success)
-      if (success .and. jamaptem == 1 .and. jatem < 1) then
+      if (success .and. jamaptem == 1 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
          write (msgbuf, '(a)') 'MDU setting "Wrimap_temperature = 1" asks to write temperature to the output map file, ' &
             //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrimap_temperature = 0"' &
             //'and do not write temperature to map file.'
@@ -2148,15 +2170,19 @@ contains
       !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
       !endif
 
-      if (jatem <= 1) then
+      if (temperature_model == TEMPERATURE_MODEL_NONE .or. temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
          jamapheatflux = 0
          jahisheatflux = 0
       end if
-      if (jatem < 1) then ! If no temperature is involved, then do not write temperature to output map/his files.
+
+      ! If no temperature is involved, then do not write temperature to output map/his files
+      if (temperature_model == TEMPERATURE_MODEL_NONE) then 
          jamaptem = 0
          jahistem = 0
       end if
-      if (jasal < 1) then ! If no salinity is involved, then do not write salinity to output map/his files.
+
+      ! If no salinity is involved, then do not write salinity to output map/his files
+      if (jasal < 1) then 
          jamapsal = 0
          jahissal = 0
       end if
@@ -2578,7 +2604,9 @@ contains
       end if
 
       allocate (map_classes_ucdir(n - 1), stat=ierr)
-      if (ierr /= 0) call aerr('map_classes_ucdir', ierr, n + 1)
+      if (ierr /= 0) then
+         call aerr('map_classes_ucdir', ierr, n + 1)
+      end if
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
@@ -3160,7 +3188,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal, 'Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)')
       end if
 
-      if (writeall .or. (kmx > 0 .and. jatem > 0)) then
+      if (writeall .or. (kmx > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE)) then
          call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem, 'Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)')
       end if
 
@@ -3400,11 +3428,11 @@ contains
          end if
       end if
 
-      if (writeall .or. (jasal == 0 .and. (jatem > 0 .or. jased > 0))) then
+      if (writeall .or. (jasal == 0 .and. (temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0))) then
          call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
       end if
 
-      if (writeall .or. (jatem == 0 .and. (jasal > 0 .or. jased > 0))) then
+      if (writeall .or. (temperature_model == TEMPERATURE_MODEL_NONE .and. (jasal > 0 .or. jased > 0))) then
          call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
       end if
 
@@ -3412,8 +3440,8 @@ contains
          call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
       end if
 
-      call prop_set(prop_ptr, 'physics', 'Temperature', jatem, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
-      if (writeall .or. (jatem > 0)) then
+      call prop_set(prop_ptr, 'physics', 'Temperature', temperature_model, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
+      if (writeall .or. (temperature_model /= TEMPERATURE_MODEL_NONE)) then
          call prop_set(prop_ptr, 'physics', 'InitialTemperature', temini, 'Uniform initial water temperature (degC)')
          call prop_set(prop_ptr, 'physics', 'Secchidepth', Secchidepth, 'Water clarity parameter (m)')
          if (Secchidepth2 > 0) then
@@ -3479,7 +3507,7 @@ contains
             call prop_set(prop_ptr, 'sediment', 'DzbDtMax', dzbdtmax, 'Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m)')
             call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
             call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
-            call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)')
+            call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
          end if
 
          if (jased /= 4) then
@@ -3669,8 +3697,8 @@ contains
 
       call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=see file *.steps')
 
-      if (writeall .or. ja_timestep_auto /= 1) then
-         call prop_set(prop_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
+      if (writeall .or. autotimestep /= AUTO_TIMESTEP_2D_OUT) then
+         call prop_set(prop_ptr, 'Time', 'autoTimeStep', autotimestep, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
       end if
       if (writeall .and. ja_timestep_auto_visc /= 1) then
          call prop_set(prop_ptr, 'Time', 'autoTimeStepVisc', ja_timestep_auto_visc, '0 = no, 1 = yes (Time limitation based on explicit diffusive term)')
@@ -4071,7 +4099,9 @@ contains
          call setmdia(mdia)
          call initMessaging(mdia)
 
-         if (line_copied) write (MDIA, *) 'Until here copy of previous diagnostic file'
+         if (line_copied) then
+            write (MDIA, *) 'Until here copy of previous diagnostic file'
+         end if
       end if
 
    end subroutine switch_dia_file

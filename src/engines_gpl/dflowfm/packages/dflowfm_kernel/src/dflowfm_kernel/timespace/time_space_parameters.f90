@@ -210,7 +210,9 @@ contains
       integer, intent(inout) :: method !< method integer
       logical, intent(in) :: is_extrapolation_allowed !< is extrapolation allowed
 
-      if (.not. is_extrapolation_allowed) return
+      if (.not. is_extrapolation_allowed) then
+         return
+      end if
 
       if (method == WEIGHTFACTORS) then
          method = WEIGHTFACTORS_EXTRAPOLATION

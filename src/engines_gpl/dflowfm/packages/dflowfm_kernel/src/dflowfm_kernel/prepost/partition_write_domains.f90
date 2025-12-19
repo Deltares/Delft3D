@@ -123,7 +123,9 @@ contains
 
 !        make the domain by deleting other parts of the net, and s
          call partition_make_domain(idmn, numlay_cellbased, numlay_nodebased, jacells, ierror)
-         if (ierror /= DFM_NOERR) goto 1234
+         if (ierror /= DFM_NOERR) then
+            goto 1234
+         end if
 
 !        write partitioning net files, including cell info. and idomain
          call unc_write_net(filename, janetcell=1, janetbnd=1, jaidomain=jacells, &

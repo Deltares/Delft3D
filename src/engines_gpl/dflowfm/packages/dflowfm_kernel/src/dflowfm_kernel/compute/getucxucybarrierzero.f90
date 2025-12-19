@@ -49,10 +49,12 @@ contains
       integer :: ku, L, LL, Ls, n12, Lf
       real(kind=dp) :: ucxku, ucyku, ww, ac1, cs, sn
 
-      ucxku = 0.0_dp; ucyku = 0.0_dp
+      ucxku = 0.0_dp
+      ucyku = 0.0_dp
 
       do LL = 1, nd(ku)%lnx
-         Ls = nd(ku)%ln(LL); L = abs(Ls)
+         Ls = nd(ku)%ln(LL)
+         L = abs(Ls)
          if (Ls < 0) then
             ac1 = acL(L)
             n12 = 1
@@ -61,7 +63,8 @@ contains
             n12 = 2
          end if
          ww = ac1 * dx(L) * wu(L)
-         cs = ww * csu(L); sn = ww * snu(L)
+         cs = ww * csu(L)
+         sn = ww * snu(L)
          if (L /= Lf) then
             ucxku = ucxku + lin2nodx(L, n12, cs, sn) * u1(L)
             ucyku = ucyku + lin2nody(L, n12, cs, sn) * u1(L)

@@ -48,7 +48,9 @@ contains
       integer :: k2
       integer :: l
 
-      if (NDRAW(16) <= 0) return
+      if (NDRAW(16) <= 0) then
+         return
+      end if
       call SETCOL(NCOL)
       do L = 1, NUML0
          K1 = KN0(1, L)

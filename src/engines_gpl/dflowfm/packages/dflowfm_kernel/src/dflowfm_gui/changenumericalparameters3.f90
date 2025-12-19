@@ -62,28 +62,50 @@ contains
       integer :: nbut, imp, inp
 
       NLEVEL = 4
-      OPTION(1) = 'Clveg                                ( )'; it(2 * 1) = 6
-      OPTION(2) = 'Cdveg                                ( )'; it(2 * 2) = 6
-      OPTION(3) = 'Rhoveg                           (kg/m3)'; it(2 * 3) = 6
-      OPTION(4) = 'Cbveg                         (kg.m2/s2)'; it(2 * 4) = 6
-      OPTION(5) = 'Stemheightstd                        ( )'; it(2 * 5) = 6
-      OPTION(6) = 'Hwavuni                              (m)'; it(2 * 6) = 6
-      OPTION(7) = 'Twavuni                              (s)'; it(2 * 7) = 6
-      OPTION(8) = 'Phiwavuni                            ( )'; it(2 * 8) = 6
-      OPTION(9) = 'Wave model nr modind                 ( )'; it(2 * 9) = 2
-      OPTION(10) = 'Slotw1D                              (m)'; it(2 * 10) = 6
-      OPTION(11) = 'Slotw2D                              (m)'; it(2 * 11) = 6
-      OPTION(12) = 'Epsmaxlev                            (m)'; it(2 * 12) = 6
-      OPTION(13) = 'Epsmaxlevm                           (m)'; it(2 * 13) = 6
-      OPTION(14) = 'jawavestreaming terms in D3Dwavemodel( )'; it(2 * 14) = 2
-      OPTION(15) = 'jawaveStokes 0,1,2,3                 ( )'; it(2 * 15) = 2
-      OPTION(16) = 'jawavelogprof                        ( )'; it(2 * 16) = 2
-      OPTION(17) = 'Maxitforestersal                     ( )'; it(2 * 17) = 2
-      OPTION(18) = 'Maxitforestertem                     ( )'; it(2 * 18) = 2
-      OPTION(19) = 'Noderivedtypes (Noderivedtypes in mdu)     ( )'; it(2 * 19) = 2
-      OPTION(20) = 'Maxdegree                            ( )'; it(2 * 20) = 2
-      OPTION(21) = 'Jaevap                               ( )'; it(2 * 21) = 2
-      OPTION(22) = 'Jaseddenscoupling                    ( )'; it(2 * 22) = 2
+      OPTION(1) = 'Clveg                                ( )'
+      it(2 * 1) = 6
+      OPTION(2) = 'Cdveg                                ( )'
+      it(2 * 2) = 6
+      OPTION(3) = 'Rhoveg                           (kg/m3)'
+      it(2 * 3) = 6
+      OPTION(4) = 'Cbveg                         (kg.m2/s2)'
+      it(2 * 4) = 6
+      OPTION(5) = 'Stemheightstd                        ( )'
+      it(2 * 5) = 6
+      OPTION(6) = 'Hwavuni                              (m)'
+      it(2 * 6) = 6
+      OPTION(7) = 'Twavuni                              (s)'
+      it(2 * 7) = 6
+      OPTION(8) = 'Phiwavuni                            ( )'
+      it(2 * 8) = 6
+      OPTION(9) = 'Wave model nr modind                 ( )'
+      it(2 * 9) = 2
+      OPTION(10) = 'Slotw1D                              (m)'
+      it(2 * 10) = 6
+      OPTION(11) = 'Slotw2D                              (m)'
+      it(2 * 11) = 6
+      OPTION(12) = 'Epsmaxlev                            (m)'
+      it(2 * 12) = 6
+      OPTION(13) = 'Epsmaxlevm                           (m)'
+      it(2 * 13) = 6
+      OPTION(14) = 'jawavestreaming terms in D3Dwavemodel( )'
+      it(2 * 14) = 2
+      OPTION(15) = 'jawaveStokes 0,1,2,3                 ( )'
+      it(2 * 15) = 2
+      OPTION(16) = 'jawavelogprof                        ( )'
+      it(2 * 16) = 2
+      OPTION(17) = 'Maxitforestersal                     ( )'
+      it(2 * 17) = 2
+      OPTION(18) = 'Maxitforestertem                     ( )'
+      it(2 * 18) = 2
+      OPTION(19) = 'Noderivedtypes (Noderivedtypes in mdu)     ( )'
+      it(2 * 19) = 2
+      OPTION(20) = 'Maxdegree                            ( )'
+      it(2 * 20) = 2
+      OPTION(21) = 'Jaevap                               ( )'
+      it(2 * 21) = 2
+      OPTION(22) = 'Jaseddenscoupling                    ( )'
+      it(2 * 22) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -241,9 +263,18 @@ contains
             call IFORMGETdouble(2 * 3, Rhoveg)
             call IFORMGETdouble(2 * 4, Cbveg)
             call IFORMGETdouble(2 * 5, stemheightstd)
-            call IFORMGETdouble(2 * 6, hwavuni); if (hwavuni > 0.0_dp) hwav = hwavuni
-            call IFORMGETdouble(2 * 7, twavuni); if (twavuni > 0.0_dp) twav = twavuni
-            call IFORMGETdouble(2 * 8, phiwavuni); if (phiwavuni > 0.0_dp) phiwav = phiwavuni
+            call IFORMGETdouble(2 * 6, hwavuni)
+            if (hwavuni > 0.0_dp) then
+               hwav = hwavuni
+            end if
+            call IFORMGETdouble(2 * 7, twavuni)
+            if (twavuni > 0.0_dp) then
+               twav = twavuni
+            end if
+            call IFORMGETdouble(2 * 8, phiwavuni)
+            if (phiwavuni > 0.0_dp) then
+               phiwav = phiwavuni
+            end if
             call IFORMGETinteger(2 * 9, modind)
             call IFORMGETdouble(2 * 10, Slotw1D)
             call IFORMGETdouble(2 * 11, Slotw2D)

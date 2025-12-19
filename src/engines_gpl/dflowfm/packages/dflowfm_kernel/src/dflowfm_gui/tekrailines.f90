@@ -61,14 +61,18 @@ contains
       do L = 1, lnx
          if (mod(L, 200) == 0) then
             call halt2(ja)
-            if (ja == 1) exit
+            if (ja == 1) then
+               exit
+            end if
          end if
 
          k1 = ln(1, L)
          k2 = ln(2, L)
 
          if (npl >= 2) then
-            if (kc(k1) * kc(k2) == 0) cycle
+            if (kc(k1) * kc(k2) == 0) then
+               cycle
+            end if
          end if
 
          if (jaall == 1 .and. wetplot > 0.0_dp) then
@@ -77,7 +81,8 @@ contains
             end if
          end if
 
-         zz1 = dmiss; zz2 = dmiss
+         zz1 = dmiss
+         zz2 = dmiss
          if (ityp == 1) then
             zz1 = s1(k1)
             zz2 = s1(k2)
@@ -95,7 +100,8 @@ contains
             zz2 = sgrw1(k2)
          else if (ityp == 6) then
             if (L <= lnx1D) then
-               zz1 = dmiss; zz2 = dmiss
+               zz1 = dmiss
+               zz2 = dmiss
                if (prof1D(3, L) < 0) then
                   if (s1m(k1) > bl(k1) + prof1D(2, L) .or. s1m(k2) > bl(k2) + prof1D(2, L)) then
                      zz1 = s1m(k1)
@@ -118,7 +124,9 @@ contains
             end if
          end if
 
-         if (zz1 == dmiss .or. zz2 == dmiss) cycle
+         if (zz1 == dmiss .or. zz2 == dmiss) then
+            cycle
+         end if
 
          if (yfac > 0) then
             zz1 = zz1 + (yz(k1) - ymn) * yfac
@@ -126,14 +134,20 @@ contains
          end if
 
          if (jsferic == 1) then ! jglobe
-            if (abs(xz(k1) - xz(k2)) > 10.0_dp) cycle
+            if (abs(xz(k1) - xz(k2)) > 10.0_dp) then
+               cycle
+            end if
          end if
 
          xz1 = xz(k1)
          xz2 = xz(k2)
 
-         if (abs(zz1) < 1.0e-6_dp) zz1 = 0.0_dp ! heh heh, eindelijk. -> #@!
-         if (abs(zz2) < 1.0e-6_dp) zz2 = 0.0_dp
+         if (abs(zz1) < 1.0e-6_dp) then
+            zz1 = 0.0_dp ! heh heh, eindelijk. -> #@!
+         end if
+         if (abs(zz2) < 1.0e-6_dp) then
+            zz2 = 0.0_dp
+         end if
 
          call movabs(xz1, zz1)
          call lnabs(xz2, zz2)

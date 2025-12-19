@@ -68,9 +68,13 @@ contains
       ruh(2, :) = my_rank
 
       ! Obtain value of maximum runup across domains, and domainnr of max value
-      if (jatimer == 1) call starttimer(IOUTPUTMPI)
+      if (jatimer == 1) then
+         call starttimer(IOUTPUTMPI)
+      end if
       call reduce_rug(ruh, num_rugs)
-      if (jatimer == 1) call stoptimer(IOUTPUTMPI)
+      if (jatimer == 1) then
+         call stoptimer(IOUTPUTMPI)
+      end if
 
       ! Reduce ruh and retrieve coordinates of maximum ruh
       do irug = 1, num_rugs
@@ -82,9 +86,13 @@ contains
       end do
 
       ! Reduction of the sum of the coordinates, Could be mpi_reduce(rank=0)
-      if (jatimer == 1) call starttimer(IOUTPUTMPI)
+      if (jatimer == 1) then
+         call starttimer(IOUTPUTMPI)
+      end if
       call mpi_allreduce(xy, xy_red, 2 * num_rugs, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) call stoptimer(IOUTPUTMPI)
+      if (jatimer == 1) then
+         call stoptimer(IOUTPUTMPI)
+      end if
       if (ierror /= 0) then
          goto 1234
       end if

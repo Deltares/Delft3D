@@ -88,7 +88,9 @@ contains
             end if
          end do
       end do
-      if (ISHOT == 1) goto 666
+      if (ISHOT == 1) then
+         goto 666
+      end if
       MVOL = 0
       call DISVAL(0, 0, 0.0_dp)
       return
