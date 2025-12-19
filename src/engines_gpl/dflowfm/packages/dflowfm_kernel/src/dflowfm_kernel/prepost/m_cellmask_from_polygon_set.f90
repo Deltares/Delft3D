@@ -30,12 +30,14 @@
 module m_cellmask_from_polygon_set
    use m_missing, only: jins, dmiss
    use precision, only: dp
+   use m_polygon, only: xpl, ypl, zpl, npl, maxpol, restorepol, savepol
 
    implicit none
 
    private
 
-   public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
+   public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
+   public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
 
    integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
    real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
@@ -218,69 +220,116 @@ contains
 
    end subroutine cellmask_from_polygon_set_cleanup
 
-   !> Optimized elemental point-in-polygon test using ray casting algorithm.
-   !! Accesses polygon data via module arrays.
+!> Elemental wrapper for cellmask operations using module-level polygon arrays
    elemental function pinpok_elemental(x, y, i_poly) result(is_inside)
       use m_polygon, only: xpl, ypl
+      use geometry_module, only: pinpok_raycast
 
-      real(kind=dp), intent(in) :: x, y !< Point coordinates (scalar)
+      real(kind=dp), intent(in) :: x, y !< Point coordinates
       integer, intent(in) :: i_poly !< Polygon index
-      logical :: is_inside !< Result: .true.=is_inside, .false.=outside
+      logical :: is_inside !< Result
 
-      integer :: i, j, i_start, i_end, crossings
-      real(kind=dp) :: x_j, x_i, y_j, y_i, x_intersect
+      integer :: i_start, i_end, n_points
 
-      is_inside = .false.
-
-      ! Get polygon bounds from module variables
+      ! Get bounds for this polygon from module arrays
       i_start = i_poly_start(i_poly)
       i_end = i_poly_end(i_poly)
+      n_points = i_end - i_start + 1
 
-      if (i_end - i_start + 1 <= 2) then
-         is_inside = .true.
-         goto 999
-      end if
-
-      ! Ray-casting algorithm
-      crossings = 0
-      j = i_end
-
-      do i = i_start, i_end
-         if (xpl(i) == dmiss) then
-            exit
-         end if
-
-         x_j = xpl(j)
-         y_j = ypl(j)
-         x_i = xpl(i)
-         y_i = ypl(i)
-
-         ! Check if point is on vertex
-         if (x == x_j .and. y == y_j) then
-            is_inside = .true.
-            goto 999
-         end if
-
-         ! Check if ray crosses edge
-         if ((y_j > y) .neqv. (y_i > y)) then
-            x_intersect = x_j + (y - y_j) * (x_i - x_j) / (y_i - y_j)
-
-            if (x < x_intersect) then
-               crossings = crossings + 1
-            else if (x == x_intersect) then
-               is_inside = .true.
-               goto 999
-            end if
-         end if
-         j = i
-      end do
-
-      is_inside = mod(crossings, 2) == 1
-999   continue
-      if (jins == 0) then
-         is_inside = .not. is_inside
-      end if
+      ! Call the shared optimized algorithm with array slice
+      is_inside = pinpok_raycast(x, y, xpl(i_start:i_end), ypl(i_start:i_end), n_points)
 
    end function pinpok_elemental
+
+   !> Initialize xpl, ypl, zpl arrays with all netcell geometries (called once)
+   subroutine init_cell_geom_as_polylines()
+      use network_data
+      use m_alloc
+
+      integer :: k, n, k1, total_points, ipoint
+
+      if (cellmask_initialized) then !> reuse cellmask cache boolean
+         return
+      end if
+
+      call savepol()
+
+      ! calculate total points needed: sum(netcell(k)%n + 1) for all cells
+      ! +1 for dmiss separator after each polygon
+      total_points = 0
+      do k = 1, nump
+         total_points = total_points + netcell(k)%n + 1 ! +1 for dmiss
+      end do
+
+      ! allocate or reallocate xpl, ypl, zpl
+      call realloc(xpl, total_points, keepexisting=.false.)
+      call realloc(ypl, total_points, keepexisting=.false.)
+      call realloc(zpl, total_points, keepexisting=.false.)
+
+      ! fill arrays with netcell geometry
+      ipoint = 0
+      do k = 1, nump
+         do n = 1, netcell(k)%n
+            ipoint = ipoint + 1
+            k1 = netcell(k)%nod(n)
+            xpl(ipoint) = xk(k1)
+            ypl(ipoint) = yk(k1)
+            zpl(ipoint) = real(k, dp) ! store cell index as z-value
+         end do
+
+         ! add separator
+         ipoint = ipoint + 1
+         xpl(ipoint) = dmiss
+         ypl(ipoint) = dmiss
+         zpl(ipoint) = dmiss
+      end do
+
+      npl = ipoint
+
+      ! initialize the cellmask module with these polygons
+      ! this builds bounding boxes and polygon indices
+      call cellmask_from_polygon_set_init(npl, xpl, ypl, zpl)
+
+   end subroutine init_cell_geom_as_polylines
+
+   !> call general polygon cleanup and restore previous polygon data
+   subroutine cleanup_cell_geom_polylines()
+      call cellmask_from_polygon_set_cleanup()
+      maxpol = 0 !< reset maxpol to prevent unnecessarily large realloc
+      call restorepol()
+   end subroutine cleanup_cell_geom_polylines
+
+!> Fast replacement for INCELLS using cached geometry in global polygon arrays
+   elemental function point_find_netcell(x, y) result(k)
+      use m_polygon, only: xpl, ypl, zpl
+
+      real(kind=dp), intent(in) :: x, y !< coordinates of point to locate enclosing netcell
+      integer :: k !< cell number of enclosing netcell, or 0 if not found
+
+      integer :: i_poly
+      logical :: is_inside
+
+      k = 0
+
+      ! Loop over all netcell polygons with fast bounding box checks
+      do i_poly = 1, polygons
+
+         ! Quick bbox rejection (most cells rejected here)
+         if (x < x_poly_min(i_poly) .or. x > x_poly_max(i_poly) .or. &
+             y < y_poly_min(i_poly) .or. y > y_poly_max(i_poly)) then
+            cycle
+         end if
+
+         ! Detailed point-in-polygon check
+         is_inside = pinpok_elemental(x, y, i_poly)
+
+         if (is_inside) then
+            ! cell index equals polygon index
+            k = i_poly
+            return
+         end if
+      end do
+
+   end function point_find_netcell
 
 end module m_cellmask_from_polygon_set
