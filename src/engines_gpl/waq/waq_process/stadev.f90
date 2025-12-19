@@ -20,47 +20,38 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_stageo
+module m_stadev
     use m_waq_precision
+    use m_logger_helper, only: get_log_unit_number
 
     implicit none
 
 contains
 
 
-    subroutine stageo (process_space_real, fl, ipoint, increm, num_cells, &
+    subroutine stadev (process_space_real, fl, ipoint, increm, num_cells, &
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_logger_helper, only: stop_with_error, get_log_unit_number
         use m_extract_waq_attribute
 
         !>\file
-        !>       Geometric mean of a variable during a certian time span
+        !>       Mean, stdev of a variable during a certain time
 
         !
         !     Description of the module :
         !
-        !        General water quality module for DELWAQ:
-        !
-        !        Calculates the geometric mean of a series of values. To take
-        !        care of the problem of very small values (that would distort
-        !        the calculated mean), a threshold is set.
-        !
-        !
         ! Name    T   L I/O   Description                                  Units
         ! ----    --- -  -    -------------------                          -----
         !
-        ! CONC           I    Concentration of the substance              1
-        ! TSTART         I    Start of statistical period                 2
-        ! TSTOP          I    Stop of statistical period                  3
-        ! TIME           I    Time in calculation                         4
-        ! DELT           I    Timestep                                    5
-        ! THRESH         I    Threshold for considering the value         6
+        ! CONC           I    Concentration of the substance            1
+        ! TSTART         I    Start of statistical period               2
+        ! TSTOP          I    Stop of statistical period                3
+        ! TIME           I    Time in calculation                       4
+        ! DELT           I    Timestep                                  5
         !
-        ! TCOUNT         O    Count of timesteps                          7
-        ! TCNTAB         O    Count of timesteps with values above        8
-        ! GEOMN          O    Geometric mean, values above threshold      9
-        ! GEOALL         O    Geometric mean, all values                 10
+        ! TCOUNT         O    Count of times (must be imported!)        6
+        ! CMEAN          O    Mean value over the given period          7
+        ! CSTDEV         O    Standard deviation over the given period  8
         !
 
         !     Logical Units : -
@@ -77,14 +68,14 @@ contains
                 IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
-                IP6, IP7, IP8, IP9, IP10, &
+                IP6, IP7, IP8, &
                 IN1, IN2, IN3, IN4, IN5, &
-                IN6, IN7, IN8, IN9, IN10
+                IN6, IN7, IN8
         INTEGER(kind = int_wp) :: ISEG
-        INTEGER(kind = int_wp) :: lunrep, IACTION, ATTRIB
-        REAL(kind = real_wp) :: TSTART, TSTOP, TIME, DELT
-        REAL(kind = real_wp) :: THRESH, TCOUNT, THRLOG, PMLOG
-        REAL(kind = real_wp), parameter :: missing_value = -999.0_real_wp
+        INTEGER(kind = int_wp) :: IACTION, lunrep
+        INTEGER(kind = int_wp) :: ATTRIB
+        REAL(kind = real_wp) :: TSTART, TSTOP, TIME, DELT, TCOUNT
+        REAL(kind = real_wp) :: CDIFF
 
         INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
         INTEGER(kind = int_wp), SAVE :: NOWARN = 0
@@ -99,8 +90,6 @@ contains
         IP6 = IPOINT(6)
         IP7 = IPOINT(7)
         IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
 
         IN1 = INCREM(1)
         IN2 = INCREM(2)
@@ -110,8 +99,6 @@ contains
         IN6 = INCREM(6)
         IN7 = INCREM(7)
         IN8 = INCREM(8)
-        IN9 = INCREM(9)
-        IN10 = INCREM(10)
 
         !
         !     There are five cases, defined by the time:
@@ -127,25 +114,6 @@ contains
         TSTOP = process_space_real(IP3)
         TIME = process_space_real(IP4)
         DELT = process_space_real(IP5)
-        THRESH = process_space_real(IP6)
-
-        IF (THRESH <= 0.0) THEN
-            WRITE(lunrep, *) 'ERROR in STAGEO'
-            WRITE(lunrep, *) &
-                    'Threshold must be a positive value'
-            WRITE(lunrep, *) &
-                    'Threshold: ', THRESH
-            WRITE(lunrep, *) 'ERROR in STAGEO'
-            WRITE(lunrep, *) &
-                    'Threshold must be a positive value'
-            WRITE(lunrep, *) &
-                    'Threshold: ', THRESH
-            CALL stop_with_error()
-        ENDIF
-
-        THRLOG = LOG(THRESH) * DELT
-
-        TCOUNT = process_space_real(IP7)
 
         !
         !      Start and stop criteria are somewhat involved. Be careful
@@ -163,14 +131,12 @@ contains
             IACTION = 2
             IF (TIME <= TSTART + 0.5 * DELT) THEN
                 DO ISEG = 1, num_cells
+                    IP6 = IPOINT(6) + (ISEG - 1) * INCREM(6)
                     IP7 = IPOINT(7) + (ISEG - 1) * INCREM(7)
                     IP8 = IPOINT(8) + (ISEG - 1) * INCREM(8)
-                    IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
-                    IP10 = IPOINT(10) + (ISEG - 1) * INCREM(10)
+                    process_space_real(IP6) = 0.0
                     process_space_real(IP7) = 0.0
                     process_space_real(IP8) = 0.0
-                    process_space_real(IP9) = 0.0
-                    process_space_real(IP10) = 0.0
                 ENDDO
             ENDIF
         ENDIF
@@ -181,55 +147,69 @@ contains
 
         IF (IACTION == 0) RETURN
 
+        IP6 = IPOINT(6)
         IP7 = IPOINT(7)
         IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
 
         DO ISEG = 1, num_cells
-            !
-            !           Only active cells that do not have a missing value
-            !           Note: the value representing a missing value is exact
-            !
-            IF (BTEST(IKNMRK(ISEG), 0) .and. process_space_real(ip1) /= missing_value ) then
+
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                !           Keep track of the time within the current geometric mean specification
+                !           Keep track of the time within the current descriptive statistics specification
                 !           that each segment is active
                 !
-                TCOUNT = process_space_real(IP7) + DELT
-                process_space_real(IP7) = TCOUNT
-
-                IF (process_space_real(IP1) >= THRESH) THEN
-                    PMLOG = LOG(process_space_real(IP1)) * DELT
-                    process_space_real(IP8) = process_space_real(IP8) + DELT
-                    process_space_real(IP9) = process_space_real(IP9) + PMLOG
-                    process_space_real(IP10) = process_space_real(IP10) + PMLOG
-                ELSE
-                    process_space_real(IP10) = process_space_real(IP10) + THRLOG
-                ENDIF
+                TCOUNT = process_space_real(IP6) + 1.0
+                process_space_real(IP6) = TCOUNT
+                process_space_real(IP7) = process_space_real(IP7) + process_space_real(IP1)
+                process_space_real(IP8) = process_space_real(IP8) + process_space_real(IP1)**2
             ENDIF
 
             !
             !        Always do the final processing whether the segment is active at this moment or not
             !
             IF (IACTION == 3) THEN
+                TCOUNT = process_space_real(IP6)
                 IF (TCOUNT > 0.0) THEN
-                    IF (process_space_real(IP8) > 0.0) THEN
-                        process_space_real(IP9) = EXP(process_space_real(IP9) / process_space_real(IP8))
-                    ELSE
-                        process_space_real(IP9) = 0.0
-                    ENDIF
-                    process_space_real(IP10) = EXP(process_space_real(IP10) / TCOUNT)
+                    process_space_real(IP7) = process_space_real(IP7) / TCOUNT
                 ELSE
-                    process_space_real(IP9) = 0.0
-                    process_space_real(IP10) = 0.0
+                    process_space_real(IP7) = 0.0
+                    process_space_real(IP8) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
                         CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
-                            WRITE(lunrep, '(a,i0)') 'Geometric mean could not be determined for segment ', ISEG
-                            WRITE(lunrep, '(a)')    '    - not enough values. Mean set to zero'
+                            WRITE(lunrep, '(a,i0)') 'Average could not be determined for segment ', ISEG
+                            WRITE(lunrep, '(a)')    '    - segment not active in the given period. Average and standard deviation set to zero'
+
+                            IF (NOWARN == MAXWARN) THEN
+                                WRITE(lunrep, '(a)') '(Further messages suppressed)'
+                            ENDIF
+                        ENDIF
+                    ENDIF
+                ENDIF
+                IF (TCOUNT > 1.0) THEN
+                    !
+                    !              If we do not have the standard deviation or the mean,
+                    !              then the calculation may fail (horribly). We detect
+                    !              whether the mean and the standard deviation are there
+                    !              by examining the increments.
+                    !              Be tolerant to possible negative values, there may be
+                    !              some roundoff errors!
+                    !
+                    IF (IN7 /= 0 .AND. IN8 /= 0) THEN
+                        CDIFF = (process_space_real(IP8) - TCOUNT * process_space_real(IP7)**2)
+                        process_space_real(IP8) = SQRT(MAX(CDIFF, 0.0) / (TCOUNT - 1.0))
+                    ENDIF
+                ELSE
+                    process_space_real(IP8) = 0.0
+
+                    IF (NOWARN < MAXWARN) THEN
+                        CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
+                        IF (ATTRIB /= 0) THEN
+                            NOWARN = NOWARN + 1
+                            WRITE(lunrep, '(a,i0)') 'Standard deviation could not be determined for segment ', ISEG
+                            WRITE(lunrep, '(a)')    '    - not enough values. Standard deviation set to zero'
 
                             IF (NOWARN == MAXWARN) THEN
                                 WRITE(lunrep, '(a)') '(Further messages suppressed)'
@@ -240,14 +220,13 @@ contains
             ENDIF
 
             IP1 = IP1 + IN1
+            IP6 = IP6 + IN6
             IP7 = IP7 + IN7
             IP8 = IP8 + IN8
-            IP9 = IP9 + IN9
-            IP10 = IP10 + IN10
 
         end do
 
         RETURN
     END
 
-end module m_stageo
+end module m_stadev

@@ -59,7 +59,7 @@ contains
    subroutine fm_thahbc()
 
       use fm_external_forcings_data, only: nbnds, zbnds, kbnds, thtbnds, thzbnds, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm, nbndsd, zbndsd, kbndsd, thtbndsd, thzbndsd, bndtr, numtracers, nbndtr, bndsf, numfracs, nbndsf
-      use m_flowparameters, only: jasal, jatem, jased
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jased
       use m_sediment, only: stm_included
       use m_transport, only: ISALT, ITEMP, ISED1, itrac2const, ifrac2const
 
@@ -71,7 +71,7 @@ contains
          call thconst(ISALT, nbnds, zbnds, kbnds, thtbnds, thzbnds)
       end if
 
-      if (jatem > 0 .and. nbndtm > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE .and. nbndtm > 0) then
          call thconst(ITEMP, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm)
       end if
 
