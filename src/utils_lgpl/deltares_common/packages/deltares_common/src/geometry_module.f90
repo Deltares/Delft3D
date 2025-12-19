@@ -253,53 +253,55 @@ contains
       cw = an > ap
    end function clockwise_hp
 
-pure subroutine pinpok(XL, YL, N, X, Y, INSIDE, jins, dmiss)
+!> wrapper for optimized ray-casting point-in-polygon test that maintains old interface
+pure subroutine pinpok(xl, yl, n, x, y, inside, jins_dummy, dmiss_dummy)
 
-      implicit none
-
-      integer, intent(in) :: N
-      integer, intent(out) :: INSIDE
-      integer, intent(in) :: jins
-      real(kind=dp), intent(in) :: dmiss
-      real(kind=dp), intent(in) :: X(N), Y(N), XL, YL
+      integer, intent(in) :: n !< number of polygon points
+      integer, intent(out) :: inside !> result: 1 if inside, 0 if outside
+      integer, intent(in) :: jins_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
+      real(kind=dp), intent(in) :: dmiss_dummy!> dummy argument to maintain old interface, internal routine will use value from m_missing
+      real(kind=dp), intent(in) :: xl, yl !> point to check if it is inside polygon
+      real(kind=dp), intent(in) :: x(n), y(n) !> polygon coordinates (n elements)
 
       logical :: is_inside
 
-      is_inside = pinpok_raycast(XL, YL, X, Y, N)
+      is_inside = pinpok_raycast(xl, yl, x, y, n)
 
-      INSIDE = 1
-      if (.not. is_inside) INSIDE = 0
+      inside = 1
+      if (.not. is_inside) then
+          inside = 0
+      end if
 
 end subroutine
    
-!> Optimized ray-casting point-in-polygon test.
-!! Pure function that works with array slices or full arrays.
+!> optimized ray-casting point-in-polygon test.
+!! pure function that works with array slices or full arrays.
    pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
 
-      real(kind=dp), intent(in) :: xl, yl !< Point coordinates to test
-      integer, intent(in) :: n !< Number of polygon points
-      real(kind=dp), intent(in) :: x(n), y(n) !< Polygon coordinates (at least n elements)
-      logical :: is_inside !< Result: true if inside (respecting jins mode)
+      real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
+      integer, intent(in) :: n !< number of polygon points
+      real(kind=dp), intent(in) :: x(n), y(n) !< polygon coordinates (at least n elements)
+      logical :: is_inside !< result: true if inside (respecting jins mode)
 
-      ! Locals
+      ! locals
       integer :: i, j, crossings
       real(kind=dp) :: x_j, y_j, x_i, y_i, x_intersect
 
       is_inside = .false.
 
-      ! Degenerate polygon check
+      ! degenerate polygon check
       if (n <= 2) then
          is_inside = .true.
          if (jins == 0) is_inside = .not. is_inside
          return
       end if
 
-      ! Ray-casting algorithm: count crossings of horizontal ray from point to +infinity
+      ! ray-casting algorithm: count crossings of horizontal ray from point to +infinity
       crossings = 0
-      j = n ! Start with last point
+      j = n ! start with last point
 
       do i = 1, n
-         ! Check for missing value (polygon separator)
+         ! check for missing value (polygon separator)
          if (x(i) == dmiss) exit
 
          x_j = x(j)
@@ -307,37 +309,37 @@ end subroutine
          x_i = x(i)
          y_i = y(i)
 
-         ! Check if point is exactly on a vertex
+         ! check if point is exactly on a vertex
          if (xl == x_j .and. yl == y_j) then
             is_inside = .true.
             if (jins == 0) is_inside = .not. is_inside
             return
          end if
 
-         ! Check if ray crosses this edge
-         ! Edge crosses horizontal line through test point if one endpoint is above and one below
+         ! check if ray crosses this edge
+         ! edge crosses horizontal line through test point if one endpoint is above and one below
          if ((y_j > yl) .neqv. (y_i > yl)) then
-            ! Compute x-coordinate of edge-ray intersection
+            ! compute x-coordinate of edge-ray intersection
             x_intersect = x_j + (yl - y_j) * (x_i - x_j) / (y_i - y_j)
 
             if (xl < x_intersect) then
-               ! Ray crosses edge to the right of point
+               ! ray crosses edge to the right of point
                crossings = crossings + 1
             else if (xl == x_intersect) then
-               ! Point is exactly on the edge
+               ! point is exactly on the edge
                is_inside = .true.
                if (jins == 0) is_inside = .not. is_inside
                return
             end if
          end if
 
-         j = i ! Current point becomes previous for next iteration
+         j = i ! current point becomes previous for next iteration
       end do
 
-      ! Odd number of crossings = inside, even = outside
+      ! odd number of crossings = inside, even = outside
       is_inside = (mod(crossings, 2) == 1)
 
-      ! Respect jins mode
+      ! respect jins mode
       if (jins == 0) then
          is_inside = .not. is_inside
       end if
