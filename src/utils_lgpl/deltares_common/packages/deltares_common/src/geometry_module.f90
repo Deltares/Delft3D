@@ -285,7 +285,7 @@ contains
 
       ! locals
       integer :: i, j, crossings
-      real(kind=dp) :: x_j, y_j, x_i, y_i, x_intersect
+      real(kind=dp) :: x_intersect
 
       is_inside = .false.
 
@@ -308,13 +308,8 @@ contains
             exit
          end if
 
-         x_j = x(j)
-         y_j = y(j)
-         x_i = x(i)
-         y_i = y(i)
-
          ! check if point is exactly on a vertex
-         if (xl == x_j .and. yl == y_j) then
+         if (xl == x(j) .and. yl == y(j)) then
             is_inside = .true.
             if (jins == 0) then
                is_inside = .not. is_inside
@@ -324,10 +319,9 @@ contains
 
          ! check if ray crosses this edge
          ! edge crosses horizontal line through test point if one endpoint is above and one below
-         if ((y_j > yl) .neqv. (y_i > yl)) then
+         if ((y(j) > yl) .neqv. (y(i) > yl)) then
             ! compute x-coordinate of edge-ray intersection
-            x_intersect = x_j + (yl - y_j) * (x_i - x_j) / (y_i - y_j)
-
+            x_intersect = x(j) + (yl - y(j)) * (x(i) - x(j)) / (y(i) - y(j))
             if (xl < x_intersect) then
                ! ray crosses edge to the right of point
                crossings = crossings + 1
@@ -340,7 +334,6 @@ contains
                return
             end if
          end if
-
          j = i ! current point becomes previous for next iteration
       end do
 
