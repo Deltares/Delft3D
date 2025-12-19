@@ -211,8 +211,6 @@ contains
       use m_polygon, only: xpl, ypl
       use geometry_module, only: pinpok_raycast
 
-      implicit none
-
       real(kind=dp), intent(in) :: x, y !< Point coordinates
       integer, intent(in) :: i_poly !< Polygon index
       logical :: is_inside !< Result
@@ -234,7 +232,6 @@ contains
       use network_data
       use m_alloc
 
-      implicit none
       integer :: k, n, k1, total_points, ipoint
 
       if (cellmask_initialized) then !> reuse cellmask cache boolean
@@ -291,7 +288,6 @@ contains
    elemental function incells_cellmask(x, y) result(kin)
       use m_polygon, only: xpl, ypl, zpl
 
-      implicit none
       real(kind=dp), intent(in) :: x, y
       integer :: kin
 
