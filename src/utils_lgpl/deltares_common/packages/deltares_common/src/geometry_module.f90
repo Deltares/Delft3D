@@ -261,7 +261,7 @@ contains
       integer, intent(in) :: jins_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
       real(kind=dp), intent(in) :: dmiss_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
       real(kind=dp), intent(in) :: xl, yl !> point to check if it is inside polygon
-      real(kind=dp), intent(in) :: x(n), y(n) !> polygon coordinates (n elements)
+      real(kind=dp), dimension(n), intent(in) :: x, y !> polygon coordinates (n elements)
 
       logical :: is_inside
 
@@ -280,7 +280,7 @@ contains
 
       real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
       integer, intent(in) :: n !< number of polygon points
-      real(kind=dp), intent(in) :: x(n), y(n) !< polygon coordinates (at least n elements)
+      real(kind=dp), dimension(n), intent(in) :: x, y !< polygon coordinates (at least n elements)
       logical :: is_inside !< result: true if inside (respecting jins mode)
 
       ! locals
