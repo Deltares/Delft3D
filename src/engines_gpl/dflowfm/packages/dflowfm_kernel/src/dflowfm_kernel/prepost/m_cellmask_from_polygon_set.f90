@@ -243,30 +243,30 @@ contains
 
       call savepol()
 
-      ! Calculate total points needed: sum(netcell(k)%N + 1) for all cells
+      ! calculate total points needed: sum(netcell(k)%n + 1) for all cells
       ! +1 for dmiss separator after each polygon
       total_points = 0
       do k = 1, nump
-         total_points = total_points + netcell(k)%N + 1 ! +1 for dmiss
+         total_points = total_points + netcell(k)%n + 1 ! +1 for dmiss
       end do
 
-      ! Allocate or reallocate xpl, ypl, zpl
-      call realloc(xpl, total_points, keepExisting=.false.)
-      call realloc(ypl, total_points, keepExisting=.false.)
-      call realloc(zpl, total_points, keepExisting=.false.)
+      ! allocate or reallocate xpl, ypl, zpl
+      call realloc(xpl, total_points, keepexisting=.false.)
+      call realloc(ypl, total_points, keepexisting=.false.)
+      call realloc(zpl, total_points, keepexisting=.false.)
 
-      ! Fill arrays with netcell geometry
+      ! fill arrays with netcell geometry
       ipoint = 0
       do k = 1, nump
-         do n = 1, netcell(k)%N
+         do n = 1, netcell(k)%n
             ipoint = ipoint + 1
-            k1 = netcell(k)%NOD(n)
-            xpl(ipoint) = XK(k1)
-            ypl(ipoint) = YK(k1)
-            zpl(ipoint) = real(k, dp) ! Store cell index as z-value
+            k1 = netcell(k)%nod(n)
+            xpl(ipoint) = xk(k1)
+            ypl(ipoint) = yk(k1)
+            zpl(ipoint) = real(k, dp) ! store cell index as z-value
          end do
 
-         ! Add separator
+         ! add separator
          ipoint = ipoint + 1
          xpl(ipoint) = dmiss
          ypl(ipoint) = dmiss
@@ -275,8 +275,8 @@ contains
 
       npl = ipoint
 
-      ! Initialize the cellmask module with these polygons
-      ! This builds bounding boxes and polygon indices
+      ! initialize the cellmask module with these polygons
+      ! this builds bounding boxes and polygon indices
       call cellmask_from_polygon_set_init(npl, xpl, ypl, zpl)
 
    end subroutine init_netcell_incells_cache
