@@ -50,14 +50,16 @@ contains
       if (.not. allocated(rn)) then
          ja = 1
       else if (size(rn) < numk) then
-         deallocate (rn); ja = 1
+         deallocate (rn)
+         ja = 1
       end if
       if (ja == 1) then
          allocate (rn(numk), stat=ierr)
          call aerr('rn(numk)', ierr, numk)
       end if
 
-      rnod = 0.0_dp; rn = 0.0_dp
+      rnod = 0.0_dp
+      rn = 0.0_dp
       do n = 1, ndx2d
          nn4 = netcell(n)%n
 

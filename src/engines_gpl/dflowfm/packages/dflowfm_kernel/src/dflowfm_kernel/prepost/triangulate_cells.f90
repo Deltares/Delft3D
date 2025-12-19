@@ -49,7 +49,9 @@ contains
 
       do k = 1, nump ! loop over the cells
          N = netcell(k)%n
-         if (N < 4) cycle
+         if (N < 4) then
+            cycle
+         end if
 !     make the triangles by connecting the 3rd, 4th, etc. node to the first one
          k0 = netcell(k)%nod(1)
          do kk = 3, N - 1

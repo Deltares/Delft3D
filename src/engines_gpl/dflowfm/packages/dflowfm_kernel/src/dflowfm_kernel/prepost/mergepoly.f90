@@ -59,8 +59,12 @@ contains
       real(kind=dp), allocatable :: xh(:), yh(:), zh(:)
       real(kind=dp) :: xt, yt, zt
 
-      if (i1 == i2 .or. i1 <= 0 .or. i1 > n .or. i2 <= 0 .or. i2 > n) return
-      if (X(i1) == dmiss .or. X(i2) == dmiss) return
+      if (i1 == i2 .or. i1 <= 0 .or. i1 > n .or. i2 <= 0 .or. i2 > n) then
+         return
+      end if
+      if (X(i1) == dmiss .or. X(i2) == dmiss) then
+         return
+      end if
 
       ! Handle 'leftmost(in array)' polyline first
       if (i1 > i2) then
@@ -106,9 +110,15 @@ contains
          ih = (i1 + im - 1) / 2
          do i = i1, ih
             ii = im - i + i1
-            xt = x(i); yt = y(i); zt = z(i)
-            x(i) = x(ii); y(i) = y(ii); z(i) = z(ii)
-            x(ii) = xt; y(ii) = yt; z(ii) = zt
+            xt = x(i)
+            yt = y(i)
+            zt = z(i)
+            x(i) = x(ii)
+            y(i) = y(ii)
+            z(i) = z(ii)
+            x(ii) = xt
+            y(ii) = yt
+            z(ii) = zt
          end do
 
          ! Flip indices, such that i1 is the rightmost
@@ -137,9 +147,15 @@ contains
          ih = (in + i2 - 1) / 2
          do i = in, ih
             ii = i2 - i + in
-            xt = x(i); yt = y(i); zt = z(i)
-            x(i) = x(ii); y(i) = y(ii); z(i) = z(ii)
-            x(ii) = xt; y(ii) = yt; z(ii) = zt
+            xt = x(i)
+            yt = y(i)
+            zt = z(i)
+            x(i) = x(ii)
+            y(i) = y(ii)
+            z(i) = z(ii)
+            x(ii) = xt
+            y(ii) = yt
+            z(ii) = zt
          end do
 
          ! Flip indices, such that i2 is the leftmost

@@ -67,7 +67,8 @@ contains
       if (jaconv == 0) then
          return
       else if (frcn == 0.0_dp) then
-         conv = 0.0_dp; return
+         conv = 0.0_dp
+         return
       else if (jaconv == 1) then ! hydraulic radius type
 
          if (ai < 1.0e-3_dp) then

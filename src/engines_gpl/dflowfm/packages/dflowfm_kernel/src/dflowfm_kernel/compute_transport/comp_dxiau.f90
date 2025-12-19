@@ -57,7 +57,9 @@ contains
       real(kind=dp) :: hh, ff
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_dxiAu", ithndl)
+      if (timon) then
+         call timstrt("comp_dxiAu", ithndl)
+      end if
 
       if (jalimitdtdiff == 0) then
          if (kmx == 0) then
@@ -114,7 +116,8 @@ contains
             L = lnfxw(i)
             if (L > 0) then
                if (au(L) > 0.0_dp) then
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   hh = max(s1(k1), s1(k2)) - max(bob(1, L), bob(2, L))
                   if (hh > 0) then
                      ff = wu(L) * hh / au(L)
@@ -137,7 +140,9 @@ contains
          end do
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine comp_dxiAu
 

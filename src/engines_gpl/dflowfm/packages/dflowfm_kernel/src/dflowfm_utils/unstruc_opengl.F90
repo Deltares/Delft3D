@@ -241,13 +241,13 @@ contains
       ! CALL fglClearColor(.4, .4, .4, 0) ! gray background
 
       if (ndraw(10) == 0) then
-         r = nreds / 255d0
-         g = ngreens / 255d0
-         b = nblues / 255d0
+         r = nreds / 255.0_dp
+         g = ngreens / 255.0_dp
+         b = nblues / 255.0_dp
       else
-         r = nredp / 255d0
-         g = ngreenp / 255d0
-         b = nbluep / 255d0
+         r = nredp / 255.0_dp
+         g = ngreenp / 255.0_dp
+         b = nbluep / 255.0_dp
       end if
 
       call fglClearColor(real(r, sp), real(g, sp), real(b, sp), real(0, sp)) ! screen background

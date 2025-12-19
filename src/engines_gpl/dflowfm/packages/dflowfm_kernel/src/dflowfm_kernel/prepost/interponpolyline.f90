@@ -58,7 +58,8 @@ contains
       end if
 
       do n = 1, npl
-         f = dpl(n) / dpl(npl); f1 = 1 - f
+         f = dpl(n) / dpl(npl)
+         f1 = 1 - f
          dxs(n) = f1 * dxs1 + f * dxs2
       end do
    end subroutine interpOnPolyline

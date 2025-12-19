@@ -50,7 +50,8 @@ contains
       real(kind=dp) :: baroclinic_force
       integer :: k1, k2
 
-      k1 = ln(1, link_index_2d); k2 = ln(2, link_index_2d)
+      k1 = ln(1, link_index_2d)
+      k2 = ln(2, link_index_2d)
       baroclinic_force = ag * (rho(k1) - rho(k2)) * hu(link_index_2d) * dxi(link_index_2d) / ((rho(k2) + rho(k1)))
       if (jarhoxu > 0) then
          rhou(link_index_2d) = 0.5_dp * (rho(k2) + rho(k1))

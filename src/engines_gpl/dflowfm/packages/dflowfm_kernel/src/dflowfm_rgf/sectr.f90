@@ -216,7 +216,9 @@ contains
       end do
 
       do I = 1, NUMSPL
-         if (NTYP(I) == 1) NUMI = I
+         if (NTYP(I) == 1) then
+            NUMI = I
+         end if
       end do
 
 59    continue
@@ -284,7 +286,9 @@ contains
             end if
          end do
       end do
-      if (JACHANGE == 1) goto 59
+      if (JACHANGE == 1) then
+         goto 59
+      end if
 
 !     Initialiseer ranking, start en eind, 1,2,3
       do I = 1, NUMSPL
@@ -312,7 +316,9 @@ contains
 
          MAXN = 0
          do J = NUMI + 1, NUMSPL
-            if (TIJ(J, I) /= 0) MAXN = max(MN12(J, 2), MAXN)
+            if (TIJ(J, I) /= 0) then
+               MAXN = max(MN12(J, 2), MAXN)
+            end if
          end do
 
          MN12(I, 1) = MAXN
@@ -334,7 +340,9 @@ contains
          end do
          MAXM = 0
          do J = 1, NUMI
-            if (TIJ(J, I) /= 0) MAXM = max(MN12(J, 3), MAXM)
+            if (TIJ(J, I) /= 0) then
+               MAXM = max(MN12(J, 3), MAXM)
+            end if
          end do
          MN12(I, 1) = MAXM
       end do
@@ -348,7 +356,9 @@ contains
       do I = 1, NUMI
          do J = NUMI + 1, NUMSPL
             if (TIJ(I, J) /= 0) then
-               if (MN12(I, 2) == 0) MN12(I, 2) = MN12(J, 1)
+               if (MN12(I, 2) == 0) then
+                  MN12(I, 2) = MN12(J, 1)
+               end if
                MN12(I, 3) = MN12(J, 1)
             end if
          end do
@@ -358,7 +368,9 @@ contains
       do I = NUMI + 1, NUMSPL
          do J = 1, NUMI
             if (TIJ(I, J) /= 0) then
-               if (MN12(I, 2) == 0) MN12(I, 2) = MN12(J, 1)
+               if (MN12(I, 2) == 0) then
+                  MN12(I, 2) = MN12(J, 1)
+               end if
                MN12(I, 3) = MN12(J, 1)
             end if
          end do

@@ -45,7 +45,7 @@ contains
       use m_setcdwcoefficient, only: setcdwcoefficient
       use m_flowgeom, only: ln, lnx, snu, csu
       use m_flow, only: jamapwind, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
-                        viskinair, ag, vonkarw, u1, ltop, v, jatem, jamapwindstress, kmx, ustw
+                        viskinair, ag, vonkarw, u1, ltop, v, temperature_model, TEMPERATURE_MODEL_COMPOSITE, jamapwindstress, kmx, ustw
       use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_area_fraction
 
@@ -119,7 +119,7 @@ contains
                   local_ice_area_fraction = 0.5_dp * (ice_area_fraction(ln(1, L)) + ice_area_fraction(ln(2, L)))
                   cdw = fm_ice_drag_effect(local_ice_area_fraction, cdw)
                end if
-               if (jatem == 5) then
+               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                   cdwcof(L) = cdw
                end if
                if (rho_water_in_wind_stress /= RHO_MEAN) then

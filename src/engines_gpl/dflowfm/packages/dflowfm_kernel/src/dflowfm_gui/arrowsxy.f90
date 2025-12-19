@@ -51,7 +51,9 @@ contains
       data X(1)/0.8_dp/, X(2)/1.0_dp/, X(3)/0.8_dp/, &
          Y(1)/-0.1_dp/, Y(2)/0.0_dp/, Y(3)/0.1_dp/
 
-      if (UR == 0 .and. VR == 0) return
+      if (UR == 0 .and. VR == 0) then
+         return
+      end if
 
       do I = 1, 3
          XR(I) = X0 + VFAC * (X(I) * UR - Y(I) * VR)

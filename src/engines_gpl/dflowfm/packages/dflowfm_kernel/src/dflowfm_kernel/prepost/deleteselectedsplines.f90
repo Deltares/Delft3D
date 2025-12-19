@@ -65,7 +65,9 @@ contains
 
       I = 1
       do
-         if (I > mcs) exit
+         if (I > mcs) then
+            exit
+         end if
          jaAllPoints = .true.
          do j = 1, lensp(I)
             call PINPOK(xsp(i, j), ysp(i, j), Npl, Xpl, Ypl, INHUL, jins, dmiss)

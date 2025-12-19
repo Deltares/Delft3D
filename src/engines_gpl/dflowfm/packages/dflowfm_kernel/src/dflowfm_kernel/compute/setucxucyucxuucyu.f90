@@ -68,8 +68,10 @@ contains
       real(kind=dp) :: uinx, uiny, u1L
 
       if (Perot_type /= NOT_DEFINED) then
-         ucxq = 0.0_dp; ucyq = 0.0_dp ! zero arrays
-         ucx = 0.0_dp; ucy = 0.0_dp
+         ucxq = 0.0_dp
+         ucyq = 0.0_dp ! zero arrays
+         ucx = 0.0_dp
+         ucy = 0.0_dp
 
          make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
 
@@ -83,7 +85,8 @@ contains
                   else
                      u1L = u1(L)
                   end if
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   wcxu = wcx1(L) * u1L
                   ucx(k1) = ucx(k1) + wcxu
                   ucxq(k1) = ucxq(k1) + wcxu * hu(L)
@@ -101,7 +104,9 @@ contains
 
             do L = lnx1D + 1, lnx
                if (jabarrieradvection == 3) then
-                  if (struclink(L) == 1) cycle
+                  if (struclink(L) == 1) then
+                     cycle
+                  end if
                end if
                if (u1(L) /= 0.0_dp) then ! link flows
                   if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
@@ -110,7 +115,8 @@ contains
                   else
                      u1L = u1(L)
                   end if
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   wcxu = wcx1(L) * u1L
                   ucx(k1) = ucx(k1) + wcxu
                   ucxq(k1) = ucxq(k1) + wcxu * hu(L)
@@ -129,7 +135,8 @@ contains
 
          if (kmx > 0) then
             do LL = 1, lnx
-               Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+               Lb = Lbot(LL)
+               Lt = Lb - 1 + kmxL(LL)
                do L = Lb, Lt
                   if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
@@ -210,7 +217,8 @@ contains
          k2 = kbndz(2, n)
          LL = kbndz(3, n)
          itpbn = kbndz(4, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
                if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
@@ -259,7 +267,8 @@ contains
          if (kmx > 0) then
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb, Lt
-               kbk = ln(1, L); k2k = ln(2, L)
+               kbk = ln(1, L)
+               k2k = ln(2, L)
                if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2k), ucy(k2k)) * cs + nod2liny(LL, 2, ucx(k2k), ucy(k2k)) * sn
@@ -272,7 +281,8 @@ contains
                      uin = ucx(k2k) * cs + ucy(k2k) * sn
                      ucx(kbk) = uin * cs
                      ucy(kbk) = uin * sn
-                     ucxq(kbk) = uin * cs; ucyq(kbk) = uin * sn
+                     ucxq(kbk) = uin * cs
+                     ucyq(kbk) = uin * sn
                   end if
                else
                   if (jasfer3D == 1) then
@@ -301,7 +311,8 @@ contains
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
                if (u1(LL) > 0) then
-                  ucx(k1) = 0.0_dp; ucy(k1) = 0.0_dp
+                  ucx(k1) = 0.0_dp
+                  ucy(k1) = 0.0_dp
                end if
             end do
          end do
@@ -310,7 +321,8 @@ contains
             LL = kbndz(3, n)
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
-               ucx(k1) = 0.0_dp; ucy(k1) = 0.0_dp
+               ucx(k1) = 0.0_dp
+               ucy(k1) = 0.0_dp
             end do
          end do
       end if
@@ -319,7 +331,8 @@ contains
          kb = kbndu(1, n)
          k2 = kbndu(2, n)
          LL = kbndu(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
                if (jacstbnd == 0) then
@@ -410,12 +423,14 @@ contains
          kb = kbndt(1, n)
          k2 = kbndt(2, n)
          LL = kbndt(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          call getLbotLtop(LL, Lb, Lt)
          do L = Lb, Lt
             kbk = ln(1, L)
             kk = kmxd * (n - 1) + L - Lb + 1
-            uu = u0(L); vv = zbndt(kk) ! v(L)
+            uu = u0(L)
+            vv = zbndt(kk) ! v(L)
             uucx = uu * cs - vv * sn
             uucy = uu * sn + vv * cs
             if (jasfer3D == 1) then
@@ -461,12 +476,14 @@ contains
          kb = kbndn(1, n)
          k2 = kbndn(2, n)
          LL = kbndn(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          call getLbotLtop(LL, Lb, Lt)
          do L = Lb, Lt
             kbk = ln(1, L)
             kk = kmxd * (n - 1) + L - Lb + 1
-            uu = zbndn(kk); vv = 0.0_dp
+            uu = zbndn(kk)
+            vv = 0.0_dp
             uucx = uu * cs - vv * sn !
             uucy = uu * sn + vv * cs
             if (jasfer3D == 1) then
@@ -487,7 +504,8 @@ contains
       if (newucxq == 1) then ! test later, see testcase willem
          if (jasfer3D == 1) then ! boundary points ucxq, ucyq, independend of bnd types
             do L = lnxi + 1, lnx
-               kb = ln(1, L); k2 = ln(2, L)
+               kb = ln(1, L)
+               k2 = ln(2, L)
                do LL = Lbot(L), Ltop(L)
                   uinx = nod2linx(LL, 2, ucxq(k2), ucyq(k2))
                   uiny = nod2liny(LL, 2, ucxq(k2), ucyq(k2))
@@ -497,7 +515,8 @@ contains
             end do
          else
             do L = lnxi + 1, lnx
-               kb = ln(1, L); k2 = ln(2, L)
+               kb = ln(1, L)
+               k2 = ln(2, L)
                do LL = Lbot(L), Ltop(L)
                   ucxq(kb) = ucxq(k2)
                   ucyq(kb) = ucyq(k2)
@@ -532,10 +551,13 @@ contains
 
       if (limtypmom == 6) then
 
-         ducxdx = 0.0_dp; ducxdy = 0.0_dp
-         ducydx = 0.0_dp; ducydy = 0.0_dp
+         ducxdx = 0.0_dp
+         ducxdy = 0.0_dp
+         ducydx = 0.0_dp
+         ducydy = 0.0_dp
          do LL = 1, lnx
-            Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
                k1 = ln(1, L)
                k2 = ln(2, L)

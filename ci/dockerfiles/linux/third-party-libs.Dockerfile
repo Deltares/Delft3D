@@ -29,7 +29,6 @@ export CFLAGS CXXFLAGS
 
 for BASEDIR_URL in \
     'zlib-1.3.1,https://github.com/madler/zlib/archive/refs/tags/v1.3.1.tar.gz' \
-    'libaec-0.3.2,https://swprojects.dkrz.de/redmine/attachments/download/453/libaec-0.3.2.tar.gz' \
     'zstd-1.5.6,https://github.com/facebook/zstd/archive/refs/tags/v1.5.6.tar.gz'
 do
     BASEDIR="${BASEDIR_URL%%,*}"
@@ -319,8 +318,8 @@ pushd "/var/cache/src/${BASEDIR}"
     --enable-build-mode=$BUILD_MODE \
     --enable-fortran \
     --enable-parallel \
-    --with-zlib=/usr/local/include,/usr/local/lib \
-    --with-szlib=/usr/local
+    --disable-szlib \
+    --with-zlib=/usr/local/include,/usr/local/lib
 make --jobs=$(nproc)
 make install
 popd
@@ -358,10 +357,7 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DENABLE_PARALLEL4=ON \
-    -DZLIB_INCLUDE_DIR=/usr/local/include \
-    -DZLIB_LIBRARY=/usr/local/lib/libz.so \
-    -DSzip_INCLUDE_DIRS=/usr/local/include \
-    -DSzip_RELEASE_LIBRARY=/usr/local/lib/libsz.so
+    -DNETCDF_ENABLE_FILTER_SZIP=OFF
 
 make --jobs=$(nproc)
 make install

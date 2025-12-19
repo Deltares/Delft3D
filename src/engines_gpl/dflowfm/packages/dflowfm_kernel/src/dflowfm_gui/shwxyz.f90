@@ -63,7 +63,9 @@ contains
       integer :: jadraw, jonce, jplus, nlevo
       real(kind=dp) :: XL, YL, RDOL, FAC
 
-      if (MC == 0) return
+      if (MC == 0) then
+         return
+      end if
       OLDKEY = WRDKEY
       NLEVO = NLEVEL
       WRDKEY = 'TAB = DCURSOR;'
@@ -95,9 +97,12 @@ contains
          JADRAW = 0
       end if
       call INKEYEVENT(KEY)
-      if (KEY /= 27) JONCE = 0
-      if (KEY /= 45 .and. KEY /= 160 .and. &
-          KEY /= 43 .and. KEY /= 162) JPLUS = 0
+      if (KEY /= 27) then
+         JONCE = 0
+      end if
+      if (KEY /= 45 .and. KEY /= 160 .and. KEY /= 43 .and. KEY /= 162) then
+         JPLUS = 0
+      end if
 
       call DISPOS2(X(M, N), Y(M, N))
       call DISDEP(M, N, RD1(M, N))
@@ -120,16 +125,24 @@ contains
          call HELP(WRDKEY, 3)
       else if (KEY == 45 .or. KEY == 160) then
          if (X(M, N) /= XYMIS) then
-            if (JPLUS /= -1) FAC = 1.0
-            if (RD1(M, N) == DMISS) RD1(M, N) = 6.9
+            if (JPLUS /= -1) then
+               FAC = 1.0
+            end if
+            if (RD1(M, N) == DMISS) then
+               RD1(M, N) = 6.9
+            end if
             RD1(M, N) = RD1(M, N) - .01 * FAC
             FAC = FAC * 1.05
             JPLUS = -1
          end if
       else if (KEY == 43 .or. KEY == 162) then
          if (X(M, N) /= XYMIS) then
-            if (JPLUS /= 1) FAC = 1.0
-            if (RD1(M, N) == DMISS) RD1(M, N) = 6.9
+            if (JPLUS /= 1) then
+               FAC = 1.0
+            end if
+            if (RD1(M, N) == DMISS) then
+               RD1(M, N) = 6.9
+            end if
             RD1(M, N) = RD1(M, N) + .01 * FAC
             FAC = FAC * 1.05
             JPLUS = 1

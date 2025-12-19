@@ -60,7 +60,9 @@ contains
       call inctime_user()
 
       tim1fld = max(time_user, tim1fld)
-      if (janudge == 1) call setzcs()
+      if (janudge == 1) then
+         call setzcs()
+      end if
       call set_external_forcings(tim1fld, .false., iresult) ! set field oriented forcings. boundary oriented forcings are in
       if (iresult /= DFM_NOERR) then
          goto 888
@@ -73,9 +75,10 @@ contains
 888   continue
 
       if (iresult /= DFM_NOERR) then
-         write (msgbuf, *) ' Error found in EC-module '; call err_flush()
+         write (msgbuf, *) ' Error found in EC-module '
+         call err_flush()
          if (jampi == 1) then
-            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd; 
+            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd
             call err_flush()
             ! Terminate all MPI processes
             call abort_all()

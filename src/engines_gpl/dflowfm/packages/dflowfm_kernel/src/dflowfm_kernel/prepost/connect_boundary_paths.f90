@@ -76,7 +76,9 @@ contains
       if (init == 1) then
          L = Lstart
 !     find first node
-         if (lnn(L) /= 1 .or. kn(1, L) < 1 .or. kn(2, l) < 1) return
+         if (lnn(L) /= 1 .or. kn(1, L) < 1 .or. kn(2, l) < 1) then
+            return
+         end if
          k1 = kn(1, L)
          k2 = kn(2, L)
          if (lanseg_map(k1) >= 1 .and. lanseg_map(k2) < 1 .and. nodemask(k1) > 0 .and. nodemask(k2) > 0) then
@@ -109,16 +111,22 @@ contains
 !  loop over all connected links and check if a valid path exists
       kklp: do kk = 1, nmk(k)
          L = nod(k)%lin(kk)
-         if (lnn(L) /= 1) cycle kklp ! boundary links only
+         if (lnn(L) /= 1) then
+            cycle kklp ! boundary links only
+         end if
 
          kother = kn(1, L) + kn(2, L) - k
 
 !     check if next node is already in nodelist
          do i = numnodes_loc, 1, -1
-            if (kother == nodelist_loc(i)) cycle kklp
+            if (kother == nodelist_loc(i)) then
+               cycle kklp
+            end if
          end do
 
-         if (nodemask(kother) < 1) cycle kklp ! path stopped
+         if (nodemask(kother) < 1) then
+            cycle kklp ! path stopped
+         end if
 
          if (numnodes_loc >= MAXNODES) then
             call qnerror('connect_boundary_paths: numnodes > MAXNODES', ' ', ' ')
@@ -245,13 +253,17 @@ contains
 !     add to landboundary
          if (xlan(MXLAN) /= DMISS) then
             MXLAN = MXLAN + 1
-            if (MXLAN > ubound(xlan, 1)) call increaselan(MXLAN + 2)
+            if (MXLAN > ubound(xlan, 1)) then
+               call increaselan(MXLAN + 2)
+            end if
             xlan(MXLAN) = dmiss
             ylan(MXLAN) = dmiss
          end if
          MXLAN = MXLAN + 2
 
-         if (MXLAN > ubound(xlan, 1)) call increaselan(MXLAN)
+         if (MXLAN > ubound(xlan, 1)) then
+            call increaselan(MXLAN)
+         end if
 
          xlan(MXLAN - 1) = xL1
          ylan(MXLAN - 1) = yL1

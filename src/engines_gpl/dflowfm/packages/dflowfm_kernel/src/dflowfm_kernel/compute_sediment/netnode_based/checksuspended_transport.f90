@@ -66,66 +66,83 @@ contains
       call newfil(mout, 'rvrcheck.xyz')
       write (mout, *) ' Depth , D50   , Refcon   , Qsc Numerical, Qsc vR84_D50 ' ! QscNumerical/Refcon, Tau'
 
-      hska = 1.5d0
-      ff = 1.3d0
-      hf = 1d0 / (hska * ff**(nx - 1))
-      D50a = 0.000062d0
-      df = 1d0 / (D50a * ff**(nx - 1))
+      hska = 1.5_dp
+      ff = 1.3_dp
+      hf = 1.0_dp / (hska * ff**(nx - 1))
+      D50a = 0.000062_dp
+      df = 1.0_dp / (D50a * ff**(nx - 1))
       do i = 1, nx
          !D50 = D50a*ff**(i-1)
-         if (i == 1) D50 = 0.000062
-         if (i == 2) D50 = 0.0002
-         if (i == 3) D50 = 0.0006
-         if (i == 4) D50 = 0.002
+         if (i == 1) then
+            D50 = 0.000062
+         end if
+         if (i == 2) then
+            D50 = 0.0002
+         end if
+         if (i == 3) then
+            D50 = 0.0006
+         end if
+         if (i == 4) then
+            D50 = 0.002
+         end if
          do j = 1, nx
             ! hsk = hska*ff**(j-1)
-            if (j == 1) hsk = 1d0
-            if (j == 2) hsk = 5d0
-            if (j == 3) hsk = 20d0
-            if (j == 4) hsk = 40d0
+            if (j == 1) then
+               hsk = 1.0_dp
+            end if
+            if (j == 2) then
+               hsk = 5.0_dp
+            end if
+            if (j == 3) then
+               hsk = 20.0_dp
+            end if
+            if (j == 4) then
+               hsk = 40.0_dp
+            end if
 
-            d90 = 2d0 * d50 ! grainsize
-            dks = 3d0 * d90 ! nikuradse
-            z0k = dks / 30d0 ! z0
+            d90 = 2.0_dp * d50 ! grainsize
+            dks = 3.0_dp * d90 ! nikuradse
+            z0k = dks / 30.0_dp ! z0
             sqcf = vonkar / log(hsk / (ee * z0k)) ! sqrt(g)/C  ( )
             ustar = sqcf * Ucur ! ustar
-            hdune = 0d0
+            hdune = 0.0_dp
             aref = max(dks, hdune) ! reference height is max of (nikuradse and half dune height) (m)
 
-            rhosed = 2650d0; rhomean = 1000d0
+            rhosed = 2650.0_dp
+            rhomean = 1000.0_dp
             rhodelta = (rhosed - rhomean) / rhomean ! rhodelta = (s-1), s=rhosed/rhomean
             sqsgd50 = sqrt(rhodelta * ag * D50)
-            Temp = 20d0
-            vismol = 4.d0 / (20.d0 + Temp) * 1d-5 ! Van rijn, 1993
+            Temp = 20.0_dp
+            vismol = 4.0_dp / (20.0_dp + Temp) * 1.0e-5_dp ! Van rijn, 1993
             Sster = D50 / (4 * vismol) * sqsgd50
-            c1 = 1.06d0 * tanh(0.064d0 * Sster * exp(-7.5d0 / Sster**2))
-            c2 = 0.22d0 * tanh(2.34d0 * Sster**(-1.18d0) * exp(-0.0064d0 * Sster**2))
+            c1 = 1.06_dp * tanh(0.064_dp * Sster * exp(-7.5_dp / Sster**2))
+            c2 = 0.22_dp * tanh(2.34_dp * Sster**(-1.18_dp) * exp(-0.0064_dp * Sster**2))
             wster = c1 + c2 * Sster
             ws = wster * sqsgd50
 
-            dstar = D50 * ((rhodelta * ag) / (vismol * vismol))**(1d0 / 3d0)
-            Wschk = 16.17d0 * D50 * D50 / (1.80d-5 + sqrt(12.12 * D50 * D50 * D50)) ! Ferguson,Church 2006) Wikipedia sand fall velocity
+            dstar = D50 * ((rhodelta * ag) / (vismol * vismol))**(1.0_dp / 3.0_dp)
+            Wschk = 16.17_dp * D50 * D50 / (1.80e-5_dp + sqrt(12.12 * D50 * D50 * D50)) ! Ferguson,Church 2006) Wikipedia sand fall velocity
 
-            if (D50 <= 0.0005d0) then ! calculate treshold velocity Ucr, formula (12)
-               Accr = 0.19d0 * D50**0.1d0
+            if (D50 <= 0.0005_dp) then ! calculate treshold velocity Ucr, formula (12)
+               Accr = 0.19_dp * D50**0.1_dp
             else ! if(D50<0.05d0) then                                       ! Dano see what happens with coarse material
-               Accr = 8.50d0 * D50**0.6d0
+               Accr = 8.50_dp * D50**0.6_dp
             end if
-            Ucr = Accr * log10(4.d0 * hsk / D90)
+            Ucr = Accr * log10(4.0_dp * hsk / D90)
 
             Pmob = (Ueff - Ucr) / Ucr
             Tmob = (Ueff * Ueff - Ucr * Ucr) / (Ucr * Ucr) ! Mobility parameter T ( )
 
-            if (Tmob > 0d0) then
+            if (Tmob > 0.0_dp) then
 
                rouse = ws / (vonkar * ustar)
                !deltaa = aref/hsk
                !call einstein_garcia(deltaa,rouse,dj1,dj2)                      ! einstein integrals following garcia 2008
                !garciaeinstein = dj1*log(hsk/z0k) + dj2                       ! garcia 2008(2-219) ( )
                !garciaeinstein = max(0d0,garciaeinstein)
-               crefa = 0.015d0 * (D50 / aref) * (Tmob**1.5d0) / (Dstar**0.3d0) ! dimensionless reference concentration ( ), (book vRijn 1993, (7.3.31) )
-               if (crefa > 0.65d0) then
-                  crefa = 0.65d0 ! max ref concentration ( )               or (book Garcia 2008, (2-226) )
+               crefa = 0.015_dp * (D50 / aref) * (Tmob**1.5_dp) / (Dstar**0.3_dp) ! dimensionless reference concentration ( ), (book vRijn 1993, (7.3.31) )
+               if (crefa > 0.65_dp) then
+                  crefa = 0.65_dp ! max ref concentration ( )               or (book Garcia 2008, (2-226) )
                end if
                !qsseq = (crefa*ustar*hsk/vonkar)*garciaeinstein               ! equilibrium suspended transport, ( ). (m/s) . (m) =  ( m2/s) )
                !sseq  = qsseq/ ( max(ucur,1d-2)*hsk )                         ! ( ) dimensionless equilibrium suspended sediment concentration
@@ -136,7 +153,7 @@ contains
 
                qsseqcheck = (crefa * ustar / vonkar) * eincheck ! (conclusion : inaccuracy of einstein_garcia is about 10-20 % => improve if have time )
 
-               qssevr84 = 0.012d0 * Ucur * D50 * Pmob**2.4d0 * Dstar**(-0.6d0) ! boek vanrijn (7.3.46), or 2007b
+               qssevr84 = 0.012_dp * Ucur * D50 * Pmob**2.4_dp * Dstar**(-0.6_dp) ! boek vanrijn (7.3.46), or 2007b
 
                write (mout, '(7F12.8)') hsk, D50, crefa, qsseqcheck, qssevr84 !,  qsseqcheck/ crefa, rhomean*ustar**2
 

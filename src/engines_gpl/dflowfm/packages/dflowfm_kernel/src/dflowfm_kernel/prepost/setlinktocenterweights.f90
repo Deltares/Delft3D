@@ -65,9 +65,12 @@ contains
 
       do L = 1, lnx
 
-         if (kcu(L) == 3) cycle ! no contribution from 1D2D internal links
+         if (kcu(L) == 3) then
+            cycle ! no contribution from 1D2D internal links
+         end if
 
-         k1 = ln(1, L); k2 = ln(2, L) !left and right node
+         k1 = ln(1, L)
+         k2 = ln(2, L) !left and right node
          wud = wu(L) * dx(L) !flow surface area at link
 
          wuL1 = acl(L) * wud ! 2d center factor
@@ -100,7 +103,8 @@ contains
             L = abs(longculverts(ilongc)%flowlinks(1))
             L1Dlink = abs(longculverts(ilongc)%flowlinks(2))
             if (L > 0 .and. L1Dlink > 0) then
-               k1 = ln(1, L); k2 = ln(2, L) !left and right node
+               k1 = ln(1, L)
+               k2 = ln(2, L) !left and right node
                wud = wu(L) * dx(L) !flow surface area
                wuL1 = acl(L) * wud ! 2d center factor
                wcL(1, L) = wuL1
@@ -134,7 +138,8 @@ contains
             L = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
             L1Dlink = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks - 1))
             if (L > 0 .and. L1Dlink > 0) then
-               k1 = ln(1, L); k2 = ln(2, L) !left and right node
+               k1 = ln(1, L)
+               k2 = ln(2, L) !left and right node
                wud = wu(L) * dx(L) !flow surface area
                wuL1 = acl(L) * wud ! 2d center factor
                wcL(1, L) = wuL1
@@ -176,9 +181,11 @@ contains
          call realloc(wwL, lnxmax, keepExisting=.false.)
          do kk = 1, size(nd(k1)%ln)
             LL = abs(nd(k1)%ln(kk))
-            n12 = 1; alf = acL(LL)
+            n12 = 1
+            alf = acL(LL)
             if (k1 /= ln(1, LL)) then
-               n12 = 2; alf = 1.0_dp - acL(LL)
+               n12 = 2
+               alf = 1.0_dp - acL(LL)
             end if
             wuL1 = alf * dx(LL) * wu(LL)
             cs = walls(8, n) ! outward positive
@@ -191,9 +198,11 @@ contains
             wc(k1) = wc(k1) + aa1
             do kk = 1, size(nd(k1)%ln)
                LL = abs(nd(k1)%ln(kk))
-               n12 = 1; alf = acL(LL)
+               n12 = 1
+               alf = acL(LL)
                if (k1 /= ln(1, LL)) then
-                  n12 = 2; alf = 1.0_dp - acL(LL)
+                  n12 = 2
+                  alf = 1.0_dp - acL(LL)
                end if
                wcL(n12, LL) = wcL(n12, LL) + wwL(kk) * aa1 / wcw
             end do
@@ -201,22 +210,31 @@ contains
       end do
 
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          if (abs(kcu(L)) == 2 .or. abs(kcu(L)) == 4) then ! 2D links and 1D2D lateral links
             if (kfs(K1) == 0) then ! kfs temporarily used as cutcell flag, set in cutcelwu
                wcx1(L) = wcx1(L) * bai(k1)
                wcy1(L) = wcy1(L) * bai(k1)
             else
-               if (wcxy(1, k1) /= 0) wcx1(L) = wcx1(L) / wcxy(1, k1)
-               if (wcxy(2, k1) /= 0) wcy1(L) = wcy1(L) / wcxy(2, k1)
+               if (wcxy(1, k1) /= 0) then
+                  wcx1(L) = wcx1(L) / wcxy(1, k1)
+               end if
+               if (wcxy(2, k1) /= 0) then
+                  wcy1(L) = wcy1(L) / wcxy(2, k1)
+               end if
             end if
 
             if (kfs(K2) == 0) then
                wcx2(L) = wcx2(L) * bai(k2)
                wcy2(L) = wcy2(L) * bai(k2)
             else
-               if (wcxy(1, k2) /= 0) wcx2(L) = wcx2(L) / wcxy(1, k2)
-               if (wcxy(2, k2) /= 0) wcy2(L) = wcy2(L) / wcxy(2, k2)
+               if (wcxy(1, k2) /= 0) then
+                  wcx2(L) = wcx2(L) / wcxy(1, k2)
+               end if
+               if (wcxy(2, k2) /= 0) then
+                  wcy2(L) = wcy2(L) / wcxy(2, k2)
+               end if
             end if
          else
             wcx1(L) = wcx1(L) * bai(k1) !if (wcxy(2,k1) .ne. 0) /wcxy(2,k1)
@@ -224,8 +242,12 @@ contains
             wcx2(L) = wcx2(L) * bai(k2) !if (wcxy(2,k2) .ne. 0) /wcxy(2,k2)
             wcy2(L) = wcy2(L) * bai(k2) !if (wcxy(1,k2) .ne. 0) /wcxy(1,k2)
          end if
-         if (wc(k1) > 0.0_dp) wcL(1, L) = wcL(1, L) / wc(k1)
-         if (wc(k2) > 0.0_dp) wcL(2, L) = wcL(2, L) / wc(k2)
+         if (wc(k1) > 0.0_dp) then
+            wcL(1, L) = wcL(1, L) / wc(k1)
+         end if
+         if (wc(k2) > 0.0_dp) then
+            wcL(2, L) = wcL(2, L) / wc(k2)
+         end if
 
       end do
 

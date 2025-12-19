@@ -153,7 +153,9 @@ contains
       integer :: i, n
 
       n = size(xp)
-      if (n <= 0) return
+      if (n <= 0) then
+         return
+      end if
 
       call increaseCrossSectionPath(path, n, 0)
       do i = 1, n

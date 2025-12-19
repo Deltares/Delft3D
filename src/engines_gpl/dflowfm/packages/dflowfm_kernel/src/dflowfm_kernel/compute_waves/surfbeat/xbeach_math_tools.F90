@@ -361,7 +361,9 @@ contains
          call fftradix(array, ntotal, shape(d(i)), product(shape(1:d(i))), &
                        inverse, stat)
          if (present(stat)) then
-            if (stat /= 0) return
+            if (stat /= 0) then
+               return
+            end if
          end if
       end do
 
@@ -391,7 +393,9 @@ contains
       intrinsic MAXVAL, MOD, PRESENT, ISHFT, BIT_SIZE, SIN, COS, &
          CMPLX, real, AIMAG
 
-      if (npass <= 1) return
+      if (npass <= 1) then
+         return
+      end if
 
       c72 = cos72
       if (inv) then
@@ -424,15 +428,23 @@ contains
 
       if (present(stat)) then
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor), STAT=stat)
-         if (stat /= 0) return
+         if (stat /= 0) then
+            return
+         end if
          call transform()
          deallocate (sine, cosine, STAT=stat)
-         if (stat /= 0) return
+         if (stat /= 0) then
+            return
+         end if
          allocate (perm(nperm), STAT=stat)
-         if (stat /= 0) return
+         if (stat /= 0) then
+            return
+         end if
          call permute()
          deallocate (perm, ctmp, STAT=stat)
-         if (stat /= 0) return
+         if (stat /= 0) then
+            return
+         end if
       else
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor))
          call transform()
@@ -462,12 +474,16 @@ contains
             end do
             j = j + 2
             jj = j * j
-            if (jj > k) exit
+            if (jj > k) then
+               exit
+            end if
          end do
          if (k <= 4) then
             kt = nfactor
             factor(nfactor + 1) = k
-            if (k /= 1) nfactor = nfactor + 1
+            if (k /= 1) then
+               nfactor = nfactor + 1
+            end if
          else
             if (k - ishft(k / 4, 2) == 0) then
                nfactor = nfactor + 1
@@ -483,7 +499,9 @@ contains
                   k = k / j
                end if
                j = ishft((j + 1) / 2, 1) + 1
-               if (j > k) exit
+               if (j > k) then
+                  exit
+               end if
             end do
          end if
          if (kt > 0) then
@@ -492,7 +510,9 @@ contains
                nfactor = nfactor + 1
                factor(nfactor) = factor(j)
                j = j - 1
-               if (j == 0) exit
+               if (j == 0) then
+                  exit
+               end if
             end do
          end if
       end subroutine factorize
@@ -521,12 +541,18 @@ contains
                      array(k2) = array(kk) - ck
                      array(kk) = array(kk) + ck
                      kk = k2 + kspan
-                     if (kk > nn) exit
+                     if (kk > nn) then
+                        exit
+                     end if
                   end do
                   kk = kk - nn
-                  if (kk > jc) exit
+                  if (kk > jc) then
+                     exit
+                  end if
                end do
-               if (kk > kspan) return
+               if (kk > kspan) then
+                  return
+               end if
                do
                   c1 = 1.0_fftkind - cd
                   s1 = sd
@@ -538,12 +564,16 @@ contains
                            array(kk) = array(kk) + array(k2)
                            array(k2) = ck * cmplx(c1, s1, kind=fftkind)
                            kk = k2 + kspan
-                           if (kk >= nt) exit
+                           if (kk >= nt) then
+                              exit
+                           end if
                         end do
                         k2 = kk - nt
                         c1 = -c1
                         kk = k1 - k2
-                        if (kk <= k2) exit
+                        if (kk <= k2) then
+                           exit
+                        end if
                      end do
                      ak = c1 - (cd * c1 + sd * s1)
                      s1 = sd * c1 - cd * s1 + s1
@@ -551,11 +581,15 @@ contains
                      s1 = s1 * c1
                      c1 = c1 * ak
                      kk = kk + jc
-                     if (kk >= k2) exit
+                     if (kk >= k2) then
+                        exit
+                     end if
                   end do
                   k1 = k1 + 1 + 1
                   kk = (k1 - kspan) / 2 + jc
-                  if (kk > jc + jc) exit
+                  if (kk > jc + jc) then
+                     exit
+                  end if
                end do
 
             case (4) !-- transform for factor of 4
@@ -594,7 +628,9 @@ contains
                            array(k3) = ckm * cmplx(c3, s3, kind=fftkind)
                         end if
                         kk = k3 + kspan
-                        if (kk > nt) exit
+                        if (kk > nt) then
+                           exit
+                        end if
                      end do
 
                      c2 = c1 - (cd * c1 + sd * s1)
@@ -608,12 +644,18 @@ contains
                      c3 = c2 * c1 - s2 * s1
                      s3 = c2 * s1 + s2 * c1
                      kk = kk - nt + jc
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
                   kk = kk - kspan + 1
-                  if (kk > jc) exit
+                  if (kk > jc) then
+                     exit
+                  end if
                end do
-               if (kspan == jc) return
+               if (kspan == jc) then
+                  return
+               end if
 
             case default
                !-- transform for odd factors
@@ -635,10 +677,14 @@ contains
                         array(k1) = ck + cmplx(-aimag(cj), real(cj), kind=fftkind)
                         array(k2) = ck + cmplx(aimag(cj), -real(cj), kind=fftkind)
                         kk = k2 + kspan
-                        if (kk >= nn) exit
+                        if (kk >= nn) then
+                           exit
+                        end if
                      end do
                      kk = kk - nn
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
 
                case (5) !-- transform for factor of 5 (optional code)
@@ -665,10 +711,14 @@ contains
                         array(k2) = ck + cmplx(-aimag(cj), real(cj), kind=fftkind)
                         array(k3) = ck + cmplx(aimag(cj), -real(cj), kind=fftkind)
                         kk = k4 + kspan
-                        if (kk >= nn) exit
+                        if (kk >= nn) then
+                           exit
+                        end if
                      end do
                      kk = kk - nn
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
 
                case default
@@ -688,7 +738,9 @@ contains
                         cosine(k) = cosine(j)
                         sine(k) = -sine(j)
                         j = j + 1
-                        if (j >= k) exit
+                        if (j >= k) then
+                           exit
+                        end if
                      end do
                   end if
                   do
@@ -707,7 +759,9 @@ contains
                            j = j + 1
                            ctmp(j) = array(k1) - array(k2)
                            k1 = k1 + kspan
-                           if (k1 >= k2) exit
+                           if (k1 >= k2) then
+                              exit
+                           end if
                         end do
                         array(kk) = ck
                         k1 = kk
@@ -726,25 +780,37 @@ contains
                               k = k + 1
                               cj = cj + ctmp(k) * sine(jj)
                               jj = jj + j
-                              if (jj > jf) jj = jj - jf
-                              if (k >= jf) exit
+                              if (jj > jf) then
+                                 jj = jj - jf
+                              end if
+                              if (k >= jf) then
+                                 exit
+                              end if
                            end do
                            k = jf - j
                            array(k1) = ck + cmplx(-aimag(cj), real(cj), kind=fftkind)
                            array(k2) = ck + cmplx(aimag(cj), -real(cj), kind=fftkind)
                            j = j + 1
-                           if (j >= k) exit
+                           if (j >= k) then
+                              exit
+                           end if
                         end do
                         kk = kk + ispan
-                        if (kk > nn) exit
+                        if (kk > nn) then
+                           exit
+                        end if
                      end do
                      kk = kk - nn
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
 
                end select
                !--  multiply by rotation factor (except for factors of 2 and 4)
-               if (ii == nfactor) return
+               if (ii == nfactor) then
+                  return
+               end if
                kk = jc + 1
                do
                   c2 = 1.0_fftkind - cd
@@ -757,13 +823,17 @@ contains
                         do
                            array(kk) = cmplx(c2, s2, kind=fftkind) * array(kk)
                            kk = kk + ispan
-                           if (kk > nt) exit
+                           if (kk > nt) then
+                              exit
+                           end if
                         end do
                         ak = s1 * s2
                         s2 = s1 * c2 + c1 * s2
                         c2 = c1 * c2 - ak
                         kk = kk - nt + kspan
-                        if (kk > ispan) exit
+                        if (kk > ispan) then
+                           exit
+                        end if
                      end do
                      c2 = c1 - (cd * c1 + sd * s1)
                      s1 = s1 + sd * c1 - cd * s1
@@ -771,10 +841,14 @@ contains
                      s1 = s1 * c1
                      c2 = c2 * c1
                      kk = kk - ispan + jc
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
                   kk = kk - kspan + jc + 1
-                  if (kk > jc + jc) exit
+                  if (kk > jc + jc) then
+                     exit
+                  end if
                end do
 
             end select
@@ -787,7 +861,9 @@ contains
          perm(1) = ns
          if (kt > 0) then
             k = kt + kt + 1
-            if (nfactor < k) k = k - 1
+            if (nfactor < k) then
+               k = k - 1
+            end if
             j = 1
             perm(k + 1) = jc
             do
@@ -795,7 +871,9 @@ contains
                perm(k) = perm(k + 1) * factor(j)
                j = j + 1
                k = k - 1
-               if (j >= k) exit
+               if (j >= k) then
+                  exit
+               end if
             end do
             k3 = perm(k + 1)
             kspan = perm(2)
@@ -815,31 +893,45 @@ contains
                            array(k2) = ck
                            kk = kk + 1
                            k2 = k2 + 1
-                           if (kk >= k) exit
+                           if (kk >= k) then
+                              exit
+                           end if
                         end do
                         kk = kk + ns - jc
                         k2 = k2 + ns - jc
-                        if (kk >= nt) exit
+                        if (kk >= nt) then
+                           exit
+                        end if
                      end do
                      kk = kk - nt + jc
                      k2 = k2 - nt + kspan
-                     if (k2 >= ns) exit
+                     if (k2 >= ns) then
+                        exit
+                     end if
                   end do
                   do
                      do
                         k2 = k2 - perm(j)
                         j = j + 1
                         k2 = perm(j + 1) + k2
-                        if (k2 <= perm(j)) exit
+                        if (k2 <= perm(j)) then
+                           exit
+                        end if
                      end do
                      j = 1
                      do
-                        if (kk < k2) cycle permute_multi
+                        if (kk < k2) then
+                           cycle permute_multi
+                        end if
                         kk = kk + jc
                         k2 = k2 + kspan
-                        if (k2 >= ns) exit
+                        if (k2 >= ns) then
+                           exit
+                        end if
                      end do
-                     if (kk >= ns) exit
+                     if (kk >= ns) then
+                        exit
+                     end if
                   end do
                   exit
                end do permute_multi
@@ -852,23 +944,33 @@ contains
                      array(k2) = ck
                      kk = kk + 1
                      k2 = k2 + kspan
-                     if (k2 >= ns) exit
+                     if (k2 >= ns) then
+                        exit
+                     end if
                   end do
                   do
                      do
                         k2 = k2 - perm(j)
                         j = j + 1
                         k2 = perm(j + 1) + k2
-                        if (k2 <= perm(j)) exit
+                        if (k2 <= perm(j)) then
+                           exit
+                        end if
                      end do
                      j = 1
                      do
-                        if (kk < k2) cycle permute_single
+                        if (kk < k2) then
+                           cycle permute_single
+                        end if
                         kk = kk + 1
                         k2 = k2 + kspan
-                        if (k2 >= ns) exit
+                        if (k2 >= ns) then
+                           exit
+                        end if
                      end do
-                     if (kk >= ns) exit
+                     if (kk >= ns) then
+                        exit
+                     end if
                   end do
                   exit
                end do permute_single
@@ -876,7 +978,9 @@ contains
             jc = k3
          end if
 
-         if (ishft(kt, 1) + 1 >= nfactor) return
+         if (ishft(kt, 1) + 1 >= nfactor) then
+            return
+         end if
 
          ispan = perm(kt + 1)
          !-- permutation for square-free factors of n
@@ -885,7 +989,9 @@ contains
          do
             factor(j) = factor(j) * factor(j + 1)
             j = j - 1
-            if (j == kt) exit
+            if (j == kt) then
+               exit
+            end if
          end do
          kt = kt + 1
          nn = factor(kt) - 1
@@ -896,7 +1002,9 @@ contains
             k2 = factor(kt)
             kk = factor(k)
             j = j + 1
-            if (j > nn) exit !-- exit infinite loop
+            if (j > nn) then
+               exit !-- exit infinite loop
+            end if
             jj = jj + kk
             do while (jj >= k2)
                jj = jj - k2
@@ -913,19 +1021,25 @@ contains
             do
                j = j + 1
                kk = perm(j)
-               if (kk >= 0) exit
+               if (kk >= 0) then
+                  exit
+               end if
             end do
             if (kk /= j) then
                do
                   k = kk
                   kk = perm(k)
                   perm(k) = -kk
-                  if (kk == j) exit
+                  if (kk == j) then
+                     exit
+                  end if
                end do
                k3 = kk
             else
                perm(j) = -j
-               if (j == nn) exit !-- exit infinite loop
+               if (j == nn) then
+                  exit !-- exit infinite loop
+               end if
             end if
          end do
          !--  reorder a and b, following the permutation cycles
@@ -933,16 +1047,22 @@ contains
             j = k3 + 1
             nt = nt - ispan
             ii = nt - 1 + 1
-            if (nt < 0) exit !-- exit infinite loop
+            if (nt < 0) then
+               exit !-- exit infinite loop
+            end if
             do
                do
                   j = j - 1
-                  if (perm(j) >= 0) exit
+                  if (perm(j) >= 0) then
+                     exit
+                  end if
                end do
                jj = jc
                do
                   kspan = jj
-                  if (jj > maxfactor) kspan = maxfactor
+                  if (jj > maxfactor) then
+                     kspan = maxfactor
+                  end if
                   jj = jj - kspan
                   k = perm(j)
                   kk = jc * k + ii + jj
@@ -952,7 +1072,9 @@ contains
                      k2 = k2 + 1
                      ctmp(k2) = array(k1)
                      k1 = k1 - 1
-                     if (k1 == kk) exit
+                     if (k1 == kk) then
+                        exit
+                     end if
                   end do
                   do
                      k1 = kk + kspan
@@ -962,10 +1084,14 @@ contains
                         array(k1) = array(k2)
                         k1 = k1 - 1
                         k2 = k2 - 1
-                        if (k1 == kk) exit
+                        if (k1 == kk) then
+                           exit
+                        end if
                      end do
                      kk = k2
-                     if (k == j) exit
+                     if (k == j) then
+                        exit
+                     end if
                   end do
                   k1 = kk + kspan
                   k2 = 0
@@ -973,11 +1099,17 @@ contains
                      k2 = k2 + 1
                      array(k1) = ctmp(k2)
                      k1 = k1 - 1
-                     if (k1 == kk) exit
+                     if (k1 == kk) then
+                        exit
+                     end if
                   end do
-                  if (jj == 0) exit
+                  if (jj == 0) then
+                     exit
+                  end if
                end do
-               if (j == 1) exit
+               if (j == 1) then
+                  exit
+               end if
             end do
          end do
 
@@ -1275,7 +1407,9 @@ contains
             y(i) = 1
          end if
 
-         if (x(i) < 0) y(i) = -y(i)
+         if (x(i) < 0) then
+            y(i) = -y(i)
+         end if
       end do
 
    end function xerf

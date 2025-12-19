@@ -402,7 +402,8 @@ contains
         !! qh_ice2wat(n) = -2.4_fp
          !
          if (ieee_is_nan(qh_ice2wat(n))) then
-            write (msgbuf, '(a,i5,10f10.3)') 'NAN in PREPROCESS_ICECOVER', n, qh_ice2wat(n); call msg_flush()
+            write (msgbuf, '(a,i5,10f10.3)') 'NAN in PREPROCESS_ICECOVER', n, qh_ice2wat(n)
+            call msg_flush()
          end if
          !
       case default
@@ -468,6 +469,7 @@ contains
                   ice_area_fraction(n) = 1.0_fp
                else
                   ice_thickness(n) = 0.0_fp
+                  snow_thickness(n) = 0.0_fp
                   ice_area_fraction(n) = 0.0_fp
                   ice_temperature(n) = celsius_to_kelvin(0.0_fp)
                end if

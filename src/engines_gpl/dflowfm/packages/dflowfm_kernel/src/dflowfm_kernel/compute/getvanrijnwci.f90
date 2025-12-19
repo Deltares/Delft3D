@@ -64,8 +64,10 @@ contains
          return
       end if
       waveps = 1.0e-4_dp
-      k1 = ln(1, LL); k2 = ln(2, LL)
-      ac1 = acL(LL); ac2 = 1.0_dp - ac1
+      k1 = ln(1, LL)
+      k2 = ln(2, LL)
+      ac1 = acL(LL)
+      ac2 = 1.0_dp - ac1
       Lb = Lbot(LL)
       huLL = max(hu(LL), 1.0e-3_dp) ! cfr taubot
 
@@ -74,9 +76,12 @@ contains
       hrmsu = 0.5_dp * (hwav(k1) + hwav(k2))
       tpu = 0.5_dp * (twav(k1) + twav(k2))
       rlabdau = 0.5_dp * (rlabda(k1) + rlabda(k2))
-      cosk1 = cosd(phiwav(k1)); cosk2 = cosd(phiwav(k2))
-      sink1 = sind(phiwav(k1)); sink2 = sind(phiwav(k2))
-      csw = ac1 * cosk1 + ac2 * cosk2; snw = ac1 * sink1 + ac2 * sink2
+      cosk1 = cosd(phiwav(k1))
+      cosk2 = cosd(phiwav(k2))
+      sink1 = sind(phiwav(k1))
+      sink2 = sind(phiwav(k2))
+      csw = ac1 * cosk1 + ac2 * cosk2
+      snw = ac1 * sink1 + ac2 * sink2
       !
       cphi = csw * csu(LL) + snw * snu(LL)
       sphi = -csw * snu(LL) + snw * csu(LL)

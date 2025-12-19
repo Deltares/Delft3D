@@ -57,14 +57,18 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("diffusionimplicit2D", ithndl)
+      if (timon) then
+         call timstrt("diffusionimplicit2D", ithndl)
+      end if
 
       do i = 1, numconst
 
-         bbr = 0.0_dp; ccr = 0.0_dp
+         bbr = 0.0_dp
+         ccr = 0.0_dp
          do L = 1, lnx
             if (dxiau(L) > 0.0_dp) then
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                if (jadiusp == 1) then
                   diuspL = diusp(L)
                else
@@ -95,7 +99,9 @@ contains
 
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine diffusionimplicit2D
 
 end module m_diffusionimplicit2d

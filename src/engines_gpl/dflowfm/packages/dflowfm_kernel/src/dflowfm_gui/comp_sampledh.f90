@@ -52,7 +52,9 @@ contains
 
       real(kind=dp) :: dum
 
-      if (MXSAM * MYSAM /= NS) goto 1234 ! structured samples only
+      if (MXSAM * MYSAM /= NS) then
+         goto 1234 ! structured samples only
+      end if
 
       ip = i + (j - 1) * MXSAM
       ipiL = max(i - 1, 1) + (j - 1) * MXSAM
@@ -62,13 +64,21 @@ contains
 
       comp_sampleDh = 0.0_dp
       dum = dbdistance(xs(ip), ys(ip), xs(ipiL), ys(ipiL), jsferic, jasfer3D, dmiss)
-      if (dum > 0.0_dp) comp_sampleDh = max(comp_sampleDh, dum)
+      if (dum > 0.0_dp) then
+         comp_sampleDh = max(comp_sampleDh, dum)
+      end if
       dum = dbdistance(xs(ip), ys(ip), xs(ipiR), ys(ipiR), jsferic, jasfer3D, dmiss)
-      if (dum > 0.0_dp) comp_sampleDh = max(comp_sampleDh, dum)
+      if (dum > 0.0_dp) then
+         comp_sampleDh = max(comp_sampleDh, dum)
+      end if
       dum = dbdistance(xs(ip), ys(ip), xs(ipjL), ys(ipjR), jsferic, jasfer3D, dmiss)
-      if (dum > 0.0_dp) comp_sampleDh = max(comp_sampleDh, dum)
+      if (dum > 0.0_dp) then
+         comp_sampleDh = max(comp_sampleDh, dum)
+      end if
       dum = dbdistance(xs(ip), ys(ip), xs(ipjR), ys(ipjR), jsferic, jasfer3D, dmiss)
-      if (dum > 0.0_dp) comp_sampleDh = max(comp_sampleDh, dum)
+      if (dum > 0.0_dp) then
+         comp_sampleDh = max(comp_sampleDh, dum)
+      end if
 
 1234  continue
 

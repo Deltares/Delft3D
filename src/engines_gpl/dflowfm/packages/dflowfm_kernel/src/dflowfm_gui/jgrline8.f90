@@ -58,18 +58,26 @@ contains
       do while (I < N)
          I = I + 1
          if (X(I) /= dXYMIS) then
-            if (INVIEW2(X(I), Y(I), XA, YA)) IN = 1
-            if (K == 0 .or. IN == 1 .or. I == L + 1) K = K + 1
+            if (INVIEW2(X(I), Y(I), XA, YA)) then
+               IN = 1
+            end if
+            if (K == 0 .or. IN == 1 .or. I == L + 1) then
+               K = K + 1
+            end if
             if (K == 1 .or. IN == 1 .or. I == L + 1) then
                XX(K) = XA
                YY(K) = YA
             end if
-            if (IN == 1) L = I
+            if (IN == 1) then
+               L = I
+            end if
          end if
          if (I == N .or. X(I) == dXYMIS .or. K == KMAX) then
             if (K /= 0) then
                call POLYLINE(XX, YY, K)
-               if (K == KMAX) I = I - 1
+               if (K == KMAX) then
+                  I = I - 1
+               end if
                K = 0
                L = 0
                IN = 0

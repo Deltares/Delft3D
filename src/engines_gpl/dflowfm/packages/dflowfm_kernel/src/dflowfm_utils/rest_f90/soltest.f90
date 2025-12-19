@@ -147,12 +147,14 @@ contains
       allocate (dmask(Ndx))
 
 !     activate all cells
-      hu = epshu + 1d0
+      hu = epshu + 1.0_dp
 
 !     set exact solution
       sex = xzw
 
-      if (jatimer == 1) call starttimer(ITOTAL)
+      if (jatimer == 1) then
+         call starttimer(ITOTAL)
+      end if
 
 !!     prepare matrix
 !      if ( jatimer.eq.1 ) call starttimer(IREDUCE)
@@ -170,12 +172,12 @@ contains
 !     pack matrix
       call pack_matrix()
 
-      call realloc(ccrsav, ubound(ccr, 1), lbound(ccr, 1), keepExisting=.false., fill=0d0)
+      call realloc(ccrsav, ubound(ccr, 1), lbound(ccr, 1), keepExisting=.false., fill=0.0_dp)
       ccrsav = ccr
 
 !     solve system
       do irun = 1, Nruns
-         s1 = 0d0
+         s1 = 0.0_dp
          ccr = ccrsav
 
 !         if (icgsolver.eq.6) call setPETSCmatrixEntries()
@@ -184,10 +186,12 @@ contains
          call solve_matrix(s1, Ndx, itsol)
 
       end do
-      if (jatimer == 1) call stoptimer(ITOTAL)
+      if (jatimer == 1) then
+         call stoptimer(ITOTAL)
+      end if
 
 !     unmask all cells
-      dmask = 0d0
+      dmask = 0.0_dp
 
       if (jampi == 1) then
          call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
@@ -195,7 +199,7 @@ contains
 !        mask all ghost cells
          do i = 1, Ndx
             if (idomain(i) /= my_rank) then
-               dmask(i) = 1d0
+               dmask(i) = 1.0_dp
             end if
          end do
 
@@ -203,10 +207,10 @@ contains
          call update_ghosts(ITYPE_SALL, 1, Ndx, dmask, ierror)
       end if
 
-      diffmax = 0d0
+      diffmax = 0.0_dp
       do i = 1, Ndxi
-         if (nd(i)%lnx > 0 .and. dmask(i) == 0d0) then
-            if (abs(s1(i) - sex(i)) > 1d-10) then
+         if (nd(i)%lnx > 0 .and. dmask(i) == 0.0_dp) then
+            if (abs(s1(i) - sex(i)) > 1.0e-10_dp) then
                continue
             end if
             diffmax = max(diffmax, abs(s1(i) - sex(i)))
@@ -215,7 +219,7 @@ contains
 
       do ii = 1, nghostlist_sall(ndomains - 1)
          i = ighostlist_sall(ii)
-         if (abs(s1(i) - sex(i)) > 1d-10) then
+         if (abs(s1(i) - sex(i)) > 1.0e-10_dp) then
             continue
          end if
       end do

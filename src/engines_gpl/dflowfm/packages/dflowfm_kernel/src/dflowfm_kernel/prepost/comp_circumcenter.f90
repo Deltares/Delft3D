@@ -75,14 +75,19 @@ contains
       x0 = DMISS
       y0 = DMISS
 
-      if (N < 2) goto 1234
+      if (N < 2) then
+         goto 1234
+      end if
 
       x0 = minval(xp(1:N))
       y0 = minval(yp(1:N))
 
 !  compute the tangent vectors
       do i = 1, N
-         ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
+         ip1 = i + 1
+         if (ip1 > N) then
+            ip1 = ip1 - N
+         end if
          xref = 0.0_dp ! not ok for jasfer3D=1
          yref = 0.0_dp ! not ok for jasfer3D=1
          call normalin(xp(i), yp(i), xp(ip1), yp(ip1), tx(i), ty(i), xref, yref, jsferic, jasfer3D, dxymis)
@@ -100,7 +105,10 @@ contains
 !  make the right-hand side
       rhs = 0.0_dp
       do i = 1, N
-         ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
+         ip1 = i + 1
+         if (ip1 > N) then
+            ip1 = ip1 - N
+         end if
          call getdxdy(x0, y0, xf(i), yf(i), xhalf, yhalf, jsferic)
 
          dfac = tx(i) * xhalf + ty(i) * yhalf
@@ -110,7 +118,9 @@ contains
 
 !  solve the system
       det = T(1, 1) * T(2, 2) - T(1, 2) * T(2, 1)
-      if (abs(det) < 1.0e-8_dp) goto 1234
+      if (abs(det) < 1.0e-8_dp) then
+         goto 1234
+      end if
 
       xc = (T(2, 2) * rhs(1) - T(1, 2) * rhs(2)) / det
       yc = (-T(2, 1) * rhs(1) + T(1, 1) * rhs(2)) / det
@@ -129,7 +139,10 @@ contains
             xzw = sum(xp(1:N)) / real(N, kind=dp)
             yzw = sum(yp(1:N)) / real(N, kind=dp)
             do m = 1, N
-               m2 = m + 1; if (m == N) m2 = 1
+               m2 = m + 1
+               if (m == N) then
+                  m2 = 1
+               end if
                call CROSS(xzw, yzw, xc, yc, xp(m), yp(m), xp(m2), yp(m2), &
                           JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
                if (jacros == 1) then

@@ -59,7 +59,9 @@ contains
       call SETCOL(NCOL)
       KMOD = max(1, NUMK / 100)
       do K = 1, NUMK
-         if (.not. INVNOD(K)) cycle
+         if (.not. INVNOD(K)) then
+            cycle
+         end if
          X = XK(K)
          Y = YK(K)
          Z = ZK(K)

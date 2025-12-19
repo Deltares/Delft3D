@@ -30,14 +30,16 @@ contains
       genstr => structure%generalst
       do L0 = 1, structure%numlinks
          Lf = structure%linknumbers(L0)
-         k1 = ln(1, Lf); k2 = ln(2, Lf) ! 1 -> 2 flow link direction
+         k1 = ln(1, Lf)
+         k2 = ln(2, Lf) ! 1 -> 2 flow link direction
 
          call getLbotLtop(Lf, Lb, Lt)
          gatefraction = genstr%gateclosedfractiononlink(L0)
 
          if (jastructurelayersactive == 0) then
             do LL = Lb, Lt
-               fu(LL) = fu(Lf); ru(LL) = ru(Lf)
+               fu(LL) = fu(Lf)
+               ru(LL) = ru(Lf)
                au(LL) = au(Lf) * (hu(LL) - hu(LL - 1)) / (hu(Lt) - hu(Lb - 1))
             end do
          else
@@ -67,9 +69,15 @@ contains
             ff3(:, 0) = 0.0_dp
             do LL = Lb, Lt
                kk = ln(iup, LL)
-               if (genstr%au(1, L0) > 0) ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
-               if (genstr%au(2, L0) > 0) ff3(2, LL - Lb + 1) = max(0.0_dp, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
-               if (genstr%au(3, L0) > 0) ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
+               if (genstr%au(1, L0) > 0) then
+                  ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
+               end if
+               if (genstr%au(2, L0) > 0) then
+                  ff3(2, LL - Lb + 1) = max(0.0_dp, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
+               end if
+               if (genstr%au(3, L0) > 0) then
+                  ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
+               end if
             end do
 
             do LL = Lb, Lt

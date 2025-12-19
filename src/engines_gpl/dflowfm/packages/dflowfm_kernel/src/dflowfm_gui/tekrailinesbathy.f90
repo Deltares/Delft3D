@@ -61,13 +61,17 @@ contains
       do L = 1, lnx
          if (mod(L, 200) == 0) then
             call halt2(ja)
-            if (ja == 1) exit
+            if (ja == 1) then
+               exit
+            end if
          end if
 
          k1 = ln(1, L)
          k2 = ln(2, L)
          if (npl > 1) then
-            if (kc(k1) * kc(k2) == 0) cycle
+            if (kc(k1) * kc(k2) == 0) then
+               cycle
+            end if
          end if
 
          if (ityp == 1) then ! bottom layer
@@ -119,7 +123,9 @@ contains
             end if
          end if
 
-         if (zz1 == dmiss .or. zz2 == dmiss) cycle
+         if (zz1 == dmiss .or. zz2 == dmiss) then
+            cycle
+         end if
 
          if (yfac > 0) then
             zz1 = zz1 + (yy1 - ymn) * yfac
@@ -127,11 +133,17 @@ contains
          end if
 
          if (jsferic == 1) then ! jglobe
-            if (abs(xz(ln(1, L)) - xz(ln(2, L))) > 10.0_dp) cycle
+            if (abs(xz(ln(1, L)) - xz(ln(2, L))) > 10.0_dp) then
+               cycle
+            end if
          end if
 
-         if (abs(zz1) < 1.0e-6_dp) zz1 = 0.0_dp ! heh heh, eindelijk
-         if (abs(zz2) < 1.0e-6_dp) zz2 = 0.0_dp
+         if (abs(zz1) < 1.0e-6_dp) then
+            zz1 = 0.0_dp ! heh heh, eindelijk
+         end if
+         if (abs(zz2) < 1.0e-6_dp) then
+            zz2 = 0.0_dp
+         end if
 
          call movabs(xx1, zz1)
          call lnabs(xx2, zz2)
@@ -141,7 +153,9 @@ contains
          k1 = ln(1, L)
          k2 = ln(2, L)
          if (npl > 1) then
-            if (kc(k1) * kc(k2) == 0) cycle
+            if (kc(k1) * kc(k2) == 0) then
+               cycle
+            end if
          end if
 
          xx1 = xz(k1)

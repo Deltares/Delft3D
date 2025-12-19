@@ -54,7 +54,7 @@ contains
       use m_flowtimes, only: time1
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
       use m_flow, only: iturbulencemodel, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
-      use m_flowparameters, only: jasal, jatem, epshs, epsz0
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, epshs, epsz0
       use m_transport, only: constituents, isalt, itemp, ised1
       use m_turbulence, only: turkinws, turepsws, rhowat
       use sediment_basics_module, only: SEDTYP_CLAY
@@ -154,13 +154,16 @@ contains
 
       ! Calculate roughness height at cell centres
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L) ! set for all cases in setcfuhi/getustbcfuhi
          z0rou(k2) = z0rou(k2) + wcl(2, L) * z0urou(L)
       end do
 
       do k = 1, ndx
-         if (s1(k) - bl(k) <= epshs) cycle
+         if (s1(k) - bl(k) <= epshs) then
+            cycle
+         end if
          !
          h0 = s1(k) - bl(k)
          chezy = sag * log(h0 / ee / max(epsz0, z0rou(k))) / vonkar ! consistency with getczz0
@@ -203,7 +206,7 @@ contains
                   salint = backgroundsalinity
                end if
                !                !
-               if (jatem > 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   temint = (tka * constituents(itemp, kk + 1) + tkb * constituents(itemp, kk)) / tkt
                else
                   temint = backgroundwatertemperature
@@ -238,7 +241,7 @@ contains
                   salint = backgroundsalinity
                end if
                !             !
-               if (jatem > 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   temint = constituents(itemp, k)
                else
                   temint = backgroundwatertemperature
@@ -259,7 +262,9 @@ contains
             cclay = 0.0_dp
             do ll = 1, lsed
                ctot = ctot + constituents(ised1 + ll - 1, kk)
-               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ised1 + ll - 1, kk)
+               if (sedtyp(ll) == SEDTYP_CLAY) then
+                  cclay = cclay + constituents(ised1 + ll - 1, kk)
+               end if
             end do
             !
             do ll = 1, lsed

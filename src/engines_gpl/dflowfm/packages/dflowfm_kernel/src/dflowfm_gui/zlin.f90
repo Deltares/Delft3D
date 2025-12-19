@@ -63,7 +63,9 @@ contains
       L = LL
       if (kmx > 0) then
          call getLtoplot(LL, L)
-         if (L < 0) return
+         if (L < 0) then
+            return
+         end if
       end if
 
       linval = ndraw(29)
@@ -86,7 +88,8 @@ contains
 
          if (LL <= lnx1D) then
             if (prof1D(1, LL) < 0) then ! profile interpolation
-               ka = -prof1D(1, LL); kb = -prof1D(2, LL)
+               ka = -prof1D(1, LL)
+               kb = -prof1D(2, LL)
                alfa = prof1d(3, LL)
                if (profiles1D(ka)%frccf /= dmiss .and. profiles1D(kb)%frccf /= dmiss .and. &
                    profiles1D(ka)%frctp == profiles1D(kb)%frctp) then
@@ -127,7 +130,8 @@ contains
                zlin = aifu(LL) ! ccr(lv2(LL))
             end if
          else
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
                zlin = 0.5_dp * (diaveg(k1) + diaveg(k2))
             else
@@ -138,14 +142,16 @@ contains
          if (javeg == 0) then
             zlin = (s1(ln(2, LL)) - s1(ln(1, LL))) * dxi(LL)
          else
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             zlin = 0.5_dp * (rnveg(k1) + rnveg(k2))
          end if
       else if (linval == 24) then
          if (javeg == 0) then
             zlin = cfuhi(LL)
          else
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (stemheight(k1) > 0 .and. stemheight(k2) > 0) then
                zlin = 0.5_dp * (stemheight(k1) + stemheight(k2))
             else
@@ -162,7 +168,8 @@ contains
          end if
       else if (linval == 27) then
          if (jawind > 0) then
-            zlin = wdsu_x(LL); jamapwindstress = 1
+            zlin = wdsu_x(LL)
+            jamapwindstress = 1
          end if
       else if (linval == 28) then
          zlin = abs(cosphiu(LL))
@@ -194,19 +201,25 @@ contains
          if (kmx > 0) then
             zlin = turkin0(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(1, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(1, LL)
+            end if
          end if
       else if (linval == 42) then
          if (kmx > 0) then
             zlin = tureps0(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(2, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(2, LL)
+            end if
          end if
       else if (linval == 43) then
          if (kmx > 0) then
             zlin = vicwwu(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(3, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(3, LL)
+            end if
          end if
       else if (linval == 44) then
          zlin = ustb(LL)
@@ -214,9 +227,12 @@ contains
          if (jawind > 0 .and. kmx > 0) then
             zlin = ustw(LL)
          else if (L < ltop(LL)) then
-            k1 = ln(1, L); k2 = ln(2, L)
-            n1 = ln(1, LL); zb1 = zws(kbot(n1) - 1)
-            n2 = ln(2, LL); zb2 = zws(kbot(n2) - 1)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            n1 = ln(1, LL)
+            zb1 = zws(kbot(n1) - 1)
+            n2 = ln(2, LL)
+            zb2 = zws(kbot(n2) - 1)
             omega1 = qw(k1) / a1(ln(1, LL))
             omega2 = qw(k2) / a1(ln(2, LL))
 
@@ -281,7 +297,8 @@ contains
             zlin = merge(1.0_dp, 0.0_dp, bermslopeindex(LL))
          end select
       else if (linval == 49) then
-         zlin = Ltop(LL) - Lbot(LL) + 1; zlin = max(zlin, 0.0_dp)
+         zlin = Ltop(LL) - Lbot(LL) + 1
+         zlin = max(zlin, 0.0_dp)
       else if (linval == 50) then
          zlin = kmxL(LL)
       else if (linval == 51) then

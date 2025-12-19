@@ -51,7 +51,8 @@ contains
       integer :: lnu
 
       if (LL /= 0) then
-         K1 = KN(1, LL); K2 = KN(2, LL)
+         K1 = KN(1, LL)
+         K2 = KN(2, LL)
          call DELELEM(K1, K2, LNU)
          LL = 0
       end if
