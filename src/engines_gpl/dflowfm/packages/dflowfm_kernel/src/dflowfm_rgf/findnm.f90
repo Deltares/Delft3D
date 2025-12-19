@@ -53,7 +53,9 @@ contains
       real(kind=dp) :: dx, dy, r, rmin, xxc, yyc
 
       data MVOL/0/, NVOL/0/
-      if (MC == 0 .or. NC == 0) return
+      if (MC == 0 .or. NC == 0) then
+         return
+      end if
       ISHOT = 0
       RMIN = 99.0e+20_dp
 
@@ -123,10 +125,18 @@ contains
                      YK(3) = YYC
                      call PINPOK(XL, YL, 3, XK, YK, INSIDET, jins, dmiss)
                      if (INSIDET == 1) then
-                        if (I1 == 1) JN = -1
-                        if (I1 == 2) IN = 1
-                        if (I1 == 3) JN = 1
-                        if (I1 == 4) IN = -1
+                        if (I1 == 1) then
+                           JN = -1
+                        end if
+                        if (I1 == 2) then
+                           IN = 1
+                        end if
+                        if (I1 == 3) then
+                           JN = 1
+                        end if
+                        if (I1 == 4) then
+                           IN = -1
+                        end if
                         return
                      else if (I1 == 4) then
 !                       WRITE(MDIA,*) 'NO KWADRANT'
@@ -139,7 +149,9 @@ contains
       end do
 
 !     WRITE(MDIA,*) 'ISHOT', ISHOT, MVOL, NVOL
-      if (ISHOT == 1) return
+      if (ISHOT == 1) then
+         return
+      end if
       ISHOT = 1
       goto 5
 

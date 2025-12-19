@@ -138,7 +138,9 @@ contains
          if (newcorio == 0) then
             hmin = min(hs(ln(1, LL)), hs(ln(2, LL)))
          elseif (newcorio == 1) then
-            if (hu(LL) == 0) cycle
+            if (hu(LL) == 0) then
+               cycle
+            end if
          end if
 
          call getLbotLtop(LL, Lb, Lt)
@@ -205,7 +207,9 @@ contains
          !x$OMP PARALLEL DO                           &
          !x$OMP PRIVATE(L,LL,Lb,Lt,k1,k2,cs,sn,hs1,hs2,fcor,fcor1,fcor2,fvcor,vcor,volu,hmin)
          do LL = lnx1D + 1, lnx
-            if (hu(LL) == 0) cycle
+            if (hu(LL) == 0) then
+               cycle
+            end if
             n1 = ln(1, LL)
             n2 = ln(2, LL)
             hmin = min(hs(n1), hs(n2))
@@ -516,7 +520,9 @@ contains
 
                do LL = lnx1D + 1, lnx
 
-                  if (abs(kcu(LL)) /= 2) cycle
+                  if (abs(kcu(LL)) /= 2) then
+                     cycle
+                  end if
                   call getLbotLtop(LL, Lb, Lt)
                   cs = csu(LL)
                   sn = snu(LL)
@@ -738,8 +744,12 @@ contains
                   end if
                else
                   call getkbotktop(k1, kb, kt)
-                  if (L1 /= 0) call getLbotLtop(L1, Lb1, Lt1)
-                  if (L2 /= 0) call getLbotLtop(L2, Lb2, Lt2)
+                  if (L1 /= 0) then
+                     call getLbotLtop(L1, Lb1, Lt1)
+                  end if
+                  if (L2 /= 0) then
+                     call getLbotLtop(L2, Lb2, Lt2)
+                  end if
                   do k = kb, kt
                      if (jasfer3D == 1) then
                         ustar = (cs * nod2wallx(nw, ucx(k), ucy(k)) + sn * nod2wally(nw, ucx(k), ucy(k))) * sf

@@ -109,8 +109,12 @@ contains
 
       ! deallocate(d) ! Save memory, arcinfo block is no longer needed.
 
-      if (NS > 100000) NDRAW(32) = 7 ! Squares (faster than circles)
-      if (NS > 500000) NDRAW(32) = 3 ! Small dots (fastest)
+      if (NS > 100000) then
+         NDRAW(32) = 7 ! Squares (faster than circles)
+      end if
+      if (NS > 500000) then
+         NDRAW(32) = 3 ! Small dots (fastest)
+      end if
 
       ! No TIDYSAMPLES required: arcinfo grid was already loaded in correctly sorted order.
       do i = 1, NS

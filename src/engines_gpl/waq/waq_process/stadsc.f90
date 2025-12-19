@@ -78,6 +78,7 @@ contains
         INTEGER(kind = int_wp) :: ATTRIB
         REAL(kind = real_wp) :: TSTART, TSTOP, TIME, DELT, TCOUNT
         REAL(kind = real_wp) :: CDIFF
+        REAL(kind = real_wp), parameter :: missing_value = -999.0_real_wp
 
         INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
         INTEGER(kind = int_wp), SAVE :: NOWARN = 0
@@ -165,7 +166,11 @@ contains
 
         DO ISEG = 1, num_cells
 
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+            !
+            !           Only active cells that do not have a missing value
+            !           Note: the value representing a missing value is exact
+            !
+            IF (BTEST(IKNMRK(ISEG), 0) .and. process_space_real(ip1) /= missing_value ) then
                 !
                 !           Keep track of the time within the current descriptive statistics specification
                 !           that each segment is active

@@ -253,8 +253,12 @@ contains
       end do
 
       do I = 1, NUMHCOPTs
-         if (IHCOPTS(1, I) == 22) JAEPS = IHCOPTS(2, I)
-         if (IHCOPTS(1, I) == 5) JALAND = IHCOPTS(2, I)
+         if (IHCOPTS(1, I) == 22) then
+            JAEPS = IHCOPTS(2, I)
+         end if
+         if (IHCOPTS(1, I) == 5) then
+            JALAND = IHCOPTS(2, I)
+         end if
       end do
 
       call IFORMPUTINTEGER(2 * 1, NHCDEV)
@@ -366,13 +370,21 @@ contains
             YBOT = max(0.0_dp, (min(YBOT, 0.25_dp)))
             JAXIS = min(1, (max(JAXIS, 0)))
             if (JAXIS == 1) then
-               if (XLEFT == 0) XLEFT = .15
-               if (YBOT == 0) YBOT = .10
+               if (XLEFT == 0) then
+                  XLEFT = .15
+               end if
+               if (YBOT == 0) then
+                  YBOT = .10
+               end if
             end if
             ! call WEAREL()
             do I = 1, NUMHCOPTS
-               if (IHCOPTS(1, I) == 22) IHCOPTS(2, I) = JAEPS
-               if (IHCOPTS(1, I) == 5) IHCOPTS(2, I) = JALAND
+               if (IHCOPTS(1, I) == 22) then
+                  IHCOPTS(2, I) = JAEPS
+               end if
+               if (IHCOPTS(1, I) == 5) then
+                  IHCOPTS(2, I) = JALAND
+               end if
             end do
             call SETTEXTSIZE()
             if (plottofile == 1) then

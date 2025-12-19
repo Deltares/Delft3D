@@ -76,7 +76,9 @@ contains
          L = 0
          call islink(L, xp, yp, zp)
 
-         if (L == 0) goto 1234
+         if (L == 0) then
+            goto 1234
+         end if
 
          call teknet(ja) ! whipe out previous net
          call readyy('Inserting meshline', 0.0_dp)
@@ -96,20 +98,28 @@ contains
       do i = 1, N2Dcells
          ic = lne(i, L)
          N = netcell(ic)%N
-         if (N /= 4) cycle
+         if (N /= 4) then
+            cycle
+         end if
          kk = 1
          do while (netcell(ic)%lin(kk) /= L .and. kk < N)
          kk = kk + 1
          end do
-         if (netcell(ic)%lin(kk) /= L) cycle
+         if (netcell(ic)%lin(kk) /= L) then
+            cycle
+         end if
          kknext = kk + 2
-         if (kknext > N) kknext = kknext - N
+         if (kknext > N) then
+            kknext = kknext - N
+         end if
          Nnext = Nnext + 1
          Lnext(Nnext) = netcell(ic)%lin(kknext)
       end do
 
       call splitlink(0.0_dp, 0.0_dp, L, dcostol, 1, ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 !   ja = 1
 !   call confrm(' ', ja)
 

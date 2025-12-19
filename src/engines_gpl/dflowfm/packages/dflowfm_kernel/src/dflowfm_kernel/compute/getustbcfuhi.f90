@@ -87,7 +87,9 @@ contains
       umodeps = 1.0e-4_dp
 
       frcn = frcu(LL)
-      if (frcn == 0.0_dp) return
+      if (frcn == 0.0_dp) then
+         return
+      end if
       friction_type = ifrcutp(LL)
 
       if (hu(LL) < trsh_u1Lb) then
@@ -233,7 +235,9 @@ contains
                end if
                z00 = z0urou(LL) ! wave enhanced z0 for turbulence
                !
-               if (stm_included) wblt(LL) = deltau
+               if (stm_included) then
+                  wblt(LL) = deltau
+               end if
                !
                ! Streaming below deltau with linear distribution
                if (jawavestreaming > WAVE_STREAMING_OFF .and. deltau > 1.0e-7_dp) then ! Streaming below deltau with linear distribution

@@ -73,13 +73,19 @@ contains
 
       do I = 1, ITBND
 
-         if (NDRAW(8) == 0) call READYY(' ', 0.25_dp + 0.75_dp * (real(I - 1 + 0.20_dp, kind=dp) / real(ITBND, kind=dp)))
+         if (NDRAW(8) == 0) then
+            call READYY(' ', 0.25_dp + 0.75_dp * (real(I - 1 + 0.20_dp, kind=dp) / real(ITBND, kind=dp)))
+         end if
          call SOR(A, B, C, D, E, XR, RJAC, M1, N1, M2, N2)
 
-         if (NDRAW(8) == 0) call READYY(' ', 0.25_dp + 0.75_dp * (real(I - 1 + 0.60_dp, kind=dp) / real(ITBND, kind=dp)))
+         if (NDRAW(8) == 0) then
+            call READYY(' ', 0.25_dp + 0.75_dp * (real(I - 1 + 0.60_dp, kind=dp) / real(ITBND, kind=dp)))
+         end if
          call SOR(A, B, C, D, E, YR, RJAC, M1, N1, M2, N2)
 
-         if (NDRAW(8) == 0) call READYY(' ', 0.25_dp + 0.75_dp * (real(I - 1 + 1.00_dp, kind=dp) / real(ITBND, kind=dp)))
+         if (NDRAW(8) == 0) then
+            call READYY(' ', 0.25_dp + 0.75_dp * (real(I - 1 + 1.00_dp, kind=dp) / real(ITBND, kind=dp)))
+         end if
 
          call BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
 

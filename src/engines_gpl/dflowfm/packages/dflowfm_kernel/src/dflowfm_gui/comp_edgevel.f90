@@ -80,7 +80,9 @@ contains
       do is = 1, mcs
          mfac = splineprops(is)%mfac
 !      if ( mfac.lt.1 ) cycle
-         if (splineprops(is)%id /= 0) cycle ! center splines only
+         if (splineprops(is)%id /= 0) then
+            cycle ! center splines only
+         end if
 !
          igL = splineprops(is)%iL
          igR = splineprops(is)%iR
@@ -97,7 +99,9 @@ contains
          do j = 1, ncs
             js = splineprops(is)%ics(j)
 
-            if (splineprops(js)%id /= 1) cycle ! true cross splines only
+            if (splineprops(js)%id /= 1) then
+               cycle ! true cross splines only
+            end if
             numtruecross = numtruecross + 1
             NsubL = min(NsubL, splineprops(is)%NsubL(j))
             NsubR = min(NsubR, splineprops(is)%NsubR(j))
@@ -208,10 +212,14 @@ contains
 
 !  compute local grow factors
       do is = 1, mcs
-         if (splineprops(is)%mfac < 1) cycle
+         if (splineprops(is)%mfac < 1) then
+            cycle
+         end if
 
          do i = splineprops(is)%iL, splineprops(is)%iR + splineprops(is)%mfac - 1
-            if (xg1(i) == DMISS .or. xg1(i + 1) == DMISS .or. nfac1(2, i) < 1) cycle
+            if (xg1(i) == DMISS .or. xg1(i + 1) == DMISS .or. nfac1(2, i) < 1) then
+               cycle
+            end if
 
             dgrow1(2, i) = comp_dgrow(eheight(2, i), edgevel(i), nfac1(2, i), ierror)
             if (ierror == 1) then

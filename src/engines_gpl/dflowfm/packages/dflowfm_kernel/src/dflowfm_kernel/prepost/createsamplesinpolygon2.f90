@@ -63,7 +63,9 @@ contains
       real(kind=dp) :: TRIAREA, SAFESIZE
       real(kind=dp) :: AREPOL, DLENPOL, DLENAV, DLENMX, XP, YP, xplmin, xplmax, yplmin, yplmax
 
-      if (NPL <= 2) return
+      if (NPL <= 2) then
+         return
+      end if
 
       call DAREAN(XPL, YPL, NPL, AREPOL, DLENPOL, DLENMX)
 
@@ -131,8 +133,12 @@ contains
          numtri = ntx ! Input value should specify max nr of triangles in indx.
          NN = ntx ! used to check array size of xs, ys in tricall
          call TRICALL(2, XPL, YPL, NPL1, INDX, NUMTRI, EDGEINDX, NUMEDGE, TRIEDGE, XS(NS1), YS(NS1), NN, TRIAREA)
-         if (numtri < 0) ntx = -numtri
-         if (nn < 0) ntx = max(ntx, -nn)
+         if (numtri < 0) then
+            ntx = -numtri
+         end if
+         if (nn < 0) then
+            ntx = max(ntx, -nn)
+         end if
       end do
 
       IN = -1 ! EN BIJPLUGGEN

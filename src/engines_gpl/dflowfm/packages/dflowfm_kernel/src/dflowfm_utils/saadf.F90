@@ -132,7 +132,9 @@ contains
       do ii = 1, nrow
 !     row i
          do ka = ia(ii), ia(ii + 1) - 1
-            if (values) scal = a(ka)
+            if (values) then
+               scal = a(ka)
+            end if
             jj = ja(ka)
             do kb = ib(jj), ib(jj + 1) - 1
                jcol = jb(kb)
@@ -145,9 +147,13 @@ contains
                   end if
                   jc(len) = jcol
                   iw(jcol) = len
-                  if (values) c(len) = scal * b(kb)
+                  if (values) then
+                     c(len) = scal * b(kb)
+                  end if
                else
-                  if (values) c(jpos) = c(jpos) + scal * b(kb)
+                  if (values) then
+                     c(jpos) = c(jpos) + scal * b(kb)
+                  end if
                end if
             end do
          end do
@@ -225,9 +231,13 @@ contains
          do ka = ia(ii), ia(ii + 1) - 1
             len = len + 1
             jcol = ja(ka)
-            if (len > nzmax) goto 999
+            if (len > nzmax) then
+               goto 999
+            end if
             jc(len) = jcol
-            if (values) c(len) = a(ka)
+            if (values) then
+               c(len) = a(ka)
+            end if
             iw(jcol) = len
          end do
          !
@@ -236,12 +246,18 @@ contains
             jpos = iw(jcol)
             if (jpos == 0) then
                len = len + 1
-               if (len > nzmax) goto 999
+               if (len > nzmax) then
+                  goto 999
+               end if
                jc(len) = jcol
-               if (values) c(len) = b(kb)
+               if (values) then
+                  c(len) = b(kb)
+               end if
                iw(jcol) = len
             else
-               if (values) c(jpos) = c(jpos) + b(kb)
+               if (values) then
+                  c(jpos) = c(jpos) + b(kb)
+               end if
             end if
          end do
          do k = ic(ii), len
@@ -338,24 +354,32 @@ contains
 !     three cases
 !
          if (j1 == j2) then
-            if (values) c(kc) = a(ka) + b(kb)
+            if (values) then
+               c(kc) = a(ka) + b(kb)
+            end if
             jc(kc) = j1
             ka = ka + 1
             kb = kb + 1
 !           kc = kc+1
          else if (j1 < j2) then
             jc(kc) = j1
-            if (values) c(kc) = a(ka)
+            if (values) then
+               c(kc) = a(ka)
+            end if
             ka = ka + 1
 !           kc = kc+1
          else if (j1 > j2) then
             jc(kc) = j2
-            if (values) c(kc) = b(kb)
+            if (values) then
+               c(kc) = b(kb)
+            end if
             kb = kb + 1
 !           kc = kc+1
          end if
 !        if (kc .gt. nzmax) goto 999
-         if (ka <= kamax .or. kb <= kbmax) goto 5
+         if (ka <= kamax .or. kb <= kbmax) then
+            goto 5
+         end if
 !        ic(i+1) = kc
       end do
       return
@@ -691,7 +715,9 @@ contains
 ! trasnpose matrix b into c
 !
       ljob = 0
-      if (values) ljob = 1
+      if (values) then
+         ljob = 1
+      end if
       ipos = 1
 !     call csrcsc (ncol,ljob,ipos,b,jb,ib,c,jc,ic)
 !-----------------------------------------------------------------------
@@ -716,14 +742,20 @@ contains
 !     if fill-in append in coordinate format to matrix.
 !
                len = len + 1
-               if (len > nzmax) goto 999
+               if (len > nzmax) then
+                  goto 999
+               end if
                jc(len) = jcol
 
                ic(len) = ii
-               if (values) c(len) = a(ka)
+               if (values) then
+                  c(len) = a(ka)
+               end if
             else
 !     else do addition.
-               if (values) c(jpos) = c(jpos) + a(ka)
+               if (values) then
+                  c(jpos) = c(jpos) + a(ka)
+               end if
             end if
          end do
          do k = ic(ii), ic(ii + 1) - 1
@@ -734,7 +766,9 @@ contains
 !     convert first part of matrix (without fill-ins) into coo format
 !
       ljob = 2
-      if (values) ljob = 3
+      if (values) then
+         ljob = 3
+      end if
       do i = 1, nrow + 1
          iw(i) = ic(i)
       end do
@@ -743,7 +777,9 @@ contains
 !     convert the whole thing back to csr format.
 !
       ljob = 0
-      if (values) ljob = 1
+      if (values) then
+         ljob = 1
+      end if
       call coicsr(nrow, len, ljob, c, jc, ic, iw)
       return
 999   ierr = ii
@@ -853,7 +889,9 @@ contains
 !     if fill-in append in coordinate format to matrix.
 !
                len = len + 1
-               if (len > nzmax) goto 999
+               if (len > nzmax) then
+                  goto 999
+               end if
                jc(len) = jcol
                ic(len) = ii
                c(len) = a(ka)
@@ -936,7 +974,9 @@ contains
          end do
       end do
       !
-      if (job == 0) return
+      if (job == 0) then
+         return
+      end if
 !
       do ii = 1, nrow + 1
          ib(ii) = ia(ii)
@@ -994,7 +1034,9 @@ contains
          end do
       end do
       !
-      if (job == 0) return
+      if (job == 0) then
+         return
+      end if
 !
       do ii = 1, nrow + 1
          ib(ii) = ia(ii)
@@ -1063,7 +1105,9 @@ contains
       !
 !     if no diagonal elements to insert in data structure return.
 !
-      if (icount == 0) return
+      if (icount == 0) then
+         return
+      end if
 !
 ! shift the nonzero elements if needed, to allow for created
 ! diagonal elements.
@@ -1191,7 +1235,9 @@ contains
       !
 !     if no diagonal elements to insert return
 !
-      if (icount == 0) return
+      if (icount == 0) then
+         return
+      end if
 !
 !     shift the nonzero elements if needed, to allow for created
 !     diagonal elements.
@@ -2037,16 +2083,24 @@ contains
       real(kind=dp) dx(1), dy(1)
       integer i, incx, incy, ix, iy, m, mp1, n
 !
-      if (n <= 0) return
-      if (incx == 1 .and. incy == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !        code for unequal increments or equal increments
 !          not equal to 1
 !
       ix = 1
       iy = 1
-      if (incx < 0) ix = (-n + 1) * incx + 1
-      if (incy < 0) iy = (-n + 1) * incy + 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
       do i = 1, n
          dy(iy) = dx(ix)
          ix = ix + incx
@@ -2060,11 +2114,15 @@ contains
 !        clean-up loop
 !
 20    m = mod(n, 7)
-      if (m == 0) go to 40
+      if (m == 0) then
+         go to 40
+      end if
       do i = 1, m
          dy(i) = dx(i)
       end do
-      if (n < 7) return
+      if (n < 7) then
+         return
+      end if
 40    mp1 = m + 1
       do i = mp1, n, 7
          dy(i) = dx(i)
@@ -2089,16 +2147,24 @@ contains
 !
       ddot = 0.0_dp
       dtemp = 0.0_dp
-      if (n <= 0) return
-      if (incx == 1 .and. incy == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !        code for unequal increments or equal increments
 !          not equal to 1
 !
       ix = 1
       iy = 1
-      if (incx < 0) ix = (-n + 1) * incx + 1
-      if (incy < 0) iy = (-n + 1) * incy + 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
       do i = 1, n
          dtemp = dtemp + dx(ix) * dy(iy)
          ix = ix + incx
@@ -2113,11 +2179,15 @@ contains
 !        clean-up loop
 !
 20    m = mod(n, 5)
-      if (m == 0) go to 40
+      if (m == 0) then
+         go to 40
+      end if
       do i = 1, m
          dtemp = dtemp + dx(i) * dy(i)
       end do
-      if (n < 5) go to 60
+      if (n < 5) then
+         go to 60
+      end if
 40    mp1 = m + 1
       do i = mp1, n, 5
          dtemp = dtemp + dx(i) * dy(i) + dx(i + 1) * dy(i + 1) +&
@@ -2137,8 +2207,12 @@ contains
 !
       dasum = 0.0_dp
       dtemp = 0.0_dp
-      if (n <= 0) return
-      if (incx == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
@@ -2155,11 +2229,15 @@ contains
 !        clean-up loop
 !
 20    m = mod(n, 6)
-      if (m == 0) go to 40
+      if (m == 0) then
+         go to 40
+      end if
       do i = 1, m
          dtemp = dtemp + abs(dx(i))
       end do
-      if (n < 6) go to 60
+      if (n < 6) then
+         go to 60
+      end if
 40    mp1 = m + 1
       do i = mp1, n, 6
          dtemp = dtemp + abs(dx(i)) + abs(dx(i + 1)) + abs(dx(i + 2))&
@@ -2178,17 +2256,27 @@ contains
       real(kind=dp) dx(1), dy(1), da
       integer i, incx, incy, ix, iy, m, mp1, n
 !
-      if (n <= 0) return
-      if (da == 0.0_dp) return
-      if (incx == 1 .and. incy == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (da == 0.0_dp) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !        code for unequal increments or equal increments
 !          not equal to 1
 !
       ix = 1
       iy = 1
-      if (incx < 0) ix = (-n + 1) * incx + 1
-      if (incy < 0) iy = (-n + 1) * incy + 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
       do i = 1, n
          dy(iy) = dy(iy) + da * dx(ix)
          ix = ix + incx
@@ -2202,11 +2290,15 @@ contains
 !        clean-up loop
 !
 20    m = mod(n, 4)
-      if (m == 0) go to 40
+      if (m == 0) then
+         go to 40
+      end if
       do i = 1, m
          dy(i) = dy(i) + da * dx(i)
       end do
-      if (n < 4) return
+      if (n < 4) then
+         return
+      end if
 40    mp1 = m + 1
       do i = mp1, n, 4
          dy(i) = dy(i) + da * dx(i)
@@ -2272,7 +2364,9 @@ contains
 !     data cutlo, cuthi / 4.441e-16,  1.304e19 /
       data cutlo, cuthi/8.232e-11_dp, 1.304e19_dp/
 !
-      if (n > 0) go to 10
+      if (n > 0) then
+         go to 10
+      end if
       dnrm2XXX_1 = zero
       go to 300
 !
@@ -2289,7 +2383,9 @@ contains
 !                        phase 1.  sum is zero
 !
 50    if (dx(i) == zero) go to 200
-      if (abs(dx(i)) > cutlo) go to 85
+      if (abs(dx(i)) > cutlo) then
+         go to 85
+      end if
 !
 !                                prepare for phase 2.
       assign 70 to next
@@ -2333,7 +2429,9 @@ contains
 !                   phase 3.  sum is mid-range.  no scaling.
 !
       do j = i, nn, incx
-         if (abs(dx(j)) >= hitest) go to 100
+         if (abs(dx(j)) >= hitest) then
+            go to 100
+         end if
          sum = sum + dx(j)**2
       end do
       dnrm2XXX_1 = sqrt(sum)
@@ -2341,7 +2439,9 @@ contains
 !
 200   continue
       i = i + incx
-      if (i <= nn) go to 20
+      if (i <= nn) then
+         go to 20
+      end if
 !
 !              end of main loop.
 !
@@ -2360,8 +2460,12 @@ contains
       real(kind=dp) da, dx(1)
       integer i, incx, m, mp1, n, nincx
 !
-      if (n <= 0) return
-      if (incx == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
@@ -2377,11 +2481,15 @@ contains
 !        clean-up loop
 !
 20    m = mod(n, 5)
-      if (m == 0) go to 40
+      if (m == 0) then
+         go to 40
+      end if
       do i = 1, m
          dx(i) = da * dx(i)
       end do
-      if (n < 5) return
+      if (n < 5) then
+         return
+      end if
 40    mp1 = m + 1
       do i = mp1, n, 5
          dx(i) = da * dx(i)
@@ -2402,16 +2510,24 @@ contains
       real(kind=dp) dx(1), dy(1), dtemp
       integer i, incx, incy, ix, iy, m, mp1, n
 !
-      if (n <= 0) return
-      if (incx == 1 .and. incy == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !       code for unequal increments or equal increments not equal
 !         to 1
 !
       ix = 1
       iy = 1
-      if (incx < 0) ix = (-n + 1) * incx + 1
-      if (incy < 0) iy = (-n + 1) * incy + 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
       do i = 1, n
          dtemp = dx(ix)
          dx(ix) = dy(iy)
@@ -2427,13 +2543,17 @@ contains
 !       clean-up loop
 !
 20    m = mod(n, 3)
-      if (m == 0) go to 40
+      if (m == 0) then
+         go to 40
+      end if
       do i = 1, m
          dtemp = dx(i)
          dx(i) = dy(i)
          dy(i) = dtemp
       end do
-      if (n < 3) return
+      if (n < 3) then
+         return
+      end if
 40    mp1 = m + 1
       do i = mp1, n, 3
          dtemp = dx(i)
@@ -2458,10 +2578,16 @@ contains
       integer i, incx, ix, n
 !
       idamaxXXX = 0
-      if (n < 1) return
+      if (n < 1) then
+         return
+      end if
       idamaxXXX = 1
-      if (n == 1) return
-      if (incx == 1) go to 20
+      if (n == 1) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
@@ -2469,7 +2595,9 @@ contains
       dmax = abs(dx(1))
       ix = ix + incx
       do i = 2, n
-         if (abs(dx(ix)) <= dmax) go to 5
+         if (abs(dx(ix)) <= dmax) then
+            go to 5
+         end if
          idamaxXXX = i
          dmax = abs(dx(ix))
 5        ix = ix + incx
@@ -2480,7 +2608,9 @@ contains
 !
 20    dmax = abs(dx(1))
       do i = 2, n
-         if (abs(dx(i)) <= dmax) cycle
+         if (abs(dx(i)) <= dmax) then
+            cycle
+         end if
          idamaxXXX = i
          dmax = abs(dx(i))
       end do
@@ -2495,16 +2625,24 @@ contains
       real(kind=dp) dx(1), dy(1), dtemp, c, s
       integer i, incx, incy, ix, iy, n
 !
-      if (n <= 0) return
-      if (incx == 1 .and. incy == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !       code for unequal increments or equal increments not equal
 !         to 1
 !
       ix = 1
       iy = 1
-      if (incx < 0) ix = (-n + 1) * incx + 1
-      if (incy < 0) iy = (-n + 1) * incy + 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
       do i = 1, n
          dtemp = c * dx(ix) + s * dy(iy)
          dy(iy) = c * dy(iy) - s * dx(ix)
@@ -2534,9 +2672,13 @@ contains
       no_warning_unused_dummy_argument(c)
 
       roe = db
-      if (abs(da) > abs(db)) roe = da
+      if (abs(da) > abs(db)) then
+         roe = da
+      end if
       scale = abs(da) + abs(db)
-      if (scale /= 0.0_dp) go to 10
+      if (scale /= 0.0_dp) then
+         go to 10
+      end if
 !        c = 1.0d0
       s = 0.0_dp
       r = 0.0_dp
@@ -2546,7 +2688,9 @@ contains
 !     c = da/r
       s = db / r
 20    z = 1.0_dp
-      if (abs(da) > abs(db)) z = s
+      if (abs(da) > abs(db)) then
+         z = s
+      end if
 !     if( abs(db) .ge. abs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
       da = r
       db = z
@@ -2561,16 +2705,24 @@ contains
       complex cx(1), cy(1)
       integer i, incx, incy, ix, iy, n
 !
-      if (n <= 0) return
-      if (incx == 1 .and. incy == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !        code for unequal increments or equal increments
 !          not equal to 1
 !
       ix = 1
       iy = 1
-      if (incx < 0) ix = (-n + 1) * incx + 1
-      if (incy < 0) iy = (-n + 1) * incy + 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
       do i = 1, n
          cy(iy) = cx(ix)
          ix = ix + incx
@@ -2593,8 +2745,12 @@ contains
       complex ca, cx(1)
       integer i, incx, n, nincx
 !
-      if (n <= 0) return
-      if (incx == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
@@ -2622,16 +2778,24 @@ contains
       real c, s
       integer i, incx, incy, ix, iy, n
 !
-      if (n <= 0) return
-      if (incx == 1 .and. incy == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !       code for unequal increments or equal increments not equal
 !         to 1
 !
       ix = 1
       iy = 1
-      if (incx < 0) ix = (-n + 1) * incx + 1
-      if (incy < 0) iy = (-n + 1) * incy + 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
       do i = 1, n
          ctemp = c * cx(ix) + s * cy(iy)
          cy(iy) = c * cy(iy) - s * cx(ix)
@@ -2658,16 +2822,24 @@ contains
       complex cx(1), cy(1), ctemp
       integer i, incx, incy, ix, iy, n
 !
-      if (n <= 0) return
-      if (incx == 1 .and. incy == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !       code for unequal increments or equal increments not equal
 !         to 1
 !
       ix = 1
       iy = 1
-      if (incx < 0) ix = (-n + 1) * incx + 1
-      if (incy < 0) iy = (-n + 1) * incy + 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
       do i = 1, n
          ctemp = cx(ix)
          cx(ix) = cy(iy)
@@ -2694,8 +2866,12 @@ contains
       real sa
       integer i, incx, n, nincx
 !
-      if (n <= 0) return
-      if (incx == 1) go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
@@ -2868,7 +3044,9 @@ contains
       ia(1) = 1
       do i = 1, nrow
          do j = 1, ncol
-            if (dns(i, j) == 0.0_dp) cycle
+            if (dns(i, j) == 0.0_dp) then
+               cycle
+            end if
             if (next > nzmax) then
                ierr = i
                return
@@ -3027,25 +3205,37 @@ contains
 !     current row number is i.  determine  where to go.
       ipos = iwk(i)
 !     save the chased element.
-      if (values) tnext = a(ipos)
+      if (values) then
+         tnext = a(ipos)
+      end if
       inext = ia(ipos)
       jnext = ja(ipos)
 !     then occupy its location.
-      if (values) a(ipos) = t
+      if (values) then
+         a(ipos) = t
+      end if
       ja(ipos) = j
 !     update pointer information for next element to come in row i.
       iwk(i) = ipos + 1
 !     determine  next element to be chased,
-      if (ia(ipos) < 0) goto 65
+      if (ia(ipos) < 0) then
+         goto 65
+      end if
       t = tnext
       i = inext
       j = jnext
       ia(ipos) = -1
-      if (k < nnz) goto 6
+      if (k < nnz) then
+         goto 6
+      end if
       goto 70
 65    init = init + 1
-      if (init > nnz) goto 70
-      if (ia(init) < 0) goto 65
+      if (init > nnz) then
+         goto 70
+      end if
+      if (ia(init) < 0) then
+         goto 65
+      end if
 !     restart chasing --
       goto 5
 70    do i = 1, n
@@ -3192,7 +3382,9 @@ contains
          kold = ko
          kdiag = 0
          do k = ia(i), ia(i + 1) - 1
-            if (ja(k) > i) cycle
+            if (ja(k) > i) then
+               cycle
+            end if
             ko = ko + 1
             if (ko > nzmax) then
                ierr = i
@@ -3200,9 +3392,13 @@ contains
             end if
             ao(ko) = a(k)
             jao(ko) = ja(k)
-            if (ja(k) == i) kdiag = ko
+            if (ja(k) == i) then
+               kdiag = ko
+            end if
          end do
-         if (kdiag == 0 .or. kdiag == ko) goto 72
+         if (kdiag == 0 .or. kdiag == ko) then
+            goto 72
+         end if
 !
 !     exchange
 !
@@ -3314,8 +3510,9 @@ contains
       do i = 1, nrow
          do k = ia(i), ia(i + 1) - 1
             j = ja(k)
-            if (j /= i)&
-            &iwk(j + 1) = iwk(j + 1) + 1
+            if (j /= i) then
+               iwk(j + 1) = iwk(j + 1) + 1
+            end if
          end do
       end do
 !
@@ -3345,8 +3542,9 @@ contains
          ko = iwk(i) - kfirst
          iwk(i) = ko + klast + 1
          do k = klast, kfirst, -1
-            if (value2 /= 0)&
-            &ao(k + ko) = a(k)
+            if (value2 /= 0) then
+               ao(k + ko) = a(k)
+            end if
             jao(k + ko) = ja(k)
          end do
       end do
@@ -3361,14 +3559,17 @@ contains
             j = jao(k)
             if (j /= i) then
                ipos = iwk(j)
-               if (value2 /= 0)&
-               &ao(ipos) = ao(k)
+               if (value2 /= 0) then
+                  ao(ipos) = ao(k)
+               end if
                jao(ipos) = i
                iwk(j) = ipos + 1
             end if
          end do
       end do
-      if (job <= 0) return
+      if (job <= 0) then
+         return
+      end if
 !
 !     .. eliminate duplicate entries --
 !     array INDU is used as marker for existing indices, it is also the
@@ -3416,7 +3617,9 @@ contains
          end do
       end do
       iao(nrow + 1) = k
-      if (job <= 1) return
+      if (job <= 1) then
+         return
+      end if
 !
 !     .. partial ordering ..
 !     split the matrix into strict upper/lower triangular
@@ -3437,10 +3640,12 @@ contains
                   ao(kfirst) = tmp
                end if
             end if
-            if (jao(klast) >= i)&
-            &klast = klast - 1
-            if (jao(kfirst) < i)&
-            &kfirst = kfirst + 1
+            if (jao(klast) >= i) then
+               klast = klast - 1
+            end if
+            if (jao(kfirst) < i) then
+               kfirst = kfirst + 1
+            end if
             go to 130
          end if
 !
@@ -3450,7 +3655,9 @@ contains
             indu(i) = klast
          end if
       end do
-      if (job <= 2) return
+      if (job <= 2) then
+         return
+      end if
 !
 !     .. order the entries according to column indices
 !     bubble-sort is used
@@ -3554,7 +3761,9 @@ contains
       do i = 1, nrow
          do k = ia(i), ia(i + 1) - 1
             j = ja(k)
-            if (j < i) indu(j + 1) = indu(j + 1) + 1
+            if (j < i) then
+               indu(j + 1) = indu(j + 1) + 1
+            end if
          end do
       end do
 !-----------
@@ -3599,7 +3808,9 @@ contains
 !     i-th row is now in ao, jao, iao structure -- lower half part
          do k = iao(i), iao(i + 1) - 1
             j = jao(k)
-            if (j >= i) cycle outer_loop
+            if (j >= i) then
+               cycle outer_loop
+            end if
             ipos = indu(j)
             ao(ipos) = ao(k)
             jao(ipos) = i
@@ -3938,7 +4149,9 @@ contains
          end do
          ao(idiag) = wk(ii)
          jao(idiag) = ii
-         if (.not. added) iptr = iptr + 1
+         if (.not. added) then
+            iptr = iptr + 1
+         end if
          iao(ii + 1) = iptr
       end do
       return
@@ -4057,7 +4270,9 @@ contains
          do k = ia(i), ia(i + 1) - 1
             j = ja(k)
             next = iao(j)
-            if (job == 1) ao(next) = a(k)
+            if (job == 1) then
+               ao(next) = a(k)
+            end if
             jao(next) = i
             iao(j) = next + 1
          end do
@@ -4308,7 +4523,9 @@ contains
 !-----------------------------------------------------------------------
       job1 = job / 10
       job2 = job - job1 * 10
-      if (job1 == 0) goto 50
+      if (job1 == 0) then
+         goto 50
+      end if
       n2 = n + n - 1
       call infdia(n, ja, ia, ind, idum)
 !----------- determine diagonals to  accept.----------------------------
@@ -4318,7 +4535,9 @@ contains
       jmax = 0
       do k = 1, n2
          j = ind(k)
-         if (j <= jmax) cycle
+         if (j <= jmax) then
+            cycle
+         end if
          i = k
          jmax = j
       end do
@@ -4328,7 +4547,9 @@ contains
       end if
       ioff(ii) = i - n
       ind(i) = -jmax
-      if (ii < idiag) goto 4
+      if (ii < idiag) then
+         goto 4
+      end if
 42    idiag = ii
 !---------------- initialize diago to zero -----------------------------
 50    continue
@@ -4347,19 +4568,27 @@ contains
             do k = ia(i), ia(i + 1) - 1
             j = ja(k)
             do l = 1, idiag
-               if (j - i /= ioff(l)) cycle
+               if (j - i /= ioff(l)) then
+                  cycle
+               end if
                diag(i, l) = a(k)
                cycle k_loop
             end do
 !--------------- append element not in any diagonal to ao,jao,iao -----
-            if (job2 == 0) cycle k_loop
+            if (job2 == 0) then
+               cycle k_loop
+            end if
             ao(ko) = a(k)
             jao(ko) = j
             ko = ko + 1
          end do k_loop
-         if (job2 /= 0) ind(i + 1) = ko
+         if (job2 /= 0) then
+            ind(i + 1) = ko
+         end if
       end do
-      if (job2 == 0) return
+      if (job2 == 0) then
+         return
+      end if
 !     finish with iao
       iao(1) = 1
       do i = 2, n + 1
@@ -4422,9 +4651,13 @@ contains
       do i = 1, n
          do jj = 1, idiag
             j = i + ioff(jj)
-            if (j < 1 .or. j > n) cycle
+            if (j < 1 .or. j > n) then
+               cycle
+            end if
             t = diag(i, jj)
-            if (job == 0 .and. t == 0.0_dp) cycle
+            if (job == 0 .and. t == 0.0_dp) then
+               cycle
+            end if
             a(ko) = t
             ja(ko) = j
             ko = ko + 1
@@ -4556,7 +4789,9 @@ contains
                jstart = m * (ja(k) - 1)
                do j = 1, m
                   ij = (j - 1) * m + i
-                  if (val) ao(krow) = a(ij, k)
+                  if (val) then
+                     ao(krow) = a(ij, k)
+                  end if
                   jao(krow) = jstart + j
                   krow = krow + 1
                end do
@@ -4656,9 +4891,15 @@ contains
       logical vals
 !-----
       ierr = 0
-      if (m * m > na) ierr = 2
-      if (m == 0) ierr = 1
-      if (ierr /= 0) return
+      if (m * m > na) then
+         ierr = 2
+      end if
+      if (m == 0) then
+         ierr = 1
+      end if
+      if (ierr /= 0) then
+         return
+      end if
 !-----------------------------------------------------------------------
       vals = (job > 0)
       nr = 1 + (nrow - 1) / m
@@ -4713,7 +4954,9 @@ contains
 !
                   jao(jpos) = jr
                   ij = j * m + irow + 1
-                  if (vals) ao(ij, jpos) = a(k)
+                  if (vals) then
+                     ao(ij, jpos) = a(k)
+                  end if
                end if
             end do
             irow = irow + 1
@@ -4732,7 +4975,9 @@ contains
             iao(io) = ko
          end if
       end do
-      if (job == -1) iao(1) = len
+      if (job == -1) then
+         iao(1) = len
+      end if
 !
       return
 !--------------end-of-csrbsr--------------------------------------------
@@ -4857,14 +5102,22 @@ contains
 !-----------------------------------------------------------------------
       ierr = 0
 !-----------
-      if (job == 1) call getbwd(n, a, ja, ia, ml, mu)
+      if (job == 1) then
+         call getbwd(n, a, ja, ia, ml, mu)
+      end if
       m = ml + mu + 1
-      if (lowd == 0) lowd = m
+      if (lowd == 0) then
+         lowd = m
+      end if
       if (m > lowd) then
          ierr = -2
       end if
-      if (lowd > nabd .or. lowd < 0) ierr = -1
-      if (ierr < 0) return
+      if (lowd > nabd .or. lowd < 0) then
+         ierr = -1
+      end if
+      if (ierr < 0) then
+         return
+      end if
 !------------
       do i = 1, m
          ii = lowd - i + 1
@@ -4960,10 +5213,16 @@ contains
 !-----------------------------------------------------------------------
          i = lowd
          do j = irow - ml, irow + mu
-            if (j <= 0) goto 19
-            if (j > n) goto 21
+            if (j <= 0) then
+               goto 19
+            end if
+            if (j > n) then
+               goto 21
+            end if
             t = abd(i, j)
-            if (t == 0.0_dp) goto 19
+            if (t == 0.0_dp) then
+               goto 19
+            end if
             if (ko > len) then
                ierr = irow
                return
@@ -5075,13 +5334,17 @@ contains
          kend = isky(i + 1)
          do k = ia(i), ia(i + 1) - 1
             j = ja(k)
-            if (j <= i) asky(kend + j - i) = a(k)
+            if (j <= i) then
+               asky(kend + j - i) = a(k)
+            end if
          end do
       end do
 !
 ! modify pointer according to imod if necessary.
 !
-      if (imod == 0) return
+      if (imod == 0) then
+         return
+      end if
       if (imod == 1) then
          do k = 1, n + 1
             isky(k) = isky(k) + 1
@@ -5176,8 +5439,12 @@ contains
 ! set kend = start position -1 in  skyline matrix.
 !
       kend = 0
-      if (imod == 1) kend = isky(1) - 1
-      if (imod == 0) kend = isky(1)
+      if (imod == 1) then
+         kend = isky(1) - 1
+      end if
+      if (imod == 0) then
+         kend = isky(1)
+      end if
 !
 ! loop through all rows
 !
@@ -5190,14 +5457,22 @@ contains
 ! get beginnning and end of skyline  row
 !
          kstart = kend + 1
-         if (imod == 0) kend = isky(i + 1)
-         if (imod == 1) kend = isky(i + 1) - 1
-         if (imod == 2) kend = isky(i)
+         if (imod == 0) then
+            kend = isky(i + 1)
+         end if
+         if (imod == 1) then
+            kend = isky(i + 1) - 1
+         end if
+         if (imod == 2) then
+            kend = isky(i)
+         end if
 !
 ! copy element into output matrix unless it is a zero element.
 !
          do k = kstart, kend
-            if (asky(k) == 0.0_dp) cycle
+            if (asky(k) == 0.0_dp) then
+               cycle
+            end if
             j = i - (kend - k)
             jao(next) = j
             ao(next) = asky(k)
@@ -5550,7 +5825,9 @@ contains
 !     .. maximum number of nonzero per row
       nc = 0
       do i = 1, n
-         if (nc < jao(i, ncmax)) nc = jao(i, ncmax)
+         if (nc < jao(i, ncmax)) then
+            nc = jao(i, ncmax)
+         end if
          jao(i, ncmax) = 0
       end do
 !     .. if nc > ncmax retrun now
@@ -5564,15 +5841,21 @@ contains
          j = ja(k)
          jao(i, ncmax) = jao(i, ncmax) + 1
          ip = jao(i, ncmax)
-         if (ip > nc) nc = ip
-         if (copyval) ao(i, ip) = a(k)
+         if (ip > nc) then
+            nc = ip
+         end if
+         if (copyval) then
+            ao(i, ip) = a(k)
+         end if
          jao(i, ip) = j
       end do
 !     .. fill the unspecified elements of AO and JAO with zero diagonals
       do i = 1, n
          do j = ia(i + 1) - ia(i) + 1, nc
             jao(i, j) = i
-            if (copyval) ao(i, j) = zero
+            if (copyval) then
+               ao(i, j) = zero
+            end if
          end do
       end do
       ierr = 0
@@ -5736,14 +6019,18 @@ contains
                end if
             end if
          end do
-         if (k >= ncmax) ncmax = k
+         if (k >= ncmax) then
+            ncmax = k
+         end if
       end do
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !     Perform some simple error checks:
 !
 !heck maximum number of nonzeros in each row:
-      if (ncmax == ner) ierr = 0
+      if (ncmax == ner) then
+         ierr = 0
+      end if
       if (ncmax > ner) then
          ierr = -1
          return
@@ -5754,7 +6041,9 @@ contains
       do in = 1, ncmax
          icount = 0
          do inn = 1, n
-            if (ac(inn, in) /= 0.0_dp) icount = 1
+            if (ac(inn, in) /= 0.0_dp) then
+               icount = 1
+            end if
          end do
          if (icount == 0) then
             ierr = 1
@@ -5767,7 +6056,9 @@ contains
       do inn = 1, n
          icount = 0
          do in = 1, ncmax
-            if (ac(inn, in) /= 0.0_dp) icount = 1
+            if (ac(inn, in) /= 0.0_dp) then
+               icount = 1
+            end if
          end do
          if (icount == 0) then
             ierr = 2
@@ -5821,7 +6112,9 @@ contains
       do i = 1, nrow
          do k = ia(i), ia(i + 1) - 1
             j = ja(k)
-            if (j > i) iau(j + 1) = iau(j + 1) + 1
+            if (j > i) then
+               iau(j + 1) = iau(j + 1) + 1
+            end if
          end do
       end do
 !
@@ -6291,7 +6584,9 @@ contains
       nr = i2 - i1 + 1
       nc = j2 - j1 + 1
 !
-      if (nr <= 0 .or. nc <= 0) return
+      if (nr <= 0 .or. nc <= 0) then
+         return
+      end if
 !
       klen = 0
 !
@@ -6307,7 +6602,9 @@ contains
             j = ja(k)
             if (j >= j1 .and. j <= j2) then
                klen = klen + 1
-               if (job == 1) ao(klen) = a(k)
+               if (job == 1) then
+                  ao(klen) = a(k)
+               end if
                jao(klen) = j - j1 + 1
             end if
          end do
@@ -6612,7 +6909,9 @@ contains
 ! perform an in-place permutation of the  arrays.
 !
       call ivperm(nnz, ja(ifirst:ifirst + nnz - 1), iwork)
-      if (values) call dvperm(nnz, a(ifirst:ifirst + nnz - 1), iwork)
+      if (values) then
+         call dvperm(nnz, a(ifirst:ifirst + nnz - 1), iwork)
+      end if
 !
 ! reshift the pointers of the original matrix back.
 !
@@ -6669,7 +6968,9 @@ contains
       real(dp) :: tmp
 !     ..
 !
-      if (job <= 0) return
+      if (job <= 0) then
+         return
+      end if
 !
 !     .. eliminate duplicate entries --
 !     array INDU is used as marker for existing indices, it is also the
@@ -6717,7 +7018,9 @@ contains
          end do
       end do
       ia(nrow + 1) = k
-      if (job <= 1) return
+      if (job <= 1) then
+         return
+      end if
 !
 !     .. partial ordering ..
 !     split the matrix into strict upper/lower triangular
@@ -6738,10 +7041,12 @@ contains
                   a(kfirst) = tmp
                end if
             end if
-            if (ja(klast) >= i)&
-            &klast = klast - 1
-            if (ja(kfirst) < i)&
-            &kfirst = kfirst + 1
+            if (ja(klast) >= i) then
+               klast = klast - 1
+            end if
+            if (ja(kfirst) < i) then
+               kfirst = kfirst + 1
+            end if
             go to 130
          end if
 !
@@ -6751,7 +7056,9 @@ contains
             indu(i) = klast
          end if
       end do
-      if (job <= 2) return
+      if (job <= 2) then
+         return
+      end if
 !
 !     .. order the entries according to column indices
 !     burble-sort is used
@@ -6833,7 +7140,9 @@ contains
          jao(kst + k) = ja(k)
       end do
 !
-      if (job /= 1) return
+      if (job /= 1) then
+         return
+      end if
       do k = ia(1), ia(nrow + 1) - 1
          ao(kst + k) = a(k)
       end do
@@ -6874,7 +7183,9 @@ contains
          jao(k) = ja(k)
       end do
 !
-      if (job /= 1) return
+      if (job /= 1) then
+         return
+      end if
       do k = ja(1), ja(nrow + 1) - 1
          ao(k) = a(k)
       end do
@@ -6968,7 +7279,9 @@ contains
             iadd = imid
             goto 20
          end if
-         if (ibeg >= iend) goto 20
+         if (ibeg >= iend) then
+            goto 20
+         end if
 !
 !     else     update the interval bounds.
 !
@@ -7077,7 +7390,9 @@ contains
             end if
          end do
       end do outer_loop
-      if (job == 0 .or. len == 0) return
+      if (job == 0 .or. len == 0) then
+         return
+      end if
 !
 !     remove diagonal elements and rewind structure
 !
@@ -7222,16 +7537,24 @@ contains
 !     update pointer information for next element to be put in row i.
       ia(i) = l + 1
 !     determine  next element to be chased
-      if (iwk(l) < 0) goto 65
+      if (iwk(l) < 0) then
+         goto 65
+      end if
       t = t1
       i = inext
       j = iwk(l)
       iwk(l) = -1
-      if (k < nnz) goto 6
+      if (k < nnz) then
+         goto 6
+      end if
       goto 70
 65    init = init + 1
-      if (init > nnz) goto 70
-      if (iwk(init) < 0) goto 65
+      if (init > nnz) then
+         goto 70
+      end if
+      if (iwk(init) < 0) then
+         goto 65
+      end if
 !     restart chasing --
       goto 5
 70    continue
@@ -7281,13 +7604,19 @@ contains
          kold = ko
          kdiag = 0
          do k = ia(i), ia(i + 1) - 1
-            if (ja(k) > i) cycle
+            if (ja(k) > i) then
+               cycle
+            end if
             ko = ko + 1
             ao(ko) = a(k)
             jao(ko) = ja(k)
-            if (ja(k) == i) kdiag = ko
+            if (ja(k) == i) then
+               kdiag = ko
+            end if
          end do
-         if (kdiag == 0 .or. kdiag == ko) goto 72
+         if (kdiag == 0 .or. kdiag == ko) then
+            goto 72
+         end if
 !
 !     exchange
 !
@@ -7340,13 +7669,19 @@ contains
          kfirst = ko + 1
          kdiag = 0
          do k = ia(i), ia(i + 1) - 1
-            if (ja(k) < i) cycle
+            if (ja(k) < i) then
+               cycle
+            end if
             ko = ko + 1
             ao(ko) = a(k)
             jao(ko) = ja(k)
-            if (ja(k) == i) kdiag = ko
+            if (ja(k) == i) then
+               kdiag = ko
+            end if
          end do
-         if (kdiag == 0 .or. kdiag == kfirst) goto 72
+         if (kdiag == 0 .or. kdiag == kfirst) then
+            goto 72
+         end if
 !     exchange
          t = ao(kdiag)
          ao(kdiag) = ao(kfirst)
@@ -7602,7 +7937,9 @@ contains
          ko = iao(perm(ii))
          do k = ia(ii), ia(ii + 1) - 1
             jao(ko) = ja(k)
-            if (values) ao(ko) = a(k)
+            if (values) then
+               ao(ko) = a(k)
+            end if
             ko = ko + 1
          end do
       end do
@@ -7665,7 +8002,9 @@ contains
 !
 !     done with ja array. return if no need to touch values.
 !
-      if (job /= 1) return
+      if (job /= 1) then
+         return
+      end if
 !
 ! else get new pointers -- and copy values too.
 !
@@ -7810,7 +8149,9 @@ contains
       do i = i1, i2
          irow = perm(i)
          do k = ia(irow), ia(irow + 1) - 1
-            if (values) b(ko) = a(k)
+            if (values) then
+               b(ko) = a(k)
+            end if
             jb(ko) = ja(k)
             ko = ko + 1
          end do
@@ -7903,7 +8244,9 @@ contains
       do i = i1, i2
          irow = rperm(i)
          do k = ia(irow), ia(irow + 1) - 1
-            if (values) b(ko) = a(k)
+            if (values) then
+               b(ko) = a(k)
+            end if
             jb(ko) = cperm(ja(k))
             ko = ko + 1
          end do
@@ -8051,11 +8394,15 @@ contains
       tmp1 = x(ii)
       x(ii) = tmp
       next = perm(ii)
-      if (next < 0) goto 65
+      if (next < 0) then
+         goto 65
+      end if
 !
 ! test for end
 !
-      if (k > n) goto 101
+      if (k > n) then
+         goto 101
+      end if
       tmp = tmp1
       perm(ii) = -perm(ii)
       ii = next
@@ -8067,8 +8414,12 @@ contains
 ! reinitilaize cycle --
 !
 65    init = init + 1
-      if (init > n) goto 101
-      if (perm(init) < 0) goto 65
+      if (init > n) then
+         goto 101
+      end if
+      if (perm(init) < 0) then
+         goto 65
+      end if
       tmp = x(init)
       ii = perm(init)
       perm(init) = -perm(init)
@@ -8126,11 +8477,15 @@ contains
       tmp1 = ix(ii)
       ix(ii) = tmp
       next = perm(ii)
-      if (next < 0) goto 65
+      if (next < 0) then
+         goto 65
+      end if
 !
 ! test for end
 !
-      if (k > n) goto 101
+      if (k > n) then
+         goto 101
+      end if
       tmp = tmp1
       perm(ii) = -perm(ii)
       ii = next
@@ -8142,8 +8497,12 @@ contains
 ! reinitilaize cycle --
 !
 65    init = init + 1
-      if (init > n) goto 101
-      if (perm(init) < 0) goto 65
+      if (init > n) then
+         goto 101
+      end if
+      if (perm(init) < 0) then
+         goto 65
+      end if
       tmp = ix(init)
       ii = perm(init)
       perm(init) = -perm(init)
@@ -8192,7 +8551,9 @@ contains
          t = 0.0_dp
          do k = k1, k2
             t1 = abs(a(k))
-            if (t1 > t) t = t1
+            if (t1 > t) then
+               t = t1
+            end if
             if (ja(k) == i) then
                if (a(k) >= 0.0) then
                   t2 = a(k)
@@ -8241,7 +8602,9 @@ contains
 !
       do i = 1, n
          do k = ia(i), ia(i + 1) - 1
-            if (ja(k) == i) idiag(i) = k
+            if (ja(k) == i) then
+               idiag(i) = k
+            end if
          end do
       end do
 !----------- -end-of-diapos---------------------------------------------
@@ -8476,11 +8839,15 @@ contains
 !     ---- candidates are all dividers of minlen
 !
       nblk = 1
-      if (minlen <= 1) return
+      if (minlen <= 1) then
+         return
+      end if
 !
       outer_loop: &
          do iblk = minlen, 1, -1
-         if (mod(minlen, iblk) /= 0) cycle outer_loop
+         if (mod(minlen, iblk) /= 0) then
+            cycle outer_loop
+         end if
          len = ia(2) - ia(1)
          len0 = len
          jfirst = ja(1)
@@ -8491,8 +8858,9 @@ contains
             len = i2 + 1 - i1
             jf = ja(i1)
             jl = ja(i2)
-            if (len /= len0 .or. jf /= jfirst .or.&
-            &jl /= jlast) cycle outer_loop
+            if (len /= len0 .or. jf /= jfirst .or. jl /= jlast) then
+               cycle outer_loop
+            end if
          end do
 !
 !     check for this candidate ----
@@ -8558,9 +8926,13 @@ contains
 ! are identical.
 !----------------------------------------------------------------------
       imsg = 0
-      if (nblk <= 1) return
+      if (nblk <= 1) then
+         return
+      end if
       nr = nrow / nblk
-      if (nr * nblk /= nrow) goto 101
+      if (nr * nblk /= nrow) then
+         goto 101
+      end if
 !--   main loop ---------------------------------------------------------
       irow = 1
       do ii = 1, nr
@@ -8571,24 +8943,32 @@ contains
          lena = ia(irow + 1) - i1
 !     len = length of each block-row in that group in the output matrix
          len = lena / nblk
-         if (len * nblk /= lena) goto 103
+         if (len * nblk /= lena) then
+            goto 103
+         end if
 !
 !     for each row
 !
          do i = 1, nblk
             irow = irow + 1
-            if (ia(irow) - ia(irow - 1) /= lena) goto 104
+            if (ia(irow) - ia(irow - 1) /= lena) then
+               goto 104
+            end if
 !
 !     for each block
 !
             do k = 0, len - 1
                jstart = ja(i1 + nblk * k) - 1
-               if ((jstart / nblk) * nblk /= jstart) goto 102
+               if ((jstart / nblk) * nblk /= jstart) then
+                  goto 102
+               end if
 !
 !     for each column
 !
                do j = 1, nblk
-                  if (jstart + j /= ja(j2)) goto 104
+                  if (jstart + j /= ja(j2)) then
+                     goto 104
+                  end if
                   j2 = j2 + 1
                end do
             end do
@@ -8653,7 +9033,9 @@ contains
 !     count the nonzero ones.
       idiag = 0
       do k = 1, n2
-         if (ind(k) /= 0) idiag = idiag + 1
+         if (ind(k) /= 0) then
+            idiag = idiag + 1
+         end if
       end do
       return
 ! done
@@ -8905,7 +9287,9 @@ contains
                scal = scal + a(k)**2
             end do
          end if
-         if (nrm == 2) scal = sqrt(scal)
+         if (nrm == 2) then
+            scal = sqrt(scal)
+         end if
          diag(ii) = scal
       end do
       return
@@ -8957,7 +9341,9 @@ contains
             end if
          end do
       end do
-      if (nrm /= 2) return
+      if (nrm /= 2) then
+         return
+      end if
       do k = 1, nrow
          diag(k) = sqrt(diag(k))
       end do
@@ -9179,23 +9565,31 @@ contains
 !     three cases
 !
             if (j1 == j2) then
-               if (values) c(kc) = a(ka) + b(kb)
+               if (values) then
+                  c(kc) = a(ka) + b(kb)
+               end if
                jc(kc) = j1
                ka = ka + 1
                kb = kb + 1
                kc = kc + 1
             else if (j1 < j2) then
                jc(kc) = j1
-               if (values) c(kc) = a(ka)
+               if (values) then
+                  c(kc) = a(ka)
+               end if
                ka = ka + 1
                kc = kc + 1
             else if (j1 > j2) then
                jc(kc) = j2
-               if (values) c(kc) = b(kb)
+               if (values) then
+                  c(kc) = b(kb)
+               end if
                kb = kb + 1
                kc = kc + 1
             end if
-            if (kc > nzmx) goto 999
+            if (kc > nzmx) then
+               goto 999
+            end if
             goto 20
          end if
          ic(i + 1) = kc
@@ -9307,7 +9701,9 @@ contains
          ii = iperm(j)
          do k = ia(ii), ia(ii + 1) - 1
             jao(ko) = ja(k)
-            if (values) ao(ko) = a(k)
+            if (values) then
+               ao(ko) = a(k)
+            end if
             ko = ko + 1
          end do
          iao(j - i1 + 2) = ko
@@ -9458,7 +9854,9 @@ contains
 !-----local variables
       integer i, j
 !---------------------------------
-      if (kvstr(nr + 1) /= kvstc(nc + 1)) return
+      if (kvstr(nr + 1) /= kvstc(nc + 1)) then
+         return
+      end if
       i = 1
       j = 1
       n = 1
@@ -9480,7 +9878,9 @@ contains
          i = i + 1
       end if
       n = n + 1
-      if (i <= nr + 1 .or. j <= nc + 1) goto 200
+      if (i <= nr + 1 .or. j <= nc + 1) then
+         goto 200
+      end if
       n = n - 2
 !---------------------------------
       return
@@ -9576,8 +9976,12 @@ contains
          mycol = 1
 3        if (il(mycol) == 1) then
             mycol = mycol + 1
-            if (mycol > maxcol) goto 99
-            if (mycol <= mcol) goto 3
+            if (mycol > maxcol) then
+               goto 99
+            end if
+            if (mycol <= mcol) then
+               goto 3
+            end if
          end if
 !
 !     reset il to zero for next nodes
@@ -9657,13 +10061,17 @@ contains
          iord(j) = 0
       end do
       nummat = 1
-      if (.not. sym) nummat = 2
+      if (.not. sym) then
+         nummat = 2
+      end if
 !
 !     iord used as a marker
 !
       nset = 0
       do nod = 1, n
-         if (iord(nod) /= 0) cycle
+         if (iord(nod) /= 0) then
+            cycle
+         end if
          nset = nset + 1
          iord(nod) = 1
 !
@@ -9673,7 +10081,9 @@ contains
          do mat = 1, nummat
             do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
                j = ja(k)
-               if (j /= nod) iord(j) = 2
+               if (j /= nod) then
+                  iord(j) = 2
+               end if
             end do
             ipos = iptr - 1
          end do
@@ -9767,7 +10177,9 @@ contains
       nset = 0
       do ii = 1, n
          nod = iw(ii)
-         if (iord(nod) /= 0) cycle
+         if (iord(nod) /= 0) then
+            cycle
+         end if
          nset = nset + 1
          iord(nod) = 1
 !
@@ -9777,7 +10189,9 @@ contains
          do mat = 1, nummat
             do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
                j = ja(k)
-               if (j /= nod) iord(j) = 2
+               if (j /= nod) then
+                  iord(j) = 2
+               end if
             end do
             ipos = iptrm1
          end do
@@ -9903,7 +10317,9 @@ contains
          do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
             jold = ja(k)
             jnew = riord(jold)
-            if (jold == nod .or. jnew > last) cycle
+            if (jold == nod .or. jnew > last) then
+               cycle
+            end if
             iw(jnew) = -1
             call HeapInsert(iw, iord, riord, jnew, ichild, jnew)
             call moveback(iw, iord, riord, last)
@@ -9927,7 +10343,9 @@ contains
 !
 !     consider this node only if it has not been moved
 !
-               if (jn > last) cycle
+               if (jn > last) then
+                  cycle
+               end if
 !     update degree of this neighbor
                iw(jn) = iw(jn) - 1
 !     and fix the heap accordingly
@@ -9939,7 +10357,9 @@ contains
 !
 !     stopping test -- end main "while"loop
 !
-      if (last > 1) goto 3
+      if (last > 1) then
+         goto 3
+      end if
       nset = nset + last
 !
 !     rescan all nodes one more time to determine the permutations
@@ -10042,7 +10462,9 @@ contains
 !
 !     number of edges
 !
-      if (sym) nnz = 2 * nnz
+      if (sym) then
+         nnz = 2 * nnz
+      end if
 !
 ! start by constructing a Max heap
 !
@@ -10071,7 +10493,9 @@ contains
          do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
             jold = ja(k)
             jnew = iord(jold)
-            if (jold == nod .or. jnew > nset) cycle
+            if (jold == nod .or. jnew > nset) then
+               cycle
+            end if
             iw(jnew) = iw(jnew) - 1
             nnz = nnz - 1
             call FixHeapM(iw, riord, iord, jnew, jnew, nset)
@@ -10079,7 +10503,9 @@ contains
          ipos = iptrm1
       end do
 !
-      if (nnz > 0) goto 3
+      if (nnz > 0) then
+         goto 3
+      end if
       return
 !-----------------------------------------------------------------------
    end
@@ -10142,15 +10568,20 @@ contains
 1     continue
       rchild = lchild + 1
       child = lchild
-      if (rchild <= last .and. a(rchild) < a(child))&
-      &child = rchild
-      if (xkey <= a(child) .or. child > last) goto 2
+      if (rchild <= last .and. a(rchild) < a(child)) then
+         child = rchild
+      end if
+      if (xkey <= a(child) .or. child > last) then
+         goto 2
+      end if
       a(vacant) = a(child)
       ind(vacant) = ind(child)
       rind(ind(vacant)) = vacant
       vacant = child
       lchild = 2 * vacant
-      if (lchild <= last) goto 1
+      if (lchild <= last) then
+         goto 1
+      end if
 2     continue
       a(vacant) = xkey
       ind(vacant) = ikey
@@ -10177,13 +10608,19 @@ contains
       a(node) = xkey
       ind(node) = ikey
       rind(ikey) = node
-      if (node <= 1) return
+      if (node <= 1) then
+         return
+      end if
       child = node
 1     parent = child / 2
-      if (a(parent) <= a(child)) goto 2
+      if (a(parent) <= a(child)) then
+         goto 2
+      end if
       call interchange(a, ind, rind, child, parent)
       child = parent
-      if (child > 1) goto 1
+      if (child > 1) then
+         goto 1
+      end if
 2     continue
       return
    end
@@ -10248,15 +10685,20 @@ contains
 1     continue
       rchild = lchild + 1
       child = lchild
-      if (rchild <= last .and. a(rchild) > a(child))&
-      &child = rchild
-      if (xkey >= a(child) .or. child > last) goto 2
+      if (rchild <= last .and. a(rchild) > a(child)) then
+         child = rchild
+      end if
+      if (xkey >= a(child) .or. child > last) then
+         goto 2
+      end if
       a(vacant) = a(child)
       ind(vacant) = ind(child)
       rind(ind(vacant)) = vacant
       vacant = child
       lchild = 2 * vacant
-      if (lchild <= last) goto 1
+      if (lchild <= last) then
+         goto 1
+      end if
 2     continue
       a(vacant) = xkey
       ind(vacant) = ikey
@@ -10282,13 +10724,19 @@ contains
       a(node) = xkey
       ind(node) = ikey
       rind(ikey) = node
-      if (node <= 1) return
+      if (node <= 1) then
+         return
+      end if
       child = node
 1     parent = child / 2
-      if (a(parent) >= a(child)) goto 2
+      if (a(parent) >= a(child)) then
+         goto 2
+      end if
       call interchange(a, ind, rind, child, parent)
       child = parent
-      if (child > 1) goto 1
+      if (child > 1) then
+         goto 1
+      end if
 2     continue
       return
    end
@@ -10351,14 +10799,18 @@ contains
       write (8, '(10i6)') (riord(j), j=1, n)
 !
       nummat = 1
-      if (.not. sym) nummat = 2
+      if (.not. sym) then
+         nummat = 2
+      end if
 !
 ! iord used as a marker
 !
       nset = 0
       do ii = 1, n
          nod = riord(ii)
-         if (iord(nod) /= 0) cycle
+         if (iord(nod) /= 0) then
+            cycle
+         end if
          nset = nset + 1
          iord(nod) = 1
 !
@@ -10368,7 +10820,9 @@ contains
          do mat = 1, nummat
             do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
                j = ja(k)
-               if (j /= nod) iord(j) = 2
+               if (j /= nod) then
+                  iord(j) = 2
+               end if
             end do
             ipos = iptr - 1
          end do

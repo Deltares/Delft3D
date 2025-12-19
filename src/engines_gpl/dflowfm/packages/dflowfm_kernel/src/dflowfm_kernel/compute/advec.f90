@@ -382,7 +382,9 @@ contains
 
                if (L > lnxi) then
                   if (iadvL == 77) then
-                     if (u0(L) < 0) iadvL = 0
+                     if (u0(L) < 0) then
+                        iadvL = 0
+                     end if
                   else if (u0(L) > 0) then
                      iadvL = 0 ! switch off advection for inflowing waterlevel bnd's, if not normalvelocitybnds
                   end if
@@ -838,7 +840,9 @@ contains
                iadvL = iadv(LL)
                if (LL > lnxi) then
                   if (iadvL == 77) then
-                     if (u0(LL) < 0) cycle
+                     if (u0(LL) < 0) then
+                        cycle
+                     end if
                   else if (u0(LL) > 0) then
                      cycle ! switch off advection for inflowing waterlevel bnd's, if not normalvelocitybnds
                   end if

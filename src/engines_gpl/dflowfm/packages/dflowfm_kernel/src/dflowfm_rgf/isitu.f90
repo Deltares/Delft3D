@@ -68,22 +68,39 @@ contains
             X2 = Xc(I + 1, J)
             X3 = Xc(I + 1, J + 1)
             X4 = Xc(I, J + 1)
-            if (X1 /= dXYMIS .and. X2 /= dXYMIS .and. &
-                X3 /= dXYMIS .and. X4 /= dXYMIS) IJYES(I, J) = 1
+            if (X1 /= dXYMIS .and. X2 /= dXYMIS .and. X3 /= dXYMIS .and. X4 /= dXYMIS) then
+               IJYES(I, J) = 1
+            end if
          end do
       end do
 
       do I = 1, MC
          do J = 1, NC
             X1 = Xc(I, J)
-            if (I /= 1) X6 = Xc(I - 1, J)
-            if (I /= MC) X2 = Xc(I + 1, J)
-            if (J /= 1) X5 = Xc(I, J - 1)
-            if (J /= NC) X4 = Xc(I, J + 1)
-            if (I /= MC .and. J /= NC) X3 = Xc(I + 1, J + 1)
-            if (I /= 1 .and. J /= 1) X8 = Xc(I - 1, J - 1)
-            if (I /= 1 .and. J /= NC) X9 = Xc(I - 1, J + 1)
-            if (I /= MC .and. J /= 1) X7 = Xc(I + 1, J - 1)
+            if (I /= 1) then
+               X6 = Xc(I - 1, J)
+            end if
+            if (I /= MC) then
+               X2 = Xc(I + 1, J)
+            end if
+            if (J /= 1) then
+               X5 = Xc(I, J - 1)
+            end if
+            if (J /= NC) then
+               X4 = Xc(I, J + 1)
+            end if
+            if (I /= MC .and. J /= NC) then
+               X3 = Xc(I + 1, J + 1)
+            end if
+            if (I /= 1 .and. J /= 1) then
+               X8 = Xc(I - 1, J - 1)
+            end if
+            if (I /= 1 .and. J /= NC) then
+               X9 = Xc(I - 1, J + 1)
+            end if
+            if (I /= MC .and. J /= 1) then
+               X7 = Xc(I + 1, J - 1)
+            end if
 !           POSITIE BENOEMEN
             if (X1 == dXYMIS) then
                IJC(I, J) = 0

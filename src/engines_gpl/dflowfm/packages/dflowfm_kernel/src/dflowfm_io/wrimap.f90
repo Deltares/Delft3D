@@ -70,7 +70,9 @@ contains
          call timstrt('wrimap inq ndims', handle_extra(80))
          if (mapids%ncid /= 0) then ! reset stord ncid to zero if file not open
             ierr = nf90_inquire(mapids%ncid, ndims)
-            if (ierr /= 0) mapids%ncid = 0
+            if (ierr /= 0) then
+               mapids%ncid = 0
+            end if
          end if
          call timstop(handle_extra(80))
 
@@ -98,11 +100,15 @@ contains
                   end if
                end if
                jabndnd = 0
-               if (jamapbnd > 0) jabndnd = 1
+               if (jamapbnd > 0) then
+                  jabndnd = 1
+               end if
                call unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
             else
                jabndnd = 0
-               if (jamapbnd > 0) jabndnd = 1
+               if (jamapbnd > 0) then
+                  jabndnd = 1
+               end if
                call unc_write_map_filepointer(mapids%ncid, tim, jabndnd) ! wrimap
             end if
          end if

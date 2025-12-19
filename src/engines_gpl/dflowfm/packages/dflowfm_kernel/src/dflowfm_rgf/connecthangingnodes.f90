@@ -63,17 +63,25 @@ contains
             k = netcell(np)%nod(kk)
             if (nmk(k) == 3) then
                km = kk - 1
-               if (km < 1) km = km + kkx
+               if (km < 1) then
+                  km = km + kkx
+               end if
                kp = kk + 1
-               if (kp > kkx) kp = kp - kkx
+               if (kp > kkx) then
+                  kp = kp - kkx
+               end if
                km = netcell(np)%nod(km)
                kp = netcell(np)%nod(kp)
                if (abs(yk(km) - yk(k)) < 1.0e-10_dp .and. abs(yk(kp) - yk(k)) < 1.0e-10_dp .or. &
                    abs(xk(km) - xk(k)) < 1.0e-10_dp .and. abs(xk(kp) - xk(k)) < 1.0e-10_dp) then
                   km = kk - 2
-                  if (km < 1) km = km + kkx
+                  if (km < 1) then
+                     km = km + kkx
+                  end if
                   kp = kk + 2
-                  if (kp > kkx) kp = kp - kkx
+                  if (kp > kkx) then
+                     kp = kp - kkx
+                  end if
                   km = netcell(np)%nod(km)
                   kp = netcell(np)%nod(kp)
                   lnu = lnu + 1

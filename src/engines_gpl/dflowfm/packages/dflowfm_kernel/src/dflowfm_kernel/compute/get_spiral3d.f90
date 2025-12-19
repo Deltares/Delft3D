@@ -77,7 +77,9 @@ contains
             sumfu = sumfu + fn * un
          end do
          spirint(k) = 0.0_dp
-         if (sumff < 1.0e-6_dp) cycle
+         if (sumff < 1.0e-6_dp) then
+            cycle
+         end if
          spirint(k) = sumfu / sumff
       end do
 

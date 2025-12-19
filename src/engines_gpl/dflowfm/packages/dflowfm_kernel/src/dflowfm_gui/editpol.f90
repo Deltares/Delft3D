@@ -135,7 +135,9 @@ contains
       call KTEXT(TEX, 1, 2, 15)
       call putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
 
-      if (KEY /= 81 .and. KEY /= 81 + 32) JAQUIT = 0
+      if (KEY /= 81 .and. KEY /= 81 + 32) then
+         JAQUIT = 0
+      end if
 
       if (NUM /= 0) then
 !        ER IS EEN KEUZE
@@ -453,7 +455,9 @@ contains
          MP = NPL
       else if (KEY == 81 .or. KEY == 81 + 32) then
          !  JAQUIT = JAQUIT + 1
-         if (JAQUIT == 2) call STOPINT()
+         if (JAQUIT == 2) then
+            call STOPINT()
+         end if
       else if (KEY == 86 .or. KEY == 86 + 32) then
          call VIEWCYCLE(KEY)
       else if (KEY == 43 .or. KEY == 140) then ! -

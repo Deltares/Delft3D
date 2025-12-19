@@ -102,7 +102,9 @@ contains
       else
          jatriangulate = 1
          jalandbound = 0
-         if (japroject == 3 .or. japroject == 4) jalandbound = 1
+         if (japroject == 3 .or. japroject == 4) then
+            jalandbound = 1
+         end if
       end if
 
       call findcells(100)
@@ -141,14 +143,22 @@ contains
             call comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, ntopo)
 
             !  check and see if the nodes are masked
-            if (inodemask(k1) /= 0 .or. inodemask(k2) /= 0) cycle
+            if (inodemask(k1) /= 0 .or. inodemask(k2) /= 0) then
+               cycle
+            end if
 
-            if (lnn(L) /= 2) cycle ! inner links only
+            if (lnn(L) /= 2) then
+               cycle ! inner links only
+            end if
 !
-            if (netcell(icellL)%N /= 3 .or. netcell(icellR)%N /= 3) cycle ! triangles only
+            if (netcell(icellL)%N /= 3 .or. netcell(icellR)%N /= 3) then
+               cycle ! triangles only
+            end if
 
             !  check and see if the nodes are masked
-            if (inodemask(kL) /= 0 .or. inodemask(kR) /= 0) cycle
+            if (inodemask(kL) /= 0 .or. inodemask(kR) /= 0) then
+               cycle
+            end if
 
             Lflip = (ntopo < 0)
 
@@ -188,16 +198,28 @@ contains
                !    find the other links
                do kk = 1, netcell(icellL)%N
                   LL = netcell(icellL)%lin(kk)
-                  if (LL == L) cycle
-                  if (kn(1, LL) == k1 .or. kn(2, LL) == k1) L1L = LL
-                  if (kn(1, LL) == k2 .or. kn(2, LL) == k2) L2L = LL
+                  if (LL == L) then
+                     cycle
+                  end if
+                  if (kn(1, LL) == k1 .or. kn(2, LL) == k1) then
+                     L1L = LL
+                  end if
+                  if (kn(1, LL) == k2 .or. kn(2, LL) == k2) then
+                     L2L = LL
+                  end if
                end do
 
                do kk = 1, netcell(icellR)%N
                   LL = netcell(icellR)%lin(kk)
-                  if (LL == L) cycle
-                  if (kn(1, LL) == k1 .or. kn(2, LL) == k1) L1R = LL
-                  if (kn(1, LL) == k2 .or. kn(2, LL) == k2) L2R = LL
+                  if (LL == L) then
+                     cycle
+                  end if
+                  if (kn(1, LL) == k1 .or. kn(2, LL) == k1) then
+                     L1R = LL
+                  end if
+                  if (kn(1, LL) == k2 .or. kn(2, LL) == k2) then
+                     L2R = LL
+                  end if
                end do
 
                !    change cells
@@ -232,7 +254,9 @@ contains
                do while (nod(k1)%lin(kk) /= L .and. kk <= nmk(k1))
                kk = kk + 1
                end do
-               if (nod(k1)%lin(kk) /= L) goto 1234
+               if (nod(k1)%lin(kk) /= L) then
+                  goto 1234
+               end if
                nod(k1)%lin(1:nmk(k1)) = [nod(k1)%lin(1:kk - 1), nod(k1)%lin(kk + 1:nmk(k1) + 1)]
                call realloc(nod(k1)%lin, nmk(k1))
 
@@ -241,7 +265,9 @@ contains
                do while (nod(k2)%lin(kk) /= L .and. kk <= nmk(k2))
                kk = kk + 1
                end do
-               if (nod(k2)%lin(kk) /= L) goto 1234
+               if (nod(k2)%lin(kk) /= L) then
+                  goto 1234
+               end if
                nod(k2)%lin(1:nmk(k2)) = [nod(k2)%lin(1:kk - 1), nod(k2)%lin(kk + 1:nmk(k2) + 1)]
                call realloc(nod(k2)%lin, nmk(k2))
 

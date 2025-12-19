@@ -66,7 +66,9 @@ contains
             exit
          end if
       end do
-      if (NMK(K1) == 0) KC(K1) = 0
+      if (NMK(K1) == 0) then
+         KC(K1) = 0
+      end if
 
       do L2 = 1, NMK(K2)
          if (NOD(K2)%LIN(L2) == 0) then
@@ -77,7 +79,9 @@ contains
             exit
          end if
       end do
-      if (NMK(K2) == 0) KC(K2) = 0
+      if (NMK(K2) == 0) then
+         KC(K2) = 0
+      end if
 
       KN(1, LNU) = 0
       KN(2, LNU) = 0

@@ -41,7 +41,9 @@ module m_changenumericalparameters
 contains
 
    subroutine CHANGENUMERICALPARAMETERS()
-      use m_flow, only: iadvec, cflmx, iadvec1d, limtypsa, limtyphu, limtypmom, itstep, teta0, icgsolver, jasal, jatem, jacreep, epsmaxlev, irov, icorio, jatidep, epshu, jaexplicitsinks, corioadamsbashfordfac, newcorio, epshs
+      use m_flow, only: iadvec, cflmx, iadvec1d, limtypsa, limtyphu, limtypmom, itstep, teta0, icgsolver, jasal, & 
+         temperature_model, jacreep, epsmaxlev, irov, icorio, jatidep, epshu, jaexplicitsinks, corioadamsbashfordfac, newcorio, &
+         epshs
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
       use m_helpnow, only: nlevel, wrdkey
@@ -212,7 +214,7 @@ contains
       call IFormPutDouble(2 * 8, teta0, '(F10.3)')
       call IFORMPUTinteger(2 * 9, icgsolver)
       call IFORMPUTinteger(2 * 11, jasal)
-      call IFORMPUTinteger(2 * 12, jatem)
+      call IFORMPUTinteger(2 * 12, temperature_model)
       call IFORMPUTinteger(2 * 13, jacreep)
       call IFORMPUTdouble(2 * 14, epsmaxlev, '(e10.5)')
       call IFORMPUTinteger(2 * 15, irov)
@@ -274,7 +276,7 @@ contains
             call IFormgetDouble(2 * 8, teta0)
             call IFORMgeTinteger(2 * 9, icgsolver)
             call IFORMgeTinteger(2 * 11, jasal)
-            call IFORMgeTinteger(2 * 12, jatem)
+            call IFORMgeTinteger(2 * 12, temperature_model)
             call IFORMgeTinteger(2 * 13, jacreep)
             call IFORMgeTdouble(2 * 14, epsmaxlev)
             call IFORMgeTinteger(2 * 15, irov)

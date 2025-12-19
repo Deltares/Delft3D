@@ -61,14 +61,18 @@ contains
       iL = i
       do while (dbdistance(xc(iL), yc(iL), xc(i), yc(i), jsferic, jasfer3D, dmiss) <= dtolLR)
          if (jacirc_loc == 0) then
-            if (iL - 1 < 1) exit
+            if (iL - 1 < 1) then
+               exit
+            end if
          else
             if (iL - 1 < jstart) then
                iL = jend + 1
                jacirc_loc = 0 ! only once
             end if
          end if
-         if (xc(iL - 1) == DMISS .or. yc(iL - 1) == DMISS) exit
+         if (xc(iL - 1) == DMISS .or. yc(iL - 1) == DMISS) then
+            exit
+         end if
          iL = iL - 1
       end do
 
@@ -76,14 +80,18 @@ contains
       iR = i
       do while (dbdistance(xc(iR), yc(iR), xc(i), yc(i), jsferic, jasfer3D, dmiss) <= dtolLR)
          if (jacirc_loc == 0) then
-            if (iR + 1 > mc) exit
+            if (iR + 1 > mc) then
+               exit
+            end if
          else
             if (iR + 1 > jend) then
                iR = jstart - 1
                jacirc_loc = 0 ! only once
             end if
          end if
-         if (xc(iR + 1) == DMISS .or. yc(iR + 1) == DMISS) exit
+         if (xc(iR + 1) == DMISS .or. yc(iR + 1) == DMISS) then
+            exit
+         end if
          iR = iR + 1
       end do
 

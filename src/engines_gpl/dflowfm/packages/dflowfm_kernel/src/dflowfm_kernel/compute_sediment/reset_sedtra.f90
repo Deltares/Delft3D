@@ -50,7 +50,9 @@ contains
 
       integer :: istat
 
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
       istat = clrstm(stmpar)
       call clrsedtra(istat, sedtra)
       if (associated(mtd%dzbdt)) then

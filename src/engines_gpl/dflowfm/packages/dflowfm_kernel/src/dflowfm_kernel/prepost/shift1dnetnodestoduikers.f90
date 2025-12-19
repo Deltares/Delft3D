@@ -56,7 +56,9 @@ contains
       integer :: minp, Ls, n, k1, k2, kL, kR, LnL
       real(kind=dp) :: x1, y1, z1, x2, y2, z2, xc, yc, XLS, YLS, dum, dis12, dis11, disL, disd, dis22, dis21, alf, zx, xL, yL, xR, yR, half, xkc, ykc
       character(len=maxlength) :: pipefilein, pipefileout
-      if (numL == 0) return
+      if (numL == 0) then
+         return
+      end if
 
       pipefilein = defaultFilename('pipe') ! is dit duikers.pliz ?
       pipefileout = defaultFilename('pipe2') ! duikers2.pliz ?

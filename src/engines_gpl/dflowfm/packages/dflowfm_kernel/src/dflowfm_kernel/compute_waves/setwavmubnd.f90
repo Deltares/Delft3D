@@ -67,7 +67,9 @@ contains
          L = kbndu(3, n)
          ac1 = acl(L)
          ac2 = 1.0_dp - ac1
-         if (hu(L) < epshu) cycle
+         if (hu(L) < epshu) then
+            cycle
+         end if
 
          ! interpolate cell-centered mass fluxes to flow links
          if (kmx == 0) then
@@ -93,8 +95,12 @@ contains
             L = kbndz(3, n)
             ac1 = acl(L)
             ac2 = 1.0_dp - ac1
-            if (hu(L) <= epshu) cycle
-            if (wavmubnd(L) /= 0.0_dp) cycle ! ?
+            if (hu(L) <= epshu) then
+               cycle
+            end if
+            if (wavmubnd(L) /= 0.0_dp) then
+               cycle ! ?
+            end if
             if (kmx == 0) then
                ! interpolate cell-centered mass fluxes to flow links
                wavmubndL = (ac1 * mxwav(kb) + ac2 * mxwav(ki)) * csu(L) + &
@@ -118,8 +124,12 @@ contains
          L = kbndn(3, n)
          ac1 = acl(L)
          ac2 = 1.0_dp - ac1
-         if (hu(L) <= epshu) cycle
-         if (wavmubnd(L) /= 0.0_dp) cycle
+         if (hu(L) <= epshu) then
+            cycle
+         end if
+         if (wavmubnd(L) /= 0.0_dp) then
+            cycle
+         end if
          if (kmx == 0) then
             ! interpolate cell-centered mass fluxes to flow links
             wavmubndL = (ac1 * mxwav(kb) + ac2 * mxwav(ki)) * csu(L) + &

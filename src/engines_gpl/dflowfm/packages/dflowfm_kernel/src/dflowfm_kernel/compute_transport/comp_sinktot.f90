@@ -54,9 +54,15 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (.not. stm_included) return
-      if (mxgr == 0) return
-      if (timon) call timstrt("comp_sinktot", ithndl)
+      if (.not. stm_included) then
+         return
+      end if
+      if (mxgr == 0) then
+         return
+      end if
+      if (timon) then
+         call timstrt("comp_sinktot", ithndl)
+      end if
 
       if (kmx < 1) then ! 2D
          do k = 1, ndx
@@ -80,7 +86,9 @@ contains
          end do
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine comp_sinktot
 
 end module m_comp_sinktot

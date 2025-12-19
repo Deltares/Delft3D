@@ -87,7 +87,9 @@ contains
 
       if (kmx == 0) then
          do L = 1, lnx
-            if (hu(L) <= epshu) cycle
+            if (hu(L) <= epshu) then
+               cycle
+            end if
             if (L > lnx1D) then
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -131,9 +133,13 @@ contains
          end do
       else ! kmx>0
          do LL = 1, lnx
-            if (hu(LL) <= epshu) cycle
+            if (hu(LL) <= epshu) then
+               cycle
+            end if
             call getLbotLtop(LL, Lb, Lt)
-            if (Lt < Lb) cycle
+            if (Lt < Lb) then
+               cycle
+            end if
             k1 = ln(1, LL)
             k2 = ln(2, LL)
             ac1 = acL(LL)

@@ -60,7 +60,9 @@ contains
 
       type(tpoly), dimension(:), allocatable :: pli
 
-      if (NPL < 3) return
+      if (NPL < 3) then
+         return
+      end if
 
 !   copy to tpoly-type polygons
       call pol_to_tpoly(numpols, pli, keepExisting=.false.)
@@ -82,7 +84,9 @@ contains
          do i = 1, num
             Lprev = L
             ip1 = i + 1
-            if (ip1 > num) ip1 = ip1 - num
+            if (ip1 > num) then
+               ip1 = ip1 - num
+            end if
             L = isleft(pli(ipol)%x(ip1), pli(ipol)%y(ip1))
             if (L .and. Lprev) then
 !            segment is internal

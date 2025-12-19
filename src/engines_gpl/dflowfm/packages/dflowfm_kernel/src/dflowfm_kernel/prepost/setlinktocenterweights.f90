@@ -65,7 +65,9 @@ contains
 
       do L = 1, lnx
 
-         if (kcu(L) == 3) cycle ! no contribution from 1D2D internal links
+         if (kcu(L) == 3) then
+            cycle ! no contribution from 1D2D internal links
+         end if
 
          k1 = ln(1, L)
          k2 = ln(2, L) !left and right node
@@ -215,16 +217,24 @@ contains
                wcx1(L) = wcx1(L) * bai(k1)
                wcy1(L) = wcy1(L) * bai(k1)
             else
-               if (wcxy(1, k1) /= 0) wcx1(L) = wcx1(L) / wcxy(1, k1)
-               if (wcxy(2, k1) /= 0) wcy1(L) = wcy1(L) / wcxy(2, k1)
+               if (wcxy(1, k1) /= 0) then
+                  wcx1(L) = wcx1(L) / wcxy(1, k1)
+               end if
+               if (wcxy(2, k1) /= 0) then
+                  wcy1(L) = wcy1(L) / wcxy(2, k1)
+               end if
             end if
 
             if (kfs(K2) == 0) then
                wcx2(L) = wcx2(L) * bai(k2)
                wcy2(L) = wcy2(L) * bai(k2)
             else
-               if (wcxy(1, k2) /= 0) wcx2(L) = wcx2(L) / wcxy(1, k2)
-               if (wcxy(2, k2) /= 0) wcy2(L) = wcy2(L) / wcxy(2, k2)
+               if (wcxy(1, k2) /= 0) then
+                  wcx2(L) = wcx2(L) / wcxy(1, k2)
+               end if
+               if (wcxy(2, k2) /= 0) then
+                  wcy2(L) = wcy2(L) / wcxy(2, k2)
+               end if
             end if
          else
             wcx1(L) = wcx1(L) * bai(k1) !if (wcxy(2,k1) .ne. 0) /wcxy(2,k1)
@@ -232,8 +242,12 @@ contains
             wcx2(L) = wcx2(L) * bai(k2) !if (wcxy(2,k2) .ne. 0) /wcxy(2,k2)
             wcy2(L) = wcy2(L) * bai(k2) !if (wcxy(1,k2) .ne. 0) /wcxy(1,k2)
          end if
-         if (wc(k1) > 0.0_dp) wcL(1, L) = wcL(1, L) / wc(k1)
-         if (wc(k2) > 0.0_dp) wcL(2, L) = wcL(2, L) / wc(k2)
+         if (wc(k1) > 0.0_dp) then
+            wcL(1, L) = wcL(1, L) / wc(k1)
+         end if
+         if (wc(k2) > 0.0_dp) then
+            wcL(2, L) = wcL(2, L) / wc(k2)
+         end if
 
       end do
 

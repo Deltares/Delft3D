@@ -221,7 +221,9 @@ contains
                   time_com = tstop_user + 1
                else
                   tem_dif = (tim - ti_coms) / ti_com
-                  if (isnan(tem_dif)) tem_dif = 0.0_hp
+                  if (isnan(tem_dif)) then
+                     tem_dif = 0.0_hp
+                  end if
                   time_com = max(ti_coms + (floor(tem_dif + 0.001_dp) + 1) * ti_com, ti_coms)
                   ti_ctv_rel = ti_ctv - tim
                   time_com_ctv = tim + minval(ti_ctv_rel, mask=ti_ctv_rel > 0)

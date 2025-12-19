@@ -56,7 +56,9 @@ contains
       real(kind=dp) :: XP, YP
       integer :: MPU, MPD, NPU, NPD, ncolcir
       XP = X(MP, NP)
-      if (XP == XYMIS) return
+      if (XP == XYMIS) then
+         return
+      end if
       YP = Y(MP, NP)
       call MOVABS(XP, YP)
       call SETCOL(NCOL)

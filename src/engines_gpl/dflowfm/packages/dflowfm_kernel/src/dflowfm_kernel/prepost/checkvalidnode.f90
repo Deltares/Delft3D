@@ -67,26 +67,42 @@ contains
 
       iL = i - 1
       if (iL >= low(1)) then
-         if (ijc(iL, j) > 0) call checkgridline(node, ijc(iL, j), lconflict)
-         if (lconflict) return
+         if (ijc(iL, j) > 0) then
+            call checkgridline(node, ijc(iL, j), lconflict)
+         end if
+         if (lconflict) then
+            return
+         end if
       end if
 
       iR = i + 1
       if (iR <= upp(1)) then
-         if (ijc(iR, j) > 0) call checkgridline(node, ijc(iR, j), lconflict)
-         if (lconflict) return
+         if (ijc(iR, j) > 0) then
+            call checkgridline(node, ijc(iR, j), lconflict)
+         end if
+         if (lconflict) then
+            return
+         end if
       end if
 
       jB = j - 1
       if (jB >= low(2)) then
-         if (ijc(i, jB) > 0) call checkgridline(node, ijc(i, jB), lconflict)
-         if (lconflict) return
+         if (ijc(i, jB) > 0) then
+            call checkgridline(node, ijc(i, jB), lconflict)
+         end if
+         if (lconflict) then
+            return
+         end if
       end if
 
       jT = j + 1
       if (jT <= upp(2)) then
-         if (ijc(i, jT) > 0) call checkgridline(node, ijc(i, jT), lconflict)
-         if (lconflict) return
+         if (ijc(i, jT) > 0) then
+            call checkgridline(node, ijc(i, jT), lconflict)
+         end if
+         if (lconflict) then
+            return
+         end if
       end if
 
    end subroutine

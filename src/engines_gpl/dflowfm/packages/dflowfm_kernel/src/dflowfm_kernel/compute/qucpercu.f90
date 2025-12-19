@@ -78,7 +78,9 @@ contains
 
 !       ucin = ( ucxu(LLLL) - ucx(k12) )*cs + (ucyu(LLLL) - ucy(k12) )*sn
             nn12 = 1
-            if (LLL > 0) nn12 = 2
+            if (LLL > 0) then
+               nn12 = 2
+            end if
             ucinx = lin2nodx(LLLL, nn12, ucxu(LLLL), ucyu(LLLL)) - ucx(k12)
             uciny = lin2nody(LLLL, nn12, ucxu(LLLL), ucyu(LLLL)) - ucy(k12)
             ucin = nod2linx(L, n12, ucinx, uciny) * cs + nod2liny(L, n12, ucinx, uciny) * sn

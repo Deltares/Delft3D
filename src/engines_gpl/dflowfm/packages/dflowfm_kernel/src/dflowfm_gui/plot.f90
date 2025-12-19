@@ -73,7 +73,9 @@ contains
             EXT = '.ps '
             do I = 1, NUMHCOPTs
                if (IHCOPTS(1, I) == 22) then
-                  if (IHCOPTS(2, I) == 1) EXT = '.eps'
+                  if (IHCOPTS(2, I) == 1) then
+                     EXT = '.eps'
+                  end if
                end if
             end do
 
@@ -124,11 +126,15 @@ contains
             call IGRPALETTERGB(0, NREDP, NGREENP, NBLUEP)
 
             call IGrHardCopySelect(1, NHCDEV)
-            if (NHCDEV == 7) call IGrHardCopySelect(1, 6)
+            if (NHCDEV == 7) then
+               call IGrHardCopySelect(1, 6)
+            end if
             do I = 1, NUMHCOPTS
                call IGrHardCopyOptions(IHCOPTS(1, I), IHCOPTS(2, I))
             end do
-            if (NHCDEV == 7) call IGrHardCopyOptions(26, 0)
+            if (NHCDEV == 7) then
+               call IGrHardCopyOptions(26, 0)
+            end if
             call IGrHardCopy(trim(PLOTJE))
             !WRITE(msgbuf,'(2A)') 'You created plotfile ', trim(PLOTJE) ; call msg_flush()
             call IWINOPEN(1, 1, 20, 1)

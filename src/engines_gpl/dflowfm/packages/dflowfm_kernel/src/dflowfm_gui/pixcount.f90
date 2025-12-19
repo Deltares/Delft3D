@@ -79,7 +79,9 @@ contains
                bl(k) = ztel(k) / real(itel(k), kind=dp)
             end if
          end do
-         if (allocated(itel)) deallocate (itel, ztel)
+         if (allocated(itel)) then
+            deallocate (itel, ztel)
+         end if
       end if
 
    end subroutine pixcount

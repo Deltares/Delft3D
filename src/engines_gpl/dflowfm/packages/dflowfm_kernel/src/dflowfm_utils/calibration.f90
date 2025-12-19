@@ -174,27 +174,69 @@ contains
       i_q = 0
       i_zs = 0
       if (phase == FILL_DATA) then
-         if (istat == 0) allocate (clddata%ittdef(ncld), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef(ncld), stat=istat)
-         if (istat == 0) allocate (clddata%def2icld(CLD_MAXDEF), stat=istat)
-         if (istat == 0) allocate (clddata%crs(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%obs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%cldtable_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%cldtable_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%start_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%end_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%slope_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%cross_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%ittdef_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%icld_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%slope_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%cross_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%start_q(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%end_q(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%ittdef_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%icld_q(ncldcrs), stat=istat)
+         if (istat == 0) then
+            allocate (clddata%ittdef(ncld), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef(ncld), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%def2icld(CLD_MAXDEF), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%crs(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%obs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cldtable_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cldtable_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%start_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%end_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%slope_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cross_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%ittdef_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%icld_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%slope_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cross_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%start_q(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%end_q(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%ittdef_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%icld_q(ncldcrs), stat=istat)
+         end if
          if (istat /= 0) then
             errmsg = 'read_cldfile: memory alloc error'
             call mess(LEVEL_ERROR, errmsg)
@@ -261,7 +303,9 @@ contains
          !
          ! End-of-file ?
          !
-         if (iocond < 0) goto 199
+         if (iocond < 0) then
+            goto 199
+         end if
          !
          ! Reading error
          !
@@ -292,7 +336,9 @@ contains
       !
       ! Comment line
       !
-      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) goto 110
+      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) then
+         goto 110
+      end if
       ibeg = 1
       iend = 132
       ! Comment at end of line
@@ -532,10 +578,18 @@ contains
          call mess(LEVEL_INFO, '*** Start of calibration area definition input: '//trim(md_cllfile))
       end if
       if (phase == FILL_DATA) then
-         if (istat == 0) allocate (clddata%ittar(ncll, 2), stat=istat) ! net link number, definition number
-         if (istat == 0) allocate (clddata%rttar(ncll), stat=istat) ! area fraction
-         if (istat == 0) allocate (clddata%sumar(numl), stat=istat)
-         if (istat == 0) allocate (clddata%linar(ncll), stat=istat) ! line numbers in file
+         if (istat == 0) then
+            allocate (clddata%ittar(ncll, 2), stat=istat) ! net link number, definition number
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttar(ncll), stat=istat) ! area fraction
+         end if
+         if (istat == 0) then
+            allocate (clddata%sumar(numl), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%linar(ncll), stat=istat) ! line numbers in file
+         end if
          clddata%sumar = 0.0_dp
          clddata%linar = intmiss
       end if
@@ -620,7 +674,9 @@ contains
       !
       ! Comment line
       !
-      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) goto 210
+      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) then
+         goto 210
+      end if
       !
       ! Scan the record
       !
@@ -632,7 +688,9 @@ contains
       !
       ! When no sub-fields are found, record appears to be empty
       !
-      if (nrflds == 0) goto 210
+      if (nrflds == 0) then
+         goto 210
+      end if
       !
       ! Check the contents
       !

@@ -74,7 +74,9 @@ contains
       real(kind=dp) :: total_width !< [m] surface width of total (flow + storage) area
       real(kind=dp) :: dzw_dt !< [m/s] water level change rate
 
-      if (kmx /= 0 .or. lnx1D == 0) return
+      if (kmx /= 0 .or. lnx1D == 0) then
+         return
+      end if
 
       uc1D = 0.0_dp
       do n = ndx2D + 1, ndxi
@@ -84,10 +86,16 @@ contains
          do LL = 1, nx
             L = nd(n)%ln(LL)
             La = abs(L)
-            if (abs(kcu(La)) /= 1) ja1D = 0
+            if (abs(kcu(La)) /= 1) then
+               ja1D = 0
+            end if
          end do
-         if (ja1D == 0) cycle
-         if (jaJunction1D == 0 .and. nx > 2) cycle
+         if (ja1D == 0) then
+            cycle
+         end if
+         if (jaJunction1D == 0 .and. nx > 2) then
+            cycle
+         end if
 
          qu_in = 0.0_dp
          qu_out = 0.0_dp
@@ -151,10 +159,16 @@ contains
             do LL = 1, nx
                L = nd(n)%ln(LL)
                La = abs(L)
-               if (abs(kcu(La)) /= 1) ja1D = 0
+               if (abs(kcu(La)) /= 1) then
+                  ja1D = 0
+               end if
             end do
-            if (ja1D == 0) cycle
-            if (jaJunction1D == 0 .and. nx > 2) cycle
+            if (ja1D == 0) then
+               cycle
+            end if
+            if (jaJunction1D == 0 .and. nx > 2) then
+               cycle
+            end if
 
             ! compute total net discharge into the node
             q_net_in = 0.0_dp

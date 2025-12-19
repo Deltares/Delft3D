@@ -75,7 +75,9 @@ contains
       NLEVEL = 3
       JADRAW = 1
 !
-      if (NPUT == 1) return
+      if (NPUT == 1) then
+         return
+      end if
 
       call IGRLINEWIDTH(2, -1)
       call SETCOL(KLZM)
@@ -105,7 +107,9 @@ contains
       JA = 0
       KEY = 999
       call READLOCATOR(XL, YL, KEY)
-      if (JSFERTEK >= 1) call dPROJECT(XLC, YLC, XL, YL, 1)
+      if (JSFERTEK >= 1) then
+         call dPROJECT(XLC, YLC, XL, YL, 1)
+      end if
 
       if (X2B > X2 .or. X1B < X1 .or. Y2B > Y2 .or. Y1B < Y1) then
          dy = dyh
@@ -116,7 +120,9 @@ contains
          JA = 3
       else if (KEY == 90 .or. KEY == 90 + 32) then
          DY = 3.0_dp * dyh
-         if (JSFERTEK >= 1) DY = min(DY, 179.0_dp)
+         if (JSFERTEK >= 1) then
+            DY = min(DY, 179.0_dp)
+         end if
          JA = 1
       else if (KEY == 23) then
          KEY = 3
@@ -136,7 +142,9 @@ contains
          JADRAW = 1
          if (KEY == 162 .or. KEY == 43) then
             DY = DY * 1.01
-            if (JSFERTEK >= 1) DY = min(DY, 179.0_dp)
+            if (JSFERTEK >= 1) then
+               DY = min(DY, 179.0_dp)
+            end if
          else if (KEY == 160 .or. KEY == 45) then
             DY = DY / 1.01
          end if
@@ -147,7 +155,9 @@ contains
          Y2B = YL + DY / 2
       else if (KEY == 143) then
          NUMZOOM = NUMZOOM - 1
-         if (NUMZOOM == 0) NUMZOOM = MAXZOOM
+         if (NUMZOOM == 0) then
+            NUMZOOM = MAXZOOM
+         end if
          XL = XYWOLD(NUMZOOM, 1)
          YL = XYWOLD(NUMZOOM, 2)
          DY = XYWOLD(NUMZOOM, 3)
@@ -169,7 +179,9 @@ contains
          if (JA /= 2) then
 !           alleen opslaan als in of uitgezoomd, niet als teruggezoomd
             NUMZOOM = NUMZOOM + 1
-            if (NUMZOOM == MAXZOOM + 1) NUMZOOM = 1
+            if (NUMZOOM == MAXZOOM + 1) then
+               NUMZOOM = 1
+            end if
             XYWOLD(NUMZOOM, 1) = XL
             XYWOLD(NUMZOOM, 2) = YL
             XYWOLD(NUMZOOM, 3) = DY
