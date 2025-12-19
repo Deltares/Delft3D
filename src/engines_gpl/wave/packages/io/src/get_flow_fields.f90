@@ -56,12 +56,14 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
 !
    integer            :: i
    integer            :: j
-   integer            :: iprint       = 0
-   real               :: alpb         = 0.0
-   real               :: dummy        = -999.0
-   real               :: maxval
-   logical            :: clbot        = .true.
-   character(256)     :: mudfilnam    = ' '
+   integer            :: idom
+   integer            :: iprint         = 0
+   real               :: alpb           = 0.0
+   real               :: dummy          = -999.0
+   real               :: max_dia_veg    = -1.0e10
+   real               :: max_height_veg = -1.0e10
+   logical            :: clbot          = .true.
+   character(256)     :: mudfilnam      = ' '
    type(input_fields) :: fif                    ! input fields defined on flow grid
 
    interface
@@ -298,20 +300,21 @@ if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
                         & f2s               , sg)
          ! It seems that SWAN only accepts constant values for diaveg and veg_stemheight
          !
-         maxval = -1.0e10
          do i=1, fif%mmax
             do j=1, fif%nmax
-               maxval = max(maxval, fif%diaveg(i,j))
+               max_dia_veg = max(max_dia_veg, fif%diaveg(i,j))
+               max_height_veg = max(max_height_veg, fif%veg_stemheight(i,j))
             enddo
          enddo
-         sr%veg_diamtr = maxval
-         maxval = -1.0e10
-         do i=1, fif%mmax
-            do j=1, fif%nmax
-               maxval = max(maxval, fif%veg_stemheight(i,j))
-            enddo
+         do idom=1, size(sr%dom)
+            if (sr%dom(idom)%vegetation < 1) then
+               sr%dom(idom)%vegetation = 1
+            endif
+            sr%dom(idom)%veg_diamtr = max_dia_veg
+            sr%dom(idom)%veg_height = max_height_veg
+            sr%dom(idom)%veg_nstems = 1
+            ! drag coefficient is not read from flow; must be set in the mdw-file
          enddo
-         sr%veg_height = maxval
       endif
    endif
    if (wavedata%mode == flow_mud_online) then

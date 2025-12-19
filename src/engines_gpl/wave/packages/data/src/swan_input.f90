@@ -109,28 +109,28 @@ module swan_input
 
    !
    type swan_dom
-      real :: freqmax ! maximum frequency
-      real :: freqmin ! minimum frequency
-      real :: enddir ! end direction for sector
-      real :: startdir ! start direction for sector
-      real :: veg_height ! vegetation height per layer
-      real :: veg_diamtr ! vegetation diameter
-      real :: veg_drag ! vegetation drag coefficient
-      integer :: veg_nstems ! the number of plant stands per square meter
+      real :: freqmax                 !> maximum frequency
+      real :: freqmin                 !> minimum frequency
+      real :: enddir                  !> end direction for sector
+      real :: startdir                !> start direction for sector
+      real :: veg_height              !> vegetation height per layer
+      real :: veg_diamtr              !> vegetation diameter
+      real :: veg_drag                !> vegetation drag coefficient
+      integer :: veg_nstems           !> the number of plant stands per square meter
       integer :: curvibot
-      integer :: dirspace ! 1: circle, 2: sector
-      integer :: ndir ! number of directional bins
-      integer :: nfreq ! number of frequency bins
+      integer :: dirspace             !> 1: circle, 2: sector
+      integer :: ndir                 !> number of directional bins
+      integer :: nfreq                !> number of frequency bins
       integer :: nestnr
-      integer :: n_meteofiles ! number of meteo input files
-      integer :: n_extforces ! number of external forcing files
+      integer :: n_meteofiles         !> number of meteo input files
+      integer :: n_extforces          !> number of external forcing files
       integer :: mxb
       integer :: myb
       integer :: mxc
       integer :: myc
-      integer :: vegetation
+      integer :: vegetation           !> corresponds with idrag in SWAN: 1: Suzuki, 2: Jacobsen. "true" is allowed for backwards compatibility, corresponding to idrag=1
       integer :: ice = 0
-      integer, dimension(5) :: qextnd ! 0: not used, 1: used and not extended, 2: used and extended
+      integer, dimension(5) :: qextnd !> 0: not used, 1: used and not extended, 2: used and extended
       integer :: flowVelocityType = FVT_DEPTH_AVERAGED
       ! Possible values:
       !    FVT_SURFACE_LAYER           : use FLOW velocity at surface
@@ -141,23 +141,23 @@ module swan_input
       character(256) :: curlif
       character(256) :: depfil
       character(256) :: nesfil
-      character(37) :: vegfil
-      character(20) :: nesnam ! dummy
+      character(256) :: vegfil
+      character(20) :: nesnam !> dummy
       character(80), dimension(:), allocatable :: extforce_names
    end type swan_dom
    !
    type swan_bnd
-      integer :: parread ! 1 = from-file, 2 = parametric
-      integer :: sshape ! 1 = Jonswap, 2 = Pierson-Moskowitz, 3 = Gauss
-      integer :: periodtype ! 1 = Peak, 2 = Mean
-      integer :: dsprtype ! 1 = Power, 2 = Degrees
-      integer :: bndtyp ! 1 = orientation, 2 = grid-coordinates, 3 = xy-coordinates
-      integer :: orient ! 1 = N, 2 = NW, 3 = W, 4 = SW, 5 = S, 6 = SE, 7 = E, 8 = NE
-      integer :: turn ! 0 = clockwise, 1 = counterclockwise (distance measurement along boundary)
-      integer :: convar ! 1 = uniform, 2 = space-varying
-      integer :: nsect ! previously swani(iindx+9)
+      integer :: parread    !> 1 = from-file, 2 = parametric
+      integer :: sshape     !> 1 = Jonswap, 2 = Pierson-Moskowitz, 3 = Gauss
+      integer :: periodtype !> 1 = Peak, 2 = Mean
+      integer :: dsprtype   !> 1 = Power, 2 = Degrees
+      integer :: bndtyp     !> 1 = orientation, 2 = grid-coordinates, 3 = xy-coordinates
+      integer :: orient     !> 1 = N, 2 = NW, 3 = W, 4 = SW, 5 = S, 6 = SE, 7 = E, 8 = NE
+      integer :: turn       !> 0 = clockwise, 1 = counterclockwise (distance measurement along boundary)
+      integer :: convar     !> 1 = uniform, 2 = space-varying
+      integer :: nsect      !> previously swani(iindx+9)
       integer, dimension(4) :: bndcrd_mn
-      real, dimension(4) :: bndcrd_xy
+      real   , dimension(4) :: bndcrd_xy
       real :: gamma0
       real :: sigfr
       !
@@ -192,11 +192,11 @@ module swan_input
       integer :: frictype
       integer :: genmode
       integer :: inrhog
-      integer :: icedamp ! 0: off, 1: clip in D-Waves, 2: via SWAN
+      integer :: icedamp !> 0: off, 1: clip in D-Waves, 2: via SWAN
       integer :: itermx
       integer :: itest
       integer :: itrace
-      integer :: modsim ! 0: stationary, 2: non-stationary input, 3: non-stationary input and calculation
+      integer :: modsim  !> 0: stationary, 2: non-stationary input, 3: non-stationary input and calculation
       ! modsim = 1 may not be used: is replaced by hotfile
       ! stationary: modsim is set to 2 (0 is not used anymore)
       integer :: mxr
@@ -216,11 +216,11 @@ module swan_input
       integer :: nscr
       integer :: nttide
       integer :: refjulday
-      integer :: num_scheme ! Numerical scheme 1: default (S&L for non-stat, SORDUP for stat), 2: BSBT
-      integer :: whitecap ! 0: off, 1: on, 2: westhuysen
+      integer :: num_scheme !> Numerical scheme 1: default (S&L for non-stat, SORDUP for stat), 2: BSBT
+      integer :: whitecap   !> 0: off, 1: on, 2: westhuysen
       integer :: nloc
       integer :: swdis
-      integer :: msurpnts ! minimum number of surrounding valid source-points for a target-point to be covered. default: 3, Delft3D: 4
+      integer :: msurpnts   !> minimum number of surrounding valid source-points for a target-point to be covered. default: 3, Delft3D: 4
       integer :: output_ice
       integer :: output_veg
       !
@@ -231,7 +231,7 @@ module swan_input
       integer, dimension(4) :: ts_wd
       !
       integer, dimension(:), pointer :: reflection
-      integer, dimension(:), pointer :: refl_type ! 1: specular, 2: diffuse
+      integer, dimension(:), pointer :: refl_type !> 1: specular, 2: diffuse
       integer, dimension(:), pointer :: nclin
       integer, dimension(:), pointer :: nlin
       !
@@ -265,11 +265,11 @@ module swan_input
       logical :: netcdf_sp
       logical :: timedependent
       logical :: triads
-      logical :: useflowdata ! true when FLOW data is used
+      logical :: useflowdata                !> true when FLOW data is used
       logical :: varwin
       logical :: varfri
       logical :: windgrowth
-      logical :: flowLinkConnectivity ! false: (default) use netlink connectivity from DFlowFM, true: use flowlink connectivity from DFlowFM
+      logical :: flowLinkConnectivity       !> false: (default) use netlink connectivity from DFlowFM, true: use flowlink connectivity from DFlowFM
       logical :: keepinput
       !
       real :: alpw
@@ -280,22 +280,22 @@ module swan_input
       real :: cftriad1
       real :: cftriad2
       real :: css
-      real :: deltc ! used when modsim = 3: Time step in non-stat SWAN runs
-      real :: nonstat_interval ! used when modsim = 3: Interval of non-stat SWAN computation
-      real :: deltcom ! Not used: COM write interval
+      real :: deltc                          !> used when modsim = 3: Time step in non-stat SWAN runs
+      real :: nonstat_interval               !> used when modsim = 3: Interval of non-stat SWAN computation
+      real :: deltcom                        !> Not used: COM write interval
       real :: inthotf
       real :: depmin
       real :: diffr_coeff
-      integer :: num_type !> Either NUM_ACCUR or NUM_STOPC
-      real :: tolerance_relative !> Relative tolerance used with both "num stopc" and "num accur"
-      real :: tolerance_absolute !> Absolute tolerance used with "num stopc"
+      integer :: num_type                    !> Either NUM_ACCUR or NUM_STOPC
+      real :: tolerance_relative             !> Relative tolerance used with both "num stopc" and "num accur"
+      real :: tolerance_absolute             !> Absolute tolerance used with "num stopc"
       real :: tolerance_absolute_wave_height !> Absolute tolerance for wave height used with "num accur"
       real :: tolerance_absolute_wave_period !> Absolute tolerance for wave period used with "num accur"
       real :: dxw
       real :: dyw
       real :: excval
       real :: frcof
-      real :: gamma0 ! Default gamma0, having a realistic value even if no boundaries are modelled. If boundaries are present gamma0 =  bnd(1)%gamma0
+      real :: gamma0                         !> Default gamma0, having a realistic value even if no boundaries are modelled. If boundaries are present gamma0 =  bnd(1)%gamma0
       real :: grav
       real, dimension(7) :: icecoeff
       real :: icewind
@@ -303,22 +303,18 @@ module swan_input
       real :: percwet
       real :: rho
       real :: rhomud
-      real :: tzone !> Time zone for communicating to external forcing module
+      real :: tzone                          !> Time zone for communicating to external forcing module
       real :: viscmud
       real :: xw
       real :: yw
       real :: wavm_write_interval
       real :: int2keephotfile
-      real :: veg_height
-      real :: veg_diamtr
-      integer :: veg_nstems ! the number of plant stands per square meter
-      integer :: maxerr = 2 ! Corresponds to maxerr in SWAN: maximum level of errors with which the calculation will continue
-      real :: veg_drag
+      integer :: maxerr = 2                  !> Corresponds to maxerr in SWAN: maximum level of errors with which the calculation will continue
       !
-      real :: wlevelcorr ! Overall water level correction; see Time frame input in GUI
-      real :: alfawind ! Overall wind speed multiplication factor;
+      real :: wlevelcorr                     !> Overall water level correction; see Time frame input in GUI
+      real :: alfawind                       !> Overall wind speed multiplication factor;
       real, dimension(:), pointer :: timwav
-      real, dimension(:), pointer :: zeta ! Default water level of a selected time point (when running stand-alone); see Time frame input in GUI
+      real, dimension(:), pointer :: zeta    !> Default water level of a selected time point (when running stand-alone); see Time frame input in GUI
       real, dimension(:), pointer :: ux0
       real, dimension(:), pointer :: uy0
       real, dimension(:), pointer :: wdir
@@ -338,7 +334,7 @@ module swan_input
       character(4) :: prnumb
       character(7), dimension(:), allocatable :: add_out_names
       character(80), dimension(:), allocatable :: extforce_names_gen
-      character(20) :: versionNumberOK = '40.51a' ! No capitals!!!
+      character(20) :: versionNumberOK = '40.51a' !> No capitals!!!
       character(16) :: prname
       character(37) :: rgfout
       character(37) :: wfil
@@ -350,16 +346,16 @@ module swan_input
       character(72) :: title3
       character(256) :: casl
       character(256) :: filnam
-      character(256) :: flowgridfile ! netcdf file containing flow grid
+      character(256) :: flowgridfile                           !> netcdf file containing flow grid
       character(256) :: scriptname
       character(256) :: specfile
       character(256) :: inputtemplatefile
       character(1024) :: comfile
-      character(15) :: usehottime = '00000000.000000' ! Time in the name of the hotfile that has to be used by SWAN
-      character(15) :: writehottime = '00000000.000000' ! Time in the name of the hotfile that has to be written by SWAN
-      character(15) :: keephottime = '00000000.000000' ! Time in the name of the hotfile that should not be deleted
-      character(50), dimension(:), allocatable :: pntfilnam ! Name of file containing locations for which output is requested
-      character(50), dimension(:), allocatable :: pntfilnamtab ! Name of file containing output on locations
+      character(15) :: usehottime = '00000000.000000'          !> Time in the name of the hotfile that has to be used by SWAN
+      character(15) :: writehottime = '00000000.000000'        !> Time in the name of the hotfile that has to be written by SWAN
+      character(15) :: keephottime = '00000000.000000'         !> Time in the name of the hotfile that should not be deleted
+      character(50), dimension(:), allocatable :: pntfilnam    !> Name of file containing locations for which output is requested
+      character(50), dimension(:), allocatable :: pntfilnamtab !> Name of file containing output on locations
       !
       type(handletype) :: tseriesfile
       !
@@ -369,11 +365,11 @@ module swan_input
    !
    type(swan_type), save :: swan_run
    !
-   integer, parameter :: q_bath = 1 ! used as index in array qextnd
-   integer, parameter :: q_wl = 2 ! used as index in array qextnd
-   integer, parameter :: q_cur = 3 ! used as index in array qextnd
-   integer, parameter :: q_wind = 4 ! used as index in array qextnd
-   integer, parameter :: q_veg = 5 ! used as index in array qextnd
+   integer, parameter :: q_bath = 1 !> used as index in array qextnd
+   integer, parameter :: q_wl = 2   !> used as index in array qextnd
+   integer, parameter :: q_cur = 3  !> used as index in array qextnd
+   integer, parameter :: q_wind = 4 !> used as index in array qextnd
+   integer, parameter :: q_veg = 5  !> used as index in array qextnd
 
    private :: get_pointname
 
@@ -958,7 +954,6 @@ contains
       def_nfreq = -999
       def_freqmin = -999.0
       def_freqmax = -999.0
-      sr%veg_drag = -999.0
       call prop_get(mdw_ptr, 'General', 'NDir', def_ndir)
       call prop_get(mdw_ptr, 'General', 'StartDir', def_startdir)
       call prop_get(mdw_ptr, 'General', 'EndDir', def_enddir)
@@ -1543,8 +1538,8 @@ contains
          dom%enddir = def_enddir
          dom%veg_height = -999.0
          dom%veg_diamtr = -999.0
-         dom%veg_nstems = 1
-         dom%veg_drag = 1
+         dom%veg_nstems = -999
+         dom%veg_drag = -999.0
          dom%qextnd(q_bath) = sr%dom(1)%qextnd(q_bath)
          dom%qextnd(q_veg) = sr%dom(1)%qextnd(q_veg)
          dom%qextnd(q_wl) = sr%dom(1)%qextnd(q_wl)
@@ -1599,23 +1594,28 @@ contains
             call handle_errors_mdw(sr)
          end if
          !
-         flag = .false.
-         dom%vegetation = 0
-         call prop_get(tmp_ptr, '*', 'Vegetation', flag)
-         if (flag) then
-            dom%vegetation = 1
+         dom%vegetation = -999
+         call prop_get(tmp_ptr, '*', 'Vegetation', dom%vegetation)
+         if (dom%vegetation == -999) then
+            ! Backwards compatible: allow "Vegetation = true"
+            flag = .false.
+            call prop_get(tmp_ptr, '*', 'Vegetation', flag)
+            if (flag) then
+               dom%vegetation = 1
+            else
+               dom%vegetation = 0
+            end if
          end if
-         flag = .false.
-         call prop_get(tmp_ptr, '*', 'VegSVNPlants', flag)
-         if (flag) then
-            dom%vegetation = 2
-         end if
-         if (dom%vegetation >= 1) then
+         if (dom%vegetation > 0) then
+            ! All vegetation parameters can optionally be overwritten when vegetation data
+            ! is read from flow, except the drag coefficient
             call prop_get(tmp_ptr, '*', 'VegHeight', dom%veg_height)
             call prop_get(tmp_ptr, '*', 'VegDiamtr', dom%veg_diamtr)
             call prop_get(tmp_ptr, '*', 'VegDrag', dom%veg_drag)
-         end if
-         if (dom%vegetation == 1) then
+            if (dom%veg_drag < 0) then
+               write (*, *) 'SWAN_INPUT: Vegetation specified but VegDrag is not specified'
+               call handle_errors_mdw(sr)
+            end if
             call prop_get(tmp_ptr, '*', 'VegNstems', dom%veg_nstems)
             !
             ! Read vegetation map
@@ -3005,7 +3005,7 @@ contains
       !
       !     Vegetation map
       !
-      if (dom%vegetation == 1) then
+      if (dom%vegetation > 0) then
          if (dom%vegfil /= '') then
             write (luninp, '(1X,A)') '$'
             lijn = 'INPGRID _'
@@ -3022,27 +3022,7 @@ contains
          end if
          line = ' '
          line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,1I4,1X,F6.2)') dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
-         write (luninp, '(1X,A)') line
-         line = ' '
-      end if
-      !
-      if (dom%vegetation == 2) then
-         write (luninp, '(1X,A)') '$'
-         lijn = 'INPGRID _'
-         line(1:19) = 'NPLANTS CURV 0. 0. '
-         write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
-         write (luninp, '(1X,A)') lijn
-         write (luninp, '(1X,A)') trim(line)
-         line = ' '
-         !
-         !     File-name vegetation map (use temporary file)
-         !
-         line = 'READINP NPLANTS 1.0 '''//trim(vegfil)//''' 4 0 FREE'
-         write (luninp, '(1X,A)') trim(line)
-         line = ' '
-         line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,A,1X,F6.2)') sr%veg_height, sr%veg_diamtr, "1", dom%veg_drag
+         write (line(15:), '(I0,1X,F6.2,1X,F7.4,1X,1I4,1X,F6.2)') dom%vegetation, dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
          write (luninp, '(1X,A)') line
          line = ' '
       end if
@@ -3472,12 +3452,6 @@ contains
       if (.not. sr%fshift) then
          line(1:10) = 'OFF FSHIFT'
          line(11:) = ' '
-         write (luninp, '(1X,A)') line
-         line = ' '
-      end if
-      if (dom%vegetation == 1) then
-         line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,I4,1X,F7.4)') dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
          write (luninp, '(1X,A)') line
          line = ' '
       end if
