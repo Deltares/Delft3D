@@ -244,7 +244,7 @@ contains
                do L = Lb, Ltop(LL)
                   if (hu(L) <= slfacdeltau) then
                      htop = min(hu(L), slfacdeltau) ! max height within streaming layer
-                     alin = 1_dp - htop / slfacdeltau ! linear from 1 at bed to 0 at 3*deltau
+                     alin = 1_dp - htop / slfacdeltau ! linear from 1 at bed to 0 at slfacdeltau (= strlyrfac * deltau)
                      Dfu1 = Dfuc * alin
                      adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1)
                      Dfu0 = Dfu1
