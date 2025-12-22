@@ -3344,7 +3344,7 @@ contains
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
       end if
-      call prop_set(prop_ptr, 'physics', 'DynRoughVeg', dynroughveg, 'Switch for dynamic vegetation rougness. Default 0.')
+      call prop_set(prop_ptr, 'physics', 'DynRoughVeg', dynroughveg, 'Switch for dynamic vegetation roughness. Default 0.')
       call prop_set(prop_ptr, 'physics', 'droot', droot, 'Root depth. Default 0.5m') ! default 0.5 [0-100]
       call prop_set(prop_ptr, 'physics', 'dstem', dstem, 'Stem height. Default 0.5m') ! default 0.5 [0-100]
       call prop_set(prop_ptr, 'physics', 'nmanmin', frcumin, 'Base friction Manning value. Default 0.023') ! default 0.023
