@@ -424,6 +424,7 @@ contains
    end subroutine fill_open_boundary_cells_with_inner_values_fewer
 
    subroutine findexternalboundarypoints() ! find external boundary points
+      use string_module, only: strsplit
       use m_netw
       use m_flow, filetype_hide => filetype ! Two stages: 1 = collect elsets for which data is provided
       use m_flowgeom !             2 = add relations between elsets and their providers
@@ -443,102 +444,70 @@ contains
       use m_filez, only: oldfil, doclose
       use messagehandling, only: msgbuf, msg_flush, err_flush
 
-      character(len=256) :: filename
-      integer :: filetype
+      ! Local variables
+      character(len=256), dimension(:), allocatable :: file_names !< list of external forcing filenames
+      character(len=256) :: filename !< filename being processed
+      character(len=64) :: varname
+      logical :: stat !< file existence status
+      logical :: ext_force_bnd_used
+      real(kind=dp) :: return_time
       integer, allocatable :: kce(:) ! kc edges (numl)
       integer, allocatable :: ke(:) ! kc edges (numl)
-      logical :: jawel
+      integer :: filetype
       integer :: ja_ext_force
-      logical :: ext_force_bnd_used
       integer :: ierr, method
-      real(kind=dp) :: return_time
       integer :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf
       integer :: nx
       integer :: ierror
       integer :: num_bc_ini_blocks
-      character(len=64) :: varname
-
+      integer :: i !< loop counter
+      
+      ! Initialize
       jatimespace = 1
-
       return_time = 0
       ja_ext_force = 0
       ext_force_bnd_used = .false.
 
-      if (len(trim(md_extfile)) > 0) then
-         inquire (file=trim(md_extfile), exist=jawel)
-         if (jawel) then
-            if (mext /= 0) then
-               ! Close first, if left open after prior flow_geominit().
-               ! NOTE: AvD: this if-check relies on the fact that mext is *not* set to 0 in default_fm_external_forcing_data(), when reinitializing an already initialized model.
-               call doclose(mext)
-            end if
+      ! Allocate and initialize temporary arrays
 
-            call oldfil(mext, md_extfile)
-            call split_filename(md_extfile, md_extfile_dir, filename) ! Remember base dir for this ext file
-            ja_ext_force = 1
-         else
-            call qnerror('External forcing file '''//trim(md_extfile)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(md_extfile), ''' not found.'
-            call err_flush()
-         end if
-      end if
-      if (len(trim(md_extfile_new)) > 0) then
-         inquire (file=trim(md_extfile_new), exist=jawel)
-         if (jawel) then
-            ext_force_bnd_used = .true.
-         else
-            call qnerror('Boundary external forcing file '''//trim(md_extfile_new)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', trim(md_extfile_new), ''' not found.'
-            call err_flush()
-         end if
-      end if
-
-! if (ja_ext_force == 0 .and. .not. ext_force_bnd_used) then
-!    return
-! endif
-
+      ! deallocate xe, ye, and xyen arrays if allocated
       if (allocated(xe)) then
          deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
       end if
 
-      !mx1Dend = 0                                        ! count MAX nr of 1D endpoints
-      !do L = 1,numl1D
-      !   if ( kn(3,L) == 1) then                         ! zeker weten
-      !      k1 = kn(1,L) ; k2 = kn(2,L)
-      !      if (nmk(k1) == 1 .and. nmk(k2) == 2 .and. lne(1,L) < 0 .or. &
-      !          nmk(k2) == 1 .and. nmk(k1) == 2 .and. lne(2,L) < 0 ) then
-      !          mx1Dend = mx1Dend + 1
-      !      endif
-      !   endif
-      !enddo
-      !
-      !
-      !nx = numl + mx1Dend
-
       ! count number of 2D links and 1D endpoints
       call count_links(mx1Dend, Nx)
 
-      allocate (xe(nx), stat=ierr)
-      xe = 0 ! used in findexternalboundarypoints
+      ! reallocate xe, ye, and xyen arrays
+      allocate(xe(nx), stat=ierr)
+      xe = 0.0_dp ! used in findexternalboundarypoints
       call aerr('xe (nx)', ierr, nx)
-      allocate (ye(nx), stat=ierr)
-      ye = 0
+
+      allocate(ye(nx), stat=ierr)
+      ye = 0.0_dp
       call aerr('ye (nx)', ierr, nx)
-      allocate (xyen(2, nx), stat=ierr)
+
+      allocate(xyen(2, nx), stat=ierr)
       xyen = 0.0_dp
       call aerr('xyen(2, nx)', ierr, nx)
 
-      ! some temp arrays
-
       if (allocated(kez)) then
          ! If flow_geominit was called separately from a flow_modelinit:
-         deallocate (kez, keu, kes, ketm, kesd, keuxy, ket, ken, ke1d2d, keg, ked, kep, kedb, keklep, kevalv, kegs, kegen, itpez, itpenz, itpeu, itpenu, kew)
+         deallocate(kez, keu, kes, ketm, kesd, keuxy, ket, ken, ke1d2d, keg, ked, kep, kedb, keklep, kevalv, kegs, kegen, itpez, &
+            itpenz, itpeu, itpenu, kew)
       end if
+
       if (allocated(ftpet)) then
-         deallocate (ftpet)
+         deallocate(ftpet)
       end if
-      allocate (kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx), itpenu(nx), kew(nx), ftpet(nx), stat=ierr)
-      call aerr('kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx) , itpenu(nx), kew(nx), ftpet(nx)', ierr, 17 * nx)
+
+      allocate(kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), &
+         ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx), itpenu(nx), &
+         kew(nx), ftpet(nx), stat=ierr)
+      call aerr('kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), &
+         keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx), &
+         itpenu(nx), kew(nx), ftpet(nx)', ierr, 17 * nx)
+      
       kce = 0
       ke = 0
       kez = 0
@@ -565,45 +534,45 @@ contains
       ftpet = 1e6_dp
 
       if (allocated(ketr)) then
-         deallocate (ketr)
+         deallocate(ketr)
       end if
-      allocate (ketr(nx, 1), stat=ierr)
+      allocate(ketr(nx, 1), stat=ierr)
       call aerr('ketr(nx,1)', ierr, nx)
       ketr = 0
 
       if (allocated(nbndtr)) then
-         deallocate (nbndtr)
+         deallocate(nbndtr)
       end if
-      allocate (nbndtr(1), stat=ierr)
+      allocate(nbndtr(1), stat=ierr)
       call aerr('nbndtr(1)', ierr, 1)
       nbndtr = 0
 
       if (allocated(trnames)) then
-         deallocate (trnames)
+         deallocate(trnames)
       end if
-      allocate (trnames(1), stat=ierr)
+      allocate(trnames(1), stat=ierr)
       call aerr('trnames(1)', ierr, 1)
       trnames(1) = ''
       numtracers = 0
 
       if (allocated(kesf)) then
-         deallocate (kesf)
+         deallocate(kesf)
       end if
-      allocate (kesf(1, nx), stat=ierr) ! would have been nice to have stmpar%lsedsus,
-      call aerr('kesf(1,nx)', ierr, nx) ! but no can do, jammer de bammer...
+      allocate(kesf(1, nx), stat=ierr)
+      call aerr('kesf(1,nx)', ierr, nx)
       kesf = 0
 
       if (allocated(nbndsf)) then
-         deallocate (nbndsf)
+         deallocate(nbndsf)
       end if
-      allocate (nbndsf(1), stat=ierr)
+      allocate(nbndsf(1), stat=ierr)
       call aerr('nbndsf(1)', ierr, 1)
       nbndsf = 0
 
       if (allocated(sfnames)) then
-         deallocate (sfnames)
+         deallocate(sfnames)
       end if
-      allocate (sfnames(1), stat=ierr)
+      allocate(sfnames(1), stat=ierr)
       call aerr('sfnames(1)', ierr, 1)
       sfnames = ''
       numfracs = 0
@@ -611,24 +580,24 @@ contains
       call make_mirrorcells(Nx, xe, ye, xyen, kce, ke, ierror)
 
       if (jampi == 1) then
-! disable mirror cells that are not mirror cells in the whole model by setting kce=0
+         ! disable mirror cells that are not mirror cells in the whole model by setting kce=0
          call partition_reduce_mirrorcells(Nx, kce, ke, ierror)
       end if
 
       nbndz = 0 ! startindex waterlevel bnds
-      nbndu = 0 ! startindex velocity   bnds
-      nbnds = 0 ! startindex salinity   bnds
+      nbndu = 0 ! startindex velocity bnds
+      nbnds = 0 ! startindex salinity bnds
       nbndtm = 0 ! startindex temperature bnds
       nbndt = 0 ! startindex tangential vel. bnds
       nbnduxy = 0 ! startindex uxuy vel. bnds
-      nbndn = 0 ! startindex normal     vel. bnds
+      nbndn = 0 ! startindex normal vel. bnds
       nbnd1d2d = 0 ! startindex 1d2d bnds
       ngate = 0 ! startindex gate links
       ncdam = 0 ! startindex cdam links
       npump = 0 ! startindex pump links
       nbndw = 0 ! startindex wave energy bnds
 
-      nqbnd = 0 ! nr of q sections   or specified q bnd's
+      nqbnd = 0 ! nr of q sections or specified q bnd's
       nqhbnd = 0 ! nr of qh boundary sections or specified qh bnd's
       ngatesg = 0 ! nr of gate signals or specified gates ! not in loop below because flow links not ready yet
       ncdamsg = 0 ! nr of controllable dam signals
@@ -636,11 +605,27 @@ contains
       nshiptxy = 0 ! nr of ship xyt signals
       nwbnd = 0 ! nr of wave-energy boundaries
 
+      ! Check if external forcing files exist
       num_bc_ini_blocks = 0
-      if (ext_force_bnd_used) then
-         ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
-         call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
-                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+
+      ! Old external forcing file
+      if (len_trim(md_extfile) > 0) then
+         inquire (file=trim(md_extfile), exist=stat)
+         if (stat) then
+            if (mext /= 0) then
+               ! Close first, if left open after prior flow_geominit().
+               ! NOTE: AvD: this if-check relies on the fact that mext is *not* set to 0 in default_fm_external_forcing_data(), when reinitializing an already initialized model.
+               call doclose(mext)
+            end if
+
+            call oldfil(mext, md_extfile)
+            call split_filename(md_extfile, md_extfile_dir, filename) ! Remember base dir for this ext file
+            ja_ext_force = 1
+         else
+            call qnerror('External forcing file '''//trim(md_extfile)//''' not found.', '  ', ' ')
+            write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(md_extfile), ''' not found.'
+            call err_flush()
+         end if
       end if
 
       do while (ja_ext_force == 1) ! read legacy format *.ext file
@@ -659,14 +644,41 @@ contains
 
             jatimespace = 1 ! module is to be used
 
-            call processexternalboundarypoints(qid, filename, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, 1.0_dp, transformcoef)
+            call processexternalboundarypoints(qid, filename, filetype, return_time, nx, kce, numz, numu, nums, &
+               numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, 1.0_dp, transformcoef)
 
          end if
 
       end do
 
-      deallocate (kce)
-      deallocate (ke)
+      ! New external forcing file
+      if (len_trim(md_extfile_new) > 0) then
+         ! Split md_extfile_new in separate file names (separated by spaces)
+         call strsplit(trim(md_extfile_new), 1, file_names, 1)
+
+         ! Loop over files and check existence
+         do i = 1, size(file_names)
+            filename = trim(file_names(i))
+
+            inquire(file=filename, exist=stat)
+            if (stat) then
+               ext_force_bnd_used = .true.
+
+               ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
+               call read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
+                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+            else
+               call qnerror('Boundary external forcing file '''//filename//''' not found.', '  ', ' ')
+               write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', filename, ''' not found.'
+               call err_flush()
+            end if
+
+         end do
+      end if
+
+      ! Deallocate temporary arrays
+      deallocate(kce)
+      deallocate(ke)
 
       if (mext /= 0) then
          rewind (mext) ! prepare input file

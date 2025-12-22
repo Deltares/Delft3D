@@ -123,7 +123,8 @@ module network_data
    integer, allocatable :: LC(:) !< (numl) Mask array for net links.
    integer, allocatable :: LC0(:) !< Backup for lc.
    real, allocatable :: RLIN(:) !< (numl) Placeholder for link values to be displayed.
-   double precision, allocatable :: xe(:), ye(:) !< (numl) Edge (link) center coordinates.
+   double precision, allocatable :: xe(:) !< (numl) Edge (link) center coordinates.
+   double precision, allocatable :: ye(:) !< (numl) Edge (link) center coordinates.
    double precision, allocatable :: dxe(:) !< (numl) Edge (link) actual length. OPTIONAL. When unallocated, we default to Euclidean distance between the netnodes xk,yk.
    double precision, allocatable :: dxe0(:) !< Backup for dxe.
    integer, allocatable :: KTRI(:), KTON(:), KBT(:)
