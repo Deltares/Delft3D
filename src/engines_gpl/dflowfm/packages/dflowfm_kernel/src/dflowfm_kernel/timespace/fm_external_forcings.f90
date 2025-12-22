@@ -445,7 +445,8 @@ contains
 
       ! Local variables
       character(len=256), dimension(:), allocatable :: file_names !< list of external forcing filenames
-      character(len=256) :: filename !< filename being processed
+      character(len=256) :: filename
+      character(len=256) :: filename_new !< filename being processed
       character(len=64) :: varname
       logical :: stat !< file existence status
       logical :: ext_force_bnd_used
@@ -657,18 +658,18 @@ contains
 
          ! Loop over files and check existence
          do i = 1, size(file_names)
-            filename = trim(file_names(i))
+            filename_new = trim(file_names(i))
 
-            inquire(file=filename, exist=stat)
+            inquire(file=filename_new, exist=stat)
             if (stat) then
                ext_force_bnd_used = .true.
 
                ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
-               call read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
+               call read_location_files_from_boundary_blocks(filename_new, nx, kce, num_bc_ini_blocks, &
                   numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
             else
-               call qnerror('Boundary external forcing file '''//filename//''' not found.', '  ', ' ')
-               write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', filename, ''' not found.'
+               call qnerror('Boundary external forcing file '''//filename_new//''' not found.', '  ', ' ')
+               write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', filename_new, ''' not found.'
                call err_flush()
             end if
 
