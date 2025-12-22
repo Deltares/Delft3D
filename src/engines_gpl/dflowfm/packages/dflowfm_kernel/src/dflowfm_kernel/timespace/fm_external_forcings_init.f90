@@ -39,12 +39,12 @@ contains
    !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_new(external_force_file_name, iresult)
       use properties, only: get_version_number, prop_file
-      use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use tree_structures, only: tree_data, tree_create, tree_create_node, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
       use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, set_lateral_count_in_external_forcings_file
       use m_flowgeom, only: ba
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
-      use string_module, only: str_tolower
+      use string_module, only: str_tolower, strsplit
       use system_utils, only: split_filename
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use m_ec_parameters, only: provFile_uniform
@@ -63,6 +63,7 @@ contains
       integer :: initial_threshold_abort
       logical :: res
       logical :: is_successful
+      type(tree_data), pointer :: main_ptr !< main tree of extForceBnd-file
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       type(tree_data), pointer :: node_ptr
       integer :: istat
@@ -74,143 +75,160 @@ contains
       integer :: ib, ibqh, ibt
       integer :: maxlatsg, max_num_src
       integer :: major, minor
+      character(len=INI_VALUE_LEN), dimension(:), allocatable :: file_names
       character(len=:), allocatable :: file_name
+      integer :: i_filename
       integer, allocatable :: itpenzr(:), itpenur(:)
 
       iresult = DFM_NOERR
-      file_name = trim(external_force_file_name)
-      if (len_trim(file_name) <= 0) then
+      res = .true.
+
+      ! Trim external_force_file_name and split in case of multiple files
+      call strsplit(trim(external_force_file_name), 1, file_names, 1)
+
+      if (len_trim(file_names(1)) <= 0) then
          ! empty line in MDU is allowed: exit without error
          return
       end if
 
-      res = .true.
+      ! Create main tree for external forcing files
+      call tree_create('main', main_ptr)
 
-      call tree_create(file_name, bnd_ptr)
-      call prop_file('ini', file_name, bnd_ptr, istat)
-      if (istat /= 0) then
-         write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(file_name), ''' could not be read'
-         call err_flush()
-         iresult = DFM_WRONGINPUT
-         return
-      end if
+      ! Loop over all specified external forcing files and create nodes for each file
+      do i_filename = 1, size(file_names)
+         file_name = trim(file_names(i_filename))
 
-      ! check FileVersion
-      major = 1
-      minor = 0
-      call get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
-      if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
-            //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
-            '. Ignoring this file.'
-         call err_flush()
-         iresult = DFM_WRONGINPUT
-         return
-      end if
+         call tree_create_node(main_ptr, file_name, bnd_ptr)
+         call prop_file('ini', file_name, bnd_ptr, istat)
+         if (istat /= DFM_NOERR) then
+            write (msgbuf, '(a,a,a)') 'External forcing file ''', file_name, ''' could not be read'
+            call err_flush()
+            iresult = DFM_WRONGINPUT
+            return
+         end if
+
+         ! check FileVersion
+         major = 1
+         minor = 0
+         call get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
+         if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
+            write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
+               //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+               '. Ignoring this file.'
+            call err_flush()
+            iresult = DFM_WRONGINPUT
+            return
+         end if
+      end do
 
       call init_registered_items()
 
-      call split_filename(file_name, base_dir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
+      do i_filename = 1, size(file_names)
+         bnd_ptr => main_ptr%child_nodes(i_filename)%node_ptr ! get pointer to current ext forcing file tree
+         file_name = trim(file_names(i_filename))
 
-      num_items_in_file = tree_num_nodes(bnd_ptr)
+         call split_filename(file_name, base_dir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
 
-      ! Build temporary reverse lookup table that maps boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
-      allocate (itpenzr(num_items_in_file))
-      allocate (itpenur(num_items_in_file))
-      itpenzr(:) = 0
-      itpenur(:) = 0
-      do ibt = 1, nbndz
-         ib = itpenz(ibt)
-         if (ib > 0 .and. ib <= num_items_in_file) then
-            itpenzr(ib) = ibt
-         end if
-      end do
-      do ibt = 1, nbndu
-         ib = itpenu(ibt)
-         if (ib > 0 .and. ib <= num_items_in_file) then
-            itpenur(ib) = ibt
-         end if
-      end do
+         num_items_in_file = tree_num_nodes(bnd_ptr) ! number of items in this ext forcing file
 
-      ! Allocate lateral provider array now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
-      if (maxlatsg > 0) then
-         call realloc(balat, maxlatsg, keepExisting=.false., fill=0.0_dp)
-         call realloc(qplat, [max(1, kmx), maxlatsg], keepExisting=.false., fill=0.0_dp)
-         call realloc(lat_ids, maxlatsg, keepExisting=.false.)
-         call realloc(n1latsg, maxlatsg, keepExisting=.false., fill=0)
-         call realloc(n2latsg, maxlatsg, keepExisting=.false., fill=0)
-      end if
-
-      ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      max_num_src = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
-      if (max_num_src > 0) then
-         call reallocsrc(max_num_src, 0)
-      end if
-
-      ib = 0
-      ibqh = 0
-      initial_threshold_abort = threshold_abort
-      threshold_abort = LEVEL_FATAL
-      do i = 1, num_items_in_file
-         node_ptr => bnd_ptr%child_nodes(i)%node_ptr
-         group_name = trim(tree_get_name(node_ptr))
-
-         select case (str_tolower(group_name))
-         case ('general')
-            ! General block, was already read.
-
-         case ('boundary')
-            res = res .and. init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
-
-         case ('lateral')
-            res = res .and. init_lateral_forcings(node_ptr, base_dir, i, major)
-
-         case ('meteo')
-            res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
-
-         case ('sourcesink')
-            res = res .and. init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name)
-
-         case default ! Unrecognized item in an ext block
-            ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
-            write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
-            call warn_flush()
-         end select
-      end do
-      threshold_abort = initial_threshold_abort
-
-      if (allocated(itpenzr)) then
-         deallocate (itpenzr)
-      end if
-      if (allocated(itpenur)) then
-         deallocate (itpenur)
-      end if
-      if (numlatsg > 0) then
-         do n = 1, numlatsg
-            balat(n) = 0.0_dp
-            do k1 = n1latsg(n), n2latsg(n)
-               k = nnlat(k1)
-               if (k > 0) then
-                  if (.not. is_ghost_node(k)) then
-                     balat(n) = balat(n) + ba(k)
-                  end if
-               end if
-            end do
+         ! Build temporary reverse lookup table that maps boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
+         allocate (itpenzr(num_items_in_file))
+         allocate (itpenur(num_items_in_file))
+         itpenzr(:) = 0
+         itpenur(:) = 0
+         do ibt = 1, nbndz
+            ib = itpenz(ibt)
+            if (ib > 0 .and. ib <= num_items_in_file) then
+               itpenzr(ib) = ibt
+            end if
          end do
-         if (jampi > 0) then
-            call reduce_sum(numlatsg, balat)
+         do ibt = 1, nbndu
+            ib = itpenu(ibt)
+            if (ib > 0 .and. ib <= num_items_in_file) then
+               itpenur(ib) = ibt
+            end if
+         end do
+
+         ! Allocate lateral provider array now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
+         maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
+         if (maxlatsg > 0) then
+            call realloc(balat, maxlatsg, keepExisting=.false., fill=0.0_dp)
+            call realloc(qplat, [max(1, kmx), maxlatsg], keepExisting=.false., fill=0.0_dp)
+            call realloc(lat_ids, maxlatsg, keepExisting=.false.)
+            call realloc(n1latsg, maxlatsg, keepExisting=.false., fill=0)
+            call realloc(n2latsg, maxlatsg, keepExisting=.false., fill=0)
          end if
-         if (allocated(kclat)) then
-            deallocate (kclat)
+
+         ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
+         max_num_src = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+         if (max_num_src > 0) then
+            call reallocsrc(max_num_src, 0)
          end if
-      end if
 
-      call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_name)//'''')
+         ib = 0
+         ibqh = 0
+         initial_threshold_abort = threshold_abort
+         threshold_abort = LEVEL_FATAL
+         do i = 1, num_items_in_file
+            node_ptr => bnd_ptr%child_nodes(i)%node_ptr
+            group_name = trim(tree_get_name(node_ptr))
 
-      call set_lateral_count_in_external_forcings_file(numlatsg) !save number of laterals to module variable
+            select case (str_tolower(group_name))
+            case ('general')
+               ! General block, was already read.
 
-      call tree_destroy(bnd_ptr)
+            case ('boundary')
+               res = res .and. init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
+
+            case ('lateral')
+               res = res .and. init_lateral_forcings(node_ptr, base_dir, i, major)
+
+            case ('meteo')
+               res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
+
+            case ('sourcesink')
+               res = res .and. init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name)
+
+            case default ! Unrecognized item in an ext block
+               ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
+               write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
+               call warn_flush()
+            end select
+         end do
+         threshold_abort = initial_threshold_abort
+
+         if (allocated(itpenzr)) then
+            deallocate (itpenzr)
+         end if
+         if (allocated(itpenur)) then
+            deallocate (itpenur)
+         end if
+         if (numlatsg > 0) then
+            do n = 1, numlatsg
+               balat(n) = 0.0_dp
+               do k1 = n1latsg(n), n2latsg(n)
+                  k = nnlat(k1)
+                  if (k > 0) then
+                     if (.not. is_ghost_node(k)) then
+                        balat(n) = balat(n) + ba(k)
+                     end if
+                  end if
+               end do
+            end do
+            if (jampi > 0) then
+               call reduce_sum(numlatsg, balat)
+            end if
+            if (allocated(kclat)) then
+               deallocate (kclat)
+            end if
+         end if
+
+         call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//file_name//'''')
+
+         call set_lateral_count_in_external_forcings_file(numlatsg) !save number of laterals to module variable
+      end do
+
+      call tree_destroy(main_ptr)
       if (allocated(thrtt)) then
          call init_threttimes()
       end if

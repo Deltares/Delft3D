@@ -331,7 +331,9 @@ contains
             ! There could be a comment (started by #) after line continuation backslash
             num_hash = 0
             do i = 1, lcend ! count number of #
-               if (linecont(i:i) == '#') num_hash = num_hash + 1
+               if (linecont(i:i) == '#') then
+                  num_hash = num_hash + 1
+               end if
             end do
             if (num_hash == 0) then ! if none, it is easy
                lcend = len_trim(linecont)

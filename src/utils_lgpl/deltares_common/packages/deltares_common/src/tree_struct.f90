@@ -88,73 +88,73 @@ module tree_structures
    ! Public routines, types and parameters
    !
    public :: tree_data
-   public :: tree_create, tree_create_node, tree_add_node, tree_get_node_by_name, tree_num_nodes, &
-             tree_count_nodes_byname, tree_disconnect_node, &
-             tree_get_data_ptr, tree_put_data, tree_get_name, tree_get_data, &
-             tree_get_datatype, tree_get_data_string, &
-             tree_traverse, tree_traverse_level, print_tree, &
-             tree_fold, tree_destroy, tree_get_data_alloc_string, tree_remove_child_by_name
+   public :: tree_create
+   public :: tree_create_node
+   public :: tree_add_node
+   public :: tree_get_node_by_name
+   public :: tree_num_nodes
+   public :: tree_count_nodes_byname
+   public :: tree_disconnect_node
+   public :: tree_get_data_ptr
+   public :: tree_put_data
+   public :: tree_get_name
+   public :: tree_get_data
+   public :: tree_get_datatype
+   public :: tree_get_data_string
+   public :: tree_traverse
+   public :: tree_traverse_level
+   public :: print_tree
+   public :: tree_fold
+   public :: tree_destroy
+   public :: tree_get_data_alloc_string
+   public :: tree_remove_child_by_name
+
    ! nested function has to be public for gfortran
    public :: dealloc_tree_data
 
 contains
 
-! tree_create --
-!    Create a new tree
-!
-! Arguments:
-!    name         Name of the new tree
-!    tree         Pointer to the new tree
-! Result:
-!    The argument tree points to a new, empty tree structure or is
-!    not associated
-!
+   !> Create a new tree. 
+   !> After calling, the argument tree points to a new empty tree structure or is not associated
    subroutine tree_create(name, tree, maxlenpar)
-      character(len=*), intent(in) :: name
-      type(tree_data), pointer, intent(out) :: tree
+      character(len=*), intent(in) :: name !< Name of the new tree
+      type(tree_data), pointer, intent(out) :: tree !< Pointer to the new tree
 
       integer :: error
       integer :: newsize
       integer, optional :: maxlenpar
 
-      if (present(maxlenpar)) maxlen = maxlenpar
+      if (present(maxlenpar)) then
+         maxlen = maxlenpar
+      end if
 
-      allocate (tree, stat=error)
+      allocate(tree, stat=error)
 
       if (error /= 0) then
-         nullify (tree)
+         nullify(tree)
       else
          newsize = size(transfer(name, node_value))
-         allocate (tree%node_name(1:newsize), stat=error)
+         allocate(tree%node_name(1:newsize), stat=error)
          if (error /= 0) then
-            deallocate (tree)
-            nullify (tree)
+            deallocate(tree)
+            nullify(tree)
             return
          else
             tree%node_name(1:newsize) = transfer(name, node_value)
             tree%node_visit = 0
-            nullify (tree%node_data)
-            nullify (tree%node_data_type)
-            nullify (tree%child_nodes)
+            nullify(tree%node_data)
+            nullify(tree%node_data_type)
+            nullify(tree%child_nodes)
          end if
       end if
    end subroutine tree_create
 
-! tree_create_node --
-!    Create a new node to the given tree or node
-!
-! Arguments:
-!    tree         The tree or node to which to append the new node
-!    name         Name of the new node
-!    node         Pointer to the new node
-! Result:
-!    The argument node points to a new, empty node or is
-!    not associated
-!
+   !< Create a new node to the given tree or node. 
+   !< The argument node points to a new, empty node or is not associated
    subroutine tree_create_node(tree, name, node)
-      character(len=*), intent(in) :: name
-      type(tree_data), pointer :: tree
-      type(tree_data), pointer :: node
+      character(len=*), intent(in) :: name !> Name of the new node
+      type(tree_data), pointer :: tree !> The tree or node to which to append the new node
+      type(tree_data), pointer :: node !> Pointer to the new node
 
       integer :: ierror
 
