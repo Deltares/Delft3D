@@ -80,11 +80,15 @@ contains
             link_domain_number = min(left_domain, right_domain) ! a choice
 
 !           ghost domain cannot be own domain
-            if (link_domain_number == domain) link_domain_number = left_domain + right_domain - domain
+            if (link_domain_number == domain) then
+               link_domain_number = left_domain + right_domain - domain
+            end if
             link_ghost_level = min(left_ghost_level, right_ghost_level)
 
 !           ghost level may be zero
-            if (link_ghost_level == 0) link_ghost_level = max(left_ghost_level, right_ghost_level)
+            if (link_ghost_level == 0) then
+               link_ghost_level = max(left_ghost_level, right_ghost_level)
+            end if
          end if
       end if
 

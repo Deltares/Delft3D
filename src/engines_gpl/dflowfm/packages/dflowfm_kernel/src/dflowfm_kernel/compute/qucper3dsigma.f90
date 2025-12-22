@@ -71,10 +71,14 @@ contains
       k12 = ln(n12, LL)
       do La = 1, nd(k12)%lnx ! loop over all attached links
          LLL = nd(k12)%ln(La)
-         nn12 = 1; if (LLL > 0) nn12 = 2
+         nn12 = 1
+         if (LLL > 0) then
+            nn12 = 2
+         end if
          LLLL = abs(LLL)
 
-         Lb2 = Lbot(LLLL); Lt2 = Ltop(LLLL)
+         Lb2 = Lbot(LLLL)
+         Lt2 = Ltop(LLLL)
          do Lk = LB2, LT2
 
             if (qa(Lk) /= 0) then ! include own link

@@ -65,11 +65,14 @@ contains
 
       integer, external :: OMP_GET_THREAD_NUM
 
-      XV = XX; YV = YY
+      XV = XX
+      YV = YY
 
       jout = -999
       rlout = -1.0_dp
-      if (MXLAN == 0) return
+      if (MXLAN == 0) then
+         return
+      end if
 
       DISMIN = 9e+33
       inb = IMISS

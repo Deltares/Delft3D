@@ -121,7 +121,9 @@ contains
       end if
 
       if (.not. allocated(ti_mpt)) then
-         allocate (ti_mpt(1), ti_mpt_rel(1)); ti_mpt(1) = 0; ti_mpt_rel(1) = 0
+         allocate (ti_mpt(1), ti_mpt_rel(1))
+         ti_mpt(1) = 0
+         ti_mpt_rel(1) = 0
       end if
 
       call timstrt('call wrimap', handle_extra(77))
@@ -219,7 +221,9 @@ contains
                   time_com = tstop_user + 1
                else
                   tem_dif = (tim - ti_coms) / ti_com
-                  if (isnan(tem_dif)) tem_dif = 0.0_hp
+                  if (isnan(tem_dif)) then
+                     tem_dif = 0.0_hp
+                  end if
                   time_com = max(ti_coms + (floor(tem_dif + 0.001_dp) + 1) * ti_com, ti_coms)
                   ti_ctv_rel = ti_ctv - tim
                   time_com_ctv = tim + minval(ti_ctv_rel, mask=ti_ctv_rel > 0)
@@ -275,7 +279,7 @@ contains
             wrwaqon = .true.
          end if
 
-         if (tim >= ti_waqs .and. tim <= ti_waqe + 0.1d0 .and. tim >= time_waq - 0.1d0) then
+         if (tim >= ti_waqs .and. tim <= ti_waqe + 0.1_dp .and. tim >= time_waq - 0.1_dp) then
             call waq_wri_couple_files(tim)
             time_waq = time_waq + ti_waq
          end if
@@ -284,9 +288,10 @@ contains
 
       if (ti_stat > 0) then
          if (tim >= time_stat) then
-            call step_to_screen(); time_stat = tim + ti_stat
+            call step_to_screen()
+            time_stat = tim + ti_stat
          end if
-      else if (ti_stat < 0d0) then
+      else if (ti_stat < 0.0_dp) then
 !     base statistics output on wallclock time, if available
          if (jatimer > 0) then
             runtime = gettimer(1, ITOTAL)
@@ -298,7 +303,7 @@ contains
       end if
 
    !! Write shape files at the initialization
-      if (abs(tim - tstart_user) < 1d-10) then
+      if (abs(tim - tstart_user) < 1.0e-10_dp) then
 #ifdef HAVE_SHAPELIB
          call unc_write_shp()
 #else

@@ -51,11 +51,15 @@ contains
          if (IPT == 1 .and. MB(2) /= 0) then
             MD = MP - MB(2)
             ND = NP - NB(2)
-            if (MD /= 0 .and. ND /= 0) JA = 0
+            if (MD /= 0 .and. ND /= 0) then
+               JA = 0
+            end if
          else if (IPT == 2) then
             MD = MP - MB(1)
             ND = NP - NB(1)
-            if (MD /= 0 .and. ND /= 0) JA = 0
+            if (MD /= 0 .and. ND /= 0) then
+               JA = 0
+            end if
          end if
       end if
       return

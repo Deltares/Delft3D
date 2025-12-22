@@ -45,9 +45,9 @@ contains
       if (I == MP) then
          PHI = 0
       else if (I > MP .and. I < MB(4)) then
-         PHI = PI * dble(I - MP) / dble(MB(4) - MP)
+         PHI = PI * real(I - MP, kind=dp) / real(MB(4) - MP, kind=dp)
       else if (I < MP .and. I > MB(3)) then
-         PHI = PI * dble(MP - I) / dble(MP - MB(3))
+         PHI = PI * real(MP - I, kind=dp) / real(MP - MB(3), kind=dp)
       else
          PHI = PI
       end if
@@ -56,9 +56,9 @@ contains
       if (J == NP) then
          PHI = 0
       else if (J > NP .and. J < NB(4)) then
-         PHI = PI * dble(J - NP) / dble(NB(4) - NP)
+         PHI = PI * real(J - NP, kind=dp) / real(NB(4) - NP, kind=dp)
       else if (J < NP .and. J > NB(3)) then
-         PHI = PI * dble(NP - J) / dble(NP - NB(3))
+         PHI = PI * real(NP - J, kind=dp) / real(NP - NB(3), kind=dp)
       else
          PHI = PI
       end if

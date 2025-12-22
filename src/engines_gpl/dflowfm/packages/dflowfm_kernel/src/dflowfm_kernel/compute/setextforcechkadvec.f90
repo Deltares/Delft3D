@@ -106,7 +106,8 @@ contains
                   if (jawindhuorzwsbased == 0 .and. Lt > 1) then
                      dzt = hu(Lt) - hu(Lt - 1)
                   else
-                     kt1 = ktop(ln(1, LL)); kt2 = ktop(ln(2, LL))
+                     kt1 = ktop(ln(1, LL))
+                     kt2 = ktop(ln(2, LL))
                      dzt = acL(LL) * (zws(kt1) - zws(kt1 - 1)) + (1.0_dp - acL(LL)) * (zws(kt2) - zws(kt2 - 1))
                   end if
                   if (Lbot(LL) < Lt .and. Lt > 2) then
@@ -198,7 +199,9 @@ contains
                   wfac = wfac * (1.0_dp - 0.5_dp * (ice_area_fraction(ln(1, LL)) + ice_area_fraction(ln(2, LL))))
                end if
                call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do L = Lb, Lt
                   adve(L) = adve(L) - wfac * wavfu(L) ! Dimensions [m/s^2]
                end do
@@ -214,7 +217,8 @@ contains
           .or. jatidep > 0 .or. ice_apply_pressure) then
          do L = 1, lnx
             if (hu(L) > 0) then
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
 
                dptot = 0.0_dp
                if (air_pressure_available) then
@@ -306,7 +310,8 @@ contains
             do L = 1, lnx
 
                if (hu(L) > 0) then
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
 
                   if (hs(k1) < 0.5_dp * hs(k2)) then
                      if (adve(L) < 0 .and. hs(k1) < chkadvd) then
@@ -326,7 +331,8 @@ contains
             do LL = 1, lnx
                if (hu(LL) > 0.0_dp) then
                   call getLbotLtop(LL, Lb, Lt)
-                  k1 = ln(1, LL); k2 = ln(2, LL)
+                  k1 = ln(1, LL)
+                  k2 = ln(2, LL)
                   if (hs(k1) < 0.5_dp * hs(k2)) then
                      do L = Lb, Lt
                         if (adve(L) < 0 .and. hs(k1) < chkadvd) then

@@ -60,7 +60,7 @@ contains
       B2 = 5.215e-4 * XX**0.73
       A2 = 0.331 * delta**1.01
       ta2 = tanhsafe(A2)
-      nu = 0.133 * (tA2 * tanhsafe(B2 / tA2))**(-0.37); 
+      nu = 0.133 * (tA2 * tanhsafe(B2 / tA2))**(-0.37)
       E = U10**4 * epsilon / ag**2 ! total energy from non-dim energy
       Hsig = 4 * sqrt(E) ! significant wave height
       fp = nu * ag / U10 ! peak freq from non-dim freq, Hz

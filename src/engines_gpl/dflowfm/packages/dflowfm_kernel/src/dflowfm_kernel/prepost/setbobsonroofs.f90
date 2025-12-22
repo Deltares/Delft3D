@@ -71,13 +71,15 @@ contains
       end if
 
       allocate (frcuroofs(lnx), stat=ierr)
-      call aerr('frcuroofs(lnx)', ierr, lnx); frcuroofs = dmiss
+      call aerr('frcuroofs(lnx)', ierr, lnx)
+      frcuroofs = dmiss
       if (infiltrationmodel == DFM_HYD_INFILT_CONST) then
          allocate (infiltcaproofs(ndx), stat=ierr)
-         call aerr('infiltcaproofs(ndx)', ierr, lnx); infiltcaproofs = dmiss
+         call aerr('infiltcaproofs(ndx)', ierr, lnx)
+         infiltcaproofs = dmiss
       end if
 
-      call readyy('Setbobsonroofs', 0d0)
+      call readyy('Setbobsonroofs', 0.0_dp)
 
       call oldfil(minp, md_roofsfile)
       call reapol(minp, 0)
@@ -91,7 +93,7 @@ contains
          end if
       end do
 
-      zpmin = 1d10
+      zpmin = 1.0e10_dp
       do n = 1, npoly
          zpmin(n) = minval(zpl(iistart(n):iiend(n)))
       end do
@@ -118,10 +120,13 @@ contains
          end do
       end do
 
-      kint = max(numLL / 100, 1); nt = 0
+      kint = max(numLL / 100, 1)
+      nt = 0
 
-      if (roofheightuni > 0d0) then
-         allocate (blav(npoly), nblav(npoly)); blav = 0d0; nblav = 0d0
+      if (roofheightuni > 0.0_dp) then
+         allocate (blav(npoly), nblav(npoly))
+         blav = 0.0_dp
+         nblav = 0.0_dp
          do iL = 1, numLL
 
             jacros = 0
@@ -129,7 +134,9 @@ contains
                L = iL
             else
                L = crossed_links(iL)
-               if (L <= 0) cycle
+               if (L <= 0) then
+                  cycle
+               end if
                k = polygon_nodes(iL)
             end if
 
@@ -138,20 +145,25 @@ contains
             end if
 
             if (mod(iL, kint) == 0) then
-               AF = dble(iL) / dble(numLL)
+               AF = real(iL, kind=dp) / real(numLL, kind=dp)
                call readyy('Setbobsonroofs', af)
             end if
 
-            n1 = ln(1, L); n2 = ln(2, L)
+            n1 = ln(1, L)
+            n2 = ln(2, L)
             if (jakdtree == 0) then
 
-               xa = xz(n1); ya = yz(n1)
-               xb = xz(n2); yb = yz(n2)
+               xa = xz(n1)
+               ya = yz(n1)
+               xb = xz(n2)
+               yb = yz(n2)
 
                iloop: do i = 1, 2
 
                   if (i == 1) then
-                     if (Lastfoundk == 0) cycle
+                     if (Lastfoundk == 0) then
+                        cycle
+                     end if
                      kf = max(1, Lastfoundk - 100)
                      kL = min(npl - 1, Lastfoundk + 100)
                   else
@@ -180,7 +192,8 @@ contains
             end if
 
             if (jacros == 1) then !  set roofgutterheight
-               n1 = ln(1, L); n2 = ln(2, L)
+               n1 = ln(1, L)
+               n2 = ln(2, L)
                i = ipsection(k)
                blav(i) = blav(i) + min(bl(n1), bl(n2))
                nblav(i) = nblav(i) + 1
@@ -197,18 +210,21 @@ contains
 
          do L = 1, lnxi ! make flat roof
             if (kcu(L) == 2) then
-               n1 = ln(1, L); n2 = ln(2, L)
-               ip1 = kc(n1); ip2 = kc(n2)
+               n1 = ln(1, L)
+               n2 = ln(2, L)
+               ip1 = kc(n1)
+               ip2 = kc(n2)
                if (ip1 > 0 .and. ip2 == ip1) then ! both in same poly
                   zc = blav(ip1) + roofheightuni
-                  bob(1, L) = zc; bob(2, L) = bob(1, L)
+                  bob(1, L) = zc
+                  bob(2, L) = bob(1, L)
                   bob0(:, L) = bob(:, L)
                   bl(n1) = zc
                   bl(n2) = zc
                   frcuroofs(L) = frcuniroof
                   if (infiltrationmodel == DFM_HYD_INFILT_CONST) then
-                     infiltcaproofs(n1) = 0d0
-                     infiltcaproofs(n2) = 0d0
+                     infiltcaproofs(n1) = 0.0_dp
+                     infiltcaproofs(n2) = 0.0_dp
                   end if
                end if
             end if
@@ -216,7 +232,8 @@ contains
 
          do L = 1, lnxi
             if (kcu(L) == 2) then
-               n1 = ln(1, L); n2 = ln(2, L)
+               n1 = ln(1, L)
+               n2 = ln(2, L)
                bob(1, L) = max(bob(1, L), bl(n1), bl(n2))
                bob(2, L) = max(bob(2, L), bl(n1), bl(n2))
                bob0(:, L) = bob(:, L)
@@ -233,7 +250,9 @@ contains
             L = iL
          else
             L = crossed_links(iL)
-            if (L <= 0) cycle
+            if (L <= 0) then
+               cycle
+            end if
             k = polygon_nodes(iL)
          end if
 
@@ -242,20 +261,25 @@ contains
          end if
 
          if (mod(iL, kint) == 0) then
-            AF = dble(iL) / dble(numLL)
+            AF = real(iL, kind=dp) / real(numLL, kind=dp)
             call readyy('Setbobsonroofs', af)
          end if
 
-         n1 = ln(1, L); n2 = ln(2, L)
+         n1 = ln(1, L)
+         n2 = ln(2, L)
          if (jakdtree == 0) then
 
-            xa = xz(n1); ya = yz(n1)
-            xb = xz(n2); yb = yz(n2)
+            xa = xz(n1)
+            ya = yz(n1)
+            xb = xz(n2)
+            yb = yz(n2)
 
             iloop2: do i = 1, 2
 
                if (i == 1) then
-                  if (Lastfoundk == 0) cycle
+                  if (Lastfoundk == 0) then
+                     cycle
+                  end if
                   kf = max(1, Lastfoundk - 100)
                   kL = min(npl - 1, Lastfoundk + 100)
                else
@@ -284,14 +308,16 @@ contains
          end if
 
          if (jacros == 1) then !  set roofgutterheight
-            n1 = ln(1, L); n2 = ln(2, L)
+            n1 = ln(1, L)
+            n2 = ln(2, L)
             ip = ipsection(k)
             if (roofheightuni > 0) then
                zc = blav(ip) + roofheightuni + roofedgeheight
             else
-               zc = sl * zpL(k + 1) + (1d0 - sl) * zpL(k)
+               zc = sl * zpL(k + 1) + (1.0_dp - sl) * zpL(k)
             end if
-            bob(1, L) = zc; bob(2, L) = bob(1, L)
+            bob(1, L) = zc
+            bob(2, L) = bob(1, L)
             bob0(:, L) = bob(:, L)
             bl(n1) = min(bl(n1), zc)
             bl(n2) = min(bl(n2), zc)
@@ -306,14 +332,19 @@ contains
 
       do L = 1, lnxi ! roofgutter connection
          if (kcu(L) == 7) then
-            n1 = ln(1, L); n2 = ln(2, L)
-            k1 = lncn(1, L); k2 = lncn(2, L)
-            ip1 = kc(n1); ip2 = kc(n2)
+            n1 = ln(1, L)
+            n2 = ln(2, L)
+            k1 = lncn(1, L)
+            k2 = lncn(2, L)
+            ip1 = kc(n1)
+            ip2 = kc(n2)
             if (ip1 > 0) then
-               bob(1, L) = bl(n1); ! zk(k1) = bl(n1)
+               bob(1, L) = bl(n1)
+               ! zk(k1) = bl(n1)
             end if
             if (ip2 > 0) then
-               bob(2, L) = bl(n2); ! zk(k2) = bl(n2)
+               bob(2, L) = bl(n2)
+               ! zk(k2) = bl(n2)
             end if
             bob0(:, L) = bob(:, L)
             if (ip1 > 0 .or. ip2 > 0) then
@@ -346,7 +377,9 @@ contains
       end if
 
       call deallocpoladm()
-      if (allocated(blav)) deallocate (blav, nblav)
+      if (allocated(blav)) then
+         deallocate (blav, nblav)
+      end if
 
    end subroutine setbobsonroofs
 

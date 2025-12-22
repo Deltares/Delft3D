@@ -114,7 +114,9 @@ contains
       if (idirectional == 1) then
 !     user interaction
          call getlink_GUI(xp, yp, Lstart)
-         if (Lstart < 1) goto 1234
+         if (Lstart < 1) then
+            goto 1234
+         end if
       end if
 
 !  perform the administration and node masking
@@ -133,7 +135,9 @@ contains
          call makenodes()
       else
          call makenodes_directional(xp, yp, Lstart, ierror)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
       end if
 
 !  make the new links
@@ -141,7 +145,9 @@ contains
 
 !  disable old nodes
       do k0 = 1, numk_old
-         if (kc(k0) > 0 .and. kc(k0) < 1235) xk(k0) = DMISS
+         if (kc(k0) > 0 .and. kc(k0) < 1235) then
+            xk(k0) = DMISS
+         end if
       end do
 !  disable old links
       do L = 1, numL_old
@@ -153,7 +159,9 @@ contains
              (kc(node1) == 0 .and. kc(node2) == 1236) .or. (kc(node1) == 1236 .and. kc(node2) == 0) .or. &
              (kc(node1) == -1 .and. kc(node2) == -1) .or. (kc(node1) == -2 .and. kc(node2) == -2)) then ! last two lines for directional refinement
 
-            if (lnn(L) == 0 .or. kn(3, L) == 0) cycle ! a 1D-link: keep it
+            if (lnn(L) == 0 .or. kn(3, L) == 0) then
+               cycle ! a 1D-link: keep it
+            end if
 
             kn(1, L) = 0
             kn(2, L) = 0
@@ -210,8 +218,12 @@ contains
             node1 = kn(1, L)
             node2 = kn(2, L)
             if (lnn(L) == 1) then
-               if (kc(node1) /= 0) kc(node1) = 1234
-               if (kc(node2) /= 0) kc(node2) = 1234
+               if (kc(node1) /= 0) then
+                  kc(node1) = 1234
+               end if
+               if (kc(node2) /= 0) then
+                  kc(node2) = 1234
+               end if
             end if
          end do
 
@@ -220,7 +232,9 @@ contains
             do kk = 1, nmk(k) ! loop over the cells connected to this node
                link1 = nod(k)%lin(kk)
 
-               if (lnn(link1) /= 1) cycle ! we are looking for disjunct cells
+               if (lnn(link1) /= 1) then
+                  cycle ! we are looking for disjunct cells
+               end if
 
                icell = lne(1, link1)
                N = netcell(icell)%N
@@ -236,7 +250,9 @@ contains
                end do
 
                if (lnn(link2) == 1) then ! disjunct cell found
-                  if (kc(k) > 0) kc(k) = 1235
+                  if (kc(k) > 0) then
+                     kc(k) = 1235
+                  end if
                   exit
                end if
             end do
@@ -252,7 +268,9 @@ contains
          !  determine the maximum number of links connected to a node
          nmkx = 0
          kp: do k0 = 1, numk
-            if (kc(k0) == 0) cycle
+            if (kc(k0) == 0) then
+               cycle
+            end if
 
             if (nmk(k0) > 1) then
                call orthonet_admin(k0, adm, ierror)
@@ -277,15 +295,21 @@ contains
 !               end if
                end if
             end do
-            if (Ncell == 0) kc(k0) = 0 ! no cells connected to node -> deactivated
+            if (Ncell == 0) then
+               kc(k0) = 0 ! no cells connected to node -> deactivated
+            end if
 
 !        weird boundary nodes -> keep them
-            if (Ncell < nmk(k0) - 1 .and. kc(k0) == 1234) kc(k0) = 1235
+            if (Ncell < nmk(k0) - 1 .and. kc(k0) == 1234) then
+               kc(k0) = 1235
+            end if
 !!        boundary nodes with more than two cells connected -> keep them !DEACTIVED (triangular meshes)
 !         if ( Ncell.gt.2 .and. kc(k0).eq.1234 ) kc(k0) = 1235
 
 !        inner nodes with more than Mmax links connected -> keep them
-            if (nmk(k0) > Mmax .and. kc(k0) > 0 .and. kc(k0) < 1234) kc(k0) = 1235
+            if (nmk(k0) > Mmax .and. kc(k0) > 0 .and. kc(k0) < 1234) then
+               kc(k0) = 1235
+            end if
 
             nmkx = max(nmkx, nmk(k0))
 
@@ -299,11 +323,13 @@ contains
          !  create and store inner nodes
          klp: do k = 1, nump
             N = netcell(k)%N
-            if (sum(kc(netcell(k)%nod(1:N))) == 0) cycle ! no active nodes in cell
+            if (sum(kc(netcell(k)%nod(1:N))) == 0) then
+               cycle ! no active nodes in cell
+            end if
 
             !  compute cell center
-            xc = sum(xk(netcell(k)%nod(1:N))) / dble(N)
-            yc = sum(yk(netcell(k)%nod(1:N))) / dble(N)
+            xc = sum(xk(netcell(k)%nod(1:N))) / real(N, kind=dp)
+            yc = sum(yk(netcell(k)%nod(1:N))) / real(N, kind=dp)
 
             !     loop over the nodes
             do kk = 1, N
@@ -324,11 +350,13 @@ contains
                   end if
                end do
 
-               if (link1 == 0 .or. link2 == 0) cycle klp ! no links found
+               if (link1 == 0 .or. link2 == 0) then
+                  cycle klp ! no links found
+               end if
 
                !     create new node
                if (kc(knode) > 0) then
-                  call dsetnewpoint(0.5d0 * (xk(knode) + xc), 0.5d0 * (yk(knode) + yc), knew)
+                  call dsetnewpoint(0.5_dp * (xk(knode) + xc), 0.5_dp * (yk(knode) + yc), knew)
                   call cirr(xk(knew), yk(knew), 31)
                   kc(knew) = -2 ! mark as inactive, non-boundary, so it will not be disabled later on
                else ! original node not active, let knew point to original node for mesh connection later
@@ -343,19 +371,23 @@ contains
 
          !  create and store boundary nodes
          do L = 1, numL_old
-            if (lnn(L) /= 1) cycle
+            if (lnn(L) /= 1) then
+               cycle
+            end if
             node1 = kn(1, L)
             node2 = kn(2, L)
 
-            if (kc(node1) == 0 .and. kc(node2) == 0) cycle ! no active nodes in link
+            if (kc(node1) == 0 .and. kc(node2) == 0) then
+               cycle ! no active nodes in link
+            end if
 
             !     compute link center
-            xc = 0.5d0 * (xk(node1) + xk(node2))
-            yc = 0.5d0 * (yk(node1) + yk(node2))
+            xc = 0.5_dp * (xk(node1) + xk(node2))
+            yc = 0.5_dp * (yk(node1) + yk(node2))
 
             !     create new node near node1
             if (kc(node1) /= 0) then
-               call dsetnewpoint(0.5d0 * (xk(node1) + xc), 0.5d0 * (yk(node1) + yc), knew)
+               call dsetnewpoint(0.5_dp * (xk(node1) + xc), 0.5_dp * (yk(node1) + yc), knew)
                kc(knew) = -1 ! mark as inactive and on the boundary
             else ! original node not active, let knew point to original node for mesh connection later
                knew = node1
@@ -364,7 +396,7 @@ contains
             call store_newnode(node1, L, L, knew, newnodes)
             !     create new node near node2
             if (kc(node2) /= 0) then
-               call dsetnewpoint(0.5d0 * (xk(node2) + xc), 0.5d0 * (yk(node2) + yc), knew)
+               call dsetnewpoint(0.5_dp * (xk(node2) + xc), 0.5_dp * (yk(node2) + yc), knew)
                kc(knew) = -1 ! mark as inactive and on the boundary
             else ! original node not active, let knew point to original node for mesh connection later
                knew = node2
@@ -410,7 +442,9 @@ contains
          ic = 0
          jc = 0
          call assign_icjc(xp, yp, ic, jc, iexit)
-         if (iexit /= 1) goto 1234
+         if (iexit /= 1) then
+            goto 1234
+         end if
 !---------------------------------------------------
 !     deselect nodes that are members of non-quads
          do k = 1, nump
@@ -434,22 +468,28 @@ contains
             k2 = kn(2, L)
             if (abs(ic(k2) - ic(k1)) == idiff .and. abs(jc(k2) - jc(k1)) == jdiff) then
                linkmask(L) = 1
-               if (kc(k1) /= 0 .and. kc(k2) /= 0) call teklink(L, ncolln)
+               if (kc(k1) /= 0 .and. kc(k2) /= 0) then
+                  call teklink(L, ncolln)
+               end if
             end if
          end do
 
          call confrm('Refine these links?', iexit)
-         if (iexit /= 1) goto 1234
+         if (iexit /= 1) then
+            goto 1234
+         end if
 !---------------------------------------------------
 
          !   create and store inner nodes
          klp: do k = 1, nump
             N = netcell(k)%N
-            if (sum(kc(netcell(k)%nod(1:N))) == 0) cycle ! no active nodes in cell
+            if (sum(kc(netcell(k)%nod(1:N))) == 0) then
+               cycle ! no active nodes in cell
+            end if
 
             !  compute cell center
-            xc = sum(xk(netcell(k)%nod(1:N))) / dble(N)
-            yc = sum(yk(netcell(k)%nod(1:N))) / dble(N)
+            xc = sum(xk(netcell(k)%nod(1:N))) / real(N, kind=dp)
+            yc = sum(yk(netcell(k)%nod(1:N))) / real(N, kind=dp)
 
             !     loop over the nodes
             do kk = 1, N
@@ -470,7 +510,9 @@ contains
                   end if
                end do
 
-               if (link1 == 0 .or. link2 == 0) cycle klp ! no links found
+               if (link1 == 0 .or. link2 == 0) then
+                  cycle klp ! no links found
+               end if
 
                if (linkmask(link1) == 1 .or. linkmask(link2) == 1) then
                   !     create new node
@@ -488,8 +530,8 @@ contains
                         Link = link2
                      end if
 
-                     xc = 0.5d0 * (xk(kn(1, Link)) + xk(kn(2, Link)))
-                     yc = 0.5d0 * (yk(kn(1, Link)) + yk(kn(2, Link)))
+                     xc = 0.5_dp * (xk(kn(1, Link)) + xk(kn(2, Link)))
+                     yc = 0.5_dp * (yk(kn(1, Link)) + yk(kn(2, Link)))
 
 !                 in this case: Left and Right node must be the same on a link
 !                 first check if a node already exists on this link (from the other side)
@@ -499,8 +541,8 @@ contains
                      else if (iSE >= 0 .and. newnodes(max(1 + iSE + 2, 1), Link) > 0) then
                         knew = newnodes(1 + iSE + 2, Link)
                      else
-                        xnew = 0.5d0 * (xk(knode) + xc)
-                        ynew = 0.5d0 * (yk(knode) + yc)
+                        xnew = 0.5_dp * (xk(knode) + xc)
+                        ynew = 0.5_dp * (yk(knode) + yc)
                         call dsetnewpoint(xnew, ynew, knew)
                         call cirr(xk(knew), yk(knew), 31)
                         kc(knew) = -2 ! mark as inactive, non-boundary, so it will not be disabled later on
@@ -527,17 +569,21 @@ contains
 
          !  create and store boundary nodes
          do L = 1, numL_old
-            if (lnn(L) /= 1) cycle
+            if (lnn(L) /= 1) then
+               cycle
+            end if
             node1 = kn(1, L)
             node2 = kn(2, L)
 
-            if (kc(node1) == 0 .and. kc(node2) == 0) cycle ! no active nodes in link
+            if (kc(node1) == 0 .and. kc(node2) == 0) then
+               cycle ! no active nodes in link
+            end if
 
             if (linkmask(L) == 1) then
 
                !     compute link center
-               xc = 0.5d0 * (xk(node1) + xk(node2))
-               yc = 0.5d0 * (yk(node1) + yk(node2))
+               xc = 0.5_dp * (xk(node1) + xk(node2))
+               yc = 0.5_dp * (yk(node1) + yk(node2))
 
                !     create new node near node1
                if (kc(node1) /= 0) then
@@ -549,7 +595,7 @@ contains
                   else if (iSE >= 0 .and. newnodes(max(1 + iSE + 2, 1), L) > 0) then
                      knew = newnodes(1 + iSE + 2, L)
                   else
-                     call dsetnewpoint(0.5d0 * (xk(node1) + xc), 0.5d0 * (yk(node1) + yc), knew)
+                     call dsetnewpoint(0.5_dp * (xk(node1) + xc), 0.5_dp * (yk(node1) + yc), knew)
                      call cirr(xk(knew), yk(knew), 31)
                      kc(knew) = -1
                   end if
@@ -570,7 +616,7 @@ contains
                   else if (iSE >= 0 .and. newnodes(max(1 + iSE + 2, 1), L) > 0) then
                      knew = newnodes(1 + iSE + 2, L)
                   else
-                     call dsetnewpoint(0.5d0 * (xk(node2) + xc), 0.5d0 * (yk(node2) + yc), knew)
+                     call dsetnewpoint(0.5_dp * (xk(node2) + xc), 0.5_dp * (yk(node2) + yc), knew)
                      call cirr(xk(knew), yk(knew), 31)
                      kc(knew) = -1
                   end if
@@ -631,24 +677,39 @@ contains
             k3 = newnodes(3, L)
             k4 = newnodes(4, L)
             !     parallel links: these are the start-end connections
-            if (k1 > 0 .and. k2 > 0 .and. k1 /= k2) call newlink(k1, k2, Lnew)
-            if (k3 > 0 .and. k4 > 0 .and. k3 /= k4) call newlink(k3, k4, Lnew)
+            if (k1 > 0 .and. k2 > 0 .and. k1 /= k2) then
+               call newlink(k1, k2, Lnew)
+            end if
+            if (k3 > 0 .and. k4 > 0 .and. k3 /= k4) then
+               call newlink(k3, k4, Lnew)
+            end if
             !     normal links: these are the left-right connections
-            if (k1 > 0 .and. k3 > 0 .and. k1 /= k3) call newlink(k1, k3, Lnew)
-            if (k2 > 0 .and. k4 > 0 .and. k2 /= k4) call newlink(k2, k4, Lnew)
+            if (k1 > 0 .and. k3 > 0 .and. k1 /= k3) then
+               call newlink(k1, k3, Lnew)
+            end if
+            if (k2 > 0 .and. k4 > 0 .and. k2 /= k4) then
+               call newlink(k2, k4, Lnew)
+            end if
          end do
 
          !  create the diagonal links in quads that connect the new mesh with the old mesh
          do k = 1, nump
             N = netcell(k)%N
-            if (N /= 4) cycle ! quads only
-            if (sum(kc(netcell(k)%nod(1:N))) == 0) cycle ! no active nodes in cell
+            if (N /= 4) then
+               cycle ! quads only
+            end if
+            if (sum(kc(netcell(k)%nod(1:N))) == 0) then
+               cycle ! no active nodes in cell
+            end if
 
             !     find the old and new nodes
             oldn = 0
             newn = 0
             do kk = 1, N
-               kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+               kkm1 = kk - 1
+               if (kkm1 < 1) then
+                  kkm1 = kkm1 + N
+               end if
                L = netcell(k)%lin(kk)
                Lm1 = netcell(k)%lin(kkm1)
 
@@ -661,9 +722,18 @@ contains
             end do
 
             do kk = 1, N
-               kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-               kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-               kkp2 = kk + 2; if (kkp2 > N) kkp2 = kkp2 - N
+               kkm1 = kk - 1
+               if (kkm1 < 1) then
+                  kkm1 = kkm1 + N
+               end if
+               kkp1 = kk + 1
+               if (kkp1 > N) then
+                  kkp1 = kkp1 - N
+               end if
+               kkp2 = kk + 2
+               if (kkp2 > N) then
+                  kkp2 = kkp2 - N
+               end if
 
                k1 = newn(kk)
                k2 = oldn(kkm1)
@@ -692,7 +762,9 @@ contains
 
          !  make the missing boundary links
          do k = 1, numk_old
-            if (kc(k) < 1234) cycle ! boundary and kept nodes only
+            if (kc(k) < 1234) then
+               cycle ! boundary and kept nodes only
+            end if
 
             !     find the links connected
             numlinks = 0
@@ -713,21 +785,39 @@ contains
                end if
             end do
 
-            if (numlinks == 0) cycle ! no links found
+            if (numlinks == 0) then
+               cycle ! no links found
+            end if
 
             !     find the two new boundary nodes
             node = 0
             do kk = 1, numlinks
-               if (kn(1, link(kk)) == k .and. kc(newnodes(1, link(kk))) == -1) node(kk) = newnodes(1, link(kk))
-               if (kn(1, link(kk)) == k .and. kc(newnodes(3, link(kk))) == -1) node(kk) = newnodes(3, link(kk))
-               if (kn(2, link(kk)) == k .and. kc(newnodes(2, link(kk))) == -1) node(kk) = newnodes(2, link(kk))
-               if (kn(2, link(kk)) == k .and. kc(newnodes(4, link(kk))) == -1) node(kk) = newnodes(4, link(kk))
+               if (kn(1, link(kk)) == k .and. kc(newnodes(1, link(kk))) == -1) then
+                  node(kk) = newnodes(1, link(kk))
+               end if
+               if (kn(1, link(kk)) == k .and. kc(newnodes(3, link(kk))) == -1) then
+                  node(kk) = newnodes(3, link(kk))
+               end if
+               if (kn(2, link(kk)) == k .and. kc(newnodes(2, link(kk))) == -1) then
+                  node(kk) = newnodes(2, link(kk))
+               end if
+               if (kn(2, link(kk)) == k .and. kc(newnodes(4, link(kk))) == -1) then
+                  node(kk) = newnodes(4, link(kk))
+               end if
 
 !           for directional refinement (1236 are persistent nodes)
-               if (kn(1, link(kk)) == k .and. kc(newnodes(1, link(kk))) == 1236) node(kk) = newnodes(1, link(kk))
-               if (kn(1, link(kk)) == k .and. kc(newnodes(3, link(kk))) == 1236) node(kk) = newnodes(3, link(kk))
-               if (kn(2, link(kk)) == k .and. kc(newnodes(2, link(kk))) == 1236) node(kk) = newnodes(2, link(kk))
-               if (kn(2, link(kk)) == k .and. kc(newnodes(4, link(kk))) == 1236) node(kk) = newnodes(4, link(kk))
+               if (kn(1, link(kk)) == k .and. kc(newnodes(1, link(kk))) == 1236) then
+                  node(kk) = newnodes(1, link(kk))
+               end if
+               if (kn(1, link(kk)) == k .and. kc(newnodes(3, link(kk))) == 1236) then
+                  node(kk) = newnodes(3, link(kk))
+               end if
+               if (kn(2, link(kk)) == k .and. kc(newnodes(2, link(kk))) == 1236) then
+                  node(kk) = newnodes(2, link(kk))
+               end if
+               if (kn(2, link(kk)) == k .and. kc(newnodes(4, link(kk))) == 1236) then
+                  node(kk) = newnodes(4, link(kk))
+               end if
             end do
 
             !     make the new links
@@ -741,14 +831,18 @@ contains
                end if
             else ! node is kept
                do kk = 1, numlinks
-                  if (node(kk) > 0 .and. node(kk) /= k) call newlink(k, node(kk), Lnew)
+                  if (node(kk) > 0 .and. node(kk) /= k) then
+                     call newlink(k, node(kk), Lnew)
+                  end if
                end do
             end if
          end do
 
          !  make the original-node to new-node links for the kept original nodes, which have more than Mmax links attached
          do k = 1, numk_old
-            if (kc(k) /= 1235 .or. nmk(k) <= Mmax) cycle
+            if (kc(k) /= 1235 .or. nmk(k) <= Mmax) then
+               cycle
+            end if
 
             do kk = 1, nmk(k)
                L = nod(k)%lin(kk)
@@ -824,8 +918,12 @@ contains
          ipoint1 = 1 + iSE1 + 2 * (1 - iLR1)
          ipoint2 = 1 + iSE2 + 2 * (1 - iLR2)
 
-         if (newnodes(ipoint1, L1) < 1) newnodes(ipoint1, L1) = knew
-         if (newnodes(ipoint2, L2) < 1) newnodes(ipoint2, L2) = knew
+         if (newnodes(ipoint1, L1) < 1) then
+            newnodes(ipoint1, L1) = knew
+         end if
+         if (newnodes(ipoint2, L2) < 1) then
+            newnodes(ipoint2, L2) = knew
+         end if
 
       end subroutine store_newnode
 
@@ -837,8 +935,12 @@ contains
          integer, intent(in) :: L !> link number
 
          isstartend = -1
-         if (kn(1, L) == k) isstartend = 0
-         if (kn(2, L) == k) isstartend = 1
+         if (kn(1, L) == k) then
+            isstartend = 0
+         end if
+         if (kn(2, L) == k) then
+            isstartend = 1
+         end if
 
          return
       end function isstartend

@@ -196,7 +196,9 @@ contains
       integer, parameter :: MAXOP = 64
       character(len=40) :: OPTION(MAXOP)
 
-      if (netstat /= NETSTAT_OK) call setnodadm(0)
+      if (netstat /= NETSTAT_OK) then
+         call setnodadm(0)
+      end if
 
       if (NUM == 1) then
          !     load en save files
@@ -540,7 +542,8 @@ contains
          else if (NWHAT == 4) then
             call CHANGEorthoparameters()
          else if (NWHAT == 5) then
-            call CHANGEGRIDPARAMETERS(); KEY = 3
+            call CHANGEGRIDPARAMETERS()
+            KEY = 3
          else if (NWHAT == 6) then
             call CHANGEINTERPOLATIONPARAMETERS()
          else if (NWHAT == 7) then
@@ -564,7 +567,8 @@ contains
          else if (NWHAT == 14) then
             call CHANGENUMERICALPARAMETERS4()
          else if (NWHAT == 15) then
-            call CHANGEcolournumbers(); KEY = 3
+            call CHANGEcolournumbers()
+            KEY = 3
          end if
          NUM = 0
       end if

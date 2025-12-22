@@ -56,7 +56,9 @@ contains
       data X(1)/0.8_dp/, X(2)/1.0_dp/, X(3)/0.8_dp/, &
          Y(1)/-0.1_dp/, Y(2)/0.0_dp/, Y(3)/0.1_dp/
 
-      if (UR == 0 .and. VR == 0) return
+      if (UR == 0 .and. VR == 0) then
+         return
+      end if
       ALFA = atan2(VR, UR) + PSI0
       CSA = cos(ALFA)
       SNA = sin(ALFA)

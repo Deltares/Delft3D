@@ -80,7 +80,9 @@ contains
 
       if (ja == 1) then
          call confrm('Are you satisfied?', ja)
-         if (ja /= 1) call restore()
+         if (ja /= 1) then
+            call restore()
+         end if
       end if
 
       return

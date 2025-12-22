@@ -53,10 +53,12 @@ contains
 
       integer :: Lb, Lt, L, LL, k1, k2
 
-      ucxeu(1:ndkx) = ucx(1:ndkx); ucyeu(1:ndkx) = ucy(1:ndkx)
+      ucxeu(1:ndkx) = ucx(1:ndkx)
+      ucyeu(1:ndkx) = ucy(1:ndkx)
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          do LL = 1, lnx
-            Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
                if (ustokes(L) /= 0.0_dp) then ! link flows
                   k1 = ln(1, L)

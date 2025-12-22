@@ -51,8 +51,12 @@ contains
       integer :: L, k, kk, kkk, k1, k2, n, nn, ierr, ja, k3, k4
       real(kind=dp) :: znn, bobm, zki
 
-      if (jamorf == 0) return
-      if (stm_included) return ! Done in fm_bott3d
+      if (jamorf == 0) then
+         return
+      end if
+      if (stm_included) then
+         return ! Done in fm_bott3d
+      end if
 
       if (.not. (ibedlevtyp == 1 .or. ibedlevtyp == 6) .and. jaceneqtr == 1 .and. .not. allocated(zn2rn)) then ! netnode depth + netcell fluxes                                                        !
 
@@ -60,17 +64,20 @@ contains
             deallocate (zk1)
          end if
          allocate (zk1(numk), stat=ierr)
-         call aerr('zk1(numk)', ierr, numk); zk1 = 0.0_dp
+         call aerr('zk1(numk)', ierr, numk)
+         zk1 = 0.0_dp
 
          ja = 0
          if (.not. allocated(zn2rn)) then
             ja = 1
          else if (size(zn2rn) < numk) then
-            deallocate (zn2rn); ja = 1
+            deallocate (zn2rn)
+            ja = 1
          end if
          if (ja == 1) then
             allocate (zn2rn(numk), stat=ierr)
-            call aerr('zn2rn(numk)', ierr, numk); zn2rn = 0.0_dp
+            call aerr('zn2rn(numk)', ierr, numk)
+            zn2rn = 0.0_dp
             do n = 1, ndx2d
                nn = size(nd(n)%x)
                do kk = 1, nn
@@ -127,7 +134,8 @@ contains
             bob(1, L) = zk(k3)
             bob(2, L) = zk(k4)
             bobm = min(bob(1, L), bob(2, L))
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             ! TODO: Herman: should we skip the step below if optional ibedlevmode==BLMODE_D3D?
             bl(k1) = min(bl(k1), bobm) ! here minimise based on connected lowest linklevels
             bl(k2) = min(bl(k2), bobm)

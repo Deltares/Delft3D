@@ -47,8 +47,8 @@ contains
       real :: rx, ry
 !     GIVE WORLD COORDINATES OF SCREENCOORDINATES
       call IGRUNITSFROMPIXELS(NX, NY, rx, ry)
-      X = dble(rx)
-      Y = dble(ry)
+      X = real(rx, kind=dp)
+      Y = real(ry, kind=dp)
       return
    end
 

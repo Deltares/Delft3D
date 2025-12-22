@@ -70,7 +70,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("get_dtmax", ithndl)
+      if (timon) then
+         call timstrt("get_dtmax", ithndl)
+      end if
 
       dtmin_transp = huge(1.0_dp)
       kk_dtmin = 0
@@ -125,7 +127,9 @@ contains
 
             if (jampi == 1) then
 !              do not include ghost cells
-               if (idomain(k) /= my_rank) cycle
+               if (idomain(k) /= my_rank) then
+                  cycle
+               end if
             end if
 
             if (dtmax(k) < dtmin_transp) then
@@ -179,7 +183,9 @@ contains
 
                if (jampi == 1) then
 !                 do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
 
                if (dtmax(kk) < dtmin_transp) then
@@ -198,12 +204,18 @@ contains
 !        update dtmax
          call update_ghosts(ITYPE_Sall, 1, Ndx, dtmax, ierror)
 !        globally reduce maximum time-step
-         if (jatimer == 1) call starttimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call starttimer(IMPIREDUCE)
+         end if
          call reduce_double_min(dtmin_transp)
-         if (jatimer == 1) call stoptimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call stoptimer(IMPIREDUCE)
+         end if
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine get_dtmax
 

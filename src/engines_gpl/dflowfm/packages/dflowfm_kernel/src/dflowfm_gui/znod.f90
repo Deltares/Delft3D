@@ -75,7 +75,9 @@ contains
       if (kmx > 0) then
          if (kplotordepthaveraged == 1) then
             call getktoplot(kk, k)
-            if (k < 0) return
+            if (k < 0) then
+               return
+            end if
          end if
       end if
 
@@ -111,9 +113,11 @@ contains
             znod = ucyq_mor(k)
          end if
       else if (nodval == 11) then
-         if (jasal > 0) znod = constituents(isalt, k)
+         if (jasal > 0) then
+            znod = constituents(isalt, k)
+         end if
       else if (nodval == 12) then
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (jafahrenheit == 0) then
                znod = constituents(itemp, k)
             else
@@ -154,7 +158,9 @@ contains
       else if (nodval == 23) then
          znod = qin(k)
       else if (nodval == 24) then
-         if (mxgr > 1 .and. jaceneqtr == 1) znod = grainlay(jgrtek, kk)
+         if (mxgr > 1 .and. jaceneqtr == 1) then
+            znod = grainlay(jgrtek, kk)
+         end if
       else if (nodval == 25 .and. kmx > 0) then
          znod = ktop(kk) - kbot(kk) + 1
       else if (nodval == 26) then
@@ -162,7 +168,9 @@ contains
             znod = vol1(k) / squ(k)
          end if
       else if (nodval == 27) then
-         if (kmx > 1) znod = vicwws(k)
+         if (kmx > 1) then
+            znod = vicwws(k)
+         end if
          ! 28 = substi/cg
       else if (nodval == 29) then
          if (allocated(tidep)) then
@@ -179,9 +187,13 @@ contains
             znod = min(znod, vol1(k) / max(squ(k), eps10))
          end do
       else if (nodval == 31) then
-         if (air_pressure_available) znod = air_pressure(kk)
+         if (air_pressure_available) then
+            znod = air_pressure(kk)
+         end if
       else if (nodval == 32) then
-         if (numlimdt(kk) > 0) znod = numlimdt(kk)
+         if (numlimdt(kk) > 0) then
+            znod = numlimdt(kk)
+         end if
       else if (nodval == 33) then
          ZNOD = (ucx(k) * ucx(k) + ucy(k) * ucy(k)) / (2.0_dp * ag)
          znod = u1(min(k, lnx)) * u1(min(k, lnx)) / (2.0_dp * ag)
@@ -206,7 +218,7 @@ contains
 
       else if (nodval == 37) then
 
-         if (Soiltempthick > 0 .and. jatem > 0) then
+         if (Soiltempthick > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
             znod = tbed(kk)
          else
             znod = same(k)
@@ -229,13 +241,13 @@ contains
 
          znod = rain(kk)
 
-      else if (nodval == 41 .and. jatem > 0) then
+      else if (nodval == 41 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = relative_humidity(kk)
-      else if (nodval == 42 .and. jatem > 0) then
+      else if (nodval == 42 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = air_temperature(kk)
-      else if (nodval == 43 .and. jatem > 0) then
+      else if (nodval == 43 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = cloudiness(kk)
-      else if (nodval == 44 .and. jatem > 0 .and. allocated(solar_radiation)) then
+      else if (nodval == 44 .and. temperature_model /= TEMPERATURE_MODEL_NONE .and. allocated(solar_radiation)) then
          znod = solar_radiation(kk)
       else if (nodval == 45 .and. NUMCONST > 0) then
          if (iconst_cur > 0 .and. iconst_cur <= NUMCONST) then

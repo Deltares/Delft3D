@@ -46,7 +46,8 @@ contains
       use m_linkstocentercartcomp, only: linkstocentercartcomp
       use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, jahistaucurrent, jahisvelocity, jahisvelvec, ucmag, jaeulervel, &
                         flowwithoutwaves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, jahistur, javiusp, viclu, viusp, &
-                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, jatem, jahisrho, &
+                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
+                        TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jahisrho, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
                         rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
@@ -92,7 +93,9 @@ contains
       kmx_const = kmx
       nlyrs = 0
 
-      if (timon) call timstrt("fill_valobs", handle_extra(55))
+      if (timon) then
+         call timstrt("fill_valobs", handle_extra(55))
+      end if
       !
       if (.not. allocated(ueux)) then
          call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
@@ -131,7 +134,8 @@ contains
             else
                do k = 1, ndx
                   call getkbotktop(k, kb, kt)
-                  ux = ueux(kb); uy = ueuy(kb)
+                  ux = ueux(kb)
+                  uy = ueuy(kb)
                   um = max(hypot(ux, uy), 1.0e-4_dp)
                   workx(k) = taus(k) * ux / um
                   worky(k) = taus(k) * uy / um
@@ -220,8 +224,12 @@ contains
                valobs(i, IPNT_wy) = 0.0_dp
                do LL = 1, nd(k)%lnx
                   LLL = abs(nd(k)%ln(LL))
-                  k1 = ln(1, LLL); k2 = ln(2, LLL)
-                  k3 = 1; if (nd(k)%ln(LL) > 0) k3 = 2
+                  k1 = ln(1, LLL)
+                  k2 = ln(2, LLL)
+                  k3 = 1
+                  if (nd(k)%ln(LL) > 0) then
+                     k3 = 2
+                  end if
                   valobs(i, IPNT_wx) = valobs(i, IPNT_wx) + wx(LLL) * wcL(k3, LLL)
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
@@ -411,7 +419,7 @@ contains
                if (jasal > 0) then
                   valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
                end if
-               if (jatem > 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
                end if
                if (jahistur > 0) then
@@ -547,32 +555,29 @@ contains
             end if
 
 !        Heatflux
-            if (jatem > 0 .and. jahisheatflux > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jahisheatflux > 0) then
                call getlink1(k, LL)
                if (jawind > 0) then
                   valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
                end if
 
-               if (jatem > 1) then ! also heat modelling involved
+               if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
                   valobs(i, IPNT_TAIR) = air_temperature(k)
+                  valobs(i, IPNT_QTOT) = Qtotmap(k)
                end if
 
-               if (jatem == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
-                  valobs(i, IPNT_RHUM) = relative_humidity(k)
-                  valobs(i, IPNT_CLOU) = cloudiness(k)
-               end if
+               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                  if (allocated(relative_humidity) .and. allocated(cloudiness)) then
+                     valobs(i, IPNT_RHUM) = relative_humidity(k)
+                     valobs(i, IPNT_CLOU) = cloudiness(k)
+                  end if
 
-               if (jatem == 5) then
                   valobs(i, IPNT_QSUN) = Qsunmap(k)
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)
                   valobs(i, IPNT_QLON) = Qlongmap(k)
                   valobs(i, IPNT_QFRE) = Qfrevamap(k)
                   valobs(i, IPNT_QFRC) = Qfrconmap(k)
-               end if
-
-               if (jatem > 1) then
-                  valobs(i, IPNT_QTOT) = Qtotmap(k)
                end if
             end if
          else
@@ -586,7 +591,9 @@ contains
          deallocate (wa)
       end if
 
-      if (timon) call timstop(handle_extra(55))
+      if (timon) then
+         call timstop(handle_extra(55))
+      end if
    end subroutine fill_valobs
 
    !> Support routine to collect the values of the ice quantities at the observation stations
@@ -602,7 +609,9 @@ contains
       integer, intent(in) :: i !< index of the observation station
       integer, intent(in) :: k !< face index associated with the observation station
 
-      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) return
+      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) then
+         return
+      end if
 
       call conditional_assign(valobs, i, IPNT_ICE_S1, ice_s1, k)
       call conditional_assign(valobs, i, IPNT_ICE_ZMIN, ice_zmin, k)

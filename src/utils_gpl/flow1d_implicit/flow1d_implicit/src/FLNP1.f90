@@ -4,7 +4,9 @@ subroutine FLNP1(lkalm  ,nbran  ,ngrid  ,nnf    ,branch ,typcr  ,&
 &arexop ,of     ,maxtab ,ntabm  ,ntab   ,table  ,&
 &sectc  ,sectv  ,prslot ,psltvr ,waoft  ,grsize ,&
 &engpar ,scifri ,pfa    ,juer   ,cp     ,rp     ,&
-&afwfqs ,alfab  ,wtt,att ,ker    )
+&afwfqs ,alfab  ,wtt,att ,ker                   ,&
+&fm1dimp                                         &
+&)
 
 !=======================================================================
 !            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -113,6 +115,9 @@ subroutine FLNP1(lkalm  ,nbran  ,ngrid  ,nnf    ,branch ,typcr  ,&
 !
 !
 !***********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !
 !     Include constants
 !
@@ -166,7 +171,7 @@ subroutine FLNP1(lkalm  ,nbran  ,ngrid  ,nnf    ,branch ,typcr  ,&
 !                  <Oh1>       <asubsc>
    &sectv(1,7) ,sectv(1,1) ,prslot      ,psltvr     ,&
    &cp(1,1)    ,rp(1,1)    ,cp(1,2)     ,rp(1,2)    ,&
-   &afwfqs(1,1),afwfqs(1,3),alfab       )
+   &afwfqs(1,1),afwfqs(1,3),alfab       ,fm1dimp)
 !
 !     Q distribution for each gridpoint and section
 !

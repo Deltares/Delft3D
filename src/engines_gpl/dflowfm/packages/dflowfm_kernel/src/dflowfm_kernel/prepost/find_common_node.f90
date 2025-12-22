@@ -50,10 +50,16 @@ contains
       do
          node = IMISS
 
-         if (a(1) == a(3) .or. a(1) == a(4)) node = a(1)
-         if (a(2) == a(3) .or. a(2) == a(4)) node = a(2)
+         if (a(1) == a(3) .or. a(1) == a(4)) then
+            node = a(1)
+         end if
+         if (a(2) == a(3) .or. a(2) == a(4)) then
+            node = a(2)
+         end if
 
-         if (node /= IMISS) exit
+         if (node /= IMISS) then
+            exit
+         end if
 
          write (6, *) 'find_common_node: no common node found'
          exit

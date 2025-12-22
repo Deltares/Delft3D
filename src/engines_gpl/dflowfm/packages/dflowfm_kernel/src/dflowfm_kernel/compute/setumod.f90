@@ -138,13 +138,18 @@ contains
          if (newcorio == 0) then
             hmin = min(hs(ln(1, LL)), hs(ln(2, LL)))
          elseif (newcorio == 1) then
-            if (hu(LL) == 0) cycle
+            if (hu(LL) == 0) then
+               cycle
+            end if
          end if
 
          call getLbotLtop(LL, Lb, Lt)
-         cs = csu(LL); sn = snu(LL); v(LL) = 0.0_dp
+         cs = csu(LL)
+         sn = snu(LL)
+         v(LL) = 0.0_dp
          do L = Lb, Lt
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
 
             if (Perot_type /= NOT_DEFINED) then
                if (jasfer3D == 1) then
@@ -197,27 +202,35 @@ contains
       !$OMP END PARALLEL DO
 
       if (newcorio == 1 .and. icorio > 0 .and. icorio < 40) then
-         fcor1 = fcorio; fcor2 = fcorio
+         fcor1 = fcorio
+         fcor2 = fcorio
          !x$OMP PARALLEL DO                           &
          !x$OMP PRIVATE(L,LL,Lb,Lt,k1,k2,cs,sn,hs1,hs2,fcor,fcor1,fcor2,fvcor,vcor,volu,hmin)
          do LL = lnx1D + 1, lnx
-            if (hu(LL) == 0) cycle
-            n1 = ln(1, LL); n2 = ln(2, LL)
+            if (hu(LL) == 0) then
+               cycle
+            end if
+            n1 = ln(1, LL)
+            n2 = ln(2, LL)
             hmin = min(hs(n1), hs(n2))
 
             call getLbotLtop(LL, Lb, Lt)
-            cs = csu(LL); sn = snu(LL)
+            cs = csu(LL)
+            sn = snu(LL)
 
             if (jsferic > 0 .or. jacorioconstant > 0) then
                if (icorio >= 4 .and. icorio <= 6) then
-                  fcor1 = fcori(LL); fcor2 = fcor1 ! defined at u-point
+                  fcor1 = fcori(LL)
+                  fcor2 = fcor1 ! defined at u-point
                else
-                  fcor1 = fcori(n1); fcor2 = fcori(n2) ! defined at zeta-points
+                  fcor1 = fcori(n1)
+                  fcor2 = fcori(n2) ! defined at zeta-points
                end if
             end if
 
             do L = Lb, Lt
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
 
                if (icorio > 0) then
                   fvcor = 0.0_dp
@@ -232,26 +245,32 @@ contains
                      end if
                   else ! David types
                      if (icorio <= 26) then ! hs/hu
-                        hs1 = hs(n1); hs2 = hs(n2)
+                        hs1 = hs(n1)
+                        hs2 = hs(n2)
                         if (kmx > 0) then
                            if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
-                              hs1 = zws(k1) - zws(k1 - 1); hs2 = zws(k2) - zws(k2 - 1)
+                              hs1 = zws(k1) - zws(k1 - 1)
+                              hs2 = zws(k2) - zws(k2 - 1)
                            end if
                         end if
                         huv = hu(L)
                      else if (icorio <= 28) then ! ahus/ahu
-                        hs1 = hus(n1); hs2 = hus(n2)
+                        hs1 = hus(n1)
+                        hs2 = hus(n2)
                         if (kmx > 0) then
                            if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
-                              hs1 = hus(k1); hs2 = hus(k2)
+                              hs1 = hus(k1)
+                              hs2 = hus(k2)
                            end if
                         end if
                         huv = acl(LL) * hs1 + (1.0_dp - acl(LL)) * hs2
                      else if (icorio <= 30) then ! like advec33
                         if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
-                           hs1 = vol1(k1); hs2 = vol1(k2)
+                           hs1 = vol1(k1)
+                           hs2 = vol1(k2)
                         else
-                           hs1 = vol1(n1); hs2 = vol1(n2)
+                           hs1 = vol1(n1)
+                           hs2 = vol1(n2)
                         end if
                         huv = acl(LL) * hs1 + (1.0_dp - acl(LL)) * hs2
                      end if
@@ -351,7 +370,9 @@ contains
 
       if (ihorvic > 0 .or. NDRAW(29) == 37) then
          number_limited_links = 0
-         dvxc = 0; dvyc = 0; suu = 0
+         dvxc = 0
+         dvyc = 0
+         suu = 0
          if (kmx == 0) then
 
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
@@ -360,8 +381,10 @@ contains
                do L = lnx1D + 1, lnx
                   if (hu(L) > 0) then ! link will flow
 
-                     cs = csu(L); sn = snu(L)
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     cs = csu(L)
+                     sn = snu(L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
 
                      vicL = 0.0_dp
                      if (Elder > 0.0_dp) then !  add Elder
@@ -369,7 +392,8 @@ contains
                         vicL = vicL + Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L) * v(L)) ! vonkar*sag/(6*Cz) = 0.009
                      end if
 
-                     k3 = lncn(1, L); k4 = lncn(2, L)
+                     k3 = lncn(1, L)
+                     k4 = lncn(2, L)
 
                      if (jasfer3D == 1) then
                         duxdn = (nod2linx(L, 2, ucx(k2), ucy(k2)) - nod2linx(L, 1, ucx(k1), ucy(k1))) * dxi(L)
@@ -441,7 +465,9 @@ contains
                      vicLu(L) = vicL ! horizontal eddy viscosity applied in mom eq.
                      viu(L) = max(0.0_dp, vicL - vicc) ! modeled turbulent part
 
-                     c11 = cs * cs; c12 = cs * sn; c22 = sn * sn
+                     c11 = cs * cs
+                     c12 = cs * sn
+                     c22 = sn * sn
                      suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
                      suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
 
@@ -475,7 +501,8 @@ contains
                !$OMP PRIVATE(L,k1,k2)
                do L = lnx1D + 1, lnx
                   if (hu(L) > 0) then ! link will flow
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      if (istresstyp == 4 .or. istresstyp == 5) then ! set stresscomponent in links right away
                         suu(L) = acl(L) * horvic(1, L) + (1.0_dp - acl(L)) * horvic(2, L)
                      else if (istresstyp == 6) then
@@ -493,9 +520,12 @@ contains
 
                do LL = lnx1D + 1, lnx
 
-                  if (abs(kcu(LL)) /= 2) cycle
+                  if (abs(kcu(LL)) /= 2) then
+                     cycle
+                  end if
                   call getLbotLtop(LL, Lb, Lt)
-                  cs = csu(LL); sn = snu(LL)
+                  cs = csu(LL)
+                  sn = snu(LL)
 
                   if (javiusp == 1) then ! user specified part
                      vicc = viusp(LL)
@@ -507,8 +537,10 @@ contains
 
                      vicL = 0.0_dp
 
-                     k1 = ln(1, L); k2 = ln(2, L)
-                     k3 = lncn(1, L); k4 = lncn(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
+                     k3 = lncn(1, L)
+                     k4 = lncn(2, L)
                      if (jasfer3D == 1) then
                         duxdn = (nod2linx(LL, 2, ucx(k2), ucy(k2)) - nod2linx(LL, 1, ucx(k1), ucy(k1))) * dxi(LL)
                         duydn = (nod2liny(LL, 2, ucx(k2), ucy(k2)) - nod2liny(LL, 1, ucx(k1), ucy(k1))) * dxi(LL)
@@ -561,7 +593,9 @@ contains
                      vicLu(L) = vicL ! horizontal eddy viscosity applied in mom eq.
                      viu(L) = max(0.0_dp, vicL - vicc) ! modeled turbulent part
 
-                     c11 = cs * cs; c12 = cs * sn; c22 = sn * sn
+                     c11 = cs * cs
+                     c12 = cs * sn
+                     c22 = sn * sn
                      suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
                      suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
 
@@ -610,7 +644,8 @@ contains
 
                do L = lnx1D + 1, lnx
                   if (hu(L) > 0) then ! link will flow
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      huv = 0.5_dp * (hs(k1) + hs(k2)) ! *huvli(L)
                      if (huv > epshu) then
 
@@ -636,10 +671,12 @@ contains
 
                do LL = lnx1D + 1, lnx
                   if (hu(LL) > 0.0_dp) then
-                     kb1 = ln(1, LL); kb2 = ln(2, LL)
+                     kb1 = ln(1, LL)
+                     kb2 = ln(2, LL)
                      call getLbotLtop(LL, Lb, Lt)
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L)
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
                         huv = 0.5_dp * ((zws(k1) - zws(k1 - 1)) + (zws(k2) - zws(k2 - 1)))
                         if (huv > epshu) then
                            if (jasfer3D == 1) then
@@ -686,7 +723,9 @@ contains
                   suxw = -cs * ustar * abs(ustar) * wuw * bai(k1)
                   suyw = -sn * ustar * abs(ustar) * wuw * bai(k1)
                   if (L1 /= 0) then
-                     csl = csu(L1); snl = snu(L1); ac1 = walls(10, nw)
+                     csl = csu(L1)
+                     snl = snu(L1)
+                     ac1 = walls(10, nw)
                      if (jasfer3D == 1) then
                         suu(L1) = suu(L1) + (csl * wall2linx(nw, 1, suxw, suyw) + snl * wall2liny(nw, 1, suxw, suyw)) * ac1
                      else
@@ -694,7 +733,9 @@ contains
                      end if
                   end if
                   if (L2 /= 0) then
-                     csl = csu(L2); snl = snu(L2); ac2 = walls(11, nw)
+                     csl = csu(L2)
+                     snl = snu(L2)
+                     ac2 = walls(11, nw)
                      if (jasfer3D == 1) then
                         suu(L2) = suu(L2) + (csl * wall2linx(nw, 2, suxw, suyw) + snl * wall2liny(nw, 2, suxw, suyw)) * ac2
                      else
@@ -703,8 +744,12 @@ contains
                   end if
                else
                   call getkbotktop(k1, kb, kt)
-                  if (L1 /= 0) call getLbotLtop(L1, Lb1, Lt1)
-                  if (L2 /= 0) call getLbotLtop(L2, Lb2, Lt2)
+                  if (L1 /= 0) then
+                     call getLbotLtop(L1, Lb1, Lt1)
+                  end if
+                  if (L2 /= 0) then
+                     call getLbotLtop(L2, Lb2, Lt2)
+                  end if
                   do k = kb, kt
                      if (jasfer3D == 1) then
                         ustar = (cs * nod2wallx(nw, ucx(k), ucy(k)) + sn * nod2wally(nw, ucx(k), ucy(k))) * sf
@@ -715,7 +760,9 @@ contains
                      suxw = -cs * ustar * abs(ustar) * wuw * bai(k1)
                      suyw = -sn * ustar * abs(ustar) * wuw * bai(k1)
                      if (L1 /= 0) then
-                        csl = csu(L1); snl = snu(L1); ac1 = walls(10, nw)
+                        csl = csu(L1)
+                        snl = snu(L1)
+                        ac1 = walls(10, nw)
                         if (jasfer3D == 1) then
                            suu(Lb1 + k - kb) = suu(Lb1 + k - kb) + (csl * wall2linx(nw, 1, suxw, suyw) + snl * wall2liny(nw, 1, suxw, suyw)) * ac1
                         else
@@ -723,7 +770,9 @@ contains
                         end if
                      end if
                      if (L2 /= 0) then
-                        csl = csu(L2); snl = snu(L2); ac2 = walls(11, nw)
+                        csl = csu(L2)
+                        snl = snu(L2)
+                        ac2 = walls(11, nw)
                         if (jasfer3D == 1) then
                            suu(Lb2 + k - kb) = suu(Lb2 + k - kb) + (csl * wall2linx(nw, 2, suxw, suyw) + snl * wall2liny(nw, 2, suxw, suyw)) * ac2
                         else
@@ -752,7 +801,9 @@ contains
                suxw = -(cs * ustar * vicl / delty) * wuw * bai(k1)
                suyw = -(sn * ustar * vicl / delty) * wuw * bai(k1)
                if (L1 /= 0) then
-                  csl = csu(L1); snl = snu(L1); ac1 = walls(10, nw)
+                  csl = csu(L1)
+                  snl = snu(L1)
+                  ac1 = walls(10, nw)
                   if (jasfer3D == 1) then
                      suu(L1) = suu(L1) + (csl * wall2linx(nw, 1, suxw, suyw) + snl * wall2liny(nw, 1, suxw, suyw)) * ac1
                   else
@@ -760,7 +811,9 @@ contains
                   end if
                end if
                if (L2 /= 0) then
-                  csl = csu(L2); snl = snu(L2); ac2 = walls(11, nw)
+                  csl = csu(L2)
+                  snl = snu(L2)
+                  ac2 = walls(11, nw)
                   if (jasfer3D == 1) then
                      suu(L2) = suu(L2) + (csl * wall2linx(nw, 2, suxw, suyw) + snl * wall2liny(nw, 2, suxw, suyw)) * ac2
                   else

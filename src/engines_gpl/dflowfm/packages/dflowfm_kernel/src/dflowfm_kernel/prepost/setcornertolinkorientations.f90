@@ -65,11 +65,15 @@ contains
          deallocate (snbn)
       end if
 
-      if (jsferic == 0 .or. jasfer3D == 0) return
+      if (jsferic == 0 .or. jasfer3D == 0) then
+         return
+      end if
 
-      allocate (csbn(2, Lnx), stat=ierr); csbn = 1.0_dp
+      allocate (csbn(2, Lnx), stat=ierr)
+      csbn = 1.0_dp
       call aerr('csbn(2,Lnx)', ierr, 2 * Lnx)
-      allocate (snbn(2, Lnx), stat=ierr); snbn = 0.0_dp
+      allocate (snbn(2, Lnx), stat=ierr)
+      snbn = 0.0_dp
       call aerr('snbn(2,Lnx)', ierr, 2 * Lnx)
 
       do L = 1, Lnx

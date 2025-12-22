@@ -67,9 +67,11 @@ contains
       if (allocated(klnup)) then
          deallocate (klnup, slnup)
       end if
-      allocate (klnup(6, lnx), stat=ierr); klnup = 0
+      allocate (klnup(6, lnx), stat=ierr)
+      klnup = 0
       call aerr('klnup(6,lnx)', ierr, lnx)
-      allocate (slnup(6, lnx), stat=ierr); slnup = 0.0_dp
+      allocate (slnup(6, lnx), stat=ierr)
+      slnup = 0.0_dp
       call aerr('slnup(6,lnx)', ierr, lnx)
 
       if (allocated(csbup)) then
@@ -79,9 +81,11 @@ contains
 
       if (jsferic == 1 .and. jasfer3D == 1) then
 !   allocate orientation arrays
-         allocate (csbup(4, Lnx), stat=ierr); csbup = 1.0_dp
+         allocate (csbup(4, Lnx), stat=ierr)
+         csbup = 1.0_dp
          call aerr('csbup(4,Lnx)', ierr, Lnx)
-         allocate (snbup(4, Lnx), stat=ierr); snbup = 0.0_dp
+         allocate (snbup(4, Lnx), stat=ierr)
+         snbup = 0.0_dp
          call aerr('snbup(4,Lnx)', ierr, Lnx)
       end if
 
@@ -91,13 +95,17 @@ contains
             cycle
          end if
 
-         dxn = -csu(L); dyn = -snu(L) ! normal vector in upwind dir
+         dxn = -csu(L)
+         dyn = -snu(L) ! normal vector in upwind dir
 
          do k12 = 1, 2
 
             rmin = 0
             k = ln(k12, L)
-            kd = ln(2, L); if (k12 == 2) kd = ln(1, L)
+            kd = ln(2, L)
+            if (k12 == 2) then
+               kd = ln(1, L)
+            end if
 
 ! SPvdP: (xzup, yzup) not used here
 !       xzup = 2d0*xz(k) - xz(kd)                     ! upwind position for which cell centre interpolated values
@@ -110,7 +118,8 @@ contains
             end if
 
             if (k12 == 2) then
-               dxn = -dxn; dyn = -dyn
+               dxn = -dxn
+               dyn = -dyn
             end if
 
             n = 0
@@ -118,7 +127,9 @@ contains
                LL = abs(nd(k)%ln(kk)) ! use this 1 point if it is less than e.g. 0.1dx away from xzup
                if (LL > lnx1D .and. LL /= L) then !
                   ku = ln(1, LL)
-                  if (ku == k) ku = ln(2, LL)
+                  if (ku == k) then
+                     ku = ln(2, LL)
+                  end if
 
                   r = dprodin(xz(kd), yz(kd), xz(k), yz(k), xz(k), yz(k), xz(ku), yz(ku))
                   r = r * (dxi(L)**2)
@@ -170,21 +181,27 @@ contains
                   nn = 2
                   ku2 = kun(nri(nn)) ! can we interpolate in ku and ku2?
                   call dcross(xz(kd), yz(kd), xz(k), yz(k), xz(ku), yz(ku), xz(ku2), yz(ku2), JACROS, SL, SM, XCR, YCR, CRP)
-                  if (sl < 1.2) jacros = 0 ! int point too close to xz(k)
+                  if (sl < 1.2) then
+                     jacros = 0 ! int point too close to xz(k)
+                  end if
                end if
 
                if (n >= 3 .and. jacros == 0) then
                   nn = 3
                   ku2 = kun(nri(nn))
                   call dcross(xz(kd), yz(kd), xz(k), yz(k), xz(ku), yz(ku), xz(ku2), yz(ku2), JACROS, SL, SM, XCR, YCR, CRP)
-                  if (sl < 1.2) jacros = 0 ! int point too close to xz(k)
+                  if (sl < 1.2) then
+                     jacros = 0 ! int point too close to xz(k)
+                  end if
                end if
 
                if (n >= 4 .and. jacros == 0) then
                   nn = 4
                   ku2 = kun(nri(nn))
                   call dcross(xz(kd), yz(kd), xz(k), yz(k), xz(ku), yz(ku), xz(ku2), yz(ku2), JACROS, SL, SM, XCR, YCR, CRP)
-                  if (sl < 1.2) jacros = 0 ! int point too close to xz(k)
+                  if (sl < 1.2) then
+                     jacros = 0 ! int point too close to xz(k)
+                  end if
                end if
 
                if (jacros == 1) then
@@ -195,7 +212,8 @@ contains
                         k2 = ln(1, LL) + ln(2, LL) - k
                         if (k2 == ku .or. k2 == ku2) then
                            if (iadv(LL) == 6 .or. iadv(LL) == IADV_ORIGINAL_LATERAL_OVERFLOW) then
-                              ku = 0; ku2 = 0
+                              ku = 0
+                              ku2 = 0
                            end if
                         end if
                      end do

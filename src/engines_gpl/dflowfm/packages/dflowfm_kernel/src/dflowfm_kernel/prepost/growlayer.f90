@@ -105,7 +105,9 @@ contains
          continue
       end if
 
-      if (j - 1 == 1) numgrow = 0
+      if (j - 1 == 1) then
+         numgrow = 0
+      end if
 
 !   dheight = 1d0
 
@@ -118,7 +120,9 @@ contains
 !  compute maximum mesh width and get dtolLR in the proper dimension
       dhmax = 0.0_dp
       do i = 1, mc - 1
-         if (xc(i, 1) == DMISS .or. xc(i + 1, 1) == DMISS) cycle
+         if (xc(i, 1) == DMISS .or. xc(i + 1, 1) == DMISS) then
+            cycle
+         end if
          dhmax = max(dhmax, dbdistance(xc(i, 1), yc(i, 1), xc(i + 1, 1), yc(i + 1, 1), jsferic, jasfer3D, dmiss))
       end do
       dtolLR = dtolLR * dhmax
@@ -159,7 +163,9 @@ contains
             if (xf(i) /= DMISS) then
                call lnabs(xf(i), yf(i))
             else
-               if (i < nf) call movabs(xf(i + 1), yf(i + 1))
+               if (i < nf) then
+                  call movabs(xf(i + 1), yf(i + 1))
+               end if
             end if
          end do
 !      call qnerror(' ', ' ', ' ')
@@ -190,13 +196,19 @@ contains
 !     update new frontmask
          if (dt_other < dt_loc) then
             do i = 1, mc
-               if (dtmax(i) - dt_other <= dtol .and. (dt_loc - dtmax(i)) > dtol) ifrontnew(i) = 0
+               if (dtmax(i) - dt_other <= dtol .and. (dt_loc - dtmax(i)) > dtol) then
+                  ifrontnew(i) = 0
+               end if
             end do
          end if
 
 !     remove isolated points from frontmask
-         if (ifrontnew(1) == 1 .and. ifrontnew(2) == 0) ifrontnew(1) = 0
-         if (ifrontnew(mc) == 1 .and. ifrontnew(mc - 1) == 0) ifrontnew(mc) = 0
+         if (ifrontnew(1) == 1 .and. ifrontnew(2) == 0) then
+            ifrontnew(1) = 0
+         end if
+         if (ifrontnew(mc) == 1 .and. ifrontnew(mc - 1) == 0) then
+            ifrontnew(mc) = 0
+         end if
          where (ifrontnew(2:mc - 1) == 1 .and. ifrontnew(1:mc - 2) == 0 .and. ifrontnew(3:mc) == 0) ifrontnew(2:mc - 1) = 0
 
          write (6, *) numgrow, j, dt_loc, dt_other
@@ -265,7 +277,9 @@ contains
             if (xf(i) /= dmiss) then
                call lnabs(xf(i), yf(i))
             else
-               if (i < nf) call movabs(xf(i + 1), yf(i + 1))
+               if (i < nf) then
+                  call movabs(xf(i + 1), yf(i + 1))
+               end if
             end if
          end do
 !      end if
@@ -311,7 +325,9 @@ contains
 !    the gridline connecting two layers will cross
       if (.not. Lalllines .and. j > 2) then
          do i = 2, mc - 1
-            if (xc1(i) == DMISS) cycle
+            if (xc1(i) == DMISS) then
+               cycle
+            end if
             if (dcosphi(xc(i, j - 2), yc(i, j - 2), xc(i, j - 1), yc(i, j - 1), xc(i, j - 1), yc(i, j - 1), xc1(i), yc1(i), jsferic, jasfer3D, dxymis) < -0.5) then
                call get_LR(mc, xc1, yc1, i, iL, iR)
                do ii = iL + 1, iR - 1

@@ -86,7 +86,8 @@ contains
 
       call SAVEgrd()
 
-      MX = MMAX; NX = NMAX
+      MX = MMAX
+      NX = NMAX
       allocate (XR(MX, NX), YR(MX, NX), XI2(MX, NX), XJ2(MX, NX), YI2(MX, NX), YJ2(MX, NX), &
                 A(MX, NX), B(MX, NX), C(MX, NX), D(MX, NX), E(MX, NX), &
                 ATP(MX, NX), XO(MX, NX), YO(MX, NX))
@@ -96,17 +97,27 @@ contains
       MCR = MC
       NCR = NC
 
-      if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0.0_dp)
+      if (NDRAW(8) == 0) then
+         call READYY('ORTHOGONALISATION', 0.0_dp)
+      end if
       call ISITU()
-      if (NDRAW(8) == 0) call READYY(' ', 0.05_dp)
+      if (NDRAW(8) == 0) then
+         call READYY(' ', 0.05_dp)
+      end if
 
-      if (JSFERIC == 1) call MAKEF(XC, YC, MMAX, NMAX)
+      if (JSFERIC == 1) then
+         call MAKEF(XC, YC, MMAX, NMAX)
+      end if
 
       call GETSPL2(XC, XI2, XJ2, MC, NC, MMAX, NMAX)
-      if (NDRAW(8) == 0) call READYY(' ', 0.10_dp)
+      if (NDRAW(8) == 0) then
+         call READYY(' ', 0.10_dp)
+      end if
 
       call GETSPL2(YC, YI2, YJ2, MC, NC, MMAX, NMAX)
-      if (NDRAW(8) == 0) call READYY(' ', 0.15_dp)
+      if (NDRAW(8) == 0) then
+         call READYY(' ', 0.15_dp)
+      end if
 
       XR = XC
       YR = YC
@@ -117,7 +128,9 @@ contains
 !     VUL DE COEFFICIENTEN-MATRICES
       do IT = 1, ITATP
          JDLA = 0
-         if (IT == 1) JDLA = 1
+         if (IT == 1) then
+            JDLA = 1
+         end if
          MA1 = max(1, M1 - 1)
          NA1 = max(1, N1 - 1)
          MA2 = min(MC - 1, M2)
@@ -128,18 +141,25 @@ contains
 !        JAMMER IN DEZE LOOP, IJC WORDT EERST VERKLOOT IN SOMDIST
 !        CALL SETINTERNALBOUNDARIES(IJC)
          call FIXDDBOUNDARIES()
-         if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0.20_dp)
+         if (NDRAW(8) == 0) then
+            call READYY('ORTHOGONALISATION', 0.20_dp)
+         end if
 
          call ORTSOR(XR, YR, A, B, C, D, E, ATP, M1, N1, M2, N2, &
                      XI2, YI2, XJ2, YJ2, XO, YO, &
                      RJAC)
       end do
 
-      if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', -1.0_dp)
+      if (NDRAW(8) == 0) then
+         call READYY('ORTHOGONALISATION', -1.0_dp)
+      end if
 
-      XC = XR; YC = YR
+      XC = XR
+      YC = YR
 
-      if (JSFERIC == 1) call MAKEY(XC, YC, MMAX, NMAX)
+      if (JSFERIC == 1) then
+         call MAKEY(XC, YC, MMAX, NMAX)
+      end if
 !     CALL TEKSHOW(X, Y, MA2, NA2, ATP, 2,'FINAL ATP')
 
       deallocate (XR, YR, XI2, XJ2, YI2, YJ2, A, B, C, D, E, ATP, XO, YO)

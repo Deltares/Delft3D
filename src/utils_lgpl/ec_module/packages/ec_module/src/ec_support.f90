@@ -60,6 +60,7 @@ module m_ec_support
    public :: ecSupportFindNetCDF
    public :: ecSupportFindNetCDFByFilename
    public :: ecSupportFindBCFileByFilename
+   public :: ecSupportNetcdfGetQuantityCandidateNames
    public :: ecSupportNetcdfCheckError
    public :: ecSupportNCFindCFCoordinates
    public :: ecSupportTimestringToRefdate
@@ -309,6 +310,277 @@ module m_ec_support
          end if
       end function ecSupportFindBCFileByFilename
       ! =======================================================================
+
+      !> Look up the variable and standard names for a given quantity name from predefined lists
+      subroutine ecSupportNetcdfGetQuantityCandidateNames(fileName, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
+         character(len=*), intent(in) :: fileName !< name of the file, used for error messages
+         character(len=*), intent(in) :: quantityName !< name of the quantity to look up
+         character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames !< list with standard names to be filled
+         character(len=*), dimension(:), intent(inout), allocatable :: ncvarnames !< list with variable names to be filled
+         character(len=*), dimension(:), intent(inout), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
+         character(len=*), optional, intent(in) :: varname !< user-supplied name of variabele, required for 'waveperiod' quantity
+
+         select case (str_tolower(trim(quantityName)))
+         case ('rainfall')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'rainfall'
+            ncstdnames(1) = 'precipitation_amount'
+         case ('rainfall_rate')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'rainfall'
+            ncstdnames(1) = 'rainfall_rate'
+         case ('windx')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'u10' ! 10 meter eastward wind
+            ncstdnames(1) = 'eastward_wind'
+         case ('windy')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'v10' ! 10 meter northward wind
+            ncstdnames(1) = 'northward_wind'
+         case ('windxy')
+            allocate(ncvarnames(1:2))
+            allocate(ncstdnames(1:2))
+            ncvarnames(1) = 'u10' ! 10 meter eastward wind
+            ncstdnames(1) = 'eastward_wind'
+            ncvarnames(2) = 'v10' ! 10 meter northward wind
+            ncstdnames(2) = 'northward_wind'
+         case ('stressx')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'tauu' ! eastward wind stress
+            ncstdnames(1) = 'surface_downward_eastward_stress'
+         case ('stressy')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'tauv' ! northward wind stress
+            ncstdnames(1) = 'surface_downward_northward_stress'
+         case ('stressxy')
+            allocate(ncvarnames(1:2))
+            allocate(ncstdnames(1:2))
+            ncvarnames(1) = 'tauu' ! eastward wind stress
+            ncstdnames(1) = 'surface_downward_eastward_stress'
+            ncvarnames(2) = 'tauv' ! northward wind stress
+            ncstdnames(2) = 'surface_downward_northward_stress'
+         case ('airpressure', 'atmosphericpressure')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'msl' ! mean sea-level pressure
+            ncstdnames(1) = 'air_pressure'
+         case ('pseudoairpressure')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'msl' ! mean sea-level pressure
+            ncstdnames(1) = 'air_pressure'
+         case ('waterlevelcorrection')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'ssh' ! water level correction
+            ncstdnames(1) = 'sea_surface_height' 
+         case ('airdensity')
+            ! UNST-6593: air_density has variable name p140209 and no standard_name, will be changed in the future according to ECMWF.
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'p140209' ! air density above sea
+            ncstdnames(1) = 'air_density'
+         case ('airpressure_windx_windy')
+            allocate(ncvarnames(1:3))
+            allocate(ncstdnames(1:3))
+            ncvarnames(1) = 'msl' ! mean sea-level pressure
+            ncstdnames(1) = 'air_pressure'
+            ncvarnames(2) = 'u10' ! 10 meter eastward wind
+            ncstdnames(2) = 'eastward_wind'
+            ncvarnames(3) = 'v10' ! 10 meter northward wind
+            ncstdnames(3) = 'northward_wind'
+         case ('airpressure_stressx_stressy')
+            allocate(ncvarnames(1:3))
+            allocate(ncstdnames(1:3))
+            ncvarnames(1) = 'msl' ! mean sea-level pressure
+            ncstdnames(1) = 'air_pressure'
+            ncvarnames(2) = 'tauu' ! eastward wind stress
+            ncstdnames(2) = 'surface_downward_eastward_stress'
+            ncvarnames(3) = 'tauv' ! northward wind stress
+            ncstdnames(3) = 'surface_downward_northward_stress'
+         case ('airpressure_windx_windy_charnock')
+            allocate(ncvarnames(1:4))
+            allocate(ncstdnames(1:4))
+            ncvarnames(1) = 'msl' ! mean sea-level pressure
+            ncstdnames(1) = 'air_pressure'
+            ncvarnames(2) = 'u10' ! 10 meter eastward wind
+            ncstdnames(2) = 'eastward_wind'
+            ncvarnames(3) = 'v10' ! 10 meter northward wind
+            ncstdnames(3) = 'northward_wind'
+            ncvarnames(4) = 'c' ! space varying Charnock coefficients
+            ncstdnames(4) = 'charnock'
+         case ('charnock')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'c' ! space varying Charnock coefficients
+            ncstdnames(1) = 'charnock'
+         case ('airtemperature')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 't2m' ! 2-meter air temperature
+            ncstdnames(1) = 'air_temperature'
+         case ('cloudiness')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'tcc' ! cloud cover (fraction)
+            ncstdnames(1) = 'cloud_area_fraction'
+         case ('humidity')
+            allocate(ncstdnames(1))
+            allocate(ncstdnames_fallback(1))
+            ncstdnames(1) = 'relative_humidity'
+            ncstdnames_fallback(1) = 'humidity'
+         case ('dewpoint')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'd2m' ! dew-point temperature
+            ncstdnames(1) = 'dew_point_temperature'
+         case ('wind_speed')
+            allocate(ncstdnames(1))
+            ncstdnames(1) = 'wind_speed'
+         case ('wind_from_direction')
+            allocate(ncstdnames(1))
+            ncstdnames(1) = 'wind_from_direction'
+         case ('humidity_airtemperature_cloudiness')
+            allocate(ncvarnames(1:3))
+            allocate(ncstdnames(1:3))
+            ncvarnames(1) = 'rhum' ! relative_humidity
+            ncstdnames(1) = 'relative_humidity'
+            ncvarnames(2) = 't2m' ! 2-meter air temperature
+            ncstdnames(2) = 'air_temperature'
+            ncvarnames(3) = 'tcc' ! cloud cover (fraction)
+            ncstdnames(3) = 'cloud_area_fraction'
+         case ('dewpoint_airtemperature_cloudiness')
+            allocate(ncvarnames(1:3))
+            allocate(ncstdnames(1:3))
+            ncvarnames(1) = 'd2m' ! dew-point temperature
+            ncstdnames(1) = 'dew_point_temperature'
+            ncvarnames(2) = 't2m' ! 2-meter air temperature
+            ncstdnames(2) = 'air_temperature'
+            ncvarnames(3) = 'tcc' ! cloud cover (fraction)
+            ncstdnames(3) = 'cloud_area_fraction'
+         case ('dewpoint_airtemperature_cloudiness_solarradiation')
+            allocate(ncvarnames(1:4))
+            allocate(ncstdnames(1:4))
+            ncvarnames(1) = 'd2m' ! dew-point temperature
+            ncstdnames(1) = 'dew_point_temperature'
+            ncvarnames(2) = 't2m' ! 2-meter air temperature
+            ncstdnames(2) = 'air_temperature'
+            ncvarnames(3) = 'tcc' ! cloud cover (fraction)
+            ncstdnames(3) = 'cloud_area_fraction'
+            ncvarnames(4) = 'ssrd'
+            ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
+         case ('solarradiation')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            allocate(ncstdnames_fallback(1))
+            ncvarnames(1) = 'ssrd'
+            ncstdnames(1) = 'surface_downwelling_shortwave_flux_in_air'
+            ncstdnames_fallback(1) = 'solar_irradiance'
+         case ('netsolarradiation')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            allocate(ncstdnames_fallback(1))
+            ncvarnames(1) = 'ssr'
+            ncstdnames(1) = 'surface_net_downward_shortwave_flux'
+            ncstdnames_fallback(1) = 'solar_irradiance'
+         case ('longwaveradiation')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'strd'
+            ncstdnames(1) = 'surface_net_downward_longwave_flux'
+         case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
+            allocate(ncvarnames(1:2))
+            allocate(ncstdnames(1:2))
+            ncvarnames(1) = 'thetao' ! temperature
+            ncstdnames(1) = 'sea_water_potential_temperature'
+            ncvarnames(2) = 'so' ! salinity
+            ncstdnames(2) = 'sea_water_salinity'
+         case ('sea_ice_area_fraction', 'sea_ice_thickness')
+            allocate(ncstdnames(1))
+            ncstdnames(1) = quantityName
+         case ('friction_coefficient_time_dependent', 'frictioncoefficient')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'friction_coefficient'
+            ncstdnames(1) = 'friction_coefficient'
+         case ('waterlevelbnd')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'waterlevel'
+            ncstdnames(1) = 'sea_surface_height'
+         case ('wavesignificantheight')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'hs' ! significant wave height
+            ncstdnames(1) = 'sea_surface_wave_significant_height'
+         case ('waveperiod')
+            if (present(varname)) then
+               allocate(ncvarnames(1))
+               allocate(ncstdnames(1))
+               ncvarnames(1) = varname ! wave period
+               ncstdnames(1) = varname
+            else
+               call setECMessage("Variable name for quantity 'waveperiod' not provided for file "//trim(fileName)//".")
+            end if
+         case ('wavedirection')
+            allocate(ncvarnames(1:2))
+            allocate(ncstdnames(1:2))
+            ncvarnames(1) = 'theta0'
+            ncstdnames(1) = 'sea_surface_wave_from_direction'
+            ncvarnames(2) = 'hs'
+            ncstdnames(2) = 'sea_surface_wave_significant_height'
+         case ('xwaveforce')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'xfor'
+            ncstdnames(1) = 'eastward_wave_force'
+         case ('ywaveforce')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'yfor'
+            ncstdnames(1) = 'northward_wave_force'
+         case ('wavebreakerdissipation')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'ssurf'
+            ncstdnames(1) = 'depth_induced_surf_breaking_energy_dissipation'
+         case ('whitecappingdissipation')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'swcap'
+            ncstdnames(1) = 'whitecapping_energy_dissipation'
+         case ('totalwaveenergydissipation')
+            allocate(ncvarnames(1))
+            allocate(ncstdnames(1))
+            ncvarnames(1) = 'dissip'
+            ncstdnames(1) = 'total_energy_dissipation'
+         case default ! experiment: gather miscellaneous variables from an NC-file,
+            if (index(quantityName, 'waqsegmentfunction') == 1) then
+               allocate(ncvarnames(1))
+               allocate(ncstdnames(1))
+               ncvarnames(1) = quantityName
+               ncstdnames(1) = quantityName
+            else if (index(quantityName, 'initialtracer') == 1) then
+               allocate(ncvarnames(1))
+               allocate(ncstdnames(1))
+               ncvarnames(1) = quantityName(14:)
+               ncstdnames(1) = quantityName(14:)
+            else
+               ! we have faulty
+               call setECMessage("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)//", unknown.")
+               !TODO: user defined quantity name
+               !ncvarnames(1) = varname
+               !ncstdnames(1) = varname
+            end if
+         end select
+
+      end subroutine ecSupportNetcdfGetQuantityCandidateNames
 
       !> Retrieve the pointer to the ElementSet with id == elementSetId.
       function ecSupportFindElementSet(instancePtr, elementSetId) result(elementSetPtr)

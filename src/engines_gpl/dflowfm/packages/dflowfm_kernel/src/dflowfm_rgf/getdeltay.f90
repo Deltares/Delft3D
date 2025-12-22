@@ -48,12 +48,16 @@ contains
       integer :: k
       dy0 = dx0 * cos(dg2rd * y)
       do k = 1, 5
-         phi = dg2rd * (y + 0.5 * dy0); c = cos(phi); s = sqrt(1.0_dp - c * c)
+         phi = dg2rd * (y + 0.5 * dy0)
+         c = cos(phi)
+         s = sqrt(1.0_dp - c * c)
          f = dy0 - dx0 * c
          df = 1.0_dp + 0.5_dp * dg2rd * dx0 * s
          yd = f / df
          dy0 = dy0 - yd
-         if (yd < 1.0e-14_dp) return
+         if (yd < 1.0e-14_dp) then
+            return
+         end if
       end do
    end
 

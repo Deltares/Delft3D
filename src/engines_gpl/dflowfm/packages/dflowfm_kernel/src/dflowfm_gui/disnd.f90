@@ -72,7 +72,7 @@ contains
          if (netorflow == 0) then
             x = xk(NN)
             y = yk(NN)
-            val = dble(rnod(NN))
+            val = real(rnod(NN), kind=dp)
             idtext = '                (no id)'
             if (allocated(nodeids)) then
                if (NN <= size(nodeids)) then

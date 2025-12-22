@@ -80,7 +80,9 @@ contains
       real(kind=dp), parameter :: tolerance = 1.0e-3_dp
 
 #ifdef HAVE_MPI
-      if (allocated(ndx_over_procs)) deallocate (ndx_over_procs)
+      if (allocated(ndx_over_procs)) then
+         deallocate (ndx_over_procs)
+      end if
       allocate (ndx_over_procs(0:fetch_proc_rank), stat=error)
       call mpi_gather(ndx, 1, mpi_integer, ndx_over_procs, 1, MPI_INTEGER, fetch_proc_rank, DFM_COMM_ALLWORLD, error)
 
@@ -88,15 +90,21 @@ contains
          ndx_over_procs(fetch_proc_rank) = 0
          ndx_max = maxval(ndx_over_procs)
 
-         if (allocated(iglobal_s_procs)) deallocate (iglobal_s_procs)
+         if (allocated(iglobal_s_procs)) then
+            deallocate (iglobal_s_procs)
+         end if
          allocate (iglobal_s_procs(ndx_max, 0:fetch_proc_rank - 1), stat=error)
          call aerr('iglobal_s_pros', error, fetch_proc_rank * ndx_max)
 
-         if (allocated(s1_buffer)) deallocate (s1_buffer)
+         if (allocated(s1_buffer)) then
+            deallocate (s1_buffer)
+         end if
          allocate (s1_buffer(ndx_max), stat=error)
          call aerr('s1_buffer', error, ndx_max)
 
-         if (allocated(f_buffer)) deallocate (f_buffer)
+         if (allocated(f_buffer)) then
+            deallocate (f_buffer)
+         end if
          allocate (f_buffer(nwf, ndx_max), stat=error)
          call aerr('f_buffer', error, nwf * ndx_max)
 
@@ -130,7 +138,9 @@ contains
                call mpi_probe(MPI_ANY_SOURCE, tag, DFM_COMM_ALLWORLD, status, error)
                call mpi_get_count(status, MPI_INTEGER, icount, error)
                source = status(MPI_SOURCE)
-               if (allocated(iglobal_s_source)) deallocate (iglobal_s_source)
+               if (allocated(iglobal_s_source)) then
+                  deallocate (iglobal_s_source)
+               end if
                allocate (iglobal_s_source(ndx_over_procs(source)))
                !call mpi_recv(iglobal_s_procs(1,source), ndx_over_procs(source), MPI_INTEGER, source, tag, DFM_COMM_ALLWORLD, status, error)
                call mpi_recv(iglobal_s_source, ndx_over_procs(source), MPI_INTEGER, source, tag, DFM_COMM_ALLWORLD, status, error)
@@ -140,10 +150,14 @@ contains
             end do
          else
             ! rebuild iglobal_s on the fetch proc
-            if (allocated(xz_proc)) deallocate (xz_proc)
+            if (allocated(xz_proc)) then
+               deallocate (xz_proc)
+            end if
             allocate (xz_proc(ndx_max), stat=error)
             call aerr('xz_proc', error, ndx_max)
-            if (allocated(yz_proc)) deallocate (yz_proc)
+            if (allocated(yz_proc)) then
+               deallocate (yz_proc)
+            end if
             allocate (yz_proc(ndx_max), stat=error)
             call aerr('yz_proc', error, ndx_max)
 
@@ -311,7 +325,9 @@ contains
 
 #ifdef HAVE_MPI
       if (use_fetch_proc > 0) then
-         if (DFM_COMM_DFMWORLD /= MPI_COMM_NULL) call MPI_Comm_free(DFM_COMM_DFMWORLD, error)
+         if (DFM_COMM_DFMWORLD /= MPI_COMM_NULL) then
+            call MPI_Comm_free(DFM_COMM_DFMWORLD, error)
+         end if
          call MPI_Group_free(dflowfm_group, error)
          call MPI_Group_free(dflowfm_entire_group, error)
          use_fetch_proc = 0

@@ -58,11 +58,14 @@ contains
       real(kind=dp) :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
       real(kind=dp) :: beta, deltaa, hyr
 
-      k1 = ln(1, L); k2 = ln(2, L)
+      k1 = ln(1, L)
+      k2 = ln(2, L)
       if (bob0(1, L) < bob0(2, L)) then
-         BL1 = bob0(1, L); BL2 = bob0(2, L)
+         BL1 = bob0(1, L)
+         BL2 = bob0(2, L)
       else
-         BL1 = bob0(2, L); BL2 = bob0(1, L)
+         BL1 = bob0(2, L)
+         BL2 = bob0(1, L)
       end if
       wu2 = wu(L)
       b21 = BL2 - BL1
@@ -74,7 +77,9 @@ contains
          if (hpr1 > 0) then
             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
             dx1 = 0.5_dp * dx(L) * acl(L)
-            if (k1 > ndx2D) dx1 = 2 * dx1
+            if (k1 > ndx2D) then
+               dx1 = 2 * dx1
+            end if
             a1(k1) = a1(k1) + dx1 * wid1
             vol1(k1) = vol1(k1) + dx1 * ar1
          end if
@@ -83,7 +88,9 @@ contains
          if (hpr2 > 0) then
             call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
             dx2 = 0.5_dp * dx(L) * (1.0_dp - acl(L))
-            if (k2 > ndx2D) dx2 = 2 * dx2
+            if (k2 > ndx2D) then
+               dx2 = 2 * dx2
+            end if
             a1(k2) = a1(k2) + dx2 * wid2
             vol1(k2) = vol1(k2) + dx2 * ar2
          end if
@@ -93,7 +100,8 @@ contains
 
             hpr1 = hu(L)
 
-            frcn = frcu(L); friction_type = ifrcutp(L)
+            frcn = frcu(L)
+            friction_type = ifrcutp(L)
             if (jaconveyance2D > 0) then
 
                jaconv = min(2, jaconveyance2D)
@@ -123,7 +131,9 @@ contains
             if (hpr1 > 0) then
                call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
                dx1 = 0.5_dp * dx(L) * acl(L)
-               if (k1 > ndx2D) dx1 = 2 * dx1
+               if (k1 > ndx2D) then
+                  dx1 = 2 * dx1
+               end if
                vol1_f(k1) = vol1_f(k1) + dx1 * ar1
             end if
 
@@ -131,7 +141,9 @@ contains
             if (hpr2 > 0) then
                call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
                dx2 = 0.5_dp * dx(L) * (1.0_dp - acl(L))
-               if (k2 > ndx2D) dx2 = 2 * dx2
+               if (k2 > ndx2D) then
+                  dx2 = 2 * dx2
+               end if
                vol1_f(k2) = vol1_f(k2) + dx2 * ar2
             end if
          else

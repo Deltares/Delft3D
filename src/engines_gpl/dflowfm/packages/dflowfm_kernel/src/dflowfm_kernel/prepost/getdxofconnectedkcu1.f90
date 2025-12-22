@@ -52,7 +52,8 @@ contains
 
       integer :: Lf, L, LL, k, kk, n, k1, k2, k3, k4, n1, n2, n2d
       real(kind=dp) :: wu1, wu2, wuL
-      wu1 = 0.0_dp; n = 0
+      wu1 = 0.0_dp
+      n = 0
 
       !if (kcs(ln(1,L) ) == 21)  k = ln(2,L)
       !if (kcs(ln(2,L) ) == 21)  k = ln(1,L)
@@ -67,8 +68,12 @@ contains
       L = ln2lne(Lf)
       k1 = kn(1, L)
       k2 = kn(2, L)
-      if (nmk(k1) == 1) k = k2
-      if (nmk(k2) == 1) k = k1
+      if (nmk(k1) == 1) then
+         k = k2
+      end if
+      if (nmk(k2) == 1) then
+         k = k1
+      end if
       do kk = 1, nmk(k)
          LL = abs(nod(k)%lin(kk))
          if (kn(3, LL) == 1 .or. kn(3, LL) == 6) then ! on second thought, only true 1D links should influence lateral inflow width ! .or. kn(3,LL) == 4) then
@@ -81,7 +86,8 @@ contains
          wu1 = wu1 / n
       end if
 
-      n1 = ln(1, Lf); n2 = ln(2, Lf)
+      n1 = ln(1, Lf)
+      n2 = ln(2, Lf)
       if (kcs(n1) == 21) then
          n2d = n1
       else if (kcs(n2) == 21) then

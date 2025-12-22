@@ -92,24 +92,32 @@ contains
 
       do Lf = 1, Lnx
          ! for cutcell
-         if (wu_mor(Lf) == 0.0_dp) cycle
+         if (wu_mor(Lf) == 0.0_dp) then
+            cycle
+         end if
          !
          ! no bed slope effects on links with bermslope adjustments
          ! fixfac and frac applied in bermslopenudging()
          if (stmpar%morpar%bermslopetransport) then
-            if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) cycle
+            if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) then
+               cycle
+            end if
          end if
          !
          if (hu(Lf) > 0.0_dp) then
             k1 = ln(1, Lf)
             k2 = ln(2, Lf)
             call getLbotLtop(Lf, Lb, Lt)
-            if (Lt < Lb) cycle
+            if (Lt < Lb) then
+               cycle
+            end if
             do l = 1, lsedtot
                if (has_bedload(tratyp(l))) then
                   di50 = sedd50(l)
                   di50spatial = .false.
-                  if (di50 < 0.0_fp .and. lsedtot == 1) di50spatial = .true.
+                  if (di50 < 0.0_fp .and. lsedtot == 1) then
+                     di50spatial = .true.
+                  end if
                   !
                   ! Initialize variables
                   !
@@ -179,7 +187,7 @@ contains
                         !
                         ! 4: Formulation according Parker & Andrews (1985)
                         !
-                        ust2avg = (ust2(k1) + ust2(k2)) / 2d0
+                        ust2avg = (ust2(k1) + ust2(k2)) / 2.0_dp
                         if (di50spatial) then
                            di50 = sqrt(sedd50fld(k1) * sedd50fld(k2))
                         end if
@@ -189,7 +197,7 @@ contains
                         if (shield /= 0.0_fp) then
                            if (islope == 3) then
                               dmloc = sqrt(dm(k1) * dm(k2))
-                              if (comparereal(dmloc, 0d0) == 0) then
+                              if (comparereal(dmloc, 0.0_dp) == 0) then
                                  if (kcs(k1) > 0) then
                                     dmloc = dm(k1)
                                  elseif (kcs(k2) > 0) then

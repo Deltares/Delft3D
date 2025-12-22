@@ -50,15 +50,20 @@ contains
       real(kind=dp) :: qsrck, dvoli, dtol = 1.0e-4_dp
 
       do n = 1, numsrc
-         if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) cycle ! due to initialisation
+         if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) then
+            cycle ! due to initialisation
+         end if
 
-         if (arsrc(n) == 0) cycle
+         if (arsrc(n) == 0) then
+            cycle
+         end if
          kk = ksrc(1, n) ! 2D pressure cell nr FROM
          kk2 = ksrc(4, n) ! 2D pressure cell nr TO
          qsrck = qsrc(n)
 
          if (kk > 0) then ! FROM Point
-            k = ksrc(2, n); dvoli = 1.0_dp / max(vol1(k), dtol)
+            k = ksrc(2, n)
+            dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then ! FROM k to k2
                turkinws(k) = turkinws(k) - dts * qsrck * dvoli * turkinws(k)
             else if (qsrck < 0) then ! FROM k2 to k
@@ -67,7 +72,8 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            k = ksrc(5, n); dvoli = 1.0_dp / max(vol1(k), dtol)
+            k = ksrc(5, n)
+            dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then
                turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / arsrc(n))**2
             else if (qsrck < 0) then

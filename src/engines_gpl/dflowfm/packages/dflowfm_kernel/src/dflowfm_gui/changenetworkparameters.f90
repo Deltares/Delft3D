@@ -80,25 +80,43 @@ contains
       jins_old = jins
 
       NLEVEL = 4
-      OPTION(1) = 'SELECT INSIDE POLYGON (1/0), 1 = INSIDE '; IT(1 * 2) = 2
+      OPTION(1) = 'SELECT INSIDE POLYGON (1/0), 1 = INSIDE '
+      IT(1 * 2) = 2
       !OPTION(2) = 'TRIANGLEMINANGLE                       ' ; IT( 2*2)  = 6
-      OPTION(2) = 'jadelnetlinktyp                         '; IT(2 * 2) = 2
-      OPTION(3) = 'TRIANGLEMAXANGLE                        '; IT(3 * 2) = 6
-      OPTION(4) = 'TRIANGLESIZEFACTOR, MAX.INSIDE/ AV.EDGE '; IT(4 * 2) = 6
-      OPTION(5) = 'limit center; 1.0:in cell <-> 0.0:on c/g'; IT(5 * 2) = 6
-      OPTION(6) = 'cosphiutrsh in geominit (good orhto)    '; IT(6 * 2) = 6
-      OPTION(7) = 'remove small links       0.0->          '; IT(7 * 2) = 6
-      OPTION(8) = 'TIME CONSUMING NETWORK CHECKS YES/NO 1/0'; IT(8 * 2) = 2
-      OPTION(9) = 'NR OF SMOOTH. ITER. IN COURANT NETWORK  '; IT(9 * 2) = 2
-      OPTION(10) = 'SMALLEST CELLSIZE IN COURANT NETWORK    '; IT(10 * 2) = 6
-      OPTION(11) = 'REMOVE SMALL TRIANGLES, TRIAREAREMFRAC  '; IT(11 * 2) = 6
-      OPTION(12) = 'REFINE NETWORK (QUADS) DIRECTION: 0,-1,1'; IT(12 * 2) = 2
-      OPTION(13) = 'Merge nodes closer than tooclose (m)    '; IT(13 * 2) = 6
-      OPTION(14) = 'Connect 1D end nodes to branch if closer'; IT(14 * 2) = 6
-      OPTION(15) = 'Uniform DX in copy landb to 1D netw     '; IT(15 * 2) = 6
-      OPTION(16) = 'snap-to-landbdy tolerance, netboundary  '; IT(16 * 2) = 6
-      OPTION(17) = 'snap-to-landbdy tolerance, inner network'; IT(17 * 2) = 6
-      OPTION(18) = 'max nr of faces allowed in removesmallfl'; IT(18 * 2) = 2
+      OPTION(2) = 'jadelnetlinktyp                         '
+      IT(2 * 2) = 2
+      OPTION(3) = 'TRIANGLEMAXANGLE                        '
+      IT(3 * 2) = 6
+      OPTION(4) = 'TRIANGLESIZEFACTOR, MAX.INSIDE/ AV.EDGE '
+      IT(4 * 2) = 6
+      OPTION(5) = 'limit center; 1.0:in cell <-> 0.0:on c/g'
+      IT(5 * 2) = 6
+      OPTION(6) = 'cosphiutrsh in geominit (good orhto)    '
+      IT(6 * 2) = 6
+      OPTION(7) = 'remove small links       0.0->          '
+      IT(7 * 2) = 6
+      OPTION(8) = 'TIME CONSUMING NETWORK CHECKS YES/NO 1/0'
+      IT(8 * 2) = 2
+      OPTION(9) = 'NR OF SMOOTH. ITER. IN COURANT NETWORK  '
+      IT(9 * 2) = 2
+      OPTION(10) = 'SMALLEST CELLSIZE IN COURANT NETWORK    '
+      IT(10 * 2) = 6
+      OPTION(11) = 'REMOVE SMALL TRIANGLES, TRIAREAREMFRAC  '
+      IT(11 * 2) = 6
+      OPTION(12) = 'REFINE NETWORK (QUADS) DIRECTION: 0,-1,1'
+      IT(12 * 2) = 2
+      OPTION(13) = 'Merge nodes closer than tooclose (m)    '
+      IT(13 * 2) = 6
+      OPTION(14) = 'Connect 1D end nodes to branch if closer'
+      IT(14 * 2) = 6
+      OPTION(15) = 'Uniform DX in copy landb to 1D netw     '
+      IT(15 * 2) = 6
+      OPTION(16) = 'snap-to-landbdy tolerance, netboundary  '
+      IT(16 * 2) = 6
+      OPTION(17) = 'snap-to-landbdy tolerance, inner network'
+      IT(17 * 2) = 6
+      OPTION(18) = 'max nr of faces allowed in removesmallfl'
+      IT(18 * 2) = 2
 !   OPTION(19)= 'dry/illegal/cutcells file (*.pol, *.lst)' ; IT(19*2)  = 4
       if (len_trim(md_dryptsfile) == 0) then
          OPTION(19) = 'DRY CELL FILE (none)'
@@ -106,11 +124,16 @@ contains
          OPTION(19) = 'DRY CELL FILE ('//trim(md_dryptsfile(1:min(len_trim(md_dryptsfile), 25)))//')'
       end if
       IT(19 * 2) = 4
-      OPTION(20) = '1D2D link generation algorithm          '; IT(20 * 2) = 2
-      OPTION(21) = 'Lateral algorithm search radius         '; IT(21 * 2) = 6
-      OPTION(22) = 'Use middle latitude (1/0)               '; IT(22 * 2) = 2
-      OPTION(23) = 'Circumcenter method (1/2/3)             '; IT(23 * 2) = 2
-      OPTION(24) = 'Circumcenter tolerance                  '; IT(24 * 2) = 6
+      OPTION(20) = '1D2D link generation algorithm          '
+      IT(20 * 2) = 2
+      OPTION(21) = 'Lateral algorithm search radius         '
+      IT(21 * 2) = 6
+      OPTION(22) = 'Use middle latitude (1/0)               '
+      IT(22 * 2) = 2
+      OPTION(23) = 'Circumcenter method (1/2/3)             '
+      IT(23 * 2) = 2
+      OPTION(24) = 'Circumcenter tolerance                  '
+      IT(24 * 2) = 6
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -170,10 +193,14 @@ contains
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 92
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 92
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
       end do
 
@@ -290,7 +317,9 @@ contains
          if (KEY == 23) then
             ! netcell administration out of date if jins changes
             call IFORMGETINTEGER(2 * 1, jins)
-            if (jins /= jins_old) netstat = NETSTAT_CELLS_DIRTY
+            if (jins /= jins_old) then
+               netstat = NETSTAT_CELLS_DIRTY
+            end if
             jins_old = jins
 
             !CALL IFormGetDouble  (2*2 , TRIANGLEMINANGLE)

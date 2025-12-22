@@ -71,9 +71,13 @@ contains
       character(LEN=32) :: MINTEX, MAXTEX
       real INFOGRAPHICS
 
-      if (NDRAW(12) == 1 .or. NDRAW(12) == 4) return ! 1 = isoscale off
+      if (NDRAW(12) == 1 .or. NDRAW(12) == 4) then
+         return ! 1 = isoscale off
+      end if
       if (NDRAW(29) <= 1 .and. NDRAW(7) <= 1) then
-         if (ndraw(32) <= 0 .or. NS < 1) return ! 1 = no, which linval
+         if (ndraw(32) <= 0 .or. NS < 1) then
+            return ! 1 = no, which linval
+         end if
       end if
 
       call IGRCHARSIZE(real(SCALESIZE), real(SCALESIZE))

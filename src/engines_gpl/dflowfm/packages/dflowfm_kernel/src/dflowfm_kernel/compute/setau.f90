@@ -99,7 +99,8 @@ contains
       end if
 
       do ng = 1, ngatesg ! loop over gate signals, setau
-         zgaten = zgate(ng); bupmin = 9.0e9_dp
+         zgaten = zgate(ng)
+         bupmin = 9.0e9_dp
          do n = L1gatesg(ng), L2gatesg(ng)
             LL = kgate(3, n)
             if (hu(LL) > 0.0_dp) then
@@ -109,11 +110,13 @@ contains
                openfact = (min(sup, zgaten) - bup) / hu(LL)
                afac = min(1.0_dp, max(0.0_dp, 1.0_dp - openfact))
                if (sup > zgaten) then
-                  hu(LL) = hu(LL) - (sup - zgaten); au(LL) = hu(LL) * wu(LL)
+                  hu(LL) = hu(LL) - (sup - zgaten)
+                  au(LL) = hu(LL) * wu(LL)
                   advi(LL) = advi(LL) + afac * 0.5_dp * abs(u1(LL)) * dxi(LL)
                end if
                if (hu(LL) < epshu) then
-                  hu(LL) = 0.0_dp; au(LL) = 0.0_dp
+                  hu(LL) = 0.0_dp
+                  au(LL) = 0.0_dp
                else if (kmx > 0) then
                   do L = Lbot(LL), Lbot(LL) + kmxL(LL) - 1
                      if (hu(L) > hu(L - 1)) then
@@ -147,7 +150,8 @@ contains
       end do
 
       do ng = 1, ncgensg ! loop over generalstruc signals, sethu
-         zgaten = zcgen(3 * (ng - 1) + 2); bupmin = 9.0e9_dp
+         zgaten = zcgen(3 * (ng - 1) + 2)
+         bupmin = 9.0e9_dp
          ! wufac  = zcgen(3*(ng-1)+3)
          do n = L1cgensg(ng), L2cgensg(ng)
             LL = kcgen(3, n)
@@ -186,7 +190,8 @@ contains
          L = abs(Lklep(n))
          call getflowdir(L, iup)
          if (iup * Lklep(n) < 0) then
-            hu(L) = 0.0_dp; au(L) = 0.0_dp
+            hu(L) = 0.0_dp
+            au(L) = 0.0_dp
             if (kmx > 0) then
                hu(Lbot(L):Ltop(L)) = 0.0_dp
                au(Lbot(L):Ltop(L)) = 0.0_dp
@@ -200,7 +205,8 @@ contains
          if (fac > 1.0e-6_dp) then
             au(L) = fac * au(L)
          else
-            hu(L) = 0.0_dp; au(L) = 0.0_dp
+            hu(L) = 0.0_dp
+            au(L) = 0.0_dp
             if (kmx > 0) then
                hu(Lbot(L):Ltop(L)) = 0.0_dp
                au(Lbot(L):Ltop(L)) = 0.0_dp
@@ -208,7 +214,9 @@ contains
          end if
       end do
 
-      if (nqbnd == 0) return
+      if (nqbnd == 0) then
+         return
+      end if
 
       huqbnd = 0.0_dp
 
@@ -216,7 +224,8 @@ contains
          do nq = 1, nqbnd ! discharge normalising Manning conveyance
             at = 0.0_dp
 
-            ssav = 0.0_dp; wwav = 0.0_dp
+            ssav = 0.0_dp
+            wwav = 0.0_dp
             do n = L1qbnd(nq), L2qbnd(nq)
                L = kbndu(3, n)
                k2 = kbndu(2, n)
@@ -238,9 +247,13 @@ contains
          end do
 
          if (jampi == 1 .and. japartqbnd == 1) then
-            if (jatimer == 1) call starttimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call starttimer(IMPIREDUCE)
+            end if
             call reduce_wwssav_all()
-            if (jatimer == 1) call stoptimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call stoptimer(IMPIREDUCE)
+            end if
          end if
       end if
 
@@ -287,7 +300,8 @@ contains
             end if
 
             if (zbndq(n) < 0.0_dp .and. hu(L) < qbndhutrs) then
-               hu(L) = 0.0_dp; au(L) = 0.0_dp
+               hu(L) = 0.0_dp
+               au(L) = 0.0_dp
             else
                if (jampi == 0) then
 !            at = at + au(L)*hu(L)**FAC23
@@ -305,9 +319,13 @@ contains
       end do
 
       if (jampi == 1 .and. japartqbnd == 1) then
-         if (jatimer == 1) call starttimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call starttimer(IMPIREDUCE)
+         end if
          call reduce_at_all()
-         if (jatimer == 1) call stoptimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call stoptimer(IMPIREDUCE)
+         end if
       end if
 
       do nq = 1, nqbnd

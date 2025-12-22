@@ -99,8 +99,12 @@ contains
       xymis = 0.0_dp ! this is the default for this file type
 
       read (mrgf, '(a)', iostat=istat) rec
-      if (istat > 0) goto 888
-      if (istat < 0) goto 9999
+      if (istat > 0) then
+         goto 888
+      end if
+      if (istat < 0) then
+         goto 9999
+      end if
       !
       ! Backwards compatible: first line could contain spherical keyword
       if (index(rec, 'Spherical') >= 1 .or. &
@@ -114,9 +118,15 @@ contains
       do
          kw_found = .false.
          read (mrgf, '(a)', iostat=istat) rec
-         if (istat > 0) goto 888
-         if (istat < 0) goto 9999
-         if (rec(1:1) == '*') cycle
+         if (istat > 0) then
+            goto 888
+         end if
+         if (istat < 0) then
+            goto 9999
+         end if
+         if (rec(1:1) == '*') then
+            cycle
+         end if
          !
          if (index(rec, 'Coordinate System') >= 1) then
             kw_found = .true.
@@ -131,12 +141,18 @@ contains
             kw_found = .true.
             i = index(rec, '=') + 1
             read (rec(i:), *, iostat=istat) xymis
-            if (istat > 0) goto 888
-            if (istat < 0) goto 9999
+            if (istat > 0) then
+               goto 888
+            end if
+            if (istat < 0) then
+               goto 9999
+            end if
          end if
          !
          if (.not. kw_found) then
-            if (index(rec, '=') >= 1) kw_found = .true.
+            if (index(rec, '=') >= 1) then
+               kw_found = .true.
+            end if
          end if
          !
          if (kw_found) then
@@ -154,20 +170,24 @@ contains
       read (rec, *, iostat=istat) mc, nc
       !
       read (mrgf, '(a)', iostat=istat) rec ! read three zero's
-      if (istat > 0) goto 888
-      if (istat < 0) goto 9999
+      if (istat > 0) then
+         goto 888
+      end if
+      if (istat < 0) then
+         goto 9999
+      end if
       !
       !  end read header of rgf-file
       !
 
-      call READYY('Reading Grid-File', 0d0)
+      call READYY('Reading Grid-File', 0.0_dp)
 
       call INCREASEGRID(MC, NC)
 
       zc = zkuni
 
-      call ECRREA(Xc, MMAX, NMAX, MC, NC, MRGF, 0d0)
-      call ECRREA(Yc, MMAX, NMAX, MC, NC, MRGF, 0.5d0)
+      call ECRREA(Xc, MMAX, NMAX, MC, NC, MRGF, 0.0_dp)
+      call ECRREA(Yc, MMAX, NMAX, MC, NC, MRGF, 0.5_dp)
 
       ! Set to system-wide dxymiss where necessary.
       do i = 1, mc
@@ -191,7 +211,7 @@ contains
          do i = 1, mc
             do j = 1, nc
                if (zc(i, j) /= dmiss) then
-                  zc(i, j) = -1d0 * zc(i, j)
+                  zc(i, j) = -1.0_dp * zc(i, j)
                end if
             end do
          end do
@@ -300,7 +320,7 @@ contains
 
       end if
 
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call DOCLOSE(MRGF)
 
       ! call gridtonet()
@@ -311,7 +331,7 @@ contains
       return
 
 9999  continue
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call DOCLOSE(MRGF)
       return
 

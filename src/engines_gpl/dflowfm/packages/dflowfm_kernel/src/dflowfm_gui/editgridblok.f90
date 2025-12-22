@@ -98,7 +98,9 @@ contains
       call KTEXT(' Indicate a Block   ', 1, 3, 15)
 
       call putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
-      if (KEY /= 23) JONCE = 0
+      if (KEY /= 23) then
+         JONCE = 0
+      end if
 
       if (NUM /= 0) then
 !        ER IS EEN KEUZE
@@ -125,10 +127,18 @@ contains
                MB(IPT) = MP
                NB(IPT) = NP
                call CIRR(Xc(MP, NP), Yc(MP, NP), NCOLLN)
-               if (NPT == 1) NPUT = 9
-               if (NPT == 2) NPUT = 17
-               if (NPT == 3) NPUT = 18
-               if (NPT == 4) NPUT = 19
+               if (NPT == 1) then
+                  NPUT = 9
+               end if
+               if (NPT == 2) then
+                  NPUT = 17
+               end if
+               if (NPT == 3) then
+                  NPUT = 18
+               end if
+               if (NPT == 4) then
+                  NPUT = 19
+               end if
             else
                call NEWBLOCKPOINT(MP, NP, JA, IPT)
                if (JA == 1) then
@@ -138,10 +148,18 @@ contains
                   MB(NPT) = MP
                   NB(NPT) = NP
                   call CIRR(Xc(MB(NPT), NB(NPT)), Yc(MB(NPT), NB(NPT)), NCOLLN)
-                  if (NPT == 1) NPUT = 9
-                  if (NPT == 2) NPUT = 17
-                  if (NPT == 3) NPUT = 18
-                  if (NPT == 4) NPUT = 19
+                  if (NPT == 1) then
+                     NPUT = 9
+                  end if
+                  if (NPT == 2) then
+                     NPUT = 17
+                  end if
+                  if (NPT == 3) then
+                     NPUT = 18
+                  end if
+                  if (NPT == 4) then
+                     NPUT = 19
+                  end if
                else if (JA == -1) then
 !                 niet meer toevoegen
                   call QNERROR('4 POINTS: CONTINUE = RIGHT MOUSE OR', 'Enter,', ' ')
@@ -149,7 +167,9 @@ contains
 !                 oud punt geclickt; uitgummen
                   call SAVEB(NPUT)
                   call CIRR(Xc(MB(IPT), NB(IPT)), Yc(MB(IPT), NB(IPT)), 0)
-                  if (IPT <= 2) call TEKB(Xc, Yc, MMAX, NMAX, 0)
+                  if (IPT <= 2) then
+                     call TEKB(Xc, Yc, MMAX, NMAX, 0)
+                  end if
                   MB(IPT) = 0
                   NB(IPT) = 0
                   NPUT = 16

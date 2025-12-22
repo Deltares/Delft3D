@@ -158,7 +158,8 @@ contains
             do num = 1, NUMCONST_MDU
                IP = IP + 1
                do LL = Lbot(L), Ltop(L)
-                  k1 = ln(1, LL); k2 = ln(2, LL)
+                  k1 = ln(1, LL)
+                  k2 = ln(2, LL)
                   crs_values(IP, icrs) = crs_values(IP, icrs) + real(sign(1, Lf), dp) * (max(q1(LL), 0.0_dp) * constituents(num, k1) &
                                                                                          + min(q1(LL), 0.0_dp) * constituents(num, k2))
                end do
@@ -239,9 +240,13 @@ contains
       integer :: ierror
 
 #ifdef HAVE_MPI
-      if (jatimer == 1) call starttimer(IOUTPUTMPI)
+      if (jatimer == 1) then
+         call starttimer(IOUTPUTMPI)
+      end if
       call mpi_allreduce(mpi_in_place, crs_values, nval * ncrs, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) call stoptimer(IOUTPUTMPI)
+      if (jatimer == 1) then
+         call stoptimer(IOUTPUTMPI)
+      end if
 #endif
 
    end subroutine reduce_cross_section_flowlink_integrals

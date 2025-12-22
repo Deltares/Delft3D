@@ -38,7 +38,9 @@ contains
 
       integer, intent(in) :: ja
 
-      if (jaGUI /= 1) return
+      if (jaGUI /= 1) then
+         return
+      end if
 
       call ISCREENBELL('ON')
       if (JA == 1) then

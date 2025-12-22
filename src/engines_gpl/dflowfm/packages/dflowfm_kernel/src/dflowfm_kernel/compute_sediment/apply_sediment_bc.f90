@@ -63,9 +63,12 @@ contains
             j = ll + ISED1 - 1 ! constituent index
             do LLL = Lnxi + 1, Lnx
                call getLbotLtop(LLL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do L = Lb, Lt
-                  kb = ln(1, L); ki = ln(2, L)
+                  kb = ln(1, L)
+                  ki = ln(2, L)
                   constituents(j, kb) = constituents(j, ki)
                end do
             end do
@@ -75,15 +78,20 @@ contains
       ! From time series bnd, or 0d0
       do ll = 1, numfracs
          iconst = ifrac2const(ll)
-         if (iconst == 0) cycle
+         if (iconst == 0) then
+            cycle
+         end if
          if (stmpar%sedpar%sedtyp(sedtot2sedsus(iconst - ISED1 + 1)) > stmpar%sedpar%max_mud_sedtyp) then
             do k = 1, nbndsf(ll)
                LLL = bndsf(ll)%k(3, k)
                call getLbotLtop(LLL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                if (hu(LLL) > 0.0_dp) then
                   do L = Lb, Lt
-                     kb = ln(1, L); ki = ln(2, L)
+                     kb = ln(1, L)
+                     ki = ln(2, L)
                      kk = kmxd * (k - 1) + L - Lb + 1
                      if (q1(L) > 0) then ! inflow
                         constituents(iconst, kb) = bndsf(ll)%z(kk)
@@ -110,9 +118,12 @@ contains
             j = ll + ISED1 - 1 ! constituent index
             do LLL = Lnxi + 1, Lnx
                call getLbotLtop(LLL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do L = Lb, Lt
-                  kb = ln(1, L); ki = ln(2, L)
+                  kb = ln(1, L)
+                  ki = ln(2, L)
                   constituents(j, kb) = constituents(j, ki)
                end do
             end do
@@ -122,14 +133,19 @@ contains
       ! From time series bnd, or 0d0
       do ll = 1, numfracs
          iconst = ifrac2const(ll) ! allow for combo equilibrium/dirichlet bc concentrations
-         if (iconst == 0) cycle
+         if (iconst == 0) then
+            cycle
+         end if
          if (stmpar%sedpar%sedtyp(sedtot2sedsus(iconst - ISED1 + 1)) <= stmpar%sedpar%max_mud_sedtyp) then
             do k = 1, nbndsf(ll)
                LLL = bndsf(ll)%k(3, k)
                call getLbotLtop(LLL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do L = Lb, Lt
-                  kb = ln(1, L); ki = ln(2, L)
+                  kb = ln(1, L)
+                  ki = ln(2, L)
                   kk = kmxd * (k - 1) + L - Lb + 1
                   if (q1(L) > 0) then ! inflow
                      constituents(iconst, kb) = bndsf(ll)%z(k)
