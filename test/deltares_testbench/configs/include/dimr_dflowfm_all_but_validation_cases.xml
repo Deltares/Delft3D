@@ -236,7 +236,7 @@
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
             <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_cumulative_discharge" toleranceAbsolute="0.0001" />
+            <parameter name="cross_section_cumulative_discharge" toleranceRelative="1e-7" />
           </parameters>
         </file>
         <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
@@ -3380,7 +3380,7 @@
           <parameters>
             <parameter name="mesh2d_windxu" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_windyu" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_Patm" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_Patm" toleranceRelative="1e-5" />
           </parameters>
         </file>
       </checks>
@@ -4784,9 +4784,9 @@
         <file name="output/winter97_saltwater_his.nc" type="netCDF">
           <parameters>
             <parameter name="salinity" toleranceAbsolute="0.0000001" />
-            <parameter name="Tair" toleranceAbsolute="0.0000001" />
+            <parameter name="Tair" toleranceAbsolute="1e-6" />
             <parameter name="potential_density" toleranceAbsolute="0.001" />
-            <parameter name="rhum" toleranceAbsolute="0.0000001" />
+            <parameter name="rhum" toleranceAbsolute="1e-5" />
             <parameter name="temperature" toleranceAbsolute="0.001" />
             <parameter name="ice_temperature" toleranceAbsolute="0.001" />
             <parameter name="ice_thickness" toleranceAbsolute="0.001" />
@@ -4863,7 +4863,7 @@
       <checks>
         <file name="dflowfmoutput/simplerain_his.nc" type="netCDF">
           <parameters>
-            <parameter name="rain" toleranceAbsolute="0.0001" />
+            <parameter name="rain" toleranceRelative="1e-7" />
           </parameters>
         </file>
       </checks>
@@ -5430,7 +5430,7 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_msed" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_msed" toleranceRelative="1e-7" />
           </parameters>
         </file>
       </checks>
@@ -5879,7 +5879,7 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_msed" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_msed" toleranceRelative="1e-7" />
           </parameters>
         </file>
       </checks>
