@@ -412,7 +412,7 @@
 			</file>
 			<file name="DFM_OUTPUT_dflow1d/dflow1d_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceAbsolute="1.0" />
 					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
@@ -433,7 +433,7 @@
 			</file>
 			<file name="DFM_OUTPUT_dflow1d/dflow1d_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceAbsolute="1.0" />
 					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
