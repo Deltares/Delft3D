@@ -7,7 +7,7 @@ contains
       use precision, only: dp
       use m_network, only: t_network
       use m_flowgeom, only: wu1Duni5, hh1Duni5
-      use m_physcoef, only: ifrctypuni ! ,frcuni1d2d
+      use m_physcoef, only: ifrctypuni, frcuni1d2d
       use m_CrossSections, only: AddCrossSectionDefinition, realloc
       use network_data, only: numl1d, kn
       use m_GlobalParameters, only: t_chainage2cross
@@ -67,7 +67,7 @@ contains
       ! Use default friction values for 1D2D links
       ! For lateral 1D2D links, use frcuni1d2d with ifrctypuni
       network%CSDefinitions%CS(idef)%frictionType(1) = ifrctypuni
-      network%CSDefinitions%CS(idef)%frictionValue(1) = 0.035_dp !frcuni1d2d, temporarily set to long culvert value for testin
+      network%CSDefinitions%CS(idef)%frictionValue(1) = frcuni1d2d
 
       ! Now create a cross-section instance
       if (network%crs%count + 1 > network%crs%size) then
@@ -82,7 +82,7 @@ contains
       deallocate (network%adm%line2cross)
       allocate (network%adm%line2cross(numl1d, 3))
       network%adm%line2cross(1:size(temp_line2cross, 1), :) = temp_line2cross
-      do L = 1, numL1D
+      do L = 1, numl1d
          if (kn(3, L) == 5) then
             network%adm%line2cross(L, :)%c1 = icrs
             network%adm%line2cross(L, :)%c2 = icrs
