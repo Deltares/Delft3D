@@ -2160,7 +2160,6 @@ contains
    end subroutine ggeo_construct_netcelllin_from_netcellnod
 
    elemental recursive subroutine INCELLS(XA, YA, KIN)
-      !use m_netw
       use network_data
       use geometry_module, only: pinpok
       use m_missing, only: jins, dmiss

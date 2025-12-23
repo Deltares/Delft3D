@@ -83,6 +83,7 @@ contains
       real(kind=dp) :: ice_free_area_fraction !< area fraction of ice cover (-)
       real(kind=dp) :: qlong_ice !< coefficient for long wave radiation of ice (J m-2 s-1 K-4)
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
+      real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
 
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
@@ -146,15 +147,17 @@ contains
 
       else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
-         ! Set surface_temperature either to water_temperature_in_cell or to ice_temperature(n) or to snow_temperature(n) and change albedo parameter in case of ice and/or snow
+         ! Set surface_temperature either to water_temperature_in_cell or to ice_temperature(n) or to snow_temperature(n)
+         ! and use a local surface_albedo so we do not overwrite the module variable `albedo`.
+         surface_albedo = albedo
          if (ja_icecover == ICECOVER_SEMTNER) then
             if (snow_thickness(n) > MIN_THICK) then
                ! ice and snow
-               albedo = snow_albedo
+               surface_albedo = snow_albedo
                surface_temperature = kelvin_to_celsius(snow_temperature(n))
             elseif (ice_thickness(n) > MIN_THICK) then
                ! ice but no snow
-               albedo = ice_albedo
+               surface_albedo = ice_albedo
                surface_temperature = kelvin_to_celsius(ice_temperature(n))
             else
                ! no ice and no snow, but ice_modelling switched on
@@ -176,13 +179,13 @@ contains
          if (net_solar_radiation_available) then
             net_solar_radiation_in_cell = solar_radiation(n)
          else if (solar_radiation_available) then
-            net_solar_radiation_in_cell = solar_radiation(n) * (1.0_dp - albedo)
+            net_solar_radiation_in_cell = solar_radiation(n) * (1.0_dp - surface_albedo)
          else ! Calculate solar radiation from cloud coverage specified in file
             if (jsferic == 1) then
                nominal_solar_radiation_in_cell = calculate_nominal_solar_radiation(xz(n), yz(n), time_in_hours)
             end if
             if (nominal_solar_radiation_in_cell > 0.0_dp) then
-               net_solar_radiation_in_cell = nominal_solar_radiation_in_cell * (1.0_dp - 0.40_dp * cloudiness_in_cell - 0.38_dp * cloudiness_in_cell * cloudiness_in_cell) * (1.0_dp - albedo)
+               net_solar_radiation_in_cell = nominal_solar_radiation_in_cell * (1.0_dp - 0.40_dp * cloudiness_in_cell - 0.38_dp * cloudiness_in_cell * cloudiness_in_cell) * (1.0_dp - surface_albedo)
             else
                net_solar_radiation_in_cell = 0.0_dp
             end if

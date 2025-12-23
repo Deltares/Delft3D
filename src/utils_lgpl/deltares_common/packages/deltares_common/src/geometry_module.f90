@@ -36,6 +36,8 @@ module geometry_module
 !!--declarations----------------------------------------------------------------
    use precision, only: dp
    use MessageHandling, only: msgbox, mess, LEVEL_ERROR
+   use m_missing, only: jins, dmiss
+
    implicit none
 
    private
@@ -47,7 +49,9 @@ module geometry_module
    ! original function of the geometry_module
    public :: clockwise
 
+   public :: pinpok_legacy
    public :: pinpok
+   public :: pinpok_raycast
    public :: dpinpok
    public :: dbdistance
    public :: getdx
@@ -249,10 +253,103 @@ contains
       cw = an > ap
    end function clockwise_hp
 
+!> wrapper for optimized ray-casting point-in-polygon test that maintains old interface
+   pure subroutine pinpok(xl, yl, n, x, y, inside, jins_dummy, dmiss_dummy)
+
+      integer, intent(in) :: n !< number of polygon points
+      integer, intent(out) :: inside !> result: 1 if inside, 0 if outside
+      integer, intent(in) :: jins_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
+      real(kind=dp), intent(in) :: dmiss_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
+      real(kind=dp), intent(in) :: xl, yl !> point to check if it is inside polygon
+      real(kind=dp), dimension(n), intent(in) :: x, y !> polygon coordinates (n elements)
+
+      logical :: is_inside
+
+      is_inside = pinpok_raycast(xl, yl, x, y, n)
+
+      inside = 1
+      if (.not. is_inside) then
+         inside = 0
+      end if
+
+   end subroutine
+
+!> optimized ray-casting point-in-polygon test.
+!! pure function that works with array slices or full arrays.
+   pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
+
+      real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
+      integer, intent(in) :: n !< number of polygon points
+      real(kind=dp), dimension(n), intent(in) :: x, y !< polygon coordinates (at least n elements)
+      logical :: is_inside !< result: true if inside (respecting jins mode)
+
+      ! locals
+      integer :: i, j, crossings
+      real(kind=dp) :: x_intersect
+
+      is_inside = .false.
+
+      ! degenerate polygon check
+      if (n <= 2) then
+         is_inside = .true.
+         if (jins == 0) then
+            is_inside = .not. is_inside
+         end if
+         return
+      end if
+
+      ! ray-casting algorithm: count crossings of horizontal ray from point to +infinity
+      crossings = 0
+      j = n ! In order to check the entire polygon, start the first link which lies between the last point (n) and the first point
+
+      do i = 1, n
+         ! check for missing value (polygon separator)
+         if (x(i) == dmiss) then
+            exit
+         end if
+
+         ! check if point is exactly on a vertex
+         if (xl == x(j) .and. yl == y(j)) then
+            is_inside = .true.
+            if (jins == 0) then
+               is_inside = .not. is_inside
+            end if
+            return
+         end if
+
+         ! check if ray crosses this edge
+         ! edge crosses horizontal line through test point if one endpoint is above and one below
+         if ((y(j) > yl) .neqv. (y(i) > yl)) then
+            ! compute x-coordinate of edge-ray intersection
+            x_intersect = x(j) + (yl - y(j)) * (x(i) - x(j)) / (y(i) - y(j))
+            if (xl < x_intersect) then
+               ! ray crosses edge to the right of point
+               crossings = crossings + 1
+            else if (xl == x_intersect) then
+               ! point is exactly on the edge
+               is_inside = .true.
+               if (jins == 0) then
+                  is_inside = .not. is_inside
+               end if
+               return
+            end if
+         end if
+         j = i ! current point becomes previous for next iteration
+      end do
+
+      ! odd number of crossings = inside, even = outside
+      is_inside = (mod(crossings, 2) == 1)
+
+      ! respect jins mode
+      if (jins == 0) then
+         is_inside = .not. is_inside
+      end if
+
+   end function pinpok_raycast
    !
    ! PINPOK
    !
-   pure subroutine pinpok(XL, YL, N, X, Y, INSIDE, jins, dmiss) ! basic subroutine
+   pure subroutine pinpok_legacy(XL, YL, N, X, Y, INSIDE, jins, dmiss) ! basic subroutine
 
       implicit none
 
@@ -321,7 +418,7 @@ contains
       end if
       if (jins == 0) INSIDE = 1 - INSIDE
       return
-   end subroutine PINPOK
+   end subroutine PINPOK_legacy
 
    !
    ! DPINPOK
