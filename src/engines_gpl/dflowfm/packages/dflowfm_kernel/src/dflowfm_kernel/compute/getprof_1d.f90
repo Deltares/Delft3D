@@ -45,6 +45,7 @@ contains
       use m_cross_helper, only: getconveyance, getcrossdischarge
       use m_flowtimes, only: time1, times_update_roughness
       use m_get_chezy, only: get_chezy
+      use m_roughness, only: getchezy
 
       integer :: L, japerim, calcConv
       real(kind=dp) :: hprL !< hoogte in profiel
@@ -147,8 +148,11 @@ contains
                if (abs(kcu(ll)) == 1) then
                   call getconveyance(network, dpt, u1L, q1L, s1L, LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
                else ! 1D2Dlink
-                  cz = frcu(L)
-                  conv = cz * af_sub(1) * sqrt(af_sub(1) / af_sub(1))
+                  frcn = network%crs%cross(network%adm%line2cross(LL, 2)%c1)%frictionvaluepos(1) !>
+                  friction_type = network%crs%cross(network%adm%line2cross(LL, 2)%c1)%frictiontypepos(1)
+                  cz = getchezy(friction_type, frcn, area / perim, dpt, u1(LL))
+                  cz_sub(1) = cz
+                  conv = cz_sub(1) * af_sub(1) * sqrt(af_sub(1) / perim_sub(1))
                end if
 
                ! For sediment transport the discharge in the main channel is required:
