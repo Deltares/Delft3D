@@ -212,6 +212,8 @@ contains
         fluxes = btest(integration_id, 3)
         vertical_upwind = .not. btest(integration_id, 18)
 
+        write(88,*) 'Start time step'
+
         if (init == 0) then
             write (file_unit, '(A)') ' Using local flexible time step method (scheme 24)'
             if (vertical_upwind) then
@@ -611,10 +613,13 @@ contains
             end do
         end do
 
+        write(88,*) 'Big loop: ', nstep
+
         acc_remained = 0.0
         acc_changed = 0.0
         volint = volold                                 ! Initialize volint. Becomes the volume 'in between'.
         do istep = 1, nstep                         ! Big loop over the substeps
+            write(88,*) '    Step: ', istep
             fact = real(istep) / real(nstep, kind = dp)         ! Interpolation factor of this step
             ! istep:  boxes to integrate:           modulo logic
             !         last boxe to integrate for this sub step           !   1     fbox
@@ -1038,9 +1043,16 @@ contains
             rhs_thread    = 0.0_dp
             dconc2_thread = 0.0_dp
 
+            amass2_thread(:,:,1) = amass2
+            dmpq_thread(:,:,:,1) = dmpq
+            rhs_thread(:,:,1)    = rhs
+            dconc2_thread(:,:,1) = dconc2
+
             do ibox = fbox, nbox, -1
                 if1 = itf(ibox + 1) + 1
                 if2 = iqsep(ibox)
+
+                write(88,*) ibox, if1, if2
 
                 !$omp parallel
                 !$omp do private(ith, iq, ifrom, ito, q, ifrom_1, ito_1, a, ipb, &
@@ -1049,7 +1061,7 @@ contains
 
                 do i = if1, if2
 
-                    ith = omp_get_thread_num()
+                     ith = omp_get_thread_num() + 1
 
                     ! initialisations
                     iq = iordf(i)
