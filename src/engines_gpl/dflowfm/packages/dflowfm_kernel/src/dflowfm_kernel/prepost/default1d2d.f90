@@ -83,7 +83,7 @@ contains
       allocate (network%adm%line2cross(numl1d, 3))
       network%adm%line2cross(1:size(temp_line2cross, 1), :) = temp_line2cross
       do L = 1, numl1d
-         if (kn(3, L) == 5) then
+         if (kn(3, L) == 5 .and. all(network%adm%line2cross(L, :)%c1 == -1)) then !> don't overwrite long culvert lin2cross
             network%adm%line2cross(L, :)%c1 = icrs
             network%adm%line2cross(L, :)%c2 = icrs
             network%adm%line2cross(L, :)%f = 1.0_dp
