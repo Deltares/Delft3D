@@ -1487,14 +1487,15 @@ contains
                call setECMessage("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
             end if
-            targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+            ! targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
 
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
             ! NOTE: No targetMask is checked here
-            targetField%arrzPtr(from:thru) = valuesT
-            targetField%timesteps = timesteps
+            ! targetField%arrzPtr(from:thru) = valuesT
+            ! targetField%timesteps = timesteps
+            connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(from:thru) = valuesT
          case default
             call setECMessage("ERROR: ec_converter::ecConverterUniform: Unsupported operand type requested.")
             return
@@ -1827,11 +1828,11 @@ contains
 
                         kbeginL = maxlay_src * (kL - 1) + 1 ! refers to source left column
                         kendL = maxlay_src * kL
-                        sigmaL =  connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(kbeginL:kendL)
+                        sigmaL =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginL:kendL)
 
                         kbeginR = maxlay_src * (kR - 1) + 1 ! refers to source right column
                         kendR = maxlay_src * kR
-                        sigmaR =  connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(kbeginR:kendR)
+                        sigmaR =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginR:kendR)
 
                         ! Convert Z-coordinate to absolute z wrt datum
                         ! For the time being, let's assume that both support points have the same
