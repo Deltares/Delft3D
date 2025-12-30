@@ -85,6 +85,8 @@ contains
     if (associated(bc%quantity)) deallocate(bc%quantity)
     allocate(bc%quantity)
     call str_upper(bc%qname,len(trim(bc%qname)))
+    
+    !TK_Temp: Dont think you should do this! Can go wrong on linux when you dont concert station names to upper case as well!
     call str_upper(bc%bcname,len(trim(bc%bcname)))
     !
     select case (bc%ftype)

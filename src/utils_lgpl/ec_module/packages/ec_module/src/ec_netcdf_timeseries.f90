@@ -243,6 +243,8 @@ contains
                ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid(iTims), (/1, iTims/), (/tslen, 1/))
                if (ierr /= NF90_NOERR) return
                call replace_char(ncptr%tsid(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
+               ! TK_Temp: Dont like this but bcname is in capitals and hence station names should be in capitals
+               call str_upper(ncptr%tsid(iTims),len(trim(ncptr%tsid(iTims))))
             end do
             ncptr%tsidvarid = iVars ! For convenience also store the Station ID explicitly
             ncptr%tsiddimid = dimids_tsid(2) ! For convenience also store the Station's dimension ID explicitly
