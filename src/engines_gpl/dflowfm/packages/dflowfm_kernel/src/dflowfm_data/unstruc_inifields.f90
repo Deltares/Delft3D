@@ -2125,7 +2125,7 @@ contains
          end if
 
          success = timespaceinitialfield(x_loc, y_loc, target_array, num_items, filename, filetype, method, used_operand, &
-                                         transformcoef, loc_type)
+                                         transformcoef, loc_type, kcsini)
 
          if (associated(target_array_3d)) then
             call initialfield2Dto3D_dbl_indx(target_array, target_array_3d, first_index, transformcoef(13), transformcoef(14), &
