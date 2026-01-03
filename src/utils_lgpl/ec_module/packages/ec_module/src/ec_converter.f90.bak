@@ -1041,11 +1041,6 @@ contains
       select case (connection%converterPtr%ofType)
       case (convType_uniform)
          success = ecConverterUniform(connection, timesteps%mjd())
-         !TK_ Temp interpolate z coordinate (mus be more elegant way of doing this
-         if (associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z)) then
-             success = ecConverterUniformZ(connection, timesteps%mjd())
-!             connection%targetItemsPtr(1)%ptr%ElementSetPtr%z = 
-         end if
       case (convType_uniform_to_magnitude)
          success = ecConverterUniformToMagnitude(connection, timesteps%mjd())
       case (convType_unimagdir)
@@ -1165,7 +1160,7 @@ contains
 
       t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
       t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
-      valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPTR
+      valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr
       valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
       n_data = connection%sourceItemsPtr(1)%ptr%quantityPtr%vectorMax
       if (associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z)) then
@@ -1288,7 +1283,6 @@ contains
             end if
             targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
-
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
             ! NOTE: No targetMask is checked here
@@ -1375,139 +1369,6 @@ contains
       success = .true.
       deallocate (valuesT, stat=istat)
    end function ecConverterUniform
-   
-   !TK_ Temp: interpolate z-values: Should be don different (not in a new function!)
-      function ecConverterUniformZ(connection, timesteps) result(success)
-      logical :: success !< function status
-      type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      !
-      real(dp) :: t0, t1 !< source item t0 and t1
-      real(dp) :: a0, a1 !< weight for source t0 and t1 data
-      integer :: n_data !< number of values
-      real(dp), dimension(:), pointer :: valuesT0 !< values at time t0
-      real(dp), dimension(:), pointer :: valuesT1 !< values at time t1
-      real(dp), dimension(:), allocatable :: valuesT !< values at time t
-      integer :: istat !< allocation status
-      integer :: i, j !< loop counters
-      type(tEcField), pointer :: targetField !< Converter's result goes in here
-      integer :: maxlay !< maximum number of layers (3D)
-      integer :: from, thru !< contiguous range of indices in the target array
-      integer :: jmin, jmax !< from target position jmin through target position jmax is filled
-      !
-      integer, dimension(:), pointer :: targetMask
-      success = .false.
-      valuesT0 => null()
-      valuesT1 => null()
-      targetField => null()
-
-      t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
-      t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
-      valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arrzPtr
-      valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arrzPtr
-      n_data = connection%sourceItemsPtr(1)%ptr%quantityPtr%vectorMax
-      if (associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z)) then
-         maxlay = size(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) / size(connection%targetItemsPtr(1)%ptr%ElementSetPtr%x)
-      else
-         maxlay = 1
-      end if
-      allocate (valuesT(maxlay * n_data), stat=istat)
-      valuesT = ec_undef_hp
-      if (connection%converterPtr%interpolationType == interpolate_passthrough) then
-         !
-         ! ===== block function (no interpolation in time) =====
-         !
-         if (timesteps < t1) then
-            ! use valuesT0 when timesteps is less than t1
-            do i = 1, size(valuesT0, dim=1)
-               valuesT(i) = valuesT0(i)
-            end do
-         else
-            ! use valuesT1 when timesteps is equals to t1 (timesteps should never be higher than t1)
-            do i = 1, size(valuesT0, dim=1)
-               valuesT(i) = valuesT1(i)
-            end do
-         end if
-         !
-      else
-         !
-         ! ===== interpolation in time =====
-         !
-         if (.not. connection%sourceItemsPtr(1)%ptr%quantityptr%constant) then
-            select case (connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
-            case (timeint_lin, timeint_lin_extrapol, timeint_rainfall)
-               ! linear interpolation in time
-               call time_weight_factors(a0, a1, timesteps, t0, t1, &
-                                        timeint=connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
-            case (timeint_bto)
-               a0 = 0.0_dp
-               a1 = 1.0_dp
-            case (timeint_bfrom)
-               a0 = 1.0_dp
-               a1 = 0.0_dp
-            end select
-            !
-            do i = 1, size(valuesT0, dim=1)
-               ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
-               valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
-            end do
-         else
-            do i = 1, size(valuesT0, dim=1)
-               ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
-               valuesT(i) = valuesT0(i)
-            end do
-         end if
-      end if
-
-      select case (connection%converterPtr%interpolationType)
-      case (interpolate_passthrough, interpolate_timespace)
-         ! ===== operation =====
-         ! Check target Item(s).
-         do i = 1, connection%nTargetItems
-            if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniform: Target ElementSet's number of coordinates not set.")
-               return
-            end if
-         end do
-         ! Select the operation.
-
-         if (connection%converterPtr%targetIndex /= ec_undef_int) then
-            jmin = connection%converterPtr%targetIndex
-            jmax = connection%converterPtr%targetIndex
-         else
-            jmin = 1
-            jmax = connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-         end if
-
-         select case (connection%converterPtr%operandType)
-         case (operand_replace, operand_replace_if_value)
-     
-         case (operand_replace_element) ! TODO: AvD/EB: why does operand_replace require a targetIndex, whereas operand_add does not?
-            if (connection%converterPtr%targetIndex == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
-               return
-            end if
-            ! targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
-            j = connection%converterPtr%targetIndex
-
-            from = (j - 1) * (maxlay * n_data) + 1
-            thru = (j) * (maxlay * n_data)
-            ! NOTE: No targetMask is checked here
-            ! targetField%arrzPtr(from:thru) = valuesT
-            ! targetField%timesteps = timesteps
-            connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(from:thru) = valuesT
-         case default
-            call setECMessage("ERROR: ec_converter::ecConverterUniform: Unsupported operand type requested.")
-            return
-         end select
-      case default
-         call setECMessage("ERROR: ec_converter::ecConverterUniform: Unsupported interpolation type requested.")
-         return
-      end select
-      success = .true.
-      deallocate (valuesT, stat=istat)
-   end function ecConverterUniformZ
-
 
    ! =======================================================================
 
@@ -1810,7 +1671,6 @@ contains
                ! Are the subproviders 3D or 2D?
                if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                    associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
-
                   ! deal with one-sided interpolation
                   if (kL == 0 .and. kR /= 0) then
                      kL = kR
@@ -1821,19 +1681,17 @@ contains
                      wR = 0.0_dp
                   end if
                   if (kL > 0) then
-                     if (kR > 0) then               
+                     if (kR > 0) then
                         kbegin = maxlay_tgt * (i - 1) + 1 ! refers to target column
                         kend = maxlay_tgt * i
 
                         kbeginL = maxlay_src * (kL - 1) + 1 ! refers to source left column
                         kendL = maxlay_src * kL
-                        ! TK_Temp, not needed!
- !                       sigmaL =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginL:kendL)
+                        sigmaL = connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginL:kendL)
 
                         kbeginR = maxlay_src * (kR - 1) + 1 ! refers to source right column
                         kendR = maxlay_src * kR
-                        ! TK_Temp, not needed!
- !                       sigmaR =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginR:kendR)
+                        sigmaR = connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginR:kendR)
 
                         ! Convert Z-coordinate to absolute z wrt datum
                         ! For the time being, let's assume that both support points have the same
