@@ -302,10 +302,10 @@ module m_ec_alloc
          integer                                 :: istat   !< allocate() status
          type(tEcItemPtr), dimension(:), pointer :: new_ptr !< new array
          integer                                 :: i       !< loop counter
-         !
+
          success = .false.
          istat = 1
-         !
+
          if (.not. associated(ptr)) then
             call setECMessage("ec_alloc::ecItemPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
