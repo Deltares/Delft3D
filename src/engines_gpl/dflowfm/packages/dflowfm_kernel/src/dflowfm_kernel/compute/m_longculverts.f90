@@ -434,7 +434,6 @@ contains
       type(tree_data), pointer :: str_ptr
       character(len=IdLen) :: typestr
       character(len=IdLen) :: st_id
-      character(len=IdLen) :: csDefId
       character(len=IdLen) :: txt
       integer :: readerr, nstr, i, numcoords
       integer, allocatable, dimension(:) :: links
@@ -533,7 +532,7 @@ contains
 
             call prop_get(str_ptr, '', 'branchId', longculverts(nlongculverts)%branchId, success)
             if (success) then
-               call prop_get(str_ptr, '', 'csDefId', csDefId, success)
+               call prop_get(str_ptr, '', 'csDefId', longculverts(nlongculverts)%csDefId, success)
                if (.not. success) then
                   call SetMessage(LEVEL_ERROR, 'csDefId not found for long culvert: '//trim(st_id))
                end if
@@ -547,7 +546,7 @@ contains
                allocate (longculverts(nlongculverts)%flowlinks(numcoords + 1))
                longculverts(nlongculverts)%flowlinks = -999
 
-               call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, csDefId, longculverts(nlongculverts)%bl, iref)
+               call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, longculverts(nlongculverts)%csDefId, longculverts(nlongculverts)%bl, iref)
                if (iref > 0) then
                   ! Use top (#2) of tabulated cross section definition to derive width and height
                   longculverts(nlongculverts)%width = network%CSDefinitions%Cs(iref)%totalwidth(2)
@@ -1168,7 +1167,6 @@ contains
       character(len=IdLen), intent(in) :: branchId !< Branch id on which to place the cross section
       character(len=IdLen), intent(in) :: csdefId !< Id of cross section definition
 
-      integer :: k
       integer :: iref, icrs
       integer :: indx
       type(t_CrossSection), pointer :: pCrs
@@ -1182,9 +1180,8 @@ contains
          end if
          icrs = network%crs%count + 1
          pCrs => network%crs%cross(icrs)
-         write (kchar, '(I0)') k
+         write (kchar, '(I0)') flowlink
          pCrs%csid = trim(branchId)//'_1D2D_'//trim(kchar)
-         pCrs%bedLevel = 0.0_dp
          call finalizeCrs(network, pCrs, iref, icrs)
          network%adm%line2cross(flowlink, :)%c1 = icrs
          network%adm%line2cross(flowlink, :)%c2 = icrs
