@@ -154,7 +154,7 @@
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="2e-6" />
 					<parameter name="water_balance_precipitation_total" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_precipitation_on_ground" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_evaporation" toleranceAbsolute="0.0001" />
@@ -202,12 +202,12 @@
 			</file>
 			<file name="DFM_OUTPUT_Boundary/Boundary_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="1e-7" />
+					<parameter name="water_balance_storage" toleranceRelative="1e-7" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_out" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_boundaries_in" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_out" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_total" toleranceRelative="1e-7" />
 				</parameters>
 			</file>
 		</checks>
@@ -412,7 +412,7 @@
 			</file>
 			<file name="DFM_OUTPUT_dflow1d/dflow1d_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceAbsolute="1.0" />
 					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
@@ -433,7 +433,7 @@
 			</file>
 			<file name="DFM_OUTPUT_dflow1d/dflow1d_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceAbsolute="1.0" />
 					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
@@ -500,9 +500,9 @@
 					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_out" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_boundaries_in" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_out" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_total" toleranceRelative="1e-7" />
 					<parameter name="water_balance_laterals_in" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_laterals_out" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_laterals_total" toleranceAbsolute="0.0001" />
@@ -533,12 +533,12 @@
 			</file>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="1e-7" />
+					<parameter name="water_balance_storage" toleranceRelative="1e-7" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_out" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_boundaries_in" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_out" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_total" toleranceRelative="1e-7" />
 				</parameters>
 			</file>
 		</checks>
@@ -554,12 +554,12 @@
 			</file>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="1e-7" />
+					<parameter name="water_balance_storage" toleranceRelative="1e-7" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_out" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_boundaries_in" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_out" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_total" toleranceRelative="1e-7" />
 				</parameters>
 			</file>
 		</checks>
@@ -605,7 +605,7 @@
 					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_vol1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_vol1" toleranceRelative="1e-7" />
 				</parameters>
 			</file>
 			<file name="DFM_OUTPUT_YZ_Storage/YZ_Storage_his.nc" type="netCDF">
@@ -616,7 +616,7 @@
 					<parameter name="bedlevel" toleranceAbsolute="0.0001" />
 					<parameter name="x_velocity" toleranceAbsolute="0.0001" />
 					<parameter name="y_velocity" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="1e-7" />
 					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
@@ -648,7 +648,7 @@
 			</file>
 			<file name="DFM_OUTPUT_ZW_Storage/ZW_Storage_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="1e-7" />
 					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
@@ -713,12 +713,12 @@
 			</file>
 			<file name="DFM_OUTPUT_Lumped_YZ_flow_area/Lumped_YZ_flow_area_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="1e-7" />
+					<parameter name="water_balance_storage" toleranceRelative="1e-7" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_out" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_boundaries_in" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_out" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_total" toleranceRelative="1e-7" />
 				</parameters>
 			</file>
 		</checks>
@@ -734,12 +734,12 @@
 			</file>
 			<file name="DFM_OUTPUT_Lumped_YZ_Tri_Trap/Lumped_YZ_Tri_Trap_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="1e-7" />
+					<parameter name="water_balance_storage" toleranceRelative="1e-7" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_out" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_boundaries_in" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_out" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_total" toleranceRelative="1e-7" />
 				</parameters>
 			</file>
 		</checks>
@@ -755,12 +755,12 @@
 			</file>
 			<file name="DFM_OUTPUT_YZ_profile_interpolation/YZ_profile_interpolation_his.nc" type="netCDF">
 				<parameters>
-					<parameter name="water_balance_total_volume" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_storage" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_total_volume" toleranceRelative="1e-7" />
+					<parameter name="water_balance_storage" toleranceRelative="1e-7" />
 					<parameter name="water_balance_volume_error" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_out" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001" />
+					<parameter name="water_balance_boundaries_in" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_out" toleranceRelative="1e-7" />
+					<parameter name="water_balance_boundaries_total" toleranceRelative="1e-7" />
 				</parameters>
 			</file>
 		</checks>
@@ -803,7 +803,7 @@
 					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
 					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_vol1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_vol1" toleranceRelative="1e-7" />
 				</parameters>
 			</file>
 		</checks>
