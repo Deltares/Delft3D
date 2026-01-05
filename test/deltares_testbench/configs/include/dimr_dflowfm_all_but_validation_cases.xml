@@ -1790,6 +1790,17 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e02_f005_c160_multiple_extfiles" ref="dflowfm_default">
+        <path version="2026-01-05T16:35:21.066000">e02_dflowfm/f005_boundary_conditions/c160_multiple_extfiles</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="output/f34_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
         <path version="2025-10-30T17:13:00">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
         <maxRunTime>3600.0</maxRunTime>
