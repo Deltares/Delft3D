@@ -2687,7 +2687,7 @@ contains
 
       istat = 0 ! Success
 
-! Put settings for .mdu file into a property tree first
+      ! Put settings for .mdu file into a property tree first
       call tree_create(trim(md_ident), prop_ptr)
       call prop_set(prop_ptr, 'General', 'Program', product_name, 'Program')
       call prop_set(prop_ptr, 'General', 'Version', version_full, 'Version number of computational kernel')
@@ -2699,7 +2699,7 @@ contains
       call prop_set(prop_ptr, 'General', 'PathsRelativeToParent', md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
       call prop_set(prop_ptr, 'General', 'ConvertLongCulverts', md_convertlongculverts, 'Default: 0. Wheter or not to convert long culvert input to 1D2D long culverts')
 
-! Geometry
+      ! Geometry
       call prop_set(prop_ptr, 'geometry', 'NetFile', trim(md_netfile), 'Unstructured grid file *_net.nc')
       call prop_set(prop_ptr, 'geometry', 'GridEnclosureFile', trim(md_encfile), 'Enclosure file to clip outer parts from the grid *.pol')
       call prop_set(prop_ptr, 'geometry', 'DryPointsFile', trim(md_dryptsfile), 'Dry points file *.xyz (third column dummy z values), or dry areas polygon file *.pol (third column 1/-1: inside/outside)')

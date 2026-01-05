@@ -5,7 +5,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -18,7 +18,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -31,7 +31,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -44,7 +44,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -71,7 +71,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -84,7 +84,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -97,7 +97,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -110,7 +110,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -123,7 +123,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
@@ -136,7 +136,7 @@
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
                 <parameters>
-                    <parameter name="discharge_magnitude" toleranceAbsolute="0.0001" />
+                    <parameter name="discharge_magnitude" toleranceRelative="1e-7" />
                     <parameter name="waterdepth" toleranceAbsolute="0.0001" />
                     <parameter name="waterlevel" toleranceAbsolute="0.0001" />
                 </parameters>
