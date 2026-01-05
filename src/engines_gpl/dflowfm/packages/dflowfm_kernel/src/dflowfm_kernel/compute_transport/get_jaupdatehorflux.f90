@@ -58,7 +58,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("get_jaupdatehorflux", ithndl)
+      if (timon) then
+         call timstrt("get_jaupdatehorflux", ithndl)
+      end if
 
       jaupdatehorflux = 0
       if (limtyp == 0) then
@@ -111,7 +113,9 @@ contains
          end do
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine get_jaupdatehorflux
 

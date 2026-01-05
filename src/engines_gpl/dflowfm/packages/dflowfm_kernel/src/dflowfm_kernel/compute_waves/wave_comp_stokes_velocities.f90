@@ -93,8 +93,10 @@ contains
       do L = 1, Lnxi
          if (hu(L) > epshu) then
             !
-            k1 = ln(1, L); k2 = ln(2, L)
-            ac1 = acl(L); ac2 = 1.0_dp - ac1
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            ac1 = acl(L)
+            ac2 = 1.0_dp - ac1
             !
             ! civilized behaviour in shallow surf zone
             huL = max(hs(k1), hs(k2), epshu)
@@ -134,7 +136,8 @@ contains
             else
                hstokes = huL
             end if
-            Mx(k1) = Mx(k2); My(k1) = My(k2)
+            Mx(k1) = Mx(k2)
+            My(k1) = My(k2)
             !
             Mu = ac1 * (csu(L) * (Mx(k1)) + snu(L) * (My(k1))) + &
                  ac2 * (csu(L) * (Mx(k2)) + snu(L) * (My(k2)))

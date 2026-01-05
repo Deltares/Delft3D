@@ -83,7 +83,9 @@ contains
 
       call timstrt('Initialise timestep', handle_inistep)
 
-      if (jazws0 == 0) s0 = s1 ! progress water levels
+      if (jazws0 == 0) then
+         s0 = s1 ! progress water levels
+      end if
 
       call bathyupdate() ! only if jamorf == 1
 
@@ -109,9 +111,10 @@ contains
       call timstop(handle_extra(38)) ! End bnd
 
       if (iresult /= DFM_NOERR) then
-         write (msgbuf, *) ' Error found in EC-module '; call err_flush()
+         write (msgbuf, *) ' Error found in EC-module '
+         call err_flush()
          if (jampi == 1) then
-            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd; 
+            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd
             call err_flush()
             ! Terminate all MPI processes
             call abort_all()
@@ -212,11 +215,15 @@ contains
 
       if (jaimplicit == 1) then
          call fillsystem_advec(ierror)
-         if (ierror /= 0) goto 888
+         if (ierror /= 0) then
+            goto 888
+         end if
       end if
 
-      if (jatem > 1 .and. jaheat_eachstep == 1) then
-         call heatu(tim1bnd / 3600.0_dp) ! from externalforcings
+      if (jaheat_eachstep == 1) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call heatu(tim1bnd / 3600.0_dp) ! from externalforcings
+         end if
       end if
       call update_icecover()
 

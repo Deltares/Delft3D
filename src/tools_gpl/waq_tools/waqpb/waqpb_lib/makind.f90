@@ -28,9 +28,9 @@
 !
 
       subroutine makind
-!     
+!
 !          Create indices for Nefis file
-!     
+!
 !          Table R2: index in ITEMS is r2_iin
 !          Table R3: index in ITEMS is inpuii
 !          Table R3: index in PROCS is inpupi
@@ -45,27 +45,42 @@
 
       do 10 icnsb = 1,ncnsb
           iitem = index_in_array(r2_sid(icnsb),itemid(:nitem))
-          if ( iitem .le. 0 ) stop 'MAKIND: BUG 001'
+          if ( iitem .le. 0 ) then
+              write(*,*) 'Error: unknown item ', r2_sid(icnsb)
+              stop 'MAKIND: BUG 001'
+          endif
           r2_iin(icnsb) = iitem-1
    10 continue
 
       do 20 iinpu = 1,ninpu
           iitem = index_in_array(inpuit(iinpu),itemid(:nitem))
-          if ( iitem .le. 0 ) stop 'MAKIND: BUG 002'
+          if ( iitem .le. 0 ) then
+              write(*,*) 'Error: unknown item ', inpuit(iinpu)
+              stop 'MAKIND: BUG 002'
+          endif
           inpuii(iinpu) = iitem-1
 
           iproc = index_in_array(inpupr(iinpu),procid(:nproc))
-          if ( iproc .le. 0 ) stop 'MAKIND: BUG 003'
+          if ( iitem .le. 0 ) then
+              write(*,*) 'Error: unknown item ', inpupr(iinpu)
+              stop 'MAKIND: BUG 003'
+          endif
           inpupi(iinpu) = iproc-1
    20 continue
 
       do 30 ioutp = 1,noutp
           iitem = index_in_array(outpit(ioutp),itemid(:nitem))
-          if ( iitem .le. 0 ) stop 'MAKIND: BUG 004'
+          if ( iitem .le. 0 ) then
+              write(*,*) 'Error: unknown item ', outpit(ioutp)
+              stop 'MAKIND: BUG 004'
+          endif
           outpii(ioutp) = iitem-1
 
           iproc = index_in_array(outppr(ioutp),procid(:nproc))
-          if ( iproc .le. 0 ) stop 'MAKIND: BUG 005'
+          if ( iitem .le. 0 ) then
+              write(*,*) 'Error: unknown item ', outppr(ioutp)
+              stop 'MAKIND: BUG 005'
+          endif
           outppi(ioutp) = iproc-1
    30 continue
 

@@ -71,9 +71,13 @@ contains
       call READYY('Writing Polygon / Land Boundary FILE', 0.0_dp)
 
       MBNA = 0
-      if (MBNA > 0) call newfil(mbna, 'bna.bna')
+      if (MBNA > 0) then
+         call newfil(mbna, 'bna.bna')
+      end if
 
-      if (NSH <= 0) goto 11
+      if (NSH <= 0) then
+         goto 11
+      end if
       allocate (istart(nsh), iend(nsh))
 
       ! First, find starts and ends of all polylines (separated by dmiss line(s))
@@ -82,16 +86,24 @@ contains
       i = 0
       pli: do
          i = i + 1
-         if (i > nsh) exit pli
-         if (xsh(i) == dmiss) cycle pli
+         if (i > nsh) then
+            exit pli
+         end if
+         if (xsh(i) == dmiss) then
+            cycle pli
+         end if
 
          ! Start of a new polyline found
          ipli = ipli + 1
          istart(ipli) = i
          pts: do
             i = i + 1
-            if (i > nsh) exit pts
-            if (xsh(i) == dmiss) exit pts
+            if (i > nsh) then
+               exit pts
+            end if
+            if (xsh(i) == dmiss) then
+               exit pts
+            end if
          end do pts
          iend(ipli) = i - 1
       end do pli
@@ -164,13 +176,15 @@ contains
                else
                   write (MPOL, '(3F15.6)') XSH(I), YSH(I), ZSH(I)
                end if
-               if (MBNA > 0) write (Mbna, '(2F15.6)') XSH(I), YSH(I)
+               if (MBNA > 0) then
+                  write (Mbna, '(2F15.6)') XSH(I), YSH(I)
+               end if
             else
                write (MPOL, '(2F15.6)') XSH(I), YSH(I)
             end if
 
             if (mod(I, KMOD) == 0) then
-               call READYY(' ', min(1d0, dble(I) / max(1, NSH)))
+               call READYY(' ', min(1.0_dp, real(I, kind=dp) / max(1, NSH)))
             end if
          end do ! pts of one polyline
       end do ! all polylines
@@ -179,7 +193,9 @@ contains
 11    call READYY(' ', -1.0_dp)
       call doclose(MPOL)
 
-      if (MBNA > 0) call doclose(MBNA)
+      if (MBNA > 0) then
+         call doclose(MBNA)
+      end if
 
       return
    end

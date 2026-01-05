@@ -19,7 +19,6 @@ ThinDamFile       =
 FixedWeirFile     =
 PillarFile        =
 StructureFile     =
-VertplizFile      =
 CrossDefFile      = 
 CrossLocFile      = 
 RoughnessFiles    = 

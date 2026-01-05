@@ -40,7 +40,9 @@ contains
 
       integer :: i
 
-      if (Ndrawdots /= 2) return
+      if (Ndrawdots /= 2) then
+         return
+      end if
 
       do i = 1, numdots
          call cirr(xdots(i), ydots(i), colnumber(i))

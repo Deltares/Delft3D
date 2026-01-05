@@ -63,7 +63,9 @@ contains
       integer :: orient
       integer :: ja
 
-      if (MC * NC == 0) return ! nothing to do
+      if (MC * NC == 0) then
+         return ! nothing to do
+      end if
 
       call savegrd()
 
@@ -182,7 +184,10 @@ contains
 
             call restoregrd()
 
-            orient = orient + 1; if (orient > 4) orient = orient - 4
+            orient = orient + 1
+            if (orient > 4) then
+               orient = orient - 4
+            end if
          else
             exit
          end if

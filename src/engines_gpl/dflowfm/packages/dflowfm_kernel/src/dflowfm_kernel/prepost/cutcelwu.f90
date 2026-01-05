@@ -123,9 +123,14 @@ contains
                cy = 0.0_dp
                num = 0
                do i = 1, NPL
-                  ip1 = i + 1; if (ip1 > NPL) ip1 = ip1 - NPL
+                  ip1 = i + 1
+                  if (ip1 > NPL) then
+                     ip1 = ip1 - NPL
+                  end if
 
-                  if (xpl(ip1) == DMISS) cycle
+                  if (xpl(ip1) == DMISS) then
+                     cycle
+                  end if
                   cof0 = xpl(i) * ypl(ip1) - xpl(ip1) * ypl(i)
                   Area = Area + cof0
                   cx = cx + (xpl(i) + xpl(ip1)) * cof0
@@ -134,7 +139,9 @@ contains
                end do
                area = area * 0.5_dp
 
-               if (area == 0.0_dp) cycle
+               if (area == 0.0_dp) then
+                  cycle
+               end if
 
                cx = cx / area / 6.0_dp
                cy = cy / area / 6.0_dp
@@ -198,7 +205,8 @@ contains
       end if
 
       if (n12 >= 4) then ! 4, 5, or 6
-         allocate (KNP(NUMP)); KNP = 0
+         allocate (KNP(NUMP))
+         KNP = 0
 
          do N = 1, NUMP
             NN = netcell(N)%N
@@ -233,7 +241,9 @@ contains
 
          do N = 1, NUMP
 
-            if (mod(n, KMOD) == 0) call READYY('CUTCELWU', real(n, kind=dp) / real(nump, kind=dp))
+            if (mod(n, KMOD) == 0) then
+               call READYY('CUTCELWU', real(n, kind=dp) / real(nump, kind=dp))
+            end if
 
             if (KNP(N) == 1) then ! AT LEAST 1 POINT INSIDE POLYGON, SO CHECK CUTC
 
@@ -257,7 +267,10 @@ contains
                      jadelete = 0
                   end if
 
-                  LLU = LL + 1; if (LLU > NN) LLU = 1
+                  LLU = LL + 1
+                  if (LLU > NN) then
+                     LLU = 1
+                  end if
                   K1 = NETCELL(N)%NOD(LL)
                   K2 = NETCELL(N)%NOD(LLU)
 
@@ -296,18 +309,30 @@ contains
                      if (N12 == 5) then ! OP DEZE MANIER UITSTEL AANPASSING TOT NA DE WEGINGEN VAN LINK CENTER/CORNER WEIGHTS
 
                         if (KC(K1) == 1 .and. kc(k2) /= 1) then ! 1 OUTSIDE
-                           IC = IC + 1; XXC(IC) = XM; YYC(IC) = YM
-                           IC = IC + 1; XXC(IC) = XK(K2); YYC(IC) = YK(K2)
+                           IC = IC + 1
+                           XXC(IC) = XM
+                           YYC(IC) = YM
+                           IC = IC + 1
+                           XXC(IC) = XK(K2)
+                           YYC(IC) = YK(K2)
                            if (Lf > 0) then
-                              if (wu(LF) /= 0.0_dp) WU(LF) = DBDISTANCE(XM, YM, XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
+                              if (wu(LF) /= 0.0_dp) then
+                                 WU(LF) = DBDISTANCE(XM, YM, XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
+                              end if
                            end if
                         else if (kc(k1) /= 1 .and. kc(k2) == 1) then
                            if (IC == 0) then
-                              IC = IC + 1; XXC(IC) = XK(K1); YYC(IC) = YK(K1)
+                              IC = IC + 1
+                              XXC(IC) = XK(K1)
+                              YYC(IC) = YK(K1)
                            end if
-                           IC = IC + 1; XXC(IC) = XM; YYC(IC) = YM
+                           IC = IC + 1
+                           XXC(IC) = XM
+                           YYC(IC) = YM
                            if (Lf > 0) then
-                              if (wu(LF) /= 0.0_dp) WU(LF) = DBDISTANCE(XM, YM, XK(K1), YK(K1), jsferic, jasfer3D, dmiss)
+                              if (wu(LF) /= 0.0_dp) then
+                                 WU(LF) = DBDISTANCE(XM, YM, XK(K1), YK(K1), jsferic, jasfer3D, dmiss)
+                              end if
                            end if
                         else if (kc(k1) == 1 .and. kc(k2) == 1 .and. Lf > 0) then
                            wu(Lf) = 0.0_dp
@@ -336,9 +361,13 @@ contains
                      if (KC(K1) == 0 .and. KC(K2) == 0) then
                         if (N12 == 5) then
                            if (IC == 0) then
-                              IC = IC + 1; XXC(IC) = XK(K1); YYC(IC) = YK(K1)
+                              IC = IC + 1
+                              XXC(IC) = XK(K1)
+                              YYC(IC) = YK(K1)
                            end if
-                           IC = IC + 1; XXC(IC) = XK(K2); YYC(IC) = YK(K2)
+                           IC = IC + 1
+                           XXC(IC) = XK(K2)
+                           YYC(IC) = YK(K2)
                         end if
                      else if (N12 == 4) then
                         LNN(L) = 0
@@ -370,7 +399,8 @@ contains
                   if (IC < 3) then
 
                      do KL = 1, nd(n)%lnx
-                        L = abs(nd(n)%ln(KL)); wu(L) = 0.0_dp
+                        L = abs(nd(n)%ln(KL))
+                        wu(L) = 0.0_dp
                      end do
                      ba(n) = 0.0_dp
 
@@ -380,7 +410,8 @@ contains
 
                      if (DAREA / BA(n) < 0.05_dp) then
                         do KL = 1, nd(n)%lnx
-                           L = abs(nd(n)%ln(KL)); wu(L) = 0.0_dp
+                           L = abs(nd(n)%ln(KL))
+                           wu(L) = 0.0_dp
                         end do
                         ba(n) = 0.0_dp
                      else

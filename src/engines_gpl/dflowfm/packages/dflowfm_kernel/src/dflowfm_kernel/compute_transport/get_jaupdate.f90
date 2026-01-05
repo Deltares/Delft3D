@@ -57,7 +57,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("get_jaupdate", ithndl)
+      if (timon) then
+         call timstrt("get_jaupdate", ithndl)
+      end if
 
       jaupdate = 0
 
@@ -78,7 +80,9 @@ contains
 !      write(6,"(I0,':',I0, ' ', $)") istep+1, num
 !   end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine get_jaupdate
 

@@ -68,7 +68,10 @@ contains
                end if
                beta = (cos(y0 * dg2rd)) / Ra
                do L = 1, lnx
-                  call dbdistancehk(xu(L), y0, xu(L), yu(L), dy); if (yu(L) < y0) dy = -dy
+                  call dbdistancehk(xu(L), y0, xu(L), yu(L), dy)
+                  if (yu(L) < y0) then
+                     dy = -dy
+                  end if
                   fcori(L) = 2.0_dp * omega * (sin(anglat * dg2rd) + beta * dy)
                end do
             end if
@@ -87,7 +90,10 @@ contains
                end if
                beta = (cos(y0 * dg2rd)) / Ra
                do k = 1, ndx
-                  call dbdistancehk(xz(k), y0, xz(k), yz(k), dy); if (yu(L) < y0) dy = -dy
+                  call dbdistancehk(xz(k), y0, xz(k), yz(k), dy)
+                  if (yu(L) < y0) then
+                     dy = -dy
+                  end if
                   fcori(k) = 2.0_dp * omega * (sin(anglat * dg2rd) + beta * dy)
                end do
             end if
@@ -120,7 +126,8 @@ contains
          n = 0
          do j = 1, 2 ! 1=count, 2=allocate and use
             if (j == 2) then
-               allocate (LLkkk(5, n), stat=ierr); LLkkk = 0
+               allocate (LLkkk(5, n), stat=ierr)
+               LLkkk = 0
             end if
             n = 0
             do L = 1, lnx
@@ -157,14 +164,17 @@ contains
       if (k > 0) then
          !call newfil(msgbu, trim(getoutputdir())//trim(md_ident)//'_Cdwcoeff.tek')
          !call newfil(mout,'fcori.xyz')
-         fcormin = huge(1.0_dp); fcormax = -huge(1.0_dp)
+         fcormin = huge(1.0_dp)
+         fcormax = -huge(1.0_dp)
          do i = 1, k
             fcormin = min(fcormin, real(fcori(i), dp))
             fcormax = max(fcormax, real(fcori(i), dp))
             if (icorio <= 6) then
-               xx = xu(i); yy = yu(i)
+               xx = xu(i)
+               yy = yu(i)
             else
-               xx = xz(i); yy = yz(i)
+               xx = xz(i)
+               yy = yz(i)
             end if
             !write(mout,*) xx,yy,fcori(i)
          end do

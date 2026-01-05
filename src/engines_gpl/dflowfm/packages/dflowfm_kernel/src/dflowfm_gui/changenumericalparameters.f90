@@ -41,7 +41,9 @@ module m_changenumericalparameters
 contains
 
    subroutine CHANGENUMERICALPARAMETERS()
-      use m_flow, only: iadvec, cflmx, iadvec1d, limtypsa, limtyphu, limtypmom, itstep, teta0, icgsolver, jasal, jatem, jacreep, epsmaxlev, irov, icorio, jatidep, epshu, jaexplicitsinks, corioadamsbashfordfac, newcorio, epshs
+      use m_flow, only: iadvec, cflmx, iadvec1d, limtypsa, limtyphu, limtypmom, itstep, teta0, icgsolver, jasal, & 
+         temperature_model, jacreep, epsmaxlev, irov, icorio, jatidep, epshu, jaexplicitsinks, corioadamsbashfordfac, newcorio, &
+         epshs
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
       use m_helpnow, only: nlevel, wrdkey
@@ -64,28 +66,50 @@ contains
       integer :: nbut, imp, inp
 
       NLEVEL = 4
-      OPTION(1) = 'COURANT NR                           ( )'; it(2 * 1) = 6
-      OPTION(2) = 'IADVEC                                  '; it(2 * 2) = 2
-      OPTION(3) = 'IADVEC1D                                '; it(2 * 3) = 2
-      OPTION(4) = 'Limtyp scalar   transport               '; it(2 * 4) = 2
-      OPTION(5) = 'Limtyp hu                               '; it(2 * 5) = 2
-      OPTION(6) = 'Limtyp momentum transport               '; it(2 * 6) = 2
-      OPTION(7) = 'itstep                                  '; it(2 * 7) = 2
-      OPTION(8) = 'teta                                ( ) '; it(2 * 8) = 6
-      OPTION(9) = 'icgsolver                           ( ) '; it(2 * 9) = 2
-      OPTION(10) = 'Transport Method                    ( ) '; it(2 * 10) = 2
-      OPTION(11) = 'Salinity included 0/1               ( ) '; it(2 * 11) = 2
-      OPTION(12) = 'Temperature model nr, 0=no, 5=heatflx() '; it(2 * 12) = 2
-      OPTION(13) = 'Anti creep                          ( ) '; it(2 * 13) = 2
-      OPTION(14) = '                                    ( ) '; it(2 * 14) = 6
-      OPTION(15) = 'irov 0,1,2,3                        ( ) '; it(2 * 15) = 2
-      OPTION(16) = 'icorio, 0, 5=org def., even=2D weigh( ) '; it(2 * 16) = 2
-      OPTION(17) = 'jatidep tidal potential forcing 0/1 ( ) '; it(2 * 17) = 2
-      OPTION(18) = 'EpsCG, CG solver stop criterion     ( ) '; it(2 * 18) = 6
-      OPTION(19) = 'Epshu, flooding criterion           (m) '; it(2 * 19) = 6
-      OPTION(20) = 'JaExplicitsinks                     ( ) '; it(2 * 20) = 2
-      OPTION(21) = 'Corioadamsbashfordfac               ( ) '; it(2 * 21) = 6
-      OPTION(22) = 'Newcorio                            ( ) '; it(2 * 22) = 2
+      OPTION(1) = 'COURANT NR                           ( )'
+      it(2 * 1) = 6
+      OPTION(2) = 'IADVEC                                  '
+      it(2 * 2) = 2
+      OPTION(3) = 'IADVEC1D                                '
+      it(2 * 3) = 2
+      OPTION(4) = 'Limtyp scalar   transport               '
+      it(2 * 4) = 2
+      OPTION(5) = 'Limtyp hu                               '
+      it(2 * 5) = 2
+      OPTION(6) = 'Limtyp momentum transport               '
+      it(2 * 6) = 2
+      OPTION(7) = 'itstep                                  '
+      it(2 * 7) = 2
+      OPTION(8) = 'teta                                ( ) '
+      it(2 * 8) = 6
+      OPTION(9) = 'icgsolver                           ( ) '
+      it(2 * 9) = 2
+      OPTION(10) = 'Transport Method                    ( ) '
+      it(2 * 10) = 2
+      OPTION(11) = 'Salinity included 0/1               ( ) '
+      it(2 * 11) = 2
+      OPTION(12) = 'Temperature model nr, 0=no, 5=heatflx() '
+      it(2 * 12) = 2
+      OPTION(13) = 'Anti creep                          ( ) '
+      it(2 * 13) = 2
+      OPTION(14) = '                                    ( ) '
+      it(2 * 14) = 6
+      OPTION(15) = 'irov 0,1,2,3                        ( ) '
+      it(2 * 15) = 2
+      OPTION(16) = 'icorio, 0, 5=org def., even=2D weigh( ) '
+      it(2 * 16) = 2
+      OPTION(17) = 'jatidep tidal potential forcing 0/1 ( ) '
+      it(2 * 17) = 2
+      OPTION(18) = 'EpsCG, CG solver stop criterion     ( ) '
+      it(2 * 18) = 6
+      OPTION(19) = 'Epshu, flooding criterion           (m) '
+      it(2 * 19) = 6
+      OPTION(20) = 'JaExplicitsinks                     ( ) '
+      it(2 * 20) = 2
+      OPTION(21) = 'Corioadamsbashfordfac               ( ) '
+      it(2 * 21) = 6
+      OPTION(22) = 'Newcorio                            ( ) '
+      it(2 * 22) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -190,7 +214,7 @@ contains
       call IFormPutDouble(2 * 8, teta0, '(F10.3)')
       call IFORMPUTinteger(2 * 9, icgsolver)
       call IFORMPUTinteger(2 * 11, jasal)
-      call IFORMPUTinteger(2 * 12, jatem)
+      call IFORMPUTinteger(2 * 12, temperature_model)
       call IFORMPUTinteger(2 * 13, jacreep)
       call IFORMPUTdouble(2 * 14, epsmaxlev, '(e10.5)')
       call IFORMPUTinteger(2 * 15, irov)
@@ -242,14 +266,17 @@ contains
             call IFormgetDouble(2 * 1, CFLmx)
             call IFORMgeTINTEGER(2 * 2, NIADVEC)
             call IFORMgeTINTEGER(2 * 3, IADVEC1D)
-            call IFORMgeTINTEGER(2 * 4, Limtypsa); limtypsa = max(0, min(limtypsa, 30))
-            call IFORMgeTINTEGER(2 * 5, Limtyphu); limtyphu = max(0, min(limtyphu, 30))
-            call IFORMgeTINTEGER(2 * 6, Limtypmom); limtypmom = max(0, min(limtypmom, 30))
+            call IFORMgeTINTEGER(2 * 4, Limtypsa)
+            limtypsa = max(0, min(limtypsa, 30))
+            call IFORMgeTINTEGER(2 * 5, Limtyphu)
+            limtyphu = max(0, min(limtyphu, 30))
+            call IFORMgeTINTEGER(2 * 6, Limtypmom)
+            limtypmom = max(0, min(limtypmom, 30))
             call IFORMgeTINTEGER(2 * 7, itstep)
             call IFormgetDouble(2 * 8, teta0)
             call IFORMgeTinteger(2 * 9, icgsolver)
             call IFORMgeTinteger(2 * 11, jasal)
-            call IFORMgeTinteger(2 * 12, jatem)
+            call IFORMgeTinteger(2 * 12, temperature_model)
             call IFORMgeTinteger(2 * 13, jacreep)
             call IFORMgeTdouble(2 * 14, epsmaxlev)
             call IFORMgeTinteger(2 * 15, irov)

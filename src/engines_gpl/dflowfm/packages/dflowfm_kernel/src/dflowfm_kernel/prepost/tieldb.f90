@@ -65,7 +65,10 @@ contains
                call DRIETWEE(XK(K2), YK(K2), ZK(K2), x2, y2, Z)
                K = 0
 10             K = K + 1
-               KU = K + 1; if (KU == MXLAN + 1) KU = 1
+               KU = K + 1
+               if (KU == MXLAN + 1) then
+                  KU = 1
+               end if
                if (XLAN(K) /= XYMIS .and. XLAN(K + 1) /= XYMIS) then
                   call CROSS(x1, y1, x2, y2, XLAN(K), YLAN(K), XLAN(K + 1), YLAN(K + 1), &
                              JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
@@ -79,7 +82,9 @@ contains
                      call ADDELEM(K2, K3)
                   end if
                end if
-               if (K < MXLAN) goto 10
+               if (K < MXLAN) then
+                  goto 10
+               end if
             end if
          end if
       end do

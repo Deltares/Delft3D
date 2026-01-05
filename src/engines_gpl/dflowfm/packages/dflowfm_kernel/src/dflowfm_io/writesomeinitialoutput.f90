@@ -59,29 +59,39 @@ contains
       integer :: k, mbalat, mwrong, L, msam, n, nf, jacheckba = 0
       real(kind=dp) :: batotown(1), batot(1), voltotown(1), volto(1), dist, dismin
 
-      batotown = 0; voltotown = 0
+      batotown = 0
+      voltotown = 0
 
       ! Stop for initialisation timer and start timer for actual computation time
       call datum(rundat0)
 
-      write (msgbuf, '(a,a)') 'Modelinit finished   at: ', rundat0; call msg_flush()
+      write (msgbuf, '(a,a)') 'Modelinit finished   at: ', rundat0
+      call msg_flush()
 
-      msgbuf = ' '; call msg_flush()
-      msgbuf = ' '; call msg_flush()
+      msgbuf = ' '
+      call msg_flush()
+      msgbuf = ' '
+      call msg_flush()
 
       call network_dimensions_message()
       call flowgeom_dimensions_message()
 
-      write (msgbuf, '(a,I25)') 'nr of closed walls     ( )  :', mxwalls; call msg_flush()
+      write (msgbuf, '(a,I25)') 'nr of closed walls     ( )  :', mxwalls
+      call msg_flush()
 
       if (kmx > 0) then
-         write (msgbuf, '(a,I25)') 'max nr of layers       ( )  :', kmx; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of 3D cells         ( )  :', ndkx - 2 * ndx; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of 3D links         ( )  :', Lnkx - 2 * lnx; call msg_flush()
+         write (msgbuf, '(a,I25)') 'max nr of layers       ( )  :', kmx
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of 3D cells         ( )  :', ndkx - 2 * ndx
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of 3D links         ( )  :', Lnkx - 2 * lnx
+         call msg_flush()
       end if
 
-      msgbuf = ' '; call msg_flush()
-      msgbuf = ' '; call msg_flush()
+      msgbuf = ' '
+      call msg_flush()
+      msgbuf = ' '
+      call msg_flush()
 
       if (jacheckba == 1) then
          if (jampi == 1) then
@@ -101,7 +111,8 @@ contains
                if (jacheckba == 1) then
                   write (mbalat, *) xz(k), yz(k), ba(k)
                   if (ns > 0) then
-                     dismin = 1.0e9_dp; nf = 0
+                     dismin = 1.0e9_dp
+                     nf = 0
                      do n = 1, ns
                         call dbdistancehk(xz(k), yz(k), xs(n), ys(n), dist)
                         if (dist < dismin) then
@@ -133,22 +144,28 @@ contains
          end if
       end if
 
-      write (msgbuf, '(a,E25.10)') 'my model area          (m2) :', batotown; call msg_flush()
+      write (msgbuf, '(a,E25.10)') 'my model area          (m2) :', batotown
+      call msg_flush()
       if (jampi == 1) then
          k = 1
          call reduce_double_sum(k, batotown, batot)
-         write (msgbuf, '(a,E25.10)') 'total model area       (m2) :', batot; call msg_flush()
+         write (msgbuf, '(a,E25.10)') 'total model area       (m2) :', batot
+         call msg_flush()
       end if
 
-      write (msgbuf, '(a,E25.10)') 'my model volume        (m3) :', voltotown; call msg_flush()
+      write (msgbuf, '(a,E25.10)') 'my model volume        (m3) :', voltotown
+      call msg_flush()
       if (jampi == 1) then
          k = 1
          call reduce_double_sum(k, voltotown, volto)
-         write (msgbuf, '(a,E25.10)') 'total model volume     (m3) :', volto; call msg_flush()
+         write (msgbuf, '(a,E25.10)') 'total model volume     (m3) :', volto
+         call msg_flush()
       end if
 
-      msgbuf = ' '; call msg_flush()
-      msgbuf = ' '; call msg_flush()
+      msgbuf = ' '
+      call msg_flush()
+      msgbuf = ' '
+      call msg_flush()
 
    end subroutine writesomeinitialoutput
 
@@ -158,19 +175,31 @@ contains
       implicit none
 
       if (ndx > 0) then
-         write (msgbuf, '(a,I25)') 'nr of flownodes              ( )  :', ndx; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of internal flownodes     ( )  :', ndxi; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of 2D internal flownodes  ( )  :', ndx2D; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of 1D internal flownodes  ( )  :', ndxi - ndx2D; call msg_flush()
-         msgbuf = ' '; call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of flownodes              ( )  :', ndx
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of internal flownodes     ( )  :', ndxi
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of 2D internal flownodes  ( )  :', ndx2D
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of 1D internal flownodes  ( )  :', ndxi - ndx2D
+         call msg_flush()
+         msgbuf = ' '
+         call msg_flush()
 
-         write (msgbuf, '(a,I25)') 'nr of openbnd cells       ( )     :', ndx - ndxi; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of 2D boundaries       ( )     :', ndx - ndx1Db; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of 1D boundaries       ( )     :', ndx1Db - ndxi; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of flowlinks           ( )     :', Lnx; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of internal links      ( )     :', Lnxi; call msg_flush()
-         write (msgbuf, '(a,I25)') 'nr of 1D links            ( )     :', Lnx1D; call msg_flush()
-         msgbuf = ' '; call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of openbnd cells       ( )     :', ndx - ndxi
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of 2D boundaries       ( )     :', ndx - ndx1Db
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of 1D boundaries       ( )     :', ndx1Db - ndxi
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of flowlinks           ( )     :', Lnx
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of internal links      ( )     :', Lnxi
+         call msg_flush()
+         write (msgbuf, '(a,I25)') 'nr of 1D links            ( )     :', Lnx1D
+         call msg_flush()
+         msgbuf = ' '
+         call msg_flush()
       end if
 
    end subroutine flowgeom_dimensions_message

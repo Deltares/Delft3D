@@ -154,7 +154,9 @@ contains
                lc(i) = 1
                ! We started a new path, now trace connected links as long as possible.
                do
-                  if (mod(i + iloc - 2, LMOD) == 1) call READYY('SAVE KML', half * real(i + iloc - 2, kind=dp) / real(NUML, kind=dp))
+                  if (mod(i + iloc - 2, LMOD) == 1) then
+                     call READYY('SAVE KML', half * real(i + iloc - 2, kind=dp) / real(NUML, kind=dp))
+                  end if
                   lcur = 0
                   ! Find an outgoing link of current net node that wasn't yet written and has correct link type.
                   do L = 1, nmk(kcur)
@@ -176,7 +178,7 @@ contains
                   !if (zk(knext) /= dmiss) then
                   !    zloc(iloc) = transform_altitude(zk(knext))
                   !else
-                  zloc(iloc) = 0d0
+                  zloc(iloc) = 0.0_dp
                   !end if
                   lc(lcur) = 1
                   kcur = knext
@@ -189,20 +191,20 @@ contains
          end do
          call READYY('SAVE KML', half)
       else
-         half = 0d0 ! Nothing done yet, start progress bar of next (depths) step at 0.
+         half = 0.0_dp ! Nothing done yet, start progress bar of next (depths) step at 0.
       end if ! kml_janet == 1
 
       if (kml_jadepth == 1) then
 
-         zmin = +huge(1d0)
-         zmax = -huge(1d0)
+         zmin = +huge(1.0_dp)
+         zmax = -huge(1.0_dp)
          do kcur = 1, numk
             if (zk(kcur) /= dmiss) then
                zmin = min(zmin, zk(kcur))
                zmax = max(zmax, zk(kcur))
             end if
          end do
-         if (kml_zmin == 0d0 .and. kml_zmax == 0d0) then
+         if (kml_zmin == 0.0_dp .and. kml_zmax == 0.0_dp) then
             kml_zmin = zmin
             kml_zmax = zmax
          end if
@@ -213,9 +215,11 @@ contains
          write (kmlunit, '(a)') '    <name>FM depth grid</name>'
          LMOD = max(1, NUML / 100)
          do n = 1, nump
-            if (mod(n, LMOD) == 1) call READYY('SAVE KML', half + (1d0 - half) * dble(n) / dble(nump))
+            if (mod(n, LMOD) == 1) then
+               call READYY('SAVE KML', half + (1.0_dp - half) * real(n, kind=dp) / real(nump, kind=dp))
+            end if
 
-            zp = 0d0
+            zp = 0.0_dp
             do i = 1, netcell(n)%n
                kcur = netcell(n)%nod(i)
                if (zk(kcur) == dmiss) then
@@ -268,7 +272,7 @@ contains
       close (kmlunit)
 
       deallocate (xloc, yloc, zloc, lc)
-      call READYY('SAVE KML', -1d0)
+      call READYY('SAVE KML', -1.0_dp)
 
    end subroutine kml_write_net
 
@@ -632,14 +636,17 @@ contains
       integer :: level
 
       ! stop is not used in this subroutine and associate is introduced to avoid the warning
-      associate (stop => stop); end associate
+      associate (stop => stop)
+      end associate
 
       inputdata = transfer(data, inputdata)
       mout = inputdata(1) !< File pointer
       maxkeylength = inputdata(2)
 
       level = tree_traverse_level()
-      if (level == 0) return
+      if (level == 0) then
+         return
+      end if
 
       call tree_get_data_ptr(tree, data_ptr, type_string)
       if (associated(data_ptr)) then

@@ -46,8 +46,12 @@ contains
       real(kind=dp), parameter :: TWO = 2.0_dp
 
       dlimiter = 0.0_dp
-      if (limtyp == 0) return
-      if (d1 * d2 < dtol) return
+      if (limtyp == 0) then
+         return
+      end if
+      if (d1 * d2 < dtol) then
+         return
+      end if
 
       r = d1 / d2 ! d1/d2
 

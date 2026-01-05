@@ -175,18 +175,42 @@ contains
       integer :: istat
       !
       ! Body
-      if (allocated(nf_sink_n)) deallocate (nf_sink_n, stat=istat)
-      if (allocated(nf_sour_n)) deallocate (nf_sour_n, stat=istat)
-      if (allocated(nf_intake_n)) deallocate (nf_intake_n, stat=istat)
-      if (allocated(nf_intake_nk)) deallocate (nf_intake_nk, stat=istat)
-      if (allocated(nf_numintake_idif)) deallocate (nf_numintake_idif, stat=istat)
-      if (allocated(nf_sinkid)) deallocate (nf_entr_start, stat=istat)
-      if (allocated(nf_sinkid)) deallocate (nf_entr_end, stat=istat)
-      if (allocated(nf_sinkid)) deallocate (nf_sinkid, stat=istat)
-      if (allocated(nf_sour_wght)) deallocate (nf_sour_wght, stat=istat)
-      if (allocated(nf_sour_wght_sum)) deallocate (nf_sour_wght_sum, stat=istat)
-      if (allocated(nf_intake_wght)) deallocate (nf_intake_wght, stat=istat)
-      if (allocated(nf_intake_z)) deallocate (nf_intake_z, stat=istat)
+      if (allocated(nf_sink_n)) then
+         deallocate (nf_sink_n, stat=istat)
+      end if
+      if (allocated(nf_sour_n)) then
+         deallocate (nf_sour_n, stat=istat)
+      end if
+      if (allocated(nf_intake_n)) then
+         deallocate (nf_intake_n, stat=istat)
+      end if
+      if (allocated(nf_intake_nk)) then
+         deallocate (nf_intake_nk, stat=istat)
+      end if
+      if (allocated(nf_numintake_idif)) then
+         deallocate (nf_numintake_idif, stat=istat)
+      end if
+      if (allocated(nf_sinkid)) then
+         deallocate (nf_entr_start, stat=istat)
+      end if
+      if (allocated(nf_sinkid)) then
+         deallocate (nf_entr_end, stat=istat)
+      end if
+      if (allocated(nf_sinkid)) then
+         deallocate (nf_sinkid, stat=istat)
+      end if
+      if (allocated(nf_sour_wght)) then
+         deallocate (nf_sour_wght, stat=istat)
+      end if
+      if (allocated(nf_sour_wght_sum)) then
+         deallocate (nf_sour_wght_sum, stat=istat)
+      end if
+      if (allocated(nf_intake_wght)) then
+         deallocate (nf_intake_wght, stat=istat)
+      end if
+      if (allocated(nf_intake_z)) then
+         deallocate (nf_intake_z, stat=istat)
+      end if
    end subroutine dealloc_nfarrays
 !
 !
@@ -209,9 +233,15 @@ contains
       ! Initialization
       !
       ! During debugging, sometimes arrays contain strange values. Clean the most important once.
-      if (allocated(nf_sink_n)) deallocate (nf_sink_n, stat=istat)
-      if (allocated(nf_sour_n)) deallocate (nf_sour_n, stat=istat)
-      if (allocated(nf_intake_n)) deallocate (nf_intake_n, stat=istat)
+      if (allocated(nf_sink_n)) then
+         deallocate (nf_sink_n, stat=istat)
+      end if
+      if (allocated(nf_sour_n)) then
+         deallocate (nf_sour_n, stat=istat)
+      end if
+      if (allocated(nf_intake_n)) then
+         deallocate (nf_intake_n, stat=istat)
+      end if
       !
       ! Sink: dimension is read from NearField and is fixed: allocate
       call realloc(nf_sink_n, [nf_num_dif, nf_numsink], keepExisting=.false., fill=0)
@@ -287,7 +317,9 @@ contains
          call realloc(nf_entr_start, nf_num_dif, keepExisting=.false., fill=0)
          call realloc(nf_entr_end, nf_num_dif, keepExisting=.false., fill=0)
       end if
-      if (allocated(nf_sinkid)) nf_sinkid = 0
+      if (allocated(nf_sinkid)) then
+         nf_sinkid = 0
+      end if
       !
       ! For each diffuser
       do idif = 1, nf_num_dif
@@ -296,7 +328,9 @@ contains
          ! sum_weight_intakes is needed to compute the discharge in each intake point
          sum_weight_intakes = 0.0_fp
          do iintake = 1, nf_intake_cnt_max
-            if (nf_intake_n(idif, iintake) == 0) exit
+            if (nf_intake_n(idif, iintake) == 0) then
+               exit
+            end if
             sum_weight_intakes = sum_weight_intakes + nf_intake_wght(idif, iintake)
          end do
          !
@@ -337,7 +371,9 @@ contains
       call realloc(find_x, nf_numsink, keepExisting=.false., fill=0.0_hp)
       call realloc(find_y, nf_numsink, keepExisting=.false., fill=0.0_hp)
       call realloc(find_n, nf_numsink, keepExisting=.false., fill=0)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
+      if (allocated(find_name)) then
+         deallocate (find_name, stat=istat)
+      end if
       allocate (character(IdLen) :: find_name(nf_numsink), stat=istat)
       find_name = ' '
       do i = 1, nf_numsink
@@ -353,10 +389,18 @@ contains
          nf_sink_n(idif, i) = find_n(i)
       end do
       !
-      if (allocated(find_x)) deallocate (find_x, stat=istat)
-      if (allocated(find_y)) deallocate (find_y, stat=istat)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
-      if (allocated(find_n)) deallocate (find_n, stat=istat)
+      if (allocated(find_x)) then
+         deallocate (find_x, stat=istat)
+      end if
+      if (allocated(find_y)) then
+         deallocate (find_y, stat=istat)
+      end if
+      if (allocated(find_name)) then
+         deallocate (find_name, stat=istat)
+      end if
+      if (allocated(find_n)) then
+         deallocate (find_n, stat=istat)
+      end if
    end subroutine getSinkLocations
 !
 !
@@ -393,7 +437,9 @@ contains
       call realloc(find_y, nf_numintake, keepExisting=.false., fill=0.0_hp)
       call realloc(find_n, nf_numintake, keepExisting=.false., fill=0)
       !call realloc(nf_numintake_idif, nf_num_dif, keepExisting=.false., fill = 0)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
+      if (allocated(find_name)) then
+         deallocate (find_name, stat=istat)
+      end if
       allocate (character(IdLen) :: find_name(nf_numintake), stat=istat)
       find_name = ' '
       do i = 1, nf_numintake
@@ -475,10 +521,18 @@ contains
          end do
       end if
       !
-      if (allocated(find_x)) deallocate (find_x, stat=istat)
-      if (allocated(find_y)) deallocate (find_y, stat=istat)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
-      if (allocated(find_n)) deallocate (find_n, stat=istat)
+      if (allocated(find_x)) then
+         deallocate (find_x, stat=istat)
+      end if
+      if (allocated(find_y)) then
+         deallocate (find_y, stat=istat)
+      end if
+      if (allocated(find_name)) then
+         deallocate (find_name, stat=istat)
+      end if
+      if (allocated(find_n)) then
+         deallocate (find_n, stat=istat)
+      end if
    end subroutine getIntakeLocations
 !
 !
@@ -548,7 +602,9 @@ contains
             call realloc(find_x, NUM_TRACK, keepExisting=.false., fill=0.0_hp)
             call realloc(find_y, NUM_TRACK, keepExisting=.false., fill=0.0_hp)
             call realloc(find_n, NUM_TRACK, keepExisting=.false., fill=0)
-            if (allocated(find_name)) deallocate (find_name, stat=istat)
+            if (allocated(find_name)) then
+               deallocate (find_name, stat=istat)
+            end if
             allocate (character(IdLen) :: find_name(NUM_TRACK), stat=istat)
             find_name = ' '
             do itrack = 1, NUM_TRACK
@@ -591,7 +647,9 @@ contains
             call realloc(find_x, nf_numsour, keepExisting=.false., fill=0.0_hp)
             call realloc(find_y, nf_numsour, keepExisting=.false., fill=0.0_hp)
             call realloc(find_n, nf_numsour, keepExisting=.false., fill=0)
-            if (allocated(find_name)) deallocate (find_name, stat=istat)
+            if (allocated(find_name)) then
+               deallocate (find_name, stat=istat)
+            end if
             allocate (character(IdLen) :: find_name(nf_numsour), stat=istat)
             find_name = ' '
             do isour = 1, nf_numsour
@@ -617,10 +675,18 @@ contains
          end if
       end if
       !
-      if (allocated(find_x)) deallocate (find_x, stat=istat)
-      if (allocated(find_y)) deallocate (find_y, stat=istat)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
-      if (allocated(find_n)) deallocate (find_n, stat=istat)
+      if (allocated(find_x)) then
+         deallocate (find_x, stat=istat)
+      end if
+      if (allocated(find_y)) then
+         deallocate (find_y, stat=istat)
+      end if
+      if (allocated(find_name)) then
+         deallocate (find_name, stat=istat)
+      end if
+      if (allocated(find_n)) then
+         deallocate (find_n, stat=istat)
+      end if
    end subroutine getSourceLocations
 !
 !
@@ -654,7 +720,9 @@ contains
          do isour = 1, nf_sour_track_max
             !
             ! Create a new entry in the src arrays for each combination of a sink_flow_node and source_flow_node
-            if (nf_sour_n(idif, isour) == 0) exit ! This might happen if the number of sources is not the same for each diffuser
+            if (nf_sour_n(idif, isour) == 0) then
+               exit ! This might happen if the number of sources is not the same for each diffuser
+            end if
             numsrc_nf = numsrc_nf + 1
             numsrc = numsrc + 1
             if (NFEntrainmentMomentum > 0) then
@@ -743,7 +811,9 @@ contains
          end if
          call realloc(intake_avg_consts, numconst, keepExisting=.false., fill=0.0_hp)
          do iintake = 1, nf_intake_cnt_max
-            if (nf_intake_n(idif, iintake) == 0) exit
+            if (nf_intake_n(idif, iintake) == 0) then
+               exit
+            end if
             do iconst = 1, numconst
                intake_avg_consts(iconst) = intake_avg_consts(iconst) + constituents(iconst, nf_intake_nk(idif, iintake)) * nf_intake_wght(idif, iintake)
             end do
@@ -756,7 +826,9 @@ contains
       end if
       !
       do isour = 1, nf_sour_track_max
-         if (nf_sour_n(idif, isour) == 0) exit
+         if (nf_sour_n(idif, isour) == 0) then
+            exit
+         end if
          numsrc_nf = numsrc_nf + 1
          numsrc = numsrc + 1
          call reallocsrc(numsrc, 2)
@@ -828,7 +900,9 @@ contains
          cssrc(2, numsrc) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
          snsrc(2, numsrc) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
       end do
-      if (allocated(intake_avg_consts)) deallocate (intake_avg_consts, stat=istat)
+      if (allocated(intake_avg_consts)) then
+         deallocate (intake_avg_consts, stat=istat)
+      end if
    end subroutine dischargeToSrc
 !
 !
@@ -848,7 +922,9 @@ contains
       ! Body
       !
       do iintake = 1, nf_intake_cnt_max
-         if (nf_intake_n(idif, iintake) == 0) exit
+         if (nf_intake_n(idif, iintake) == 0) then
+            exit
+         end if
          numsrc_nf = numsrc_nf + 1
          numsrc = numsrc + 1
          call reallocsrc(numsrc, 2)

@@ -82,9 +82,13 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_fluxver", ithndl)
+      if (timon) then
+         call timstrt("comp_fluxver", ithndl)
+      end if
 
-      if (sum(1.0_dp - thetavert(1:NUMCONST)) < DTOL) goto 1234 ! nothing to do
+      if (sum(1.0_dp - thetavert(1:NUMCONST)) < DTOL) then
+         goto 1234 ! nothing to do
+      end if
 
       !if ( limtyp.eq.6 ) then
       !   call message(LEVEL_ERROR, 'transport/comp_fluxver: limtyp==6 not supported')
@@ -96,7 +100,9 @@ contains
       !$xOMP PRIVATE(kk,kb,kt,dz,k,cf,kL,kR,j,sedL,sedR,kLL,kRR,sl3L,sl3R,ds1L,ds1R,ds2L,ds2R,qw_loc) &
       !$xOMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndx
-         if (kfs(kk) <= 0) cycle
+         if (kfs(kk) <= 0) then
+            cycle
+         end if
 
          if (nsubsteps > 1) then
             if (jaupdate(kk) == 0) then
@@ -148,7 +154,9 @@ contains
                   cf = 1.0_dp ! or always use it, is MUSCL = default
                end if
 
-               if (thetavert(j) == 1.0_dp) cycle
+               if (thetavert(j) == 1.0_dp) then
+                  cycle
+               end if
 
                sedL = sed(j, kL)
                sedR = sed(j, kR)
@@ -186,7 +194,9 @@ contains
 
 1234  continue
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine comp_fluxver
 

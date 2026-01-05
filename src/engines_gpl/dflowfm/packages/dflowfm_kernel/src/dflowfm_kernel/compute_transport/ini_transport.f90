@@ -82,7 +82,7 @@ contains
          ISALT = NUMCONST
       end if
 
-      if (jatem /= 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          NUMCONST = NUMCONST + 1
          ITEMP = NUMCONST
       end if

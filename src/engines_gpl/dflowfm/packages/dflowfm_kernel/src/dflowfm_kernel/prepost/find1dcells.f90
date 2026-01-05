@@ -49,9 +49,8 @@ contains
 !>    it is assumed that kc has been allocated
 !>    it is assumed that findcells has already been called (for 2d cells)
    subroutine find1dcells()
-#ifdef _OPENMP
-      use omp_lib
-#endif
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+
       implicit none
 
       integer :: k1, k2, k3, L, N, new_cell
@@ -60,35 +59,32 @@ contains
       logical :: Lisnew
       integer :: ierror
       integer :: nump1d, nump1d_i
-#ifdef _OPENMP
-      integer :: temp_threads
-#endif
+
       ierror = 1
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))
-#ifdef _OPENMP
-      temp_threads = omp_get_max_threads() !> Save old number of threads
-      call omp_set_num_threads(OMP_GET_NUM_PROCS()) !> Set number of threads to max for this O(N^2) operation
-#endif
-      !$OMP PARALLEL DO
+      call init_cell_geom_as_polylines()
+      !> Dynamic scheduling in case of unequal work, chunksize guided
+      !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do L = 1, NUML1D
          if (KN(1, L) /= 0 .and. kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then
-            call INCELLS(Xk(KN(1, L)), Yk(KN(1, L)), left_2D_cells(L))
-            call INCELLS(Xk(KN(2, L)), Yk(KN(2, L)), right_2D_cells(L))
+            left_2D_cells(L) = point_find_netcell(Xk(KN(1, L)), Yk(KN(1, L)))
+            right_2D_cells(L) = point_find_netcell(Xk(KN(2, L)), Yk(KN(2, L)))
          end if
       end do
       !$OMP END PARALLEL DO
-#ifdef _OPENMP
-      call omp_set_num_threads(temp_threads)
-#endif
-
+      call cleanup_cell_geom_polylines()
+      
 !     BEGIN COPY from flow_geominit
       KC = 2 ! ONDERSCHEID 1d EN 2d NETNODES
 
       do L = 1, NUML
-         k1 = KN(1, L); k2 = KN(2, L); k3 = KN(3, L)
+         k1 = KN(1, L)
+         k2 = KN(2, L)
+         k3 = KN(3, L)
          if (k3 >= 1 .and. k3 <= 7) then
-            KC(k1) = 1; KC(k2) = 1
+            KC(k1) = 1
+            KC(k2) = 1
          end if
       end do
 
@@ -251,8 +247,11 @@ contains
       integer :: L, k1, k2, left_cell, right_cell
 
       do L = 1, NUML1D
-         k1 = KN(1, L); k2 = KN(2, L)
-         if (k1 == 0) cycle
+         k1 = KN(1, L)
+         k2 = KN(2, L)
+         if (k1 == 0) then
+            cycle
+         end if
          left_cell = get_2D_cell(L, k1, left_2D_cells)
          right_cell = get_2D_cell(L, k2, right_2D_cells)
          if (left_cell /= 0 .and. left_cell == right_cell) then !Both net nodes inside 2D cell, but assume that the first is then the 1D net node.

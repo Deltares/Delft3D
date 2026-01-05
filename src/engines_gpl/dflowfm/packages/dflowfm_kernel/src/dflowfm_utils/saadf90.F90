@@ -127,9 +127,12 @@ contains
 
       integer :: na, n, ntot, j
 
-      if (allocated(ngs)) deallocate (ngs) ! Guus to Saad
+      if (allocated(ngs)) then
+         deallocate (ngs) ! Guus to Saad
+      end if
       ! allocate(ngs(nogauss0+nocg0) )
-      allocate (ngs(nodtot)); ngs = 0
+      allocate (ngs(nodtot))
+      ngs = 0
 
       na = 0 ! matrix counter
       if (Noderivedtypes < 5) then
@@ -168,11 +171,14 @@ contains
       integer :: maxmatvecs, n30
       real(kind=dp), intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
 
-      NROW = NOCG0; nax = na
+      NROW = NOCG0
+      nax = na
       ! n30  = 30
       n30 = 30
 
-      NN = NROW; mm = n30 * nn; nwk = 2 * mm
+      NN = NROW
+      mm = n30 * nn
+      nwk = 2 * mm
 
       if (allocated(IA)) then
          deallocate (iao, jao, ia, ja, perm, kolrs, jlu, ju, iw)
@@ -184,8 +190,14 @@ contains
                 perm(nn), kolrs(nn), &
                 jlu(mm), ju(nn), iw(nn * 3), stat=ierr)
       call aerr('iao(nn+1)', IERR, mm + 7 * nn + 2 * na)
-      iao = 0; jao = 0; ia = 0; ja = 0
-      jlu = 0; ju = 0; iw = 0; perm = 0
+      iao = 0
+      jao = 0
+      ia = 0
+      ja = 0
+      jlu = 0
+      ju = 0
+      iw = 0
+      perm = 0
 
       allocate (ao(na), a(na), solo(nn), rhso(nn), sol(nn), &
                 sol0(nn), rhs(nn), alu(mm), stat=ierr)
@@ -200,8 +212,12 @@ contains
       end do
       call aerr('wk(nwk)', IERR, nwk)
 
-      ao = 0.0_dp; a = 0.0_dp
-      solo = 0.0_dp; rhs = 0.0_dp; alu = 0.0_dp; wk = 0.0_dp
+      ao = 0.0_dp
+      a = 0.0_dp
+      solo = 0.0_dp
+      rhs = 0.0_dp
+      alu = 0.0_dp
+      wk = 0.0_dp
       sol = 0.0_dp
 
       ipar = 0 ! initialize all params to 0
@@ -498,13 +514,15 @@ contains
       do ii = 1, n
          j1 = ia(ii)
          j2 = ia(ii + 1) - 1
-         dropsum = 0.0d0
-         tnorm = 0.0d0
+         dropsum = 0.0_dp
+         tnorm = 0.0_dp
          do k = j1, j2
             tnorm = tnorm + abs(a(k))
          end do
 
-         if (tnorm == 0.0) goto 997
+         if (tnorm == 0.0) then
+            goto 997
+         end if
          tnorm = tnorm / real(j2 - j1 + 1)
 !
 !     unpack L-part and U-part of row of A in arrays w
@@ -540,7 +558,9 @@ contains
 !     eliminate previous rows
 !
 150      jj = jj + 1
-         if (jj > lenl) goto 160
+         if (jj > lenl) then
+            goto 160
+         end if
 !-----------------------------------------------------------------------
 !     in order to do the elimination in the correct order we must select
 !     the smallest column index among jw(k), k=jj+1, ..., lenl.
@@ -609,7 +629,9 @@ contains
 !     this is a fill-in element
 !
                   lenu = lenu + 1
-                  if (lenu > n) goto 995
+                  if (lenu > n) then
+                     goto 995
+                  end if
                   i = ii + lenu - 1
                   jw(i) = j
                   jw(n + j) = i
@@ -629,7 +651,9 @@ contains
 !     this is a fill-in element
 !
                   lenl = lenl + 1
-                  if (lenl > n) goto 995
+                  if (lenl > n) then
+                     goto 995
+                  end if
                   jw(lenl) = j
                   jw(n + j) = lenl
                   w(lenl) = -s
@@ -703,9 +727,11 @@ contains
 !
 !     store inverse of diagonal element of u
 !
-         if (w(ii) == 0.0) w(ii) = (0.0001 + tol) * tnorm
+         if (w(ii) == 0.0) then
+            w(ii) = (0.0001 + tol) * tnorm
+         end if
 !
-         alu(ii) = 1.0d0 / w(ii)
+         alu(ii) = 1.0_dp / w(ii)
 !
 !     update pointer to beginning of next row of U.
 !
@@ -850,7 +876,9 @@ contains
 
       !     WRITE (*,'(A,I4)') 'nbr of iterations =', its
 
-      if (iou /= 6) close (iou)
+      if (iou /= 6) then
+         close (iou)
+      end if
       return
    end subroutine runrc2
 
@@ -888,7 +916,7 @@ contains
 !     normal execution
 !
       its = 0
-      res = 0.0d0
+      res = 0.0_dp
 !
       do i = 1, n
          sol(i) = guess(i)
@@ -950,7 +978,7 @@ contains
 
       call amux(n, sol, wk, a, ja, ia)
       do i = 1, n
-         wk(n + i) = sol(i) - 1.0d0
+         wk(n + i) = sol(i) - 1.0_dp
          wk(i) = wk(i) - rhs(i)
       end do
 !      write (iou, *) '# the actual residual norm is', dnrm2(n,wk,1)
@@ -962,7 +990,9 @@ contains
          '   nbr of iterations =', its
       call watisdefout(n, sol, sol0)
 
-      if (iou /= 6) close (iou)
+      if (iou /= 6) then
+         close (iou)
+      end if
       return
    end subroutine runrc
 
@@ -992,7 +1022,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      afun = -1.0d0
+      afun = -1.0_dp
       return
    end function afun
 
@@ -1001,7 +1031,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      bfun = -1.0d0
+      bfun = -1.0_dp
       return
    end function bfun
 
@@ -1010,7 +1040,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      cfun = -1.0d0
+      cfun = -1.0_dp
       return
    end function cfun
 
@@ -1035,7 +1065,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      ffun = 0.0d0
+      ffun = 0.0_dp
       return
    end function ffun
 
@@ -1485,7 +1515,9 @@ contains
 !
 !     check the status of the call
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
 
       if (ipar(10) == 1) then
          goto 10
@@ -1507,7 +1539,9 @@ contains
 !     initialization
 !
       call bisinit(ipar, fpar, 5 * n, 1, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
@@ -1598,7 +1632,9 @@ contains
 60    ipar(7) = ipar(7) + 1
       alpha = ddot(n, w(n + 1:2 * n), 1, w(2 * n + 1:3 * n), 1)
       fpar(11) = fpar(11) + 2 * n
-      if (brkdn(alpha, ipar)) goto 900
+      if (brkdn(alpha, ipar)) then
+         goto 900
+      end if
       alpha = fpar(7) / alpha
       do i = 1, n
          w(i + (5 - 1) * n) = w(i + (5 - 1) * n) + alpha * w(i + (2 - 1) * n)
@@ -1616,7 +1652,9 @@ contains
          return
       end if
 70    if (ipar(3) == 999) then
-         if (ipar(11) == 1) goto 900
+         if (ipar(11) == 1) then
+            goto 900
+         end if
       else if (stopbis(n, ipar, 1, fpar, w(1:n), w(n + 1:2 * n), alpha)) then
          goto 900
       end if
@@ -1634,7 +1672,9 @@ contains
 !     clean up -- necessary to accommodate the right-preconditioning
 !
 900   if (rp) then
-         if (ipar(1) < 0) ipar(12) = ipar(1)
+         if (ipar(1) < 0) then
+            ipar(12) = ipar(1)
+         end if
          ipar(1) = 5
          ipar(8) = 4 * n + 1
          ipar(9) = ipar(8) - n
@@ -1680,7 +1720,9 @@ contains
 !
 !     check the status of the call
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
       if (ipar(10) == 1) then
          goto 10
       else if (ipar(10) == 2) then
@@ -1706,7 +1748,9 @@ contains
 !     initialization
 !
       call bisinit(ipar, fpar, 5 * n, 1, lp, rp, wk)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
@@ -1795,7 +1839,9 @@ contains
       zzm1 = zz
       zz = ddot(n, wk(:, 3), 1, wk(:, 3), 1)
       fpar(11) = fpar(11) + 2 * n
-      if (brkdn(zz, ipar)) goto 900
+      if (brkdn(zz, ipar)) then
+         goto 900
+      end if
       if (ipar(7) > 3) then
          alpha = zz / zzm1
          do i = 1, n
@@ -1849,7 +1895,9 @@ contains
 90    ipar(7) = ipar(7) + 1
       alpha = ddot(n, wk(:, 3), 1, wk(:, 3), 1)
       fpar(11) = fpar(11) + 2 * n
-      if (brkdn(alpha, ipar)) goto 900
+      if (brkdn(alpha, ipar)) then
+         goto 900
+      end if
       alpha = zz / alpha
       do i = 1, n
          wk(i, 5) = wk(i, 5) + alpha * wk(i, 2)
@@ -1867,7 +1915,9 @@ contains
          return
       end if
 100   if (ipar(3) == 999) then
-         if (ipar(11) == 1) goto 900
+         if (ipar(11) == 1) then
+            goto 900
+         end if
       else if (stopbis(n, ipar, 1, fpar, wk(:, 1), wk(:, 2), alpha)) then
          goto 900
       end if
@@ -1879,7 +1929,9 @@ contains
 !     clean up -- necessary to accommodate the right-preconditioning
 !
 900   if (rp) then
-         if (ipar(1) < 0) ipar(12) = ipar(1)
+         if (ipar(1) < 0) then
+            ipar(12) = ipar(1)
+         end if
          ipar(1) = 5
          ipar(8) = 4 * n + 1
          ipar(9) = ipar(8) - n
@@ -1931,7 +1983,9 @@ contains
 !
 !     status of the program
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
       if (ipar(10) == 1) then
          goto 10
       else if (ipar(10) == 2) then
@@ -1957,7 +2011,9 @@ contains
 !     initialization, initial residual
 !
       call bisinit(ipar, fpar, 7 * n, 1, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
 !
 !     compute initial residual, request a matvecc
 !
@@ -2052,7 +2108,9 @@ contains
 60    ipar(7) = ipar(7) + 1
       alpha = ddot(n, w(:, 4), 1, w(:, 5), 1)
       fpar(11) = fpar(11) + 2 * n
-      if (brkdn(alpha, ipar)) goto 900
+      if (brkdn(alpha, ipar)) then
+         goto 900
+      end if
       alpha = fpar(7) / alpha
       do i = 1, n
          w(i, 7) = w(i, 7) + alpha * w(i, 3)
@@ -2067,7 +2125,9 @@ contains
          return
       end if
 70    if (ipar(3) == 999) then
-         if (ipar(11) == 1) goto 900
+         if (ipar(11) == 1) then
+            goto 900
+         end if
       else if (stopbis(n, ipar, 1, fpar, w, w(:, 3), alpha)) then
          goto 900
       end if
@@ -2115,7 +2175,9 @@ contains
       fpar(8) = fpar(7)
       fpar(7) = ddot(n, w(:, 1), 1, w(:, 2), 1)
       fpar(11) = fpar(11) + 4 * n
-      if (brkdn(fpar(7), ipar)) return
+      if (brkdn(fpar(7), ipar)) then
+         return
+      end if
       alpha = fpar(7) / fpar(8)
       do i = 1, n
          w(i, 3) = w(i, 1) + alpha * w(i, 3)
@@ -2130,7 +2192,9 @@ contains
 !     some clean up job to do
 !
 900   if (rp) then
-         if (ipar(1) < 0) ipar(12) = ipar(1)
+         if (ipar(1) < 0) then
+            ipar(12) = ipar(1)
+         end if
          ipar(1) = 5
          ipar(8) = 6 * n + 1
          ipar(9) = ipar(8) - n
@@ -2192,7 +2256,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
@@ -2232,7 +2296,9 @@ contains
 !     call the initialization routine
 !
       call bisinit(ipar, fpar, 8 * n, 1, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
 !
 !     perform a matvec to compute the initial residual
 !
@@ -2289,7 +2355,9 @@ contains
       else if (ipar(3) /= 999) then
          fpar(4) = fpar(1) * fpar(3) + fpar(2)
       end if
-      if (ipar(3) >= 0) fpar(6) = fpar(5)
+      if (ipar(3) >= 0) then
+         fpar(6) = fpar(5)
+      end if
       if (ipar(3) >= 0 .and. fpar(5) <= fpar(4) .and. ipar(3) /= 999) then
          goto 900
       end if
@@ -2335,7 +2403,9 @@ contains
 !     step (2)
       alpha = ddot(n, w(:, 1), 1, w(:, 5), 1)
       fpar(11) = fpar(11) + 2 * n
-      if (brkdn(alpha, ipar)) goto 900
+      if (brkdn(alpha, ipar)) then
+         goto 900
+      end if
       alpha = fpar(7) / alpha
       fpar(8) = alpha
 !
@@ -2390,12 +2460,16 @@ contains
 !
 !     step (5)
       omega = ddot(n, w(:, 4), 1, w(:, 4), 1)
-      if (omega /= 0d0) then
+      if (omega /= 0.0_dp) then
          fpar(11) = fpar(11) + n + n
-         if (brkdn(omega, ipar)) goto 900
+         if (brkdn(omega, ipar)) then
+            goto 900
+         end if
          omega = ddot(n, w(:, 4), 1, w(:, 3), 1) / omega
          fpar(11) = fpar(11) + n + n
-         if (brkdn(omega, ipar)) goto 900
+         if (brkdn(omega, ipar)) then
+            goto 900
+         end if
       end if
 
       fpar(9) = omega
@@ -2434,7 +2508,9 @@ contains
          ipar(10) = 9
          return
       end if
-      if (stopbis(n, ipar, 2, fpar, w(1, 2), w(1, 7), one)) goto 900
+      if (stopbis(n, ipar, 2, fpar, w(1, 2), w(1, 7), one)) then
+         goto 900
+      end if
 100   if (ipar(3) == 999 .and. ipar(11) == 1) goto 900
 !
 !     step (8): computing new p and rho
@@ -2453,7 +2529,9 @@ contains
       ! w(1:N,6) = w(1:N,2) + beta * (w(1:N,6) - omega * w(1:N,5))
 
       fpar(11) = fpar(11) + 6 * n + 3
-      if (brkdn(fpar(7), ipar)) goto 900
+      if (brkdn(fpar(7), ipar)) then
+         goto 900
+      end if
 !
 !     end of an iteration
 !
@@ -2462,7 +2540,9 @@ contains
 !     some clean up job to do
 !
 900   if (rp) then
-         if (ipar(1) < 0) ipar(12) = ipar(1)
+         if (ipar(1) < 0) then
+            ipar(12) = ipar(1)
+         end if
          ipar(1) = 5
          ipar(8) = 7 * n + 1
          ipar(9) = ipar(8) - n
@@ -2519,7 +2599,9 @@ contains
 !
 !     status of the call (where to go)
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
       if (ipar(10) == 1) then
          goto 10
       else if (ipar(10) == 2) then
@@ -2545,7 +2627,9 @@ contains
 !     initializations
 !
       call bisinit(ipar, fpar, 11 * n, 2, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
       ipar(1) = 1
       ipar(8) = 1
       ipar(9) = 1 + 6 * n
@@ -2599,7 +2683,9 @@ contains
 30    sigma = rho
       rho = ddot(n, w(:, 2), 1, w(:, 3), 1)
       fpar(11) = fpar(11) + n + n
-      if (brkdn(rho, ipar)) goto 900
+      if (brkdn(rho, ipar)) then
+         goto 900
+      end if
       if (ipar(7) == 1) then
          alpha = zero
       else
@@ -2651,7 +2737,9 @@ contains
       end do
       sigma = ddot(n, w(:, 2), 1, w(:, 8), 1)
       fpar(11) = fpar(11) + 6 * n
-      if (brkdn(sigma, ipar)) goto 900
+      if (brkdn(sigma, ipar)) then
+         goto 900
+      end if
       alpha = rho / sigma
       do i = 1, n
          w(i, 5) = w(i, 4) - alpha * w(i, 8)
@@ -2704,7 +2792,9 @@ contains
       sigma = one / (one + theta)
       tao = tao * sqrt(sigma * theta)
       fpar(11) = fpar(11) + 4 * n + 6
-      if (brkdn(tao, ipar)) goto 900
+      if (brkdn(tao, ipar)) then
+         goto 900
+      end if
       eta = sigma * alpha
       sigma = te / alpha
       te = theta * eta
@@ -2728,7 +2818,9 @@ contains
       sigma = one / (one + theta)
       tao = tao * sqrt(sigma * theta)
       fpar(11) = fpar(11) + 8 + 2 * n
-      if (brkdn(tao, ipar)) goto 900
+      if (brkdn(tao, ipar)) then
+         goto 900
+      end if
       eta = sigma * alpha
       sigma = te / alpha
       te = theta * eta
@@ -2754,13 +2846,17 @@ contains
       else
          fpar(6) = fpar(5)
       end if
-      if (fpar(6) > fpar(4) .and. (ipar(7) < ipar(6) .or. ipar(6) <= 0)) goto 30
+      if (fpar(6) > fpar(4) .and. (ipar(7) < ipar(6) .or. ipar(6) <= 0)) then
+         goto 30
+      end if
 100   if (ipar(3) == 999 .and. ipar(11) == 0) goto 30
 !
 !     clean up
 !
 900   if (rp) then
-         if (ipar(1) < 0) ipar(12) = ipar(1)
+         if (ipar(1) < 0) then
+            ipar(12) = ipar(1)
+         end if
          ipar(1) = 5
          ipar(8) = 10 * n + 1
          ipar(9) = ipar(8) - n
@@ -2806,7 +2902,7 @@ contains
 !----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hes points to the Hessenberg matrix,
@@ -2821,7 +2917,9 @@ contains
 !
 !     check the status of the call
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
       if (ipar(10) == 1) then
          goto 10
       else if (ipar(10) == 2) then
@@ -2852,7 +2950,9 @@ contains
       vrn = vs + m
       i = vrn + m + 1
       call bisinit(ipar, fpar, i, 1, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
@@ -2952,7 +3052,9 @@ contains
       ptr = k * (k - 1) / 2 + hes
       p2 = ipar(9)
       call mgsro(.false., n, n, k + 1, k + 1, fpar(11), w, w(ptr + 1), ipar(12))
-      if (ipar(12) < 0) goto 200
+      if (ipar(12) < 0) then
+         goto 200
+      end if
 !
 !     apply previous Givens rotations to column.
 !
@@ -2974,10 +3076,14 @@ contains
 
       prs = vrn + k
       alpha = fpar(5)
-      if (w(p2) /= zero) alpha = abs(w(p2 + 1) * w(prs) / w(p2))
+      if (w(p2) /= zero) then
+         alpha = abs(w(p2 + 1) * w(prs) / w(p2))
+      end if
       fpar(5) = alpha
 !
-      if (k >= m .or. (ipar(3) >= 0 .and. alpha <= fpar(4)) .or. (ipar(6) > 0 .and. ipar(7) >= ipar(6))) goto 200
+      if (k >= m .or. (ipar(3) >= 0 .and. alpha <= fpar(4)) .or. (ipar(6) > 0 .and. ipar(7) >= ipar(6))) then
+         goto 200
+      end if
 !
       call givens(w(p2), w(p2 + 1), c, s)
 !     w(vc+k) = c
@@ -2986,7 +3092,9 @@ contains
 !     w(prs) = c * w(prs)
       w(prs + 1) = alpha
 !
-      if (w(p2) /= zero) goto 110
+      if (w(p2) /= zero) then
+         goto 110
+      end if
 !
 !     update the approximate solution, first solve the upper triangular
 !     system, temporary pointer ptr points to the Hessenberg matrix,
@@ -3060,7 +3168,9 @@ contains
       else if (ipar(3) < 0) then
          if (ipar(7) <= m + 1) then
             fpar(3) = abs(w(vrn + 1))
-            if (ipar(3) == -1) fpar(4) = fpar(1) * fpar(3) + fpar(2)
+            if (ipar(3) == -1) then
+               fpar(4) = fpar(1) * fpar(3) + fpar(2)
+            end if
          end if
          alpha = abs(w(vrn + k))
       end if
@@ -3074,9 +3184,13 @@ contains
       end if
       if (ipar(7) < ipar(6) .or. ipar(6) <= 0) then
          if (ipar(3) /= 999) then
-            if (fpar(6) > fpar(4)) goto 100
+            if (fpar(6) > fpar(4)) then
+               goto 100
+            end if
          else
-            if (ipar(11) == 0) goto 100
+            if (ipar(11) == 0) then
+               goto 100
+            end if
          end if
       end if
 !
@@ -3094,7 +3208,7 @@ contains
          end if
       end if
 300   if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -3142,7 +3256,9 @@ contains
 !
 !     check the status of the call
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
       if (ipar(10) == 1) then
          goto 10
       else if (ipar(10) == 2) then
@@ -3173,7 +3289,9 @@ contains
       vrn = vs + m
       i = vrn + m + 1
       call bisinit(ipar, fpar, i, 1, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
@@ -3273,7 +3391,9 @@ contains
       ptr = k * (k - 1) / 2 + hess
       p2 = ipar(9)
       call mgsro(.false., n, n, k + 1, k + 1, fpar(11), w, w(ptr + 1), ipar(12))
-      if (ipar(12) < 0) goto 200
+      if (ipar(12) < 0) then
+         goto 200
+      end if
 !
 !     apply previous Givens rotations and generate a new one to eliminate
 !     the subdiagonal element.
@@ -3302,7 +3422,9 @@ contains
       fpar(11) = fpar(11) + 6 * k + 2
       alpha = abs(alpha)
       fpar(5) = alpha
-      if (k < m .and. .not. (ipar(3) >= 0 .and. alpha <= fpar(4)) .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) goto 110
+      if (k < m .and. .not. (ipar(3) >= 0 .and. alpha <= fpar(4)) .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) then
+         goto 110
+      end if
 !
 !     update the approximate solution, first solve the upper triangular
 !     system, temporary pointer ptr points to the Hessenberg matrix,
@@ -3377,7 +3499,9 @@ contains
       else if (ipar(3) < 0) then
          if (ipar(7) <= m + 1) then
             fpar(3) = abs(w(vrn + 1))
-            if (ipar(3) == -1) fpar(4) = fpar(1) * fpar(3) + fpar(2)
+            if (ipar(3) == -1) then
+               fpar(4) = fpar(1) * fpar(3) + fpar(2)
+            end if
          end if
          fpar(6) = abs(w(vrn + k))
       else
@@ -3390,7 +3514,9 @@ contains
          ipar(1) = -3
          goto 300
       end if
-      if ((ipar(7) < ipar(6) .or. ipar(6) <= 0) .and. ((ipar(3) == 999 .and. ipar(11) == 0) .or. (ipar(3) /= 999 .and. fpar(6) > fpar(4)))) goto 100
+      if ((ipar(7) < ipar(6) .or. ipar(6) <= 0) .and. ((ipar(3) == 999 .and. ipar(11) == 0) .or. (ipar(3) /= 999 .and. fpar(6) > fpar(4)))) then
+         goto 100
+      end if
 !
 !     termination, set error code, compute convergence rate
 !
@@ -3438,7 +3564,9 @@ contains
 !
 !     where to go
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
       if (ipar(10) == 1) then
          goto 10
       else if (ipar(10) == 2) then
@@ -3479,7 +3607,9 @@ contains
 !
       full = .false.
       call bisinit(ipar, fpar, i, 1, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
       ipar(1) = 1
       if (lp) then
          do ii = 1, n
@@ -3541,17 +3671,25 @@ contains
 !     iterations start here
 !
 30    j = j + 1
-      if (j > lb) j = j - lb
+      if (j > lb) then
+         j = j - lb
+      end if
       jp1 = j + 1
-      if (jp1 > lb) jp1 = jp1 - lb
+      if (jp1 > lb) then
+         jp1 = jp1 - lb
+      end if
       ptrv = iv + (j - 1) * n + 1
       ptrw = iv + (jp1 - 1) * n + 1
       if (.not. full) then
-         if (j > jp1) full = .true.
+         if (j > jp1) then
+            full = .true.
+         end if
       end if
       if (full) then
          j0 = jp1 + 1
-         if (j0 > lb) j0 = j0 - lb
+         if (j0 > lb) then
+            j0 = j0 - lb
+         end if
       else
          j0 = 1
       end if
@@ -3616,7 +3754,9 @@ contains
       i = j0
       do while (i /= j)
          k = i + 1
-         if (k > lb) k = k - lb
+         if (k > lb) then
+            k = k - lb
+         end if
 !        c = w(ic+i)
          s = w(is + i)
          alpha = w(ihm + i)
@@ -3700,13 +3840,17 @@ contains
       else
          fpar(6) = fpar(5)
       end if
-      if (ipar(1) >= 0 .and. fpar(6) > fpar(4) .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) goto 30
+      if (ipar(1) >= 0 .and. fpar(6) > fpar(4) .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) then
+         goto 30
+      end if
 70    if (ipar(3) == 999 .and. ipar(11) == 0) goto 30
 !
 !     clean up the iterative solver
 !
 80    fpar(7) = zero
-      if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+      if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) then
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
+      end if
       if (ipar(1) > 0) then
          if (ipar(3) == 999 .and. ipar(11) /= 0) then
             ipar(1) = 0
@@ -3762,7 +3906,9 @@ contains
 !
 !     check the status of the call
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
       if (ipar(10) == 1) then
          goto 10
       else if (ipar(10) == 2) then
@@ -3792,7 +3938,9 @@ contains
       vrn = vs + m
       i = vrn + m + 1
       call bisinit(ipar, fpar, i, 1, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
@@ -3892,7 +4040,9 @@ contains
       p2 = ipar(9)
       ipar(7) = ipar(7) + 1
       call mgsro(.false., n, n, k + 1, k + 1, fpar(11), w, w(ptr + 1), ipar(12))
-      if (ipar(12) < 0) goto 200
+      if (ipar(12) < 0) then
+         goto 200
+      end if
 !
 !     apply previous Givens rotations and generate a new one to eliminate
 !     the subdiagonal element.
@@ -3921,8 +4071,9 @@ contains
 !
       alpha = abs(alpha)
       fpar(5) = alpha
-      if (k < m .and. .not. (ipar(3) >= 0 .and. alpha <= fpar(4)) &
-          .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) goto 110
+      if (k < m .and. .not. (ipar(3) >= 0 .and. alpha <= fpar(4)) .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) then
+         goto 110
+      end if
 !
 !     update the approximate solution, first solve the upper triangular
 !     system, temporary pointer ptr points to the Hessenberg matrix,
@@ -3975,7 +4126,9 @@ contains
       else if (ipar(3) < 0) then
          if (ipar(7) <= m + 1) then
             fpar(3) = abs(w(vrn + 1))
-            if (ipar(3) == -1) fpar(4) = fpar(1) * fpar(3) + fpar(2)
+            if (ipar(3) == -1) then
+               fpar(4) = fpar(1) * fpar(3) + fpar(2)
+            end if
          end if
          fpar(6) = abs(w(vrn + k))
       else if (ipar(3) /= 999) then
@@ -3988,9 +4141,9 @@ contains
          ipar(1) = -3
          goto 300
       end if
-      if ((ipar(7) < ipar(6) .or. ipar(6) <= 0) .and. &
-          ((ipar(3) == 999 .and. ipar(11) == 0) .or. &
-           (ipar(3) /= 999 .and. fpar(6) > fpar(4)))) goto 100
+      if ((ipar(7) < ipar(6) .or. ipar(6) <= 0) .and. ((ipar(3) == 999 .and. ipar(11) == 0) .or. (ipar(3) /= 999 .and. fpar(6) > fpar(4)))) then
+         goto 100
+      end if
 !
 !     termination, set error code, compute convergence rate
 !
@@ -4063,7 +4216,9 @@ contains
 !
 !     where to go
 !
-      if (ipar(1) <= 0) ipar(10) = 0
+      if (ipar(1) <= 0) then
+         ipar(10) = 0
+      end if
       if (ipar(10) == 1) then
          goto 110
       else if (ipar(10) == 2) then
@@ -4089,7 +4244,9 @@ contains
 !     initialization, parameter checking, clear the work arrays
 !
       call bisinit(ipar, fpar, 11 * n, 1, lp, rp, w)
-      if (ipar(1) < 0) return
+      if (ipar(1) < 0) then
+         return
+      end if
       perm(1) = .false.
       perm(2) = .false.
       perm(3) = .false.
@@ -4250,8 +4407,12 @@ contains
       u(1) = zero
       ju = 1
       k = i2
-      if (i <= lbm1) ju = 0
-      if (i < lb) k = 0
+      if (i <= lbm1) then
+         ju = 0
+      end if
+      if (i < lb) then
+         k = 0
+      end if
 31    if (k == lbm1) k = 0
       k = k + 1
 !
@@ -4274,7 +4435,9 @@ contains
       end do
       fpar(11) = fpar(11) + 4 * n
 !
-      if (k /= i2) goto 31
+      if (k /= i2) then
+         goto 31
+      end if
 !
 !     end of Mod. Gram. Schmidt loop
 !
@@ -4289,7 +4452,9 @@ contains
 !     normalize and insert new vectors
 !
       ip2 = i2
-      if (i2 == lbm1) i2 = 0
+      if (i2 == lbm1) then
+         i2 = 0
+      end if
       i2 = i2 + 1
 !
       do j = 1, n
@@ -4313,12 +4478,20 @@ contains
       end do
       call uppdir(n, w(:, 7:), np, lb, indp, w, u, usav, fpar(11))
 !-----------------------------------------------------------------------
-      if (i == 1) goto 34
+      if (i == 1) then
+         goto 34
+      end if
       j = np - 1
-      if (full) j = j - 1
-      if (.not. perm(j)) zeta = -zeta * ypiv(j)
+      if (full) then
+         j = j - 1
+      end if
+      if (.not. perm(j)) then
+         zeta = -zeta * ypiv(j)
+      end if
 34    x = zeta / u(np)
-      if (perm(np)) goto 36
+      if (perm(np)) then
+         goto 36
+      end if
       do k = 1, n
          w(k, 10) = w(k, 10) + x * w(k, 1)
       end do
@@ -4356,7 +4529,9 @@ contains
 !-----------------------------------------------------------------------
 !     here the fact that the last step is different is accounted for.
 !-----------------------------------------------------------------------
-      if (.not. perm(np)) goto 900
+      if (.not. perm(np)) then
+         goto 900
+      end if
       x = zeta / umm
       do k = 1, n
          w(k, 10) = w(k, 10) + x * w(k, 1)
@@ -4366,7 +4541,9 @@ contains
 !     right preconditioning and clean-up jobs
 !
 900   if (rp) then
-         if (ipar(1) < 0) ipar(12) = ipar(1)
+         if (ipar(1) < 0) then
+            ipar(12) = ipar(1)
+         end if
          ipar(1) = 5
          ipar(8) = 9 * n + 1
          ipar(9) = ipar(8) + n
@@ -4391,13 +4568,17 @@ contains
 !     performs implicitly one step of the lu factorization of a
 !     banded hessenberg matrix.
 !-----------------------------------------------------------------------
-      if (np <= 1) goto 12
+      if (np <= 1) then
+         goto 12
+      end if
       npm1 = np - 1
 !
 !     -- perform  previous step of the factorization-
 !
       do k = 1, npm1
-         if (.not. permut(k)) goto 5
+         if (.not. permut(k)) then
+            goto 5
+         end if
          x = u(k)
          u(k) = u(k + 1)
          u(k + 1) = x
@@ -4408,14 +4589,18 @@ contains
 !-----------------------------------------------------------------------
 12    umm = u(np)
       perm = (beta > abs(umm))
-      if (.not. perm) goto 4
+      if (.not. perm) then
+         goto 4
+      end if
       xpiv = umm / beta
       u(np) = beta
       goto 8
 4     xpiv = beta / umm
 8     permut(np) = perm
       ypiv(np) = xpiv
-      if (.not. full) return
+      if (.not. full) then
+         return
+      end if
 !     shift everything up if full...
       do k = 1, npm1
          ypiv(k) = ypiv(k + 1)
@@ -4434,24 +4619,32 @@ contains
 !     elements of the column of the triangular matrix..
 !-----------------------------------------------------------------------
       real(kind=dp) :: zero
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !
       npm1 = np - 1
-      if (np <= 1) goto 12
+      if (np <= 1) then
+         goto 12
+      end if
       j = indp
       ju = npm1
 10    if (j <= 0) j = lbp
       x = u(ju) / usav(j)
-      if (x == zero) goto 115
+      if (x == zero) then
+         goto 115
+      end if
       do k = 1, n
          y(k) = y(k) - x * p(k, j)
       end do
       flops = flops + 2 * n
 115   j = j - 1
       ju = ju - 1
-      if (ju >= 1) goto 10
+      if (ju >= 1) then
+         goto 10
+      end if
 12    indp = indp + 1
-      if (indp > lbp) indp = 1
+      if (indp > lbp) then
+         indp = 1
+      end if
       usav(indp) = u(np)
       do k = 1, n
          p(k, indp) = y(k)
@@ -4518,7 +4711,9 @@ contains
          ipar(1) = -1
          stopbis = .true.
       end if
-      if (stopbis) return
+      if (stopbis) then
+         return
+      end if
 !
 !     computes errors
 !
@@ -4687,7 +4882,9 @@ contains
       do i = 3, 10
          fpar(i) = zero
       end do
-      if (fpar(11) < zero) fpar(11) = zero
+      if (fpar(11) < zero) then
+         fpar(11) = zero
+      end if
 !     .. clear the used portion of the work array to zero
 
       ! do i = 1, wksize
@@ -4772,7 +4969,9 @@ contains
                ops = ops + 4 * n + 1
             end if
             nrm0 = nrm0 - hh(i) * hh(i)
-            if (nrm0 < zero) nrm0 = zero
+            if (nrm0 < zero) then
+               nrm0 = zero
+            end if
             thr = nrm0 * reorth
          end do
       end if
@@ -4793,7 +4992,9 @@ contains
             ops = ops + 4 * n + 1
          end if
          nrm0 = nrm0 - hh(i) * hh(i)
-         if (nrm0 < zero) nrm0 = zero
+         if (nrm0 < zero) then
+            nrm0 = zero
+         end if
          thr = nrm0 * reorth
       end do
 !
@@ -5031,7 +5232,9 @@ contains
 !
 !     nx has to be larger than 1
 !
-      if (nx <= 1) return
+      if (nx <= 1) then
+         return
+      end if
       h = one / real(nx - 1, kind=dp)
 !
 !     the mode
@@ -5054,50 +5257,68 @@ contains
 !
 !     compute the stencil at the current node
 !
-               if (value) call getsten(nx, ny, nz, mode, ix - 1, iy - 1, iz - 1, stencil, h, r)
+               if (value) then
+                  call getsten(nx, ny, nz, mode, ix - 1, iy - 1, iz - 1, stencil, h, r)
+               end if
 !     west
                if (ix > 1) then
                   ja(iedge) = node - kx
-                  if (value) a(iedge) = stencil(2)
+                  if (value) then
+                     a(iedge) = stencil(2)
+                  end if
                   iedge = iedge + 1
                end if
 !     south
                if (iy > 1) then
                   ja(iedge) = node - ky
-                  if (value) a(iedge) = stencil(4)
+                  if (value) then
+                     a(iedge) = stencil(4)
+                  end if
                   iedge = iedge + 1
                end if
 !     front plane
                if (iz > 1) then
                   ja(iedge) = node - kz
-                  if (value) a(iedge) = stencil(6)
+                  if (value) then
+                     a(iedge) = stencil(6)
+                  end if
                   iedge = iedge + 1
                end if
 !     center node
                ja(iedge) = node
                iau(node) = iedge
-               if (value) a(iedge) = stencil(1)
+               if (value) then
+                  a(iedge) = stencil(1)
+               end if
                iedge = iedge + 1
 !     east
                if (ix < nx) then
                   ja(iedge) = node + kx
-                  if (value) a(iedge) = stencil(3)
+                  if (value) then
+                     a(iedge) = stencil(3)
+                  end if
                   iedge = iedge + 1
                end if
 !     north
                if (iy < ny) then
                   ja(iedge) = node + ky
-                  if (value) a(iedge) = stencil(5)
+                  if (value) then
+                     a(iedge) = stencil(5)
+                  end if
                   iedge = iedge + 1
                end if
 !     back plane
                if (iz < nz) then
                   ja(iedge) = node + kz
-                  if (value) a(iedge) = stencil(7)
+                  if (value) then
+                     a(iedge) = stencil(7)
+                  end if
                   iedge = iedge + 1
                end if
 !     the right-hand side
-               if (genrhs) rhs(node) = r
+               if (genrhs) then
+                  rhs(node) = r
+               end if
                node = node + 1
             end do
          end do
@@ -5154,16 +5375,18 @@ contains
 !
 !     if mode < 0, we shouldn't have come here
 !
-      if (mode < 0) return
+      if (mode < 0) then
+         return
+      end if
 !
       do k = 1, 7
          stencil(k) = zero
       end do
 !
       hhalf = h * half
-      x = h * dble(kx)
-      y = h * dble(ky)
-      z = h * dble(kz)
+      x = h * real(kx, kind=dp)
+      y = h * real(ky, kind=dp)
+      z = h * real(kz, kind=dp)
       cntr = zero
 !     differentiation wrt x:
       coeff = afun(x + hhalf, y, z)
@@ -5177,7 +5400,9 @@ contains
       coeff = dfun(x, y, z) * hhalf
       stencil(3) = stencil(3) + coeff
       stencil(2) = stencil(2) - coeff
-      if (ny <= 1) goto 99
+      if (ny <= 1) then
+         goto 99
+      end if
 !
 !     differentiation wrt y:
 !
@@ -5192,7 +5417,9 @@ contains
       coeff = efun(x, y, z) * hhalf
       stencil(5) = stencil(5) + coeff
       stencil(4) = stencil(4) - coeff
-      if (nz <= 1) goto 99
+      if (nz <= 1) then
+         goto 99
+      end if
 !
 ! differentiation wrt z:
 !
@@ -5215,7 +5442,9 @@ contains
 !
 !     the right-hand side
 !
-      if (mode > 0) rhs = h * h * hfun(x, y, z)
+      if (mode > 0) then
+         rhs = h * h * hfun(x, y, z)
+      end if
 !
       return
    end subroutine getsten
@@ -5308,14 +5537,14 @@ contains
 !     some constants
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
       integer iedge, ix, iy, iz, k, kx, ky, kz, nfree2, node
       real(kind=dp) :: h
 !
-      h = one / dble(nx + 1)
+      h = one / real(nx + 1, kind=dp)
       kx = 1
       ky = nx
       kz = nx * ny
@@ -5419,7 +5648,7 @@ contains
       implicit none
 
       real(kind=dp) :: zero, half
-      parameter(zero=0.0d0, half=0.5d0)
+      parameter(zero=0.0_dp, half=0.5_dp)
 !
 !     local variables
 !
@@ -5443,9 +5672,9 @@ contains
 !------------
       hhalf = h * half
       h2 = h * h
-      x = h * dble(kx)
-      y = h * dble(ky)
-      z = h * dble(kz)
+      x = h * real(kx, kind=dp)
+      y = h * real(ky, kind=dp)
+      z = h * real(kz, kind=dp)
 ! differentiation wrt x:
       xh = x + hhalf
       call afunbl(nfree, xh, y, z, coeff)
@@ -5467,7 +5696,9 @@ contains
          stencil(3, k) = stencil(3, k) + coeff(k) * hhalf
          stencil(2, k) = stencil(2, k) - coeff(k) * hhalf
       end do
-      if (ny <= 1) goto 99
+      if (ny <= 1) then
+         goto 99
+      end if
 !
 ! differentiation wrt y:
 !
@@ -5488,7 +5719,9 @@ contains
          stencil(5, k) = stencil(5, k) + coeff(k) * hhalf
          stencil(4, k) = stencil(4, k) - coeff(k) * hhalf
       end do
-      if (nz <= 1) goto 99
+      if (nz <= 1) then
+         goto 99
+      end if
 !
 ! differentiation wrt z:
 !
@@ -5533,7 +5766,7 @@ contains
 !     parameters
 !
       real(kind=dp) :: zero
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !
 !     local variables
 !
@@ -5595,7 +5828,9 @@ contains
 !
 !     if it's only 1-D, skip the following part
 !
-      if (ny <= 1) goto 100
+      if (ny <= 1) then
+         goto 100
+      end if
 !
 !     the bottom (south) side
 !
@@ -5633,7 +5868,9 @@ contains
 !
 !     if only 2-D skip the following section on z
 !
-      if (nz <= 1) goto 100
+      if (nz <= 1) then
+         goto 100
+      end if
 !
 !     the front surface
 !
@@ -5711,7 +5948,9 @@ contains
                   stencil(5) = a(lk)
                   lk = lk + 1
                end if
-               if (k < nz) stencil(7) = a(lk)
+               if (k < nz) then
+                  stencil(7) = a(lk)
+               end if
 !
 !     first the ia pointer -- points to the beginning of each row
                ia(node) = iedge
@@ -5946,7 +6185,9 @@ contains
 !
 !     If only one dimension, return now
 !
-      if (ny <= 1) return
+      if (ny <= 1) then
+         return
+      end if
 !
 !     the bottom (south) side suface, This similar to the situation
 !     with the left side, except all the function and realted variation
@@ -6023,7 +6264,9 @@ contains
 !
 !     If only has two dimesion to work on, return now
 !
-      if (nz <= 1) return
+      if (nz <= 1) then
+         return
+      end if
 !
 !     The front side boundary
 !
@@ -6126,7 +6369,9 @@ contains
       lctcsr = -1
       k = ia(i)
 10    if (k < ia(i + 1) .and. (lctcsr == -1)) then
-         if (ja(k) == j) lctcsr = k
+         if (ja(k) == j) then
+            lctcsr = k
+         end if
          k = k + 1
          goto 10
       end if
@@ -6152,9 +6397,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine afunbl
@@ -6174,9 +6419,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine bfunbl
@@ -6196,9 +6441,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine cfunbl
@@ -6218,7 +6463,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6239,7 +6484,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6260,7 +6505,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6281,7 +6526,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6328,7 +6573,7 @@ contains
             !
             !     compute the inner product of row i with vector x
             !
-            t = 0.0d0
+            t = 0.0_dp
             do k = ia(i), ia(i + 1) - 1
                t = t + a(k) * x(ja(k))
             end do
@@ -6342,7 +6587,7 @@ contains
       else
          do i = 1, n
 
-            t = 0.0d0
+            t = 0.0_dp
             do k = ia(i), ia(i + 1) - 1
                t = t + a(k) * x(ja(k))
             end do
@@ -6546,17 +6791,17 @@ contains
          goto 1234
       end if
 
-      call realloc(solver%a, solver%numnonzeros, keepExisting=.false., fill=0d0)
+      call realloc(solver%a, solver%numnonzeros, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%ia, solver%numrows + 1, keepExisting=.false., fill=0)
       call realloc(solver%ja, solver%numnonzeros, keepExisting=.false., fill=0)
 
-      call realloc(solver%rhs, solver%numrows, keepExisting=.false., fill=0d0)
+      call realloc(solver%rhs, solver%numrows, keepExisting=.false., fill=0.0_dp)
 
-      call realloc(solver%alu, solver%numnonzerosprecond, keepExisting=.false., fill=0d0)
+      call realloc(solver%alu, solver%numnonzerosprecond, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%ju, solver%numrows, keepExisting=.false., fill=0)
       call realloc(solver%jlu, solver%numnonzerosprecond, keepExisting=.false., fill=0)
 
-      call realloc(solver%work, solver%nwork, keepExisting=.false., fill=0d0)
+      call realloc(solver%work, solver%nwork, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%jw, solver%nwork, keepExisting=.false., fill=0)
 
       ierror = 0
@@ -6577,18 +6822,36 @@ contains
 
       type(tsolver), intent(inout) :: solver !< solver
 
-      if (allocated(solver%a)) deallocate (solver%a)
-      if (allocated(solver%ia)) deallocate (solver%ia)
-      if (allocated(solver%ja)) deallocate (solver%ja)
+      if (allocated(solver%a)) then
+         deallocate (solver%a)
+      end if
+      if (allocated(solver%ia)) then
+         deallocate (solver%ia)
+      end if
+      if (allocated(solver%ja)) then
+         deallocate (solver%ja)
+      end if
 
-      if (allocated(solver%rhs)) deallocate (solver%rhs)
+      if (allocated(solver%rhs)) then
+         deallocate (solver%rhs)
+      end if
 
-      if (allocated(solver%alu)) deallocate (solver%alu)
-      if (allocated(solver%ju)) deallocate (solver%ju)
-      if (allocated(solver%jlu)) deallocate (solver%jlu)
+      if (allocated(solver%alu)) then
+         deallocate (solver%alu)
+      end if
+      if (allocated(solver%ju)) then
+         deallocate (solver%ju)
+      end if
+      if (allocated(solver%jlu)) then
+         deallocate (solver%jlu)
+      end if
 
-      if (allocated(solver%work)) deallocate (solver%work)
-      if (allocated(solver%jw)) deallocate (solver%jw)
+      if (allocated(solver%work)) then
+         deallocate (solver%work)
+      end if
+      if (allocated(solver%jw)) then
+         deallocate (solver%jw)
+      end if
 
       solver%numrows = 0
       solver%numnonzeros = 0
@@ -6624,12 +6887,16 @@ contains
       if (japrecond == 1) then
 !     compute preconditioner
          call ilud(solver%numrows, solver%a, solver%ja, solver%ia, solver%alpha, solver%tol, solver%alu, solver%jlu, solver%ju, solver%numnonzerosprecond, solver%work, solver%jw, ierror, solver%numnonzeros)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
       end if
 
 !  solve system
       call runrc2(solver%numrows, solver%rhs, sol, solver%ipar, solver%fpar, solver%work, solver%a, solver%ja, solver%ia, solver%alu, solver%jlu, solver%ju, iters, solver%eps, solver%jabcgstab, ierror, solver%numnonzerosprecond)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       ierror = 0
 1234  continue

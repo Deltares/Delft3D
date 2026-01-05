@@ -100,20 +100,28 @@ contains
          do j = j0, j1
 !         if ( i.ne.i0 .and. i.ne.i1 .and. j.ne.j0 .and. j.ne.j1 ) cycle
 
-            if (i - i0 > 1 .and. i1 - i > 1 .and. j - j0 > 1 .and. j1 - j > 1) cycle
+            if (i - i0 > 1 .and. i1 - i > 1 .and. j - j0 > 1 .and. j1 - j > 1) then
+               cycle
+            end if
 
             ip = i + (j - 1) * MXSAM
 
-            if (ip == ipcur) cycle
+            if (ip == ipcur) then
+               cycle
+            end if
 
 !        next sample may never have DMISS coordinates/value
-            if (xs(ip) == DMISS .or. zs(ip) == DMISS) cycle
+            if (xs(ip) == DMISS .or. zs(ip) == DMISS) then
+               cycle
+            end if
 
 !        check angle with previous step
             if (ipprev /= ipcur .and. ipprev > 0) then
                dcsphi = dcosphi(xs(ipprev), ys(ipprev), xs(ipcur), ys(ipcur), xs(ipcur), ys(ipcur), xs(ip), ys(ip), jsferic, jasfer3D, dxymis)
 
-               if (dcsphi < 0.5_dp) cycle
+               if (dcsphi < 0.5_dp) then
+                  cycle
+               end if
             end if
 
 !        make subbath

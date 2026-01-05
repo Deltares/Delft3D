@@ -92,22 +92,29 @@ contains
       write (TEX(11) (57:64), '(I8)') nc
 
 !
-      write (msgbuf, '(A)'); call msg_flush()
+      write (msgbuf, '(A)')
+      call msg_flush()
 
       do I = 1, MAXLIN
-         write (msgbuf, '(A)') TEX(I); call msg_flush()
+         write (msgbuf, '(A)') TEX(I)
+         call msg_flush()
       end do
 
       omp_numt = 0
 #ifdef _OPENMP
-      write (msgbuf, '(A,i8)') 'number of threads           : ', omp_get_num_threads(); call msg_flush()
+      write (msgbuf, '(A,i8)') 'number of threads           : ', omp_get_num_threads()
+      call msg_flush()
 #else
-      write (msgbuf, '(A,i8)') 'number of threads           : OMP disabled'; call msg_flush()
+      write (msgbuf, '(A,i8)') 'number of threads           : OMP disabled'
+      call msg_flush()
 #endif
 
-      write (msgbuf, '(A,i8)') 'number of samples                    :', ns; call msg_flush()
-      write (msgbuf, '(A,i8)') 'arcinfo columns mca                  :', mca; call msg_flush()
-      write (msgbuf, '(A,i8)') 'arcinfo columns nca                  :', nca; call msg_flush()
+      write (msgbuf, '(A,i8)') 'number of samples                    :', ns
+      call msg_flush()
+      write (msgbuf, '(A,i8)') 'arcinfo columns mca                  :', mca
+      call msg_flush()
+      write (msgbuf, '(A,i8)') 'arcinfo columns nca                  :', nca
+      call msg_flush()
 
       WRDKEY = 'ACTUAL AND MAXIMUM DIMENSIONS OF DATA'
       NLEVEL = 2

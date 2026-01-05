@@ -96,7 +96,9 @@ contains
 
       allocate (XH(MNMAX), YH(MNMAX), XH2(MNMAX), YH2(MNMAX))
 
-      if (BFAC == 0) return
+      if (BFAC == 0) then
+         return
+      end if
       BFE = 1 - BFAC
 
 !     DE HORIZONTALEN

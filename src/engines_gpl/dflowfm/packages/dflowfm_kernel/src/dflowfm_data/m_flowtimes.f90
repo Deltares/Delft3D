@@ -49,7 +49,21 @@ module m_flowtimes
    real(kind=dp) :: dt_max !< Computational timestep limit by user.
    real(kind=dp) :: dt_init !< dt of first timestep, if not specified, use dt_max, if that also not specified, use 1 s
 
-   integer :: ja_timestep_auto !< Use CFL-based dt (with dt_max as upper bound)
+   integer :: autotimestep !< Automatic timestepping control, limit timestep by CFL condition. Use one of the AUTO_TIMESTEP_<> parameters
+   ! Production parameters
+   integer, parameter :: AUTO_TIMESTEP_2D_OUT = 1 !< 2D-model; use outflows in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_HOR_OUT = 3 !< 3D-model; use horizontal outflows (per cell-layer) in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_HOR_INOUT = 4 !< 3D-model; use horizontal in- and outflows (per cell-layer) in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_INOUT = 5 !< 3D-model; use in- or outflows (per cell-column) in CFL timestep limit
+   ! Research/hidden parameters
+   integer, parameter :: AUTO_TIMESTEP_OFF = 0 !< RESEARCH/HIDDEN - Use no CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_2D_INOUT = 2 !< RESEARCH/HIDDEN - 2D-model; use in- and outflows in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN = 6 !< RESEARCH/HIDDEN - 3D-model; use horizontal outflows (per cell-column) and total inflows (per cell-layer) in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_INOUT_BAROCLINE = 7 !< RESEARCH/HIDDEN - 3D-model; use in- and outflows (per cell-layer) including barocline effects in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_OUT_NOTOP = 8 !< RESEARCH/HIDDEN - 3D-model; use outflows (per cell-layer) excluding the top layer in CFL timestep limit
+   integer, parameter :: AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN_NOTOP = 10 !< RESEARCH/HIDDEN - 3D-models; use horizontal outflows (per cell-column) and total inflows (per cell-layer), excluding the top layer, in CFL timestep limit
+
+
    integer :: ja_timestep_auto_visc !< Use explicit time step restriction based on viscosity term
    integer :: ja_timestep_nostruct !< Exclude (structure) links without advection from the time step limitation
    integer :: ja_timestep_noqout !< Exclude negative qin term from timestep limitation.
@@ -216,7 +230,7 @@ contains
       dt_init = 1.0_dp
       dt_trach = 1200.0_dp !< User specified DtTrt Trachytope roughness update time interval (s)
       dt_fac_max = 1.1_dp !< default setting
-      ja_timestep_auto = 1 !< Use CFL-based dt (with dt_max as upper bound)
+      autotimestep = AUTO_TIMESTEP_2D_OUT !< Use CFL-based dt (with dt_max as upper bound)
       ja_timestep_auto_visc = 0 !< Use explicit time step restriction based on viscosity term
       ja_timestep_nostruct = 0 !< Exclude (structure) links without advection from the time step limitation
       ja_timestep_noqout = 1 !< Exclude negative qin terms from the time step limitation

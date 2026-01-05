@@ -51,14 +51,16 @@ contains
       if (.not. allocated(rn)) then
          ja = 1
       else if (size(rn) < numk) then
-         deallocate (rn); ja = 1
+         deallocate (rn)
+         ja = 1
       end if
       if (ja == 1) then
          allocate (rn(numk), stat=ierr)
          call aerr('rn(numk)', ierr, numk)
       end if
 
-      rnod = 0.0_dp; rn = 0.0_dp
+      rnod = 0.0_dp
+      rn = 0.0_dp
       do L = lnx1D + 1, lnxi ! regular 2D flow links
          k1 = lncn(1, L) ! netnode 1
          k2 = lncn(2, L) ! netnode 2

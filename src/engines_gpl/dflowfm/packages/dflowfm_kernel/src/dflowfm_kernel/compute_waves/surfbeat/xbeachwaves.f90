@@ -242,7 +242,9 @@ contains
       allocate (allowednames(2), oldnames(0))
       allowednames = ['abs_1d', 'abs_2d']
       absgentype = readkey_str(md_surfbeatfile, 'absgentype', 'abs_1d', 2, 0, allowednames, oldnames)
-      if (allocated(allowednames)) deallocate (allowednames, oldnames)
+      if (allocated(allowednames)) then
+         deallocate (allowednames, oldnames)
+      end if
       allocate (allowednames(2), oldnames(0))
       allowednames = ['instant ', 'velocity']
       tidetype = readkey_str(md_surfbeatfile, 'tidetype', 'velocity', 2, 0, allowednames, oldnames)
@@ -428,12 +430,9 @@ contains
       integer, parameter :: np = 12
 
       ! Set some initial values
-      if (trim(instat) == 'jons' .or. &
-          trim(instat) == 'jons_table' .or. &
-          trim(instat) == 'swan' .or. &
-          trim(instat) == 'vardens' .or. &
-          trim(instat) == 'reuse' &
-          ) Trep = 10.0_dp
+      if (trim(instat) == 'jons' .or. trim(instat) == 'jons_table' .or. trim(instat) == 'swan' .or. trim(instat) == 'vardens' .or. trim(instat) == 'reuse') then
+         Trep = 10.0_dp
+      end if
 
       ! Init values water levels and velocities
       hhw = hs
@@ -548,11 +547,11 @@ contains
          maxnumbnds = 100
          allocate (uave(maxnumbnds), vave(maxnumbnds), dlengthrm(maxnumbnds), stat=ierror)
          allocate (umeanrm(maxnumbnds), vmeanrm(maxnumbnds), stat=ierror)
-         uave = 0d0
-         vave = 0d0
-         dlengthrm = 0d0
-         umeanrm = 0d0
-         vmeanrm = 0d0
+         uave = 0.0_dp
+         vave = 0.0_dp
+         dlengthrm = 0.0_dp
+         umeanrm = 0.0_dp
+         vmeanrm = 0.0_dp
       end if
 
       !if ( windmodel.eq.1) then
@@ -646,45 +645,45 @@ contains
       real(kind=dp) :: thetaminloc
 
       if (swave == 1) then
-         theta0 = (1.5d0 * pi) - dir0 * atan(1.d0) / 45d0
-         do while (theta0 < -2d0 * pi)
-            theta0 = theta0 + 2.d0 * pi
+         theta0 = (1.5_dp * pi) - dir0 * atan(1.0_dp) / 45.0_dp
+         do while (theta0 < -2.0_dp * pi)
+            theta0 = theta0 + 2.0_dp * pi
          end do
-         do while (theta0 > 2d0 * pi)
-            theta0 = theta0 - 2.d0 * pi
+         do while (theta0 > 2.0_dp * pi)
+            theta0 = theta0 - 2.0_dp * pi
          end do
 
          if (thetanaut == 1) then
             thetaminloc = thetamin
-            thetamin = (270.d0 - thetamax) * dg2rd
-            thetamax = (270.d0 - thetaminloc) * dg2rd
+            thetamin = (270.0_dp - thetamax) * dg2rd
+            thetamax = (270.0_dp - thetaminloc) * dg2rd
          else
             thetamin = thetamin * dg2rd
             thetamax = thetamax * dg2rd
          end if
 
-         thetamin = mod(thetamin, 2.d0 * pi)
-         thetamax = mod(thetamax, 2.d0 * pi)
+         thetamin = mod(thetamin, 2.0_dp * pi)
+         thetamax = mod(thetamax, 2.0_dp * pi)
 
          if (thetamin >= thetamax) then
-            if (thetamax >= 0.d0) then
+            if (thetamax >= 0.0_dp) then
                do while (thetamin >= thetamax)
-                  thetamin = thetamin - 2.d0 * pi
+                  thetamin = thetamin - 2.0_dp * pi
                end do
             else
                do while (thetamin > thetamax)
-                  thetamax = thetamax + 2.d0 * pi
+                  thetamax = thetamax + 2.0_dp * pi
                end do
             end if
-         elseif (thetamax > thetamin + 2.d0 * pi) then
-            do while (thetamax > thetamin + 2.d0 * pi)
-               thetamin = thetamin + 2.d0 * pi
+         elseif (thetamax > thetamin + 2.0_dp * pi) then
+            do while (thetamax > thetamin + 2.0_dp * pi)
+               thetamin = thetamin + 2.0_dp * pi
             end do
          end if
 
          if (single_dir == 0) then
             dtheta = dtheta * dg2rd
-            if (dtheta > 0d0) then ! safety
+            if (dtheta > 0.0_dp) then ! safety
                ntheta = max(nint((thetamax - thetamin) / dtheta), 1)
             else
                ntheta = 1
@@ -695,37 +694,37 @@ contains
             dtheta = thetamax - thetamin
          end if
       else
-         dtheta = 2d0 * pi
+         dtheta = 2.0_dp * pi
          ntheta = 1
       end if
 
-      call realloc(csx, ntheta, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(csx, ntheta, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('csx  (ntheta)', ierr, ntheta)
-      call realloc(snx, ntheta, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(snx, ntheta, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('snx  (ntheta)', ierr, ntheta)
-      call realloc(thet, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thet, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('thet  (ntheta,ndx)', ierr, ntheta * ndx)
-      call realloc(costh, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(costh, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('costh  (ntheta,ndx)', ierr, ntheta * ndx)
-      call realloc(sinth, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(sinth, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('sinth  (ntheta,ndx)', ierr, ntheta * ndx)
-      call realloc(thetabin, ntheta, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thetabin, ntheta, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('thetabin  (ntheta)', ierr, ntheta)
 
       if (single_dir == 1) then
          dtheta_s = dtheta_s * dg2rd
          ntheta_s = nint((thetamax - thetamin) / dtheta_s)
-         call realloc(thetabin_s, ntheta_s, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(thetabin_s, ntheta_s, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('thetabin_s  (ntheta_s)', ierr, ntheta_s)
-         call realloc(thet_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(thet_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('thet_s  (ntheta_s,ndx)', ierr, ntheta_s * ndx)
-         call realloc(costh_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(costh_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('costh_s  (ntheta_s,ndx)', ierr, ntheta_s * ndx)
-         call realloc(sinth_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(sinth_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('sinth_s  (ntheta_s,ndx)', ierr, ntheta_s * ndx)
 
       else
-         dtheta_s = 2d0 * pi
+         dtheta_s = 2.0_dp * pi
          ntheta_s = 0
          allocate (thetabin_s(0))
          allocate (thet_s(0, 0))
@@ -734,7 +733,7 @@ contains
       end if
 
       do itheta = 1, ntheta
-         thetabin(itheta) = thetamin + dtheta / 2d0 + dtheta * (itheta - 1)
+         thetabin(itheta) = thetamin + dtheta / 2.0_dp + dtheta * (itheta - 1)
       end do
 
       do itheta = 1, ntheta
@@ -749,14 +748,14 @@ contains
 
       if (single_dir == 1) then
          do itheta = 1, ntheta_s
-            thetabin_s(itheta) = mod(thetamin + dtheta_s / 2.0 + dtheta_s * (itheta - 1), 2d0 * pi)
+            thetabin_s(itheta) = mod(thetamin + dtheta_s / 2.0 + dtheta_s * (itheta - 1), 2.0_dp * pi)
          end do
 
          do itheta = 1, ntheta_s
             do k = 1, ndx
                thet_s(itheta, k) = thetabin_s(itheta)
-               costh_s(itheta, k) = cos(mod(thetabin_s(itheta), 2d0 * pi))
-               sinth_s(itheta, k) = sin(mod(thetabin_s(itheta), 2d0 * pi))
+               costh_s(itheta, k) = cos(mod(thetabin_s(itheta), 2.0_dp * pi))
+               sinth_s(itheta, k) = sin(mod(thetabin_s(itheta), 2.0_dp * pi))
             end do
          end do
       end if
@@ -785,18 +784,18 @@ contains
          if (hh(k) > epshu) then
             L0(k) = 2 * pi * ag / (sigmwav(k)**2)
          else
-            L0(k) = 0d0
+            L0(k) = 0.0_dp
          end if
       end do
       L1 = L0
 
       do k = 1, ndxi
          if (hh(k) > epshu) then
-            if (2 * pi / L0(k) * hh(k) > 5d0) then
+            if (2 * pi / L0(k) * hh(k) > 5.0_dp) then
                Ltemp(k) = L0(k)
             else
                Ltemp(k) = iteratedispersion(L0(k), Ltemp(k), pi, hh(k))
-               if (Ltemp(k) < 0.d0) then ! this is an error from iteratedispersion
+               if (Ltemp(k) < 0.0_dp) then ! this is an error from iteratedispersion
                   Ltemp(k) = -Ltemp(k)
                   call writelog('lws', '', 'Warning: no convergence in dispersion relation iteration at t = ', &
                                 time0)
@@ -807,27 +806,29 @@ contains
       end do
 
       do L = 1, nbndz
-         k1 = kbndz(1, L); k2 = kbndz(2, L)
+         k1 = kbndz(1, L)
+         k2 = kbndz(2, L)
          L1(k1) = L1(k2)
       end do
 
       do L = 1, nbndu
-         k1 = kbndu(1, L); k2 = kbndu(2, L)
+         k1 = kbndu(1, L)
+         k2 = kbndu(2, L)
          L1(k1) = L1(k2)
       end do
 
       do k = 1, ndx
          kwav(k) = 2 * pi / max(L1(k), epshu)
          cwav(k) = sigmwav(k) / kwav(k)
-         kh = min(kwav(k) * hh(k), 10.0d0)
-         nwav(k) = 0.5d0 + kh / max(sinh(2d0 * kh), epshu)
+         kh = min(kwav(k) * hh(k), 10.0_dp)
+         nwav(k) = 0.5_dp + kh / max(sinh(2.0_dp * kh), epshu)
          cgwav(k) = cwav(k) * nwav(k)
       end do
 
       where (hh <= epshu)
-         kwav = 25d0
+         kwav = 25.0_dp
          cwav = sqrt(ag * epshu)
-         nwav = 1.d0
+         nwav = 1.0_dp
          cgwav = sqrt(ag * epshu)
       end where
 
@@ -848,12 +849,12 @@ contains
       real(kind=dp) :: L1, L2
       integer :: iter
       real(kind=dp) :: err
-      real(kind=dp), parameter :: aphi = 1.d0 / (((1.0d0 + sqrt(5.0d0)) / 2) + 1)
-      real(kind=dp), parameter :: bphi = ((1.0d0 + sqrt(5.0d0)) / 2) / (((1.0d0 + sqrt(5.0d0)) / 2) + 1)
+      real(kind=dp), parameter :: aphi = 1.0_dp / (((1.0_dp + sqrt(5.0_dp)) / 2) + 1)
+      real(kind=dp), parameter :: bphi = ((1.0_dp + sqrt(5.0_dp)) / 2) / (((1.0_dp + sqrt(5.0_dp)) / 2) + 1)
       integer, parameter :: itermax = 150
-      real(kind=dp), parameter :: errmax = 0.00001d0
+      real(kind=dp), parameter :: errmax = 0.00001_dp
 
-      err = huge(0.0d0)
+      err = huge(0.0_dp)
       iter = 0
       L1 = Lestimate
       do while (err > errmax .and. iter < itermax)
@@ -911,15 +912,15 @@ contains
       !ee_eps = 0.00001d0
       !tt_eps = waveps    !important to limit wave celerities to 1 in case of cells for which hs<epshu
 
-      hh = 0.d0
-      ddlok = 0.d0
+      hh = 0.0_dp
+      ddlok = 0.0_dp
       wete = 0
-      drr = 0.d0
-      horadvec = 0d0
+      drr = 0.0_dp
+      horadvec = 0.0_dp
       !horadvec2=0d0
-      thetaadvec = 0d0
+      thetaadvec = 0.0_dp
       !thetaadvec2=0d0
-      RH = 0d0
+      RH = 0.0_dp
       gammax_correct = .false.
       !
       if (wci > 0) then
@@ -942,7 +943,7 @@ contains
 
       if (single_dir == 0) then
          do k = 1, ndx ! stack
-            thetamean(k) = sum(ee1(:, k) * thet(:, k), dim=1) / max(sum(ee1(:, k), dim=1), 0.00001d0) ! energy weighted wave direction
+            thetamean(k) = sum(ee1(:, k) * thet(:, k), dim=1) / max(sum(ee1(:, k), dim=1), 0.00001_dp) ! energy weighted wave direction
          end do
       else
          ! thetamean determined in wave_stationary, ntheta=1
@@ -1004,17 +1005,17 @@ contains
          call getcellcentergradients(umwci, xbducxdx, xbducxdy)
          call getcellcentergradients(vmwci, xbducydx, xbducydy)
       else
-         xbducxdx = 0.d0
-         xbducydx = 0.d0
-         xbducxdy = 0.d0
-         xbducydy = 0.d0
+         xbducxdx = 0.0_dp
+         xbducydx = 0.0_dp
+         xbducxdy = 0.0_dp
+         xbducydy = 0.0_dp
       end if
       !
       ! Calculate sinh(2kh)
-      where (2d0 * hh * kwav <= 3000.d0)
-         sinh2kh = sinh(min(2d0 * kwav * hh, 10.0d0))
+      where (2.0_dp * hh * kwav <= 3000.0_dp)
+         sinh2kh = sinh(min(2.0_dp * kwav * hh, 10.0_dp))
       elsewhere
-         sinh2kh = 3000.d0
+         sinh2kh = 3000.0_dp
       end where
       !
       call xbeach_compute_wave_velocities(1, dhsdx, dhsdy, xbducxdx, xbducxdy, xbducydx, xbducydy, sinh2kh)
@@ -1028,22 +1029,22 @@ contains
             if (vol1(k) > epshu * ba(k)) then
                ee1(itheta, k) = ee1(itheta, k) - dts * (horadvec(itheta, k) * bai(k) + thetaadvec(itheta, k))
             else
-               ee1(itheta, k) = 0d0
+               ee1(itheta, k) = 0.0_dp
             end if
          end do
       end do
 
       ee1 = ee1 * sigt ! Back to wave energy
-      ee1 = max(ee1, 0.0d0)
+      ee1 = max(ee1, 0.0_dp)
 
       !endif
       !
       where (wete == 1)
          E = sum(ee1, dim=1) * dtheta
       elsewhere
-         E = 0.d0
+         E = 0.0_dp
       end where
-      H = sqrt(8.d0 * E / rhomean / ag)
+      H = sqrt(8.0_dp * E / rhomean / ag)
       !
       ! Correct for gammax in these areas
       where (H > gammaxxb * hs .and. wete == 1)
@@ -1062,7 +1063,7 @@ contains
          H = min(H, gammaxxb * hs)
       end where
       !
-      rhog8 = rhomean * ag / 8d0
+      rhog8 = rhomean * ag / 8.0_dp
       where (gammax_correct)
          E = rhog8 * H**2
       end where
@@ -1072,25 +1073,25 @@ contains
       call xbeach_wave_breaker_dissipation(dts, break, waveps, hhw, kwav, km, gamma, gamma2, nroelvink, QB, alpha, Trep, cwav, thetamean, H, D, sigmwav, wci, 0)
 
       !   Dissipation by bed friction
-      dfac = 2.d0 * fw * rhomean / (3.d0 * pi)
+      dfac = 2.0_dp * fw * rhomean / (3.0_dp * pi)
       do k = 1, Ndx
-         uorb(k) = H(k) * sigmwav(k) / 2d0 * sinhsafei(kwav(k) * hh(k)) ! uorb uit XBeach
+         uorb(k) = H(k) * sigmwav(k) / 2.0_dp * sinhsafei(kwav(k) * hh(k)) ! uorb uit XBeach
          Df(k) = dfac(k) * uorb(k)**3
       end do
 
       if (jauorb == 0) then ! old d3d convention
-         uorb = uorb * sqrt(pi) / 2d0 ! only on hrms derived value, not on SWAN read uorb
+         uorb = uorb * sqrt(pi) / 2.0_dp ! only on hrms derived value, not on SWAN read uorb
       end if
 
       where (hh > fwcutoff)
-         Df = 0.d0
+         Df = 0.0_dp
       end where
       !
       !   Distribution of total dissipation over directions
       !
       do itheta = 1, ntheta
-         ddlok(itheta, :) = ee1(itheta, :) * D / max(E, 1d-5) ! breaking
-         dd(itheta, :) = ddlok(itheta, :) + ee1(itheta, :) * Df / max(E, 1d-5) ! breaking plus friction
+         ddlok(itheta, :) = ee1(itheta, :) * D / max(E, 1.0e-5_dp) ! breaking
+         dd(itheta, :) = ddlok(itheta, :) + ee1(itheta, :) * Df / max(E, 1.0e-5_dp) ! breaking plus friction
       end do
 
       !if (windmodel.eq.1) then
@@ -1125,12 +1126,12 @@ contains
             if (vol1(k) > epshu * ba(k)) then
                rr(itheta, k) = rr(itheta, k) - dts * (rrhoradvec(itheta, k) * bai(k) + rrthetaadvec(itheta, k))
             else
-               rr(itheta, k) = 0d0
+               rr(itheta, k) = 0.0_dp
             end if
          end do
       end do
 
-      rr = max(rr, 0.0d0)
+      rr = max(rr, 0.0_dp)
 
       !  euler step roller energy dissipation
       !if (windmodel.eq.1) then
@@ -1171,33 +1172,37 @@ contains
             if (wete(k) == 1) then
                ee1(itheta, k) = ee1(itheta, k) - dts * dd(itheta, k) ! totale dissipatie
                if (roller > 0) then
-                  drr(itheta, k) = 2.0 * ag * BR(k) * max(rr(itheta, k), 0.0d0) / cwav(k)
+                  drr(itheta, k) = 2.0 * ag * BR(k) * max(rr(itheta, k), 0.0_dp) / cwav(k)
                   rr(itheta, k) = rr(itheta, k) + dts * (ddlok(itheta, k) - drr(itheta, k)) ! only wave breaker dissipation
                else
-                  rr(itheta, k) = 0.0d0
-                  drr(itheta, k) = 0.0d0
+                  rr(itheta, k) = 0.0_dp
+                  drr(itheta, k) = 0.0_dp
                end if
-               ee1(itheta, k) = max(ee1(itheta, k), 0.0d0)
-               rr(itheta, k) = max(rr(itheta, k), 0.0d0)
+               ee1(itheta, k) = max(ee1(itheta, k), 0.0_dp)
+               rr(itheta, k) = max(rr(itheta, k), 0.0_dp)
             else
-               ee1(itheta, k) = 0.0d0
-               rr(itheta, k) = 0.0d0
+               ee1(itheta, k) = 0.0_dp
+               rr(itheta, k) = 0.0_dp
             end if ! wete
          end do
       end do
       !endif !windmodel
 
       if (jampi == 1) then
-         if (jatimer == 1) call starttimer(IXBEACH)
+         if (jatimer == 1) then
+            call starttimer(IXBEACH)
+         end if
          call update_ghosts(ITYPE_Sall, Ntheta, Ndx, ee1, ierr)
          call update_ghosts(ITYPE_Sall, Ntheta, Ndx, rr, ierr)
-         if (jatimer == 1) call stoptimer(IXBEACH)
+         if (jatimer == 1) then
+            call stoptimer(IXBEACH)
+         end if
       end if
 
       !   OUTPUT Bulk quantities
       do k = 1, ndx ! stack
          E(k) = sum(ee1(:, k), dim=1) * dtheta
-         H(k) = sqrt(8.d0 * E(k) / rhomean / ag)
+         H(k) = sqrt(8.0_dp * E(k) / rhomean / ag)
       end do
       Dtot = D + Df
 
@@ -1209,7 +1214,7 @@ contains
       else ! need something here for mor
          rsl = sin(beta)
          do k = 1, ndx
-            R(k) = 9d-1 * rhomean * ag * rsl * H(k)**2 ! Martins 2018
+            R(k) = 9.0e-1_dp * rhomean * ag * rsl * H(k)**2 ! Martins 2018
             DR(k) = 2.0 * ag * beta * R(k) / cwav(k)
          end do
       end if
@@ -1218,34 +1223,40 @@ contains
       ! For single_dir, this is done in stationary part
       if (single_dir == 0) then
          do k = 1, ndx
-            thetamean(k) = (sum(ee1(:, k) * thet(:, k), dim=1) / dble(ntheta)) / (max(sum(ee1(:, k), dim=1), 0.00001d0) / dble(ntheta))
+            thetamean(k) = (sum(ee1(:, k) * thet(:, k), dim=1) / real(ntheta, kind=dp)) / (max(sum(ee1(:, k), dim=1), 0.00001_dp) / real(ntheta, kind=dp))
          end do
          !
          ! Copy thetamean to first dry cells next to waterline by simple averaging
          do k = 1, ndx
-            if (hs(k) > epshu) cycle
+            if (hs(k) > epshu) then
+               cycle
+            end if
             n = 0
-            cost = 0d0
-            sint = 0d0
+            cost = 0.0_dp
+            sint = 0.0_dp
             do L = 1, nd(k)%lnx
                Lf = abs(L)
                k1 = ln(1, Lf)
                if (k1 == k) then
                   k2 = ln(2, Lf)
-                  if (hs(k2) <= epshu) cycle
+                  if (hs(k2) <= epshu) then
+                     cycle
+                  end if
                   n = n + 1
                   cost = cost + cos(thetamean(k2))
                   sint = sint + sin(thetamean(k2))
                else
                   k2 = k
-                  if (hs(k1) <= epshu) cycle
+                  if (hs(k1) <= epshu) then
+                     cycle
+                  end if
                   n = n + 1
                   cost = cost + cos(thetamean(k1))
                   sint = sint + sin(thetamean(k1))
                end if
             end do
             if (n > 0) then
-               thetamean(k) = atan2(sint / dble(n), cost / dble(n))
+               thetamean(k) = atan2(sint / real(n, kind=dp), cost / real(n, kind=dp))
             end if
          end do
       end if
@@ -1253,7 +1264,7 @@ contains
       ! Energy limitation roller; strictly speaking, I would expect this after advection step
       gammax_correct = .false.
       if (rollergammax == 1) then
-         RH = sqrt(8d0 * R / rhomean / ag)
+         RH = sqrt(8.0_dp * R / rhomean / ag)
          where (RH > gammaxxb * hhw .and. wete == 1)
             gammax_correct = .true.
          elsewhere
@@ -1317,8 +1328,8 @@ contains
       !   Radiation stresses
       nwav = cgwav / max(cwav, sqrt(ag * epshu))
       do k = 1, ndx ! stack
-         Sxx(k) = (nwav(k) * sum((1.d0 + costh(:, k)**2) * ee1(:, k), dim=1) - .5d0 * sum(ee1(:, k), dim=1)) * dtheta ! wave energy contribution
-         Syy(k) = (nwav(k) * sum((1.d0 + sinth(:, k)**2) * ee1(:, k), dim=1) - .5d0 * sum(ee1(:, k), dim=1)) * dtheta
+         Sxx(k) = (nwav(k) * sum((1.0_dp + costh(:, k)**2) * ee1(:, k), dim=1) - 0.5_dp * sum(ee1(:, k), dim=1)) * dtheta ! wave energy contribution
+         Syy(k) = (nwav(k) * sum((1.0_dp + sinth(:, k)**2) * ee1(:, k), dim=1) - 0.5_dp * sum(ee1(:, k), dim=1)) * dtheta
          Sxy(k) = nwav(k) * sum(sinth(:, k) * costh(:, k) * ee1(:, k), dim=1) * dtheta
 
          Sxx(k) = Sxx(k) + sum((costh(:, k)**2) * rr(:, k), dim=1) * dtheta ! Roller contribution
@@ -1327,12 +1338,12 @@ contains
       end do
 
       !   Wave forces Fx, Fy, value on links
-      Fx_cc = 0d0
-      Fy_cc = 0d0
-      dsxxdx = 0d0
-      dsyydy = 0d0
-      dsxydy = 0d0
-      dsxydx = 0d0
+      Fx_cc = 0.0_dp
+      Fy_cc = 0.0_dp
+      dsxxdx = 0.0_dp
+      dsyydy = 0.0_dp
+      dsxydy = 0.0_dp
+      dsxydx = 0.0_dp
       ! Jipjanneke
       do L = 1, lnx
          k1 = ln(1, L)
@@ -1357,37 +1368,45 @@ contains
 
       ! Open boundaries: Neumann
       do n = 1, nbndw ! not necessary, no wave bnd without open flow bnd
-         k1 = kbndw(1, n); k2 = kbndw(2, n)
+         k1 = kbndw(1, n)
+         k2 = kbndw(2, n)
          Fx_cc(k1) = Fx_cc(k2)
          Fy_cc(k1) = Fy_cc(k2)
       end do
 
       do n = 1, nbndz
-         k1 = kbndz(1, n); k2 = kbndz(2, n)
+         k1 = kbndz(1, n)
+         k2 = kbndz(2, n)
          Fx_cc(k1) = Fx_cc(k2)
          Fy_cc(k1) = Fy_cc(k2)
       end do
 
       do n = 1, nbndu
-         k1 = kbndu(1, n); k2 = kbndu(2, n)
+         k1 = kbndu(1, n)
+         k2 = kbndu(2, n)
          Fx_cc(k1) = Fx_cc(k2)
          Fy_cc(k1) = Fy_cc(k2)
       end do
 
       if (jampi == 1) then
-         if (jatimer == 1) call starttimer(IXBEACH)
+         if (jatimer == 1) then
+            call starttimer(IXBEACH)
+         end if
          call update_ghosts(ITYPE_SALL, 1, ndx, Fx_cc, ierror)
          call update_ghosts(ITYPE_SALL, 1, ndx, Fy_cc, ierror)
-         if (jatimer == 1) call stoptimer(IXBEACH)
+         if (jatimer == 1) then
+            call stoptimer(IXBEACH)
+         end if
       end if
 
       ! Compute wavfu for 2D runs;
       ! For 3D, this is done in setwavfu using results of xbeach_wave_compute_flowforcing3D; we only need the Fx_cc, Fy_cc values
       if (kmx == 0) then
          do L = 1, Lnx
-            k1 = ln(1, L); k2 = ln(2, L)
-            Fx(L) = (acL(L) * Fx_cc(k1) + (1d0 - acL(L)) * Fx_cc(k2))
-            Fy(L) = (acL(L) * Fy_cc(k1) + (1d0 - acL(L)) * Fy_cc(k2))
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            Fx(L) = (acL(L) * Fx_cc(k1) + (1.0_dp - acL(L)) * Fx_cc(k2))
+            Fy(L) = (acL(L) * Fy_cc(k1) + (1.0_dp - acL(L)) * Fy_cc(k2))
             !rhoL     = ( acL(L)*rho(k1) + (1d0-acL(L))*rho(k2) )
             rhoL = rhomean
             wavfu(L) = (Fx(L) * csu(L) + Fy(L) * snu(L)) / (rhoL * max(hu(L), hminlw))
@@ -1395,8 +1414,8 @@ contains
          end do
 
          where (hu <= epshu)
-            wavfu = 0d0
-            wavfv = 0d0
+            wavfu = 0.0_dp
+            wavfv = 0.0_dp
          end where
       end if
 
@@ -1415,17 +1434,19 @@ contains
       integer :: k, k1, k2, kk, L, itheta
       real(kind=dp) :: dum, cgwavL, cwuL, dt, kkcflmxloc
 
-      dtmaxwav = huge(0d0)
+      dtmaxwav = huge(0.0_dp)
       kkcflmxloc = 0
 
       ! Calculate max CFL based timestep for wave calculation
       do k = 1, ndx
          if (jampi == 1) then
             !            do not include ghost cells
-            if (idomain(k) /= my_rank) cycle
+            if (idomain(k) /= my_rank) then
+               cycle
+            end if
          end if
          do itheta = 1, ntheta
-            dum = 0.d0
+            dum = 0.0_dp
             do kk = 1, nd(k)%lnx
                L = abs(nd(k)%ln(kk))
                k1 = ln(1, L)
@@ -1434,20 +1455,22 @@ contains
                cgwavL = acL(L) * cgwav(k1) + (1 - acL(L)) * cgwav(k2)
                cwuL = cgwavL * (csu(L) * csx(itheta) + snu(L) * snx(itheta))
 
-               if (ln(2, L) == k) cwuL = -cwuL
+               if (ln(2, L) == k) then
+                  cwuL = -cwuL
+               end if
 
                if (cwuL >= 0.) then ! outgoing velocities only
                   dum = dum + cwuL * wu(L)
                end if
             end do
-            if (dum > tiny(0d0)) then
+            if (dum > tiny(0.0_dp)) then
                dt = cflmx * ba(k) / dum
                if (dt < dtmaxwav) then
                   dtmaxwav = dt
                end if
             end if
             dum = ctheta(itheta, k) / dtheta
-            if (dum > tiny(0d0)) then
+            if (dum > tiny(0.0_dp)) then
                dt = cflmx / dum
                if (dt < dtmaxwav) then
                   dtmaxwav = dt
@@ -1512,10 +1535,10 @@ contains
          if (wci > 0) then
             allocate (ulocal(1:ndx))
             allocate (vlocal(1:ndx))
-            L0 = 0.d0
-            L1 = -huge(0.d0)
+            L0 = 0.0_dp
+            L1 = -huge(0.0_dp)
          end if
-         Trepold = 0.d0
+         Trepold = 0.0_dp
          call xbeach_dispersion(hhw) ! at initialisation, water depth is always hhw==hs
          km = kwav
       end if
@@ -1541,8 +1564,8 @@ contains
       end select
 
       if (wci > 0) then
-         arg = min(100.0d0, km * hh)
-         fac = (1.d0 + ((km * H / 2.d0)**2)) ! use deep water correction
+         arg = min(100.0_dp, km * hh)
+         fac = (1.0_dp + ((km * H / 2.0_dp)**2)) ! use deep water correction
          do n = 1, nbndw
             kb = kbndw(1, n)
             sigmwav(kb) = sqrt(ag * km(kb) * tanh(arg(kb)))
@@ -1551,31 +1574,31 @@ contains
          kmx = km * cos(thetamean)
          kmy = km * sin(thetamean)
          wm = sigmwav + kmx * ulocal * min( &
-              min(hh / hwci, 1.d0), &
-              min(1.d0, (1.d0 - hh / hwcimax)) &
+              min(hh / hwci, 1.0_dp), &
+              min(1.0_dp, (1.0_dp - hh / hwcimax)) &
               ) + &
               kmy * vlocal * min( &
-              min(hh / hwci, 1.d0), &
-              min(1.d0, (1.d0 - hh / hwcimax)) &
+              min(hh / hwci, 1.0_dp), &
+              min(1.0_dp, (1.0_dp - hh / hwcimax)) &
               )
 !
-         where (km > 0.01d0)
+         where (km > 0.01_dp)
             cwav = sigmwav / km
-            cgwav = cwav * (0.5d0 + arg / sinh(2 * arg)) * sqrt(fac) ! &  to include more
+            cgwav = cwav * (0.5_dp + arg / sinh(2 * arg)) * sqrt(fac) ! &  to include more
             !                                   + km*(H/2)**2*sqrt(max(par%g*km*tanh(arg),0.001d0))/sqrt(max(fac,0.001d0)) ! include wave steepness
-            nwav = 0.5d0 + km * hh / sinh(2 * max(km, 0.00001d0) * hh)
+            nwav = 0.5_dp + km * hh / sinh(2 * max(km, 0.00001_dp) * hh)
          elsewhere
             cwav = sqrt(ag * epshu)
             cgwav = sqrt(ag * epshu)
-            nwav = 1.d0
+            nwav = 1.0_dp
          end where
          !
-         cgym = cgwav * sin(thetamean) + vlocal * min(min(hh / hwci, 1.d0), min(1.d0, (1.d0 - hh / hwcimax)))
-         cgxm = cgwav * cos(thetamean) + ulocal * min(min(hh / hwci, 1.d0), min(1.d0, (1.d0 - hh / hwcimax)))
+         cgym = cgwav * sin(thetamean) + vlocal * min(min(hh / hwci, 1.0_dp), min(1.0_dp, (1.0_dp - hh / hwcimax)))
+         cgxm = cgwav * cos(thetamean) + ulocal * min(min(hh / hwci, 1.0_dp), min(1.0_dp, (1.0_dp - hh / hwcimax)))
          !
          ! Compute slopes of wave number in cell centres
-         dkmydx = 0d0
-         dkmxdy = 0d0
+         dkmydx = 0.0_dp
+         dkmxdy = 0.0_dp
          do L = 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)
@@ -1586,40 +1609,43 @@ contains
          end do
          !
          ! Calculate advection part
-         advel = 1d0
-         advec = 0d0
+         advel = 1.0_dp
+         advec = 0.0_dp
          call advec_upw_bulk(thetamean, wm, advel, advec)
          do k = 1, ndx
             km(k) = km(k) - dts * advec(k) * bai(k)
             kmx(k) = kmx(k) - dts * cgym(k) * (dkmydx(k) - dkmxdy(k))
             kmy(k) = kmy(k) + dts * cgxm(k) * (dkmydx(k) - dkmxdy(k))
             km(k) = km(k) + hypot(kmx(k), kmy(k))
-            km(k) = min(km(k), 25d0)
+            km(k) = min(km(k), 25.0_dp)
          end do
          !
          do n = 1, nbndw
-            k1 = kbndw(1, n); k2 = kbndw(2, n)
+            k1 = kbndw(1, n)
+            k2 = kbndw(2, n)
             km(k1) = km(k2)
          end do
          !
          do n = 1, nbndz
-            k1 = kbndz(1, n); k2 = kbndz(2, n)
+            k1 = kbndz(1, n)
+            k2 = kbndz(2, n)
             km(k1) = km(k2)
          end do
          !
          do n = 1, nbndu
-            k1 = kbndu(1, n); k2 = kbndu(2, n)
+            k1 = kbndu(1, n)
+            k2 = kbndu(2, n)
             km(k1) = km(k2)
          end do
          !
          ! non-linear dispersion
-         arg = min(100.0d0, km * hh)
-         arg = max(arg, 0.0001d0)
+         arg = min(100.0_dp, km * hh)
+         arg = max(arg, 0.0001_dp)
          !
-         fac = (1.d0 + ((km * H / 2.d0)**2))
+         fac = (1.0_dp + ((km * H / 2.0_dp)**2))
          !
          sigmwav = sqrt(ag * km * tanh(arg) * fac)
-         sigmwav = max(sigmwav, 0.010d0)
+         sigmwav = max(sigmwav, 0.010_dp)
          !  update intrinsic frequency
          do itheta = 1, ntheta
             sigt(itheta, :) = sigmwav
@@ -1629,9 +1655,9 @@ contains
          kwav = km
       else
          ! check if we need to recompute sigm and sigt
-         if (abs(Trep - Trepold) / Trep > 1d-4) then
+         if (abs(Trep - Trepold) / Trep > 1.0e-4_dp) then
             Trepold = Trep
-            sigmwav = 2d0 * pi / Trep
+            sigmwav = 2.0_dp * pi / Trep
             do itheta = 1, ntheta
                sigt(itheta, :) = sigmwav
             end do
@@ -1689,13 +1715,15 @@ contains
       integer :: LL1, LL2, n, lunfil
 
       ierror = 1
-      if (.not. allocated(dist)) allocate (dist(1:ntheta), factor(1:ntheta), e01(1:ntheta))
+      if (.not. allocated(dist)) then
+         allocate (dist(1:ntheta), factor(1:ntheta), e01(1:ntheta))
+      end if
       !
-      eeout = 0d0
-      uin = 0d0
-      vin = 0d0
-      qxbc = 0d0
-      qybc = 0d0
+      eeout = 0.0_dp
+      uin = 0.0_dp
+      vin = 0.0_dp
+      qxbc = 0.0_dp
+      qybc = 0.0_dp
       !
       !  note: also in xbeach_spectral_wave_init
       call get_hboundary(hboundary)
@@ -1733,10 +1761,12 @@ contains
          end if
          !
          do n = 1, nwbnd
-            Trep = 1d-1 ! safety for max reduction below
+            Trep = 1.0e-1_dp ! safety for max reduction below
             LL1 = L1wbnd(n)
             LL2 = L2wbnd(n)
-            if (LL1 > LL2) cycle
+            if (LL1 > LL2) then
+               cycle
+            end if
             if (jampi == 1) then
                !k = ln(2,LL1)
                !if (.not.(idomain(k)==my_rank) .or. LL2==0) then     ! then not a boundary domain, second check is safety
@@ -1747,7 +1777,7 @@ contains
             waveBoundaryParameters(n)%hboundary = hboundary(n)
             waveBoundaryParameters(n)%randomseed = randomseed(n)
 
-            call realloc(ees, [ntheta_s, LL2 - LL1 + 1], keepExisting=.false., fill=0d0)
+            call realloc(ees, [ntheta_s, LL2 - LL1 + 1], keepExisting=.false., fill=0.0_dp)
 
             call create_incident_waves_surfbeat(LL2 - LL1 + 1, n, &
                                                 waveBoundaryParameters(n)%ntheta, time0, &
@@ -1761,7 +1791,7 @@ contains
                                                 )
             ! Watch out: Hbc is Hm0
             Trep = Tbc
-            dir0 = mod(270d0 - Dbc / pi * 180d0, 360d0) ! for single_dir and absgen_bc
+            dir0 = mod(270.0_dp - Dbc / pi * 180.0_dp, 360.0_dp) ! for single_dir and absgen_bc
             if (single_dir > 0) then
                ee_s(:, LL1:LL2) = ees
             end if
@@ -1806,7 +1836,9 @@ contains
                if (ier /= 0) then
                   call report_file_read_error('bc/gen.ezs')
                end if
-               if (bline == '*') goto 5
+               if (bline == '*') then
+                  goto 5
+               end if
                read (lunfil, *, iostat=ier) nt ! no of timesteps
                if (ier /= 0) then
                   call report_file_read_error('bc/gen.ezs')
@@ -1831,7 +1863,9 @@ contains
                if (ier /= 0) then
                   call report_file_read_error('bc/gen.ezs')
                end if
-               if (bline == '*') goto 6
+               if (bline == '*') then
+                  goto 6
+               end if
                read (lunfil, *, iostat=ier) nt
                if (ier /= 0) then
                   call report_file_read_error('bc/gen.ezs')
@@ -1859,8 +1893,12 @@ contains
                Hrms = Hm0 / sqrt(2.0_dp)
                m = 2.0_dp * spreadpar
                theta0 = (1.5_dp * pi) - dir0 * atan(1.0_dp) / 45.0_dp
-               if (theta0 > pi) theta0 = theta0 - 2.0_dp * pi
-               if (theta0 < -pi) theta0 = theta0 + 2.0_dp * pi
+               if (theta0 > pi) then
+                  theta0 = theta0 - 2.0_dp * pi
+               end if
+               if (theta0 < -pi) then
+                  theta0 = theta0 + 2.0_dp * pi
+               end if
                newstatbc = 1
 
                do itheta = 1, ntheta
@@ -1889,8 +1927,9 @@ contains
             else
                factor = 0.0_dp
             end if
-            e01 = factor * E0; ! 1:ntheta ding
-            e01 = max(e01, 0.0_dp); 
+            e01 = factor * E0
+            ! 1:ntheta ding
+            e01 = max(e01, 0.0_dp)
             if (jampi == 0) then
                if (nbndw > 0) then
                   Llong = Tlong * maxval(cgwav(kbndw(1, 1:nbndw))) !! cg at some boundary point, xbeach_dispersion(). This implies that this value is the same everywhere!!
@@ -1922,8 +1961,12 @@ contains
                bcendtime = bcendtime + bcdur
                theta0 = (1.5_dp * pi) - dir0 * atan(1.0_dp) / 45.0_dp
 
-               if (theta0 > 2.0_dp * pi) theta0 = theta0 - 2.0_dp * pi
-               if (theta0 < -2.0_dp * pi) theta0 = theta0 + 2.0_dp * pi
+               if (theta0 > 2.0_dp * pi) then
+                  theta0 = theta0 - 2.0_dp * pi
+               end if
+               if (theta0 < -2.0_dp * pi) then
+                  theta0 = theta0 + 2.0_dp * pi
+               end if
                newstatbc = 1
 
                !if (windmodel==0) then
@@ -1957,8 +2000,8 @@ contains
                else
                   factor = 0.0_dp
                end if
-               e01 = factor * E0; 
-               e01 = max(e01, 0.0_dp); 
+               e01 = factor * E0
+               e01 = max(e01, 0.0_dp)
             elseif (trim(instat) == 'reuse') then
                close (71) ! to do, newlun
                close (72)
@@ -2008,7 +2051,8 @@ contains
                              min(time0 / taper, 1.0_dp)
                if (nbndu > 0) then
                   Lb = kbndw2kbndu(n)
-                  bl1 = bl(kb); bl2 = bl(ki); 
+                  bl1 = bl(kb)
+                  bl2 = bl(ki)
                   ht = max(zbndu(Lb) - 0.5_dp * (bl1 + bl2), epshu) ! mean depth, not instantaneous
                   em = (sum(0.5_dp * e01)) * dtheta * min(time0 / taper, 1.0_dp)
                   ei = sum(zbndw(:, n), dim=1) * dtheta
@@ -2051,7 +2095,8 @@ contains
 
                if (nbndu > 0) then
                   Lb = kbndw2kbndu(n)
-                  bl1 = bl(kb); bl2 = bl(ki); 
+                  bl1 = bl(kb)
+                  bl2 = bl(ki)
                   ht = max(zbndu(Lb) - 0.5_dp * (bl1 + bl2), epshu) ! mean depth, not instantaneous
                   em = Emean * min(time0 / taper, 1.0_dp)
                   ei = sum(zbndw(:, n), dim=1) * dtheta
@@ -2093,7 +2138,8 @@ contains
                zbndw(:, n) = e01 * E1 / max(Emean, 0.000001_dp) * min(time0 / taper, 1.0_dp)
                if (nbndu > 0) then
                   Lb = kbndw2kbndu(n)
-                  bl1 = bl(kb); bl2 = bl(ki); 
+                  bl1 = bl(kb)
+                  bl2 = bl(ki)
                   ht = max(zbndu(Lb) - 0.5_dp * (bl1 + bl2), epshu) ! mean depth, not instantaneous
                   if (freewave == 1) then
                      uin(kbndw2kbndu(n)) = sqrt(ag / ht) * bi(n)
@@ -2111,9 +2157,15 @@ contains
       end if
 
       ! safety on processes included
-      if (allocated(uin)) uin = lwave * (order - 1) * uin
-      if (allocated(vin)) vin = lwave * (order - 1) * vin
-      if (allocated(zbndw)) zbndw = swave * zbndw
+      if (allocated(uin)) then
+         uin = lwave * (order - 1) * uin
+      end if
+      if (allocated(vin)) then
+         vin = lwave * (order - 1) * vin
+      end if
+      if (allocated(zbndw)) then
+         zbndw = swave * zbndw
+      end if
 
       ierror = 0
 
@@ -2234,7 +2286,7 @@ contains
          D = Qb * 2.0_dp * alpha * rhomean * ag * H**2 / 8.0_dp
          !
          if (wci /= 0 .or. windmodel == 1) then
-            D = D * sigmwav / 2.0_dp / pi; 
+            D = D * sigmwav / 2.0_dp / pi
          else
             D = D / Trep
          end if
@@ -2363,7 +2415,8 @@ contains
 
       advec = 0.0_dp
       do L = 1, lnx ! upwind (supq) + limited high order (dsq), loop over link
-         k1 = ln(1, L); k2 = ln(2, L) ! linker en rechtercelnr geassocieerd aan de links
+         k1 = ln(1, L)
+         k2 = ln(2, L) ! linker en rechtercelnr geassocieerd aan de links
          velocL = acL(L) * veloc(k1) + (1.0_dp - acL(L)) * veloc(k2)
 
          do itheta = 1, ntheta
@@ -2373,9 +2426,17 @@ contains
             ! inproduct cgx*csu+cgy*snu
 
             if (cwuL > 0) then !   ->      ds1   ds2
-               k = k1; kd = k2; is = 1; half = 1.0_dp - acl(L); ip = 0 !   ->   ku     k     kd
+               k = k1
+               kd = k2
+               is = 1
+               half = 1.0_dp - acl(L)
+               ip = 0 !   ->   ku     k     kd
             else !   <-      ds2   ds1
-               k = k2; kd = k1; is = -1; half = acl(L); ip = 3 !   <-   kd     k     ku
+               k = k2
+               kd = k1
+               is = -1
+               half = acl(L)
+               ip = 3 !   <-   kd     k     ku
             end if ! acL = linkse dx fractie van afstand tussen flownodes (slide 83)
 
             fluxvel1 = is * cwuL * wu(L) ! snelheidsbijdrage linkse cel
@@ -2387,13 +2448,15 @@ contains
                ku = klnup(1 + ip, L) ! pointer upwind cel horende bij link L
 
                if (ku /= 0) then
-                  kl2s = klnup(2 + ip, L); kl2 = abs(kl2s) !
+                  kl2s = klnup(2 + ip, L)
+                  kl2 = abs(kl2s) !
 
                   if (ku < 0) then
                      waku = quant(itheta, abs(ku)) ! pointer naar cel negatief?
                   else
                      kl1 = ku
-                     sl1 = slnup(1 + ip, L); sl2 = slnup(2 + ip, L) ! link upwind cell weight
+                     sl1 = slnup(1 + ip, L)
+                     sl2 = slnup(2 + ip, L) ! link upwind cell weight
                      waku = quant(itheta, kl1) * sl1 + quant(itheta, kl2) * sl2 ! gewogen gemiddelde upwind waarden
                   end if
 
@@ -2407,7 +2470,7 @@ contains
                      ds = cf * dslim(ds1, ds2, limtypw) ! reconstructie van totale slope volgens 1 van de 4 schema's                                            ! centraal schema
                      !
                      if (limtypw == 99) then
-                        ds = cf * dlimiter_nonequi(ds1, ds2, half, 1d0) * ds2
+                        ds = cf * dlimiter_nonequi(ds1, ds2, half, 1.0_dp) * ds2
                      end if
                      !
                      if (abs(ds) > eps10) then ! als celgemiddelde niet volstaat
@@ -2476,17 +2539,26 @@ contains
       real(kind=dp), intent(in), dimension(ndx) :: quant
       real(kind=dp), intent(out), dimension(ndx) :: advec
 
-      advec = 0d0
+      advec = 0.0_dp
       do L = 1, lnx ! upwind (supq) + limited high order (dsq), loop over link
-         k1 = ln(1, L); k2 = ln(2, L) ! linker en rechtercelnr geassocieerd aan de links
-         velocL = acL(L) * veloc(k1) + (1d0 - acL(L)) * veloc(k2)
+         k1 = ln(1, L)
+         k2 = ln(2, L) ! linker en rechtercelnr geassocieerd aan de links
+         velocL = acL(L) * veloc(k1) + (1.0_dp - acL(L)) * veloc(k2)
 
          cwuL = velocL * (csu(L) * cos(thetamean(k1)) + snu(L) * sin(thetamean(k1))) ! met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
 
          if (cwuL > 0) then !   ->      ds1   ds2
-            k = k1; kd = k2; is = 1; half = 1d0 - acl(L); ip = 0 !   ->   ku     k     kd
+            k = k1
+            kd = k2
+            is = 1
+            half = 1.0_dp - acl(L)
+            ip = 0 !   ->   ku     k     kd
          else !   <-      ds2   ds1
-            k = k2; kd = k1; is = -1; half = acl(L); ip = 3 !   <-   kd     k     ku
+            k = k2
+            kd = k1
+            is = -1
+            half = acl(L)
+            ip = 3 !   <-   kd     k     ku
          end if ! acL = linkse dx fractie van afstand tussen flownodes (slide 83)
 
          fluxvel = is * cwuL * wu(L)
@@ -2543,20 +2615,20 @@ contains
       real(kind=dp), dimension(ntheta, ndx), intent(in) :: veloc, quan
       real(kind=dp), dimension(ntheta, ndx), intent(out) :: advec
 
-      advec = 0d0
+      advec = 0.0_dp
       if (ntheta > 1) then
          do k = 1, ndx
             do itheta = 2, ntheta - 2
-               ctheta_between = 0.5d0 * (veloc(itheta, k) + veloc(itheta + 1, k))
+               ctheta_between = 0.5_dp * (veloc(itheta, k) + veloc(itheta + 1, k))
                if (ctheta_between > 0) then
-                  eeup = 1.5d0 * quan(itheta, k) - .5 * quan(itheta - 1, k)
-                  if (eeup < 0.d0) then
+                  eeup = 1.5_dp * quan(itheta, k) - .5 * quan(itheta - 1, k)
+                  if (eeup < 0.0_dp) then
                      eeup = quan(itheta, k)
                   end if
                   fluxtheta(itheta) = eeup * ctheta_between
                else
-                  eeup = 1.5d0 * quan(itheta + 1, k) - .5 * quan(itheta + 2, k)
-                  if (eeup < 0.d0) then
+                  eeup = 1.5_dp * quan(itheta + 1, k) - .5 * quan(itheta + 2, k)
+                  if (eeup < 0.0_dp) then
                      eeup = quan(itheta + 1, k)
                   end if
                   fluxtheta(itheta) = eeup * ctheta_between
@@ -2568,27 +2640,31 @@ contains
             if (ctheta_between > 0) then
                fluxtheta(itheta) = quan(itheta, k) * ctheta_between
             else
-               eeup = 1.5d0 * quan(itheta + 1, k) - .5 * quan(itheta + 2, k)
-               if (eeup < 0.d0) eeup = quan(itheta + 1, k)
+               eeup = 1.5_dp * quan(itheta + 1, k) - .5 * quan(itheta + 2, k)
+               if (eeup < 0.0_dp) then
+                  eeup = quan(itheta + 1, k)
+               end if
                fluxtheta(itheta) = eeup * ctheta_between
             end if
 
             itheta = ntheta - 1 ! only compute for itheta==ntheta-1
             ctheta_between = .5 * (veloc(itheta + 1, k) + veloc(itheta, k))
             if (ctheta_between > 0) then
-               eeup = 1.5d0 * quan(itheta, k) - .5 * quan(itheta - 1, k)
-               if (eeup < 0.d0) eeup = quan(itheta, k)
+               eeup = 1.5_dp * quan(itheta, k) - .5 * quan(itheta - 1, k)
+               if (eeup < 0.0_dp) then
+                  eeup = quan(itheta, k)
+               end if
                fluxtheta(itheta) = eeup * ctheta_between
             else
                eeup = quan(itheta + 1, k)
                fluxtheta(itheta) = eeup * ctheta_between
             end if
 
-            advec(1, k) = (fluxtheta(1) - 0.d0) / dtheta ! No flux across lower boundary theta grid
+            advec(1, k) = (fluxtheta(1) - 0.0_dp) / dtheta ! No flux across lower boundary theta grid
             do itheta = 2, ntheta - 1
                advec(itheta, k) = (fluxtheta(itheta) - fluxtheta(itheta - 1)) / dtheta
             end do
-            advec(ntheta, k) = (0.d0 - fluxtheta(ntheta - 1)) / dtheta ! No flux across upper boundary theta grid
+            advec(ntheta, k) = (0.0_dp - fluxtheta(ntheta - 1)) / dtheta ! No flux across upper boundary theta grid
          end do
       end if
 
@@ -2613,7 +2689,9 @@ contains
 
       ierror = 1
 
-      if (nbndu < 1 .and. jampi == 0) goto 1234
+      if (nbndu < 1 .and. jampi == 0) then
+         goto 1234
+      end if
 
       call xbeach_absgen_bc()
 
@@ -2678,10 +2756,18 @@ contains
       if (.not. bccreated) then
          bccreated = .true.
          allocate (waveBoundaryParameters(nwbnd), stat=ierr)
-         if (ierr == 0) allocate (randomseed(nwbnd), stat=ierr)
-         if (ierr == 0) allocate (waveBoundaryAdministration(nwbnd), stat=ierr)
-         if (ierr == 0) allocate (waveBoundaryTimeSeries(nwbnd), stat=ierr)
-         if (ierr == 0) allocate (waveSpectrumAdministration(nwbnd), stat=ierr)
+         if (ierr == 0) then
+            allocate (randomseed(nwbnd), stat=ierr)
+         end if
+         if (ierr == 0) then
+            allocate (waveBoundaryAdministration(nwbnd), stat=ierr)
+         end if
+         if (ierr == 0) then
+            allocate (waveBoundaryTimeSeries(nwbnd), stat=ierr)
+         end if
+         if (ierr == 0) then
+            allocate (waveSpectrumAdministration(nwbnd), stat=ierr)
+         end if
       end if
 
       if (random == 1) then
@@ -2708,7 +2794,7 @@ contains
       allocate (ibndspec(nspectrumloc))
       allocate (xx(nspectrumloc))
       allocate (yy(nspectrumloc))
-      dist = 1d99
+      dist = 1.0e99_dp
       ibndspec = 0
       xx = dmiss
       yy = dmiss
@@ -2763,7 +2849,9 @@ contains
       do ibnd = 1, nwbnd
          LL1 = L1wbnd(ibnd)
          LL2 = L2wbnd(ibnd)
-         if (LL1 > LL2) cycle
+         if (LL1 > LL2) then
+            cycle
+         end if
 
          waveBoundaryParameters(ibnd)%masterFileName = bcfile
          waveBoundaryParameters(ibnd)%np = LL2 - LL1 + 1
@@ -2773,10 +2861,18 @@ contains
          waveBoundaryParameters(ibnd)%y0 = yref0
          waveBoundaryParameters(ibnd)%hboundary = hboundary(ibnd)
 
-         if (allocated(waveBoundaryParameters(ibnd)%xb)) deallocate (waveBoundaryParameters(ibnd)%xb)
-         if (allocated(waveBoundaryParameters(ibnd)%yb)) deallocate (waveBoundaryParameters(ibnd)%yb)
-         if (allocated(waveBoundaryParameters(ibnd)%theta)) deallocate (waveBoundaryParameters(ibnd)%theta)
-         if (allocated(waveBoundaryParameters(ibnd)%theta_s)) deallocate (waveBoundaryParameters(ibnd)%theta_s)
+         if (allocated(waveBoundaryParameters(ibnd)%xb)) then
+            deallocate (waveBoundaryParameters(ibnd)%xb)
+         end if
+         if (allocated(waveBoundaryParameters(ibnd)%yb)) then
+            deallocate (waveBoundaryParameters(ibnd)%yb)
+         end if
+         if (allocated(waveBoundaryParameters(ibnd)%theta)) then
+            deallocate (waveBoundaryParameters(ibnd)%theta)
+         end if
+         if (allocated(waveBoundaryParameters(ibnd)%theta_s)) then
+            deallocate (waveBoundaryParameters(ibnd)%theta_s)
+         end if
 
          ! Now allocate arrays to the correct size and set values
          allocate (waveBoundaryParameters(ibnd)%xb(waveBoundaryParameters(ibnd)%np))
@@ -2794,7 +2890,7 @@ contains
 
          ! Ensure all theta directions are between 0 and 2pi, required for some trig. on some compilers
          do itheta = 1, ntheta
-            waveBoundaryParameters(ibnd)%theta(itheta) = mod(waveBoundaryParameters(ibnd)%theta(itheta) + twopi, 8.d0 * atan(1.d0))
+            waveBoundaryParameters(ibnd)%theta(itheta) = mod(waveBoundaryParameters(ibnd)%theta(itheta) + twopi, 8.0_dp * atan(1.0_dp))
          end do
 
          ! Allocate space for the random seed. This seed should be identical on all processes
@@ -2812,7 +2908,7 @@ contains
             waveSpectrumAdministration(ibnd)%bccount = 0
             ! Initialize bcendtime to zero.
             ! Stored and defined in spectral_wave_bc_module
-            waveSpectrumAdministration(ibnd)%spectrumendtime = 0.d0
+            waveSpectrumAdministration(ibnd)%spectrumendtime = 0.0_dp
             ! Initialise lastwaveheight to zero
             ! Stored and defined in wave_boundary_main_module
             allocate (waveSpectrumAdministration(ibnd)%lastwaveelevation(waveBoundaryParameters(ibnd)%np, &
@@ -2843,8 +2939,8 @@ contains
                   ii = ii + 1
                   waveSpectrumAdministration(ibnd)%nspectra = ii
                   call realloc(waveSpectrumAdministration(ibnd)%ispectra, ii, keepExisting=.true., fill=-999)
-                  call realloc(waveSpectrumAdministration(ibnd)%xspec, ii, keepExisting=.true., fill=-999d0)
-                  call realloc(waveSpectrumAdministration(ibnd)%yspec, ii, keepExisting=.true., fill=-999d0)
+                  call realloc(waveSpectrumAdministration(ibnd)%xspec, ii, keepExisting=.true., fill=-999.0_dp)
+                  call realloc(waveSpectrumAdministration(ibnd)%yspec, ii, keepExisting=.true., fill=-999.0_dp)
 !              ugly as hell, but no realloc of derived types available
 !              as number of locations usually small, this should not kill performance
                   if (ii == 1) then
@@ -2890,12 +2986,12 @@ contains
                end do
 
 !           project spectrum locations on polyline
-               drL = 1d99
+               drL = 1.0e99_dp
                do i = 1, waveSpectrumAdministration(ibnd)%nspectra
 
 !              find nearest point on polyline
-                  disall = 1d99
-                  darc = 0d0
+                  disall = 1.0e99_dp
+                  darc = 0.0_dp
                   do ip = 1, NPL - 1
                      xa = XPL(ip)
                      ya = YPL(ip)
@@ -2923,7 +3019,7 @@ contains
                !  compute weights from mesh to spectrum locations
                do i = 1, LL2 - LL1 + 1
                   !  determine arc length along polyline
-                  darc = 0d0
+                  darc = 0.0_dp
                   do ip = 1, kL(i) - 1
                      xa = XPL(ip)
                      ya = YPL(ip)
@@ -2951,12 +3047,12 @@ contains
                   !wavespectrumadministration(ibnd)%kL(i) = iperm(j)
                   wavespectrumadministration(ibnd)%kR(i) = wavespectrumadministration(ibnd)%ispectra(iperm(j))
                   !wavespectrumadministration(ibnd)%kR(i) = iperm(j)
-                  wavespectrumadministration(ibnd)%wL(i) = 1d0
-                  wavespectrumadministration(ibnd)%wR(i) = 0d0
+                  wavespectrumadministration(ibnd)%wL(i) = 1.0_dp
+                  wavespectrumadministration(ibnd)%wR(i) = 0.0_dp
                   if (j + 1 <= waveSpectrumAdministration(ibnd)%nspectra) then
                      wavespectrumadministration(ibnd)%kR(i) = wavespectrumadministration(ibnd)%ispectra(iperm(j + 1))
-                     wavespectrumadministration(ibnd)%wL(i) = min(max(1d0 - (darc - drL(j)) / (drL(j + 1) - drL(j)), 0d0), 1d0)
-                     wavespectrumadministration(ibnd)%wR(i) = 1d0 - wavespectrumadministration(ibnd)%wL(i)
+                     wavespectrumadministration(ibnd)%wL(i) = min(max(1.0_dp - (darc - drL(j)) / (drL(j + 1) - drL(j)), 0.0_dp), 1.0_dp)
+                     wavespectrumadministration(ibnd)%wR(i) = 1.0_dp - wavespectrumadministration(ibnd)%wL(i)
                   end if
                end do ! i
 
@@ -2978,9 +3074,9 @@ contains
                   allocate (wavespectrumadministration(ibnd)%kR(nbndw))
                   allocate (wavespectrumadministration(ibnd)%wR(nbndw))
                   wavespectrumadministration(ibnd)%kL = 1
-                  wavespectrumadministration(ibnd)%wL = 1d0
+                  wavespectrumadministration(ibnd)%wL = 1.0_dp
                   wavespectrumadministration(ibnd)%kR = 1
-                  wavespectrumadministration(ibnd)%wR = 0d0
+                  wavespectrumadministration(ibnd)%wR = 0.0_dp
                else
                   call writelog('ewls', '', 'If nspectrumloc>1 then bcfile should contain spectra locations with LOCLIST header')
                   close (fid)
@@ -2990,16 +3086,16 @@ contains
 
             waveBoundaryAdministration(ibnd)%initialized = .true.
 
-            waveSpectrumAdministration(ibnd)%Hbc = 0d0
-            waveSpectrumAdministration(ibnd)%Tbc = 0d0
-            waveSpectrumAdministration(ibnd)%Dbc = 0d0
+            waveSpectrumAdministration(ibnd)%Hbc = 0.0_dp
+            waveSpectrumAdministration(ibnd)%Tbc = 0.0_dp
+            waveSpectrumAdministration(ibnd)%Dbc = 0.0_dp
 
             close (fid)
 
          end if
 
          if (single_dir > 0) then
-            call realloc(waveSpectrumAdministration(ibnd)%ee_s, [ntheta_s, LL2 - LL1 + 1], keepExisting=.false., fill=0d0)
+            call realloc(waveSpectrumAdministration(ibnd)%ee_s, [ntheta_s, LL2 - LL1 + 1], keepExisting=.false., fill=0.0_dp)
          end if
 
          ! Set time to recompute new boundary condition time series to
@@ -3024,8 +3120,8 @@ contains
 
       real(kind=dp), intent(out) :: xref0, yref0
 
-      xref0 = huge(0d0)
-      yref0 = huge(0d0)
+      xref0 = huge(0.0_dp)
+      yref0 = huge(0.0_dp)
       if (nbndw > 0) then
          xref0 = minval(xbndw(1:nbndw))
          yref0 = minval(ybndw(1:nbndw))
@@ -3035,9 +3131,9 @@ contains
          call reduce_double_min(yref0)
       end if
 
-      if (xref0 == huge(0d0)) then ! nbndw=0 for all subdomains, or in sequential run
-         xref0 = 0d0
-         yref0 = 0d0
+      if (xref0 == huge(0.0_dp)) then ! nbndw=0 for all subdomains, or in sequential run
+         xref0 = 0.0_dp
+         yref0 = 0.0_dp
       end if
    end subroutine get_refpoint
 
@@ -3060,8 +3156,8 @@ contains
       integer :: i, k, k2
       integer :: LL1, LL2, n
 
-      hboundary = 0d0
-      dlength = 0d0
+      hboundary = 0.0_dp
+      dlength = 0.0_dp
       if (jampi == 0) then
          do n = 1, nwbnd
             !     integrate along wave boundary
@@ -3074,10 +3170,10 @@ contains
             end do
 
             !  compute average
-            if (dlength(n) > 0d0) then
+            if (dlength(n) > 0.0_dp) then
                hboundary(n) = hboundary(n) / dlength(n)
             else
-               hboundary(n) = 0d0
+               hboundary(n) = 0.0_dp
             end if
          end do
       else
@@ -3085,7 +3181,9 @@ contains
          do n = 1, nwbnd
             LL1 = L1wbnd(n)
             LL2 = L2wbnd(n)
-            if (LL1 > LL2) cycle
+            if (LL1 > LL2) then
+               cycle
+            end if
             do i = LL1, LL2
                k2 = kbndw(2, i)
                if (idomain(k2) == my_rank) then
@@ -3105,10 +3203,10 @@ contains
          !     compute average
          k = 0
          do k = 1, nwbnd
-            if (dum(2, k) > 0d0) then
+            if (dum(2, k) > 0.0_dp) then
                hboundary(k) = dum(1, k) / dum(2, k)
             else
-               hboundary(k) = 0d0
+               hboundary(k) = 0.0_dp
             end if
          end do
       end if
@@ -3136,7 +3234,7 @@ contains
 
       !> Prepare
       ! set basic water depth for all wave calculations, dependent on wci, single_dir
-      if (deltaH > 0.d0) then
+      if (deltaH > 0.0_dp) then
          hhw = max(hs + deltaH * H, epshu)
       else
          hhw = max(hs, epshu)
@@ -3147,8 +3245,8 @@ contains
       else
          do k = 1, ndx
             gammal = H(k) / hhw(k)
-            if (gammal > 1.d0) then
-               hstokes(k) = deltahmin * (gammal - 1.d0) * H(k) + hhw(k)
+            if (gammal > 1.0_dp) then
+               hstokes(k) = deltahmin * (gammal - 1.0_dp) * H(k) + hhw(k)
             else
                hstokes(k) = hhw(k)
             end if
@@ -3159,7 +3257,7 @@ contains
       ! rhs is calculated based on time0==time1, and dts==dtprev
       select case (trim(instat))
       case ('stat', 'stat_table')
-         if ((abs(mod(time0, wavint)) < 0.001d0 * dts) .or. newstatbc == 1) then
+         if ((abs(mod(time0, wavint)) < 0.001_dp * dts) .or. newstatbc == 1) then
             call xbeach_wave_dispersion(0)
             call xbeach_wave_stationary(0)
             newstatbc = 0
@@ -3170,7 +3268,7 @@ contains
             call update_means_wave_flow()
             !
             ! do refraction
-            if ((abs(mod(time0, wavint)) < 0.001d0 * dts) .or. newstatbc == 1 .or. time0 == dts) then
+            if ((abs(mod(time0, wavint)) < 0.001_dp * dts) .or. newstatbc == 1 .or. time0 == dts) then
                call xbeach_wave_dispersion(1)
                call xbeach_wave_stationary(1)
                newstatbc = 0
@@ -3254,23 +3352,23 @@ contains
       ierror = 1
 
       !if (windmodel .eq. 0) then
-      factime = 1d0 / cats / Trep * dts
+      factime = 1.0_dp / cats / Trep * dts
       !else
       !   factime = 1d0/cats/minval(sigmwav)/2d0/pi*dts
       !endif
 
 !  compute boundary-averaged velocities
       numbnd = 0
-      uave = 0d0
-      vave = 0d0
-      dlengthrm = 0d0
+      uave = 0.0_dp
+      vave = 0.0_dp
+      dlengthrm = 0.0_dp
 
       do n = 1, nbndu
          if (kbndu(4, n) == 5) then
             Lb = kbndu(3, n)
             numbnd = kbndu(5, n)
             if (numbnd > maxnumbnds) then
-               maxnumbnds = max(int(1.2d0 * numbnd), maxnumbnds + 1)
+               maxnumbnds = max(int(1.2_dp * numbnd), maxnumbnds + 1)
                !
                if (jampi == 1) then
                   idum(1) = maxnumbnds
@@ -3278,11 +3376,11 @@ contains
                   maxnumbnds = idum(1)
                end if
                !
-               call realloc(uave, maxnumbnds, keepExisting=.true., fill=0d0)
-               call realloc(vave, maxnumbnds, keepExisting=.true., fill=0d0)
-               call realloc(dlengthrm, maxnumbnds, keepExisting=.true., fill=0d0)
-               call realloc(umeanrm, maxnumbnds, keepExisting=.true., fill=0d0)
-               call realloc(vmeanrm, maxnumbnds, keepExisting=.true., fill=0d0)
+               call realloc(uave, maxnumbnds, keepExisting=.true., fill=0.0_dp)
+               call realloc(vave, maxnumbnds, keepExisting=.true., fill=0.0_dp)
+               call realloc(dlengthrm, maxnumbnds, keepExisting=.true., fill=0.0_dp)
+               call realloc(umeanrm, maxnumbnds, keepExisting=.true., fill=0.0_dp)
+               call realloc(vmeanrm, maxnumbnds, keepExisting=.true., fill=0.0_dp)
             end if
             !
             if (jampi == 0) then
@@ -3316,10 +3414,10 @@ contains
 
       if (nubnd > 0) then
          do n = 1, nubnd
-            uave(n) = uave(n) / max(dlengthrm(n), 1d-16)
-            vave(n) = vave(n) / max(dlengthrm(n), 1d-16)
-            umeanrm(n) = factime * uave(n) + (1d0 - factime) * umeanrm(n)
-            vmeanrm(n) = factime * vave(n) + (1d0 - factime) * vmeanrm(n)
+            uave(n) = uave(n) / max(dlengthrm(n), 1.0e-16_dp)
+            vave(n) = vave(n) / max(dlengthrm(n), 1.0e-16_dp)
+            umeanrm(n) = factime * uave(n) + (1.0_dp - factime) * umeanrm(n)
+            vmeanrm(n) = factime * vave(n) + (1.0_dp - factime) * vmeanrm(n)
          end do
       end if
 
@@ -3338,8 +3436,8 @@ contains
                uin_loc = uin(n) * csu(Lb) + vin(n) * snu(Lb)
                vin_loc = vin(n) * csu(Lb) - uin(n) * snu(Lb)
             else
-               uin_loc = 0d0
-               vin_loc = 0d0
+               uin_loc = 0.0_dp
+               vin_loc = 0.0_dp
             end if
 
             !  check array size
@@ -3351,7 +3449,7 @@ contains
             if (trim(absgentype) == 'abs_1d') then
                ! zbndu for absgen bc is slowly varying tide+surge water level
                hsk = s1(ki) - bl(ki)
-               u1(Lb) = (1d0 + sqrt(ag * hsk) / cgwav(ki)) * uin_loc - sqrt(ag / hsk) * (s1(ki) - zbndu(n)) + umeanrm(numbnd)
+               u1(Lb) = (1.0_dp + sqrt(ag * hsk) / cgwav(ki)) * uin_loc - sqrt(ag / hsk) * (s1(ki) - zbndu(n)) + umeanrm(numbnd)
                s0(kb) = s0(ki)
                s1(kb) = s1(ki)
 
@@ -3362,13 +3460,13 @@ contains
                !
                ht(1) = zbndu(n) - bl(kb)
                ht(2) = zbndu(n) - bl(ki)
-               hum = max(epshu, 0.5d0 * (ht(1) + ht(2)))
+               hum = max(epshu, 0.5_dp * (ht(1) + ht(2)))
                !
                umean = umeanrm(numbnd)
                vmean = vmeanrm(numbnd)
                !
                if (ARC == 0) then
-                  u1(Lb) = (order - 1d0) * uin_loc + umean
+                  u1(Lb) = (order - 1.0_dp) * uin_loc + umean
                   s1(kb) = s1(ki)
                   u1rm(n) = u1(Lb)
                   cycle ! all done
@@ -3380,12 +3478,12 @@ contains
                   cycle
                end if
                !
-               xbducxdx = 0d0
-               xbducxdy = 0d0
-               xbducydx = 0d0
-               xbducydy = 0d0
-               dbetadx = 0d0
-               dbetady = 0d0
+               xbducxdx = 0.0_dp
+               xbducxdy = 0.0_dp
+               xbducydx = 0.0_dp
+               xbducydy = 0.0_dp
+               dbetadx = 0.0_dp
+               dbetady = 0.0_dp
                !
                do i = 1, NLNX
                   L = abs(nd(ki)%ln(i))
@@ -3394,8 +3492,8 @@ contains
                   k2 = ln(2, L)
                   !
                   ! Pragmatic way
-                  betak1 = ucx(k1) * csu(Lb) + ucy(k1) * snu(Lb) - 2d0 * sqrt(ag * (s1(k1) - bl(k1)))
-                  betak2 = ucx(k2) * csu(Lb) + ucy(k2) * snu(Lb) - 2d0 * sqrt(ag * (s1(k2) - bl(k2)))
+                  betak1 = ucx(k1) * csu(Lb) + ucy(k1) * snu(Lb) - 2.0_dp * sqrt(ag * (s1(k1) - bl(k1)))
+                  betak2 = ucx(k2) * csu(Lb) + ucy(k2) * snu(Lb) - 2.0_dp * sqrt(ag * (s1(k2) - bl(k2)))
                   !
                   dbetadx(k1) = dbetadx(k1) + wcx1(L) * (betak2 - betak1) * dxi(L)
                   dbetadx(k2) = dbetadx(k2) + wcx2(L) * (betak2 - betak1) * dxi(L)
@@ -3428,55 +3526,59 @@ contains
                if (jawind > 0) then
                   Fwin = wdsu(Lb) * huvli(Lb)
                else
-                  Fwin = 0d0
+                  Fwin = 0.0_dp
                end if
                c = sqrt(ag * hu(Lb))
                !
                !
                dbetadt = -(u1(Lb) - c) * dbetadn - v(Lb) * dbetads + c * dvds + ag * dhdn + Fn / (rhomean * hu(Lb)) - Ftau + Fwin
-               beta = u1(Lb) - 2d0 * sqrt(ag * hu(Lb))
+               beta = u1(Lb) - 2.0_dp * sqrt(ag * hu(Lb))
                !
                thetai = atan2(vin_loc, uin_loc) ! cartesian angle wrt X
                !
                betanp1 = beta + dbetadt * dts
-               alpha2 = (270d0 - dir0) * dg2rd ! first guess, theta0 not set for spectral bc as dir0 not defined
-               alphanew = 0.d0
+               alpha2 = (270.0_dp - dir0) * dg2rd ! first guess, theta0 not set for spectral bc as dir0 not defined
+               alphanew = 0.0_dp
                !
                cg0 = sqrt(ag * hum)
                !
                do jj = 1, 50
                   !
                   if (freewave == 1) then ! assuming incoming long wave propagates at sqrt(g*h) (free wave)
-                     ur = cos(alpha2) / (cos(alpha2) + 1.d0) &
-                          * (betanp1 - umean + 2.d0 * cg0 &
-                             - uin_loc * (cos(thetai) - 1.d0) / cos(thetai))
+                     ur = cos(alpha2) / (cos(alpha2) + 1.0_dp) &
+                          * (betanp1 - umean + 2.0_dp * cg0 &
+                             - uin_loc * (cos(thetai) - 1.0_dp) / cos(thetai))
                   else ! assuming incoming long wave propagates at group velocity (bound wave)
-                     cgbound = max(0.5d0 * (cgwav(kb) + cgwav(ki)), eps10)
+                     cgbound = max(0.5_dp * (cgwav(kb) + cgwav(ki)), eps10)
                      dum = uin_loc * (cgbound * cos(thetai) - cg0) / (cgbound * cos(thetai))
-                     ur = cos(alpha2) / (cos(alpha2) + 1.d0) &
-                          * (betanp1 - umean + 2.d0 * cg0 - dum)
+                     ur = cos(alpha2) / (cos(alpha2) + 1.0_dp) &
+                          * (betanp1 - umean + 2.0_dp * cg0 - dum)
                   end if
                   !
                   vert = v(Lb) - vmean - vin_loc ! tangential component along cell face
                   !
-                  alphanew = atan2(vert, (ur + 1.d-16))
-                  if (alphanew > (pi * 0.5d0)) alphanew = alphanew - pi
-                  if (alphanew <= (-pi * 0.5d0)) alphanew = alphanew + pi
+                  alphanew = atan2(vert, (ur + 1.0e-16_dp))
+                  if (alphanew > (pi * 0.5_dp)) then
+                     alphanew = alphanew - pi
+                  end if
+                  if (alphanew <= (-pi * 0.5_dp)) then
+                     alphanew = alphanew + pi
+                  end if
                   !
-                  if (abs(alphanew - alpha2) < 1d-3) then
+                  if (abs(alphanew - alpha2) < 1.0e-3_dp) then
                      exit
                   end if
                   alpha2 = alphanew
                end do
                !
-               u1(Lb) = (order - 1.d0) * uin_loc + ur + umean
+               u1(Lb) = (order - 1.0_dp) * uin_loc + ur + umean
                u1rm(n) = u1(Lb)
                !
                ! try from cell centre, uses value at old time level anyhow
-               betaki = ucx(ki) * csu(Lb) + ucy(ki) * snu(Lb) - 2d0 * sqrt(ag * (s1(ki) - bl(ki)))
+               betaki = ucx(ki) * csu(Lb) + ucy(ki) * snu(Lb) - 2.0_dp * sqrt(ag * (s1(ki) - bl(ki)))
                un = ucx(ki) * csu(Lb) + ucy(ki) * snu(Lb)
-               s1(kb) = 1.5d0 * ((betanp1 - u1rm(n))**2 / 4.d0 / ag + .5d0 * (bl(kb) + bl(ki))) - &
-                        0.5d0 * ((betaki - un)**2 / 4.d0 / ag + bl(ki))
+               s1(kb) = 1.5_dp * ((betanp1 - u1rm(n))**2 / 4.0_dp / ag + 0.5_dp * (bl(kb) + bl(ki))) - &
+                        0.5_dp * ((betaki - un)**2 / 4.0_dp / ag + bl(ki))
             end if
 
          end if ! riemannpuntje
@@ -3507,14 +3609,14 @@ contains
       real(kind=dp) :: dcf, dcfin, ML, twothird
 
       if (hs(k) <= epshu) then
-         ktb(k) = 0d0
+         ktb(k) = 0.0_dp
          return
       end if
       !
       if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
-         cw = rlabda(k) / max(1d-1, twav(k))
-         rol = 9d-1 * rhomean * ag * sin(1d-1) * hwav(k)**2 ! Martins 2018
-         disrol = 2d-1 * ag * rol / cw ! 2.0*beta = 2d-1
+         cw = rlabda(k) / max(1.0e-1_dp, twav(k))
+         rol = 9.0e-1_dp * rhomean * ag * sin(1.0e-1_dp) * hwav(k)**2 ! Martins 2018
+         disrol = 2.0e-1_dp * ag * rol / cw ! 2.0*beta = 2d-1
          Tw = twav(k)
          Tb = twav(k)
       end if
@@ -3523,7 +3625,7 @@ contains
          disrol = DR(k)
          rol = R(k)
          cw = max(cwav(k), sqrt(ag * epshu))
-         Tw = max(2.*pi / sigmwav(k), 1d0)
+         Tw = max(2.*pi / sigmwav(k), 1.0_dp)
          if (turb == TURB_BORE_AVERAGED) then
             Tb = Tbore(k)
          else
@@ -3531,18 +3633,18 @@ contains
          end if
       end if
 
-      twothird = 2d0 / 3d0
+      twothird = 2.0_dp / 3.0_dp
       ktrb = (disrol / rhomean)**twothird ! See Battjes, 1975 / 1985
 
-      hloc = max(s1(k) - bl(k), 0.01d0)
+      hloc = max(s1(k) - bl(k), 0.01_dp)
       ! compute mixing length
       ML = sqrt(2 * rol * Tw / (rhomean * cw))
-      ML = min(ML, hloc); 
+      ML = min(ML, hloc)
       ! exponential decay turbulence over depth
-      dcfin = exp(min(100.d0, hloc / max(ML, 1d-10)))
-      dcf = min(1.d0, 1.d0 / (dcfin - 1.d0))
+      dcfin = exp(min(100.0_dp, hloc / max(ML, 1.0e-10_dp)))
+      dcf = min(1.0_dp, 1.0_dp / (dcfin - 1.0_dp))
       !
-      ktb(k) = ktrb * dcf * Tw / max(1d-1, Tb)
+      ktb(k) = ktrb * dcf * Tw / max(1.0e-1_dp, Tb)
 
    end subroutine rollerturbulence
 
@@ -3576,10 +3678,10 @@ contains
          allocate (detadxmax(1:ndx), stat=ierr)
       end if
 
-      dh = 0.03d0
-      dt = 1.25d0
-      nh = floor(0.99d0 / dh); 
-      nt = floor(50.d0 / dt); 
+      dh = 0.03_dp
+      dt = 1.25_dp
+      nh = floor(0.99_dp / dh)
+      nt = floor(50.0_dp / dt)
       hh = max(s1 - bl, epshu)
 
       ! compute dimensionless wave height and wave period in each grid point..
@@ -3591,29 +3693,29 @@ contains
             BR(k) = beta
             cycle
          end if
-         ih0 = floor(h0(k) / dh); 
-         it0 = floor(t0(k) / dt); 
-         ih1 = min(ih0 + 1, nh); 
-         it1 = min(it0 + 1, nt); 
-         p = (h0(k) - ih0 * dh) / dh; 
-         q = (T0(k) - it0 * dt) / dt; 
-         f0 = (1 - p) * (1 - q); 
-         f1 = p * (1 - q); 
-         f2 = q * (1 - p); 
-         f3 = p * q; 
-         if (t0(k) == 50.d0) then
-            t0fac = 50.d0 / max((Trep * sqrt(ag / hh(k))), 50.d0)
+         ih0 = floor(h0(k) / dh)
+         it0 = floor(t0(k) / dt)
+         ih1 = min(ih0 + 1, nh)
+         it1 = min(it0 + 1, nt)
+         p = (h0(k) - ih0 * dh) / dh
+         q = (T0(k) - it0 * dt) / dt
+         f0 = (1 - p) * (1 - q)
+         f1 = p * (1 - q)
+         f2 = q * (1 - p)
+         f3 = p * q
+         if (t0(k) == 50.0_dp) then
+            t0fac = 50.0_dp / max((Trep * sqrt(ag / hh(k))), 50.0_dp)
          elseif (t0(k) == 1.25) then
-            t0fac = 1.25d0 / min((Trep * sqrt(ag / hh(k))), 1.25d0)
+            t0fac = 1.25_dp / min((Trep * sqrt(ag / hh(k))), 1.25_dp)
          else
-            t0fac = 1.d0
+            t0fac = 1.0_dp
          end if
          !
          duddtmax = f0 * RF(3, ih0, it0) + f1 * RF(3, ih1, it0) + f2 * RF(3, ih0, it1) + f3 * RF(3, ih1, it1)
          siguref = f0 * RF(4, ih0, it0) + f1 * RF(4, ih1, it0) + f2 * RF(4, ih0, it1) + f3 * RF(4, ih1, it1)
          !
          dudtmax = uorb(k) / sqrt(2.0) / max(waveps, siguref) * sqrt(ag / hh(k)) * t0fac * duddtmax ! urms_cc is uorb, not urms. Checked, set jauorb=1 in mdu for match
-         detadxmax(k) = dudtmax * sinh(min(kwav(k) * hh(k), 10d0)) / max(cwav(k), sqrt(H(k) * ag)) / sigmwav(k) ! checked JRE
+         detadxmax(k) = dudtmax * sinh(min(kwav(k) * hh(k), 10.0_dp)) / max(cwav(k), sqrt(H(k) * ag)) / sigmwav(k) ! checked JRE
          !
          if (rfb == 1) then
             duddtmean = f0 * RF(5, ih0, it0) + f1 * RF(5, ih1, it0) + f2 * RF(5, ih0, it1) + f3 * RF(5, ih1, it1)
@@ -3623,7 +3725,7 @@ contains
          end if
       end do
 
-      Tbore = Tbfac * max(Trep / 25.d0, min(Trep / 4.d0, H / (max(cwav, sqrt(H * ag)) * max(detadxmax, 5d-3))))
+      Tbore = Tbfac * max(Trep / 25.0_dp, min(Trep / 4.0_dp, H / (max(cwav, sqrt(H * ag)) * max(detadxmax, 5.0e-3_dp))))
    end subroutine borecharacter
 
 !   subroutine xbeach_map_wind_field(wx, wy, mwind, wmagcc, windspreadfac)
@@ -4190,8 +4292,9 @@ contains
       !
       ierr = 1
       !
-      if (allocated(costemp)) deallocate (costemp, costemp2, sintemp, sintemp2, hh, &
-                                          eebc, gammax_correct, stat=ierr)
+      if (allocated(costemp)) then
+         deallocate (costemp, costemp2, sintemp, sintemp2, hh, eebc, gammax_correct, stat=ierr)
+      end if
       allocate (costemp(1:ndx), costemp2(1:ndx), sintemp(1:ndx), sintemp2(1:ndx), hh(1:ndx), stat=ierr)
       allocate (gammax_correct(1:numk), RH(1:numk), stat=ierr)
       costemp = 0.0_dp
@@ -4367,7 +4470,8 @@ contains
             ee1(itheta, :) = costemp2
          end do
          E = sum(ee1, dim=1) * dthetalocal
-         costemp = 0.0_dp; costemp2 = 0.0_dp
+         costemp = 0.0_dp
+         costemp2 = 0.0_dp
          !
          call corner2flownod(cstat, numk, cwav, ndxi, ndx, .false., ierr)
          !
@@ -4588,22 +4692,33 @@ contains
       ! Allocate local arrays
       allocate (ok(mn))
       allocate (indx(4, mn))
-      allocate (eeold(ntheta, mn)); eeold = 0.0_dp
-      allocate (dee(ntheta, mn)); dee = 0.0_dp
-      allocate (eeprev(ntheta)); eeprev = 0.0_dp
-      allocate (cgprev(ntheta)); cgprev = 0.0_dp
-      allocate (A(ntheta, mn)); A = 0.0_dp
-      allocate (B(ntheta, mn)); B = 0.0_dp
-      allocate (C(ntheta, mn)); C = 0.0_dp
-      allocate (R(ntheta, mn)); R = 0.0_dp
-      allocate (DoverE(mn)); DoverE = 0.0_dp
-      allocate (diff(mn)); diff = 0.0_dp
-      allocate (ra(mn)); ra = 0.0_dp
+      allocate (eeold(ntheta, mn))
+      eeold = 0.0_dp
+      allocate (dee(ntheta, mn))
+      dee = 0.0_dp
+      allocate (eeprev(ntheta))
+      eeprev = 0.0_dp
+      allocate (cgprev(ntheta))
+      cgprev = 0.0_dp
+      allocate (A(ntheta, mn))
+      A = 0.0_dp
+      allocate (B(ntheta, mn))
+      B = 0.0_dp
+      allocate (C(ntheta, mn))
+      C = 0.0_dp
+      allocate (R(ntheta, mn))
+      R = 0.0_dp
+      allocate (DoverE(mn))
+      DoverE = 0.0_dp
+      allocate (diff(mn))
+      diff = 0.0_dp
+      allocate (ra(mn))
+      ra = 0.0_dp
 
       ok = solverNotConverged
       indx = 0
       ee = 0.0_dp
-      eemax = 1.0_dp; 
+      eemax = 1.0_dp
       dtheta = theta(2) - theta(1)
       niter = min(maxiter, 400)
 
@@ -4629,10 +4744,10 @@ contains
          end if
          sweep = mod(iter, 4)
          if (sweep == 0) then
-            sweep = 4; 
+            sweep = 4
          end if
          if (sweep == 1) then
-            eeold = ee; 
+            eeold = ee
          end if
          !  Loop over all points depending on sweep direction
          do count = 1, mn
@@ -4706,7 +4821,9 @@ contains
             do k = 1, mn
                dee(:, k) = ee(:, k) - eeold(:, k)
                diff(k) = maxval(abs(dee(:, k)))
-               if (diff(k) / eemax < crit) ok(k) = solverConverged
+               if (diff(k) / eemax < crit) then
+                  ok(k) = solverConverged
+               end if
             end do
             !
             ! Percentage of converged points
@@ -4824,7 +4941,7 @@ contains
          end if
          sweep = mod(iter, 4)
          if (sweep == 0) then
-            sweep = 4; 
+            sweep = 4
          end if
          !  Loop over all points depending on sweep direction
          do count = 1, mn
@@ -5012,7 +5129,9 @@ contains
          end do
       end if
       ! nothing to order
-      if (n < 2) return
+      if (n < 2) then
+         return
+      end if
       ! initialize indices for hiring and retirement-promotion phase
       l = n / 2 + 1
 
@@ -5116,7 +5235,9 @@ contains
 
       ierr = 1
 
-      if (allocated(no_connected_cells)) deallocate (no_connected_cells, connected_cells)
+      if (allocated(no_connected_cells)) then
+         deallocate (no_connected_cells, connected_cells)
+      end if
       allocate (no_connected_cells(no_nodes))
       allocate (connected_cells(no_nodes, 12))
       no_connected_cells = 0
@@ -5300,8 +5421,10 @@ contains
          L = kbndw(3, k)
          cn1 = lncn(1, L)
          cn2 = lncn(2, L)
-         wmask(1, cn1) = wcLn(1, L); wmask(2, cn1) = k
-         wmask(3, cn2) = wcLn(2, L); wmask(4, cn2) = k
+         wmask(1, cn1) = wcLn(1, L)
+         wmask(2, cn1) = k
+         wmask(3, cn2) = wcLn(2, L)
+         wmask(4, cn2) = k
          !
          inner(cn1) = .false.
          inner(cn2) = .false.
@@ -5311,7 +5434,9 @@ contains
       ! Normalize weights
       do k = 1, numk
          sumw = wmask(1, k) + wmask(3, k)
-         if (sumw == 0.0_dp) cycle
+         if (sumw == 0.0_dp) then
+            cycle
+         end if
          wmask(1, k) = wmask(1, k) / sumw
          wmask(3, k) = wmask(3, k) / sumw
       end do
@@ -5319,7 +5444,9 @@ contains
       !> get indexes of edge nodes with wave boundary
       noseapts = 0
       do k = 1, numk
-         if (wmask(2, k) > 0 .or. wmask(4, k) > 0) noseapts = noseapts + 1
+         if (wmask(2, k) > 0 .or. wmask(4, k) > 0) then
+            noseapts = noseapts + 1
+         end if
       end do
       !
       ! allocate seapts array and fill
@@ -5337,7 +5464,9 @@ contains
 
       !> non-wave open u and z boundaries get neumann flag
       do k = 1, nbndz
-         if (kbndz2kbndw(k) /= 0) cycle ! then wave dirichlet bnd
+         if (kbndz2kbndw(k) /= 0) then
+            cycle ! then wave dirichlet bnd
+         end if
          L = kbndz(3, k)
          cn1 = lncn(1, L)
          cn2 = lncn(2, L)
@@ -5346,38 +5475,56 @@ contains
          !! network_data::NB values: 1=INTERN, 2=RAND, 3=HOEK, 0/-1=DOET NIET MEE OF 1D
          !  (KN(3,L) == 2) 2D
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) cycle ! not 2d link
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+               cycle ! not 2d link
+            end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle ! not inner net node
+            if (nb(ko) /= 1) then
+               cycle ! not inner net node
+            end if
             nmmask(ko) = cn1
          end do
          !
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn2
          end do
       end do
       !
       do k = 1, nbndu
-         if (kbndu2kbndw(k) /= 0) cycle ! then wave dirichlet bnd
+         if (kbndu2kbndw(k) /= 0) then
+            cycle ! then wave dirichlet bnd
+         end if
          L = kbndu(3, k)
          cn1 = lncn(1, L)
          cn2 = lncn(2, L)
          !
          ! Find internal node
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn1
          end do
          !
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn2
          end do
       end do
@@ -5387,19 +5534,29 @@ contains
          cn1 = walls(2, iwalls) ! first corner
          cn2 = walls(3, iwalls) ! second corner
          ! Find internal node
-         if (wmask(2, cn1) > 0 .or. wmask(4, cn1) > 0) goto 10 ! do next node
+         if (wmask(2, cn1) > 0 .or. wmask(4, cn1) > 0) then
+            goto 10 ! do next node
+         end if
          do LL = 1, size(nod(cn1)%lin)
-            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn1, abs(nod(cn1)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn1
          end do
          !
 10       if (wmask(2, cn2) > 0 .or. wmask(4, cn2) > 0) cycle
          do LL = 1, size(nod(cn2)%lin)
-            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) cycle
+            if (kn(3, abs(nod(cn2)%lin(LL))) /= 2) then
+               cycle
+            end if
             call othernode(cn2, abs(nod(cn2)%lin(LL)), ko)
-            if (nb(ko) /= 1) cycle
+            if (nb(ko) /= 1) then
+               cycle
+            end if
             nmmask(ko) = cn2
          end do
       end do
@@ -5491,10 +5648,14 @@ contains
          call aerr('Drstat  (numk)', ierr, numk)
       end if
       !
-      if (ierr > 0) goto 1234
+      if (ierr > 0) then
+         goto 1234
+      end if
       ierr = 0
 1234  continue
-      if (ierr > 0) write (*, *) 'xbeachwaves::allocstatsolverarrays :: Error.'
+      if (ierr > 0) then
+         write (*, *) 'xbeachwaves::allocstatsolverarrays :: Error.'
+      end if
       return
    end subroutine allocstatsolverarrays
 
@@ -5535,7 +5696,9 @@ contains
       ! open boundaries that are not wave energy bnds get inner domain value
       do k = 1, nbndz
          if (skipnbndw .and. allocated(zbndw)) then
-            if (kbndz2kbndw(k) > 0) cycle
+            if (kbndz2kbndw(k) > 0) then
+               cycle
+            end if
          end if
          kb = kbndz(1, k)
          ki = kbndz(2, k)
@@ -5544,7 +5707,9 @@ contains
 
       do k = 1, nbndu
          if (skipnbndw .and. allocated(zbndw)) then
-            if (kbndu2kbndw(k) > 0) cycle
+            if (kbndu2kbndw(k) > 0) then
+               cycle
+            end if
          end if
          kb = kbndu(1, k)
          ki = kbndu(2, k)
@@ -5909,7 +6074,8 @@ contains
       end do
       !
       do k = 1, nbndz
-         kb = kbndz(1, k); ki = kbndz(2, k)
+         kb = kbndz(1, k)
+         ki = kbndz(2, k)
          sxwav(kb) = sxwav(ki)
          sywav(kb) = sywav(ki)
          sbxwav(kb) = sbxwav(ki)
@@ -5917,7 +6083,8 @@ contains
       end do
       !
       do k = 1, nbndu
-         kb = kbndu(1, k); ki = kbndu(2, k)
+         kb = kbndu(1, k)
+         ki = kbndu(2, k)
          sxwav(kb) = sxwav(ki)
          sywav(kb) = sywav(ki)
          sbxwav(kb) = sbxwav(ki)
@@ -5966,8 +6133,10 @@ contains
 
       ! shortcut to switch off stokes drift
       if (jawavestokes == NO_STOKES_DRIFT) then
-         ustokes = 0.0_dp; vstokes = 0.0_dp
-         ustx_cc(k) = 0.0_dp; usty_cc(k) = 0.0_dp ! output
+         ustokes = 0.0_dp
+         vstokes = 0.0_dp
+         ustx_cc(k) = 0.0_dp
+         usty_cc(k) = 0.0_dp ! output
          return
       end if
 
@@ -5986,7 +6155,8 @@ contains
 
       do L = 1, lnx ! facenormal decomposition
          if (hu(L) > m_xbeach_data_hminlw) then
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             ustokes(L) = acL(L) * (csu(L) * (uwf(k1) + urf(k1)) + snu(L) * (vwf(k1) + vrf(k1))) + &
                          (1.0_dp - acL(L)) * (csu(L) * (uwf(k2) + urf(k2)) + snu(L) * (vwf(k2) + vrf(k2)))
 

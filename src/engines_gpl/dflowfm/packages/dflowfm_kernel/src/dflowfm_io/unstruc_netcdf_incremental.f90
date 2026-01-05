@@ -194,7 +194,9 @@ contains
          ierr = unc_def_var_nonspatial(incids%ncid, incids%id_time, nf90_double, [incids%id_tsp%id_timedim], 'time', 'time', ' ', trim(Tudunitstr))
          maxTimes = 1 + nint((ti_classmape - ti_classmaps) / ti_classmap)
          chunkSizeTime = min(mapclass_chunksize_time, maxTimes)
-         if (ierr == nf90_noerr) ierr = nf90_def_var_chunking(incids%ncid, incids%id_time, NF90_CHUNKED, [chunkSizeTime])
+         if (ierr == nf90_noerr) then
+            ierr = nf90_def_var_chunking(incids%ncid, incids%id_time, NF90_CHUNKED, [chunkSizeTime])
+         end if
 
          if (nclasses_s1 > 0 .and. ierr == nf90_noerr) then
             ierr = def_var_classmap_ugrid('s1', incids%ncid, id_twodim, id_class_s1, id_jumps_s1, incids)
@@ -208,7 +210,9 @@ contains
          if (nclasses_ucdir > 0 .and. ierr == nf90_noerr .and. kmx == 0) then
             ierr = def_var_classmap_ugrid('ucdir', incids%ncid, id_twodim, id_class_ucdir, id_jumps_ucdir, incids)
          end if
-         if (ierr == nf90_noerr) ierr = nf90_enddef(incids%ncid)
+         if (ierr == nf90_noerr) then
+            ierr = nf90_enddef(incids%ncid)
+         end if
          call check_error(ierr, 'definition phase variables of classes')
          time_index = 1
       else
@@ -236,7 +240,9 @@ contains
             angle = atan2(workx(i), worky(i))
             ! CF:  The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.
             angle = 90.0_dp - raddeg_hp * angle
-            if (angle < 0.0_dp) angle = 360.0_dp + angle
+            if (angle < 0.0_dp) then
+               angle = 360.0_dp + angle
+            end if
             ucdir(i) = angle
          end do
          call put_in_classes(map_classes_ucdir, ucdir(1:ndx), current_ucdir)
@@ -273,43 +279,69 @@ contains
 
          if (nclasses_s1 > 0) then
             call classes_to_classbounds(nclasses_s1, map_classes_s1, workbounds)
-            if (ierr == nf90_noerr) ierr = nf90_put_var(incids%ncid, id_class_s1, workbounds)
-            if (ierr == nf90_noerr) ierr = write_initial_classes(incids, current_s1, buffer_s1, 's1', id_jumps_s1)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_put_var(incids%ncid, id_class_s1, workbounds)
+            end if
+            if (ierr == nf90_noerr) then
+               ierr = write_initial_classes(incids, current_s1, buffer_s1, 's1', id_jumps_s1)
+            end if
             previous_s1 => current_s1
          end if
          if (nclasses_hs > 0) then
             call classes_to_classbounds(nclasses_hs, map_classes_hs, workbounds, lbound=0.0_dp)
-            if (ierr == nf90_noerr) ierr = nf90_put_var(incids%ncid, id_class_hs, workbounds)
-            if (ierr == nf90_noerr) ierr = write_initial_classes(incids, current_hs, buffer_hs, 'hs', id_jumps_hs)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_put_var(incids%ncid, id_class_hs, workbounds)
+            end if
+            if (ierr == nf90_noerr) then
+               ierr = write_initial_classes(incids, current_hs, buffer_hs, 'hs', id_jumps_hs)
+            end if
             previous_hs => current_hs
          end if
          if (nclasses_ucmag > 0 .and. kmx == 0) then
             call classes_to_classbounds(nclasses_ucmag, map_classes_ucmag, workbounds, lbound=0.0_dp)
-            if (ierr == nf90_noerr) ierr = nf90_put_var(incids%ncid, id_class_ucmag, workbounds)
-            if (ierr == nf90_noerr) ierr = write_initial_classes(incids, current_ucmag, buffer_ucmag, 'ucmag', id_jumps_ucmag)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_put_var(incids%ncid, id_class_ucmag, workbounds)
+            end if
+            if (ierr == nf90_noerr) then
+               ierr = write_initial_classes(incids, current_ucmag, buffer_ucmag, 'ucmag', id_jumps_ucmag)
+            end if
             previous_ucmag => current_ucmag
          end if
          if (nclasses_ucdir > 0 .and. kmx == 0) then
             call classes_to_classbounds(nclasses_ucdir, map_classes_ucdir, workbounds, lbound=0.0_dp, ubound=360.0_dp)
-            if (ierr == nf90_noerr) ierr = nf90_put_var(incids%ncid, id_class_ucdir, workbounds)
-            if (ierr == nf90_noerr) ierr = write_initial_classes(incids, current_ucdir, buffer_ucdir, 'ucdir', id_jumps_ucdir)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_put_var(incids%ncid, id_class_ucdir, workbounds)
+            end if
+            if (ierr == nf90_noerr) then
+               ierr = write_initial_classes(incids, current_ucdir, buffer_ucdir, 'ucdir', id_jumps_ucdir)
+            end if
             previous_ucdir => current_ucdir
          end if
       else
          if (nclasses_s1 > 0) then
-            if (ierr == nf90_noerr) ierr = write_changed_classes_update_previous(incids, previous_s1, current_s1, buffer_s1, 's1', id_jumps_s1)
+            if (ierr == nf90_noerr) then
+               ierr = write_changed_classes_update_previous(incids, previous_s1, current_s1, buffer_s1, 's1', id_jumps_s1)
+            end if
          end if
          if (nclasses_hs > 0) then
-            if (ierr == nf90_noerr) ierr = write_changed_classes_update_previous(incids, previous_hs, current_hs, buffer_hs, 'hs', id_jumps_hs)
+            if (ierr == nf90_noerr) then
+               ierr = write_changed_classes_update_previous(incids, previous_hs, current_hs, buffer_hs, 'hs', id_jumps_hs)
+            end if
          end if
          if (nclasses_ucmag > 0 .and. kmx == 0) then
-            if (ierr == nf90_noerr) ierr = write_changed_classes_update_previous(incids, previous_ucmag, current_ucmag, buffer_ucmag, 'ucmag', id_jumps_ucmag)
+            if (ierr == nf90_noerr) then
+               ierr = write_changed_classes_update_previous(incids, previous_ucmag, current_ucmag, buffer_ucmag, 'ucmag', id_jumps_ucmag)
+            end if
          end if
          if (nclasses_ucdir > 0 .and. kmx == 0) then
-            if (ierr == nf90_noerr) ierr = write_changed_classes_update_previous(incids, previous_ucdir, current_ucdir, buffer_ucdir, 'ucdir', id_jumps_ucdir)
+            if (ierr == nf90_noerr) then
+               ierr = write_changed_classes_update_previous(incids, previous_ucdir, current_ucdir, buffer_ucdir, 'ucdir', id_jumps_ucdir)
+            end if
          end if
       end if
-      if (ierr == nf90_noerr) ierr = nf90_put_var(incids%ncid, incids%id_time, tim, start=[time_index])
+      if (ierr == nf90_noerr) then
+         ierr = nf90_put_var(incids%ncid, incids%id_time, tim, start=[time_index])
+      end if
       call check_error(ierr, 'actual writing of class maps')
 
       isLast = comparereal(tim, ti_classmape, eps10) /= -1
@@ -342,11 +374,21 @@ contains
       end if
 
       if (isLast) then
-         if (ierr == nf90_noerr) ierr = nf90_close(incids%ncid)
-         if (associated(previous_s1)) deallocate (previous_s1)
-         if (associated(previous_hs)) deallocate (previous_hs)
-         if (associated(previous_ucmag)) deallocate (previous_ucmag)
-         if (associated(previous_ucdir)) deallocate (previous_ucdir)
+         if (ierr == nf90_noerr) then
+            ierr = nf90_close(incids%ncid)
+         end if
+         if (associated(previous_s1)) then
+            deallocate (previous_s1)
+         end if
+         if (associated(previous_hs)) then
+            deallocate (previous_hs)
+         end if
+         if (associated(previous_ucmag)) then
+            deallocate (previous_ucmag)
+         end if
+         if (associated(previous_ucdir)) then
+            deallocate (previous_ucdir)
+         end if
          if (allocated(buffer_s1)) then
             deallocate (buffer_s1)
          end if
@@ -437,14 +479,20 @@ contains
       end if
 
       classbndsname = 'class_bounds_'//name
-      if (ierr == nf90_noerr) ierr = nf90_def_var(ncid, classbndsname, nf90_double, [id_twodim, id_class], var_id_class_bnds)
+      if (ierr == nf90_noerr) then
+         ierr = nf90_def_var(ncid, classbndsname, nf90_double, [id_twodim, id_class], var_id_class_bnds)
+      end if
       ndims(1) = ndxi - ndx2d
       ndims(2) = ndx2d
       do i = 1, 2
          if (ndims(i) > 0) then
             actual_chunksize = min(mapclass_chunksize_ndx, ndims(i))
-            if (ierr == nf90_noerr) ierr = nf90_def_var_deflate(ncid, ids(i), 0, 1, mapclass_deflate)
-            if (ierr == nf90_noerr) ierr = nf90_def_var_chunking(ncid, ids(i), NF90_CHUNKED, [actual_chunksize, chunkSizeTime])
+            if (ierr == nf90_noerr) then
+               ierr = nf90_def_var_deflate(ncid, ids(i), 0, 1, mapclass_deflate)
+            end if
+            if (ierr == nf90_noerr) then
+               ierr = nf90_def_var_chunking(ncid, ids(i), NF90_CHUNKED, [actual_chunksize, chunkSizeTime])
+            end if
             if (ierr == nf90_noerr .and. output_type == type_new_class) then
                ierr = put_flag_attributes(incids%ncid, ids(i), map_classes, unit, classbndsname, lbound, ubound)
             end if
@@ -454,7 +502,9 @@ contains
          call mess(LEVEL_INFO, 'successfully defined '//name//' with deflate_level and chunksizes =', mapclass_deflate, actual_chunksize, mapclass_chunksize_time)
       end if
       if (output_type == type_very_compact) then
-         if (ierr == nf90_noerr) ierr = nf90_def_var(ncid, 'jumps_'//name, nf90_int, [incids%id_tsp%id_timedim], var_id_jumps)
+         if (ierr == nf90_noerr) then
+            ierr = nf90_def_var(ncid, 'jumps_'//name, nf90_int, [incids%id_tsp%id_timedim], var_id_jumps)
+         end if
       end if
    end function def_var_classmap_ugrid
 
@@ -548,7 +598,9 @@ contains
          else
             ierr = unc_put_var_map_byte(incids%ncid, incids%id_tsp, var_ids, UNC_LOC_S, diff)
          end if
-         if (ierr == 0) ierr = nf90_put_var(incids%ncid, varid_jumps, [cnt], [time_index])
+         if (ierr == 0) then
+            ierr = nf90_put_var(incids%ncid, varid_jumps, [cnt], [time_index])
+         end if
       else
          if (mapclass_time_buffer_size > 1) then
             buffer(:, ti) = current

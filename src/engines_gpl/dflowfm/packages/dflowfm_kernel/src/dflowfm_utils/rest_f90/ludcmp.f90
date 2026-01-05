@@ -66,7 +66,9 @@ contains
       do I = 1, N
          AAMAX = 0.
          do J = 1, N
-            if (abs(A(I, J)) > AAMAX) AAMAX = abs(A(I, J))
+            if (abs(A(I, J)) > AAMAX) then
+               AAMAX = abs(A(I, J))
+            end if
          end do
          if (AAMAX == 0) then
             JAPARALLEL = 1
@@ -112,14 +114,18 @@ contains
          end if
          INDX(J) = IMAX
          if (J /= N) then
-            if (A(J, J) == 0.0_dp) A(J, J) = TINY
+            if (A(J, J) == 0.0_dp) then
+               A(J, J) = TINY
+            end if
             DUM = 1./A(J, J)
             do I = J + 1, N
                A(I, J) = A(I, J) * DUM
             end do
          end if
       end do
-      if (A(N, N) == 0.0_dp) A(N, N) = TINY
+      if (A(N, N) == 0.0_dp) then
+         A(N, N) = TINY
+      end if
       return
    end
 

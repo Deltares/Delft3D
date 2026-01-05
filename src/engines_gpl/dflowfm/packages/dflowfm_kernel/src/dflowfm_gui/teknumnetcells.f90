@@ -57,7 +57,9 @@ contains
       jm = 0
       mxnum = 0
       if (jatel == 1) then
-         if (nump == 0) call findcells(0)
+         if (nump == 0) then
+            call findcells(0)
+         end if
          ijyes = 0
       else
          vmax = -9.0e9_dp

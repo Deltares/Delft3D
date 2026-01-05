@@ -181,7 +181,9 @@ contains
       real(kind=dp) :: taucre
 
       call deallocgrains()
-      if (mxgr == 0) return
+      if (mxgr == 0) then
+         return
+      end if
       m = mxgr
       allocate (d50(m), rhosed(m), erosionpar(m), ustcre2(m), ws(m), sedini(m), uniformerodablethickness(m), &
                 d50ca(m), d50cb(m), d50wa(m), d50wb(m), d50wc(m), bwcr(m))

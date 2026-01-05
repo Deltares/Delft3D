@@ -54,8 +54,12 @@ contains
 
       if (allocated(netcell0)) then
          do k = 1, ubound(netcell0, 1)
-            if (allocated(netcell0(k)%nod)) deallocate (netcell0(k)%nod)
-            if (allocated(netcell0(k)%lin)) deallocate (netcell0(k)%lin)
+            if (allocated(netcell0(k)%nod)) then
+               deallocate (netcell0(k)%nod)
+            end if
+            if (allocated(netcell0(k)%lin)) then
+               deallocate (netcell0(k)%lin)
+            end if
          end do
          deallocate (netcell0)
       end if

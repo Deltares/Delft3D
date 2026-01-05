@@ -71,7 +71,8 @@ contains
                adve0 = adve
             end if
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                ds = ag * dxi(L) * (s0(k2) - s0(k1))
                u1(L) = (u1(L) * (1.0_dp - das) + u0(L) * das - dta * (adve(L) + ds)) / (1.0_dp + dta * advi(L))
             end do

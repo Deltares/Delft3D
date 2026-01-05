@@ -108,17 +108,28 @@ contains
 
       if (mc * nc < -1000) then ! save grd to polygon for partitioning
          call savepol()
-         n = 0; nfirst = 0
+         n = 0
+         nfirst = 0
          do i = 1, mc - 1
             do j = 1, nc - 1
                if (xc(i, j) /= dmiss .and. xc(i + 1, j) /= dmiss .and. &
                    xc(i, j + 1) /= dmiss .and. xc(i + 1, j + 1) /= dmiss) then
                   if (nfirst /= 0) then
-                     n = n + 1; xpl(n) = xc(i, j); ypl(n) = yc(i, j)
-                     n = n + 1; xpl(n) = xc(i + 1, j); ypl(n) = yc(i + 1, j)
-                     n = n + 1; xpl(n) = xc(i + 1, j + 1); ypl(n) = yc(i + 1, j + 1)
-                     n = n + 1; xpl(n) = xc(i, j + 1); ypl(n) = yc(i, j + 1)
-                     n = n + 1; xpl(n) = dmiss; ypl(n) = dmiss
+                     n = n + 1
+                     xpl(n) = xc(i, j)
+                     ypl(n) = yc(i, j)
+                     n = n + 1
+                     xpl(n) = xc(i + 1, j)
+                     ypl(n) = yc(i + 1, j)
+                     n = n + 1
+                     xpl(n) = xc(i + 1, j + 1)
+                     ypl(n) = yc(i + 1, j + 1)
+                     n = n + 1
+                     xpl(n) = xc(i, j + 1)
+                     ypl(n) = yc(i, j + 1)
+                     n = n + 1
+                     xpl(n) = dmiss
+                     ypl(n) = dmiss
                   else
                      nfirst = 1
                   end if

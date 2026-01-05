@@ -62,20 +62,36 @@ contains
          do kk = 1, netcell(np)%n
             k = netcell(np)%nod(kk)
             if (nmk(k) == 3) then
-               km = kk - 1; if (km < 1) km = km + kkx
-               kp = kk + 1; if (kp > kkx) kp = kp - kkx
+               km = kk - 1
+               if (km < 1) then
+                  km = km + kkx
+               end if
+               kp = kk + 1
+               if (kp > kkx) then
+                  kp = kp - kkx
+               end if
                km = netcell(np)%nod(km)
                kp = netcell(np)%nod(kp)
                if (abs(yk(km) - yk(k)) < 1.0e-10_dp .and. abs(yk(kp) - yk(k)) < 1.0e-10_dp .or. &
                    abs(xk(km) - xk(k)) < 1.0e-10_dp .and. abs(xk(kp) - xk(k)) < 1.0e-10_dp) then
-                  km = kk - 2; if (km < 1) km = km + kkx
-                  kp = kk + 2; if (kp > kkx) kp = kp - kkx
+                  km = kk - 2
+                  if (km < 1) then
+                     km = km + kkx
+                  end if
+                  kp = kk + 2
+                  if (kp > kkx) then
+                     kp = kp - kkx
+                  end if
                   km = netcell(np)%nod(km)
                   kp = netcell(np)%nod(kp)
                   lnu = lnu + 1
-                  kn(1, lnu) = k; kn(2, lnu) = km; kn(3, lnu) = 2
+                  kn(1, lnu) = k
+                  kn(2, lnu) = km
+                  kn(3, lnu) = 2
                   lnu = lnu + 1
-                  kn(1, lnu) = k; kn(2, lnu) = kp; kn(3, lnu) = 2
+                  kn(1, lnu) = k
+                  kn(2, lnu) = kp
+                  kn(3, lnu) = 2
                   !call connectdbn(k,km,lnu)
                   !call connectdbn(k,kp,lnu)
                end if
@@ -98,9 +114,12 @@ contains
       integer :: L, k1, k2
 
       do L = 1, numL
-         k1 = kn(1, L); k2 = kn(2, L)
+         k1 = kn(1, L)
+         k2 = kn(2, L)
          if (abs(xk(k1) - xk(k2)) > 1.0e-10_dp .and. abs(yk(k1) - yk(k2)) > 1.0e-10_dp) then
-            kn(1, L) = 0; kn(2, L) = 0; kn(3, L) = 0
+            kn(1, L) = 0
+            kn(2, L) = 0
+            kn(3, L) = 0
          end if
       end do
 
@@ -127,12 +146,14 @@ contains
       y2 = sin(bedslopedir * dg2rd)
       hh = abs(zkuni)
       bedwid2 = 0.5_dp * bedwidth
-      k1 = kn(1, 1); k2 = kn(2, 1)
+      k1 = kn(1, 1)
+      k2 = kn(2, 1)
       call dbdistancehk(xk(k1), yk(k1), xk(k2), yk(k2), gridsize)
 
       do k = 1, numk
 
-         x3 = xk(k); y3 = yk(k)
+         x3 = xk(k)
+         y3 = yk(k)
          call dLINEDIS2(X3, Y3, X1, Y1, -Y2, x2, JA, dist, XN, YN, rl)
          call dLINEDIS2(X3, Y3, X1, Y1, X2, Y2, JA, disn, XN, YN, rl)
 
@@ -147,7 +168,9 @@ contains
             bedrepose = hh * atan(0.5_dp * pi / bedwid2)
             zk(k) = zk(k) + hh * (1.0_dp - cos(disn * tan(bedrepose / hh))) ! normal to vector
             if (disn > bedwid2 + 2 * gridsize) then
-               xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
+               xk(k) = dmiss
+               yk(k) = dmiss
+               zk(k) = dmiss
             end if
          end if
 
