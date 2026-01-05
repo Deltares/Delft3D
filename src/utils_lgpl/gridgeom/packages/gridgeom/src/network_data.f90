@@ -55,6 +55,7 @@
 
 module network_data
 
+   use precision, only: dp
    use m_dimens
    use m_landboundary
    use m_polygon
@@ -123,10 +124,10 @@ module network_data
    integer, allocatable :: LC(:) !< (numl) Mask array for net links.
    integer, allocatable :: LC0(:) !< Backup for lc.
    real, allocatable :: RLIN(:) !< (numl) Placeholder for link values to be displayed.
-   double precision, allocatable :: xe(:) !< (numl) Edge (link) center coordinates.
-   double precision, allocatable :: ye(:) !< (numl) Edge (link) center coordinates.
-   double precision, allocatable :: dxe(:) !< (numl) Edge (link) actual length. OPTIONAL. When unallocated, we default to Euclidean distance between the netnodes xk,yk.
-   double precision, allocatable :: dxe0(:) !< Backup for dxe.
+   real(kind=dp), allocatable :: xe(:) !< (numl) Edge (link) center coordinates.
+   real(kind=dp), allocatable :: ye(:) !< (numl) Edge (link) center coordinates.
+   real(kind=dp), allocatable :: dxe(:) !< (numl) Edge (link) actual length. OPTIONAL. When unallocated, we default to Euclidean distance between the netnodes xk,yk.
+   real(kind=dp), allocatable :: dxe0(:) !< Backup for dxe.
    integer, allocatable :: KTRI(:), KTON(:), KBT(:)
 
    ! Edge (and cell) related :      ! there are more edges than flow links .....

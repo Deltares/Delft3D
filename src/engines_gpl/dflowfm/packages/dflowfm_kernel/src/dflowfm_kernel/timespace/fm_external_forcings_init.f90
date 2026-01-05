@@ -178,16 +178,20 @@ contains
                ! General block, was already read.
 
             case ('boundary')
-               res = res .and. init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
+               is_successful = init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
+               res = res .and. is_successful
 
             case ('lateral')
-               res = res .and. init_lateral_forcings(node_ptr, base_dir, i, major)
+               is_successful = init_lateral_forcings(node_ptr, base_dir, i, major)
+               res = res .and. is_successful
 
             case ('meteo')
-               res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
+               is_successful = init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
+               res = res .and. is_successful
 
             case ('sourcesink')
-               res = res .and. init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name)
+               is_successful = init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name)
+               res = res .and. is_successful
 
             case default ! Unrecognized item in an ext block
                ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)

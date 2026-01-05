@@ -448,15 +448,28 @@ contains
       character(len=256) :: filename
       character(len=256) :: filename_new !< filename being processed
       character(len=64) :: varname
-      logical :: stat !< file existence status
+      logical :: stat !< status of inquire
       logical :: ext_force_bnd_used
       real(kind=dp) :: return_time
       integer, allocatable :: kce(:) ! kc edges (numl)
       integer, allocatable :: ke(:) ! kc edges (numl)
       integer :: filetype
       integer :: ja_ext_force
-      integer :: ierr, method
-      integer :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf
+      integer :: ierr
+      integer :: method
+      integer :: numz
+      integer :: numu
+      integer :: nums
+      integer :: numtm
+      integer :: numsd
+      integer :: numt
+      integer :: numuxy
+      integer :: numn
+      integer :: num1d2d
+      integer :: numqh
+      integer :: numw
+      integer :: numtr
+      integer :: numsf
       integer :: nx
       integer :: ierror
       integer :: num_bc_ini_blocks
@@ -472,7 +485,10 @@ contains
 
       ! deallocate xe, ye, and xyen arrays if allocated
       if (allocated(xe)) then
-         deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
+         ! centre points of all net links, also needed for opening closed boundaries
+         deallocate(xe) 
+         deallocate(ye)
+         deallocate(xyen)
       end if
 
       ! count number of 2D links and 1D endpoints
@@ -493,8 +509,28 @@ contains
 
       if (allocated(kez)) then
          ! If flow_geominit was called separately from a flow_modelinit:
-         deallocate(kez, keu, kes, ketm, kesd, keuxy, ket, ken, ke1d2d, keg, ked, kep, kedb, keklep, kevalv, kegs, kegen, itpez, &
-            itpenz, itpeu, itpenu, kew)
+         deallocate(kez)
+         deallocate(keu)
+         deallocate(kes)
+         deallocate(ketm)
+         deallocate(kesd)
+         deallocate(keuxy)
+         deallocate(ket)
+         deallocate(ken)
+         deallocate(ke1d2d)
+         deallocate(keg)
+         deallocate(ked)
+         deallocate(kep)
+         deallocate(kedb)
+         deallocate(keklep)
+         deallocate(kevalv)
+         deallocate(kegs)
+         deallocate(kegen)
+         deallocate(itpez)
+         deallocate(itpenz)
+         deallocate(itpeu)
+         deallocate(itpenu)
+         deallocate(kew)
       end if
 
       if (allocated(ftpet)) then
@@ -610,7 +646,7 @@ contains
 
       ! Old external forcing file
       if (len_trim(md_extfile) > 0) then
-         inquire (file=trim(md_extfile), exist=stat)
+         inquire(file=trim(md_extfile), exist=stat)
          if (stat) then
             if (mext /= 0) then
                ! Close first, if left open after prior flow_geominit().
@@ -626,6 +662,29 @@ contains
             write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(md_extfile), ''' not found.'
             call err_flush()
          end if
+      end if
+
+      ! New external forcing file
+      if (len_trim(md_extfile_new) > 0) then
+         ! Split md_extfile_new in separate file names (separated by spaces)
+         call strsplit(trim(md_extfile_new), 1, file_names, 1)
+
+         ! Loop over files and check existence
+         do i = 1, size(file_names)
+            filename_new = trim(file_names(i))
+
+            inquire(file=filename_new, exist=stat)
+            if (stat) then
+               ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
+               call read_location_files_from_boundary_blocks(filename_new, nx, kce, num_bc_ini_blocks, &
+                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+            else
+               call qnerror('Boundary external forcing file '''//filename_new//''' not found.', '  ', ' ')
+               write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', filename_new, ''' not found.'
+               call err_flush()
+            end if
+
+         end do
       end if
 
       do while (ja_ext_force == 1) ! read legacy format *.ext file
@@ -650,31 +709,6 @@ contains
          end if
 
       end do
-
-      ! New external forcing file
-      if (len_trim(md_extfile_new) > 0) then
-         ! Split md_extfile_new in separate file names (separated by spaces)
-         call strsplit(trim(md_extfile_new), 1, file_names, 1)
-
-         ! Loop over files and check existence
-         do i = 1, size(file_names)
-            filename_new = trim(file_names(i))
-
-            inquire(file=filename_new, exist=stat)
-            if (stat) then
-               ext_force_bnd_used = .true.
-
-               ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
-               call read_location_files_from_boundary_blocks(filename_new, nx, kce, num_bc_ini_blocks, &
-                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
-            else
-               call qnerror('Boundary external forcing file '''//filename_new//''' not found.', '  ', ' ')
-               write (msgbuf, '(a,a,a)') 'Boundary external forcing file ''', filename_new, ''' not found.'
-               call err_flush()
-            end if
-
-         end do
-      end if
 
       ! Deallocate temporary arrays
       deallocate(kce)
