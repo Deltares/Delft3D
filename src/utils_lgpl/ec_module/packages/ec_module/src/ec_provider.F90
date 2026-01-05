@@ -1892,6 +1892,18 @@ contains
             if (quantityname == 'temperaturebnd') then
                quantityname = 'temperature'
             end if
+         else
+             if (quantityname == 'waterlevelbnd') then
+               quantityname = 'waterlevelbnd'
+            end if
+             if (quantityname == 'salinitybnd') then
+                quantityname = 'so'
+             end if
+             
+             if (quantityname == 'temperaturebnd') then
+               quantityname = 'thetao'
+            end if
+                
          end if
       else
          call setECMessage("Forcing file ("//trim(bctfilename)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
