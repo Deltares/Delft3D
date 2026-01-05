@@ -2082,8 +2082,8 @@ contains
 
    end subroutine finish_initialization
 
-   subroutine fill_field_values(target_array, target_array_3d, target_location_type, first_index, filename, filetype, method, operand, &
-                                transformcoef, iloctype, kcsini, success)
+   subroutine fill_field_values(target_array, target_array_3d, target_location_type, first_index, filename, filetype, method, &
+                                operand, transformcoef, iloctype, kcsini, success)
 
       use m_alloc, only: reallocP
       use timespace, only: timespaceinitialfield
