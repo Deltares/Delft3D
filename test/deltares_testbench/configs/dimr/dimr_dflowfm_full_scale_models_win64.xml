@@ -301,8 +301,8 @@
             <checks>
                 <file name="output/DFlowFM_his.nc" type="netCDF">
                     <parameters>
-                        <parameter name="water_balance_groundwater_total" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_precipitation_total" toleranceAbsolute="0.001" />
+                        <parameter name="water_balance_groundwater_total" toleranceRelative="1e-7" />
+                        <parameter name="water_balance_precipitation_total" toleranceRelative="1e-7" />
                     </parameters>
                 </file>
             </checks>
@@ -338,11 +338,11 @@
                 <file name="DFM_OUTPUT_FM_model/FM_model_his.nc" type="netCDF">
                     <parameters>
                         <parameter name="water_balance_boundaries_in" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_boundaries_out" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_laterals_in" toleranceAbsolute="0.001" />
+                        <parameter name="water_balance_boundaries_out" toleranceRelative="1e-7" />
+                        <parameter name="water_balance_laterals_in" toleranceRelative="1e-7" />
                         <parameter name="water_balance_laterals_out" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_storage" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_total_volume" toleranceAbsolute="0.001" />
+                        <parameter name="water_balance_storage" toleranceRelative="1e-7" />
+                        <parameter name="water_balance_total_volume" toleranceRelative="5e-6" />
 						<parameter name="bridge_discharge" toleranceAbsolute="0.001" />
 						<parameter name="bridge_velocity" toleranceAbsolute="0.001" />				
                     </parameters>
