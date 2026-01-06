@@ -1,4 +1,4 @@
-This repository contains the specifications for D-HYDRO kernel input files. The main purpose of these specifications is to improve clarity on the latest file formats and transparency on changes. This formal specification will also facilitate the automation of certain processes, such as updating the user manuals and updating software packages.
+This repository contains the specifications for Delft3D FM kernel input files. The main purpose of these specifications is to improve clarity on the latest file formats and transparency on changes. This formal specification will also facilitate the automation of certain processes, such as updating the user manuals and updating software packages.
 
 
 **Table of contents**
@@ -7,8 +7,7 @@ This repository contains the specifications for D-HYDRO kernel input files. The 
 - [Contributing to this repository](#contributing-to-this-repository)
   - [Making changes](#making-changes)
   - [Releasing on GitHub](#releasing-on-github)
-    - [Official D-HYDRO release](#official-d-hydro-release)
-    - [Intermediate DIMR release](#intermediate-dimr-release)
+    - [Official Delft3D FM release](#official-delft3d-fm-release)
 - [Initiative](#initiative)
   - [Motivation](#motivation)
   - [Requirements \& decisions](#requirements--decisions)
@@ -31,12 +30,12 @@ Each kernel file type has a corresponding specification file in JSON defining it
 Each specification file must conform to a schema that defines its internal structure. For example, `ini.json.schema` validates `mdu.json` and `structures.json`, since an MDU and structure file are both INI files. They ensure consistency and enforceability of the specification format.
 
 # Supported Files
-The following D-HYDRO kernel files have a specification:
+The following Delft3D FM kernel files have a specification:
 - [MDU file](specifications/dflowfm/mdu.md)
 
 # Contributing to this repository
 
-Changes to this repository are required when updates happen that affect a D-HYDRO kernel file structure during kernel development.
+Changes to this repository are required when updates happen that affect a Delft3D FM kernel file structure during kernel development.
 
 ## Making changes
 
@@ -59,40 +58,23 @@ Changes to this repository are required when updates happen that affect a D-HYDR
   - `PATCH`: bugfixes or metadata changes (updating descriptions or default values)
 
 ## Releasing on GitHub
-When a specific set of specification is included in an official or intermediate D-HYDRO release, create a GitHub release for that commit.
+When a specification version is included in an official Delft3D FM release, create a GitHub release for that commit.
 
-### Official D-HYDRO release
+### Official Delft3D FM release
 1. Check out the desired commit
 2. Tag the release (use correct version)
 
 ```
-git tag -a v2025.01 -m "D-HYDRO 2025.01"
-git push origin v2025.01
+git tag -a 2026.02 -m "Delft3D FM 2026.02"
+git push origin 2026.02
 ```
 
-3. Go to the [Releases](https://github.com/Deltares-research/D-HYDRO-file-schematizations/releases) page on GitHub
+3. Go to the [Releases](https://github.com/Deltares/Delft3DFM.File.Specifications/releases) page on GitHub
 4. Click `Create a new release` and:
-   * Choose the tag you just created (e.g. `v2025.01`)
-   * Choose the previous tag (e.g. `v2024.03`)
+   * Choose the tag you just created (e.g. `2026.02`)
+   * Choose the previous tag (e.g. `2026.01`)
    * Select `Set as the latest release`
 5. Click `Publish release`
-
-### Intermediate DIMR release
-1. Checkout the desired commit
-2. Tag the release (use correct version)
-
-```
-git tag -a v2.27.27 -m "DIMR 2.27.27"
-git push origin v2.27.27
-```
-
-3. Go to the [Releases](https://github.com/Deltares-research/D-HYDRO-file-schematizations/releases) page on GitHub
-4. Click `Create a new release` and:
-   * Choose the tag you just created (e.g. `v2.27.27`)
-   * Choose the previous tag (e.g. `v2.27.26`)
-   * Select `Set as a pre-release`
-5. Click `Publish release`
-
 
 # Initiative
 
@@ -100,7 +82,7 @@ This section outlines the motivation, requirements, design decisions, and long-t
 
 ## Motivation
 
-The structure of model files in D-HYDRO changes over time as the source code develops. For users, it is important to know which input is accepted when setting up their models. These structural changes must also be reflected in our user manuals and software that relies on the D-HYDRO kernels.
+The structure of model files in Delft3D FM changes over time as the source code develops. For users, it is important to know which input is accepted when setting up their models. These structural changes must also be reflected in our user manuals and software that relies on the Delft3D FM kernels.
 
 Currently, the accepted file structures are embedded within the Fortran source code. This creates the following issues:
 - The information is not easily accessible to users and developers outside the kernel development team
