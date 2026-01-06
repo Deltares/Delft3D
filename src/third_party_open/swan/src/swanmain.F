@@ -985,7 +985,7 @@
       WRITE (VERTXT, '(F5.2)') VERNUM                                     40.03
 !      CALL BUGFIX ('A')
 !      CALL BUGFIX ('B')
-      VERTXT ='41.51.8'
+      VERTXT ='41.51.9'
       IF (SIZEOF(GRAV) == 8) THEN
         VERTXT = TRIM(VERTXT) // " Double-Prec."
       END IF
@@ -6953,6 +6953,11 @@
 !
       INTEGER     IERR
       REAL        TSTVAL(10)                                              40.00
+      REAL, PARAMETER :: DEPWMAX=100000.
+!           NetCDF fill values (E+30) might appear in depth and/or
+!           waterlevel arrays on dry points and be picked up when
+!           computing gradients. This is avoided by setting the actual
+!           depth to zero when it is above DEPWMAX.
       TYPE(BSPCDAT), POINTER :: CURBFL                                    40.31
       LOGICAL LPB                                                         40.80
       SAVE  IENT
@@ -7182,7 +7187,7 @@
               COMPDA(INDX,JDP1) = COMPDA(INDX,JDP2)
               WLVL = COMPDA(INDX,JWLV2)
               DEPW = DEP + WLVL + WLEV
-              IF (DEPW>100000.) THEN
+              IF (DEPW>DEPWMAX) THEN
                 DEPW = 0.
               ENDIF
               COMPDA(INDX,JDP2) = DEPW
@@ -7209,7 +7214,7 @@
            COMPDA(INDX,JDP1) = COMPDA(INDX,JDP2)
            WLVL = COMPDA(INDX,JWLV2)
            DEPW = DEP + WLVL + WLEV
-           IF (DEPW>100000.) THEN
+           IF (DEPW>DEPWMAX) THEN
               DEPW = 0.
            ENDIF
            COMPDA(INDX,JDP2) = DEPW
