@@ -29,7 +29,6 @@
 
 module fm_external_forcings
    use m_make_mirrorcells, only: make_mirrorcells
-   use m_in2dflowcell, only: in2dflowcell
    use m_count_links, only: count_links
    use m_add_bndtracer, only: add_bndtracer
    use m_addopenbndsection, only: addopenbndsection
@@ -1060,7 +1059,7 @@ contains
          call realloc(fnamwbnd, nwbnd, fill='')
          fnamwbnd(nwbnd) = trim(filename)
 
-      else if (qidfm == 'temperaturebnd' .and. jatem > 0) then
+      else if (qidfm == 'temperaturebnd' .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketm(nbndtm + 1:nx), numtm, usemask=.false., rrtolrel=rrtolrel)
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells'
          call msg_flush()
@@ -2074,10 +2073,8 @@ contains
          end if
       end if
 
-      if (allocated(kbndTM)) then
-         deallocate (xbndTM, ybndTM, xy2bndTM, zbndTM, kbndTM)
-      end if
-      if (jatem > 0) then
+      if (allocated(kbndTM)) deallocate (xbndTM, ybndTM, xy2bndTM, zbndTM, kbndTM)
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          if (allocated(sigmabndTM)) then
             deallocate (sigmabndTM)
          end if
@@ -2512,6 +2509,7 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: realloc
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2608,8 +2606,8 @@ contains
             jawave = 0 ! no wind, no waves
             call mess(LEVEL_INFO, 'No wind, so waves is switched off ')
          end if
-         if (jatem > 1) then
-            jatem = 1 ! no wind, no heat model temperature
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            temperature_model = TEMPERATURE_MODEL_TRANSPORT ! no wind, no heat model temperature
             call mess(LEVEL_INFO, 'No wind ?? => no heat model !')
          end if
       end if
@@ -2872,15 +2870,19 @@ contains
                end if
             end do
          end if
-
+         call init_cell_geom_as_polylines()
+         !$OMP PARALLEL DO SCHEDULE(GUIDED)
          do n = ndx2D + 1, ndxi
-            if (kcs(n) == 1) then
-               call IN2Dflowcell(Xz(n), Yz(n), ja)
+            if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
+               ja = point_find_netcell(Xz(n), Yz(n))
                if (ja >= 1) then
                   bare(n) = 0.0_dp
                end if
             end if
          end do
+         !$OMP END PARALLEL DO
+         call cleanup_cell_geom_polylines()
+
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)

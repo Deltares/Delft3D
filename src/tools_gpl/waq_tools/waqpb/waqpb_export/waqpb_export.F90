@@ -187,7 +187,10 @@ program waqpb_export
 !             Lookup item in items table
          iinpu = ioffse + naanta - 1
          iitem = index_in_array(inpuit(iinpu), itemid(:nitem))
-         if (iitem <= 0) stop 'unknown ITEM'
+         if (iitem <= 0) then
+            write(*,*) 'Error: unknown input item ', inpuit(iinpu)
+            stop 'unknown ITEM'
+         endif
 
          !             Documented items are marked for COEFEDIT.DAT
          if (inpudo(iinpu) == 'x') itmswi(iitem) = .true.
@@ -249,7 +252,10 @@ program waqpb_export
          !             Lookup item in items table
          ioutp = ioffse + naanta - 1
          iitem = index_in_array(outpit(ioutp), itemid(:nitem))
-         if (iitem <= 0) stop 'unknown ITEM'
+         if (iitem <= 0) then
+            write(*,*) 'Error: unknown output item ', outpit(ioutp)
+            stop 'unknown ITEM'
+         endif
 
          !             Find item properties and store in PDF structure
          if (outpsx(ioutp) == 1) then
@@ -354,7 +360,10 @@ program waqpb_export
          ioutf = ioffse + flu - 1
          !             write (lu_mes,*) ' flu ',flu,' ioutf ', ioutf
          iitem = index_in_array(outffl(ioutf), itemid(:nitem))
-         if (iitem <= 0) stop 'unknown FLUX'
+         if (iitem <= 0) then
+            write(*,*) 'Error: unknown flux ', outffl(ioutf)
+            stop 'unknown FLUX'
+         endif
 
          !             Find and store flux properties
          flu_id(flu) = itemid(iitem)

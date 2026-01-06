@@ -469,6 +469,7 @@ contains
                   ice_area_fraction(n) = 1.0_fp
                else
                   ice_thickness(n) = 0.0_fp
+                  snow_thickness(n) = 0.0_fp
                   ice_area_fraction(n) = 0.0_fp
                   ice_temperature(n) = celsius_to_kelvin(0.0_fp)
                end if

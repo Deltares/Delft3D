@@ -44,7 +44,7 @@ contains
       use m_flow, only: kmx, zws, BACKGROUNDWATERTEMPERATURE, BACKGROUNDSALINITY, ag, rhomean, adve, baroclinic_force_prev, dsall, dteml
       use m_flowgeom, only: ln, bob, acl, dx
       use m_transport, only: isalt, itemp, constituents
-      use m_flowparameters, only: jasal, jatem, epshs
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, epshs
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getLbotLtop
       use m_density_formulas, only: derivative_density_to_salinity_eckart, derivative_density_to_temperature_eckart
@@ -71,7 +71,7 @@ contains
       allocate (poflu(0:2 * kmx + 1), kicol(0:2 * kmx + 1), kicor(0:2 * kmx + 1))
       allocate (point(0:2 * kmx + 1), drho(0:2 * kmx + 1), dsal(0:2 * kmx + 1), dtem(0:2 * kmx + 1))
 
-      if (jasal == 0 .and. jatem == 0) then
+      if (jasal == 0 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
          return
       end if
 
@@ -248,7 +248,7 @@ contains
             end if
             sal = acl(L) * constituents(isalt, kl) + (1.0_dp - acl(L)) * constituents(isalt, kr)
             temp = backgroundwatertemperature
-            if (jatem > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                temp = acl(L) * constituents(itemp, kl) + (1.0_dp - acl(L)) * constituents(itemp, kr)
             end if
             drho_dsalinity = derivative_density_to_salinity_eckart(sal, temp)
@@ -256,7 +256,7 @@ contains
             dsal(kf) = grad
          end if
 
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             cl = constituents(itemp, kl2)
             if (kl1 >= kbl .and. kl1 <= ktl) then
                cl = ((pocol(kl2 - kbl + 1) - pocor(krr)) * constituents(itemp, kl1) &
