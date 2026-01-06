@@ -104,7 +104,7 @@
                 {
                     "key": "structureFile",
                     "value_type": "list[path]",
-                    "description": "File (*.ini) containing list of hydraulic structures."
+                    "description": "File (*.ini) containing list of hydraulic structures. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes."
                 },
                 {
                     "key": "gulliesFile",
@@ -3037,8 +3037,8 @@
                 },
                 {
                     "key": "extForceFileNew",
-                    "value_type": "path",
-                    "description": "New format for external forcings file *.ext, link with bc-format boundary conditions specification."
+                    "value_type": "list[path]",
+                    "description": "New format for external forcings file *.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes."
                 },
                 {
                     "key": "rainfall",

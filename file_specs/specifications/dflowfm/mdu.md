@@ -54,7 +54,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `netFile` | Net file (\*_net.nc) containing mesh information. |  |  |  |
 | `dryPointsFile` | Dry points file (\*.xyz), third column dummy z values, or polygon file (\*.pol). |  |  |  |
 | `gridEnclosureFile` | Enclosure file (\*.pol) to clip outer parts from the grid. |  |  |  |
-| `structureFile` | File (\*.ini) containing list of hydraulic structures. |  |  |  |
+| `structureFile` | File (\*.ini) containing list of hydraulic structures. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. |  |  |  |
 | `gulliesFile` | Polyline file (\*_gul.pliz), containing lowest bed level along talweg x, y, z level. |  |  |  |
 | `roofsFile` | Polyline file (\*_roof.pliz), containing roofgutter heights x, y, z level. |  |  |  |
 | `iniFieldFile` | Initial and parameter field file (\*.ini). |  |  |  |
@@ -509,7 +509,7 @@ This section contains the settings for external forcings.
 | Keyword | Description | Default | Supported values | Unit |
 | ------- | ----------- | ------- | ---------------- | ---- |
 | `extForceFile` | Old format for external forcings file \*.ext, link with tim/cmp-format boundary conditions specification. |  |  |  |
-| `extForceFileNew` | New format for external forcings file \*.ext, link with bc-format boundary conditions specification. |  |  |  |
+| `extForceFileNew` | New format for external forcings file \*.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes. |  |  |  |
 | `rainfall` | Include rainfall. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `qExt` | Include user Qin/out, externally provided. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `evaporation` | Include evaporation in water balance. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
