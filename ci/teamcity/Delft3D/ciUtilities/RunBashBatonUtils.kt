@@ -11,7 +11,7 @@ import Delft3D.step.*
 
 object RunBashBatonUtilities : BuildType({
     id("RunBashBatonUtilities")
-    name = "Run BashBaton Utilities
+    name = "Run BashBaton Utilities"
     description = """
         Runs BashBaton utilities (codespell, shfmt, shellcheck, bashunit and bashcov) on bash scripts.
     """.trimIndent()
