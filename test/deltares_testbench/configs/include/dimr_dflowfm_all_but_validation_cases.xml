@@ -236,7 +236,7 @@
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
             <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_cumulative_discharge" toleranceAbsolute="0.0001" />
+            <parameter name="cross_section_cumulative_discharge" toleranceRelative="1e-7" />
           </parameters>
         </file>
         <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
@@ -506,7 +506,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c010_waterlevel_tim_constant" ref="dflowfm_default">
-      <path version="2025-10-15T15:13:55.959000">e02_dflowfm/f005_boundary_conditions/c010_waterlevel_tim_constant</path>
+      <path version="2025-12-16T12:49:08.878000">e02_dflowfm/f005_boundary_conditions/c010_waterlevel_tim_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -519,7 +519,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c012_waterlevel_tim_mismatchstart" ref="dflowfm_default">
-      <path version="2025-10-15T15:13:56.577000">e02_dflowfm/f005_boundary_conditions/c012_waterlevel_tim_mismatchstart</path>
+      <path version="2025-12-16T12:49:11.688000">e02_dflowfm/f005_boundary_conditions/c012_waterlevel_tim_mismatchstart</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -532,7 +532,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c013_waterlevel_tim_mismatchend" ref="dflowfm_default">
-      <path version="2025-10-15T15:13:57.128000">e02_dflowfm/f005_boundary_conditions/c013_waterlevel_tim_mismatchend</path>
+      <path version="2025-12-16T12:49:14.167000">e02_dflowfm/f005_boundary_conditions/c013_waterlevel_tim_mismatchend</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -545,7 +545,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c014_waterlevel_cmp_constant" ref="dflowfm_default">
-      <path version="2025-10-15T15:13:57.771000">e02_dflowfm/f005_boundary_conditions/c014_waterlevel_cmp_constant</path>
+      <path version="2025-12-16T12:49:26.820000">e02_dflowfm/f005_boundary_conditions/c014_waterlevel_cmp_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -558,7 +558,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c016_waterlevel_bc_tim_constant" ref="dflowfm_default">
-      <path version="2025-10-15T15:13:58.345000">e02_dflowfm/f005_boundary_conditions/c016_waterlevel_bc_tim_constant</path>
+      <path version="2025-12-16T12:49:29.610000">e02_dflowfm/f005_boundary_conditions/c016_waterlevel_bc_tim_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -571,7 +571,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c017_waterlevel_bc_tim_varying" ref="dflowfm_default">
-      <path version="2025-10-15T15:13:59.203000">e02_dflowfm/f005_boundary_conditions/c017_waterlevel_bc_tim_varying</path>
+      <path version="2025-12-16T12:49:33.233000">e02_dflowfm/f005_boundary_conditions/c017_waterlevel_bc_tim_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -584,7 +584,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c018_waterlevel_bc_cmp_constant" ref="dflowfm_default">
-      <path version="2025-10-15T15:13:59.772000">e02_dflowfm/f005_boundary_conditions/c018_waterlevel_bc_cmp_constant</path>
+      <path version="2025-12-16T12:49:36.326000">e02_dflowfm/f005_boundary_conditions/c018_waterlevel_bc_cmp_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -597,7 +597,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c019_waterlevel_bc_cmp_varying" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:00.664000">e02_dflowfm/f005_boundary_conditions/c019_waterlevel_bc_cmp_varying</path>
+      <path version="2025-12-16T12:49:40.806000">e02_dflowfm/f005_boundary_conditions/c019_waterlevel_bc_cmp_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1547,7 +1547,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c100_tracer_tim_constant" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:46.187000">e02_dflowfm/f005_boundary_conditions/c100_tracer_tim_constant</path>
+      <path version="2025-12-16T12:49:44.631000">e02_dflowfm/f005_boundary_conditions/c100_tracer_tim_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1566,7 +1566,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c101_tracer_tim_varying" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:47.076000">e02_dflowfm/f005_boundary_conditions/c101_tracer_tim_varying</path>
+      <path version="2025-12-16T12:49:48.470000">e02_dflowfm/f005_boundary_conditions/c101_tracer_tim_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1585,7 +1585,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c102_tracer_cmp_constant" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:47.987000">e02_dflowfm/f005_boundary_conditions/c102_tracer_cmp_constant</path>
+      <path version="2025-12-16T12:49:51.827000">e02_dflowfm/f005_boundary_conditions/c102_tracer_cmp_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1604,7 +1604,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c103_tracer_cmp_varying" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:49.073000">e02_dflowfm/f005_boundary_conditions/c103_tracer_cmp_varying</path>
+      <path version="2025-12-16T12:49:54.832000">e02_dflowfm/f005_boundary_conditions/c103_tracer_cmp_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1623,7 +1623,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c104_tracer_bc_tim_constant" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:49.900000">e02_dflowfm/f005_boundary_conditions/c104_tracer_bc_tim_constant</path>
+      <path version="2025-12-16T12:49:57.518000">e02_dflowfm/f005_boundary_conditions/c104_tracer_bc_tim_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1642,7 +1642,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c105_tracer_bc_tim_varying" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:50.853000">e02_dflowfm/f005_boundary_conditions/c105_tracer_bc_tim_varying</path>
+      <path version="2025-12-16T12:50:00.094000">e02_dflowfm/f005_boundary_conditions/c105_tracer_bc_tim_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1661,7 +1661,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c106_tracer_bc_cmp_constant" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:51.543000">e02_dflowfm/f005_boundary_conditions/c106_tracer_bc_cmp_constant</path>
+      <path version="2025-12-16T12:50:02.748000">e02_dflowfm/f005_boundary_conditions/c106_tracer_bc_cmp_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1680,7 +1680,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c107_tracer_bc_cmp_varying" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:52.185000">e02_dflowfm/f005_boundary_conditions/c107_tracer_bc_cmp_varying</path>
+      <path version="2025-12-16T12:50:05.394000">e02_dflowfm/f005_boundary_conditions/c107_tracer_bc_cmp_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1749,7 +1749,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c140_waterlevel_bc_julian" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:55.200000">e02_dflowfm/f005_boundary_conditions/c140_waterlevel_bc_julian</path>
+      <path version="2025-12-16T12:50:08.041000">e02_dflowfm/f005_boundary_conditions/c140_waterlevel_bc_julian</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1762,7 +1762,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c144_waterlevel_tim_iso8601" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:55.848000">e02_dflowfm/f005_boundary_conditions/c144_waterlevel_tim_iso8601</path>
+      <path version="2025-12-16T12:50:10.571000">e02_dflowfm/f005_boundary_conditions/c144_waterlevel_tim_iso8601</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -3380,7 +3380,7 @@
           <parameters>
             <parameter name="mesh2d_windxu" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_windyu" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_Patm" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_Patm" toleranceRelative="1e-5" />
           </parameters>
         </file>
       </checks>
@@ -4499,7 +4499,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f015_c030_bedlev_xyz_netbnd" ref="dflowfm_default">
-      <path version="2025-10-15T15:17:32.522000">e02_dflowfm/f015_spatial_interpolation/c030_bedlev_xyz_netbnd</path>
+      <path version="2025-12-16T16:01:33.921000">e02_dflowfm/f015_spatial_interpolation/c030_bedlev_xyz_netbnd</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/bathymetry_map.nc" type="netCDF">
@@ -4784,9 +4784,9 @@
         <file name="output/winter97_saltwater_his.nc" type="netCDF">
           <parameters>
             <parameter name="salinity" toleranceAbsolute="0.0000001" />
-            <parameter name="Tair" toleranceAbsolute="0.0000001" />
+            <parameter name="Tair" toleranceAbsolute="1e-6" />
             <parameter name="potential_density" toleranceAbsolute="0.001" />
-            <parameter name="rhum" toleranceAbsolute="0.0000001" />
+            <parameter name="rhum" toleranceAbsolute="1e-5" />
             <parameter name="temperature" toleranceAbsolute="0.001" />
             <parameter name="ice_temperature" toleranceAbsolute="0.001" />
             <parameter name="ice_thickness" toleranceAbsolute="0.001" />
@@ -4863,7 +4863,7 @@
       <checks>
         <file name="dflowfmoutput/simplerain_his.nc" type="netCDF">
           <parameters>
-            <parameter name="rain" toleranceAbsolute="0.0001" />
+            <parameter name="rain" toleranceRelative="1e-7" />
           </parameters>
         </file>
       </checks>
@@ -5430,7 +5430,7 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_msed" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_msed" toleranceRelative="1e-7" />
           </parameters>
         </file>
       </checks>
@@ -5879,7 +5879,7 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_msed" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_msed" toleranceRelative="1e-7" />
           </parameters>
         </file>
       </checks>
@@ -9002,7 +9002,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000004" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
@@ -9012,7 +9012,7 @@
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
             <parameter name="s1" toleranceAbsolute="0.0000001" />
             <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000003" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000004" />
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        

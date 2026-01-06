@@ -537,7 +537,7 @@
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
             <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_cumulative_discharge" toleranceAbsolute="0.0001" />
+            <parameter name="cross_section_cumulative_discharge" toleranceRelative="1e-7" />
           </parameters>
         </file>
         <file name="dflowfmoutput/tt3_map.nc" type="netCDF">

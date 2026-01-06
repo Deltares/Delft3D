@@ -111,9 +111,10 @@ subroutine test_clockwise
 end subroutine test_clockwise
 
 subroutine test_pinpok
+    use m_missing, only: jins
+
     real(hp), dimension(6) :: x, y
     real(hp)               :: xl, yl
-    integer                :: jins
     integer                :: inside
 
     !
