@@ -166,13 +166,6 @@ project {
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
         }
-        dockerRegistry {
-            id = "DOCKER_REGISTRY_BASHBATON"
-            name = "Docker Registry BashBaton"
-            url = "https://containers.deltares.nl/"
-            userName = "%harbor-bashbaton-user%"
-            password = "%harbor-bashbaton-secret%"
-        }
         awsConnection {
             id = "doc_download_connection"
             name = "Deltares MinIO connection"

@@ -20,21 +20,14 @@ object RunBashBatonUtilities : BuildType({
 
     templates(
         TemplatePublishStatus,
-        TemplateMergeRequest
+        TemplateMergeRequest,
+        TemplateDockerRegistry
     )
 
     vcs {
         root(DslContext.settingsRoot)
         excludeDefaultBranchChanges = true
         cleanCheckout = true
-    }
-
-    features {
-        dockerRegistryConnections {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_BASHBATON"
-            }
-        }
     }
 
     // triggers {
