@@ -11,7 +11,9 @@ import Delft3D.step.*
 
 object RunBashBatonUtilities : BuildType({
     id("RunBashBatonUtilities")
+
     name = "Run BashBaton Utilities"
+
     description = """
         Runs BashBaton utilities (codespell, shfmt, shellcheck, bashunit and bashcov) on bash scripts.
     """.trimIndent()
@@ -25,6 +27,14 @@ object RunBashBatonUtilities : BuildType({
         root(DslContext.settingsRoot)
         excludeDefaultBranchChanges = true
         cleanCheckout = true
+    }
+
+    features {
+        dockerRegistryConnections {
+            loginToRegistry = on {
+                dockerRegistryId = "DOCKER_REGISTRY_BASHBATON"
+            }
+        }
     }
 
     // triggers {
@@ -45,7 +55,6 @@ object RunBashBatonUtilities : BuildType({
             name = "Run unit tests"
             scriptContent = """
                 #!/usr/bin/env bash
-                source /root/.bashrc
                 echo "[[ bashunit ]]"
                 bashunit --version
                 echo "[[ shfmt ]]"
