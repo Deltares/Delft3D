@@ -30,20 +30,22 @@ object RunBashBatonUtilities : BuildType({
         cleanCheckout = true
     }
 
-    // triggers {
-    //     vcs { 
-    //         // Trigger this build only if there are changes to the files matching these rules.
-    //         // Absolute paths match paths relative to the VCS root.
-    //         // See: https://www.jetbrains.com/help/teamcity/configuring-vcs-triggers.html#General+Syntax
-    //         triggerRules = """
-    //             +:ci/teamcity/Delft3D/verschilanalyse/**/*.sh
-    //         """.trimIndent()
-    //         branchFilter = "+:pull/*"
-    //     }
-    // }
+    val targetPath = "ci/teamcity/Delft3D/verschilanalyse"
+    val dockerImageName = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+
+    triggers {
+        vcs {
+            triggerRules = """
+                +:$targetPath/**/*.sh
+            """.trimIndent()
+
+            branchFilter = "+:pull/*"
+        }
+    }
 
     steps {
         mergeTargetBranch {}
+
         script {
             name = "Display versions"
             scriptContent = """
@@ -58,43 +60,50 @@ object RunBashBatonUtilities : BuildType({
                 bashcov --version
                 echo "[[ codespell ]]"
                 codespell --version
-                """.trimIndent()
-            dockerImage = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+            """.trimIndent()
+
+            dockerImage = dockerImageName
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
         }
+
         script {
             name = "Run codespell"
             scriptContent = """
                 #!/usr/bin/env bash
-                codespell --enable-colors ci/teamcity/Delft3D/verschilanalyse
-                """.trimIndent()
-            dockerImage = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+                codespell --enable-colors $targetPath
+            """.trimIndent()
+
+            dockerImage = dockerImageName
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
         }
+
         script {
             name = "Run shfmt"
             scriptContent = """
                 #!/usr/bin/env bash
-                FORCE_COLOR=1 shfmt --indent 2 --list --diff ci/teamcity/Delft3D/verschilanalyse
-                """.trimIndent()
-            dockerImage = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+                FORCE_COLOR=1 shfmt --indent 2 --list --diff $targetPath
+            """.trimIndent()
+
+            dockerImage = dockerImageName
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
         }
+
         script {
             name = "Run shellcheck"
             scriptContent = """
                 #!/usr/bin/env bash
-                shellcheck --shell=bash --format=tty --severity=style ci/teamcity/Delft3D/verschilanalyse/**/*.sh
-                """.trimIndent()
-            dockerImage = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+                shellcheck --shell=bash --format=tty --severity=style $targetPath/**/*.sh
+            """.trimIndent()
+
+            dockerImage = dockerImageName
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
