@@ -35,6 +35,7 @@ object RunBashBatonUtilities : BuildType({
 
     val targetPaths = listOf(
         "ci/teamcity/Delft3D/verschilanalyse",
+        "tmp"
         // add more paths here if needed
     )
 
