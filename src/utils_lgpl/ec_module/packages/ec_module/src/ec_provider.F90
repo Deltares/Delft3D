@@ -191,6 +191,7 @@ contains
             bcBlockPtr%ncptr => ecSupportFindNetCDF(instancePtr, netCDFId)
             if (.not. ecNetCDFInit(fileName, bcBlockPtr%ncptr, iostat)) then
                bcBlockPtr%ncptr => null()
+               write(*,*) 'initializebcblock, ecbcinit returned false'
                return
             end if
          end if

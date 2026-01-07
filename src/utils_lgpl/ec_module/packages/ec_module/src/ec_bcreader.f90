@@ -110,7 +110,8 @@ contains
        if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, &
                               bc%dimvector, vectormax=bc%quantity%vectormax)) then
           return                                               ! quantityName-plilabel combination not found
-                              endif
+       endif
+       
        !TK_Temp: Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
        do nrVar = 1, size(bc%ncptr%variable_names)
           if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) exit

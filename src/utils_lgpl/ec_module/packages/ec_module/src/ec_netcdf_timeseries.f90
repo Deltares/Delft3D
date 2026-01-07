@@ -329,18 +329,14 @@ contains
       success = .false.
       vmax = 1
 
-      ! if search for variable_name
-      if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
-         do ivar = 1, ncptr%nVars
-            ltl = len_trim(quantity)
-            if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
-         end do
-      end if
+     do ivar = 1, ncptr%nVars
+         ltl = len_trim(quantity)
+         if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
+     end do 
 
-      if (ivar <= ncptr%nVars) then
+     if (ivar <= ncptr%nVars) then
          q_id(1) = ivar
          if (allocated(ncptr%vector_definitions(ivar)%s)) then
-            ! TK_Temp
             call strsplit(ncptr%vector_definitions(ivar)%s, 1, elmnames, 1, sep=",")
             vmax = size(elmnames)
             if (allocated(q_id)) deallocate (q_id)
@@ -356,6 +352,7 @@ contains
          call setECMessage("ec_netcdf_timeseries::ecNetCDFScan: Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")
          q_id(1) = -1
       end if
+
       do itim = 1, ncptr%nTims
          ltl = len_trim(location)
          if (strcmpi(ncptr%tsid(itim), location)) exit ! Found
