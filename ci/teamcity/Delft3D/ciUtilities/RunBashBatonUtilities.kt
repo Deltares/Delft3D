@@ -45,7 +45,7 @@ object RunBashBatonUtilities : BuildType({
     steps {
         mergeTargetBranch {}
         script {
-            name = "Run unit tests"
+            name = "Display versions"
             scriptContent = """
                 #!/usr/bin/env bash
                 echo "[[ bashunit ]]"
@@ -57,7 +57,40 @@ object RunBashBatonUtilities : BuildType({
                 echo "[[ bashcov ]]"
                 bashcov --version
                 echo "[[ codespell ]]"
-                codespell --version            
+                codespell --version
+                """.trimIndent()
+            dockerImage = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerRunParameters = "--rm"
+            dockerPull = true
+        }
+        script {
+            name = "Run codespell"
+            scriptContent = """
+                #!/usr/bin/env bash
+                codespell --enable-colors ci/teamcity/Delft3D/verschilanalyse
+                """.trimIndent()
+            dockerImage = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerRunParameters = "--rm"
+            dockerPull = true
+        }
+        script {
+            name = "Run shfmt"
+            scriptContent = """
+                #!/usr/bin/env bash
+                FORCE_COLOR=1 shfmt --indent 2 --list --diff ci/teamcity/Delft3D/verschilanalyse
+                """.trimIndent()
+            dockerImage = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerRunParameters = "--rm"
+            dockerPull = true
+        }
+        script {
+            name = "Run shellcheck"
+            scriptContent = """
+                #!/usr/bin/env bash
+                shellcheck --shell=bash --format=tty --severity=style ci/teamcity/Delft3D/verschilanalyse/**/*.sh
                 """.trimIndent()
             dockerImage = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
