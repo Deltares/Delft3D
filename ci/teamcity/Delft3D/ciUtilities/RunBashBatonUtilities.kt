@@ -30,14 +30,23 @@ object RunBashBatonUtilities : BuildType({
         cleanCheckout = true
     }
 
-    val targetPath = "ci/teamcity/Delft3D/verschilanalyse"
+
     val dockerImageName = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+
+    val targetPaths = listOf(
+        "ci/teamcity/Delft3D/verschilanalyse",
+        // add more paths here if needed
+    )
+
+    val joinedTargetPaths = targetPaths.joinToString(" ")
+    val shellScripts = targetPaths.map { "$it/**/*.sh" }
+    val joinedShellScripts = shellScripts.joinToString(" ")
 
     triggers {
         vcs {
-            triggerRules = """
-                +:$targetPath/**/*.sh
-            """.trimIndent()
+            triggerRules = targetPaths.joinToString("\n") { 
+                path -> "+:$path/**/*.sh"
+            }
 
             branchFilter = "+:pull/*"
         }
@@ -72,7 +81,7 @@ object RunBashBatonUtilities : BuildType({
             name = "Run codespell"
             scriptContent = """
                 #!/usr/bin/env bash
-                codespell --enable-colors $targetPath
+                codespell --enable-colors $joinedTargetPaths
             """.trimIndent()
 
             dockerImage = dockerImageName
@@ -86,7 +95,7 @@ object RunBashBatonUtilities : BuildType({
             name = "Run shfmt"
             scriptContent = """
                 #!/usr/bin/env bash
-                FORCE_COLOR=1 shfmt --indent 2 --list --diff $targetPath
+                FORCE_COLOR=1 shfmt --indent 2 --list --diff $joinedTargetPaths
             """.trimIndent()
 
             dockerImage = dockerImageName
@@ -100,22 +109,13 @@ object RunBashBatonUtilities : BuildType({
             name = "Run shellcheck"
             scriptContent = """
                 #!/usr/bin/env bash
-                shellcheck --shell=bash --format=tty --severity=style $targetPath/**/*.sh
+                shellcheck --shell=bash --format=tty --severity=style $joinedShellScripts
             """.trimIndent()
 
             dockerImage = dockerImageName
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
-            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
-        }
-
-        script {
-            name = "will not fail"
-            scriptContent = """
-                #!/usr/bin/env bash
-                echo "Mike has a little lamb"
-            """.trimIndent()
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
         }
     }
