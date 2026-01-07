@@ -94,7 +94,7 @@ module precision_basics
 
 contains
 
-   function comparerealdouble(val1, val2, eps)
+   elemental function comparerealdouble(val1, val2, eps)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two double precision numbers
@@ -155,7 +155,7 @@ contains
 
    end function comparerealdouble
 
-   function comparerealsingle(val1, val2, eps)
+   elemental function comparerealsingle(val1, val2, eps)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two real numbers of type sp
@@ -217,7 +217,7 @@ contains
 
    end function comparerealsingle
 
-   function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(compare)
+   elemental function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(compare)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two double precision numbers
@@ -267,7 +267,7 @@ contains
 
    end function comparerealdouble_finite_check
 
-   function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(compare)
+   elemental function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(compare)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two real numbers of type sp

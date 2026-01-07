@@ -277,6 +277,7 @@ contains
 !> optimized ray-casting point-in-polygon test.
 !! pure function that works with array slices or full arrays.
    pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
+      use precision_basics, only: comparereal
 
       real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
       integer, intent(in) :: n !< number of polygon points
@@ -325,7 +326,7 @@ contains
             if (xl < x_intersect) then
                ! ray crosses edge to the right of point
                crossings = crossings + 1
-            else if (xl == x_intersect) then
+            else if (comparereal(xl, x_intersect)) then
                ! point is exactly on the edge
                is_inside = .true.
                if (jins == 0) then

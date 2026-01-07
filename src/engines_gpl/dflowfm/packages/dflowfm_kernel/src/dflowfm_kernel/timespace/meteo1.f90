@@ -4492,6 +4492,7 @@ module timespace_triangle
    use precision
    use timespace_data
    use m_alloc
+   use geometry_module, only: pinpok_raycast
 
    implicit none
 
@@ -4520,76 +4521,7 @@ module timespace_triangle
    end interface find_nearest
 
 contains
-   !
-   !
-   ! ==========================================================================
-   !>
-   subroutine pinpok(xl, yl, n, x, y, inside)
-
-      implicit none
-
-      real(kind=dp), intent(in) :: xl, yl ! point under consideration
-      integer, intent(in) :: n
-      real(kind=dp), dimension(n), intent(in) :: x, y ! polygon(n)
-      integer, intent(out) :: inside
-
-      integer :: i, i1, i2, np, rechts
-      real(kind=dp) :: rl, rm, x1, x2, y1, y2
-
-      if (n <= 2) then
-         inside = 1
-      else
-         np = 0
-5        continue
-         np = np + 1
-         if (np <= n) then
-            if (x(np) /= dmiss_default) then
-               goto 5
-            end if
-         end if
-         np = np - 1
-         inside = 0
-         rechts = 0
-         i = 0
-10       continue
-         i1 = mod(i, np) + 1
-         i2 = mod(i1, np) + 1
-         x1 = x(i1)
-         x2 = x(i2)
-         y1 = y(i1)
-         y2 = y(i2)
-         if (xl >= min(x1, x2) .and. xl <= max(x1, x2)) then
-            if (xl == x1 .and. yl == y1 .or. & ! tussen of op lijnstuk
-                (x1 == x2 .and. & ! op punt 1
-                 yl >= min(y1, y2) .and. yl <= max(y1, y2)) .or. & ! op verticale lijn
-                (yl == y1 .and. y1 == y2)) then ! op horizontale lijn
-               inside = 1
-               return
-            else if (x1 /= x2) then ! scheve lijn
-               rl = (xl - x1) / (x2 - x1)
-               rm = (y1 - yl) + rl * (y2 - y1)
-               if (rm == 0) then ! op scheve lijn
-                  inside = 1
-                  return
-               else if (rm > 0.0_dp) then ! onder scheve lijn
-                  if (xl == x1 .or. xl == x2) then
-                     if (x1 > xl .or. x2 > xl) then
-                        rechts = rechts + 1
-                     end if
-                  end if
-                  inside = 1 - inside
-               end if
-            end if
-         end if
-         i = i + 1
-         if (i < np) then
-            goto 10
-         end if
-         if (mod(rechts, 2) /= 0) then
-            inside = 1 - inside
-         end if
-      end if
-   end subroutine pinpok
+  
    !
    !
    ! ==========================================================================
@@ -4853,7 +4785,11 @@ contains
          xtmin = min(xt(1), min(xt(2), xt(3)))
          ytmin = min(yt(1), min(yt(2), yt(3)))
          if (xp >= xtmin .and. xp <= xtmax .and. yp >= ytmin .and. yp <= ytmax) then
-            call pinpok(xp, yp, n3, xt, yt, intri)
+            if (pinpok_raycast(xp, yp, xt, yt, n3)) then
+               intri = 1
+            else
+               intri = 0
+            end if
             if (intri == 1) then
                nrfind = k
                nroldfind = nrfind
@@ -5855,7 +5791,11 @@ contains
             if (kc(n) > 0) then ! search allowed, (not allowed like closed pipes point etc)
                if (npl == 1) then ! 1 point polygon: check whether point lies inside a grid cell
                   nn = size(nd(n)%x)
-                  call pinpok(xpl(1), ypl(1), nn, nd(n)%x, nd(n)%y, inp)
+                  if (pinpok_raycast(xpl(1), ypl(1), nd(n)%x, nd(n)%y, nn)) then
+                     inp = 1
+                  else
+                     inp = 0
+                  end if
                else ! real polygon, check whether grid cell lies inside polygon
                   call inwhichpolygon(xz(n), yz(n), inp)
                end if
