@@ -326,7 +326,7 @@ contains
             if (xl < x_intersect) then
                ! ray crosses edge to the right of point
                crossings = crossings + 1
-            else if (comparereal(xl, x_intersect)) then
+            else if (comparereal(xl, x_intersect) == 0) then
                ! point is exactly on the edge
                is_inside = .true.
                if (jins == 0) then
