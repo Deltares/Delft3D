@@ -109,6 +109,14 @@ object RunBashBatonUtilities : BuildType({
             dockerPull = true
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
         }
+
+        script {
+            name = "will not fail"
+            scriptContent = """
+                #!/usr/bin/env bash
+                echo "Mike has a little lamb"
+            """.trimIndent()
+        }
     }
 
     requirements {
