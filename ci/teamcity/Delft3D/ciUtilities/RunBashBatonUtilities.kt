@@ -74,7 +74,7 @@ object RunBashBatonUtilities : BuildType({
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
-            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILUR
+            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
         }
         script {
             name = "Run shfmt"
@@ -86,7 +86,7 @@ object RunBashBatonUtilities : BuildType({
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
-            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILUR
+            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
         }
         script {
             name = "Run shellcheck"
@@ -98,7 +98,7 @@ object RunBashBatonUtilities : BuildType({
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
-            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILUR
+            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
         }
     }
 
