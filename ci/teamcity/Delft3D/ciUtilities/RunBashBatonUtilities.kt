@@ -116,6 +116,7 @@ object RunBashBatonUtilities : BuildType({
                 #!/usr/bin/env bash
                 echo "Mike has a little lamb"
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
         }
     }
 
