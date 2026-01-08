@@ -105,7 +105,6 @@ object RunBashBatonUtilities : BuildType({
             name = "Run shellcheck"
             scriptContent = """
                 #!/usr/bin/env bash
-                //find $joinedTargetPaths  -name "*.sh" -print0 | xargs -0 shellcheck
                 find $joinedTargetPaths -name '*.sh' -exec shellcheck {} +
             """.trimIndent()
 
