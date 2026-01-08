@@ -159,6 +159,42 @@ function(F90TWTEST NAME)
             COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${NAME}> $<TARGET_RUNTIME_DLLS:${NAME}>
             COMMAND_EXPAND_LISTS
         )
+        # Copy PETSc DLL explicitly (not captured by TARGET_RUNTIME_DLLS)
+        add_custom_command(TARGET ${NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${petsc_libdir}/libpetsc.dll" 
+                $<TARGET_FILE_DIR:${NAME}>
+            COMMENT "Copying PETSc runtime dependency ${petsc_libdir}"
+        )
+
+        add_custom_command(TARGET ${NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "$ENV{ONEAPI_ROOT}/mpi/latest/bin/impi.dll" 
+                $<TARGET_FILE_DIR:${NAME}>
+            COMMENT "Copying impi runtime dependency"
+        )
+
+        add_custom_command(TARGET ${NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "$ENV{ONEAPI_ROOT}/mkl/latest/bin/mkl_sequential.2.dll" 
+                $<TARGET_FILE_DIR:${NAME}>
+            COMMENT "Copying mkl runtime dependency"
+        )
+
+        add_custom_command(TARGET ${NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${checkout_src_root}/${hdf5_module}/bin/hdf5.dll" 
+                $<TARGET_FILE_DIR:${NAME}>
+            COMMENT "Copying mkl runtime dependency"
+        )
+        add_custom_command(TARGET ${NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${checkout_src_root}/${hdf5_module}/bin/hdf5_hl.dll" 
+                $<TARGET_FILE_DIR:${NAME}>
+            COMMENT "Copying mkl runtime dependency"
+        )
+        
+
     endif()
     gtest_discover_tests(${NAME} WORKING_DIRECTORY $<TARGET_FILE_DIR:${NAME}>)
 endfunction()
