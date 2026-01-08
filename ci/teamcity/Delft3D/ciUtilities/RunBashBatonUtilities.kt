@@ -39,19 +39,14 @@ object RunBashBatonUtilities : BuildType({
         // add more paths here if needed
     )
 
-    val joinedTargetPaths = targetPaths.joinToString(" ")
-    val shellScripts = targetPaths.map { "$it/**/*.sh" }
-    val joinedShellScripts = shellScripts.joinToString(" ")
-
     triggers {
-        vcs {
-            triggerRules = targetPaths.joinToString("\n") { 
-                path -> "+:$path/**/*.sh"
-            }
-
+        vcs { 
+            triggerRules = targetPaths.joinToString("\n") { "+:$it/**/*.sh" }
             branchFilter = "+:pull/*"
         }
     }
+
+    val joinedTargetPaths = targetPaths.joinToString(" ")
 
     steps {
         mergeTargetBranch {}
@@ -96,7 +91,7 @@ object RunBashBatonUtilities : BuildType({
             name = "Run shfmt"
             scriptContent = """
                 #!/usr/bin/env bash
-                FORCE_COLOR=1 shfmt --indent 2 --list --diff $joinedTargetPaths
+                FORCE_COLOR=1 shfmt --indent 4 --list --diff $joinedTargetPaths
             """.trimIndent()
 
             dockerImage = dockerImageName
@@ -110,7 +105,8 @@ object RunBashBatonUtilities : BuildType({
             name = "Run shellcheck"
             scriptContent = """
                 #!/usr/bin/env bash
-                shellcheck --shell=bash --format=tty --severity=style $joinedShellScripts
+                //find $joinedTargetPaths  -name "*.sh" -print0 | xargs -0 shellcheck
+                find $joinedTargetPaths  -name '*.sh' -exec shellcheck {}
             """.trimIndent()
 
             dockerImage = dockerImageName
