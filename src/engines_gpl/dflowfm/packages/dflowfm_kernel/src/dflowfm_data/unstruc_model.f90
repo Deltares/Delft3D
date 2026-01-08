@@ -2672,6 +2672,7 @@ contains
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
+      use m_fm_icecover, only: fm_ice_null, ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
       use m_flow_validatestate_data, only: dtavg_min_err, s01maxavg_min_err, s01_max_err, u01_max_err, umag_max_err, s1_max_warn, u1abs_max_warn, umag_max_err, ssc_max_err, umag_max_warn
 
       integer, intent(in) :: mout !< File pointer where to write to.
@@ -3792,6 +3793,12 @@ contains
          call prop_set(prop_ptr, 'calibration', 'UseCalibration', jacali, 'Activate calibration factor friction multiplier (1 = yes, 0 = no)') ! Could be updated to check if both strings are empty or filled
          call prop_set(prop_ptr, 'calibration', 'DefinitionFile', trim(md_cldfile), 'File (*.cld) containing calibration definitions')
          call prop_set(prop_ptr, 'calibration', 'AreaFile', trim(md_cllfile), 'File (*.cll) containing area distribution of calibration definitions')
+      end if
+
+      ! Ice
+      if (writeall .or. ja_icecover /= ICECOVER_NONE) then
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'IceCoverModel', trim(fm_ice_convert_value_to_string('IceCoverModel', ice_data)), 'Type of ice model (None, External, Semtner)')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'AddIceToMap', ice_data%mapout%default, 'Add ice quantities to map file (1 = yes, 0 = no)')
       end if
 
 ! Output

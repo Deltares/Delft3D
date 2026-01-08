@@ -528,4 +528,29 @@ contains
       call icecover_prepare_output(ice_data, water_level_fp, water_density, ag_fp)
    end subroutine fm_icecover_prepare_output
 
+   !> Convert a value into the corresponding input string. This is the opposite of reading the input file.
+   !! This function is used to output the mdu-file
+   function fm_ice_convert_value_to_string(keyword, ice_data) result(string)
+      character(len=20) :: string !< value of "keyword", converted to (input-)string
+      character(len=*), intent(in) :: keyword !< keyword inside ice_data that needs to be converted
+      type(icecover_type), intent(in) :: ice_data
+
+      string = ''
+      select case (keyword)
+      case ('IceCoverModel')
+         select case (ice_data%model_type)
+         case (ICECOVER_NONE)
+            string = 'None'
+         case (ICECOVER_EXT)
+            string = 'External'
+         case (ICECOVER_SEMTNER)
+            string = 'Semtner'
+         case default
+            continue
+         end select
+      case default
+         continue
+      end select
+   end function fm_ice_convert_value_to_string
+
 end module m_fm_icecover
