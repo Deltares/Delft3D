@@ -89,7 +89,7 @@ module m_horton
                ! No valid band width between min and max infiltration capacity
                infCapState(i) = HORTON_CAPSTAT_NOCHANGE
 
-            else if ((includeRain == 1 .and. (rainfall(i) / HOURS_PER_DAY > minInfCap(i))) .or. initialStorage(i) > 0.0_dp) then
+            else if ((includeRain == 1 .and. (rainfall(i) / HOURS_PER_DAY > minInfCap(i))) .or. comparereal(initialStorage(i), 0.0_dp) == 1) then
                
                ! Wet situation, infiltration capacity is decreasing
                infCapState(i) = HORTON_CAPSTAT_DECREASE
