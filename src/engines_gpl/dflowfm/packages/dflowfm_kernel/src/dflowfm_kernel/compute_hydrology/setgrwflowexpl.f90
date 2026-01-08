@@ -51,8 +51,6 @@ contains
       use m_horton, only: compute_horton_infiltration
       use m_wind, only: jarain, rain
 
-      real(kind=dp), parameter :: mmphr_to_mps = 1.0e-3_dp / 3600.0_dp
-
       integer :: k1, k2, L, k
       integer :: ierr
       real(kind=dp) :: z1, z2, h1, h2, dh, dQ, hunsat, hunsat1, hunsat2, fac, qgrw, h2Q
@@ -65,7 +63,6 @@ contains
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then ! Horton's infiltration equation
          ierr = compute_horton_infiltration(ndx, HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, infiltcap, &
                                             dts, hs, rain, jarain, HortonState)
-         infiltcap = infiltcap * mmphr_to_mps
       end if
 
       if (infiltrationmodel == 1) then ! orig. interceptionmodel: no horizontal groundwater flow, and infiltration is instantaneous as long as it fits in unsat zone (called 'interception' here, but naming to be discussed)

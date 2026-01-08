@@ -57,27 +57,30 @@ module m_horton
                                            timestepSize, initialStorage, rainfall, includeRain, infCapState, infiltrationMM) result(ierr)
          
          
-         integer,                 intent(in   ) :: n                  !< Array length (grid cell count)
-         real(kind=dp),           intent(in   ) :: minInfCap(n)       !< Minimum infiltration capacity (mm/hr)
-         real(kind=dp),           intent(in   ) :: maxInfCap(n)       !< Maximum infiltration capacity (mm/hr)
-         real(kind=dp),           intent(in   ) :: decreaseRate(n)    !< Decrease rate (1/hr)
-         real(kind=dp),           intent(in   ) :: recoveryRate(n)    !< Recovery rate (1/hr)
-         real(kind=dp),           intent(  out) :: infCap(n)          !< Infiltration capacity (mm/hr)
-         real(kind=dp),           intent(in   ) :: timestepSize       !< Timestep size (s)
-         real(kind=dp),           intent(in   ) :: initialStorage(n)  !< Initial storage (=storage at start of timestep) (m)
-         real(kind=dp),           intent(in   ) :: rainfall(:)        !< Rainfall in current timestep (or more precise: additional ground rainfall, so minus interception)
-         integer,                 intent(in   ) :: includeRain        !< indicates whether or not (1/0) array Rainfall is available, otherwise no rainfall is assumed
-         integer,                 intent(  out) :: infCapState(n)     !< Infiltration capacity state; (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE))
-         real(kind=dp), optional, intent(  out) :: infiltrationMM(n)  !< Infiltration amount (mm)
-         integer                                :: ierr               !< Result status, DHYD_NOERR if successful.
+         integer,                 intent(in)  :: n                  !< Array length (grid cell count)
+         real(kind=dp),           intent(in)  :: minInfCap(n)       !< Minimum infiltration capacity (mm/hr)
+         real(kind=dp),           intent(in)  :: maxInfCap(n)       !< Maximum infiltration capacity (mm/hr)
+         real(kind=dp),           intent(in)  :: decreaseRate(n)    !< Decrease rate (1/hr)
+         real(kind=dp),           intent(in)  :: recoveryRate(n)    !< Recovery rate (1/hr)
+         real(kind=dp),           intent(out) :: infCap(n)          !< Infiltration capacity (m/s)
+         real(kind=dp),           intent(in)  :: timestepSize       !< Timestep size (s)
+         real(kind=dp),           intent(in)  :: initialStorage(n)  !< Initial storage (=storage at start of timestep) (m)
+         real(kind=dp),           intent(in)  :: rainfall(:)        !< Rainfall in current timestep (or more precise: additional ground rainfall, so minus interception) (mm/day)
+         integer,                 intent(in)  :: includeRain        !< Indicates whether or not (1/0) array Rainfall is available, otherwise no rainfall is assumed
+         integer,                 intent(out) :: infCapState(n)     !< Infiltration capacity state; (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE))
+         real(kind=dp), optional, intent(out) :: infiltrationMM(n)  !< Infiltration amount (mm)
+         integer                              :: ierr               !< Result status, DHYD_NOERR if successful.
          
          ! local
-         integer, parameter :: nrSecondsPerHour = 3600
+         integer, parameter :: SECONDS_PER_HOUR = 3600 !< Number of seconds per hour
+         integer, parameter :: HOURS_PER_DAY = 24 !< Number of hours per day
+         integer, parameter :: MPS_TO_MMPHR = SECONDS_PER_HOUR * 1000 !< Conversion factor from m/s to mm/hr
          real(kind=dp)      :: rFrac
          integer            :: i
          
          ierr = DHYD_NOERR
-         rFrac = timestepSize / nrSecondsPerHour
+         rFrac = timestepSize / SECONDS_PER_HOUR
+         infCap = infCap * MPS_TO_MMPHR ! Convert to mm/hr for computation
 
          do i = 1, n
 
@@ -86,31 +89,25 @@ module m_horton
                ! No valid band width between min and max infiltration capacity
                infCapState(i) = HORTON_CAPSTAT_NOCHANGE
 
-            else if (includeRain == 1 .and. (rainfall(i) > minInfCap(i))) then ! If rain is included and above minimum infiltration capacity
+            else if ((includeRain == 1 .and. (rainfall(i) / HOURS_PER_DAY > minInfCap(i))) .or. initialStorage(i) > 0.0_dp) then
                
                ! Wet situation, infiltration capacity is decreasing
                infCapState(i) = HORTON_CAPSTAT_DECREASE
                infCap(i) = minInfCap(i) + (infCap(i) - minInfCap(i)) * exp(-1d0 * decreaseRate(i) * rFrac)
 
-            else ! Rain is not included and/or below minimum infiltration capacity
+            else
 
-               if (infCap(i) < maxInfCap(i)) then
-                  
-                  ! Filtration capacity is below maximum, so it can recover
-                  infCapState(i) = HORTON_CAPSTAT_RECOVERY
-                  infCap(i) = maxInfCap(i) - (maxInfCap(i) - infCap(i)) * exp(-1d0 * recoveryRate(i) * rFrac)
-                  
-               else 
+               ! Dry situation, infiltration capacity is recovering
+               infCapState(i) = HORTON_CAPSTAT_RECOVERY
+               infCap(i) = maxInfCap(i) - (maxInfCap(i) - infCap(i)) * exp(-1d0 * recoveryRate(i) * rFrac)
 
-                  ! Filtration capacity is at maximum, so no change
-                  infCapState(i) = HORTON_CAPSTAT_NOCHANGE
-
-               end if
             end if
          end do
 
+         infCap = infCap / MPS_TO_MMPHR ! Convert back to m/s
+
          if (present(infiltrationMM)) then
-            infiltrationMM = infCap * timestepSize / nrSecondsPerHour
+            infiltrationMM = infCap * timestepSize * 1e-3_dp ! m/s * s -> m -> mm
          end if
 
       end function compute_horton_infiltration
