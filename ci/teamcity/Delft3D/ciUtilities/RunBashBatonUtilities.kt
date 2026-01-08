@@ -34,9 +34,8 @@ object RunBashBatonUtilities : BuildType({
     val dockerImageName = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
 
     val targetPaths = listOf(
-        "ci/teamcity/Delft3D/verschilanalyse",
-        "tmp"
-        // add more paths here if needed
+        "ci/teamcity/Delft3D/verschilanalyse"
+        // add more comma-separated paths here if needed
     )
 
     triggers {
