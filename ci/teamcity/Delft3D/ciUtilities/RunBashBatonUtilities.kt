@@ -104,7 +104,7 @@ object RunBashBatonUtilities : BuildType({
             name = "Run shellcheck"
             scriptContent = """
                 #!/usr/bin/env bash
-                find $joinedTargetPaths -name '*.sh' -exec shellcheck --format=diff {} +
+                find $joinedTargetPaths -name '*.sh' -exec shellcheck --format=tty {} +
             """.trimIndent()
 
             dockerImage = dockerImageName
