@@ -57,7 +57,7 @@ contains
       call readMDUFile('test_output.mdu', ierr)
       call f90_expect_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')
       
-      call F90_EXPECT_STREQ(md_obsfile, tm_md_obsfile, 'Difference in md_obsfile after read-write-read cycle.')
+      call F90_EXPECT_STREQ(trim(md_obsfile)//C_NULL_CHAR, trim(tm_md_obsfile)//C_NULL_CHAR, 'Difference in md_obsfile after read-write-read cycle.')
       
       call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
       

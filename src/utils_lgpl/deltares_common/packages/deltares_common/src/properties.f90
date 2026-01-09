@@ -39,7 +39,7 @@ module properties
    implicit none
    private
 
-   integer, parameter :: max_length = 256
+   integer, parameter :: max_length = 1024
    integer, parameter :: xml_buffer_length = 1000
    character(len=1), parameter :: space = ' '
    character(len=1), parameter :: tab = achar(9)
