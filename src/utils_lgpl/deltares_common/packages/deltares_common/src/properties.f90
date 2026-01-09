@@ -1,7 +1,7 @@
 module properties
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -1617,7 +1617,7 @@ contains
       integer :: mout
       integer :: maxkeylength
       character(len=1), dimension(:), pointer :: data_ptr
-      character(len=max_length) :: string
+      character(len=1024) :: string
       character(len=40) :: type_string
       logical :: success
       integer :: level
