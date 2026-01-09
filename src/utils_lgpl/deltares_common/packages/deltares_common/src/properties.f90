@@ -1617,7 +1617,7 @@ contains
       integer :: mout
       integer :: maxkeylength
       character(len=1), dimension(:), pointer :: data_ptr
-      character(len=max_length) :: string
+      character(len=1024) :: string
       character(len=40) :: type_string
       logical :: success
       integer :: level
