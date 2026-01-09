@@ -332,7 +332,7 @@ contains
       allocate (links(npl))
       call convert1D2DLongCulverts(xpl, ypl, zpl, npl, links)
       npl = 1
-      do i = 1, nlongculverts !< save possibly adjusted xpl to new structure file
+      do i = 1, nlongculverts !< save adjusted xpl and ypl to new structure file
          longculvertindex2 = 0
          do j = 1, tree_num_nodes(strs_ptr) !> check all structure file blocks
             str_ptr_2 => strs_ptr%CHILD_NODES(j)%node_ptr
@@ -410,6 +410,38 @@ contains
       call tree_destroy(strs_ptr)
 
    end subroutine convertLongCulvertsAsNetwork
+
+   subroutine replaceCoordinatesInStructures(xcoords, ycoords, ncoords, structures)
+      use tree_data_types, only: tree_data
+      implicit none
+      real(kind=dp), intent(in) :: xcoords(:)
+      real(kind=dp), intent(in) :: ycoords(:)
+      integer, intent(in) :: ncoords
+      type(tree_data), pointer, intent(inout) :: structures
+
+      type(tree_data), pointer :: current
+      character(len=IDLEN) :: typestr
+
+      ncoords = 1
+      do i = 1, nlongculverts !< save adjusted xpl and ypl to new structure file
+         longculvertindex2 = 0
+         do j = 1, tree_num_nodes(structures) !> check all structure file blocks
+            current => structures%CHILD_NODES(j)%node_ptr
+            call prop_get(current, '', 'type', typestr, success)
+            if (success .and. strcmpi(typestr, 'longCulvert')) then
+               longculvertindex2 = longculvertindex2 + 1
+               if (longculvertindex2 == i) then
+                  numcoords = size(longculverts(i)%xcoords)
+                  call tree_remove_child_by_name(current, 'xCoordinates', istart)
+                  call prop_set(current, '', 'xCoordinates', xcoords(ncoords:npl + numcoords - 1), '')
+                  ncoords = ncoords + numcoords + 1
+                  exit
+               end if
+            end if
+         end do
+      end do
+   end subroutine
+
    !> Loads the long culverts from a structures.ini file and
    !! creates extra netnodes+links for them.
    subroutine loadLongCulvertsAsNetwork(structurefile, jaKeepExisting, ierr)
