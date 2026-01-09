@@ -78,14 +78,64 @@ contains
 
       call resetFullFlowModel()
 
-      call f90_expect_eq(CHANGEDIRQQ('MDUversion'), .true., '')
+      call F90_ASSERT_TRUE(CHANGEDIRQQ('MDUversion'), '')
       ! read MDU
       call readMDUFile('old_model.mdu', ierr)
-      call f90_expect_eq(CHANGEDIRQQ('..'), .true., '')
+      call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
 
       call f90_expect_eq(ierr, DFM_NOERR, 'Error when reading old MDU file version with [model] block.')
 
    end subroutine test_mdu_fileversion_model
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_mdu_fileversion_general, test_mdu_fileversion_general,
+   subroutine test_mdu_fileversion_general() bind(C)
+      use unstruc_model, only: readMDUFile
+      use dfm_error, only: DFM_NOERR
+      use m_partitioninfo, only: jampi
+      use ifport, only: CHANGEDIRQQ
+      use m_resetfullflowmodel, only: resetFullFlowModel
+
+      integer :: ierr
+
+      jampi = 0
+      call resetFullFlowModel()
+
+      call F90_ASSERT_TRUE(CHANGEDIRQQ("MDUversion"), '')
+      ! read MDU
+      call readMDUFile('new_general.mdu', ierr)
+      call F90_ASSERT_TRUE(CHANGEDIRQQ(".."), '')
+
+      call f90_expect_eq(ierr, DFM_NOERR, 'Error when reading new MDU file version with [General] block.')
+   end subroutine test_mdu_fileversion_general
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_read_stretch_coef, test_read_stretch_coef,
+   subroutine test_read_stretch_coef() bind(C)
+      use unstruc_model, only: readMDUFile
+      use dfm_error, only: DFM_NOERR
+      use m_partitioninfo, only: jampi
+      use ifport, only: CHANGEDIRQQ
+      use m_resetfullflowmodel, only: resetFullFlowModel
+      use m_flow, only: laycof
+      use precision, only: dp
+
+      integer :: ierr
+      real(kind=hp) :: sumlaycof
+
+      jampi = 0
+      call resetFullFlowModel()
+
+      call F90_ASSERT_TRUE(CHANGEDIRQQ("MDUversion"), '')
+      ! read MDU
+      call readMDUFile('stretch_example.mdu', ierr)
+      call F90_ASSERT_TRUE(CHANGEDIRQQ(".."), '')
+
+      call f90_expect_eq(ierr, DFM_NOERR, 'Error when reading MDU file with stretch coeff.')
+      call f90_expect_eq(size(laycof), 18, "Difference in dimension of laycof")
+      sumlaycof = sum(laycof)
+      call F90_ASSERT_NEAR(sumlaycof, 100.0_dp, 1e-12_dp, "Difference in sum of laycof for all layers")
+   end subroutine test_read_stretch_coef
    !$f90tw)
 
 end module test_mdu_file_read_write
