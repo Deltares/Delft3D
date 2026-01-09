@@ -3,6 +3,7 @@
 set -eo pipefail
 
 # Import bash utility functions.
+# shellcheck source=ci/teamcity/Delft3D/verschilanalyse/bundle/util.sh
 source util.sh
 
 function show_help {
