@@ -27,40 +27,41 @@ module test_mdu_file_read_write
    implicit none
 
 contains
-   function get_current_dir() result(cwd)
-      use iso_c_binding
-      character(len=:), allocatable :: cwd
-      character(kind=c_char, len=1024) :: buf
-      type(c_ptr) :: res
-      integer :: null_pos
 
-      interface
-         function getcwd(buf, size) bind(C, name="_getcwd")
-            import :: c_char, c_size_t, c_ptr
-            type(c_ptr) :: getcwd
-            character(kind=c_char) :: buf(*)
-            integer(c_size_t), value :: size
-         end function
-      end interface
-
-      res = getcwd(buf, len(buf, kind=c_size_t))
-      if (c_associated(res)) then
-         null_pos = index(buf, c_null_char)
-         if (null_pos == 0) null_pos = len(buf) + 1
-         cwd = buf(:null_pos - 1)
-      else
-         cwd = ""
-      end if
-   end function
-   !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_something, test_something,
-   subroutine test_something() bind(C)
+   !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_read_write_read, test_read_write_read,
+   subroutine test_read_write_read() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
-      character(len=:), allocatable :: cwd
+      use unstruc_model, only: readMDUFile, md_obsfile, writeMDUFile
+      use dfm_error, only: DFM_NOERR
+      use m_partitioninfo, only: jampi
+      use ifport, only: CHANGEDIRQQ
+      use m_resetfullflowmodel, only: resetFullFlowModel
+      character(len=1024) :: tm_md_obsfile = ' '
+      character(len=256) :: output_file = 'test_output.mdu'
+      
+      
+      integer :: ierr
+      call resetFullFlowModel()
 
-      ! Call the function
-      cwd = get_current_dir()
-      call mess(LEVEL_ERROR, "PWD", cwd)
-      call f90_expect_eq(1, 0, cwd)
+      call F90_ASSERT_TRUE(CHANGEDIRQQ('MDUversion'), '')
+      call readMDUFile('stretch_example.mdu', ierr)
+      call f90_expect_eq(ierr, DFM_NOERR, 'Error when reading MDU file.')
+      
+      tm_md_obsfile = md_obsfile
+      
+      call writeMDUFile(output_file, ierr)
+      call f90_expect_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')
+      
+      
+      call resetFullFlowModel()
+      call readMDUFile('test_output.mdu', ierr)
+      call f90_expect_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')
+      
+      call F90_EXPECT_STREQ(md_obsfile, tm_md_obsfile, 'Difference in md_obsfile after read-write-read cycle.')
+      
+      call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
+      
+      
    end subroutine
    !$f90tw)
 

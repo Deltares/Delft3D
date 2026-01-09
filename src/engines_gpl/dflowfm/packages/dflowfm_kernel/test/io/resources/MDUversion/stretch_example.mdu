@@ -186,7 +186,10 @@ Wrishp_src        = 0
 Wrishp_pump       = 0
 OutputDir         =
 FlowGeomFile      =
-ObsFile           =
+ObsFile                             = ../../../../geometry/output_locations/maas-j19_6-v2a_1_kilometer_obs.xyn   \
+                                      ../../../../geometry/output_locations/maas-j19_6-v2a_2_output_obs.xyn   \
+                                      ../../../../geometry/output_locations/maas-j19_6-v2a_3_measurement_obs.xyn  \
+                                      ../../../../geometry/output_locations/maas-j19_6-v2a_5_100m_obs.xyn          # Points file *_obs.xyn with observation stations with rows x, y, station name: *measurement_obs.pli is OBLIGATORY
 CrsFile           = observcrs.ini
 HisFile           =
 HisInterval       = 60
