@@ -83,11 +83,15 @@ module m_hydrology_data
    real(kind=dp), allocatable :: infiltcaproofs(:) !< temporary of the same
 
    ! Horton-specific:
-   real(kind=dp), allocatable, target :: HortonMinInfCap(:) !< [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: HortonMaxInfCap(:) !< [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: HortonDecreaseRate(:) !< [1/hr]  Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: HortonRecoveryRate(:) !< [1/hr]  Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-   integer, allocatable, target :: HortonState(:) !< [-]     Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
+   type :: t_HortonInfiltrationConfig
+      real(kind=dp), allocatable :: minInfCap(:) !< [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), allocatable :: maxInfCap(:) !< [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), allocatable :: decreaseRate(:) !< [1/hr]  Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), allocatable :: recoveryRate(:) !< [1/hr]  Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+   end type t_HortonInfiltrationConfig
+
+   type(t_HortonInfiltrationConfig), target :: hortonInfiltrationConfig !< Horton infiltration configuration containing min/max infiltration capacity and decrease/recovery rates
+   integer, allocatable, target :: hortonState(:) !< [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
 
    !
    ! dhydrology state (not used yet, only when WFLOW functionality will be connected)

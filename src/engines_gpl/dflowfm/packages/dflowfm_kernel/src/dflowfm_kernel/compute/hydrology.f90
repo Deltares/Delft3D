@@ -77,10 +77,10 @@ contains
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
          call realloc(infiltcap0, ndx, keepExisting=.false., fill=huge(1.0_dp), stat=ierr)
          call realloc(infiltcap, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
-         call realloc(HortonMinInfCap, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
-         call realloc(HortonMaxInfCap, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
-         call realloc(HortonDecreaseRate, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
-         call realloc(HortonRecoveryRate, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
+         call realloc(hortonInfiltrationConfig%minInfCap, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
+         call realloc(hortonInfiltrationConfig%maxInfCap, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
+         call realloc(hortonInfiltrationConfig%decreaseRate, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
+         call realloc(hortonInfiltrationConfig%recoveryRate, ndx, keepExisting=.false., fill=0.0_dp, stat=ierr)
          call realloc(HortonState, ndx, keepExisting=.false., fill=HORTON_CAPSTAT_NOCHANGE, stat=ierr)
       end if
 
@@ -97,7 +97,7 @@ contains
 
       ! Start Horton at max infiltration (alsoto trigger decrease mode).
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
-         infiltcap = HortonMaxInfCap * 1.0e-3_dp / 3600.0_dp ! mm/hr -> m/s
+         infiltcap = hortonInfiltrationConfig%maxInfCap * 1.0e-3_dp / 3600.0_dp ! mm/hr -> m/s
          infiltcap0 = infiltcap
       end if
 

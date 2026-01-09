@@ -44,8 +44,8 @@ contains
    subroutine setgrwflowexpl()
       use precision, only: dp
       use m_flowgeom, only: ndx, ndx2d, bl, ba, lnx1d, lnxi, ln, wu, dxi, bai, lnx
-      use m_flow, only: qingrw, qoutgrw, volgrw, infiltrationmodel, dfm_hyd_infilt_horton, hortonmininfcap, hortonmaxinfcap, &
-         hortondecreaserate, hortonrecoveryrate, infiltcap, hs, hortonstate, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, &
+      use m_flow, only: qingrw, qoutgrw, volgrw, infiltrationmodel, dfm_hyd_infilt_horton, hortonInfiltrationConfig, &
+         infiltcap, hs, hortonstate, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, &
          infilt, sgrw0, h_transfer, s1, pgrw, bgrw, conductivity, porosgrw, dfm_hyd_infilt_darcy, h_capillair, unsatfac, hu
       use m_flowtimes, only: dts
       use m_horton, only: compute_horton_infiltration
@@ -61,7 +61,7 @@ contains
       Volgrw = 0.0_dp    
 
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then ! Horton's infiltration equation
-         ierr = compute_horton_infiltration(ndx, HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, infiltcap, &
+         ierr = compute_horton_infiltration(ndx, hortonInfiltrationConfig, infiltcap, &
                                             dts, hs, rain, jarain, HortonState)
       end if
 
