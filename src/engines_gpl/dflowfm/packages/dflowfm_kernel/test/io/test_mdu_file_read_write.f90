@@ -45,17 +45,17 @@ contains
 
       call F90_ASSERT_TRUE(CHANGEDIRQQ('MDUversion'), '')
       call readMDUFile('stretch_example.mdu', ierr)
-      call f90_expect_eq(ierr, DFM_NOERR, 'Error when reading MDU file.')
+      call f90_assert_eq(ierr, DFM_NOERR, 'Error when reading MDU file.')
       
       tm_md_obsfile = md_obsfile
       
       call writeMDUFile(output_file, ierr)
-      call f90_expect_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')
+      call f90_assert_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')
       
       
       call resetFullFlowModel()
       call readMDUFile('test_output.mdu', ierr)
-      call f90_expect_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')
+      call f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')
       
       call F90_EXPECT_STREQ(trim(md_obsfile)//C_NULL_CHAR, trim(tm_md_obsfile)//C_NULL_CHAR, 'Difference in md_obsfile after read-write-read cycle.')
       
