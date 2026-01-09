@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -212,7 +212,8 @@ contains
             do ikey = 1, Nkeys
                call str_lower(Skeys(ikey))
                if (trim(Skeys(ikey)) == 'hmin') then
-                  read (Svals(ikey), *) hmin; Dx_mincour = hmin
+                  read (Svals(ikey), *) hmin
+                  Dx_mincour = hmin
                else if (trim(Skeys(ikey)) == 'dtmax') then
                   read (Svals(ikey), *) Dt_maxcour
                else if (trim(Skeys(ikey)) == 'maxlevel') then

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -102,8 +102,12 @@ contains
          do jsub = jstep, 1, -1
             jfile = jstart - 1 + jsub + jstep * (jarray - 1)
 !            if ( jfile.gt.Nfile ) cycle
-            if (jfile > jend) cycle
-            if (jfile < jstart) cycle
+            if (jfile > jend) then
+               cycle
+            end if
+            if (jfile < jstart) then
+               cycle
+            end if
 
             dline = -1
             read (MINP, *, ERR=101, end=100) (dline(ifile), ifile=1, Mfile)
@@ -113,7 +117,9 @@ contains
                do isub = 1, istep
                   ifile = istart - 1 + isub + istep * (iarray - 1)
 !                   if ( ifile.gt.Mfile ) cycle
-                  if (ifile > iend) cycle
+                  if (ifile > iend) then
+                     cycle
+                  end if
 
                   if (dline(ifile) /= RMIS) then
                      num(iarray) = num(iarray) + 1

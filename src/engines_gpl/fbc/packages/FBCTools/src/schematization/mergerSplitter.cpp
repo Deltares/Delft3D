@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares, University of Duisburg-Essen
+// Copyright (C) 2026 Deltares, University of Duisburg-Essen
 // Institute of Hydraulic Engineering and Water Resources Management
 //
 // This program is free software; you can redistribute it and/or modify

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -60,7 +60,9 @@ contains
       do is = 1, mcs
 !     determine the number of control points in the spline
          call nump(is, num)
-         if (num <= 2) cycle ! center splines only
+         if (num <= 2) then
+            cycle ! center splines only
+         end if
 
          do j = 1, splineprops(is)%ncs
             js = splineprops(is)%ics(j)

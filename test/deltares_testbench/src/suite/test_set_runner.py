@@ -1,6 +1,6 @@
 """Manager for running test case sets.
 
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import multiprocessing

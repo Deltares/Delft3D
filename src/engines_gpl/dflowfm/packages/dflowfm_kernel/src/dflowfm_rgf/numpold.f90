@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,9 @@ contains
       integer :: j
       NUMPI = 0
       do J = 1, NMAX
-         if (X(MP, J) /= XYMIS) NUMPI = J
+         if (X(MP, J) /= XYMIS) then
+            NUMPI = J
+         end if
       end do
       return
    end subroutine numpold

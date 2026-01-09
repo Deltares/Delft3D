@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,9 @@ contains
 
       Nr_in = Nr
 
-      if (num < 1) goto 1234
+      if (num < 1) then
+         goto 1234
+      end if
 
 !  compute the number of samples
       Nr = num + (num - 1) * numref

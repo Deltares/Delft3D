@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -108,7 +108,9 @@ contains
                                         NC, II, JJ, IN, &
                                         JN, DXY0)
                               DXY = RFAC * TEKEN * FR * JANU * DXY0
-                              if (JSFERIC == 1) DXY = RD2DG * DXY / RA
+                              if (JSFERIC == 1) then
+                                 DXY = RD2DG * DXY / RA
+                              end if
                               DX = DXY * IN
                               DY = DXY * JN
                               call TOLOCL(DX, DY, X, Y, mmax, nmax, &
@@ -127,7 +129,9 @@ contains
                                      NC, II, JJ, JN, &
                                      IN, DXY0)
                            DXY = RFAC * TEKEN * FR * JANU * DXY0
-                           if (JSFERIC == 1) DXY = RD2DG * DXY / RA
+                           if (JSFERIC == 1) then
+                              DXY = RD2DG * DXY / RA
+                           end if
                            DX = DXY * IN
                            DY = DXY * JN
                            call TOLOCL(DX, DY, X, Y, mmax, nmax, &

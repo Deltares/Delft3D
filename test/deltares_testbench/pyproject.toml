@@ -26,12 +26,13 @@ dependencies = [
     "pywin32 ; platform_system == 'Windows'",  # Required for Windows to access the registry.
     "netCDF4 ~= 1.7.2",
     "lxml ~= 5.1",
-    "pyarrow ~= 16.1", # Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)
+    "pyarrow ~= 16.1", # PyArrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)
     "pandas ~= 2.0",
     "matplotlib >=3.7,<3.9",
     "numpy ~= 1.24",
     "minio ~= 7.2",
     "s3-path-wrangler ~= 0.5",
+    "urllib3 >= 2.6.3",
     "pyreadline3 ~= 3.5.4 ; platform_system == 'Windows'"
 ]
 

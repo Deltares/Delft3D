@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -239,6 +239,7 @@ contains
       use unstruc_files
       use m_partitioninfo
       use check_mpi_env
+      use m_init_openmp, only: init_openmp
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -289,6 +290,9 @@ contains
          jampi = 0
       end if
 
+#ifdef _OPENMP
+      ierr = init_openmp(md_numthreads, jampi)
+#endif
       !   make domain number string as soon as possible
       write (sdmn, '(I4.4)') my_rank
 

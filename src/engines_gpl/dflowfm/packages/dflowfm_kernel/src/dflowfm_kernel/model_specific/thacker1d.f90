@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -96,7 +96,8 @@ contains
 !    r     = xz(k) - 150d0  ! sqrt(  xz(k)*xz(k) + yz(k)*yz(k) )
 !    s1k   = samp*r*ct
 
-         xx = xz(k) - 150.0_dp; yy = 0
+         xx = xz(k) - 150.0_dp
+         yy = 0
          s1k = samp * (2.0_dp * xx * ct - 2.0_dp * yy * st - psi * ct * ct)
 
          if (ini == 1) then
@@ -109,7 +110,8 @@ contains
                call statisticsonemorepoint(dif)
             end if
             if (is == 0) then
-               call movabs(xz(k), s1k); is = 1
+               call movabs(xz(k), s1k)
+               is = 1
             else
                call lnabs(xz(k), s1k)
             end if
