@@ -8,12 +8,12 @@
 
 set -eo pipefail
 
-VARIABLES=( \
-    "BUCKET" "CURRENT_PREFIX" "REFERENCE_PREFIX" "LOG_DIR" "SEND_EMAIL" \
-    "TEAMCITY_SERVER_URL" "REPORT_BUILD_TYPE_ID" "START_BUILD_TYPE_ID" \
-    "BUILD_ID" "VCS_ROOT_ID" "VCS_REVISION" "BRANCH_NAME" \
+VARIABLES=(
+    "BUCKET" "CURRENT_PREFIX" "REFERENCE_PREFIX" "LOG_DIR" "SEND_EMAIL"
+    "TEAMCITY_SERVER_URL" "REPORT_BUILD_TYPE_ID" "START_BUILD_TYPE_ID"
+    "BUILD_ID" "VCS_ROOT_ID" "VCS_REVISION" "BRANCH_NAME"
 )
-if ! util.check_vars_are_set "${VARIABLES[@]}" ; then
+if ! util.check_vars_are_set "${VARIABLES[@]}"; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -34,11 +34,11 @@ docker run --rm \
 
 # Trigger teamcity 'Report' build.
 curl --fail --silent --show-error -X POST \
+    "${TEAMCITY_SERVER_URL}/app/rest/buildQueue" \
     --header "Authorization: Bearer $(cat "${HOME}/.teamcity/verschilanalyse-token")" \
     --header "Accept: application/json" \
     --header "Content-Type: application/json" \
-    --data-binary @- <<EOF \
-    "${TEAMCITY_SERVER_URL}/app/rest/buildQueue"
+    --data-binary @- <<EOF
 {
     "buildTypeId": "${REPORT_BUILD_TYPE_ID}",
     "revisions": {
