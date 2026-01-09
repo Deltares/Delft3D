@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,9 @@ contains
       integer :: NCLAN(0)
       real(kind=dp) :: ZSH(0)
 
-      if (NPL <= 0) return
+      if (NPL <= 0) then
+         return
+      end if
       numnampli = size(nampli)
       if (zpl(1) == dmiss) then ! No third column for z-values
          call WRILDB(MPOL, XPL, YPL, NPL, NCLAN, 0, ZSH, 0, nampli, 64, numnampli)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 !! *.ext file for quantities such as initialwaterlevel,
 !! frictioncoefficient, etc.
 module unstruc_inifields
+
    use m_setinitialverticalprofile, only: setinitialverticalprofile
    use m_add_tracer, only: add_tracer
    use m_setzcs, only: setzcs
@@ -40,6 +41,7 @@ module unstruc_inifields
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
 
+   use precision, only: dp
    implicit none
    private
 
@@ -569,7 +571,7 @@ contains
             end if
             call averagingTypeStringToInteger(averagingType, iav)
             if (iav >= 0) then
-               transformcoef(4) = dble(iav)
+               transformcoef(4) = real(iav, kind=dp)
             else
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='// &
                   trim(quantity)//'. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
@@ -603,7 +605,7 @@ contains
                   call warn_flush()
                   transformcoef(8) = 1.0_dp
                else
-                  transformcoef(8) = dble(averagingNumMin)
+                  transformcoef(8) = real(averagingNumMin, kind=dp)
                end if
             end if
 
@@ -1290,8 +1292,8 @@ contains
 
       use m_flow, only: s1, hs, sabot, satop, sa1, ndkx, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
-      use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, jatem, &
-                                  initem2D, inivel
+      use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, temperature_model, &
+                                  TEMPERATURE_MODEL_NONE, initem2D, inivel
 
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
@@ -1430,7 +1432,7 @@ contains
          end if
 
       case ('initialtemperature')
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             target_location_type = UNC_LOC_S
             target_array => tem1
             initem2D = 1
@@ -1482,7 +1484,7 @@ contains
          end if
 
       case ('initialverticaltemperatureprofile')
-         if (jatem > 0 .and. kmx > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE .and. kmx > 0) then
             target_location_type = UNC_LOC_3DV
             target_array => tem1
          end if
@@ -1582,7 +1584,7 @@ contains
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
       use m_heatfluxes, only: secchisp
-      use m_wind, only: ICdtyp
+      use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
@@ -1609,8 +1611,7 @@ contains
       integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
       integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
       integer, intent(in) :: filetype !< Type of the file being read (NCGRID, etc).
-      
-      
+
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
       character(len=idlen) :: qid_base, qid_specific
@@ -1775,7 +1776,7 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => Cdwusp
-         iCdtyp = 1 ! only 1 coeff
+         wind_drag_type = CD_TYPE_CONST
       case ('wavesignificantheight', 'waveperiod', 'wavedirection')
          if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
@@ -2239,7 +2240,8 @@ contains
             if (kmx == 0) then
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
             else
-               kb = kbot(n); kt = ktop(n)
+               kb = kbot(n)
+               kt = ktop(n)
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
                do k = kb, kt
                   level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))

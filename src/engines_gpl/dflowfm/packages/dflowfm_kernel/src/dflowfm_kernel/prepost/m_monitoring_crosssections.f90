@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -137,7 +137,9 @@ contains
 
       integer :: i, n
 
-      if (.not. allocated(cs)) return
+      if (.not. allocated(cs)) then
+         return
+      end if
 
       n = size(cs)
       do i = 1, n
@@ -160,7 +162,9 @@ contains
       integer :: i, n
 
       n = size(rfrom)
-      if (n > size(rto) .or. n == 0) return
+      if (n > size(rto) .or. n == 0) then
+         return
+      end if
 
       do i = 1, n
          !maxnp  = size(rfrom(i)%path%xp)
@@ -222,7 +226,7 @@ contains
          crs(ncrs)%name = ' '
          crs(ncrs)%name(1:m) = name(1:m)
       else ! No name given, generate one.
-         write (cdigits, '(i1)') max(2, int(floor(log10(dble(iUniq_)) + 1)))
+         write (cdigits, '(i1)') max(2, int(floor(log10(real(iUniq_, kind=dp)) + 1)))
          write (crs(ncrs)%name, '(a,i'//cdigits//'.'//cdigits//')') trim(defaultName_), iUniq_
          iUniq_ = iUniq_ + 1
       end if

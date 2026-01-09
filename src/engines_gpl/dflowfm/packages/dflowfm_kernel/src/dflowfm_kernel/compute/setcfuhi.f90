@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,7 +54,8 @@ contains
 
       ! NOTE: When frcuni==0, the initial friction fields in frcu also become noneffective:
       if (jatrt == 0 .and. (frcmax == 0.0_dp .or. ifrctypuni == -999)) then
-         cfuhi = 0; return
+         cfuhi = 0
+         return
       end if
       if (jaconveyance2D >= 1) then ! .and. kmx <=1 ) then
          return

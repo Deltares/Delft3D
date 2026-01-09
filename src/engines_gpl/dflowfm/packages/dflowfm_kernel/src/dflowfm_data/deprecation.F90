@@ -185,7 +185,9 @@ contains
       integer :: num_deprecated !< count the number of deprecated keywords
 
       status = DFM_NOERR
-      if (.not. associated(tree)) return
+      if (.not. associated(tree)) then
+         return
+      end if
 
       num_obsolete = 0
       num_deprecated = 0

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -193,7 +193,9 @@ contains
          else
             do l = 1, lsed
                do k = 1, ndx
-                  if (hs(k) <= epshu) cycle
+                  if (hs(k) <= epshu) then
+                     cycle
+                  end if
                   call getkbotktop(k, kbot, ktop)
                   ssc = 0.0_dp
                   do kk = kbot, ktop

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -107,7 +107,9 @@ contains
 
 !           add to total internal tides dissipation rate
             if (jampi == 1) then
-               if (idomain(k) /= my_rank) cycle
+               if (idomain(k) /= my_rank) then
+                  cycle
+               end if
             end if
 
             if (k <= Ndxi) then ! do not add fictitious boundary nodes

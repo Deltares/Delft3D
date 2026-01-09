@@ -1,7 +1,7 @@
 subroutine esm_alloc_int(lundia, error, zmodel, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -247,14 +247,20 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
     ! arrays for: mask arrays (permanent)
     !
     pntnam = 'kcu'           !  Mask array for the u-velocity point (time INdependent)
-                             !  =0 dry      point
-                             !  =1 active   point
+                             !  =-1 active  point belonging to other partition (ghost point)
+                             !  = 0 dry     point
+                             !  = 1 active  point
+                             !  = 2 open boundary point
+                             !  = 3 Domain Decomposition boundary point
     ierr = mkipnt(pntnam, nmaxddb*mmaxddb, gdp)
     if (ierr <= -9) goto 9999
     !
     pntnam = 'kcv'           !  Mask array for the v-velocity point (time INdependent)
-                             !  =0 dry      point
-                             !  =1 active   point
+                             !  =-1 active  point belonging to other partition (ghost point)
+                             !  = 0 dry     point
+                             !  = 1 active  point
+                             !  = 2 open boundary point
+                             !  = 3 Domain Decomposition boundary point
     ierr = mkipnt(pntnam, nmaxddb*mmaxddb, gdp)
     if (ierr <= -9) goto 9999
     !
