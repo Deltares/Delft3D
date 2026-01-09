@@ -11,7 +11,7 @@ import java.io.File
 
 object TestBenchValidation : BuildType({
     id("TestBenchValidation")
-    name = "TestBench validation"''
+    name = "TestBench validation"
     buildNumberPattern = "%build.vcs.number%"
     description = """
         Runs the TestBench validation. 
