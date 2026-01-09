@@ -31,7 +31,7 @@ object RunBashBatonUtilities : BuildType({
     }
 
 
-    val dockerImageName = "containers.deltares.nl/bashbaton-dev/bashbaton:main"
+    val dockerImageName = "containers.deltares.nl/bashbaton/bashbaton:release_v1.0.0"
 
     val targetPaths = listOf(
         "ci/teamcity/Delft3D/verschilanalyse"
