@@ -555,6 +555,14 @@
         {
             "file": "lib\\ucrtbased.dll",
             "issuedTo": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\boost_date_time-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_filesystem-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
         }
     ],
     "notSigned": [

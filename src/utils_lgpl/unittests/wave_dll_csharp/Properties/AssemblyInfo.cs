@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Deltares")]
 [assembly: AssemblyProduct("wave_dll_csharp")]
-[assembly: AssemblyCopyright("Copyright © Deltares 2025")]
+[assembly: AssemblyCopyright("Copyright © Deltares 2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -3279,7 +3279,7 @@ contains
       !
       ! ====================================================================
       !
-      !     Copyright © 2025, Rijkswaterstaat, All Rights Reserved.
+      !     Copyright © 2026, Rijkswaterstaat, All Rights Reserved.
       !
       !     This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
       !     https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
