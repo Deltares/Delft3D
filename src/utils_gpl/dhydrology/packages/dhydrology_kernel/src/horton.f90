@@ -50,7 +50,7 @@ module m_horton
    
       !> Computes infiltration capacity as defined by Horton equations.
       !!
-      !! Infiltration capacity defined in mm/hr, decrease and recovery rate in 1/hr.
+      !! Infiltration capacity defined in m/s, decrease and recovery rate in 1/hr.
       !! Typical timestep used in application is 1 minute (i.e. much smaller than 1 hour),
       !! otherwise computation of infiltration volume (in mm) should be more refined
       !! (using integral of capacity function, depending on state recovery or decrease).
@@ -73,10 +73,6 @@ module m_horton
          integer, parameter :: SECONDS_PER_HOUR = 3600 !< Number of seconds per hour
          integer, parameter :: HOURS_PER_DAY = 24 !< Number of hours per day
          integer, parameter :: MPS_TO_MMPHR = SECONDS_PER_HOUR * 1000 !< Conversion factor from m/s to mm/hr
-         ! real(kind=dp), dimension(:), pointer :: minInfCap       !< Minimum infiltration capacity (mm/hr)
-         ! real(kind=dp), dimension(:), pointer :: maxInfCap       !< Maximum infiltration capacity (mm/hr)
-         ! real(kind=dp), dimension(:), pointer :: decreaseRate    !< Decrease rate (1/hr)
-         ! real(kind=dp), dimension(:), pointer :: recoveryRate    !< Recovery rate (1/hr)
          real(kind=dp)      :: timestepSizeHr
          integer            :: i
          
@@ -84,12 +80,6 @@ module m_horton
          ierr = DHYD_NOERR
          timestepSizeHr = timestepSize / SECONDS_PER_HOUR ! Fraction of hour represented by timestep
          infCap = infCap * MPS_TO_MMPHR ! Convert to mm/hr for computation
-
-         ! ! Set pointers to configuration arrays
-         ! minInfCap => config%minInfCap
-         ! maxInfCap => config%maxInfCap
-         ! decreaseRate => config%decreaseRate
-         ! recoveryRate => config%recoveryRate
 
          do i = 1, n
 
