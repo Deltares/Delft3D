@@ -331,24 +331,25 @@ contains
 
       allocate (links(npl))
       call convert1D2DLongCulverts(xpl, ypl, zpl, npl, links)
-      npl = 1
-      do i = 1, nlongculverts !< save adjusted xpl and ypl to new structure file
-         longculvertindex2 = 0
-         do j = 1, tree_num_nodes(strs_ptr) !> check all structure file blocks
-            str_ptr_2 => strs_ptr%CHILD_NODES(j)%node_ptr
-            call prop_get(str_ptr_2, '', 'type', typestr, success)
-            if (success .and. strcmpi(typestr, 'longCulvert')) then
-               longculvertindex2 = longculvertindex2 + 1
-               if (longculvertindex2 == i) then
-                  numcoords = size(longculverts(i)%xcoords)
-                  call tree_remove_child_by_name(str_ptr_2, 'xCoordinates', istart)
-                  call prop_set(str_ptr_2, '', 'xCoordinates', xpl(npl:npl + numcoords - 1), '')
-                  npl = npl + numcoords + 1
-                  exit
-               end if
-            end if
-         end do
-      end do
+      call replaceCoordinatesInStructures(xpl, ypl, strs_ptr)
+      ! npl = 1
+      ! do i = 1, nlongculverts !< save adjusted xpl and ypl to new structure file
+      !    longculvertindex2 = 0
+      !    do j = 1, tree_num_nodes(strs_ptr) !> check all structure file blocks
+      !       str_ptr_2 => strs_ptr%CHILD_NODES(j)%node_ptr
+      !       call prop_get(str_ptr_2, '', 'type', typestr, success)
+      !       if (success .and. strcmpi(typestr, 'longCulvert')) then
+      !          longculvertindex2 = longculvertindex2 + 1
+      !          if (longculvertindex2 == i) then
+      !             numcoords = size(longculverts(i)%xcoords)
+      !             call tree_remove_child_by_name(str_ptr_2, 'xCoordinates', istart)
+      !             call prop_set(str_ptr_2, '', 'xCoordinates', xpl(npl:npl + numcoords - 1), '')
+      !             npl = npl + numcoords + 1
+      !             exit
+      !          end if
+      !       end if
+      !    end do
+      ! end do
       call restorepol()
       istart = 1
       do i = nlongculverts0 + 1, nlongculverts
@@ -410,31 +411,48 @@ contains
       call tree_destroy(strs_ptr)
 
    end subroutine convertLongCulvertsAsNetwork
-
-   subroutine replaceCoordinatesInStructures(xcoords, ycoords, ncoords, structures)
+   
+   subroutine replaceCoordinatesInStructures(xcoords, ycoords, structures)
       use tree_data_types, only: tree_data
+      use tree_structures, only: tree_num_nodes, tree_remove_child_by_name
+      use properties, only: prop_get, prop_set
+      use messagehandling, only: msgbuf, err_flush, IDLEN
+      use string_module, only: strcmpi
+      use m_longculverts_data, only: longculverts
       implicit none
+
       real(kind=dp), intent(in) :: xcoords(:)
       real(kind=dp), intent(in) :: ycoords(:)
-      integer, intent(in) :: ncoords
       type(tree_data), pointer, intent(inout) :: structures
 
       type(tree_data), pointer :: current
       character(len=IDLEN) :: typestr
+      integer :: i, j, coordindex, longculvertindex, ncoords, ierror
+      logical :: success
 
-      ncoords = 1
+      coordindex = 1
       do i = 1, nlongculverts !< save adjusted xpl and ypl to new structure file
-         longculvertindex2 = 0
+         longculvertindex = 0
          do j = 1, tree_num_nodes(structures) !> check all structure file blocks
             current => structures%CHILD_NODES(j)%node_ptr
             call prop_get(current, '', 'type', typestr, success)
             if (success .and. strcmpi(typestr, 'longCulvert')) then
-               longculvertindex2 = longculvertindex2 + 1
-               if (longculvertindex2 == i) then
-                  numcoords = size(longculverts(i)%xcoords)
-                  call tree_remove_child_by_name(current, 'xCoordinates', istart)
-                  call prop_set(current, '', 'xCoordinates', xcoords(ncoords:npl + numcoords - 1), '')
-                  ncoords = ncoords + numcoords + 1
+               longculvertindex = longculvertindex + 1
+               if (longculvertindex == i) then
+                  ncoords = size(longculverts(i)%xcoords)
+                  call tree_remove_child_by_name(current, 'xCoordinates', ierror)
+                  if (ierror /= 0) then
+                     write (msgbuf, '(A,I0)') 'Error Removing xCoordinates from structure #', j
+                     call err_flush()
+                  end if
+                  call tree_remove_child_by_name(current, 'yCoordinates', ierror)
+                  if (ierror /=0) then
+                     write (msgbuf, '(A,I0)') 'Error Removing xCoordinates from structure #', j
+                     call err_flush()
+                  end if
+                  call prop_set(current, '', 'xCoordinates', xcoords(coordindex:coordindex + ncoords - 1), '')
+                  call prop_set(current, '', 'yCoordinates', ycoords(coordindex:coordindex + ncoords - 1), '')
+                  coordindex = coordindex + ncoords + 1
                   exit
                end if
             end if
