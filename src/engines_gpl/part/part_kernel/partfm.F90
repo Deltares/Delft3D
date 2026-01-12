@@ -142,6 +142,14 @@ contains
         filebase = ' '
         filebase = fname(1)(1:Ldot)
 
+        !
+        ! For oil: the deflection angle
+        !
+        if (oil .and. hyd%num_layers > 1) then
+            defang = const(noconsp)
+        else
+            defang = 0.0
+        end if
 
         !! AM NpartTot = npmax
         !! AM Nrpart = npmax !npmax is the number of particles released due to the instantaneous and continuous discharges
