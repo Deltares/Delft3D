@@ -75,7 +75,6 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `profDefFile` | (\*_profdefinition.def) definition for all profile nrs. |  |  |  |
 | `profDefXyzFile` | (\*_profdefinition.def) definition for all profile nrs. |  |  |  |
 | `partitionFile` | (\*_part.pol), polyline(s) x, y. |  |  |  |
-| `uniformWidth1D` | Uniform width for channel profiles not specified by profLoc. | `2.0` |  |  |
 | `dxWuiMin2D` | Smallest fraction dx/wu , set dx > `dxWuiMin2D`\*wu. | `0.0` |  |  |
 | `waterLevIni` | Initial water level. | `0.0` |  | [m AD] |
 | `bedLevUni` | Uniform bed level (only if `bedLevType`>=3), used at missing z-values in `netFile`. | `-5.0` |  | [m AD] |
@@ -90,7 +89,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `nonLin2D` | Non-linear 2D volumes, only i.c.m. `bedLevType`=3 and `conveyance2D`>=1. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `slotw1D` | Minimum slotwidth 1D. | `0.001` |  | [m] |
 | `slotw2D` | Minimum slotwidth 2D. | `0.001` |  | [m] |
-| `dthdth1D` | Uniform width for 1D profiles and 1D2D internal links. | `2.0` |  | [m] |
+| `uniformWidth1D` | Uniform width for 1D profiles and 1D2D internal links. | `2.0` |  | [m] |
 | `uniformHeight1D` | Uniform height for 1D profiles and 1D2D internal links. | `3.0` |  | [m] |
 | `uniformWidth1DStreetInlets` | Uniform width for street inlets. | `0.2` |  | [m] |
 | `uniformHeight1DStreetInlets` | Uniform height for street inlets. | `0.1` |  | [m] |

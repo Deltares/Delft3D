@@ -210,12 +210,6 @@
                     "description": "(*_part.pol), polyline(s) x, y."
                 },
                 {
-                    "key": "uniformWidth1D",
-                    "default_value": 2.0,
-                    "value_type": "float",
-                    "description": "Uniform width for channel profiles not specified by profLoc."
-                },
-                {
                     "key": "dxWuiMin2D",
                     "default_value": 0.0,
                     "value_type": "float",
@@ -329,7 +323,7 @@
                     "unit": "m"
                 },
                 {
-                    "key": "dthdth1D",
+                    "key": "uniformWidth1D",
                     "value_type": "float",
                     "default_value": 2.0,
                     "description": "Uniform width for 1D profiles and 1D2D internal links.",
