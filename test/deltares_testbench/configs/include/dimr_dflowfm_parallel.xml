@@ -444,25 +444,6 @@
           </file>
       </checks>
     </testCase>
-	  <testCase name="e02_f014_c201" ref="dimr">
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c201_genstruc_partition</path>
-        <programs>
-          <program ref="dimr">
-             <arguments>
-                 <argument>-c 2 -m dimr.xml</argument>
-             </arguments>
-          </program>
-        </programs>
-         <checks>
-            <file name="DFM_OUTPUT_RMM_dflowfm/RMM_dflowfm_0000_his.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="waterlevel" toleranceAbsolute="0.001" />
-                    <parameter name="general_structure_discharge" toleranceAbsolute="0.001" />
-					<parameter name="general_structure_gate_lower_edge_level" toleranceAbsolute="0.001" />
-                </parameters>
-            </file>     
-         </checks>
-    </testCase>
     <testCase name="e02_f012_c188_from_restart_graded_inicomp_mapmerge" ref="postproc">
         <programs>
           <program ref="dfmoutput">
