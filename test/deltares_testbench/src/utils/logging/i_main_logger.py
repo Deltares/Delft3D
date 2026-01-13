@@ -1,6 +1,6 @@
 """Interface extending ILogger interface with the option to create test case loggers.
 
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 """
 
 from abc import abstractmethod

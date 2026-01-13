@@ -61,6 +61,7 @@ object WindowsTest : BuildType({
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+        param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
 
     }
 
@@ -75,6 +76,34 @@ object WindowsTest : BuildType({
 
     steps {
         mergeTargetBranch {}
+        step {
+            name = "Download artifact from Nexus"
+            type = "RawDownloadNexusWindows"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_username", "%nexus_username%")
+            param("download_to", ".")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+        }
+        powerShell {
+            name = "Extract artifact"
+            enabled = false
+            scriptMode = script {
+                content = """
+                    ${'$'}ErrorActionPreference = "Stop"
+
+                    ${'$'}dest = "test/deltares_testbench/data/engines/teamcity_artifacts/x64"
+
+                    Write-Host "Extracting %file_path% ..."
+
+                    Expand-Archive -Path %file_path% -DestinationPath "temp_extract"
+
+                    robocopy "temp_extract/x64" ${'$'}dest /E /XC /XN /XO
+                """.trimIndent()
+            }
+        }
         python {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"

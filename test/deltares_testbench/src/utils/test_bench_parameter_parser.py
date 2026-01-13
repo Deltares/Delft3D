@@ -1,6 +1,6 @@
 """Parser for handling supplied arguments.
 
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import getpass

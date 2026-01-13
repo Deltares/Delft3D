@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -29,7 +29,7 @@
 !
 !  readlib.f90  Subroutines for flexible reading from file; = module version  of old Readlib.Lib
 !
-!  Copyright (C) 2025 Geert Prinsen WL|Deltares
+!  Copyright (C) 2026 Geert Prinsen WL|Deltares
 !
 !  General information:
 !  This module contains a number of auxilary subroutines that can be
