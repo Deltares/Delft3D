@@ -173,7 +173,7 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    if(WITH_INTERACTER)
+   if(WITH_INTERACTER)
         # Find and link the actual Interacter library
         find_library(lib_interacter intmwi64.lib
                   HINTS ENV INTERACTER_DIR
