@@ -679,10 +679,10 @@ contains
       use m_dambreak_breach, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind, only: wind_drag_type, cdb, wdb, jaheat_eachstep, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, pavini, pavbnd, &
-          jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext,jaevap, jawind, &
-          wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
-          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
-          CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
+                        jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext, jaevap, jawind, &
+                        wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
+                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
+                        CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
@@ -2176,13 +2176,13 @@ contains
       end if
 
       ! If no temperature is involved, then do not write temperature to output map/his files
-      if (temperature_model == TEMPERATURE_MODEL_NONE) then 
+      if (temperature_model == TEMPERATURE_MODEL_NONE) then
          jamaptem = 0
          jahistem = 0
       end if
 
       ! If no salinity is involved, then do not write salinity to output map/his files
-      if (jasal < 1) then 
+      if (jasal < 1) then
          jamapsal = 0
          jahissal = 0
       end if
@@ -2640,9 +2640,9 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_wind, only: jaspacevarcharn, jaheat_eachstep, wind_drag_type, cdb, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, &
-          pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
-          CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
-          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003      
+                        pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
+                        CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
+                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
@@ -2672,6 +2672,7 @@ contains
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
+      use m_fm_icecover, only: fm_ice_null, ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
       use m_flow_validatestate_data, only: dtavg_min_err, s01maxavg_min_err, s01_max_err, u01_max_err, umag_max_err, s1_max_warn, u1abs_max_warn, umag_max_err, ssc_max_err, umag_max_warn
 
       integer, intent(in) :: mout !< File pointer where to write to.
@@ -3564,7 +3565,7 @@ contains
 
       if (jaspacevarcharn .and. wind_drag_type /= CD_TYPE_CHARNOCK1955) then
          write (msgbuf, '(a,i0,a)') 'A (time- and space-varying) Charnock coefficient was provided via the .ext file. [wind] ICdtyp has been reset from ', &
-             wind_drag_type, ' to 4 (Charnock).'
+            wind_drag_type, ' to 4 (Charnock).'
          call mess(LEVEL_WARN, msgbuf)
          wind_drag_type = CD_TYPE_CHARNOCK1955
       end if
@@ -3792,6 +3793,12 @@ contains
          call prop_set(prop_ptr, 'calibration', 'UseCalibration', jacali, 'Activate calibration factor friction multiplier (1 = yes, 0 = no)') ! Could be updated to check if both strings are empty or filled
          call prop_set(prop_ptr, 'calibration', 'DefinitionFile', trim(md_cldfile), 'File (*.cld) containing calibration definitions')
          call prop_set(prop_ptr, 'calibration', 'AreaFile', trim(md_cllfile), 'File (*.cll) containing area distribution of calibration definitions')
+      end if
+
+      ! Ice
+      if (writeall .or. ja_icecover /= ICECOVER_NONE) then
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'IceCoverModel', trim(fm_ice_convert_value_to_string('IceCoverModel', ice_data)), 'Type of ice model (None, External, Semtner)')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'AddIceToMap', ice_data%mapout%default, 'Add ice quantities to map file (1 = yes, 0 = no)')
       end if
 
 ! Output
