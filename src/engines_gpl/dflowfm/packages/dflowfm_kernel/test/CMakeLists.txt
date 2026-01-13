@@ -24,3 +24,5 @@ f90twtest(test_pol_to_cellmask
     LIBRARIES dflowfm_kernel
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
+
+add_subdirectory(io)

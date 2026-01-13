@@ -26,11 +26,14 @@ if(OPENMP_FOUND)
 endif()
 
 # Boost C++, it is a required package, if not found configuration will abort
-if(WIN32)
-  # In windows use pre-compiled static libraries
-  set(Boost_USE_STATIC_LIBS ON)
-endif()
 set(Boost_USE_RELEASE_LIBS ON)
+
+if(WIN32)
+  set(Boost_USE_STATIC_LIBS OFF)
+  set(Boost_DIR ${CMAKE_SOURCE_DIR}/../third_party_open/boost/boost_1_90_0/lib/cmake/Boost-1.90.0)
+  # Note: boost_system is header-only since Boost 1.69+ and not needed as a component
+  find_package(Boost 1.90 CONFIG REQUIRED COMPONENTS filesystem date_time)
+endif()
 
 # version 1.65 is a minimum version
 if(LINUX)
@@ -42,12 +45,7 @@ if(LINUX)
    else()
       message(FATAL_ERROR "Xerces-C not found")
    endif()
-else()
-   set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/boost)
-   set(BOOST_LIBRARY_DIR ${BOOST_ROOT}/stage/lib)
 endif()
-link_directories(${BOOST_LIBRARY_DIR})
-include_directories(${BOOST_ROOT})
 
 # Set warning levels
 if(MSVC)
@@ -111,7 +109,9 @@ endif()
 # Link dependencies
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(LINK_LIBRARIES FBCTools_static 
-                       xerces-c_3)
+                       xerces-c_3
+                       Boost::filesystem
+                       Boost::date_time)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(LINK_LIBRARIES FBCTools_static 
                        ${XercesC_LIBRARIES}
@@ -157,4 +157,9 @@ set(FBC_SUPPORT_FILES
   )
   if(WIN32)
      install(FILES ${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-windows-vc-10.0/bin/xerces-c_3_1.dll DESTINATION lib)
+     if(NOT Boost_USE_STATIC_LIBS)
+        get_target_property(BOOST_FILESYSTEM_DLL Boost::filesystem LOCATION)
+        get_target_property(BOOST_DATETIME_DLL Boost::date_time LOCATION)
+        install(FILES ${BOOST_FILESYSTEM_DLL} ${BOOST_DATETIME_DLL} DESTINATION lib)
+     endif()
   endif()
