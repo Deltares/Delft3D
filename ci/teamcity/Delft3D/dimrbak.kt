@@ -110,26 +110,6 @@ object DIMRbak : BuildType({
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
-            name = "Pin and tag builds"
-            command = module {
-                module = "ci_tools.dimrset_delivery.step_2_pin_and_tag_builds"
-                scriptArguments = """ 
-                    --build_id "%teamcity.build.id%"
-                    --teamcity-username "%dimrbakker_username%"
-                    --teamcity-password "%dimrbakker_password%"
-                    --git-username "deltares-service-account"
-                    --git-PAT "%github_deltares-service-account_access_token%"
-                    %dry_run%
-                """.trimIndent()
-            }
-            workingDir = "ci/python"
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-        }
-        python {
             name = "Generate test report summary"
             command = module {
                 module = "ci_tools.dimrset_delivery.step_3_teamcity_test_results"
