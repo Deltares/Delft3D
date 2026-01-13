@@ -324,7 +324,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e04_f04_c07" ref="dimr_trunk">
-            <path version="2025-12-19T17:17:00">e04_wave/f04-general/c07_vegetation</path>
+            <path version="2026-01-13T15:20:00">e04_wave/f04-general/c07_vegetation</path>
             <maxRunTime>900.0</maxRunTime>
             <checks>
                 <file name="wavm-check.nc" type="NETCDF">
