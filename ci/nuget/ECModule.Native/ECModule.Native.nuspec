@@ -10,7 +10,7 @@
         <projectUrl>http://oss.deltares.nl/web/delta-shell</projectUrl>
         <description>This package contains the native ECModule library, which includes functions related to grid interpolation.</description>
         <summary>Deltares ECModule library.</summary>
-        <copyright>Deltares 2025</copyright>
+        <copyright>Deltares 2026</copyright>
         <tags>native</tags>
     </metadata>
     <files>
