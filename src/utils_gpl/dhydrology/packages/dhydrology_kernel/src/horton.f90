@@ -54,17 +54,16 @@ module m_horton
       !! Typical timestep used in application is 1 minute (i.e. much smaller than 1 hour),
       !! otherwise computation of infiltration volume (in mm) should be more refined
       !! (using integral of capacity function, depending on state recovery or decrease).
-   function compute_horton_infiltration(n, config, infiltration_capacity, &
-                                           timestep_size, initial_storage, rainfall, include_rain, infiltration_capacity_state, infiltration_mm) result(ierr)
+   function compute_horton_infiltration(n, config, infiltration_capacity, timestep_size, initial_storage, rainfall, include_rain, &
+                                        infiltration_capacity_state, infiltration_mm) result(ierr)
          
-         
-         integer, intent(in)  :: n !< Array length (grid cell count)
+         integer, intent(in) :: n !< Array length (grid cell count)
          type(t_HortonInfiltrationConfig), intent(in) :: config !< Horton infiltration configuration containing min/max infiltration capacity and decrease/recovery rates
          real(kind=dp), intent(out) :: infiltration_capacity(n) !< Infiltration capacity (m/s)
-         real(kind=dp), intent(in)  :: timestep_size !< Timestep size (s)
-         real(kind=dp), intent(in)  :: initial_storage(n) !< Initial storage (=storage at start of timestep) (m)
-         real(kind=dp), intent(in)  :: rainfall(:) !< Rainfall in current timestep (or more precise: additional ground rainfall, so minus interception) (mm/day)
-         integer, intent(in)  :: include_rain !< Indicates whether or not (1/0) array Rainfall is available, otherwise no rainfall is assumed
+         real(kind=dp), intent(in) :: timestep_size !< Timestep size (s)
+         real(kind=dp), intent(in) :: initial_storage(n) !< Initial storage (=storage at start of timestep) (m)
+         real(kind=dp), intent(in) :: rainfall(:) !< Rainfall in current timestep (or more precise: additional ground rainfall, so minus interception) (mm/day)
+         integer, intent(in) :: include_rain !< Indicates whether or not (1/0) array Rainfall is available, otherwise no rainfall is assumed
          integer, intent(out) :: infiltration_capacity_state(n) !< Infiltration capacity state; (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE))
          real(kind=dp), optional, intent(out) :: infiltration_mm(n) !< Infiltration amount (mm)
          integer :: ierr !< Result status, DHYD_NOERR if successful.
