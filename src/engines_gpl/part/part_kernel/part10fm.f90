@@ -234,15 +234,15 @@ contains
                         ! but only for the oil model (surface floating), to be consistent with the delft3d approach
                         ! for all oil fractions. If it hits mpart=0 due to dispersion the particle will not stick but resamples.
                         if (oil) then
-                        do ifract = 1 , nfract
-                            if ( wpart(1 + 3 * (ifract - 1), ipart) > 0.0 ) then
-                                call part10fm_pdrag(ipart, ifract, rseed) ! only for floating oil and particles near surface when winddrag option is used
-                            endif
-                        enddo
-                    else if (apply_wind_drag) then  !when leeway function is used and not the oil module
-                        do isub = 1 , nosubs
-                            if (wpart(isub, ipart)>0.0 ) then
-                                call part10fm_pdrag(ipart, isub, rseed) ! only for floating oil and particles near surface when winddrag option is used
+                            do ifract = 1 , nfract
+                                if ( wpart(1 + 3 * (ifract - 1), ipart) > 0.0 ) then
+                                    call part10fm_pdrag(ipart, ifract, rseed) ! only for floating oil and particles near surface when winddrag option is used
+                                endif
+                            enddo
+                        else if (apply_wind_drag) then  !when leeway function is used and not the oil module
+                            do isub = 1 , nosubs
+                                if (wpart(isub, ipart)>0.0 ) then
+                                    call part10fm_pdrag(ipart, isub, rseed) ! only for floating oil and particles near surface when winddrag option is used
                                 endif
                             enddo
                         endif
@@ -388,15 +388,17 @@ contains
         !partdomain = .FALSE.    ! if false the particle is in the domain
         niter = 0
         cdrag = drand(3) / 100.0          !  wind drag as a fraction
-        ! note that the leeway is not using the oil module, but in combination with the apply_wind_drag option (see also part10, for the d3dV4 application))
-        if ( oil ) then 
+
+        ! note that the leeway is not using the oil module, but in combination with the
+        ! apply_wind_drag option (see also part10, for the d3dV4 application))
+        if ( oil ) then
             defang = defang * twopi / 360.0    !  deflection angle oil modelling
         elseif ( leeway ) then
             defang = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
             cdrag  = leeway_multiplier          !  windage (leeway), given as a fraction
             leeway_modifier_rad = atan2(leeway_modifier, earth_radius) * raddeg_hp
         endif
-  
+
         ! the next section is taken from the oildsp routine to allow access to the stickyness (if oilmod).
         if (oil) then
             npadd = 0
@@ -425,8 +427,7 @@ contains
             partlay = laypart(ipart)
 
             totdepthlay(1) = h0(partcel)
-            partcellay             = partcel + (partlay-1) * hyd%nosegl
-            !partbottomlay             = laybot(1, mpart(ipart))
+            partcellay = partcel + (partlay-1) * hyd%nosegl
             do ilay = 2, noslay
                if (ilay <= kmx) then
                   totdepthlay(ilay) = totdepthlay(ilay - 1) + h0(partcel + (ilay-1) * hyd%nosegl)
@@ -438,7 +439,7 @@ contains
             if ( laypart(ipart) == 1 ) then
                 depthp = thicknessl * hpart(ipart)
             else
-                depthp = totdepthlay(laypart(ipart)-1) + thicknessl * hpart(ipart)
+                depthp = totdepthlay(partlay-1) + thicknessl * hpart(ipart)
             endif
 
             if (depthp .lt. max_wind_drag_depth) then
@@ -446,19 +447,14 @@ contains
                 vxw  = - wvelo(mpart(ipart)) * sin( wdirr + leeway_ang_sign * defang )
                 vyw  = - wvelo(mpart(ipart)) * cos( wdirr + leeway_ang_sign * defang )
                 vw_net = sqrt((vxw-ux0)**2 + (vyw-uy0)**2)  ! net wind for drag (to accommodate scaling the modifier)
-    !           drag on the difference vector: cd * (wind - flow)
-                if ( abs( vw_net ) .gt. 0 .and. leeway ) then    ! if no net wind velocity (so no drag) then nothing will happen 
+
+                ! drag on the difference vector: cd * (wind - flow)
+                if ( abs( vw_net ) .gt. 0 .and. leeway ) then    ! if no net wind velocity (so no drag) then nothing will happen
                     dwx = ((cdrag*(vxw-ux0old) + leeway_modifier * sin ((vxw-ux0old)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
                     dwy = ((cdrag*(vyw-uy0old) + leeway_modifier * cos ((vyw-uy0old)/vw_net))) * dts    !
                 endif
             end if
         end if
-
-        xpart(ipart) = xpartold + dwx    !cartesian
-        ypart(ipart) = ypartold + dwy    !
-
-        dwx = cdrag * (dpxwind - ux0) * dts
-        dwy = cdrag * (dpywind - uy0) * dts
 
         if (jsferic == 0) then
             xpart(ipart) = xpartold + dwx    !cartesian
@@ -467,26 +463,7 @@ contains
         else
             ! if spherical then for an accurate conversion we need to calculate distances
             zpartold = zpart(ipart)
-            ux0old = atan2(ux0old, earth_radius) * raddeg_hp
-            uy0old = atan2(uy0old, earth_radius) * raddeg_hp
-            dpxwind = - wvel_sf * sin(wdirr)  ! in degrees (radians). note that the direction is from the north and defined clockwise, 0 means no x displacement
-            dpywind = - wvel_sf * cos(wdirr)
-            dpxwind = - wvel_sf * sin(wdirr + leeway_ang_sign * defang )  ! in degrees (radians). note that the direction is from the north and defined clockwise, 0 means no x displacement
-            dpywind = - wvel_sf * cos(wdirr + leeway_ang_sign * defang )
-            dwx = cdrag * (dpxwind - ux0old) * dts
-            dwy = cdrag * (dpywind - uy0old) * dts
-            if ( apply_wind_drag .and. depthp .lt. max_wind_drag_depth .and. leeway) then
-!           drag on the difference vector: cd * (wind - flow)
-                if ( abs( wvel_sf ) .gt. 0 .and. leeway ) then    ! if no net wind velocity (so no drag) then nothing will happen 
-                    dwx = ((cdrag * (dpxwind - ux0old) + leeway_modifier_rad * sin ((dpxwind - ux0old)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
-                    dwy = ((cdrag * (dpywind - uy0old) + leeway_modifier_rad * cos ((dpywind - uy0old)/vw_net))) * dts    !
-                endif
- 
-            endif
-            call Cart3Dtospher(xpartold, ypartold, zpartold, xx(1), yy(1), ptref)
-            xx(1) = xx(1) + dwx
-            yy(1) = yy(1) + dwy
-            call sphertocart3D(xx(1), yy(1), xpart(ipart), ypart(ipart), zpart(ipart)) !to convert back to meters
+            call displace_spherical( xpartold, ypartold, zpartold, dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
         endif
 
         call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
