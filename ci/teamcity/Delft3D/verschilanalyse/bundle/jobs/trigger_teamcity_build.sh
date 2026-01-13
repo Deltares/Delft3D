@@ -33,12 +33,8 @@ docker run --rm \
     s3 sync --delete --no-progress /data "${BUCKET}/${CURRENT_PREFIX}/logs"
 
 # Trigger teamcity 'Report' build.
-curl --fail --silent --show-error -X POST \
-    "${TEAMCITY_SERVER_URL}/app/rest/buildQueue" \
-    --header "Authorization: Bearer $(cat "${HOME}/.teamcity/verschilanalyse-token")" \
-    --header "Accept: application/json" \
-    --header "Content-Type: application/json" \
-    --data-binary @- <<EOF
+payload=$(
+    cat <<EOF
 {
     "buildTypeId": "${REPORT_BUILD_TYPE_ID}",
     "revisions": {
@@ -81,3 +77,11 @@ curl --fail --silent --show-error -X POST \
     }
 }
 EOF
+)
+
+curl --fail --silent --show-error -X POST \
+    --header "Authorization: Bearer $(cat "${HOME}/.teamcity/verschilanalyse-token")" \
+    --header "Accept: application/json" \
+    --header "Content-Type: application/json" \
+    --data-binary "${payload}" \
+    "${TEAMCITY_SERVER_URL}/app/rest/buildQueue"
