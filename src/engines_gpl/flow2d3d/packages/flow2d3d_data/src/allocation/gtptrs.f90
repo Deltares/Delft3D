@@ -59,6 +59,7 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: areau
     integer(pntrsize), pointer :: areav
     integer(pntrsize), pointer :: atr
+    integer(pntrsize), pointer :: a_ice
     integer(pntrsize), pointer :: bruvai
     integer(pntrsize), pointer :: c
     integer(pntrsize), pointer :: cbuv
@@ -157,6 +158,7 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: fviwe
     integer(pntrsize), pointer :: fxw
     integer(pntrsize), pointer :: fyw
+    integer(pntrsize), pointer :: f_w
     integer(pntrsize), pointer :: grmasu
     integer(pntrsize), pointer :: grmasv
     integer(pntrsize), pointer :: grmsur
@@ -180,6 +182,10 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: hv
     integer(pntrsize), pointer :: hv0
     integer(pntrsize), pointer :: hydrbc
+    integer(pntrsize), pointer :: h_ice
+    integer(pntrsize), pointer :: h_snow
+    integer(pntrsize), pointer :: icestr
+    integer(pntrsize), pointer :: icknmi
     integer(pntrsize), pointer :: msucom
     integer(pntrsize), pointer :: msvcom
     integer(pntrsize), pointer :: ombc
@@ -255,6 +261,9 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: stif
     integer(pntrsize), pointer :: stil
     integer(pntrsize), pointer :: sumrho
+    integer(pntrsize), pointer :: sxice
+    integer(pntrsize), pointer :: sxsn
+    integer(pntrsize), pointer :: sxa
     integer(pntrsize), pointer :: taubmx
     integer(pntrsize), pointer :: taubpu
     integer(pntrsize), pointer :: taubpv
@@ -269,8 +278,12 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: thtim
     integer(pntrsize), pointer :: tkedis
     integer(pntrsize), pointer :: tkepro
+    integer(pntrsize), pointer :: toth_i
+    integer(pntrsize), pointer :: toth_w
     integer(pntrsize), pointer :: tp
     integer(pntrsize), pointer :: tpcom
+    integer(pntrsize), pointer :: t_ice
+    integer(pntrsize), pointer :: t_snow
     integer(pntrsize), pointer :: u0
     integer(pntrsize), pointer :: u1
     integer(pntrsize), pointer :: ubrlsu
@@ -288,6 +301,8 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: uvdist
     integer(pntrsize), pointer :: uwtypu
     integer(pntrsize), pointer :: uwtypv
+    integer(pntrsize), pointer :: u_ice
+    integer(pntrsize), pointer :: ut_ice
     integer(pntrsize), pointer :: v0
     integer(pntrsize), pointer :: v1
     integer(pntrsize), pointer :: vicuv
@@ -303,6 +318,8 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: volum1
     integer(pntrsize), pointer :: vortic
     integer(pntrsize), pointer :: vsus
+    integer(pntrsize), pointer :: v_ice
+    integer(pntrsize), pointer :: vt_ice
     integer(pntrsize), pointer :: w1
     integer(pntrsize), pointer :: w10mag
     integer(pntrsize), pointer :: wenf
@@ -429,6 +446,8 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: kcu
     integer(pntrsize), pointer :: kcv
     integer(pntrsize), pointer :: kfs
+    integer(pntrsize), pointer :: kfsice
+    integer(pntrsize), pointer :: kfssnw
     integer(pntrsize), pointer :: kfu
     integer(pntrsize), pointer :: kfv
     integer(pntrsize), pointer :: kspu
@@ -542,6 +561,7 @@ subroutine gtptrs(gdp)
     areau      => gdp%gdr_i_ch%areau
     areav      => gdp%gdr_i_ch%areav
     atr        => gdp%gdr_i_ch%atr
+    a_ice      => gdp%gdr_i_ch%a_ice
     bruvai     => gdp%gdr_i_ch%bruvai
     c          => gdp%gdr_i_ch%c
     cbuv       => gdp%gdr_i_ch%cbuv
@@ -640,6 +660,7 @@ subroutine gtptrs(gdp)
     fviwe      => gdp%gdr_i_ch%fviwe
     fxw        => gdp%gdr_i_ch%fxw
     fyw        => gdp%gdr_i_ch%fyw
+    f_w        => gdp%gdr_i_ch%f_w
     grmasu     => gdp%gdr_i_ch%grmasu
     grmasv     => gdp%gdr_i_ch%grmasv
     grmsur     => gdp%gdr_i_ch%grmsur
@@ -663,6 +684,10 @@ subroutine gtptrs(gdp)
     hv         => gdp%gdr_i_ch%hv
     hv0        => gdp%gdr_i_ch%hv0
     hydrbc     => gdp%gdr_i_ch%hydrbc
+    h_ice      => gdp%gdr_i_ch%h_ice
+    h_snow     => gdp%gdr_i_ch%h_snow
+    icestr     => gdp%gdr_i_ch%icestr
+    icknmi     => gdp%gdr_i_ch%icknmi
     msucom     => gdp%gdr_i_ch%msucom
     msvcom     => gdp%gdr_i_ch%msvcom
     ombc       => gdp%gdr_i_ch%ombc
@@ -738,6 +763,9 @@ subroutine gtptrs(gdp)
     stif       => gdp%gdr_i_ch%stif
     stil       => gdp%gdr_i_ch%stil
     sumrho     => gdp%gdr_i_ch%sumrho
+    sxa        => gdp%gdr_i_ch%sxa
+    sxice      => gdp%gdr_i_ch%sxice
+    sxsn       => gdp%gdr_i_ch%sxsn
     taubmx     => gdp%gdr_i_ch%taubmx
     taubpu     => gdp%gdr_i_ch%taubpu
     taubpv     => gdp%gdr_i_ch%taubpv
@@ -752,8 +780,12 @@ subroutine gtptrs(gdp)
     thtim      => gdp%gdr_i_ch%thtim
     tkedis     => gdp%gdr_i_ch%tkedis
     tkepro     => gdp%gdr_i_ch%tkepro
+    toth_i     => gdp%gdr_i_ch%toth_i
+    toth_w     => gdp%gdr_i_ch%toth_w
     tp         => gdp%gdr_i_ch%tp
     tpcom      => gdp%gdr_i_ch%tpcom
+    t_ice      => gdp%gdr_i_ch%t_ice
+    t_snow     => gdp%gdr_i_ch%t_snow
     u0         => gdp%gdr_i_ch%u0
     u1         => gdp%gdr_i_ch%u1
     ubrlsu     => gdp%gdr_i_ch%ubrlsu
@@ -771,6 +803,8 @@ subroutine gtptrs(gdp)
     uvdist     => gdp%gdr_i_ch%uvdist
     uwtypu     => gdp%gdr_i_ch%uwtypu
     uwtypv     => gdp%gdr_i_ch%uwtypv
+    u_ice      => gdp%gdr_i_ch%u_ice
+    ut_ice     => gdp%gdr_i_ch%ut_ice
     v0         => gdp%gdr_i_ch%v0
     v1         => gdp%gdr_i_ch%v1
     vicuv      => gdp%gdr_i_ch%vicuv
@@ -786,6 +820,8 @@ subroutine gtptrs(gdp)
     volum1     => gdp%gdr_i_ch%volum1
     vortic     => gdp%gdr_i_ch%vortic
     vsus       => gdp%gdr_i_ch%vsus
+    v_ice      => gdp%gdr_i_ch%v_ice
+    vt_ice     => gdp%gdr_i_ch%vt_ice
     w1         => gdp%gdr_i_ch%w1
     w10mag     => gdp%gdr_i_ch%w10mag
     wenf       => gdp%gdr_i_ch%wenf
@@ -914,6 +950,8 @@ subroutine gtptrs(gdp)
     kcu        => gdp%gdr_i_ch%kcu
     kcv        => gdp%gdr_i_ch%kcv
     kfs        => gdp%gdr_i_ch%kfs
+    kfsice     => gdp%gdr_i_ch%kfsice
+    kfssnw     => gdp%gdr_i_ch%kfssnw
     kfu        => gdp%gdr_i_ch%kfu
     kfv        => gdp%gdr_i_ch%kfv
     kspu       => gdp%gdr_i_ch%kspu
@@ -1041,6 +1079,8 @@ subroutine gtptrs(gdp)
     kcv        = gtipnt('kcv'   , gdp)
     kcv45      = gtipnt('kcv45' , gdp)
     kfs        = gtipnt('kfs'   , gdp)
+    kfsice     = gtipnt('kfsice', gdp)
+    kfssnw     = gtipnt('kfssnw', gdp)
     kfsmax     = gtipnt('kfsmax', gdp)
     kfsmin     = gtipnt('kfsmin', gdp)
     kfsmx0     = gtipnt('kfsmx0', gdp)
@@ -1082,6 +1122,7 @@ subroutine gtptrs(gdp)
     areau      = gtrpnt('areau' , gdp)
     areav      = gtrpnt('areav' , gdp)
     atr        = gtrpnt('atr'   , gdp)
+    a_ice      = gtrpnt('a_ice ', gdp)
     bruvai     = gtrpnt('bruvai', gdp)
     c          = gtrpnt('c'     , gdp)
     cbuv       = gtrpnt('cbuv'  , gdp)
@@ -1192,6 +1233,7 @@ subroutine gtptrs(gdp)
     fviwe      = gtrpnt('fviwe' , gdp)
     fxw        = gtrpnt('fxw'   , gdp)
     fyw        = gtrpnt('fyw'   , gdp)
+    f_w        = gtrpnt('f_w'   , gdp)
     grmasu     = gtrpnt('grmasu', gdp)
     grmasv     = gtrpnt('grmasv', gdp)
     grmsur     = gtrpnt('grmsur', gdp)
@@ -1222,6 +1264,10 @@ subroutine gtptrs(gdp)
     hv0        = gtrpnt('hv0'   , gdp)
     hydprs     = gtrpnt('hydprs', gdp)
     hydrbc     = gtrpnt('hydrbc', gdp)
+    h_ice      = gtrpnt('h_ice ', gdp)
+    h_snow     = gtrpnt('h_snow', gdp)
+    icestr     = gtrpnt('icestr', gdp)
+    icknmi     = gtrpnt('icknmi', gdp)
     msucom     = gtrpnt('msucom', gdp)
     msvcom     = gtrpnt('msvcom', gdp)
     ombc       = gtrpnt('ombc'  , gdp)
@@ -1295,6 +1341,9 @@ subroutine gtptrs(gdp)
     stif       = gtrpnt('stif'  , gdp)
     stil       = gtrpnt('stil'  , gdp)
     sumrho     = gtrpnt('sumrho', gdp)
+    sxa        = gtrpnt('sxa   ', gdp)
+    sxice      = gtrpnt('sxice ', gdp)
+    sxsn       = gtrpnt('sxsn  ', gdp)
     taubmx     = gtrpnt('taubmx', gdp)
     taubpu     = gtrpnt('taubpu', gdp)
     taubpv     = gtrpnt('taubpv', gdp)
@@ -1309,8 +1358,12 @@ subroutine gtptrs(gdp)
     thtim      = gtrpnt('thtim' , gdp)
     tkedis     = gtrpnt('tkedis', gdp)
     tkepro     = gtrpnt('tkepro', gdp)
+    toth_i     = gtrpnt('toth_i', gdp)
+    toth_w     = gtrpnt('toth_w', gdp)
     tp         = gtrpnt('tp'    , gdp)
     tpcom      = gtrpnt('tpcom' , gdp)
+    t_ice      = gtrpnt('t_ice ', gdp)
+    t_snow     = gtrpnt('t_snow', gdp)
     u0         = gtrpnt('u0'    , gdp)
     u1         = gtrpnt('u1'    , gdp)
     ubrlsu     = gtrpnt('ubrlsu', gdp)
@@ -1326,6 +1379,8 @@ subroutine gtptrs(gdp)
     uvdist     = gtrpnt('uvdist', gdp)
     uwtypu     = gtrpnt('uwtypu', gdp)
     uwtypv     = gtrpnt('uwtypv', gdp)
+    u_ice      = gtrpnt('u_ice ', gdp)
+    ut_ice     = gtrpnt('ut_ice', gdp)
     v0         = gtrpnt('v0'    , gdp)
     v1         = gtrpnt('v1'    , gdp)
     vicuv      = gtrpnt('vicuv' , gdp)
@@ -1339,6 +1394,8 @@ subroutine gtptrs(gdp)
     volum1     = gtrpnt('volum1', gdp)
     vortic     = gtrpnt('vortic', gdp)
     vsus       = gtrpnt('vsus'  , gdp)
+    v_ice      = gtrpnt('v_ice ', gdp)
+    vt_ice     = gtrpnt('vt_ice', gdp)
     w1         = gtrpnt('w1'    , gdp)
     w10mag     = gtrpnt('w10mag', gdp)
     wenf       = gtrpnt('wenf'  , gdp)

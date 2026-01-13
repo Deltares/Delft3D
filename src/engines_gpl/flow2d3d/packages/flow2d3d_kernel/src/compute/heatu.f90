@@ -1,10 +1,14 @@
 subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
-               & ltem      ,lstsci    ,icx       ,icy       , &
+               & ltem      ,lsal      ,lstsci    ,icx       ,icy       , &
                & nmmax     ,kmax      ,kfs       ,kfsmx0    ,kfsmax    , &
                & kfsmin    ,kspu      ,kspv      ,dzs0      ,dzs1      , &
                & sour      ,sink      ,r0        ,evap      ,dps       , &
                & s0        ,s1        ,thick     ,w10mag    ,patm      , &
                & xcor      ,ycor      ,gsqs      ,xz        ,yz        , &
+               & toth_i    ,toth_w    ,f_w       ,kfsice    ,kfssnw    , &
+               & h_ice     ,h_snow    ,t_ice     ,t_snow    , &
+               & z0urou    ,z0vrou    ,kfu       ,kfv       , &
+               & u0        ,v0        ,u_ice     ,v_ice     , &
                & anglon    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -101,6 +105,8 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp) , dimension(:) , pointer :: tairarr
     real(fp) , dimension(:) , pointer :: clouarr
     real(fp) , dimension(:) , pointer :: swrfarr
+    logical                 , pointer :: ice
+    character(10)           , pointer :: ice_model
     logical  , dimension(:) , pointer :: flbcktemp
     logical                 , pointer :: rhum_file
     logical                 , pointer :: tair_file
@@ -120,6 +126,9 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     logical                 , pointer :: wave
     logical                 , pointer :: struct
     logical                 , pointer :: zmodel
+    real(fp)                , pointer :: albedo_wat
+    real(fp)                , pointer :: albedo_ice
+    real(fp)                , pointer :: albedo_snow
 !
 ! Global variables
 !
@@ -130,6 +139,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     integer                                                     , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                                                     , intent(in)  :: keva   !  Description and declaration in tricom.igs
     integer                                                     , intent(in)  :: ktemp  !  Description and declaration in tricom.igs
+    integer                                                     , intent(in)  :: lsal   !  Description and declaration in dimens.igs
     integer                                                     , intent(in)  :: lstsci !  Description and declaration in esm_alloc_int.f90
     integer                                                     , intent(in)  :: ltem   !  Description and declaration in dimens.igs
     integer                                                     , intent(in)  :: nmmax  !  Description and declaration in dimens.igs
@@ -137,6 +147,8 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                , intent(in)  :: kfsmax !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                , intent(in)  :: kfsmx0 !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                , intent(in)  :: kfsmin !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                , intent(in)  :: kfu    !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                , intent(in)  :: kfv    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)        , intent(in)  :: kspu   !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)        , intent(in)  :: kspv   !  Description and declaration in esm_alloc_int.f90
     logical                                                     , intent(in)  :: sferic !  Description and declaration in tricom.igs
@@ -163,11 +175,27 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)               :: sink   !  Description and declaration in esm_alloc_real.f90
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)               :: sour   !  Description and declaration in esm_alloc_real.f90
     real(fp)   , dimension(kmax)                                , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: toth_i !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: toth_w !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: f_w    !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: z0urou !  Description and declaration in rjdim.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: z0vrou !  Description and declaration in rjdim.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: h_ice
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: h_snow
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: t_ice
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: t_snow
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: u_ice
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: v_ice
+    integer    , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: kfsice !  Description and declaration in esm_alloc_int.f90
+    integer    , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: kfssnw !  Description and declaration in esm_alloc_int.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         , intent(in)  :: u0      !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         , intent(in)  :: v0      !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
     integer       :: istat
     integer       :: k
+    integer       :: ken
     integer       :: k0
     integer       :: k1
     integer       :: k2
@@ -182,7 +210,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)      :: b1      ! Transmission coefficient 
     real(fp)      :: bowrat
     real(fp)      :: cccoef  ! Coefficient for cloud cover 
+    real(fp)      :: coef_qbl! Coefficient for qbl in case of ice 
     real(fp)      :: corr
+    real(fp)      :: c_eva   ! Parameter for evaporative flux
+    real(fp)      :: c_sh    ! Parameter for sensible heat flux 
     real(fp)      :: d       ! Declination angle at given time (radians)
     real(fp)      :: decln   ! Maximum declination angle of the earth
     real(fp)      :: delvap  ! Vapour pressure difference (see also Rob Uittenbogaard's 1DV model
@@ -206,6 +237,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)      :: h0new
     real(fp)      :: h0old
     real(fp)      :: hcp     ! Specific heat capacity 1004. [j/kg/K] 
+    real(fp)      :: hdz     ! half of thickness of top layer
     real(fp)      :: hfree   ! Free convection of sensible heat
     real(fp)      :: hlc
     real(fp)      :: htrsh
@@ -247,12 +279,16 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)      :: tl      ! Latent heat [j/kg]
     real(fp)      :: tm0     ! GMT time in hours after midnight January first (TIMJAN + TIMHR)
     real(fp)      :: tm      ! Actual time in hours after midnight January first (TIMJAN + TIMHR + TIMEZONE)
+    real(fp)      :: tsurf   ! Surface layer temperature
+    real(fp)      :: ustar   ! friction velocity
     real(fp)      :: w0      ! Angular frequency of one year period (/hours)
     real(fp)      :: w1      ! Angular frequency of one day period (/hours)
     real(fp)      :: xnuair
+    real(fp)      :: z00
     real(fp)      :: zbottom
     real(fp)      :: zdown
     real(fp)      :: ztop
+    real(fp)      :: t_freeze
     logical       :: success
     character(100):: errmsg
 !
@@ -318,8 +354,13 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     struct      => gdp%gdprocs%struct
     zmodel      => gdp%gdprocs%zmodel
     flbcktemp   => gdp%gdheat%flbcktemp
+    ice         => gdp%gdprocs%ice
+    ice_model   => gdp%gdice%ice_model
+    albedo_wat  => gdp%gdice%albedo_wat
+    albedo_ice  => gdp%gdice%albedo_ice
+    albedo_snow => gdp%gdice%albedo_snow
     !
-    msgcount = 0
+	msgcount = 0
     htrsh    = 0.5_fp * dryflc
     !
     if (rhum_file .or. tair_file .or. clou_file .or. swrf_file .or. scc_file) then
@@ -932,10 +973,11 @@ do l=1,lstsci
        !
        ! initialize local parameters
        !
-       rlon = anglon
+	   rlon = anglon
        rlat = anglat
        !
        cccoef = 0.4_fp
+       albedo = 0.06_fp
        tm0    = timjan + timhr
        !
        decln  = 23.5_fp * degrad
@@ -976,6 +1018,53 @@ do l=1,lstsci
                 k0 = kfsmx0(nm)
              else
                 k0 = 1
+             endif
+             !
+             ! Compute freezing temperature for ice modelling
+             !
+             t_freeze = 0.0_fp
+             if (ice) then
+                 if (lsal .ne. 0) then
+             	    t_freeze = -0.0526_fp * r0(nm,k0,lsal)
+             	endif
+             endif
+             !
+             if (.not. ice) then
+                ! in case of no ice modelling:
+                albedo = 0.06_fp
+                em     = 0.985_fp
+                tsurf  = r0(nm,k0,ltem)
+                c_eva  = dalton
+                c_sh   = stanton
+             else if (.not. kfsice(nm)) then
+                ! in case of ice modelling but no occurence of ice:
+                albedo = albedo_wat  !! we assume that it's equal to 0.06
+                em     = 0.985_fp
+                tsurf  = r0(nm,k0,ltem)
+                c_eva  = dalton
+                c_sh   = stanton
+             else if (.not. kfssnw(nm)) then
+                ! in case of ice but no occurence of snow:
+                albedo = albedo_ice
+                em     = 0.987_fp
+                tsurf  = t_ice(nm)
+                c_eva  = dalton
+                if (tair .gt. tsurf) then
+                   c_sh = 0.00232
+                else
+                   c_sh = stanton
+                endif
+             else 
+                ! in case of ice and snow:
+                albedo = albedo_snow
+                em     = 0.987_fp
+                tsurf  = t_snow(nm)
+                c_eva  = dalton
+                if (tair .gt. tsurf) then
+                   c_sh = 0.00232
+                else
+                   c_sh = stanton
+                endif
              endif
              !
              if (rhum_file) then
@@ -1047,7 +1136,7 @@ do l=1,lstsci
              !
              ! Latent heat tl
              !
-             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,l)
+             tl = 2.5e6_fp - 2.3e3_fp*tsurf
              !
              ! Calculate heat loss at the sea surface
              ! CFCLOU = fraction => multiply by 10-4 removed
@@ -1055,15 +1144,20 @@ do l=1,lstsci
              ! Saturation pressure of water vapour in air remote (ewl) and
              ! near water surface (ew)
              !
-             ew  = 10.0_fp**(  ( 0.7859_fp + 0.03477_fp*r0(nm,k0,l) ) &
-                 & / ( 1.0_fp + 0.00412_fp*r0(nm,k0,l) )  )
+             ew  = 10.0_fp**(  ( 0.7859_fp + 0.03477_fp*tsurf ) &
+                 & / ( 1.0_fp + 0.00412_fp*tsurf )  )
              ewl = 10.0_fp**( (0.7859_fp + 0.03477_fp*tair) / (1.0_fp + 0.00412_fp*tair) )
              !
              ! Vapour pressure in air remote (eal) for given humidity
              ! rhum is in percentages; divide by 100 for fraction
              !
              eal = (rhum/100.0_fp) * ewl
-             if (eal > eps) then
+             !
+             ! Extra check because KNMI ice model allows negative relative humidity values
+             !
+             if (ice .and. ice_model .eq. 'KNMI') eal = (ABS(rhum)/100.0_fp) * ewl
+             !
+              if (eal > eps) then
                 sq_eal = sqrt(eal)
              else
                 sq_eal = 0.0_fp
@@ -1090,7 +1184,7 @@ do l=1,lstsci
                 !
                 ! No evap from fileva, evap and qeva calculated internally
                 !
-                evap(nm) = dalton * rhoa * w10mag(nm) * delvap
+                evap(nm) = c_eva * rhoa * w10mag(nm) * delvap
                 qeva     = evap(nm) * tl
              case (2)
                 !
@@ -1101,14 +1195,14 @@ do l=1,lstsci
                 !
                 ! evap from fileva, qeva is calculated internally
                 !
-                qeva = dalton * rhoa * w10mag(nm) * delvap * tl
+                qeva = c_eva * rhoa * w10mag(nm) * delvap * tl
              case default
                 ! nothing
              end select
              !
              ! Heat loss of water by forced convection of sensible heat
              !
-             qco = stanton * rhoa * hcp * w10mag(nm) * (r0(nm,k0,l)-tair)
+             qco = c_sh * rhoa * hcp * w10mag(nm) * (tsurf-tair)
              !
              if (free_convec) then
                 !
@@ -1143,7 +1237,7 @@ do l=1,lstsci
                 ! Add to heat loss by forced convection
                 !
                 rcpa  = hcp * (rhoa0+rhoa10) / 2.0_fp
-                hfree = rcpa * fheat * (r0(nm,k0,l)-tair)
+                hfree = rcpa * fheat * (tsurf-tair)
                 qco   = qco + hfree
                 !
                 ! Latent heat by free convection
@@ -1179,10 +1273,17 @@ do l=1,lstsci
              ! heat loss by effective infrared back radiation hl, restricted by
              ! presence of clouds and water vapour in air
              !
-             qbl = em * sboltz * ( celsius_to_kelvin(r0(nm,k0,l))**4.0_fp )                 &
+             qbl = em * sboltz * ( celsius_to_kelvin(tsurf)**4.0_fp )                 &
                  & * (0.39_fp - 0.05_fp*sq_eal) * (1.0_fp - 0.6_fp*cfclou*cfclou)
              !
              qbl = max(0.0_fp, qbl)
+             !
+             ! in case of an ice layer the back radiation is computed in DIF_ICE (by iteration)
+             !
+             if (ice .and. kfsice(nm) == 1) then
+                qbl = 0.0   
+                coef_qbl = em * sboltz * (0.39_fp - 0.05_fp*sq_eal) * (1.0_fp - 0.6_fp*cfclou*cfclou)
+             endif    
              !
              ! net heat flux [W/m^2] into water, solar radiation excluded
              !
@@ -1209,6 +1310,18 @@ do l=1,lstsci
                 endif
                 !
                 extinc = 1.7_fp/secchi(nm)
+                !
+                ! in case of ice all heat is in the top layer: 
+                !
+                if (ice .and. kfsice(nm).eq.1) extinc = 1.7_fp/ (0.1_fp * thick(1) * h0old)
+                !
+                !! For testing of horizontal ice model only:
+                !! qsn = 0.0_fp
+                !! qeva = 0.0_fp
+                !! qbl = 0.0_fp
+                !! qco = 0.0_fp
+                !! ql = 0.0_fp
+                !
                 corr  = 1.0_fp / ( (1.0_fp - exp(extinc*zbottom)) / extinc )
                 qink  = corr * qsn * (1.0_fp - exp(extinc*zdown)) / extinc
                 qtotk = (qink-ql) / (rhow*cp)
@@ -1219,29 +1332,80 @@ do l=1,lstsci
                    qtotk = qtotk * (1.0_fp - exp(extinc*zdown))
                 endif    
                 !
+                if (ice) then
+                   if (kfsice(nm).eq.1 .or. (r0(nm,k0,ltem) .lt. 0.1_fp .and. tair .lt. 0.0)) then
+                      ! compute half of thickness of top layer:
+                      hdz = 0.5_fp * thick(k0) * h0old
+                      ! compute Z0 value:
+                      ken = kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm)
+                      z00 = (kfu(nmd)*z0urou(nmd) + kfu(nm)*z0urou(nm) + kfv(ndm)&
+                          & *z0vrou(ndm) + kfv(nm)*z0vrou(nm))/ken
+                      z00 = max(1e-6,z00)
+                      ! compute friction velocity:
+                      ustar = w10mag(nm) / rhow
+                      ustar = max(1e-6,ustar)
+                      !
+                      toth_i(nm) = qtotk * (rhow*cp)
+                      !
+                      if (kfsice(nm) == 1) then 
+                         call hea_ice ( nm        ,toth_i    ,toth_w    ,f_w       , &
+                                      & t_freeze  ,r0(nm,k0,ltem) ,w10mag(nm)      ,rhow      ,ustar     , &
+                                      & hdz       ,z00       ,cp        ,qbl       , &
+                                      & coef_qbl  ,kfssnw    ,tair      , &
+                                      & h_ice     ,h_snow    ,t_ice     ,t_snow    ,gdp       )
+                         !
+                         !! For testing of horizontal ice model only:
+                         !! RESET QBL
+                         !! qbl = 0.0_fp
+                         !
+                         ql = qbl + qco + qeva
+                         qtotk = f_w(nm) / (rhow*cp)            
+                         toth_w(nm) = 0.0_fp
+                      else
+                          toth_w(nm) = qtotk * (rhow*cp)
+                          f_w(nm)    = 0.0_fp        
+                      endif
+                   else
+                      toth_w(nm) = qtotk * (rhow*cp)
+                      toth_i(nm) = 0.0_fp
+                      f_w(nm)    = 0.0_fp
+                   endif
+                endif
+                !
                 if (zmodel) then
                    if (qtotk > 0.0_fp) then
                       sour(nm, k0, l) = sour(nm, k0, l) + qtotk*gsqs(nm)
-                   elseif (r0(nm, k0, l) > 0.01_fp) then
+                   elseif (r0(nm, k0, l) > t_freeze + 0.01_fp) then
                       sink(nm, k0, l) = sink(nm, k0, l) - qtotk*gsqs(nm)/r0(nm, k0, l)
-                   elseif (r0(nm, k0, l) > 0.0_fp .and. r0(nm, k0, l) < 0.01_fp) then
+                   elseif (r0(nm, k0, l) > t_freeze .and. r0(nm, k0, l) < t_freeze + 0.01_fp) then
                       !
                       ! No addition to sink when the water temperature is lower than 0.01 degree.
                       !
                    else
-                      msgcount = msgcount + 1
+                      !
+                      ! This error is switched off in case of ice modelling
+                      !
+                      if (.not. ice) msgcount = msgcount + 1
                    endif
                 else
                    if (qtotk > 0.0_fp) then
                       sour(nm, k0, l) = sour(nm, k0, l) + qtotk/(thick(k0)*h0old)
-                   elseif (r0(nm, k0, l) > 0.01_fp) then
+                   elseif (t_freeze .gt. -0.0001 .and. r0(nm, k0, l) > 0.01_fp) then
                       sink(nm, k0, l) = sink(nm, k0, l) - qtotk/(thick(k0)*h0new*r0(nm, k0, l))
-                   elseif (r0(nm, k0, l) > 0.0_fp .and. r0(nm, k0, l) < 0.01_fp) then
+                   elseif (t_freeze .le. -0.0001 .and. r0(nm, k0, l) > t_freeze + 0.01_fp) then
                       !
-                      ! No addition to sink when the water temperature is lower than 0.01 degree.
+                      ! When freezing point below zero (i.e. ice modelling) allow sources for computing lower temperatures)
+                      !
+                      sour(nm, k0, ltem) = sour(nm, k0, l) + qtotk/(thick(k0)*h0old)
+                   elseif (r0(nm, k0, ltem) > t_freeze .and. r0(nm, k0, ltem) < t_freeze + 0.01_fp) then
+                      !
+                      ! No addition to sink when the water temperature is lower than {t_freeze + 0.01} degree.
                       !                   
                    else
-                      msgcount = msgcount + 1
+                      !
+                      ! This error is switched off in case of ice modelling
+                      !
+                      if (.not. ice) msgcount = msgcount + 1
                    endif
                 endif
                 do k = k1, k2, kstep

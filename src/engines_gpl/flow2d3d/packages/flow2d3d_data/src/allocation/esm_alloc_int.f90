@@ -76,6 +76,7 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
     integer , pointer :: ndro
     integer , pointer :: nsluv
     integer , pointer :: nipntr
+    logical , pointer :: ice
 !
 ! Global variables
 !
@@ -87,6 +88,7 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
 !
     integer           :: ddb
     integer           :: ierr    ! Errorflag 
+    integer           :: kfacice ! Multiplication factor; 1 if ICE='Y', else 0 
     integer           :: kfacz   ! Multiple factor; 0 if ZMODEL=TRUE 1 if ZMODEL=FALSE for vertical grid arrays 
     integer           :: mmaxdb
     integer           :: mmaxddb
@@ -121,6 +123,7 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
     nofou     => gdp%d%nofou
     ndro      => gdp%d%ndro
     nsluv     => gdp%d%nsluv
+    ice       => gdp%gdprocs%ice
     !
     ! initialize array boundaries
     !
@@ -130,6 +133,11 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
     kfacz = 0
     if (zmodel) then
        kfacz = 1
+    endif
+    !
+    kfacice = 0
+    if (ice) then
+       kfacice = 1
     endif
     !
     ! arrays for: discharge sources
@@ -340,6 +348,18 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
                              !  = 0 structure
                              !  = 0 gate (KSPV(NM,0)*KSPV(NM,K)=4)
     ierr = mkipnt(pntnam, nmaxddb*mmaxddb*kmax, gdp)
+    if (ierr <= -9) goto 9999
+    !
+    ! arrays for: ice modelling
+    !
+    pntnam = 'kfsice'       !  Global data
+    ierr = mkipnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr <= -9) goto 9999
+    !
+    pntnam = 'kfssnw'      !  Global data
+    ierr = mkipnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
     if (ierr <= -9) goto 9999
     !
     ! arrays for: cut cell approach

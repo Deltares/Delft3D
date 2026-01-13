@@ -93,6 +93,7 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: areau
     integer(pntrsize) , pointer :: areav
     integer(pntrsize) , pointer :: atr
+    integer(pntrsize) , pointer :: a_ice
     integer(pntrsize) , pointer :: bruvai
     integer(pntrsize) , pointer :: c
     integer(pntrsize) , pointer :: cbuv
@@ -170,6 +171,7 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: fltr
     integer(pntrsize) , pointer :: fuiwe
     integer(pntrsize) , pointer :: fviwe
+    integer(pntrsize) , pointer :: f_w
     integer(pntrsize) , pointer :: grmasu
     integer(pntrsize) , pointer :: grmasv
     integer(pntrsize) , pointer :: gro
@@ -189,6 +191,10 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: hv
     integer(pntrsize) , pointer :: hv0
     integer(pntrsize) , pointer :: hydrbc
+    integer(pntrsize) , pointer :: h_ice
+    integer(pntrsize) , pointer :: h_snow
+    integer(pntrsize) , pointer :: icestr
+    integer(pntrsize) , pointer :: icknmi
     integer(pntrsize) , pointer :: msucom
     integer(pntrsize) , pointer :: msvcom
     integer(pntrsize) , pointer :: omega
@@ -243,6 +249,9 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: sour
     integer(pntrsize) , pointer :: sournf
     integer(pntrsize) , pointer :: sumrho
+    integer(pntrsize) , pointer :: sxa
+    integer(pntrsize) , pointer :: sxice
+    integer(pntrsize) , pointer :: sxsn
     integer(pntrsize) , pointer :: taubmx
     integer(pntrsize) , pointer :: taubpu
     integer(pntrsize) , pointer :: taubpv
@@ -256,8 +265,12 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: thtim
     integer(pntrsize) , pointer :: tkedis
     integer(pntrsize) , pointer :: tkepro
+    integer(pntrsize) , pointer :: toth_i
+    integer(pntrsize) , pointer :: toth_w
     integer(pntrsize) , pointer :: tp
     integer(pntrsize) , pointer :: tpcom
+    integer(pntrsize) , pointer :: t_ice
+    integer(pntrsize) , pointer :: t_snow
     integer(pntrsize) , pointer :: u0
     integer(pntrsize) , pointer :: u1
     integer(pntrsize) , pointer :: ubrlsu
@@ -273,6 +286,8 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: uvdist
     integer(pntrsize) , pointer :: uwtypu
     integer(pntrsize) , pointer :: uwtypv
+    integer(pntrsize) , pointer :: u_ice
+    integer(pntrsize) , pointer :: ut_ice
     integer(pntrsize) , pointer :: v0
     integer(pntrsize) , pointer :: v1
     integer(pntrsize) , pointer :: vicuv
@@ -287,6 +302,8 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: volum1
     integer(pntrsize) , pointer :: vortic
     integer(pntrsize) , pointer :: vsus
+    integer(pntrsize) , pointer :: v_ice
+    integer(pntrsize) , pointer :: vt_ice
     integer(pntrsize) , pointer :: w1
     integer(pntrsize) , pointer :: w10mag
     integer(pntrsize) , pointer :: windcd
@@ -383,6 +400,8 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: kcu
     integer(pntrsize) , pointer :: kcv
     integer(pntrsize) , pointer :: kfs
+    integer(pntrsize) , pointer :: kfsice
+    integer(pntrsize) , pointer :: kfssnw
     integer(pntrsize) , pointer :: kfu
     integer(pntrsize) , pointer :: kfv
     integer(pntrsize) , pointer :: kspu
@@ -448,6 +467,7 @@ function getpointer(pntnam, gdp)
     areau      => gdp%gdr_i_ch%areau
     areav      => gdp%gdr_i_ch%areav
     atr        => gdp%gdr_i_ch%atr
+    a_ice      => gdp%gdr_i_ch%a_ice
     bruvai     => gdp%gdr_i_ch%bruvai
     c          => gdp%gdr_i_ch%c
     cbuv       => gdp%gdr_i_ch%cbuv
@@ -525,6 +545,7 @@ function getpointer(pntnam, gdp)
     fltr       => gdp%gdr_i_ch%fltr
     fuiwe      => gdp%gdr_i_ch%fuiwe
     fviwe      => gdp%gdr_i_ch%fviwe
+    f_w        => gdp%gdr_i_ch%f_w
     grmasu     => gdp%gdr_i_ch%grmasu
     grmasv     => gdp%gdr_i_ch%grmasv
     gro        => gdp%gdr_i_ch%gro
@@ -544,6 +565,10 @@ function getpointer(pntnam, gdp)
     hv         => gdp%gdr_i_ch%hv
     hv0        => gdp%gdr_i_ch%hv0
     hydrbc     => gdp%gdr_i_ch%hydrbc
+    h_ice      => gdp%gdr_i_ch%h_ice
+    h_snow     => gdp%gdr_i_ch%h_snow
+    icestr     => gdp%gdr_i_ch%icestr
+    icknmi     => gdp%gdr_i_ch%icknmi
     msucom     => gdp%gdr_i_ch%msucom
     msvcom     => gdp%gdr_i_ch%msvcom
     omega      => gdp%gdr_i_ch%omega
@@ -598,6 +623,9 @@ function getpointer(pntnam, gdp)
     sour       => gdp%gdr_i_ch%sour
     sournf     => gdp%gdr_i_ch%sournf
     sumrho     => gdp%gdr_i_ch%sumrho
+    sxa        => gdp%gdr_i_ch%sxa
+    sxice      => gdp%gdr_i_ch%sxice
+    sxsn       => gdp%gdr_i_ch%sxsn
     taubmx     => gdp%gdr_i_ch%taubmx
     taubpu     => gdp%gdr_i_ch%taubpu
     taubpv     => gdp%gdr_i_ch%taubpv
@@ -611,8 +639,12 @@ function getpointer(pntnam, gdp)
     thtim      => gdp%gdr_i_ch%thtim
     tkedis     => gdp%gdr_i_ch%tkedis
     tkepro     => gdp%gdr_i_ch%tkepro
+    toth_i     => gdp%gdr_i_ch%toth_i
+    toth_w     => gdp%gdr_i_ch%toth_w
     tp         => gdp%gdr_i_ch%tp
     tpcom      => gdp%gdr_i_ch%tpcom
+    t_ice      => gdp%gdr_i_ch%t_ice
+    t_snow     => gdp%gdr_i_ch%t_snow
     u0         => gdp%gdr_i_ch%u0
     u1         => gdp%gdr_i_ch%u1
     ubrlsu     => gdp%gdr_i_ch%ubrlsu
@@ -628,6 +660,8 @@ function getpointer(pntnam, gdp)
     uvdist     => gdp%gdr_i_ch%uvdist
     uwtypu     => gdp%gdr_i_ch%uwtypu
     uwtypv     => gdp%gdr_i_ch%uwtypv
+    u_ice      => gdp%gdr_i_ch%u_ice
+    ut_ice     => gdp%gdr_i_ch%ut_ice
     v0         => gdp%gdr_i_ch%v0
     v1         => gdp%gdr_i_ch%v1
     vicuv      => gdp%gdr_i_ch%vicuv
@@ -642,6 +676,8 @@ function getpointer(pntnam, gdp)
     volum1     => gdp%gdr_i_ch%volum1
     vortic     => gdp%gdr_i_ch%vortic
     vsus       => gdp%gdr_i_ch%vsus
+    v_ice      => gdp%gdr_i_ch%v_ice
+    vt_ice     => gdp%gdr_i_ch%vt_ice
     w1         => gdp%gdr_i_ch%w1
     w10mag     => gdp%gdr_i_ch%w10mag
     windsu     => gdp%gdr_i_ch%windsu
@@ -738,6 +774,8 @@ function getpointer(pntnam, gdp)
     kcu        => gdp%gdr_i_ch%kcu
     kcv        => gdp%gdr_i_ch%kcv
     kfs        => gdp%gdr_i_ch%kfs
+    kfsice     => gdp%gdr_i_ch%kfsice
+    kfssnw     => gdp%gdr_i_ch%kfssnw
     kfu        => gdp%gdr_i_ch%kfu
     kfv        => gdp%gdr_i_ch%kfv
     kspu       => gdp%gdr_i_ch%kspu
@@ -837,6 +875,8 @@ function getpointer(pntnam, gdp)
        returnval = areav
     case ('atr')
        returnval = atr
+    case ('a_ice')
+       returnval = a_ice
     case ('bruvai')
        returnval = bruvai
     case ('cbuv')
@@ -987,6 +1027,8 @@ function getpointer(pntnam, gdp)
        returnval = fuiwe
     case ('fviwe')
        returnval = fviwe
+    case ('f_w')
+       returnval = f_w
     case ('grmasu')
        returnval = grmasu
     case ('grmasv')
@@ -1037,6 +1079,14 @@ function getpointer(pntnam, gdp)
        returnval = hv0
     case ('hrms')
        returnval = hrms
+    case ('h_ice')
+       returnval = h_ice
+    case ('h_snow')
+       returnval = h_snow
+    case ('icestr')
+       returnval = icestr
+    case ('icknmi')
+       returnval = icknmi
     case ('msucom')
        returnval = msucom
     case ('msvcom')
@@ -1145,6 +1195,12 @@ function getpointer(pntnam, gdp)
        returnval = sumrho
     case ('soumud')
        returnval = soumud
+    case ('sxa')
+       returnval = sxa
+    case ('sxice')
+       returnval = sxice
+    case ('sxsn')
+       returnval = sxsn
     case ('taubmx')
        returnval = taubmx
     case ('taubpu')
@@ -1171,10 +1227,18 @@ function getpointer(pntnam, gdp)
        returnval = tkedis
     case ('tkepro')
        returnval = tkepro
+    case ('toth_i')
+       returnval = toth_i
+    case ('toth_w')
+       returnval = toth_w
     case ('tp')
        returnval = tp
     case ('tpcom')
        returnval = tpcom
+    case ('t_ice')
+       returnval = t_ice
+    case ('t_snow')
+       returnval = t_snow
     case ('u0')
        returnval = u0
     case ('u1')
@@ -1205,6 +1269,10 @@ function getpointer(pntnam, gdp)
        returnval = umnflc
     case ('usus')
        returnval = usus
+    case ('u_ice')
+       returnval = u_ice
+    case ('ut_ice')
+       returnval = ut_ice
     case ('v0')
        returnval = v0
     case ('v1')
@@ -1233,6 +1301,10 @@ function getpointer(pntnam, gdp)
        returnval = vortic
     case ('vsus')
        returnval = vsus
+    case ('v_ice')
+       returnval = v_ice
+    case ('vt_ice')
+       returnval = vt_ice
     case ('w1')
        returnval = w1
     case ('w10mag')
@@ -1417,6 +1489,10 @@ function getpointer(pntnam, gdp)
        returnval = kcv45
     case ('kfs')
        returnval = kfs
+    case ('kfsice')
+       returnval = kfsice
+    case ('kfssnw')
+       returnval = kfssnw
     case ('kfu')
        returnval = kfu
     case ('kfv')

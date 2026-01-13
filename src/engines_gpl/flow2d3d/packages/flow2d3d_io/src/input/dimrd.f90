@@ -106,6 +106,13 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     integer , pointer :: ifis
     integer , pointer :: itis
     integer , pointer :: nh_level
+    logical , pointer :: ice
+    character(10) , pointer :: ice_model
+    logical , pointer :: dyn_ice
+    logical , pointer :: prs_ice
+    logical , pointer :: his_ice
+    real(fp), pointer :: albedo_ice
+    real(fp), pointer :: albedo_snow
 !
 ! Global variables
 !
@@ -182,6 +189,8 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     character(300)                           :: mdfrec ! Record read from the MD-file 300 = 256 + a bit (field, =, ##, etc.) 
     character(6)                             :: keyw   ! Keyword to look for in the MD-file
     character(256)                           :: stringval
+    real(sp)                                 :: sprval ! Help array (real) where the data, recently read from the MD-file, are stored temporarily in single precision     
+    real(fp)                                 :: fprval ! Help array (real) where the data, recently read from the MD-file, are stored temporarily in double precision     
 !
 !! executable statements -------------------------------------------------------
 !
@@ -222,6 +231,13 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     ifis      => gdp%gdrdpara%ifis
     itis      => gdp%gdrdpara%itis
     nh_level  => gdp%gdnonhyd%nh_level
+    ice       => gdp%gdprocs%ice
+    ice_model => gdp%gdice%ice_model
+    dyn_ice   => gdp%gdice%dyn_ice
+    prs_ice   => gdp%gdice%prs_ice
+    his_ice   => gdp%gdice%his_ice
+    albedo_ice  => gdp%gdice%albedo_ice
+    albedo_snow => gdp%gdice%albedo_snow
     !
     ! initialize local parameters
     !
@@ -678,5 +694,44 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
           endif
        endif
     endif
+    !
+    ! Ice modelling
+    !
+    call prop_get(gdp%mdfile_ptr, '*', 'Ice', stringval)
+    if (stringval /= ' ') then
+       call small(stringval,999)
+       if (stringval == 'deltares') then
+          ice = .true.
+          ice_model = 'deltares'
+          write(lundia,'(a)') 'ice modelling with Deltares model'
+       elseif (stringval == 'knmi') then
+          ice = .true.
+          ice_model = 'knmi'
+           write(lundia,'(a)') 'ice modelling with KNMI model'
+       else
+          ice = .false.
+          write(lundia,'(a)') 'no ice modelling'
+       endif
+       call prop_get(gdp%mdfile_ptr, '*', 'Dynice' , gdp%gdice%dyn_ice)
+       call prop_get(gdp%mdfile_ptr, '*', 'Prsice' , gdp%gdice%prs_ice)
+       call prop_get(gdp%mdfile_ptr, '*', 'HISice' , gdp%gdice%his_ice)
+    endif   
+    !
+    !  Read albedo_ice and albedo_snow
+    !
+    sprval = -999.0_sp
+    call prop_get(gdp%mdfile_ptr, '*', 'albice', sprval)
+    fprval = real(sprval,fp)       
+    if (comparereal(fprval, -999.0_fp) /= 0) then
+       albedo_ice = fprval
+       write(lundia,'(a,f6.3)') 'Albedo of ice changed to:  ', albedo_ice
+     endif
+    sprval = -999.0_sp
+    call prop_get(gdp%mdfile_ptr, '*', 'albsnw', sprval)
+    fprval = real(sprval,fp)       
+    if (comparereal(fprval, -999.0_fp) /= 0) then
+       albedo_snow = fprval
+       write(lundia,'(a,f6.3)') 'Albedo of snow changed to: ', albedo_snow
+     endif
  9999 continue
 end subroutine dimrd

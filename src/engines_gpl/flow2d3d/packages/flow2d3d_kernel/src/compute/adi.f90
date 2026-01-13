@@ -30,7 +30,9 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
              & wrkb1     ,wrkb2     ,wrkb3     ,wrkb4     ,wrkb5     , &
              & wrkb6     ,wrkb7     ,wrkb8     ,wrkb9     ,wrkb10    , &
              & wrkb11    ,wrkb12    ,wrkb13    ,wrkb14    ,wrkb15    , &
-             & wrkb16    ,sbkol     ,precip    ,gdp       )
+             & wrkb16    ,sbkol     ,precip    , &
+             & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,vt_ice     , &
+             & kfsice    ,z0urou    ,z0vrou    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -255,6 +257,14 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
     character(8)                                             :: dischy  !  Description and declaration in tricom.igs
     character(8)                                             :: solver  !  Description and declaration in tricom.igs
     character(8)                               , intent(in)  :: stage   !!  First or Second half time step
+    integer , dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: kfsice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: u_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: v_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: a_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)               :: ut_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)               :: vt_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: z0urou  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: z0vrou  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -322,7 +332,9 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
               & diapl     ,rnpl      , &
               & cfvrou    ,cfurou    ,rttfv     ,r0        ,windsv    , &
               & patm      ,fcorio    ,ubrlsv    ,hkrv      , &
-              & pship     ,tgfsep    ,dtev      ,vstokes   ,.false.   ,gdp       )
+              & pship     ,tgfsep    ,dtev      ,vstokes   ,.false.   , &
+              & v_ice     ,u_ice     ,a_ice     ,vt_ice    ,kfsice    , &
+              & z0vrou    ,gdp       )
        call timer_stop(timer_1stuzd, gdp)
        call timer_stop(timer_uzd, gdp)
        !
@@ -383,7 +395,9 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
               & wrka7     ,wrka8     ,wrka15    ,wrkb1     ,wrkb2     , &
               & wrkb3     ,wrkb4     ,wrkb5     ,wrkb6     ,wrkb7     , &
               & wrkb8     ,wrkb15    ,wrkb16    ,soumud    ,            &
-              & precip    ,ustokes   ,gdp       )
+              & precip    ,ustokes   , &
+              & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+              & z0urou    ,gdp       )
        call timer_stop(timer_1stsud, gdp)
        call timer_stop(timer_sud, gdp)
        !
@@ -483,7 +497,9 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
               & diapl     ,rnpl      , &
               & cfurou    ,cfvrou    ,rttfu     ,r0        ,windsu    , &
               & patm      ,fcorio    ,ubrlsu    ,hkru      , &
-              & pship     ,tgfsep    ,dteu      ,ustokes   ,.false.   ,gdp       )
+              & pship     ,tgfsep    ,dteu      ,ustokes   ,.false.   , &
+              & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+              & z0urou    ,gdp       )
        call timer_stop(timer_2nduzd, gdp)
        call timer_stop(timer_uzd, gdp)
        !
@@ -541,7 +557,9 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
               & wrka7     ,wrka8     ,wrka16    ,wrkb1     ,wrkb2     , &
               & wrkb3     ,wrkb4     ,wrkb5     ,wrkb6     ,wrkb7     , &
               & wrkb8     ,wrkb15    ,wrkb16    ,soumud    ,            &
-              & precip    ,vstokes   ,gdp       )
+              & precip    ,vstokes   , &
+              & v_ice     ,u_ice     ,a_ice     ,vt_ice    ,kfsice    , &
+              & z0vrou    ,gdp       )
        call timer_stop(timer_2ndsud, gdp)
        call timer_stop(timer_sud, gdp)
        !

@@ -13,6 +13,8 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
                 & cvalv0    ,cfurou    ,cfvrou    ,rouflo    ,patm      , &
                 & z0ucur    ,z0vcur    ,z0urou    ,z0vrou    ,ktemp     , &
                 & precip    ,evap      ,irequest  ,fds       ,iarrc     , &
+                & h_ice     ,h_snow    ,a_ice     ,u_ice     ,v_ice     , &
+                & kfsice    , &
                 & mf        ,ml        ,nf        ,nl        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -111,6 +113,7 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
     type (datagroup)                , pointer :: group1
     type (datagroup)                , pointer :: group3
     type (flwoutputtype)            , pointer :: flwoutput
+    logical                         , pointer :: ice
 !
 ! Global variables
 !
@@ -190,6 +193,12 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
     integer    , dimension(0:nproc-1)                                                 , intent(in)  :: ml          ! last index w.r.t. global grid in x-direction
     integer    , dimension(0:nproc-1)                                                 , intent(in)  :: nf          ! first index w.r.t. global grid in y-direction
     integer    , dimension(0:nproc-1)                                                 , intent(in)  :: nl          ! last index w.r.t. global grid in y-direction
+    real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                  , intent(inout)  :: h_ice    !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                  , intent(in)  :: h_snow      !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                  , intent(in)  :: a_ice       !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                  , intent(in)  :: u_ice       !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                  , intent(in)  :: v_ice       !  Description and declaration in esm_alloc_real.f90
+    integer    , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                  , intent(in)  :: kfsice      !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -295,6 +304,7 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
     clou_file      => gdp%gdheat%clou_file
     prcp_file      => gdp%gdheat%prcp_file
     free_convec    => gdp%gdheat%free_convec
+    ice            => gdp%gdprocs%ice
     !
     ! Initialize local variables
     !
@@ -379,6 +389,13 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
        endif
        if (index(selmap(6:13), 'Y') /= 0) then
           call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'R1', ' ', io_prec       , 4, dimids=(/iddim_n, iddim_m, iddim_kmaxout_restr, iddim_lstsci/), longname='Concentrations per layer in zeta point', acl='z')
+       endif
+       if (ice) then
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'H_ICE', ' ', io_prec    , 2, dimids=(/iddim_n , iddim_m,  iddim_kmaxout_restr/), longname='Ice thickness ('//trim(velt)//')', unit='m', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'H_SNOW', ' ', io_prec   , 2, dimids=(/iddim_n , iddim_m,  iddim_kmaxout_restr/), longname='Snow thickness ('//trim(velt)//')', unit='m', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'A_ICE', ' ', io_prec    , 2, dimids=(/iddim_n , iddim_m,  iddim_kmaxout_restr/), longname='Ice concentration ('//trim(velt)//')', unit='-', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'U_ICE', ' ', io_prec    , 2, dimids=(/iddim_n , iddim_mc, iddim_kmaxout_restr/), longname='U-velocity of ice ('//trim(velt)//')', unit='m/s', acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'V_ICE', ' ', io_prec    , 2, dimids=(/iddim_nc, iddim_m,  iddim_kmaxout_restr/), longname='V-velocity of ice ('//trim(velt)//')', unit='m/s', acl='v')
        endif
        if (flwoutput%difuflux) then
           call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'R1FLX_UU', ' ', io_prec , 4, dimids=(/iddim_n , iddim_mc, iddim_kmaxout_restr, iddim_lstsci/), longname='Constituent flux in u-direction (u point)', acl='u')
@@ -709,8 +726,56 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
              if (ierror /= 0) goto 9999
           endif
        endif
+       if (ice) then
+          !
+          !  ICE QUANTITIES
+          !
+          !  H_ICE contains product of H_ICE and A_ICE
+          !
+          allocate( rbuff2(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) )
+          rbuff2(:, :) = 0.0_fp
+          do nm = 1, nmmax
+             call nm_to_n_and_m(nm, n, m, gdp)
+             if (kfs(n,m) .eq. 1) then           ! Also for KFSICE=0 this is applied
+                rbuff2(n,m) = h_ice(n,m)
+                h_ice(n,m) = h_ice(n,m) * a_ice(n,m)
+             endif
+          enddo
+          call wrtarray_nm(fds, filename, filetype, grnam3, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, h_ice, 'H_ICE')
+          do nm = 1, nmmax
+             call nm_to_n_and_m(nm, n, m, gdp)
+             if (kfs(n,m) .eq. 1) then
+                h_ice(n,m) = rbuff2(n,m)
+            endif
+          enddo
+          deallocate(rbuff2)
+          if (ierror /= 0) goto 9999
+          !
+          call wrtarray_nm(fds, filename, filetype, grnam3, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, h_snow, 'H_SNOW')
+          if (ierror /= 0) goto 9999
+          !
+          call wrtarray_nm(fds, filename, filetype, grnam3, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, a_ice, 'A_ICE')
+          if (ierror /= 0) goto 9999
+          !
+          call wrtarray_nm(fds, filename, filetype, grnam3, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, u_ice, 'U_ICE')
+          if (ierror /= 0) goto 9999
+          !
+          call wrtarray_nm(fds, filename, filetype, grnam3, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, v_ice, 'V_ICE')
+          if (ierror /= 0) goto 9999
+          !
+       endif
        if (flwoutput%momentum) then
-          mom_accum => gdp%gdflwpar%mom_accum
+       mom_accum => gdp%gdflwpar%mom_accum
           !
           ! element 'MOM_DUDT'
           !

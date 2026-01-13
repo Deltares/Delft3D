@@ -1,0 +1,51 @@
+!----- GPL ---------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2013.                                     
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id: ice.igs 283 2011-02-17 08:24:29Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/trunk/src/engines_gpl/flow2d3d/packages/data/include/ice.igs $$
+!-------------------------------------------------------------------------------
+    type gd_ice
+!
+       real(fp) :: albedo_snow
+       real(fp) :: albedo_ice
+       real(fp) :: albedo_wat
+       real(fp) :: cp_snow         !! specific heat for snow
+       real(fp) :: cp_ice          !! specific heat for ice
+       real(fp) :: k_snow          !! conductivity  for snow
+       real(fp) :: k_ice           !! conductivity  for ice
+       real(fp) :: lh_snow         !! latent heat for snow
+       real(fp) :: lh_ice          !! latent heat for ice
+       real(fp) :: rho_ice         !! density of ice
+       real(fp) :: rho_snow        !! density of snow
+       integer  :: lice            !! constituent number that represents ice
+       integer  :: lsnow           !! constituent number that represents snow
+       character(10) :: ice_model  !! type of ice model (Deltares or KNMI)
+       logical  :: dyn_ice         !! flag for horizontal transport of ice 
+       logical  :: prs_ice         !! flag for ice pressure on water
+       logical  :: his_ice         !! ice output on history file
+!
+    end type gd_ice
+!

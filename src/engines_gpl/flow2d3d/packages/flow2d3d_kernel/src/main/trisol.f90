@@ -194,6 +194,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: veg3d
     logical                              , pointer :: sbkol
     logical                              , pointer :: nfl
+    logical                              , pointer :: ice
     logical                              , pointer :: bubble
     logical                              , pointer :: lfsdu
     logical , dimension(:)               , pointer :: flbub
@@ -203,6 +204,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: ampbc
     integer(pntrsize)                    , pointer :: areau
     integer(pntrsize)                    , pointer :: areav
+    integer(pntrsize)                    , pointer :: a_ice
     integer(pntrsize)                    , pointer :: bruvai
     integer(pntrsize)                    , pointer :: c
     integer(pntrsize)                    , pointer :: cbuv
@@ -291,6 +293,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: fviwe
     integer(pntrsize)                    , pointer :: fxw
     integer(pntrsize)                    , pointer :: fyw
+    integer(pntrsize)                    , pointer :: f_w
     integer(pntrsize)                    , pointer :: grmasu
     integer(pntrsize)                    , pointer :: grmasv
     integer(pntrsize)                    , pointer :: grmsur
@@ -310,6 +313,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: hv
     integer(pntrsize)                    , pointer :: hv0
     integer(pntrsize)                    , pointer :: hydrbc
+    integer(pntrsize)                    , pointer :: h_ice
+    integer(pntrsize)                    , pointer :: h_snow
+    integer(pntrsize)                    , pointer :: icestr
+    integer(pntrsize)                    , pointer :: icknmi
     integer(pntrsize)                    , pointer :: ombc
     integer(pntrsize)                    , pointer :: omega
     integer(pntrsize)                    , pointer :: patm
@@ -377,6 +384,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: stif
     integer(pntrsize)                    , pointer :: stil
     integer(pntrsize)                    , pointer :: sumrho
+    integer(pntrsize)                    , pointer :: sxa
+    integer(pntrsize)                    , pointer :: sxice
+    integer(pntrsize)                    , pointer :: sxsn
     integer(pntrsize)                    , pointer :: taubmx
     integer(pntrsize)                    , pointer :: taubpu
     integer(pntrsize)                    , pointer :: taubpv
@@ -391,7 +401,11 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: thtim
     integer(pntrsize)                    , pointer :: tkedis
     integer(pntrsize)                    , pointer :: tkepro
+    integer(pntrsize)                    , pointer :: toth_i
+    integer(pntrsize)                    , pointer :: toth_w
     integer(pntrsize)                    , pointer :: tp
+    integer(pntrsize)                    , pointer :: t_ice
+    integer(pntrsize)                    , pointer :: t_snow
     integer(pntrsize)                    , pointer :: u0
     integer(pntrsize)                    , pointer :: u1
     integer(pntrsize)                    , pointer :: ubrlsu
@@ -407,6 +421,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: usus
     integer(pntrsize)                    , pointer :: uwtypu
     integer(pntrsize)                    , pointer :: uwtypv
+    integer(pntrsize)                    , pointer :: u_ice
+    integer(pntrsize)                    , pointer :: ut_ice
     integer(pntrsize)                    , pointer :: v0
     integer(pntrsize)                    , pointer :: v1
     integer(pntrsize)                    , pointer :: vicuv
@@ -422,6 +438,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: volum1
     integer(pntrsize)                    , pointer :: vortic
     integer(pntrsize)                    , pointer :: vsus
+    integer(pntrsize)                    , pointer :: v_ice
+    integer(pntrsize)                    , pointer :: vt_ice
     integer(pntrsize)                    , pointer :: w1
     integer(pntrsize)                    , pointer :: w10mag
     integer(pntrsize)                    , pointer :: wenf
@@ -496,6 +514,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: kcu
     integer(pntrsize)                    , pointer :: kcv
     integer(pntrsize)                    , pointer :: kfs
+    integer(pntrsize)                    , pointer :: kfsice
+    integer(pntrsize)                    , pointer :: kfssnw
     integer(pntrsize)                    , pointer :: kfu
     integer(pntrsize)                    , pointer :: kfv
     integer(pntrsize)                    , pointer :: kspu
@@ -722,6 +742,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     iro                 => gdp%gdphysco%iro
     irov                => gdp%gdphysco%irov
     wind                => gdp%gdprocs%wind
+    ice                 => gdp%gdprocs%ice
     salin               => gdp%gdprocs%salin
     temp                => gdp%gdprocs%temp
     const               => gdp%gdprocs%const
@@ -751,6 +772,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     ampbc               => gdp%gdr_i_ch%ampbc
     areau               => gdp%gdr_i_ch%areau
     areav               => gdp%gdr_i_ch%areav
+    a_ice               => gdp%gdr_i_ch%a_ice
     bruvai              => gdp%gdr_i_ch%bruvai
     c                   => gdp%gdr_i_ch%c
     cbuv                => gdp%gdr_i_ch%cbuv
@@ -839,6 +861,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     fviwe               => gdp%gdr_i_ch%fviwe
     fxw                 => gdp%gdr_i_ch%fxw
     fyw                 => gdp%gdr_i_ch%fyw
+    f_w                 => gdp%gdr_i_ch%f_w
     grmasu              => gdp%gdr_i_ch%grmasu
     grmasv              => gdp%gdr_i_ch%grmasv
     grmsur              => gdp%gdr_i_ch%grmsur
@@ -858,6 +881,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     hv                  => gdp%gdr_i_ch%hv
     hv0                 => gdp%gdr_i_ch%hv0
     hydrbc              => gdp%gdr_i_ch%hydrbc
+    h_ice               => gdp%gdr_i_ch%h_ice
+    h_snow              => gdp%gdr_i_ch%h_snow
+    icestr              => gdp%gdr_i_ch%icestr
+    icknmi              => gdp%gdr_i_ch%icknmi
     ombc                => gdp%gdr_i_ch%ombc
     omega               => gdp%gdr_i_ch%omega
     patm                => gdp%gdr_i_ch%patm
@@ -925,6 +952,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     stif                => gdp%gdr_i_ch%stif
     stil                => gdp%gdr_i_ch%stil
     sumrho              => gdp%gdr_i_ch%sumrho
+    sxa                 => gdp%gdr_i_ch%sxa
+    sxice               => gdp%gdr_i_ch%sxice
+    sxsn                => gdp%gdr_i_ch%sxsn
     taubmx              => gdp%gdr_i_ch%taubmx
     taubpu              => gdp%gdr_i_ch%taubpu
     taubpv              => gdp%gdr_i_ch%taubpv
@@ -939,7 +969,11 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     thtim               => gdp%gdr_i_ch%thtim
     tkedis              => gdp%gdr_i_ch%tkedis
     tkepro              => gdp%gdr_i_ch%tkepro
+    toth_i              => gdp%gdr_i_ch%toth_i
+    toth_w              => gdp%gdr_i_ch%toth_w
     tp                  => gdp%gdr_i_ch%tp
+    t_ice               => gdp%gdr_i_ch%t_ice
+    t_snow              => gdp%gdr_i_ch%t_snow
     u0                  => gdp%gdr_i_ch%u0
     u1                  => gdp%gdr_i_ch%u1
     ubrlsu              => gdp%gdr_i_ch%ubrlsu
@@ -955,6 +989,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     usus                => gdp%gdr_i_ch%usus
     uwtypu              => gdp%gdr_i_ch%uwtypu
     uwtypv              => gdp%gdr_i_ch%uwtypv
+    u_ice               => gdp%gdr_i_ch%u_ice
+    ut_ice              => gdp%gdr_i_ch%ut_ice
     v0                  => gdp%gdr_i_ch%v0
     v1                  => gdp%gdr_i_ch%v1
     vicuv               => gdp%gdr_i_ch%vicuv
@@ -970,6 +1006,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     volum1              => gdp%gdr_i_ch%volum1
     vortic              => gdp%gdr_i_ch%vortic
     vsus                => gdp%gdr_i_ch%vsus
+    v_ice               => gdp%gdr_i_ch%v_ice
+    vt_ice              => gdp%gdr_i_ch%vt_ice
     w1                  => gdp%gdr_i_ch%w1
     w10mag              => gdp%gdr_i_ch%w10mag
     wenf                => gdp%gdr_i_ch%wenf
@@ -1044,6 +1082,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     kcu                 => gdp%gdr_i_ch%kcu
     kcv                 => gdp%gdr_i_ch%kcv
     kfs                 => gdp%gdr_i_ch%kfs
+    kfsice              => gdp%gdr_i_ch%kfsice
+    kfssnw              => gdp%gdr_i_ch%kfssnw
     kfu                 => gdp%gdr_i_ch%kfu
     kfv                 => gdp%gdr_i_ch%kfv
     kspu                => gdp%gdr_i_ch%kspu
@@ -1113,6 +1153,20 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     !
     call timer_start(timer_trisol_ini, gdp)
     if (ifirst == 1) then
+       !
+       if (ice) then
+          !
+          ! FOR TESTING HORIZONTAL TRANSPORT OF ICE
+          !
+          icx   = nmaxddb
+          icy   = 1
+          !
+          ! call init_iceberg     (jstart    ,icx       ,icy       , &
+          !           & nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
+          !           & r(r1)     ,i(kspu)   ,i(kspv)   ,r(s1)     ,r(pship)  , &
+          !           & r(dps)    ,r(volum1) ,r(gsqs)   ,r(thick)  , &
+          !           & r(h_ice)  ,r(a_ice)  ,i(kfsice) ,gdp       )
+       endif
        !
        ! initialisation of user defined parameters and array pointers
        !        if user def. function not requested then flag is set 0 and
@@ -1682,7 +1736,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(precip) ,gdp       )
+              & r(wrkb16) ,sbkol     ,r(precip) , &
+              & r(u_ice)  ,r(v_ice)  ,r(a_ice)  ,r(ut_ice) ,r(vt_ice) , &
+              & i(kfsice) ,r(z0urou) ,r(z0vrou) ,gdp       )
        call timer_stop(timer_1stadi, gdp)
        if (roller) then
           !
@@ -1890,12 +1946,16 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icy = 1
           call timer_start(timer_heatu, gdp)
           call heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
-                   & ltem      ,lstsci    ,icx       ,icy       , &
+                   & ltem      ,lsal      ,lstsci    ,icx       ,icy       , &
                    & nmmax     ,kmax      ,i(kfs)    ,i(kfsmx0) ,i(kfsmax) , &
                    & i(kfsmin) ,i(kspu)   ,i(kspv)   ,r(dzs0)   ,r(dzs1)   , &
                    & r(sour)   ,r(sink)   ,r(r0)     ,r(evap)   ,d(dps)    , &
                    & r(s0)     ,r(s1)     ,r(thick)  ,r(w10mag) ,r(patm)   , &
                    & r(xcor)   ,r(ycor)   ,r(gsqs)   ,r(xz)     ,r(yz)     , &
+                   & r(toth_i) ,r(toth_w) ,r(f_w)    ,i(kfsice) ,i(kfssnw) , &
+                   & r(h_ice)  ,r(h_snow) ,r(t_ice)  ,r(t_snow) , &
+                   & r(z0urou) ,r(z0vrou) ,i(kfu)    ,i(kfv)    , &
+                   & r(u0)     ,r(v0)     ,r(u_ice)  ,r(v_ice)  , &
                    & anglon    ,gdp       )
           call timer_stop(timer_heatu, gdp)
        endif
@@ -2003,7 +2063,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & lsed      ,lsts      ,norow     ,nocol     ,i(irocol) , &
                  & i(kcs)    ,i(kcu)    ,i(kcv)    ,i(kfs)    ,i(kfu)    , &
                  & i(kfv)    ,i(kadu)   ,i(kadv)   ,r(alfas)  ,r(s0)     , &
-                 & r(s1)     ,r(hu)     ,r(hv)     ,d(dps)    ,r(qxk)    , &
+                 & r(s1)     ,r(hu)     ,r(hv)     ,d(dps)    , &
+                 & r(dpu)    ,r(dpv)    ,r(qxk)    , &
                  & r(qyk)    ,r(qzk)    ,r(guu)    ,r(gvv)    ,r(guv)    , &
                  & r(gvu)    ,r(gsqs)   ,r(rbnd)   ,r(sigdif) ,r(sigmol) , &
                  & r(r0)     ,r(r1)     ,r(sour)   ,r(sink)   ,r(ws)     , &
@@ -2023,7 +2084,14 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) ,r(xz)     , &
                  & r(yz)     ,r(rlabda) ,r(wrka4)  ,r(wrkb18) ,r(bruvai) , &
                  & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,            &
-                 & gdp       )
+                 & r(toth_i) ,r(toth_w) ,r(f_w)    ,r(evap)   , &
+                 & r(u_ice)  ,r(v_ice)  ,r(a_ice)  ,r(ut_ice) ,r(vt_ice) , &
+                 & r(h_ice)  ,r(h_snow) ,r(t_ice)  ,r(t_snow) ,r(pship)  , &
+                 & i(kfsice) ,i(kfssnw) ,anglat    ,r(w10mag) ,r(precip) , &
+                 & r(icestr) ,r(icknmi) ,r(sxice)  ,r(sxsn)   ,r(sxa)    , &
+                 & r(u1)     ,r(v1)     ,r(fcorio) , &
+                 & r(gud)    ,r(guz)    ,r(gvd)    ,r(gvz)    , &
+                 & i(kspu)   ,i(kspv)   ,gdp       )
           call timer_stop(timer_tritra, gdp)
           call timer_stop(timer_difu, gdp)
        endif
@@ -2706,7 +2774,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(precip) ,gdp       )
+              & r(wrkb16) ,sbkol     ,r(precip) , &
+              & r(u_ice)  ,r(v_ice)  ,r(a_ice)  ,r(ut_ice) ,r(vt_ice) , &
+              & i(kfsice) ,r(z0urou) ,r(z0vrou) ,gdp       )
        call timer_stop(timer_2ndadi, gdp)
        if (roller) then
           !
@@ -2963,12 +3033,16 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icy = 1
           call timer_start(timer_heatu, gdp)
           call heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
-                   & ltem      ,lstsci    ,icx       ,icy       , &
+                   & ltem      ,lsal      ,lstsci    ,icx       ,icy       , &
                    & nmmax     ,kmax      ,i(kfs)    ,i(kfsmx0) ,i(kfsmax) , &
                    & i(kfsmin) ,i(kspu)   ,i(kspv)   ,r(dzs0)   ,r(dzs1)   , &
                    & r(sour)   ,r(sink)   ,r(r0)     ,r(evap)   ,d(dps)    , &
                    & r(s0)     ,r(s1)     ,r(thick)  ,r(w10mag) ,r(patm)   , &
                    & r(xcor)   ,r(ycor)   ,r(gsqs)   ,r(xz)     ,r(yz)     , &
+                   & r(toth_i) ,r(toth_w) ,r(f_w)    ,i(kfsice) ,i(kfssnw) , &
+                   & r(h_ice)  ,r(h_snow) ,r(t_ice)  ,r(t_snow) , &
+                   & r(z0urou) ,r(z0vrou) ,i(kfu)    ,i(kfv)    , &
+                   & r(u0)     ,r(v0)     ,r(u_ice)  ,r(v_ice)  , &
                    & anglon    ,gdp       )
           call timer_stop(timer_heatu, gdp)
        endif
@@ -3076,7 +3150,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & lsed      ,lsts      ,norow     ,nocol     ,i(irocol) , &
                  & i(kcs)    ,i(kcu)    ,i(kcv)    ,i(kfs)    ,i(kfu)    , &
                  & i(kfv)    ,i(kadu)   ,i(kadv)   ,r(alfas)  ,r(s0)     , &
-                 & r(s1)     ,r(hu)     ,r(hv)     ,d(dps)    ,r(qxk)    , &
+                 & r(s1)     ,r(hu)     ,r(hv)     ,d(dps)    , &
+                 & r(dpu)    ,r(dpv)    ,r(qxk)    , &
                  & r(qyk)    ,r(qzk)    ,r(guu)    ,r(gvv)    ,r(guv)    , &
                  & r(gvu)    ,r(gsqs)   ,r(rbnd)   ,r(sigdif) ,r(sigmol) , &
                  & r(r0)     ,r(r1)     ,r(sour)   ,r(sink)   ,r(ws)     , &
@@ -3096,7 +3171,14 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) ,r(xz)     , &
                  & r(yz)     ,r(rlabda) ,r(wrka4)  ,r(wrkb18) ,r(bruvai) , &
                  & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,            &
-                 & gdp       )
+                 & r(toth_i) ,r(toth_w) ,r(f_w)    ,r(evap)   , &
+                 & r(u_ice)  ,r(v_ice)  ,r(a_ice)  ,r(ut_ice) ,r(vt_ice) , &
+                 & r(h_ice)  ,r(h_snow) ,r(t_ice)  ,r(t_snow) ,r(pship)  , &
+                 & i(kfsice) ,i(kfssnw) ,anglat    ,r(w10mag) ,r(precip) , &
+                 & r(icestr) ,r(icknmi) ,r(sxice)  ,r(sxsn)   ,r(sxa)    , &
+                 & r(u1)     ,r(v1)     ,r(fcorio) , &
+                 & r(gud)    ,r(guz)    ,r(gvd)    ,r(gvz)    , &
+                 & i(kspu)   ,i(kspv)   ,gdp       )
           call timer_stop(timer_tritra, gdp)
           call timer_stop(timer_difu, gdp)
        endif

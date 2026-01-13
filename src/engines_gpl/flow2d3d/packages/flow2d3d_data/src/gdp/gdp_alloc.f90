@@ -107,6 +107,7 @@ subroutine gdp_alloc(gdp)
     allocate (gdp%gdusrpar)
     allocate (gdp%gdzmodel)
     allocate (gdp%gdnonhyd)
+    allocate (gdp%gdice)
     !
     allocate (gdp%gdbetaro)
     allocate (gdp%gdbcdat)

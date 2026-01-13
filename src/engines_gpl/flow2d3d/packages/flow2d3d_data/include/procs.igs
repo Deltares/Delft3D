@@ -78,4 +78,5 @@ type gd_procs
    integer :: waveol               = 0       ! 0 = Waves from existing COM-file (linear interpolation)
                                              ! 1 = Waves from existing COM-file (constant like when online)
 											 ! 2 = Waves computed by Delft3D-WAVES online
+   logical :: ice                  = .false. ! Ice modelling
 end type gd_procs

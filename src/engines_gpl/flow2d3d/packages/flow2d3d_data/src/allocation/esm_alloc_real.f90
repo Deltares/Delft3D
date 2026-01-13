@@ -107,6 +107,7 @@ subroutine esm_alloc_real(lundia, error, gdp)
     logical                 , pointer :: bubble
     real(fp), dimension(:,:), pointer :: ustokes
     real(fp), dimension(:,:), pointer :: vstokes
+    logical                 , pointer :: ice
 !
 ! Global variables
 !
@@ -117,6 +118,7 @@ subroutine esm_alloc_real(lundia, error, gdp)
 !
     integer           :: ierr     ! Errorflag 
     integer           :: istat
+    integer           :: kfacice  ! Multiplication factor; 1 if ICE='Y', else 0 
     integer           :: kfacrl   ! Multiplication factor; 1 if ROLLER='Y', else 0 
     integer           :: kfaccdw  ! Multiplication factor; 1 if CDWSTRUCT='Y', else 0 
     integer           :: kfacvg3d ! Multiplication factor; 1 if VEG3D='Y', else 0 
@@ -186,6 +188,7 @@ subroutine esm_alloc_real(lundia, error, gdp)
     nofou      => gdp%d%nofou
     ndro       => gdp%d%ndro
     nsluv      => gdp%d%nsluv
+    ice        => gdp%gdprocs%ice
     !
     ! initialize array bounderies
     !
@@ -204,6 +207,11 @@ subroutine esm_alloc_real(lundia, error, gdp)
     kfacz = 0
     if (zmodel) then
        kfacz = 1
+    endif
+    !
+    kfacice = 0
+    if (ice) then
+       kfacice = 1
     endif
     !
     kfacrl = 0
@@ -2421,6 +2429,111 @@ subroutine esm_alloc_real(lundia, error, gdp)
     pntnam = 'dpc'           !  no description (yet)
     ierr = mkfpnt(pntnam, max(nmax, mmax)*(kmax + 2), gdp)
     if (ierr <= -9) goto 9999
+     !
+    ! BEGIN arrays for: Ice-model
+    !
+    !            * kfacice   h_ice  (nmaxddb,mmaxddb)
+    !            * kfacice   h_snow (nmaxddb,mmaxddb)
+    !            * kfacice   t_ice  (nmaxddb,mmaxddb)
+    !            * kfacice   t_snow (nmaxddb,mmaxddb
+    !            * kfacice   u_ice  (nmaxddb,mmaxddb
+    !            * kfacice   v_ice  (nmaxddb,mmaxddb
+    !            * kfacice   a_ice (nmaxddb,mmaxddb
+    !            * kfacice   toth_i (nmaxddb,mmaxddb)
+    !            * kfacice   toth_w (nmaxddb,mmaxddb)
+    !            * kfacice   f_w    (nmaxddb,mmaxddb)
+    !            * kfacice   ut_ice (nmaxddb,mmaxddb)
+    !            * kfacice   vt_ice (nmaxddb,mmaxddb)
+    !            * kfacice   icestr (nmaxddb,mmaxddb,3)
+    !            * kfacice   icknmi (nmaxddb,mmaxddb,3)
+    !            * kfacice   sxice  (nmaxddb,mmaxddb,5)
+    !            * kfacice   sxsn   (nmaxddb,mmaxddb,5)
+    !            * kfacice   sxa    (nmaxddb,mmaxddb,5)
+    !
+    pntnam = 'h_ice'         !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'h_snow'        !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 't_ice'         !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 't_snow'        !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !    !
+    pntnam = 'u_ice'         !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !    !
+    pntnam = 'v_ice'         !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !    !
+    pntnam = 'a_ice'         !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !    !
+    pntnam = 'toth_i'     !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'toth_w'     !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'f_w'        !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'ut_ice'        !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'vt_ice'        !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'icestr'        !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice*3), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'icknmi'        !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice*3), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'sxice'         !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice*5), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'sxsn'          !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice*5), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
+    !
+    pntnam = 'sxa'           !  Global data
+    ierr = mkfpnt(pntnam, max(1, nmaxddb*mmaxddb*kfacice*5), gdp)
+                             !  no description (yet)
+    if (ierr<= - 9) goto 9999
     !
     ! BEGIN arrays for: z-model (fixed layer)
     !

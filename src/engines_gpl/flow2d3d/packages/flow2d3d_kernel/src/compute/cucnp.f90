@@ -14,7 +14,9 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                & r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
                & windsu    ,patm      ,fcorio    ,ubrlsu    ,uwtypu    , &
                & hkru      ,pship     ,tgfsep    ,dteu      ,ua        , &
-               & ub        ,ustokes   ,mom_output,u1        ,s1        ,gdp       )
+               & ub        ,ustokes   ,mom_output,u1        ,s1        , &
+               & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+               & z0urou    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -109,6 +111,10 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     logical                      , pointer :: roller
     logical                      , pointer :: xbeach
     logical                      , pointer :: veg3d
+    logical                 , pointer :: ice
+    real(fp)                , pointer :: vonkar
+    real(fp)                , pointer :: drycrt
+    integer                 , pointer :: lundia
     real(fp), dimension(:,:)     , pointer :: mom_m_velchange     ! momentum du/dt term
     real(fp), dimension(:,:)     , pointer :: mom_m_densforce     ! density force term in u dir
     real(fp), dimension(:,:)     , pointer :: mom_m_flowresist    ! vegetation and porous plates in u dir
@@ -222,6 +228,12 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     logical                                           , intent(in)  :: mom_output
     character(1), dimension(nsrc)                     , intent(in)  :: dismmt  !  Description and declaration in esm_alloc_char.f90
     character(8)                                      , intent(in)  :: dischy  !  Description and declaration in tricom.igs
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: a_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: u_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: ut_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: v_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: z0urou  !  Description and declaration in esm_alloc_real.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfsice  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -237,11 +249,13 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     integer                    :: kk
     integer                    :: kup
     integer                    :: kspu0k
+    integer                    :: m
     integer                    :: maskval
     integer                    :: nbaroc  ! No barocline pressure on open boundary points if IBAROC = 0
     integer                    :: ndm
     integer                    :: ndmd
     integer                    :: ndmu
+    integer                    :: n
     integer                    :: nm
     integer                    :: nmd
     integer                    :: nmdis
@@ -274,6 +288,8 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                   :: flowresist
     real(fp)                   :: fxwl     ! local, modified fxw
     real(fp)                   :: gksi
+    real(fp)                   :: h0
+    real(fp)                   :: h0half
     real(fp)                   :: h0i
     real(fp)                   :: h0fac
     real(fp)                   :: hl
@@ -292,6 +308,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                   :: tsg2
     real(fp)                   :: twothird
     real(fp)                   :: umod
+    real(fp)                   :: ustar
     real(fp)                   :: uuu
     real(fp)                   :: uweir
     real(fp)                   :: viz1
@@ -303,6 +320,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                   :: wsul     ! local, modified wsu
     real(fp)                   :: wsumax
     real(fp)                   :: www
+    real(fp)                   :: z00
 !
 !! executable statements -------------------------------------------------------
 !
@@ -326,12 +344,16 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     roller     => gdp%gdprocs%roller
     xbeach     => gdp%gdprocs%xbeach
     veg3d      => gdp%gdprocs%veg3d
+    ice        => gdp%gdprocs%ice
+    vonkar     => gdp%gdphysco%vonkar
+    drycrt     => gdp%gdnumeco%drycrt
+    lundia     => gdp%gdinout%lundia
     no_dis         => gdp%gdnfl%no_dis
     nf_src_mom     => gdp%gdnfl%nf_src_mom
     nf_src_momu    => gdp%gdnfl%nf_src_momu
     nf_src_momv    => gdp%gdnfl%nf_src_momv
     momrelax       => gdp%gdnfl%momrelax
-    !
+	!
     ! INITIALISATION
     !
     call timer_start(timer_cucnp_ini, gdp)
@@ -664,6 +686,33 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                       ddk(nm, k) = ddk(nm, k) + wsbodyul*h0i/rhow
                    endif
                 enddo
+             endif
+          endif
+          !
+          ! ICE-WATER STRESS
+          !
+          if (ice .and. kfsice(nm)==1 ) then
+             ut_ice(nm) = 0.0_fp
+             h0half = 0.5_fp * thick(1) * hu(nm)
+             z00    = max(1e-6,z0urou(nm))
+             ustar  = max(1e-6,windsu(nm) / rhow)
+             ut_ice(nm) = sqrt((u_ice(nm)-u0(nm,1))**2+(v_ice(nm)-v1(nm,1))**2) &
+                             & * ustar * vonkar / (log (h0half/z00))
+             ut_ice(nm) = a_ice(nm) * h0i * ut_ice(nm) / thick(1)
+             ddk(nm,1) = ddk(nm, 1) - ut_ice(nm) /rhow
+          endif
+          !
+          !  Check whether drying and flooding flag is all right in case of ice
+          !
+          if (ice .and. kfsice(nm)==1) then
+             h0 = min(s1(nmu), s1(nm)) + dpu(nm)
+             if (h0 < drycrt .and. kfu(nm) .eq. 1) then
+                call nm_to_n_and_m(nm, n, m, gdp)
+                write (lundia,*) 'kenmerk administration wrongly open   in (m,n)= ', m, n 
+             endif
+             if (h0 > dryflc .and. kfu(nm) .eq. 0) then
+                call nm_to_n_and_m(nm, n, m, gdp)
+                write (lundia,*) 'kenmerk administration wrongly closed in (m,n)= ', m, n 
              endif
           endif
        endif

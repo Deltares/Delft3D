@@ -17,7 +17,9 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
              & diapl     ,rnpl      , &
              & cfurou    ,cfvrou    ,rttfu     ,r0        ,windsu    , &
              & patm      ,fcorio    ,ubrlsu    ,hkru      , &
-             & pship     ,tgfsep    ,dteu      ,ustokes   ,mom_output,gdp       )
+             & pship     ,tgfsep    ,dteu      ,ustokes   ,mom_output, &
+             & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+             & z0urou    ,gdp       ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -106,6 +108,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                , pointer :: rhofrac
     real(fp)                , pointer :: ag
     real(fp)                , pointer :: vicmol
+    real(fp)                , pointer :: vonkar
     integer                 , pointer :: iro
     integer                 , pointer :: irov
     logical                 , pointer :: wind
@@ -113,6 +116,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     logical                 , pointer :: roller
     logical                 , pointer :: xbeach
     logical                 , pointer :: veg3d
+    logical                 , pointer :: ice
     integer                 , pointer :: mfg
     integer                 , pointer :: nfg
     real(fp), dimension(:,:)          , pointer :: mom_m_velchange     ! momentum du/dt term
@@ -229,6 +233,12 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)  , dimension(nsrc)                         , intent(in)  :: umdis   !  Description and declaration in esm_alloc_real.f90
     logical                                             , intent(in)  :: mom_output ! true: generate momentum terms for output, false=solve equation
     character(1), dimension(nsrc)                       , intent(in)  :: dismmt  !  Description and declaration in esm_alloc_char.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: a_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: u_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: ut_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: v_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: z0urou  !  Description and declaration in esm_alloc_real.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: kfsice  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -306,6 +316,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: gksi
     real(fp)           :: gksid
     real(fp)           :: gksiu
+    real(fp)           :: h0half
     real(fp)           :: h0i
     real(fp)           :: h0fac
     real(fp)           :: hl
@@ -330,6 +341,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: tsg2
     real(fp)           :: twothird
     real(fp)           :: umod
+    real(fp)           :: ustar
     real(fp)           :: uuu
     real(fp)           :: vih
     real(fp)           :: viz1
@@ -340,6 +352,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: wsul     ! local, modified wsu
     real(fp)           :: wsumax
     real(fp)           :: www
+    real(fp)           :: z00
     real(fp)           :: zz
     character(20)      :: errtxt
     integer            :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
@@ -360,6 +373,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     rhofrac    => gdp%gdphysco%rhofrac
     ag         => gdp%gdphysco%ag
     vicmol     => gdp%gdphysco%vicmol
+    vonkar     => gdp%gdphysco%vonkar
     iro        => gdp%gdphysco%iro
     irov       => gdp%gdphysco%irov
     wind       => gdp%gdprocs%wind
@@ -367,6 +381,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     roller     => gdp%gdprocs%roller
     xbeach     => gdp%gdprocs%xbeach
     veg3d      => gdp%gdprocs%veg3d
+    ice        => gdp%gdprocs%ice
     mfg        => gdp%gdparall%mfg
     nfg        => gdp%gdparall%nfg
     no_dis         => gdp%gdnfl%no_dis
@@ -704,6 +719,20 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                 enddo
              endif
           endif
+          !
+          ! ICE-WATER STRESS
+          !
+          if (ice .and. kfsice(nm)==1 ) then
+             ut_ice(nm) = 0.0_fp
+             h0half = 0.5_fp * thick(1) * hu(nm)
+             z00    = max(1e-6,z0urou(nm))
+             ustar  = max(1e-6,windsu(nm) / rhow)
+             ut_ice(nm) = sqrt((u_ice(nm)-u1(nm,1))**2+(v_ice(nm)-v(nm,1))**2) &
+                             & * ustar * vonkar / (log (h0half/z00))
+             ut_ice(nm) = a_ice(nm) * h0i * ut_ice(nm) / thick(1)
+             ddk(nm,1) = ddk(nm, 1) - ut_ice(nm) /rhow
+          endif
+          !
        endif
     enddo
     call timer_stop(timer_uzd_stress, gdp)
@@ -1416,6 +1445,8 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
               & diapl     ,rnpl      , &
               & cfurou    ,cfvrou    ,rttfu     ,r0        ,windsu    , &
               & patm      ,fcorio    ,ubrlsu    ,hkru      , &
-              & pship     ,tgfsep    ,dteu      ,ustokes   ,.true.    ,gdp       )
+              & pship     ,tgfsep    ,dteu      ,ustokes   ,.true.    , &
+              & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+              & z0urou    ,gdp       )
     endif
 end subroutine uzd

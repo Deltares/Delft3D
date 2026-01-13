@@ -22,7 +22,9 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
              & cc        ,dd        ,tetau     ,aak       ,bbk       , &
              & cck       ,ddk       ,d0        ,d0k       ,bbka      , &
              & bbkc      ,ua        ,ub        ,soumud    ,            &
-             & precip    ,ustokes   ,gdp       )
+             & precip    ,ustokes   , &
+             & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+             & z0urou    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -236,6 +238,12 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     real(fp)     , dimension(nsrc)                                              :: umdis   !  Description and declaration in esm_alloc_real.f90
     character(1) , dimension(nsrc)                                              :: dismmt  !  Description and declaration in esm_alloc_char.f90
     character(8)                                                                :: dischy  !  Description and declaration in tricom.igs
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: u_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: v_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: a_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: ut_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: z0urou  !  Description and declaration in esm_alloc_real.f90
+    integer      , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: kfsice  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -380,7 +388,9 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
              & r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
              & windsu    ,patm      ,fcorio    ,ubrlsu    ,uwtypu    , &
              & hkru      ,pship     ,tgfsep    ,dteu      ,ua        , &
-             & ub        ,ustokes   ,.false.   ,u1        ,s1        ,gdp       )
+             & ub        ,ustokes   ,.false.   ,u1        ,s1        , &
+             & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+             & z0urou    ,gdp       )
     call timer_stop(timer_sud_cucnp, gdp)
     !
     ! INITIALISATION OF ITERATION OVER CONTINUITY EQUATION
@@ -1034,7 +1044,8 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
                 & r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
                 & windsu    ,patm      ,fcorio    ,ubrlsu    ,uwtypu    , &
                 & hkru      ,pship     ,tgfsep    ,dteu      ,ua        , &
-                & ub        ,ustokes   ,.true.    ,u1        ,s1        ,gdp       )
+                & ub        ,ustokes   ,.true.    ,u1        ,s1        , &
+	            & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,z0urou    ,gdp       )
        call timer_stop(timer_sud_cucnp, gdp)
     endif
 end subroutine sud

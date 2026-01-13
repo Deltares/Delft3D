@@ -221,6 +221,7 @@ subroutine gdp_dealloc(gdp)
     deallocate (gdp%gdusrpar, STAT = istat)
     deallocate (gdp%gdzmodel, STAT = istat)
     deallocate (gdp%gdnonhyd, STAT = istat)
+    deallocate (gdp%gdice   , STAT = istat)
     !
     call clrbedformpar(istat, gdp)
     deallocate (gdp%gdbedformpar, STAT = istat)

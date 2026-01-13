@@ -59,6 +59,7 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     include 'fsm.i'
     include 'tri-dyn.igd'
     integer(pntrsize)             , pointer :: alpha
+    integer(pntrsize)             , pointer :: a_ice
     integer(pntrsize)             , pointer :: cbuv
     integer(pntrsize)             , pointer :: cdwlsu
     integer(pntrsize)             , pointer :: cdwlsv
@@ -78,6 +79,8 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     integer(pntrsize)             , pointer :: fcorio
     integer(pntrsize)             , pointer :: hkru
     integer(pntrsize)             , pointer :: hkrv
+    integer(pntrsize)             , pointer :: h_ice
+    integer(pntrsize)             , pointer :: h_snow
     integer(pntrsize)             , pointer :: hydrbc
     integer(pntrsize)             , pointer :: kcs
     integer(pntrsize)             , pointer :: omega
@@ -94,8 +97,10 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     integer(pntrsize)             , pointer :: umnldf
     integer(pntrsize)             , pointer :: uwtypu
     integer(pntrsize)             , pointer :: uwtypv
+    integer(pntrsize)             , pointer :: u_ice
     integer(pntrsize)             , pointer :: v1
     integer(pntrsize)             , pointer :: vicuv
+    integer(pntrsize)             , pointer :: v_ice
     integer(pntrsize)             , pointer :: vmnldf
     integer(pntrsize)             , pointer :: xcor
     integer(pntrsize)             , pointer :: ycor
@@ -468,6 +473,7 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     wavcmp              => gdp%gdprocs%wavcmp
     lftrto              => gdp%gdprocs%lftrto
     alpha               => gdp%gdr_i_ch%alpha
+    a_ice               => gdp%gdr_i_ch%a_ice
     cbuv                => gdp%gdr_i_ch%cbuv
     cdwlsu              => gdp%gdr_i_ch%cdwlsu
     cdwlsv              => gdp%gdr_i_ch%cdwlsv
@@ -488,6 +494,8 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     hkru                => gdp%gdr_i_ch%hkru
     hkrv                => gdp%gdr_i_ch%hkrv
     hydrbc              => gdp%gdr_i_ch%hydrbc
+    h_ice               => gdp%gdr_i_ch%h_ice
+    h_snow              => gdp%gdr_i_ch%h_snow
     kcs                 => gdp%gdr_i_ch%kcs
     omega               => gdp%gdr_i_ch%omega
     pship               => gdp%gdr_i_ch%pship
@@ -503,9 +511,11 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     umnldf              => gdp%gdr_i_ch%umnldf
     uwtypu              => gdp%gdr_i_ch%uwtypu
     uwtypv              => gdp%gdr_i_ch%uwtypv
+    u_ice               => gdp%gdr_i_ch%u_ice
     v1                  => gdp%gdr_i_ch%v1
     vicuv               => gdp%gdr_i_ch%vicuv
     vmnldf              => gdp%gdr_i_ch%vmnldf
+    v_ice               => gdp%gdr_i_ch%v_ice
     xcor                => gdp%gdr_i_ch%xcor
     ycor                => gdp%gdr_i_ch%ycor
     itdro               => gdp%gdr_i_ch%itdro
@@ -648,7 +658,9 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
             & nmax      ,nmaxus    ,kmax      ,lstsci    ,ltur      , &
             & ch(namcon),r(s1)     ,r(u1)     ,r(v1)     ,r(r1)     , &
             & r(rtur1)  ,r(decay)  ,r(umnldf) ,r(vmnldf) ,i(kfu)    , &
-            & i(kfv)    ,r(dpd)    ,lsed      ,gdp       )
+            & i(kfv)    ,r(dp)     ,lsed      , &
+            & r(h_ice)  ,r(h_snow) ,r(a_ice)  ,r(u_ice)  ,r(v_ice)  , &
+            & gdp       )
     if (error) goto 9999
     !
     ! Boundary conditions general (only if nto > 0)

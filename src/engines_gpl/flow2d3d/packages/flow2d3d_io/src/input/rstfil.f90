@@ -2,7 +2,9 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
                 & nmaxus    ,kmax      ,lstsci    ,ltur      , &
                 & s1        ,u1        ,v1        ,r1        ,rtur1     , &
                 & umnldf    ,vmnldf    ,kfu       ,kfv       , &
-                & dpd       ,namcon    ,coninit   ,gdp       )
+                & dpd       ,namcon    ,coninit   , &
+                & h_ice     ,h_snow    ,a_ice     ,u_ice     ,v_ice     , &
+                & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -55,6 +57,7 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
     !
     real(fp)                             , pointer :: tstart
     integer                              , pointer :: julday
+    logical                              , pointer :: ice
     integer                              , pointer :: mfg
     integer                              , pointer :: mlg
     integer                              , pointer :: nfg
@@ -90,6 +93,11 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax, lstsci), intent(out) :: r1     !  Description and declaration in esm_alloc_real.f90
     character(*)                                                                             :: restid !!  Run identification of the restart file. If RESTID = non-blank then current simulation will use this file for setting the initial conditions
     character(20), dimension(lstsci + ltur)                                    , intent(in)  :: namcon !  Description and declaration in esm_alloc_char.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: h_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: h_snow !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: a_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: u_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: v_ice  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -120,6 +128,7 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
 !
     julday              => gdp%gdinttim%julday
     tstart              => gdp%gdexttim%tstart
+    ice                 => gdp%gdprocs%ice
     !
     mfg                 => gdp%gdparall%mfg
     mlg                 => gdp%gdparall%mlg
@@ -323,6 +332,43 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
                     & nf, nl, mf, ml, iarrc, gdp, &
                     & ierror, lundia, vmnldf, 'DUMMY', rdum)
        if (ierror /= 0) goto 9999
+        if (ice) then
+          !
+          ! read ice thickness H_ICE
+          !
+          call rdarray_nm(luntmp, filtmp, ftype, 'DUMMY', 0, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, h_ice, 'DUMMY', rdum)
+          if (ierror /= 0) goto 9999
+          !
+          ! read snowthickness H_SNOW
+          !
+          call rdarray_nm(luntmp, filtmp, ftype, 'DUMMY', 0, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, h_snow, 'DUMMY', rdum)
+          if (ierror /= 0) goto 9999
+          !
+          ! read ice concentration A_ICE
+          !
+          call rdarray_nm(luntmp, filtmp, ftype, 'DUMMY', 0, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, a_ice, 'DUMMY', rdum)
+          if (ierror /= 0) goto 9999
+          !
+          ! read ice ice velocity in x-direction U_ICE
+          !
+          call rdarray_nm(luntmp, filtmp, ftype, 'DUMMY', 0, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, u_ice, 'DUMMY', rdum)
+          if (ierror /= 0) goto 9999
+          !
+          ! read ice velocity in y-direction V_ICE
+          !
+          call rdarray_nm(luntmp, filtmp, ftype, 'DUMMY', 0, &
+                       & nf, nl, mf, ml, iarrc, gdp, &
+                       & ierror, lundia, v_ice, 'DUMMY', rdum)
+          if (ierror /= 0) goto 9999
+       endif
        !
        ! close file
        !

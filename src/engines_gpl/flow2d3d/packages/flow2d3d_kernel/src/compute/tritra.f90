@@ -5,7 +5,8 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                 & lsed      ,lsts      ,norow     ,nocol     ,irocol    , &
                 & kcs       ,kcu       ,kcv       ,kfs       ,kfu       , &
                 & kfv       ,kadu      ,kadv      ,alfas     ,s0        , &
-                & s1        ,hu        ,hv        ,dps       ,qxk       , &
+                & s1        ,hu        ,hv        ,dps       , &
+                & dpu       ,dpv       ,qxk       , &
                 & qyk       ,qzk       ,guu       ,gvv       ,guv       , &
                 & gvu       ,gsqs      ,rbnd      ,sigdif    ,sigmol    , &
                 & r0        ,r1        ,sour      ,sink      ,ws        , &
@@ -24,7 +25,15 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                 & wenf      ,wenl      ,dis       ,grmsur    ,grmsvr    , &
                 & areau     ,areav     ,volum0    ,volum1    ,xz        , &
                 & yz        ,rlabda    ,hbd       ,rscale    ,bruvai    , &
-                & hrms      ,dzs1      ,kfsmin    ,kfsmax    ,gdp       )
+                & hrms      ,dzs1      ,kfsmin    ,kfsmax    , &
+                & toth_i    ,toth_w    ,f_w       ,evap      , &
+                & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,vt_ice    , &
+                & h_ice     ,h_snow    ,t_ice     ,t_snow    ,pship     , &
+                & kfsice    ,kfssnw    ,anglat    ,w10mag    ,precip    , &
+                & icestr    ,icknmi    ,sxice     ,sxsn      ,sxa       , &
+                & u1        ,v1        ,fcorio    , &
+                & gud       ,guz       ,gvd       ,gvz       , &
+                & kspu      ,kspv      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -81,6 +90,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     logical       , pointer :: roller
     logical       , pointer :: wavcmp
     logical       , pointer :: snelli
+    logical       , pointer :: ice
 !
 ! Global variables
 !
@@ -111,12 +121,16 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kcu          !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kcv          !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kfs          !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kfsice       !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kfssnw       !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kfu          !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kfv          !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfsmax       !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfsmin       !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)              :: kadu         !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)              :: kadv         !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)            :: kspu         !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)            :: kspv         !  Description and declaration in esm_alloc_int.f90
     logical                                                         :: eqmbcsand    !  Description and declaration in morpar.igs
     logical                                                         :: eqmbcmud     !  Description and declaration in morpar.igs
     logical                                                         :: eulerisoglm  !  Description and declaration in morpar.igs
@@ -124,6 +138,8 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: c            !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: cgc          !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                    :: dps          !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: dpu          !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: dpv          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub,4)                  :: dis          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: df           !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: dzs1         !  Description and declaration in esm_alloc_real.f90
@@ -133,6 +149,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: ewabr1       !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: ewave0       !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: ewave1       !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: fcorio       !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: fxw          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: fyw          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: gsqs         !  Description and declaration in esm_alloc_real.f90
@@ -142,10 +159,14 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: grmsvr       !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: grfacu       !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: grfacv       !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: gud          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: guu          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: guv          !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: guz          !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: gvd          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: gvu          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: gvv          !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: gvz          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: hbd          !  breaker delay depth
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: hrms         !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: hu           !  Description and declaration in esm_alloc_real.f90
@@ -163,6 +184,8 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: sourw        !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: theta
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: tp           !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)              :: u1           !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)              :: v1           !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: wsu          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: wsv          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: xcor         !  Description and declaration in esm_alloc_real.f90
@@ -225,6 +248,28 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     character(13)                                     , intent(in)  :: trasol       !  Description and declaration in tricom.igs
     integer, dimension(lsed)                                        :: sedtyp       !!  sediment type: 0=total/1=noncoh/2=coh
     character(8)                                      , intent(in)  :: stage        !!  First or second half time step
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: toth_i       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: toth_w       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: f_w          !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: h_ice        !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: h_snow       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: t_ice        !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: t_snow       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: u_ice        !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: v_ice        !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: a_ice        !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: ut_ice       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: vt_ice       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub,5)                    :: sxice        !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub,5)                    :: sxsn         !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub,5)                    :: sxa          !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub,3)                    :: icestr       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub,3)                    :: icknmi       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: pship        !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: precip       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: evap         !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: w10mag       !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: anglat       !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -246,6 +291,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     roller     => gdp%gdprocs%roller
     wavcmp     => gdp%gdprocs%wavcmp
     snelli     => gdp%gdprocs%snelli
+    ice        => gdp%gdprocs%ice
     !
     icx     = 0
     icy     = 0
@@ -443,6 +489,32 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
           call timer_stop(timer_tritra_rest, gdp)
        else
        endif
+       !
+       if (ice) then
+          !
+          ! Ice modelling
+          !
+          icx = nmaxddb
+          icy = 1
+          call d_ice(hdt     ,nst       ,icx       ,icy       , &
+                 & j         ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
+                 & u1        ,v1        ,r1        ,norow     ,irocol    , &
+                 & kcs       ,kfu       ,kfv       ,kfs       , &
+                 & dps       ,dpu       ,dpv       ,anglat    ,w10mag    ,evap      , &
+                 & kspu      ,kspv      ,s1        ,pship     ,precip    , &
+                 & guu       ,gvv       ,gvu       ,guv       , &
+                 & gud       ,gvd       ,guz       ,gvz       , &
+                 & fcorio    ,gsqs      , &
+                 & h_ice     ,h_snow    ,t_ice     ,t_snow    , &
+                 & u_ice     ,v_ice     ,a_ice     ,kfsice    ,kfssnw    , &
+                 & toth_i    ,toth_w    ,f_w       ,ut_ice    ,vt_ice    , &
+                 & icestr    ,icknmi    ,sxice     ,sxsn      ,sxa       , &
+                 & aak       ,bbk       ,cck       ,bdddx     , &
+                 & bddx      ,bdx       ,bux       ,buux      , &
+                 & buuux     ,uvdwk     ,vvdwk     ,aakl      , &
+                 & bbkl      ,cckl      ,ddkl      ,dsdksi    ,dsdeta    , &  
+                 & gdp       )
+       endif
     endif
     !
     !
@@ -622,6 +694,32 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                     & seddif    ,gdp       )
           call timer_stop(timer_tritra_rest, gdp)
        else
+       endif
+       !
+       if (ice) then
+          !
+          ! Ice modelling
+          !
+          icx = 1
+          icy = nmaxddb
+          call d_ice(hdt     ,nst       ,icx       ,icy       , &
+                 & j         ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
+                 & v1        ,u1        ,r1 ,nocol ,irocol(1, norow + 1) , &
+                 & kcs       ,kfv       ,kfu       ,kfs       , &
+                 & dps       ,dpu       ,dpv       ,anglat    ,w10mag    ,evap      , &
+                 & kspv      ,kspu      ,s1        ,pship     ,precip    ,  &
+                 & gvv       ,guu       ,guv       ,gvu       , &
+                 & gvd       ,gud       ,gvz       ,guz       , &
+                 & fcorio    ,gsqs      , &
+                 & h_ice     ,h_snow    ,t_ice     ,t_snow    , &
+                 & v_ice     ,u_ice     ,a_ice     ,kfsice    ,kfssnw    , &
+                 & toth_i    ,toth_w    ,f_w       ,vt_ice    ,ut_ice    , &
+                 & icestr    ,icknmi    ,sxice     ,sxsn      ,sxa       , &
+                 & aak       ,bbk       ,cck       ,bdddx     , &
+                 & bddx      ,bdx       ,bux       ,buux      , &
+                 & buuux     ,uvdwk     ,vvdwk     ,aakl      , &
+                 & bbkl      ,cckl      ,ddkl      ,dsdksi    ,dsdeta    , &  
+                 & gdp       )
        endif
     endif
     !

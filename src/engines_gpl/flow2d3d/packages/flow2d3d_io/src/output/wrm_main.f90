@@ -189,6 +189,12 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     integer       , dimension(:)         , pointer :: nl
     !
     logical                              , pointer :: mergemap
+    integer(pntrsize)                    , pointer :: h_ice
+    integer(pntrsize)                    , pointer :: h_snow
+    integer(pntrsize)                    , pointer :: a_ice
+    integer(pntrsize)                    , pointer :: u_ice
+    integer(pntrsize)                    , pointer :: v_ice
+    integer(pntrsize)                    , pointer :: kfsice
 !
 ! Global variables
 !
@@ -360,6 +366,12 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     ktemp               => gdp%gdtricom%ktemp
     mergemap            => gdp%gdpostpr%mergemap
     lfsdu               => gdp%gdprocs%lfsdu
+    h_ice               => gdp%gdr_i_ch%h_ice
+    h_snow              => gdp%gdr_i_ch%h_snow
+    a_ice               => gdp%gdr_i_ch%a_ice
+    u_ice               => gdp%gdr_i_ch%u_ice
+    v_ice               => gdp%gdr_i_ch%v_ice
+    kfsice              => gdp%gdr_i_ch%kfsice
     !
     if (wrifou) then
        ifile = FILOUT_FOU
@@ -592,6 +604,8 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
                     & r(cvalv0) ,r(cfurou) ,r(cfvrou) ,rouflo    ,r(patm)   , &
                     & r(z0ucur) ,r(z0vcur) ,r(z0urou) ,r(z0vrou) ,ktemp     , &
                     & r(precip) ,r(evap)   ,irequest  ,fds       ,iarrc     , &
+                    & r(h_ice)  ,r(h_snow) ,r(a_ice)  ,r(u_ice)  ,r(v_ice)  , &
+                    & i(kfsice) , &
                     & mf        ,ml        ,nf        ,nl        ,gdp       )
           if (error) goto 9999
           !

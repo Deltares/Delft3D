@@ -54,11 +54,13 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     include 'fsm.i'
     include 'tri-dyn.igd'
     integer(pntrsize)      , pointer :: alfas
+    integer(pntrsize)      , pointer :: a_ice
     integer(pntrsize)      , pointer :: c
     integer(pntrsize)      , pointer :: cfurou
     integer(pntrsize)      , pointer :: cfvrou
     integer(pntrsize)      , pointer :: dicuv
     integer(pntrsize)      , pointer :: fcorio
+    integer(pntrsize)      , pointer :: f_w
     integer(pntrsize)      , pointer :: gsqd
     integer(pntrsize)      , pointer :: gsqs
     integer(pntrsize)      , pointer :: guu
@@ -66,6 +68,10 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     integer(pntrsize)      , pointer :: gvu
     integer(pntrsize)      , pointer :: gvv
     integer(pntrsize)      , pointer :: hu
+    integer(pntrsize)      , pointer :: h_ice
+    integer(pntrsize)      , pointer :: h_snow
+    integer(pntrsize)      , pointer :: icestr
+    integer(pntrsize)      , pointer :: icknmi
     integer(pntrsize)      , pointer :: pship
     integer(pntrsize)      , pointer :: r1
     integer(pntrsize)      , pointer :: rho
@@ -76,8 +82,19 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     integer(pntrsize)      , pointer :: sig
     integer(pntrsize)      , pointer :: sigdif
     integer(pntrsize)      , pointer :: sigmol
+    integer(pntrsize)      , pointer :: sxa
+    integer(pntrsize)      , pointer :: sxice
+    integer(pntrsize)      , pointer :: sxsn
     integer(pntrsize)      , pointer :: thick
+    integer(pntrsize)      , pointer :: toth_w
+    integer(pntrsize)      , pointer :: toth_i
+    integer(pntrsize)      , pointer :: t_ice
+    integer(pntrsize)      , pointer :: t_snow
+    integer(pntrsize)      , pointer :: u_ice
+    integer(pntrsize)      , pointer :: ut_ice
     integer(pntrsize)      , pointer :: vicuv
+    integer(pntrsize)      , pointer :: v_ice
+    integer(pntrsize)      , pointer :: vt_ice
     integer(pntrsize)      , pointer :: ws
     integer(pntrsize)      , pointer :: x2y
     integer(pntrsize)      , pointer :: x3
@@ -100,6 +117,8 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     integer(pntrsize)      , pointer :: kcu
     integer(pntrsize)      , pointer :: kcv
     integer(pntrsize)      , pointer :: kfs
+    integer(pntrsize)      , pointer :: kfsice
+    integer(pntrsize)      , pointer :: kfssnw
     integer(pntrsize)      , pointer :: kspu
     integer(pntrsize)      , pointer :: kspv
     integer(pntrsize)      , pointer :: mnbnd
@@ -160,6 +179,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     logical                , pointer :: swrf_file
     character(256)         , pointer :: flbdfh
     real(fp), dimension(:) , pointer :: duneheight
+    logical                , pointer :: ice
 !
 ! Global variables
 !
@@ -329,6 +349,26 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     duneheight  => gdp%gdbedformpar%duneheight
     solrad_read => gdp%gdheat%solrad_read
     swrf_file   => gdp%gdheat%swrf_file
+    a_ice       => gdp%gdr_i_ch%a_ice
+    h_ice       => gdp%gdr_i_ch%h_ice
+    t_ice       => gdp%gdr_i_ch%t_ice
+    h_snow      => gdp%gdr_i_ch%h_snow
+    u_ice       => gdp%gdr_i_ch%u_ice
+    v_ice       => gdp%gdr_i_ch%v_ice
+    ut_ice      => gdp%gdr_i_ch%ut_ice
+    vt_ice      => gdp%gdr_i_ch%vt_ice
+    icestr      => gdp%gdr_i_ch%icestr
+    icknmi      => gdp%gdr_i_ch%icknmi
+    sxice       => gdp%gdr_i_ch%sxice
+    sxsn        => gdp%gdr_i_ch%sxsn
+    sxa         => gdp%gdr_i_ch%sxa
+    t_snow      => gdp%gdr_i_ch%t_snow
+    toth_i      => gdp%gdr_i_ch%toth_i
+    toth_w      => gdp%gdr_i_ch%toth_w
+    f_w         => gdp%gdr_i_ch%f_w
+    kfsice      => gdp%gdr_i_ch%kfsice
+    kfssnw      => gdp%gdr_i_ch%kfssnw
+    ice         => gdp%gdprocs%ice
     !
     icx     = 0
     icy     = 0
@@ -486,6 +526,17 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
                 & nmaxus    ,lstsci    ,ltur      ,lturi     ,lsecfl    , &
                 & r(r1)     ,i(kfs)    ,r(rtur1)  ,gdp       )
        if (error) goto 9999
+    endif
+    !
+    ! INIT_ICE : initialization for ice modelling
+    !
+    if (ice) then
+       call init_ice(restid ,mmax      ,nmaxus    ,kmax      ,lstsci    , &
+                & i(kfsice) ,i(kfssnw) ,r(toth_i) ,r(toth_w) ,r(f_w)   , &
+                & r(r1)     ,r(h_ice)  ,r(h_snow) ,r(a_ice)  , &
+                & r(t_ice)  ,r(t_snow), &
+                & r(u_ice)  ,r(v_ice)  ,r(ut_ice) ,r(vt_ice) ,r(icknmi) , &
+                & r(icestr) ,r(sxice)  ,r(sxsn)   ,r(sxa)    ,gdp )
     endif
     !
     ! INITGF: set tide generating forces arrays if TGFCMP <> ' '

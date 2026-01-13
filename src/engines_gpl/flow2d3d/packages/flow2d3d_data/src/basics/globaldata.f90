@@ -83,6 +83,7 @@ module globaldata
     include 'fourier.igs'
     include 'heat.igs'
     include 'htur2d.igs'
+    include 'ice.igs'
     include 'inout.igs'
     include 'inttim.igs'
     include 'iwearr.igs'
@@ -197,6 +198,7 @@ module globaldata
        type (bedcomp_data), pointer :: gdmorlyr
        type (gd_usrpar)   , pointer :: gdusrpar
        type (gd_zmodel)   , pointer :: gdzmodel
+       type (gd_ice)      , pointer :: gdice
        type (gd_nonhyd)   , pointer :: gdnonhyd
        type (gd_waqpar)   , pointer :: gdwaqpar
        !

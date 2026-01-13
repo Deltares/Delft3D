@@ -5,7 +5,9 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
               & nmax      ,nmaxus    ,kmax      ,lstsci    ,ltur      , &
               & namcon    ,s1        ,u1        ,v1        ,r1        , &
               & rtur1     ,decay     ,umnldf    ,vmnldf    ,kfu       , &
-              & kfv       ,dpd       ,lsed      ,gdp       )
+              & kfv       ,dpd       ,lsed      , &
+              & h_ice     ,h_snow    ,a_ice     ,u_ice     ,v_ice     , &
+			  & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -114,6 +116,11 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                                                                                           !!  used by the system)
     character(2)                                                  , intent(out) :: fmtic  !!  File format of initial condition file
     character(20), dimension(lstsci + ltur)                                     :: namcon !  Description and declaration in esm_alloc_char.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) , intent(in)  :: h_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) , intent(in)  :: h_snow !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) , intent(in)  :: a_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) , intent(in)  :: u_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) , intent(in)  :: v_ice  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -278,7 +285,9 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                  & nmaxus    ,kmax      ,lstsci    ,ltur      , &
                  & s1        ,u1        ,v1        ,r1        ,rtur1     , &
                  & umnldf    ,vmnldf    ,kfu       ,kfv       , &
-                 & dpd       ,namcon    ,coninit   ,gdp       )
+                 & dpd       ,namcon    ,coninit   , &
+                 & h_ice     ,h_snow    ,a_ice     ,u_ice     ,v_ice     , &
+                 & gdp       )
     endif
     !
     ! locate 'Filic' record for initial cond. in extra input file
