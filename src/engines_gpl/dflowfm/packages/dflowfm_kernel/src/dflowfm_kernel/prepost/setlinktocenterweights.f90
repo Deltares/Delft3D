@@ -45,14 +45,12 @@ contains
       use m_netw
       use m_flowgeom
       use m_sferic
-      use m_longculverts_data, only: newculverts, nlongculverts, longculverts
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
 
       real(kind=dp) :: wud, wuL1, wuL2, cs, sn
       integer :: L, n, kk, n12, lnxmax
       integer :: k1, k2, LL
-      integer :: ilongc, L1dlink
       real(kind=dp) :: aa1, wcw, alf
 
       wcx1 = 0

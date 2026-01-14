@@ -123,19 +123,18 @@ contains
       type(tree_data), pointer :: block_ptr
       type(tree_data), pointer :: node_ptr
       type(tree_data), pointer :: strs_ptr
-      type(tree_data), pointer :: str_ptr, str_ptr_2
+      type(tree_data), pointer :: str_ptr
       character(len=IdLen) :: typestr
       character(len=IdLen) :: st_id
       character(len=IdLen) :: csDefId
       character(len=IdLen) :: txt
-      integer :: readerr, nstr, i, j, numcoords
+      integer :: readerr, nstr, i, numcoords
       integer, allocatable, dimension(:) :: links
       logical :: success
       integer :: istart
       integer :: nlongculverts0
       integer :: mout
       integer :: longculvertindex
-      integer :: longculvertindex2
       character(len=IdLen) :: temppath, tempname, tempext
       logical :: write_converted_files_
 
