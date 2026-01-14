@@ -361,6 +361,9 @@ source /opt/intel/oneapi/setvars.sh
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
+export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
+export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
 
 URL='https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.9.2.tar.gz'
 BASEDIR='netcdf-c-4.9.2'
@@ -396,6 +399,9 @@ source /opt/intel/oneapi/setvars.sh
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
+export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
+export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
 
 URL='https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz'
 BASEDIR='netcdf-fortran-4.6.1'
@@ -438,6 +444,9 @@ source /opt/intel/oneapi/setvars.sh
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
+export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
+export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
 
 URL='https://download.osgeo.org/proj/proj-9.2.0.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")

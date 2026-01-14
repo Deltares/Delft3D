@@ -70,8 +70,12 @@ object LinuxBuild : BuildType({
                 #!/usr/bin/env bash
                 source /opt/bashrc
                 set -eo pipefail
-
-                cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install -D CURL_ROOT=/usr/local -D CURL_INCLUDE_DIR=/usr/local/include -D CURL_LIBRARY=/usr/local/lib/libcurl.so
+                export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+                export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+                export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
+                export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
+                export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
+                cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install
                 cmake --build build_%product% --parallel --config %build_type%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
