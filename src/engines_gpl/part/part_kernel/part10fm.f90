@@ -356,7 +356,8 @@ contains
         real(kind = dp) :: t0                      ! helpvariable with initial time step buoyant spreading
         real(kind = dp) :: tp                      ! real value of iptime(ipart)
         real(kind = dp) :: trp                     ! horizontal random walk
-        real(kind = dp) :: wdirr                        ! is wind direction in radians
+        real(kind = dp) :: wdirr                   ! is wind direction in radians
+        real(kind = dp) :: defang_rad              ! deflection angle in radians
         real(kind = dp), dimension(noslay)  :: totdepthlay             ! total depth (below water surface) of bottom of layers
         real(kind = dp) :: thicknessl, depthp              ! layerthickness, depth particle
         integer :: mpartold, npadd, mparttemp
@@ -392,10 +393,10 @@ contains
         ! note that the leeway is not using the oil module, but in combination with the
         ! apply_wind_drag option (see also part10, for the d3dV4 application))
         if ( oil ) then
-            defang = defang * twopi / 360.0    !  deflection angle oil modelling
+            defang_rad = defang * twopi / 360.0    !  deflection angle oil modelling
         elseif ( leeway ) then
-            defang = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
-            cdrag  = leeway_multiplier          !  windage (leeway), given as a fraction
+            defang_rad = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
+            cdrag      = leeway_multiplier          !  windage (leeway), given as a fraction
             leeway_modifier_rad = atan2(leeway_modifier, earth_radius) * raddeg_hp
         endif
 
@@ -444,8 +445,8 @@ contains
 
             if (depthp .lt. max_wind_drag_depth) then
                 if ( leeway ) leeway_ang_sign = float(mod(ipart, 3) - 1)
-                vxw  = - wvelo(mpart(ipart)) * sin( wdirr + leeway_ang_sign * defang )
-                vyw  = - wvelo(mpart(ipart)) * cos( wdirr + leeway_ang_sign * defang )
+                vxw  = - wvelo(mpart(ipart)) * sin( wdirr + leeway_ang_sign * defang_rad )
+                vyw  = - wvelo(mpart(ipart)) * cos( wdirr + leeway_ang_sign * defang_rad )
                 vw_net = sqrt((vxw-ux0)**2 + (vyw-uy0)**2)  ! net wind for drag (to accommodate scaling the modifier)
 
                 ! drag on the difference vector: cd * (wind - flow)
