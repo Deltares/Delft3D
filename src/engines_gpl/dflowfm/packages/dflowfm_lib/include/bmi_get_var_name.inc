@@ -91,7 +91,7 @@
   case(30)
      var_name = "HortonRecoveryRate"
   case(31)
-     var_name = "HortonState"
+     var_name = "horton_state"
   case(32)
      var_name = "shx"
   case(33)

@@ -29,7 +29,7 @@
 
 !> Module for storing the optional hydrology state variables
 module m_hydrology_data
-   use m_horton, only: t_HortonInfiltrationConfig
+   use m_horton, only: t_HortonInfiltrationConfig, t_HortonInfiltrationState
    use precision, only: dp
 
    implicit none
@@ -73,8 +73,8 @@ module m_hydrology_data
    real(kind=dp), allocatable :: infiltcaproofs(:) !< temporary of the same
 
    ! Horton-specific:
-   type(t_HortonInfiltrationConfig), target :: hortonInfiltrationConfig !< Horton infiltration configuration containing min/max infiltration capacity and decrease/recovery rates
-   integer, allocatable, target :: hortonState(:) !< [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
+   type(t_HortonInfiltrationConfig), target :: horton_infiltration_config
+   integer, allocatable, target :: horton_state(:) !< [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
 
    ! dhydrology state (not used yet, only when WFLOW functionality will be connected)
    real(kind=dp), allocatable, target :: CanopyGapFraction(:)

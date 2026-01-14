@@ -54,7 +54,7 @@ contains
                         jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
                         use_density
       use m_flowtimes, only: handle_extra
-      use m_hydrology_data, only: hortonstate
+      use m_hydrology_data, only: horton_state
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
       use m_observations_data, only : valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
@@ -572,7 +572,7 @@ contains
 
             ! Write horton infiltration state (0: NOCHANGE, 1: DECREASING, 2: RECOVERING)
             if (infiltrationmodel == DFM_HYD_INFILT_HORTON .and. jahisinfilt > 0) then
-               valobs(i, IPNT_INFILTHORTONSTATE) = hortonstate(k)
+               valobs(i, IPNT_INFILTHORTONSTATE) = horton_state(k)
             end if
 
 !        Heatflux

@@ -90,7 +90,7 @@
      rank = 1
   case("HortonRecoveryRate")
      rank = 1
-  case("HortonState")
+  case("horton_state")
      rank = 1
   case("shx")
      rank = 1

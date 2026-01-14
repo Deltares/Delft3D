@@ -32,6 +32,15 @@
 
 module m_setgrwflowexpl
 
+   use precision, only: dp
+   use m_flowgeom, only: ndx, ndx2d, bl, ba, lnx1d, lnxi, ln, wu, dxi, bai, lnx
+   use m_flow, only: qingrw, qoutgrw, volgrw, infiltrationmodel, dfm_hyd_infilt_horton, horton_infiltration_config, &
+      infiltcap, hs, horton_state, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, &
+      infilt, sgrw0, h_transfer, s1, pgrw, bgrw, conductivity, porosgrw, dfm_hyd_infilt_darcy, h_capillair, unsatfac, hu
+   use m_flowtimes, only: dts
+   use m_horton, only: compute_horton_infiltration, t_HortonInfiltrationState
+   use m_wind, only: jarain, rain
+
    implicit none
 
    private
@@ -42,27 +51,20 @@ contains
 
 !> groundwater flow explicit
    subroutine setgrwflowexpl()
-      use precision, only: dp
-      use m_flowgeom, only: ndx, ndx2d, bl, ba, lnx1d, lnxi, ln, wu, dxi, bai, lnx
-      use m_flow, only: qingrw, qoutgrw, volgrw, infiltrationmodel, dfm_hyd_infilt_horton, hortonInfiltrationConfig, &
-         infiltcap, hs, hortonstate, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, &
-         infilt, sgrw0, h_transfer, s1, pgrw, bgrw, conductivity, porosgrw, dfm_hyd_infilt_darcy, h_capillair, unsatfac, hu
-      use m_flowtimes, only: dts
-      use m_horton, only: compute_horton_infiltration
-      use m_wind, only: jarain, rain
-
+      type(t_HortonInfiltrationState), pointer :: horton_infiltration_state
       integer :: k1, k2, L, k
       integer :: ierr
       real(kind=dp) :: z1, z2, h1, h2, dh, dQ, hunsat, hunsat1, hunsat2, fac, qgrw, h2Q
       real(kind=dp) :: fc, conduct, h_upw, Qmx
+
+      call set_horton_infiltration_state(horton_infiltration_state)
 
       qingrw = 0.0_dp
       qoutgrw = 0.0_dp
       Volgrw = 0.0_dp    
 
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then ! Horton's infiltration equation
-         ierr = compute_horton_infiltration(ndx, hortonInfiltrationConfig, infiltcap, &
-                                            dts, hs, rain, jarain, HortonState)
+         ierr = compute_horton_infiltration(horton_infiltration_config, horton_infiltration_state)
       end if
 
       if (infiltrationmodel == 1) then ! orig. interceptionmodel: no horizontal groundwater flow, and infiltration is instantaneous as long as it fits in unsat zone (called 'interception' here, but naming to be discussed)
@@ -159,5 +161,18 @@ contains
       end if
 
    end subroutine setgrwflowexpl
+
+   subroutine set_horton_infiltration_state(state)
+      type(t_HortonInfiltrationState), pointer, intent(out) :: state
+
+      state%n => ndx
+      state%include_rain => jarain
+      state%timestep => dts
+      state%inf_cap => infiltcap
+      state%waterlevel => hs
+      state%rainfall => rain
+      state%inf_cap_state => horton_state
+
+   end subroutine set_horton_infiltration_state
 
 end module m_setgrwflowexpl
