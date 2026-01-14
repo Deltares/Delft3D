@@ -606,6 +606,8 @@ export CXX=mpicxx # We would like to use mpiicpx, but some tests get different r
 export CC=mpiicx
 export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH
+export CMAKE_PREFIX_PATH=/usr/local:\$CMAKE_PREFIX_PATH
+export LIBRARY_PATH=/usr/local/lib:\$LIBRARY_PATH
 EOT
 
 COPY --from=uuid --link /usr/local /usr/local/
