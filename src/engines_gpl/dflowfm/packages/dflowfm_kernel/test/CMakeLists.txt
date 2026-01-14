@@ -1,3 +1,56 @@
+# Function to copy all required runtime dependencies for dflowfm_kernel tests
+function(copy_dflowfm_test_dependencies TARGET_NAME)
+    if(WIN32)
+        # Copy PETSc DLL explicitly (not captured by TARGET_RUNTIME_DLLS)
+        add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${petsc_libdir}/libpetsc.dll" 
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+            COMMENT "Copying PETSc runtime dependency to $<TARGET_FILE_DIR:${TARGET_NAME}>"
+        )
+
+        # Copy MKL runtime dependency
+        add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "$ENV{ONEAPI_ROOT}/mkl/latest/bin/mkl_sequential.2.dll" 
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+            COMMENT "Copying MKL runtime dependency"
+        )
+
+        # Copy HDF5 DLL
+        add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${checkout_src_root}/${hdf5_module}/bin/hdf5.dll" 
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+            COMMENT "Copying HDF5 runtime dependency"
+        )
+
+        # Copy HDF5_HL DLL
+        add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${checkout_src_root}/${hdf5_module}/bin/hdf5_hl.dll" 
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+            COMMENT "Copying hdf5_hl runtime dependency"
+        )
+
+        # Copy zlib DLL
+        add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+                "${checkout_src_root}/${zlib_module}/bin/zlib.dll" 
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+            COMMENT "Copying zlib runtime dependency"
+        )
+        
+        # Uncomment if needed:
+        # add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+        #     COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+        #         "$ENV{ONEAPI_ROOT}/mpi/latest/bin/impi.dll" 
+        #         $<TARGET_FILE_DIR:${TARGET_NAME}>
+        #     COMMENT "Copying impi runtime dependency"
+        # )
+    endif()
+endfunction()
+
 f90twtest(test_dflowfm_kernel_example
     CFILES test_dflowfm_kernel_example.cpp
     F90FILES test_dflowfm_kernel_example.f90
@@ -33,4 +86,5 @@ f90twtest(test_longculverts
     LIBRARIES dflowfm_kernel
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
-add_subdirectory(io)
+copy_dflowfm_test_dependencies(test_longculverts)
+
