@@ -190,7 +190,7 @@ ObsFile                             = ../../../../geometry/output_locations/maas
                                       ../../../../geometry/output_locations/maas-j19_6-v2a_2_output_obs.xyn   \
                                       ../../../../geometry/output_locations/maas-j19_6-v2a_3_measurement_obs.xyn  \
                                       ../../../../geometry/output_locations/maas-j19_6-v2a_5_100m_obs.xyn          # Points file *_obs.xyn with observation stations with rows x, y, station name: *measurement_obs.pli is OBLIGATORY
-CrsFile           = observcrs.ini
+CrsFile = '../../../../geometry/crs/beno19_6-w6_1_kilometer_crs.pli ../../../../geometry/crs/maas-j21_20m_km2_85_3_measurement_crs.pli ../../../../geometry/crs/maas-j21_20m_km2_85_4_calibration_crs.pli ../../../../geometry/crs/crs_q.pli ../../../../geometry/crs/crs_h.pli'
 HisFile           =
 HisInterval       = 60
 XLSInterval       =
