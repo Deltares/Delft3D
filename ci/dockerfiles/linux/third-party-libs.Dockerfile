@@ -320,7 +320,6 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 RUN --mount=type=cache,target=/var/cache/src/,id=hdf5-${CACHE_ID_SUFFIX} <<"EOF-hdf5"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
-dnf install -y curl
 
 URL='https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_2.tar.gz'
 BASEDIR='hdf5-hdf5-1_14_2'
@@ -442,7 +441,6 @@ COPY --from=curl-custom --link /usr/local/ /usr/local/
 RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
-dnf install -y curl
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
@@ -552,7 +550,7 @@ source /opt/intel/oneapi/setvars.sh
 pushd "/var/cache/src/${BASEDIR}"
 
 export ESMF_DIR="/var/cache/src/${BASEDIR}"
-export ESMF_COMM=mpiuni # we would like to use mpiuni, but some tests get different results
+export ESMF_COMM=mpiuni # we do not need mpi
 export ESMF_COMPILER=intel
 export ESMF_C=icx
 export ESMF_CXX=icpx
