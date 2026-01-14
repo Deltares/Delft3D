@@ -320,7 +320,7 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 RUN --mount=type=cache,target=/var/cache/src/,id=hdf5-${CACHE_ID_SUFFIX} <<"EOF-hdf5"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
-
+dnf install -y curl
 URL='https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_2.tar.gz'
 BASEDIR='hdf5-hdf5-1_14_2'
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
@@ -612,7 +612,7 @@ RUN set -eo pipefail && \
     cat <<EOT >> /opt/bashrc
 source /opt/intel/oneapi/setvars.sh
 export FC=mpi${INTEL_FORTRAN_COMPILER}
-export CXX=mpicxx # we do not need mpi
+export CXX=mpicxx # We would like to use mpiicpx, but some tests get different results
 export CC=mpiicx
 export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH
