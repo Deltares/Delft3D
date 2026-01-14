@@ -649,13 +649,8 @@ contains
             vallongculvert(1:NUMVALS_LONGCULVERT, n) = 0.0_dp
             if (longculverts(n)%numlinks > 0) then ! This long culvert is valid on the current domain/subdomain
                ! fill in for the representative flow ilnk
-               if (newculverts) then
-                  La = abs(longculverts(n)%flowlinks(2)) ! We use the 2st link as a representative flow link
-                  dir = sign(1.0_dp, real(longculverts(n)%flowlinks(2), kind=dp))
-               else
-                  La = abs(longculverts(n)%flowlinks(1))
-                  dir = sign(1.0_dp, real(longculverts(n)%flowlinks(1), kind=dp))
-               end if
+               La = abs(longculverts(n)%flowlinks(1))
+               dir = sign(1.0_dp, real(longculverts(n)%flowlinks(1), kind=dp))
 
                if (La > 0) then
                   if (jampi > 0) then

@@ -247,7 +247,7 @@ contains
             call prop_set(block_ptr, '', 'type', 'rectangle')
 
             longculverts(nlongculverts)%id = st_id
-            longculverts(nlongculverts)%numlinks = numcoords + 1
+            longculverts(nlongculverts)%numlinks = numcoords - 1
             allocate (longculverts(nlongculverts)%netlinks(longculverts(nlongculverts)%numlinks))
             allocate (longculverts(nlongculverts)%flowlinks(longculverts(nlongculverts)%numlinks))
             longculverts(nlongculverts)%flowlinks = -999
@@ -354,7 +354,7 @@ contains
       istart = 1
       do i = nlongculverts0 + 1, nlongculverts
          longculverts(i)%netlinks = links(istart:istart + longculverts(i)%numlinks - 1)
-         istart = istart + longculverts(i)%numlinks
+         istart = istart + longculverts(i)%numlinks + 1
       end do
 
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
@@ -801,7 +801,7 @@ contains
             end if
 
             Lf = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
-            if (Lf > 0) then
+            if (Lf > 0 .and. longculverts(ilongc)%numlinks > 1) then
                wu(Lf) = longculverts(ilongc)%width
                prof1D(1, Lf) = wu(Lf)
                prof1D(2, Lf) = longculverts(ilongc)%height
@@ -876,11 +876,7 @@ contains
 
       do i = 1, nlongculverts
          if (longculverts(i)%numlinks > 0) then
-            if (newculverts) then
-               L = abs(longculverts(i)%flowlinks(2))
-            else
-               L = abs(longculverts(i)%flowlinks(1))
-            end if
+            L = abs(longculverts(i)%flowlinks(1))
             if (L > 0) then
                au(L) = longculverts(i)%valve_relative_opening * au(L)
                call getflowdir(L, L_dir)
@@ -1053,11 +1049,16 @@ contains
          jpoint = jend + 2
          ipoly = ipoly + 1
          point_count = jend - jstart + 1
-         if (point_count >= 3) then
+         meshgeom1d%nbranches = meshgeom1d%nbranches + 1
+         if (point_count == 2) then
+            meshgeom1d%numnode = meshgeom1d%numnode + point_count
+            meshgeom1d%numedge = meshgeom1d%numedge + point_count - 1
+            meshgeom1d%ngeometry = meshgeom1d%ngeometry + point_count
+            meshgeom1d%nnodes = meshgeom1d%nnodes + 2 ! only 2 network nodes per branch
+         else if (point_count >= 3) then
             meshgeom1d%numnode = meshgeom1d%numnode + point_count - 2
             meshgeom1d%numedge = meshgeom1d%numedge + point_count - 3
             meshgeom1d%ngeometry = meshgeom1d%ngeometry + point_count - 2
-            meshgeom1d%nbranches = meshgeom1d%nbranches + 1
             meshgeom1d%nnodes = meshgeom1d%nnodes + 2 ! only 2 network nodes per branch
          end if
       end do
@@ -1097,6 +1098,23 @@ contains
          if (point_count <= 1) then
             call mess(LEVEL_WARN, 'generateLongCulverts: No valid start+end point found in polyline.')
          else if (point_count == 2) then
+            ipoly = ipoly + 1
+            currentbranchindex = currentbranchindex + 1
+            write (ipolychar, '(I0)') currentbranchindex
+            nbranchids(currentbranchindex) = 'BR_longCulvert_'//trim(ipolychar)
+            numculvertpoints = jend - jstart + 1
+            
+            ! meshgeom1d%nnodex(newnetnodeindex:newnetnodeindex + 1) = [xplCulv(jstart + 1), xplCulv(jend - 1)]
+            ! meshgeom1d%nnodey(newnetnodeindex:newnetnodeindex + 1) = [yplCulv(jstart + 1), yplCulv(jend - 1)]
+            ! meshgeom1d%nodex(newnetnodeindex:newnetnodeindex + 1) = [xplCulv(jstart + 1), xplCulv(jend - 1)]
+            ! meshgeom1d%nodey(newnetnodeindex:newnetnodeindex + 1) = [yplCulv(jstart + 1), yplCulv(jend - 1)]
+            ! meshgeom1d%nedge_nodes(1:2, currentbranchindex) = [newnetnodeindex, newnetnodeindex + 1]
+            ! write (nodechar, '(I0)') newnetnodeindex
+            ! nnodeids(newnetnodeindex) = 'BR_longCulvert_'//trim(ipolychar)//'_node_'//trim(nodechar)
+            ! write (nodechar, '(I0)') newnetnodeindex + 1
+            ! nnodeids(newnetnodeindex + 1) = 'BR_longCulvert_'//trim(ipolychar)//'_node_'//trim(nodechar)
+            ! newnetnodeindex = newnetnodeindex + 2
+
             call longculvert_create_endpoint(jstart, k1)
             call longculvert_create_endpoint(jend, k2)
             xplCulv(jstart:jstart + 1) = [xk(k1), xk(k2)]
@@ -1106,6 +1124,34 @@ contains
             if (allocated(dxe)) then
                dxe(linksCulv(links_index)) = dbdistance(xk(k1), yk(k1), xk(k2), xk(k2), jsferic, jasfer3D, dmiss)
             end if
+
+            ! Create geometry nodes.
+            meshgeom1d%nnodex(newnetnodeindex:newnetnodeindex + 1) = [xk(k1), xk(k2)]
+            meshgeom1d%nnodey(newnetnodeindex:newnetnodeindex + 1) = [yk(k1), yk(k2)]
+            meshgeom1d%nodex(newnetnodeindex:newnetnodeindex + 1) = [xk(k1), xk(k2)]
+            meshgeom1d%nodey(newnetnodeindex:newnetnodeindex + 1) = [yk(k1), yk(k2)]
+            meshgeom1d%nedge_nodes(1:2, currentbranchindex) = [newnetnodeindex, newnetnodeindex + 1]
+            write (nodechar, '(I0)') newnetnodeindex
+            nnodeids(newnetnodeindex) = 'BR_longCulvert_'//trim(ipolychar)//'_node_'//trim(nodechar)
+            write (nodechar, '(I0)') newnetnodeindex + 1
+            nnodeids(newnetnodeindex + 1) = 'BR_longCulvert_'//trim(ipolychar)//'_node_'//trim(nodechar)
+            meshgeom1d%nbranchgeometrynodes(currentbranchindex) = numculvertpoints
+            meshgeom1d%ngeopointx(newgeomindex:newgeomindex + numculvertpoints - 1) = [xk(k1), xk(k2)]
+            meshgeom1d%ngeopointy(newgeomindex:newgeomindex + numculvertpoints - 1) = [yk(k1), yk(k2)]
+            meshgeom1d%nedge_nodes(1:2, currentbranchindex) = [newnetnodeindex, newnetnodeindex + 1]
+
+            meshgeom1d%nodebranchidx(newnodeindex:newnodeindex + 1) = [currentbranchindex, currentbranchindex]
+            meshgeom1d%nodeidx(newnodeindex:newnodeindex + 1) = [k1, k2]
+            meshgeom1d%nodeidx_inverse(k1) = newnodeindex
+            meshgeom1d%nodeidx_inverse(k2) = newnodeindex + 1
+
+            meshgeom1d%edgebranchidx(newedgeindex) = currentbranchindex
+            
+            newgeomindex = newgeomindex + numculvertpoints
+            newnetnodeindex = newnetnodeindex + 2
+            newnodeindex = newnodeindex + 2
+            newedgeindex = newedgeindex + 1
+
             links_index = links_index + 2  ! Leave a single 'dmiss' gap between links of adjacent longculverts
          else if (point_count > 2) then
             ipoly = ipoly + 1
@@ -1131,6 +1177,7 @@ contains
             meshgeom1d%nbranchgeometrynodes(currentbranchindex) = numculvertpoints - 2
             meshgeom1d%ngeopointx(newgeomindex:newgeomindex + numculvertpoints - 3) = xplCulv(jstart+1:jend-1)
             meshgeom1d%ngeopointy(newgeomindex:newgeomindex + numculvertpoints - 3) = yplCulv(jstart+1:jend-1)
+
             newgeomindex = newgeomindex + numculvertpoints
             newnetnodeindex = newnetnodeindex + 2
 
