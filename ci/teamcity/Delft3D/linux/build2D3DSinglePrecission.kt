@@ -73,7 +73,7 @@ object LinuxBuild2D3DSP : BuildType({
                 source /opt/bashrc
                 set -eo pipefail
 
-                cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=flow2d3d -D CMAKE_BUILD_TYPE=%build_type% -B build_flow2d3d -D CMAKE_INSTALL_PREFIX=build_flow2d3d/install
+                cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=flow2d3d -D CMAKE_BUILD_TYPE=%build_type% -B build_flow2d3d -D CMAKE_INSTALL_PREFIX=build_flow2d3d/install -D CURL_ROOT=/usr/local -D CURL_INCLUDE_DIR=/usr/local/include -D CURL_LIBRARY=/usr/local/lib/libcurl.so
                 cmake --build build_flow2d3d --parallel --config %build_type%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
