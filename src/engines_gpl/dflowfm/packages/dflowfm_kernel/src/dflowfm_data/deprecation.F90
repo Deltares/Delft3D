@@ -238,13 +238,13 @@ contains
       end do
 
       if (num_deprecated > 0) then
-         call mess(LEVEL_WARN, prefix//': Deprecated keywords used:  '//trim(keyword_set%additional_information))
+         call mess(LEVEL_WARN, prefix//': Deprecated keywords used (see the lines above):  '//trim(keyword_set%additional_information))
       end if
 
       threshold_abort = temp_threshold !> restore threshold_abort
 
       if (num_obsolete > 0) then
-         call mess(LEVEL_ERROR, prefix//': Old unsupported keywords used: '//trim(keyword_set%additional_information))
+         call mess(LEVEL_ERROR, prefix//': Old unsupported keywords used (see the lines above): '//trim(keyword_set%additional_information))
          status = DFM_WRONGINPUT
       end if
 
