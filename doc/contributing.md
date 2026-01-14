@@ -6,15 +6,20 @@ If you are entirely new to contributing to open source, [this generic guide](htt
 
 ## Workflow
  - Create a fork of the Delft3D repository, or request write-access to our Delft3D repository via Delft3D support.
- - Create an issue in https://issuetracker.deltares.nl
-   For 3rd party developers: create a branch of type "research", or communicate with a Deltares contact person
+ - Create a JIRA issue ticket at https://issuetracker.deltares.nl describing the bug to be fixed or functionality to be developed.
+   The issue number is relevant for naming the development branch (see below).
+   Third party developers don't have access to the issue tracker; we recommend to communicate with a Deltares contact person.
  - Checkout/Clone the repository locally.
  - Create a branch using the naming convention below.
+   If no issue number is available, create a research branch starting with `research/`.
    The frequency of updating your branch from main is up to personal taste.
    Yet, merge from main as often as possible, and merge back to main as early as possible.
  - Make and test the modifications.
  - Provide a patch-file, or create a pull request:
-   - Our Continuous Integration pipelines will only be triggered if the pull request is created by a Deltares contact person. These pipelines consist of (Deltares-internal) TeamCity projects to build the source code (Windows and Linux) and subsequently a set of model simulation testbenches. Continuation is only possible when all checks succeed. This will take at least 30 minutes.
+   - Our Continuous Integration pipelines will only be triggered if the pull request is created by a Deltares contact person.
+     These pipelines consist of (Deltares-internal) TeamCity projects to build the source code (Windows and Linux) and subsequently a set of model simulation testbenches.
+     A merge is only possible when all checks succeed.
+     The projects will take at least 30 minutes to complete.
    - You have to assign the Pull request to a core developer for reviewing and testing. When succeeded, the tester/reviewer is allowed to merge into main.
  - Official binary deliveries are only allowed using Deltares TeamCity server
 
