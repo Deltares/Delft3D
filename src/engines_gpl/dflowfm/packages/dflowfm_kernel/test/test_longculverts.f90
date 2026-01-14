@@ -237,6 +237,7 @@ contains
         integer :: links(COORD_COUNT)
         integer :: i
 
+        npl = 0
         ! Arrange
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
@@ -278,6 +279,7 @@ contains
         use m_missing, only: dmiss
         use m_polygon, only: xpl, ypl, zpl, npl
         use m_longculverts, only: convert1D2DLongCulverts
+        use m_save_ugrid_state, only: meshgeom1d
         implicit none
 
         integer, parameter :: COORD_COUNT_LC1 = 4
@@ -289,6 +291,7 @@ contains
         integer :: links(ARRAY_SIZE)
         integer :: i
 
+        npl = 0
         ! Arrange
         ! 2 x 2 grid.
         call generate_square_grid( &
@@ -306,6 +309,10 @@ contains
         ypl = y_coords
         zpl = z_coords
         npl = ARRAY_SIZE
+
+        !> ensure meshgeom1d state is disregarded
+        meshgeom1d%numnode = -1 
+        meshgeom1d%nnodes = -1
 
         ! Act
         call convert1D2DLongCulverts(x_coords, y_coords, z_coords, ARRAY_SIZE, links)
