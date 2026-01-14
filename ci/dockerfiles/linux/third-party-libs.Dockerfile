@@ -472,7 +472,9 @@ cmake .. \
     -DSQLITE3_LIBRARY=/usr/local/lib/libsqlite3.so \
     -DEXE_SQLITE3=/usr/local/bin/sqlite3 \
     -DENABLE_TIFF=ON \
-    -DENABLE_CURL=OFF
+    -DENABLE_CURL=OFF \
+    -DBUILD_PROJSYNC=OFF \
+    -DBUILD_TESTING=OFF
 cmake --build . --config $BUILD_TYPE --parallel $(nproc)
 cmake --build . --target install
 popd
