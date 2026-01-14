@@ -59,7 +59,7 @@ contains
 
       qingrw = 0.0_dp
       qoutgrw = 0.0_dp
-      Volgrw = 0.0_dp    
+      Volgrw = 0.0_dp
 
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then ! Horton's infiltration equation
          call set_horton_infiltration_state(horton_infiltration_state)
