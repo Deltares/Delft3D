@@ -29,17 +29,10 @@
 
 !> Module for storing the optional hydrology state variables
 module m_hydrology_data
+   use m_horton, only: t_HortonInfiltrationConfig
    use precision, only: dp
 
    implicit none
-
-   type :: t_HortonInfiltrationConfig
-      real(kind=dp), allocatable :: minInfCap(:) !< [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-      real(kind=dp), allocatable :: maxInfCap(:) !< [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-      real(kind=dp), allocatable :: decreaseRate(:) !< [1/hr]  Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-      real(kind=dp), allocatable :: recoveryRate(:) !< [1/hr]  Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-   end type t_HortonInfiltrationConfig
-
    
    ! Constants
    integer, parameter :: DFM_HYD_NOINFILT = 0 !< No infiltration active.
@@ -76,7 +69,7 @@ module m_hydrology_data
    real(kind=dp) :: infiltcapuni !< [m s-1] Uniform infiltration capacity. Only used if infiltrationmodel == 2 (DFM_HYD_INFILT_CONST).
    real(kind=dp), allocatable, target :: infilt(:) !< [m3 s-1] Actual infiltration flux at current time {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: infiltcap0(:) !< [mm h-1] Maximum infiltration capacity on each cell at previous timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: infiltcap(:) !< [m s-1] Maximum infiltration capacity on each cell {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: infiltcap(:) !< [m s-1] Maximum infiltration capacit   y on each cell {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable :: infiltcaproofs(:) !< temporary of the same
 
    ! Horton-specific:

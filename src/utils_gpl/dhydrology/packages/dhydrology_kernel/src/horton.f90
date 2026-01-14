@@ -27,7 +27,6 @@
 
 module m_horton
 
-   use m_hydrology_data, only: t_HortonInfiltrationConfig
    use dhydrology_error
    use precision_basics
 
@@ -38,14 +37,21 @@ module m_horton
    public :: HORTON_CAPSTAT_NOCHANGE
    public :: HORTON_CAPSTAT_DECREASE
    public :: HORTON_CAPSTAT_RECOVERY
+   public :: t_HortonInfiltrationConfig
    public :: compute_horton_infiltration
-
 
    ! Horton infiltration capacity states
    integer, parameter :: HORTON_CAPSTAT_NOCHANGE = 0 !< No change in infiltration state
    integer, parameter :: HORTON_CAPSTAT_DECREASE = 1 !< Infiltration in decreasing mode
    integer, parameter :: HORTON_CAPSTAT_RECOVERY = 2 !< Infiltration in recovery/increasing mode
    
+   type :: t_HortonInfiltrationConfig
+      real(kind=dp), allocatable :: minInfCap(:) !< [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), allocatable :: maxInfCap(:) !< [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), allocatable :: decreaseRate(:) !< [1/hr]  Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), allocatable :: recoveryRate(:) !< [1/hr]  Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+   end type t_HortonInfiltrationConfig
+
    contains 
    
       !> Computes infiltration capacity as defined by Horton equations.
@@ -54,7 +60,7 @@ module m_horton
       !! Typical timestep used in application is 1 minute (i.e. much smaller than 1 hour),
       !! otherwise computation of infiltration volume (in mm) should be more refined
       !! (using integral of capacity function, depending on state recovery or decrease).
-   function compute_horton_infiltration(n, config, infiltration_capacity, timestep_size, initial_storage, rainfall, include_rain, &
+      function compute_horton_infiltration(n, config, infiltration_capacity, timestep_size, initial_storage, rainfall, include_rain, &
                                         infiltration_capacity_state, infiltration_mm) result(ierr)
          
          integer, intent(in) :: n !< Array length (grid cell count)
