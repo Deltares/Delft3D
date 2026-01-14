@@ -1,7 +1,7 @@
 subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
                     & ws        ,tsd       ,rsedeq    ,factsd    , &
-                    & sour_theta,sink_theta,source_factor,sink_factor,& 
-                    & sour_ex   ,sour_im   ,sink_ex   ,sink_im)
+                    & sink_theta,source_factor,sink_factor,& 
+                    & sour_ex   ,sink_ex   ,sink_im)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -56,12 +56,10 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
     real(fp), intent(in)  :: factsd
     real(fp)              :: tsd
     real(fp)              :: sink_theta
-    real(fp)              :: sour_theta
     real(fp)              :: sink_factor
     real(fp)              :: source_factor
     real(fp), intent(in)  :: rsedeq
     real(fp), intent(out) :: sour_ex
-    real(fp), intent(out) :: sour_im
     real(fp), intent(out) :: sink_ex
     real(fp), intent(out) :: sink_im
 !
@@ -115,16 +113,14 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
           ! tsd given by user transport formula
           !
        endif
-       hots = wsl/(tsd*factsd)  ! h over ts = hots
+       hots = wsl/(tsd*factsd)  ! (hots = h over ts)
        sour_ex = source_factor*rsedeq*hots/h0
-       sour_im = source_factor*(hots-wsl)/h1
        sink_ex = sink_factor*(1.0_fp - sink_theta)*wsl/h0  
        sink_im = sink_factor*sink_theta * wsl/h1  
     else
-       sour_ex = source_factor*(1.0_fp - sour_theta)*rsedeq*wsl/h0
-       sour_im = source_factor*sour_theta*rsedeq*wsl/h1
+       sour_ex = source_factor*rsedeq*wsl/h0
        sink_ex = sink_factor*(1.0_fp - sink_theta)*wsl/h0  
-       sink_im = sink_factor*sink_theta * wsl/h1  ! -(sink_theta * -wsl/h1) for opposite sign convention of wsl
+       sink_im = sink_factor*sink_theta * wsl/h1
     endif
 end subroutine soursin_2d
 

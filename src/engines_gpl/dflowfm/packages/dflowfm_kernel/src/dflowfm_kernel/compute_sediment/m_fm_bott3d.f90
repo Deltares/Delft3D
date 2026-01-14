@@ -1039,7 +1039,7 @@ contains
       use sediment_basics_module
       use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
       use m_flow, only: kmx, s1, vol1
-      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor !, stmpar
+      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
       use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
@@ -1696,7 +1696,6 @@ contains
                   constituents(itrac, k) = constituents(itrac, k) * ddp
                end do
             end if !ITRA1>0
-            end if !ddp/=1.0_dp
          end do !k
       else !kmx==0
          do ll = 1, stmpar%lsedsus ! works for sigma only

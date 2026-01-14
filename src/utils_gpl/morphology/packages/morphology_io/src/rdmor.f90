@@ -794,8 +794,6 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
     mornum%sink_theta=1.0_fp
     call prop_get(mor_ptr, 'Numerics', 'SinkTheta', mornum%sink_theta)
-    mornum%sour_theta=1.0_fp
-    call prop_get(mor_ptr, 'Numerics', 'SourTheta', mornum%sour_theta)
     mornum%suspended_flux_factor=1.0_fp
     call prop_get(mor_ptr, 'Numerics', 'SuspendedFluxFactor', mornum%suspended_flux_factor)
     mornum%sink_factor=1.0_fp

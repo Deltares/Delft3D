@@ -197,7 +197,6 @@ contains
       real(fp), dimension(max(kmx, 1)) :: thicklc
       real(fp), dimension(max(kmx, 1)) :: siglc
       real(fp) :: sink_theta      
-      real(fp) :: sour_theta      
       real(fp) :: sink_factor      
       real(fp) :: source_factor      
       real(fp) :: thick0
@@ -257,7 +256,6 @@ contains
          return
       end if
       sink_theta = stmpar%morpar%mornum%sink_theta
-      sour_theta = stmpar%morpar%mornum%sour_theta
       sink_factor = stmpar%morpar%mornum%sink_factor
       source_factor = stmpar%morpar%mornum%source_factor
       
@@ -1282,8 +1280,8 @@ contains
                   !
                   call soursin_2d(umod(nm), ustarc, h0, h1, &
                                 & ws(kb, l), tsd, trsedeq, factsd,    &
-                                & sour_theta, sink_theta, source_factor, sink_factor, &
-                                & sourse(nm, l), sour_im(nm, l), sinkse(nm, l), sink_im(nm, l))
+                                & sink_theta, source_factor, sink_factor, &
+                                & sourse(nm, l), sinkse(nm, l), sink_im(nm, l))
                end if ! suspfrac
             end if ! kmaxlc = 1
             if (suspfrac) then
