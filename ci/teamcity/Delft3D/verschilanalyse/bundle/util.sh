@@ -27,4 +27,5 @@ function util.check_vars_are_set {
         return 1
     fi
 }
+
 export -f util.check_vars_are_set

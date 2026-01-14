@@ -11,7 +11,7 @@
 set -eo pipefail
 
 if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX; then
-    >&2 echo "Abort"
+    >&2 echo "Abort!"
     exit 1
 fi
 
