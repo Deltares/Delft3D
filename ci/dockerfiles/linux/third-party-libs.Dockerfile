@@ -358,10 +358,6 @@ cmake .. \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DENABLE_PARALLEL4=ON \
     -DNETCDF_ENABLE_FILTER_SZIP=OFF \
-    -DZLIB_INCLUDE_DIR=/usr/local/include \
-    -DZLIB_LIBRARY=/usr/local/lib/libz.so \
-    -DSzip_INCLUDE_DIRS=/usr/local/include \
-    -DSzip_RELEASE_LIBRARY=/usr/local/lib/libsz.so \
     -DENABLE_DAP=OFF
 
 make --jobs=$(nproc)
