@@ -115,7 +115,7 @@ fi
 export CC=icx CXX=icpx CFLAGS="-O3" CXXFLAGS="-O3"
 
 pushd /var/cache/src/cmake-3.30.3
-./bootstrap --parallel=$(nproc)
+./bootstrap --parallel=$(nproc) -- -DCMAKE_USE_OPENSSL=OFF
 make --jobs=$(nproc)
 make install
 popd
