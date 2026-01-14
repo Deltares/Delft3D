@@ -48,6 +48,27 @@ do
 done
 EOF-compression-libs
 
+FROM base AS curl-custom
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=curl-${CACHE_ID_SUFFIX} <<"EOF-curl"
+set -eo pipefail
+source /opt/intel/oneapi/setvars.sh
+
+dnf install rpm-build -y
+dnf download --source curl
+rpm -ivh curl-*.src.rpm
+cd /root/rpmbuild/SOURCES
+tar xf curl-*.tar.xz
+rm -f curl-*.tar.xz
+cd curl-*
+./configure --without-ssl --without-libpsl --prefix=/usr/local
+make --jobs=$(nproc)
+make install
+EOF-curl
+
 FROM base AS uuid
 
 ARG DEBUG
@@ -332,10 +353,14 @@ ARG DEBUG
 ARG CACHE_ID_SUFFIX
 
 COPY --from=hdf5 --link /usr/local/ /usr/local/
+COPY --from=curl-custom --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-c-${CACHE_ID_SUFFIX} <<"EOF-netcdf-c"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
+
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 URL='https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.9.2.tar.gz'
 BASEDIR='netcdf-c-4.9.2'
@@ -369,6 +394,9 @@ RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-fortran-${CACHE_ID_SUFFI
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
 URL='https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz'
 BASEDIR='netcdf-fortran-4.6.1'
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
@@ -378,7 +406,6 @@ else
     wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export HDF5_PLUGIN_PATH=/usr/local/lib
 [[ $DEBUG = "0" ]] \
     && FLAGS="-O3 -DNDEBUG -mcmodel=large" \
@@ -403,10 +430,14 @@ ARG CACHE_ID_SUFFIX
 
 COPY --from=tiff --link /usr/local/ /usr/local/
 COPY --from=sqlite3 --link /usr/local/ /usr/local/
+COPY --from=curl-custom --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
+
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 URL='https://download.osgeo.org/proj/proj-9.2.0.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -507,7 +538,7 @@ source /opt/intel/oneapi/setvars.sh
 pushd "/var/cache/src/${BASEDIR}"
 
 export ESMF_DIR="/var/cache/src/${BASEDIR}"
-export ESMF_COMM=mpiuni # we do not need mpi per se
+export ESMF_COMM=mpiuni # we would like to use mpiuni, but some tests get different results
 export ESMF_COMPILER=intel
 export ESMF_C=icx
 export ESMF_CXX=icpx
@@ -585,3 +616,4 @@ COPY --from=gdal --link /usr/local/ /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
 COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=googletest --link /usr/local/ /usr/local/
+COPY --from=curl-custom --link /usr/local /usr/local/
