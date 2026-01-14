@@ -321,6 +321,7 @@ RUN --mount=type=cache,target=/var/cache/src/,id=hdf5-${CACHE_ID_SUFFIX} <<"EOF-
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 dnf install -y curl
+
 URL='https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_2.tar.gz'
 BASEDIR='hdf5-hdf5-1_14_2'
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
@@ -441,6 +442,7 @@ COPY --from=curl-custom --link /usr/local/ /usr/local/
 RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
+dnf install -y curl
 
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
@@ -469,7 +471,8 @@ cmake .. \
     -DSQLITE3_INCLUDE_DIR=/usr/local/include \
     -DSQLITE3_LIBRARY=/usr/local/lib/libsqlite3.so \
     -DEXE_SQLITE3=/usr/local/bin/sqlite3 \
-    -DENABLE_TIFF=ON
+    -DENABLE_TIFF=ON \
+    -DENABLE_CURL=OFF
 cmake --build . --config $BUILD_TYPE --parallel $(nproc)
 cmake --build . --target install
 popd
