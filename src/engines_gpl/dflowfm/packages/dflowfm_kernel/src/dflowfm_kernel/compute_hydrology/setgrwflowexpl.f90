@@ -51,19 +51,18 @@ contains
 
 !> groundwater flow explicit
    subroutine setgrwflowexpl()
-      type(t_HortonInfiltrationState), pointer :: horton_infiltration_state
+      type(t_HortonInfiltrationState), target :: horton_infiltration_state
       integer :: k1, k2, L, k
       integer :: ierr
       real(kind=dp) :: z1, z2, h1, h2, dh, dQ, hunsat, hunsat1, hunsat2, fac, qgrw, h2Q
       real(kind=dp) :: fc, conduct, h_upw, Qmx
-
-      call set_horton_infiltration_state(horton_infiltration_state)
 
       qingrw = 0.0_dp
       qoutgrw = 0.0_dp
       Volgrw = 0.0_dp    
 
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then ! Horton's infiltration equation
+         call set_horton_infiltration_state(horton_infiltration_state)
          ierr = compute_horton_infiltration(horton_infiltration_config, horton_infiltration_state)
       end if
 
@@ -163,7 +162,7 @@ contains
    end subroutine setgrwflowexpl
 
    subroutine set_horton_infiltration_state(state)
-      type(t_HortonInfiltrationState), pointer, intent(out) :: state
+      type(t_HortonInfiltrationState), target, intent(out) :: state
 
       state%n => ndx
       state%include_rain => jarain

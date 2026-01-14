@@ -54,13 +54,13 @@ module m_horton
    end type t_HortonInfiltrationConfig
 
    type :: t_HortonInfiltrationState
-      integer, pointer :: n !< Number of grid cells
-      integer, pointer :: include_rain !< Indicates whether or not (1/0) rainfall array is available
-      real(kind=dp), pointer :: timestep !< [s] Timestep size
-      real(kind=dp), dimension(:), pointer :: inf_cap !< [m/s] Infiltration capacity
-      real(kind=dp), dimension(:), pointer :: waterlevel !< [m] Waterlevel in current timestep
-      real(kind=dp), dimension(:), pointer :: rainfall !< [mm/day] Rainfall in current timestep
-      integer, dimension(:), pointer :: inf_cap_state !< Infiltration capacity state; (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE))
+      integer, pointer :: n => null() !< Number of grid cells
+      integer, pointer :: include_rain => null() !< Indicates whether or not (1/0) rainfall array is available
+      real(kind=dp), pointer :: timestep => null() !< [s] Timestep size
+      real(kind=dp), dimension(:), pointer :: inf_cap => null() !< [m/s] Infiltration capacity
+      real(kind=dp), dimension(:), pointer :: waterlevel => null() !< [m] Waterlevel in current timestep
+      real(kind=dp), dimension(:), pointer :: rainfall => null() !< [mm/day] Rainfall in current timestep
+      integer, dimension(:), pointer :: inf_cap_state => null() !< Infiltration capacity state; (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE))
    end type t_HortonInfiltrationState
 
    contains
@@ -74,14 +74,15 @@ module m_horton
       function compute_horton_infiltration(config, state, infiltration_mm) result(ierr)
 
          type(t_HortonInfiltrationConfig), intent(in) :: config !< Horton infiltration configuration containing min/max infiltration capacity and decrease/recovery rates
-         type(t_HortonInfiltrationState), pointer, intent(inout) :: state !< Horton infiltration state containing current infiltration capacity and state
+         type(t_HortonInfiltrationState), pointer, intent(in) :: state !< Horton infiltration state containing current infiltration capacity and state
          real(kind=dp), optional, intent(out) :: infiltration_mm(:) !< Infiltration amount (mm)
          integer :: ierr !< Result status, DHYD_NOERR if successful.
          
          ! local
          real(kind=dp), parameter :: SECOND_TO_HOUR = 1.0_dp / 3600.0_dp !< Number of seconds per hour
+         real(kind=dp), parameter :: METER_TO_MILLIMETER = 1000.0_dp !< Conversion factor from meter to millimeter
          integer, parameter :: DAY_TO_HOUR = 24 !< Number of hours per day
-         real(kind=dp), parameter :: MPS_TO_MMPHR = 3.6_dp !< Conversion factor from m/s to mm/hr
+         real(kind=dp), parameter :: MPS_TO_MMPHR = METER_TO_MILLIMETER / SECOND_TO_HOUR !< Conversion factor from m/s to mm/hr
          real(kind=dp) :: timestep !< Timestep size in hours
          real(kind=dp), dimension(:), allocatable :: inf_cap !< [mm/hr] Infiltration capacity
          real(kind=dp), dimension(:), allocatable :: rainfall !< [mm/hr] Rainfall 
@@ -122,7 +123,7 @@ module m_horton
          state%inf_cap = inf_cap ! Update infiltration capacity in state
 
          if (present(infiltration_mm)) then
-            infiltration_mm = inf_cap * state%timestep * 1e-3_dp ! m/s * s -> m -> mm
+            infiltration_mm = state%inf_cap * state%timestep * METER_TO_MILLIMETER ! m/s * s -> m -> mm
          end if
 
       end function compute_horton_infiltration
