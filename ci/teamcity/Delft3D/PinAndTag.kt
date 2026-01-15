@@ -16,6 +16,12 @@ object PinAndTag : BuildType({
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 
+    features {
+        approval {
+            approvalRules = "group:DIMR_BAKKERS:1"
+        }
+    }
+
     val branchFilters = """
         +:<default>
         +:main
