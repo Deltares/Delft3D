@@ -16,4 +16,3 @@ class HandlerType(Enum):
     NET = 4
     PATH = 5
     MINIO = 6
-    DVC = 7

@@ -37,9 +37,7 @@ class ResolveHandler(ABC):
         """
         logger.debug(f"detecting handler for {path}")
 
-        if path.endswith(".dvc"):
-            return HandlerType.DVC
-        elif re.search(
+        if re.search(
             r"^\\(\\)?[A-Za-z0-9]+|^\/\/[A-Za-z0-9]+", path
         ):  # assume network path starts with either [//] or [\\]
             return HandlerType.NET
