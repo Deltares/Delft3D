@@ -72,7 +72,11 @@ object LinuxBuild2D3DSP : BuildType({
                 #!/usr/bin/env bash
                 source /opt/bashrc
                 set -eo pipefail
-
+                export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${'$'}PKG_CONFIG_PATH
+                export LD_LIBRARY_PATH=/usr/local/lib:${'$'}LD_LIBRARY_PATH
+                export CMAKE_PREFIX_PATH=/usr/local:${'$'}CMAKE_PREFIX_PATH
+                export CMAKE_INCLUDE_PATH=/usr/local/include:${'$'}CMAKE_INCLUDE_PATH
+                export CMAKE_LIBRARY_PATH=/usr/local/lib:${'$'}CMAKE_LIBRARY_PATH
                 cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=flow2d3d -D CMAKE_BUILD_TYPE=%build_type% -B build_flow2d3d -D CMAKE_INSTALL_PREFIX=build_flow2d3d/install
                 cmake --build build_flow2d3d --parallel --config %build_type%
             """.trimIndent()

@@ -168,7 +168,7 @@ class Program:
             return
         file_logger: Optional[FileLogger] = None
 
-        if self.__settings.run_mode == ModeType.REFERENCE:
+        if self.__settings.command_line_settings.run_mode == ModeType.REFERENCE:
             time_str = datetime.now().strftime("%y%m%d_%H%M%S")
             unique_name = f"{self.__program_config.name}={time_str}.log"
             log_file = os.path.abspath(os.path.join(str(self.__program_config.working_directory), unique_name))
@@ -179,7 +179,7 @@ class Program:
             )
 
         logger.debug(f"Program output will be written to: {log_file}")
-        file_logger = FileLogger(self.__settings.log_level, unique_name, log_file)
+        file_logger = FileLogger(self.__settings.command_line_settings.log_level, unique_name, log_file)
         for line in completed_process.stdout.splitlines():
             file_logger.debug(line.decode())
 
@@ -202,7 +202,7 @@ class Program:
         )
 
         program_env = self.__program_config.environment
-        tb_root = self.__settings.test_bench_root
+        tb_root = self.__settings.command_line_settings.test_bench_root
 
         if tb_root is not None:
             program_env["TestBenchRoot"] = tb_root

@@ -1,6 +1,8 @@
 import glob
 import os
 import pathlib as pl
+from datetime import datetime, timezone
+from typing import List
 from unittest.mock import MagicMock, call
 
 import pytest
@@ -26,8 +28,10 @@ class TestComparisonRunner:
         # Arrange
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths()
-        settings.skip_run = True
-        config = TestComparisonRunner.create_test_case_config("Name_1", False)
+        settings.command_line_settings.skip_run = True
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        config = TestComparisonRunner.create_test_case_config("Name_1", locations=[ref_location, case_location])
         config.path = TestCasePath("abc/prefix", "v1")
         settings.configs_to_run = [config]
         logger = MagicMock(spec=ConsoleLogger)
@@ -41,48 +45,58 @@ class TestComparisonRunner:
         runner.run_tests_sequentially()
 
         # Assert
-        path = Paths().rebuildToLocalPath(Paths().mergeFullPath("references", "Name_1", "Name_1"))
-        expected_log_message = f"Downloading reference result, {path} from https://deltares.nl/Name_1/abc/prefix"
-        assert call(expected_log_message) in testcase_logger.debug.call_args_list
+        ref_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("references", "win64", "Name_1"))
+        case_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("cases", "win64", "Name_1"))
+        expected_log_message1 = f"Downloading reference result, {ref_path} from https://deltares.nl/win64/abc/prefix"
+        expected_log_message2 = f"Downloading input of case, {case_path} from https://deltares.nl/win64/abc/prefix"
+        assert call(expected_log_message1) in testcase_logger.debug.call_args_list
+        assert call(expected_log_message2) in testcase_logger.debug.call_args_list
         assert download_mock.call_count == 2  # Downloads case AND reference data.
 
     def test_log_and_skip_with_argument_skip_run(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths()
-        settings.skip_run = True
-        config = TestComparisonRunner.create_test_case_config("Name_1", False, PathType.INPUT)
-        config.path = TestCasePath("abc/prefix", "v1")
+        settings.command_line_settings.skip_run = True
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        config = TestComparisonRunner.create_test_case_config("Name_1", locations=[ref_location, case_location])
+        config.path = TestCasePath("abc/prefix", "vl")
         settings.configs_to_run = [config]
         logger = MagicMock(spec=ConsoleLogger)
         testcase_logger = MagicMock()
         logger.create_test_case_logger.return_value = testcase_logger
         prepare_mock = mocker.patch("src.suite.test_set_runner.TestSetRunner._TestSetRunner__prepare_test_case")
         run_mock = mocker.patch("src.suite.test_case.TestCase.run")
-
         runner = ComparisonRunner(settings, logger)
 
         # Act
         runner.run_tests_sequentially()
 
+        # Assert
         expected_log_message = "Skipping execution of testcase (postprocess only)...\n"
         assert call(expected_log_message) in testcase_logger.info.call_args_list
         prepare_mock.assert_called()
         run_mock.assert_not_called()
 
-    def test_skip_download_for_parameter_no_download(self, mocker: MockerFixture) -> None:
+    def test_prepare_case_uses_minio(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths()
-        settings.skip_download = [PathType.INPUT]
-        config = TestComparisonRunner.create_test_case_config("Name_1", False, PathType.INPUT)
-        config.path = TestCasePath("abc/prefix", "v1")
+        settings.command_line_settings.skip_run = True
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        now = datetime.now(timezone.utc).replace(second=0, microsecond=0)
+        version = now.isoformat().split("+", 1)[0]
+        testcase_path = TestCasePath(prefix="abc/prefix", version=version)
+        config = TestComparisonRunner.create_test_case_config(
+            name="testname", testcase_path=testcase_path, locations=[ref_location, case_location]
+        )
         settings.configs_to_run = [config]
         logger = MagicMock(spec=ConsoleLogger)
         testcase_logger = MagicMock()
         logger.create_test_case_logger.return_value = testcase_logger
         download_mock = mocker.patch("src.suite.test_set_runner.HandlerFactory.download")
-        run_mock = mocker.patch("src.suite.test_case.TestCase.run")
 
         runner = ComparisonRunner(settings, logger)
 
@@ -90,10 +104,51 @@ class TestComparisonRunner:
         runner.run_tests_sequentially()
 
         # Assert
-        expected_log_message = "Skipping input of case download (skip download argument)"
-        assert call(expected_log_message) in testcase_logger.info.call_args_list
-        download_mock.assert_not_called()
-        run_mock.assert_called()
+        ref_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("references", "win64", "testname"))
+        case_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("cases", "win64", "testname"))
+        expected_log_message1 = f"Downloading reference result, {ref_path} from https://deltares.nl/win64/abc/prefix"
+        expected_log_message2 = f"Downloading input of case, {case_path} from https://deltares.nl/win64/abc/prefix"
+        assert call(expected_log_message1) in testcase_logger.debug.call_args_list
+        assert call(expected_log_message2) in testcase_logger.debug.call_args_list
+        assert download_mock.call_count == 2  # Downloads case AND reference data.
+
+    def test_prepare_case_uses_dvc(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+        settings.command_line_settings.skip_run = True
+
+        testcase_path = TestCasePath(prefix="abc/prefix", version="DVC")
+
+        ref_location = TestComparisonRunner.create_location(
+            name="reference", root="data/cases/", location_type=PathType.REFERENCE
+        )
+        case_location = TestComparisonRunner.create_location(
+            name="case", root="data/cases/", location_type=PathType.INPUT
+        )
+        config = TestComparisonRunner.create_test_case_config(
+            name="testname", testcase_path=testcase_path, locations=[ref_location, case_location]
+        )
+        config.path = TestCasePath("abc/prefix", "DVC")
+        settings.configs_to_run = [config]
+        logger = MagicMock(spec=ConsoleLogger)
+        testcase_logger = MagicMock()
+        logger.create_test_case_logger.return_value = testcase_logger
+        download_mock = mocker.patch("src.suite.test_set_runner.HandlerFactory.download")
+
+        runner = ComparisonRunner(settings, logger)
+
+        # Act
+        runner.run_tests_sequentially()
+
+        # Assert
+        remote_ref_path = os.path.abspath("data/cases/abc/prefix/reference_win64.dvc")
+        remote_case_path = os.path.abspath("data/cases/abc/prefix/input.dvc")
+        expected_log_message1 = f"Downloading reference result, from DVC file at {remote_ref_path}"
+        expected_log_message2 = f"Downloading input of case, from DVC file at {remote_case_path}"
+        assert call(expected_log_message1) in testcase_logger.debug.call_args_list
+        assert call(expected_log_message2) in testcase_logger.debug.call_args_list
+        assert download_mock.call_count == 2
 
     def test_run_tests_in_parallel_with_empty_settings_raises_value_error(self) -> None:
         # Arrange
@@ -114,8 +169,12 @@ class TestComparisonRunner:
         TestComparisonRunner.clean_empty_logs(log_file_1)
         TestComparisonRunner.clean_empty_logs(log_file_2)
         settings = TestBenchSettings()
-        config1 = TestComparisonRunner.create_test_case_config("Name_1", True)
-        config2 = TestComparisonRunner.create_test_case_config("Name_2", False)
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        config1 = TestComparisonRunner.create_test_case_config(
+            "Name_1", ignore_testcase=True, locations=[ref_location, case_location]
+        )
+        config2 = TestComparisonRunner.create_test_case_config("Name_2", locations=[ref_location, case_location])
         settings.configs_to_run = [config1, config2]
         logger = ConsoleLogger(LogLevel.INFO)
         runner = ComparisonRunner(settings, logger)
@@ -130,10 +189,9 @@ class TestComparisonRunner:
     def test_run_without_test_cases_logs_no_results(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()
-        settings.config_file = "some.xml"
+        settings.command_line_settings.config_file = "some.xml"
         settings.local_paths = LocalPaths()
-        settings.parallel = False
-        # settings.filter = "testcase=e02_f102_c02e_1d-precipitation123"
+        settings.command_line_settings.parallel = False
         logger = MagicMock(spec=ConsoleLogger)
 
         runner = ComparisonRunner(settings, logger)
@@ -144,7 +202,9 @@ class TestComparisonRunner:
 
         # Assert
         assert (
-            call(f"There are no test cases in '{settings.config_file}' with applied filter '{settings.filter}'.")
+            call(
+                f"There are no test cases in '{settings.command_line_settings.config_file}' with applied filter '{settings.command_line_settings.filter}'."
+            )
             in logger.error.call_args_list
         )
 
@@ -153,49 +213,72 @@ class TestComparisonRunner:
     ) -> None:
         # Arrange
         settings = TestBenchSettings()
-        config1 = TestComparisonRunner.create_test_case_config("Banana_1", True)
-        config2 = TestComparisonRunner.create_test_case_config("Banana_2", False)
-        settings.config_file = "some.xml"
-        settings.configs_from_xml = [config1, config2]
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        config1 = TestComparisonRunner.create_test_case_config(
+            "Banana_1", ignore_testcase=True, locations=[ref_location, case_location]
+        )
+        config2 = TestComparisonRunner.create_test_case_config("Banana_2", locations=[ref_location, case_location])
+        settings.command_line_settings.config_file = "some.xml"
+        xml_configs = [config1, config2]
         settings.local_paths = LocalPaths()
-        settings.parallel = False
-        settings.filter = "testcase=Apple"
+        settings.command_line_settings.parallel = False
+        settings.command_line_settings.filter = "testcase=Apple"
         logger = MagicMock(spec=ConsoleLogger)
 
         runner = ComparisonRunner(settings, logger)
 
         # Act
-        if settings.filter != "":
-            settings.configs_to_run = XmlConfigParser.filter_configs(settings.configs_from_xml, settings.filter, logger)
+        settings.configs_to_run = XmlConfigParser.filter_configs(
+            xml_configs, settings.command_line_settings.filter, logger
+        )
 
         with pytest.raises(ValueError):
             runner.run()
 
         # Assert
         assert (
-            call(f"There are no test cases in '{settings.config_file}' with applied filter '{settings.filter}'.")
+            call(
+                f"There are no test cases in '{settings.command_line_settings.config_file}' with applied filter '{settings.command_line_settings.filter}'."
+            )
             in logger.error.call_args_list
         )
 
     @staticmethod
-    def create_test_case_config(name: str, ignore: bool, type=PathType.REFERENCE) -> TestCaseConfig:
+    def create_test_case_config(
+        name: str,
+        ignore_testcase: bool = False,
+        locations: List[Location] | None = None,
+        testcase_path: TestCasePath | None = None,
+    ) -> TestCaseConfig:
         config = TestCaseConfig()
         config.name = name
-        config.ignore = ignore
+        config.ignore = ignore_testcase
 
-        location1 = TestComparisonRunner.create_location(name, type)
-        location2 = TestComparisonRunner.create_location(name, type)
+        if testcase_path is None:
+            config.path = TestCasePath("", "")
+        else:
+            config.path = testcase_path
 
-        config.locations = [location1, location2]
+        if locations is None:
+            locations = []
+        else:
+            config.locations = locations
+
         return config
 
     @staticmethod
-    def create_location(name: str, type: PathType) -> Location:
-        location1 = Location()
-        location1.root = "https://deltares.nl/"
-        location1.from_path = name.replace(" ", "")
-        location1.type = type
-        return location1
+    def create_location(
+        name: str,
+        location_type: PathType = PathType.INPUT,
+        root: str = "https://deltares.nl/",
+        from_path: str | None = None,
+    ) -> Location:
+        location = Location()
+        location.root = root
+        location.from_path = "win64"
+        location.type = location_type
+        return location
 
     @staticmethod
     def clean_empty_logs(filenames: str) -> None:
