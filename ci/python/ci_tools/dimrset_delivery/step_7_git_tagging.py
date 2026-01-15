@@ -75,9 +75,7 @@ class GitTagger(StepExecutorInterface):
 
         if self.__dry_run:
             self.__context.log(
-                f"Would tag commit "
-                f"{self.__kernel_versions['build.vcs.number']} "
-                f"as DIMRset_{self.__dimr_version}"
+                f"Would tag commit {self.__kernel_versions['build.vcs.number']} as DIMRset_{self.__dimr_version}"
             )
             return True
 
@@ -88,6 +86,7 @@ class GitTagger(StepExecutorInterface):
         except Exception as e:
             self.__context.log(f"Error during tagging: {e}", severity=LogLevel.ERROR)
             return False
+
 
 if __name__ == "__main__":
     try:

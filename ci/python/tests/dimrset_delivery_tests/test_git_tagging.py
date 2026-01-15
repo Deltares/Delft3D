@@ -29,7 +29,7 @@ class TestGitTagging:
         self.mock_services.git = Mock(spec=GitClient)
         self.mock_services.teamcity = Mock(spec=TeamCity)
 
-    def test_git_tagging_success(self):
+    def test_git_tagging_success(self) -> None:
         step = GitTagger(self.mock_context, self.mock_services)
         result = step.execute_step()
 
@@ -60,9 +60,7 @@ class TestGitTagging:
 
         # Assert
         assert result is False
-        self.mock_context.log.assert_any_call(
-            "Error during tagging: Git error", severity=LogLevel.ERROR
-        )
+        self.mock_context.log.assert_any_call("Error during tagging: Git error", severity=LogLevel.ERROR)
 
     def test_git_tagging_dry_run_git_client_required(self) -> None:
         """Test that dry run without git client."""
