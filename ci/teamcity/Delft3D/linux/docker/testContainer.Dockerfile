@@ -19,7 +19,7 @@ RUN set -eo pipefail && \
     dnf install --assumeyes python3 expect && \
     dnf clean all && \
     rm --recursive --force /var/cache/dnf && \
-    update-crypto-policies --set FIPS
+    command -v update-crypto-policies >/dev/null && update-crypto-policies --set FIPS || true
 
 # Install pip
 RUN set -eo pipefail && \
