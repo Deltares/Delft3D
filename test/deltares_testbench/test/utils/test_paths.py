@@ -1,17 +1,42 @@
 from src.utils.paths import Paths
 
+import pytest
 
-def test_merge_full_path_skips_none_segments() -> None:
+@pytest.mark.parametrize(
+    ("left", "right", "expected"),
+    [
+        pytest.param(None, "fruit", "fruit", id="none-left"),
+        pytest.param("", "fruit", "fruit", id="empty-left"),
+        pytest.param("/etc/path", "child", "/etc/path/child", id="linux-path"),
+        pytest.param(r"C:\user\documents", "child", r"C:\user\documents\child", id="windows-path"),
+    ],
+)
+def test_merge_path_elements(left, right, expected) -> None:
+    # Arrange
     paths = Paths()
 
-    result = paths.mergeFullPath(None, "suite", "case")
+    # Act
+    result = paths.mergePathElements(left, right)
 
-    assert result == "suite/case"
+    # Assert
+    assert result == expected
 
 
-def test_merge_path_elements_handles_none_left() -> None:
+@pytest.mark.parametrize(
+    ("left", "segments", "expected"),
+    [
+        pytest.param(None, ("fruit", "apple"), "fruit/apple", id="no-base"),
+        pytest.param("", ("fruit", "apple"), "fruit/apple", id="empty-base"),
+        pytest.param("/etc", ("sub1","sub2"), "/etc/sub1/sub2", id="linux-base"),
+        pytest.param(r"C:\user", ("documents",), r"C:\user\documents", id="windows-base"),
+    ],
+)
+def test_merge_full_path(left, segments, expected) -> None:
+    # Arrange
     paths = Paths()
+    
+    # Act
+    result = paths.mergeFullPath(left, *segments)
 
-    result = paths.mergePathElements(None, "suite")
-
-    assert result == "suite"
+    # Assert
+    assert result == expected
