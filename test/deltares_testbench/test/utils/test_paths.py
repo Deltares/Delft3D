@@ -2,6 +2,7 @@ import pytest
 
 from src.utils.paths import Paths
 
+
 @pytest.mark.parametrize(
     ("left", "right", "expected"),
     [
@@ -11,7 +12,7 @@ from src.utils.paths import Paths
         pytest.param(r"C:\user\documents", "child", r"C:\user\documents\child", id="windows-path"),
     ],
 )
-def test_merge_path_elements(left, right, expected) -> None:
+def test_merge_path_elements(left: str | None, right: str, expected: str) -> None:
     # Arrange
     paths = Paths()
 
@@ -31,7 +32,7 @@ def test_merge_path_elements(left, right, expected) -> None:
         pytest.param(r"C:\user", ("documents",), r"C:\user\documents", id="windows-base"),
     ],
 )
-def test_merge_full_path(left, segments, expected) -> None:
+def test_merge_full_path(left: str | None, segments: tuple[str, ...], expected: str) -> None:
     # Arrange
     paths = Paths()
 
