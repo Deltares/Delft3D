@@ -47,7 +47,7 @@ class TestEmailHelper:
         }.get(key)
 
         with patch(
-            "ci_tools.dimrset_delivery.step_5_prepare_email.get_testbank_result_parser", return_value=mock_parser
+            "ci_tools.dimrset_delivery.step_4_prepare_email.get_testbank_result_parser", return_value=mock_parser
         ):
             return EmailHelper(mock_context, mock_services)  # type: ignore
 
@@ -87,14 +87,14 @@ class TestEmailHelper:
         content = out_files[0].read_text()
         assert "Hello" in content
 
-    @patch("ci_tools.dimrset_delivery.step_5_prepare_email.KERNELS", [])
+    @patch("ci_tools.dimrset_delivery.step_4_prepare_email.KERNELS", [])
     def test_get_email_friendly_kernel_name_empty_kernels(self) -> None:
         """Test kernel name mapping with empty KERNELS list."""
         helper = self.make_helper()
         result = helper._EmailHelper__get_email_friendly_kernel_name("unknown_kernel")  # type: ignore
         assert result == ""
 
-    @patch("ci_tools.dimrset_delivery.step_5_prepare_email.KERNELS")
+    @patch("ci_tools.dimrset_delivery.step_4_prepare_email.KERNELS")
     def test_get_email_friendly_kernel_name_found(self, mock_kernels: Mock) -> None:
         """Test kernel name mapping when kernel is found."""
         # Mock kernel config object
@@ -107,7 +107,7 @@ class TestEmailHelper:
         result = helper._EmailHelper__get_email_friendly_kernel_name("kernel_internal")  # type: ignore
         assert result == "Kernel Display Name"
 
-    @patch("ci_tools.dimrset_delivery.step_5_prepare_email.KERNELS")
+    @patch("ci_tools.dimrset_delivery.step_4_prepare_email.KERNELS")
     def test_get_email_friendly_kernel_name_not_found(self, mock_kernels: Mock) -> None:
         """Test kernel name mapping when kernel is not found."""
         # Mock kernel config object that doesn't match
@@ -169,7 +169,7 @@ class TestEmailHelper:
         }.get(key)
 
         with patch(
-            "ci_tools.dimrset_delivery.step_5_prepare_email.get_previous_testbank_result_parser",
+            "ci_tools.dimrset_delivery.step_4_prepare_email.get_previous_testbank_result_parser",
             return_value=mock_prev_parser,
         ):
             helper = self.make_helper(
@@ -251,8 +251,8 @@ class TestParseVersion:
 class TestIntegration:
     """Integration tests for prepare_email functionality."""
 
-    # @patch("ci_tools.dimrset_delivery.step_5_prepare_email.EmailHelper")
-    @patch("ci_tools.dimrset_delivery.step_5_prepare_email.get_testbank_result_parser")
+    # @patch("ci_tools.dimrset_delivery.step_4_prepare_email.EmailHelper")
+    @patch("ci_tools.dimrset_delivery.step_4_prepare_email.get_testbank_result_parser")
     def test_prepare_email_with_no_previous_parser(self, mock_get_parser: Mock) -> None:
         """Test email preparation when no previous parser is available."""
         # Arrange
