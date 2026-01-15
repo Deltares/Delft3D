@@ -61,7 +61,7 @@ object PinAndTag : BuildType({
         python {
             name = "Tag DIMRset release in Git"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_7_git_tagging.py"
+                module = "ci_tools.dimrset_delivery.step_7_git_tagging"
                 scriptArguments = """ 
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
