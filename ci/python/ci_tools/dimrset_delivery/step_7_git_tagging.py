@@ -48,7 +48,7 @@ class GitTagger(StepExecutorInterface):
 
     def execute_step(self) -> bool:
         """
-        Execute the step to tag builds in Git.
+        Execute the step to tag the DIMRset release in Git.
 
         This method logs the process, checks for required clients, and performs the tagging
         operation. In dry-run mode, it logs intended actions without making changes.
