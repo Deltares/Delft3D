@@ -10,28 +10,20 @@ object PinAndTag : BuildType({
         TemplateMonitorPerformance
     )
 
-    name = "Pin and Tag container build"
+    name = "Pin and tag"
+    description = "Pin and tag all the builds in the chain."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 
+    val branchFilters = """
+        +:<default>
+        +:main
+        +:all/release/*
+    """.trimIndent()
+
     vcs {
         root(DslContext.settingsRoot)
-        branchFilter = """
-            +:<default>
-            +:main
-            +:all/release/*
-        """.trimIndent()
-    }
-    
-    if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
-        dependencies {
-            dependency(Publish) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-            }
-        }
+        branchFilter = branchFilters
     }
 
     requirements {
@@ -40,11 +32,6 @@ object PinAndTag : BuildType({
     }
 
     params {
-        text("release_version", "2.29.xx",
-            label = "Release version",
-            description = "e.g. '2.29.03' or '2025.02'",
-            display = ParameterDisplay.PROMPT)
-        param("DIMRset_ver", "%release_version%")
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", DslContext.getParameter("dimrbakker_password"))
         password("dimrbakker_personal_access_token", DslContext.getParameter("dimrbakker_personal_access_token"))
@@ -53,9 +40,27 @@ object PinAndTag : BuildType({
 
     steps {
         python {
-            name = "Pin and tag builds"
+            name = "Pin and tag TeamCity builds"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_2_pin_and_tag_builds"
+                module = "ci_tools.dimrset_delivery.step_6_pin_and_tag_builds"
+                scriptArguments = """ 
+                    --build_id "%teamcity.build.id%"
+                    --teamcity-username "%dimrbakker_username%"
+                    --teamcity-password "%dimrbakker_password%"
+                    %dry_run%
+                """.trimIndent()
+            }
+            workingDir = "ci/python"
+            environment = venv {
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
+            }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+        }
+        python {
+            name = "Tag DIMRset release in Git"
+            command = module {
+                module = "ci_tools.dimrset_delivery.step_7_git_tagging.py"
                 scriptArguments = """ 
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -73,4 +78,14 @@ object PinAndTag : BuildType({
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
     }
+
+    if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
+        triggers {
+            finishBuildTrigger {
+                buildType = "Delft3D_Publish"
+                successfulOnly = true
+                branchFilter = branchFilters
+            }
+        }
+    }   
 })

@@ -7,7 +7,7 @@ from ci_tools.dimrset_delivery.common_utils import ResultTestBankParser, Summary
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
-from ci_tools.dimrset_delivery.step_5_prepare_email import EmailHelper
+from ci_tools.dimrset_delivery.step_4_prepare_email import EmailHelper
 
 
 class TestEmailHelper:

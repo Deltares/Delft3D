@@ -8,7 +8,7 @@ from ci_tools.dimrset_delivery.lib.ssh_client import Direction, SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
-from ci_tools.dimrset_delivery.step_4_update_excel_sheet import ExcelHelper
+from ci_tools.dimrset_delivery.step_3_update_excel_sheet import ExcelHelper
 from ci_tools.example_utils.logger import LogLevel
 
 
