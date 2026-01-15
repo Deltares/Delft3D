@@ -80,7 +80,7 @@ class GitTagger(StepExecutorInterface):
             return True
 
         try:
-            self.__git_client.tag_commit(f"DIMRset_{self.__dimr_version}")
+            self.__git_client.tag_commit(self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}")
             self.__context.log("Tagging completed successfully!")
             return True
         except Exception as e:
