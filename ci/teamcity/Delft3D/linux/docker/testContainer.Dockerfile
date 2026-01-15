@@ -18,7 +18,7 @@ RUN set -eo pipefail && \
     (dnf install --assumeyes python3.11 expect && ln -sf /usr/bin/python3.11 /usr/bin/python3) || \
     dnf install --assumeyes python3 expect && \
     dnf clean all && \
-    rm --recursive --force /var/cache/dnf \
+    rm --recursive --force /var/cache/dnf && \
     update-crypto-policies --set FIPS
 
 # Install pip
