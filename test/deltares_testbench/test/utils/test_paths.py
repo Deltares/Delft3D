@@ -1,6 +1,6 @@
-from src.utils.paths import Paths
-
 import pytest
+
+from src.utils.paths import Paths
 
 @pytest.mark.parametrize(
     ("left", "right", "expected"),
@@ -27,14 +27,14 @@ def test_merge_path_elements(left, right, expected) -> None:
     [
         pytest.param(None, ("fruit", "apple"), "fruit/apple", id="no-base"),
         pytest.param("", ("fruit", "apple"), "fruit/apple", id="empty-base"),
-        pytest.param("/etc", ("sub1","sub2"), "/etc/sub1/sub2", id="linux-base"),
+        pytest.param("/etc", ("sub1", "sub2"), "/etc/sub1/sub2", id="linux-base"),
         pytest.param(r"C:\user", ("documents",), r"C:\user\documents", id="windows-base"),
     ],
 )
 def test_merge_full_path(left, segments, expected) -> None:
     # Arrange
     paths = Paths()
-    
+
     # Act
     result = paths.mergeFullPath(left, *segments)
 
