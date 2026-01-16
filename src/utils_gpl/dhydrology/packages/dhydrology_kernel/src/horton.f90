@@ -71,11 +71,17 @@ module m_horton
       !! Typical timestep used in application is 1 minute (i.e. much smaller than 1 hour),
       !! otherwise computation of infiltration volume (in mm) should be more refined
       !! (using integral of capacity function, depending on state recovery or decrease).
-      function compute_horton_infiltration(config, state, infiltration_mm) result(ierr)
+      function compute_horton_infiltration(config, n, include_rain, timestep, inf_cap, waterlevel, rainfall, inf_cap_state, infiltration_mm) result(ierr)
 
          type(t_HortonInfiltrationConfig), intent(in) :: config !< Horton infiltration configuration containing min/max infiltration capacity and decrease/recovery rates
-         type(t_HortonInfiltrationState), pointer, intent(in) :: state !< Horton infiltration state containing current infiltration capacity and state
-         real(kind=dp), optional, intent(out) :: infiltration_mm(:) !< Infiltration amount (mm)
+         integer, intent(in) :: n !< Number of grid cells
+         integer, intent(in) :: include_rain !< Indicates whether or not (1/0) rainfall array is available
+         real(kind=dp), intent(in) :: timestep !< [s] Timestep size
+         real(kind=dp), dimension(:), intent(inout) :: inf_cap !< [m/s] Infiltration capacity
+         real(kind=dp), dimension(:), intent(in) :: waterlevel !< [m] Waterlevel in current timestep
+         real(kind=dp), dimension(:), intent(in) :: rainfall !< [mm/day] Rainfall in current timestep
+         integer, dimension(:), intent(inout) :: inf_cap_state !< Infiltration capacity state; (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE))
+         real(kind=dp), optional, intent(out) :: infiltration_mm(:) !< [mm] Infiltration amount
          integer :: ierr !< Result status, DHYD_NOERR if successful.
          
          ! local
@@ -83,47 +89,42 @@ module m_horton
          real(kind=dp), parameter :: METER_TO_MILLIMETER = 1000.0_dp !< Conversion factor from meter to millimeter
          integer, parameter :: DAY_TO_HOUR = 24 !< Number of hours per day
          real(kind=dp), parameter :: MPS_TO_MMPHR = METER_TO_MILLIMETER / SECOND_TO_HOUR !< Conversion factor from m/s to mm/hr
-         real(kind=dp) :: timestep !< Timestep size in hours
-         real(kind=dp), dimension(:), allocatable :: inf_cap !< [mm/hr] Infiltration capacity
-         real(kind=dp), dimension(:), allocatable :: rainfall !< [mm/hr] Rainfall 
          integer :: i
+         real(kind=dp) :: timestep_hr
+         real(kind=dp), dimension(:), allocatable :: rainfall_local !< Local rainfall array in mm/hr
          
          ! Set error status to no error and do unit conversions
          ierr = DHYD_NOERR
-         timestep = state%timestep
-         timestep = timestep * SECOND_TO_HOUR ! Convert timestep to hours
-         inf_cap = state%inf_cap
+         timestep_hr = timestep * SECOND_TO_HOUR ! Convert timestep to hours
          inf_cap = inf_cap * MPS_TO_MMPHR ! Convert infiltration capacity to mm/hr
-         rainfall = state%rainfall
-         rainfall = rainfall / DAY_TO_HOUR ! Convert rainfall to mm/hr
+         rainfall_local = rainfall / DAY_TO_HOUR ! Convert rainfall to mm/hr
 
-         do i = 1, state%n
+         do i = 1, n
 
             if (config%max_inf_cap(i) <= config%min_inf_cap(i)) then
                
                ! No valid band width between min and max infiltration capacity
-               state%inf_cap_state(i) = HORTON_CAPSTAT_NOCHANGE
+               inf_cap_state(i) = HORTON_CAPSTAT_NOCHANGE
 
-            else if ((state%include_rain == 1 .and. (rainfall(i) > config%min_inf_cap(i))) .or. comparereal(state%waterlevel(i), 0.0_dp) == 1) then
+            else if ((include_rain == 1 .and. (rainfall_local(i) > config%min_inf_cap(i))) .or. comparereal(waterlevel(i), 0.0_dp) == 1) then
                
                ! Wet situation, infiltration capacity is decreasing
-               state%inf_cap_state(i) = HORTON_CAPSTAT_DECREASE
-               inf_cap(i) = config%min_inf_cap(i) + (inf_cap(i) - config%min_inf_cap(i)) * exp(-1d0 * config%decrease_rate(i) * timestep)
+               inf_cap_state(i) = HORTON_CAPSTAT_DECREASE
+               inf_cap(i) = config%min_inf_cap(i) + (inf_cap(i) - config%min_inf_cap(i)) * exp(-1d0 * config%decrease_rate(i) * timestep_hr)
 
             else
 
                ! Dry situation, infiltration capacity is recovering
-               state%inf_cap_state(i) = HORTON_CAPSTAT_RECOVERY
-               inf_cap(i) = config%max_inf_cap(i) - (config%max_inf_cap(i) - inf_cap(i)) * exp(-1d0 * config%recovery_rate(i) * timestep)
+               inf_cap_state(i) = HORTON_CAPSTAT_RECOVERY
+               inf_cap(i) = config%max_inf_cap(i) - (config%max_inf_cap(i) - inf_cap(i)) * exp(-1d0 * config%recovery_rate(i) * timestep_hr)
 
             end if
          end do
 
          inf_cap = inf_cap / MPS_TO_MMPHR ! Convert back to m/s
-         state%inf_cap = inf_cap ! Update infiltration capacity in state
 
          if (present(infiltration_mm)) then
-            infiltration_mm = state%inf_cap * state%timestep * METER_TO_MILLIMETER ! m/s * s -> m -> mm
+            infiltration_mm = inf_cap * timestep * METER_TO_MILLIMETER ! m/s * s -> m -> mm
          end if
 
       end function compute_horton_infiltration

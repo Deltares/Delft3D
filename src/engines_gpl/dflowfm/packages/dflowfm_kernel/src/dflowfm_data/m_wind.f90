@@ -74,7 +74,7 @@ module m_wind
    integer :: jawindstressgiven !< wind given as stress, no conversion needed
    integer :: jastresstowind !< if jawindstressgiven==1, convert stress to wind yes/no 1/0
    integer :: ja_computed_airdensity !< compute air_density yes/no 1/0
-   integer, target :: jarain !< use rain yes or no
+   integer :: jarain !< use rain yes or no
    integer :: jaevap !< use evap yes or no
    integer :: ja_airdensity !< use variabele air density yes or no
    logical :: solar_radiation_available = .false. !< solar radiation provided by user

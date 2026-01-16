@@ -89,14 +89,11 @@ module m_hydrology_data
 contains
 
    !> Sets ALL (scalar) variables in this module to their default values.
-   !! For a reinit prior to flow computation, only call reset_hydrology_data() instead.
    subroutine default_hydrology_data()
       jadhyd = 0
       interceptionmodel = 0
 
       infiltrationmodel = DFM_HYD_NOINFILT
       infiltcapuni = 0.0_dp
-
-      call reset_hydrology_data()
    end subroutine default_hydrology_data
 end module m_hydrology_data
