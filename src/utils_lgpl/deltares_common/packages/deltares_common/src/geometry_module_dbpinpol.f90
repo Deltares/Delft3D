@@ -66,7 +66,6 @@ contains
          end if
 
          in = 0 ! Reset for subsequent queries
-         return
       end if
 
       ! Query phase (when in >= 0)
