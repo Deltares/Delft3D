@@ -46,6 +46,12 @@ contains
       integer :: num
       logical, save :: initialized = .false.
 
+      ! Special case: NPL == 0 means "no polygons to check, everything is considered inside"
+      if (NPL == 0) then
+         in = 1
+         return
+      end if
+
       ! Initialization phase (when in < 0)
       if (in < 0) then
          ! Clean up any previous initialization
