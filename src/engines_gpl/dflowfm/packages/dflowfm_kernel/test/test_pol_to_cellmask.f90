@@ -823,45 +823,45 @@ contains
    !$f90tw)
 
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_dbpinpol_basic_functionality, test_dbpinpol_basic_functionality,
-subroutine test_dbpinpol_basic_functionality() bind(C)
-   ! Test dbpinpol with known inputs/outputs (no legacy comparison)
-   use geometry_module, only: dbpinpol
-   use m_polygon, only: xpl, ypl, zpl, npl
-   use m_alloc, only: realloc
-   
-   real(kind=dp) :: xp, yp
-   integer :: in_result
-   
-   ! Setup simple rectangular polygon
-   npl = 5
-   call realloc(xpl, npl, keepexisting=.false.)
-   call realloc(ypl, npl, keepexisting=.false.)
-   call realloc(zpl, npl, keepexisting=.false.)
-   
-   xpl = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp]
-   ypl = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
-   zpl = [1.0_dp, 1.0_dp, 1.0_dp, 1.0_dp, 1.0_dp]
-   
-   ! Initialize
-   in_result = -1
-   call dbpinpol(0.0_dp, 0.0_dp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
-   
-   ! Test: Point inside should return 1
-   xp = 5.0_dp
-   yp = 5.0_dp
-   in_result = 0
-   call dbpinpol(xp, yp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
-   call f90_expect_eq(in_result, 1, "Point (5,5) should be inside polygon")
-   
-   ! Test: Point outside should return 0
-   xp = 15.0_dp
-   yp = 15.0_dp
-   call dbpinpol(xp, yp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
-   call f90_expect_eq(in_result, 0, "Point (15,15) should be outside polygon")
-   
-   deallocate(xpl, ypl, zpl)
-   
-end subroutine
+   subroutine test_dbpinpol_basic_functionality() bind(C)
+      ! Test dbpinpol with known inputs/outputs (no legacy comparison)
+      use geometry_module, only: dbpinpol
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_alloc, only: realloc
+
+      real(kind=dp) :: xp, yp
+      integer :: in_result
+
+      ! Setup simple rectangular polygon
+      npl = 5
+      call realloc(xpl, npl, keepexisting=.false.)
+      call realloc(ypl, npl, keepexisting=.false.)
+      call realloc(zpl, npl, keepexisting=.false.)
+
+      xpl = [0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp, 0.0_dp]
+      ypl = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
+      zpl = [1.0_dp, 1.0_dp, 1.0_dp, 1.0_dp, 1.0_dp]
+
+      ! Initialize
+      in_result = -1
+      call dbpinpol(0.0_dp, 0.0_dp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
+
+      ! Test: Point inside should return 1
+      xp = 5.0_dp
+      yp = 5.0_dp
+      in_result = 0
+      call dbpinpol(xp, yp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
+      call f90_expect_eq(in_result, 1, "Point (5,5) should be inside polygon")
+
+      ! Test: Point outside should return 0
+      xp = 15.0_dp
+      yp = 15.0_dp
+      call dbpinpol(xp, yp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
+      call f90_expect_eq(in_result, 0, "Point (15,15) should be outside polygon")
+
+      deallocate (xpl, ypl, zpl)
+
+   end subroutine
 !$f90tw)
 
    ! Helper subroutine: setup 5 cells in a row (0-10, 10-20, 20-30, 30-40, 40-50)

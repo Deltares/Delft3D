@@ -21,7 +21,9 @@ popd
 # The contents of this directory should be the result of a CMake 'install' of D-Hydro.
 # In other words, it should have `bin`, `lib` and `share` subdirectories, with the required scripts and binaries.
 # If this directory doesn't already exist, create it and put a symbolic link to the default install location.
-mkdir -p "$(dirname $TESTBENCH_ARTIFACTS)"
+mkdir -p "$(dirname "$TESTBENCH_ARTIFACTS")"
 if [[ ! -d "$TESTBENCH_ARTIFACTS" ]]; then
-    ln -s -T "$(realpath build_fm-suite_release/install/)" "$TESTBENCH_ARTIFACTS"
+    # Remove if something exists (broken symlink or regular file)
+    [[ -e "$TESTBENCH_ARTIFACTS" ]] || [[ -L "$TESTBENCH_ARTIFACTS" ]] && rm -f "$TESTBENCH_ARTIFACTS"
+    ln -s -T "$(realpath -m build_fm-suite_release/install/)" "$TESTBENCH_ARTIFACTS"
 fi

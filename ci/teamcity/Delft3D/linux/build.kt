@@ -68,7 +68,7 @@ object LinuxBuild : BuildType({
             name = "Build"
             scriptContent = """
                 #!/usr/bin/env bash
-                source /opt/bashrc
+                source /etc/bashrc
                 set -eo pipefail
                 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${'$'}PKG_CONFIG_PATH
                 export LD_LIBRARY_PATH=/usr/local/lib:${'$'}LD_LIBRARY_PATH
@@ -87,7 +87,9 @@ object LinuxBuild : BuildType({
             name = "Run unit tests"
             scriptContent = """ 
                 #!/usr/bin/env bash
-                source /opt/bashrc
+                source /etc/bashrc
+                set -eo pipefail
+
                 ctest --test-dir build_%product% --build-config %build_type% --output-junit ../unit-test-report-linux.xml --output-on-failure
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
@@ -99,7 +101,9 @@ object LinuxBuild : BuildType({
             name = "Install"
             scriptContent = """
                 #!/usr/bin/env bash
-                source /opt/bashrc
+                source /etc/bashrc
+                set -eo pipefail
+
                 cmake --install build_%product% --config %build_type%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
