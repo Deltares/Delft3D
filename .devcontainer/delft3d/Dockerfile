@@ -51,16 +51,6 @@ ADD --chmod=755 \
 
 # Configure interactive bash environment.
 RUN cat >> /home/dev/.bashrc <<EOF
-# Source Intel OneApi 
-source /opt/intel/oneapi/setvars.sh
-
-# Set Compilers and library path
-export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH
-export FC=mpiifx
-export CXX=mpicxx
-export CC=mpiicx
-
 # Bash history
 export PROMPT_COMMAND='history -a'
 export HISTFILE=/home/dev/.history/.bash_history

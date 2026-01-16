@@ -7,10 +7,12 @@ Copyright (C)  Stichting Deltares, 2026
 class LocalPaths:
     """Class containing locations to given root directories."""
 
-    def __init__(self) -> None:
-        self.__cases_path: str = "cases"
-        self.__engines_path: str = "engines"
-        self.__reference_path: str = "references"
+    def __init__(
+        self, cases_path: str = "cases", engines_path: str = "engines", references_path: str = "references"
+    ) -> None:
+        self.__cases_path: str = cases_path
+        self.__engines_path: str = engines_path
+        self.__reference_path: str = references_path
 
     @property
     def cases_path(self) -> str:
