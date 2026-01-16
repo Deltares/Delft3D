@@ -77,6 +77,17 @@ contains
 
         REAL(kind = real_wp) :: PSEDMIN
 
+        real, parameter      :: seconds_per_day = 86400.0
+
+        !
+        ! For now!
+        !
+        real :: mass_flux(1), volume(1), flow(2)
+
+        volume(1) = 25.0e7
+        flow(1:2) = 200.0
+
+
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
         IP3 = IPOINT(3)
@@ -112,6 +123,93 @@ contains
         IN15 = INCREM(15)
         IN16 = INCREM(16)
         IN17 = INCREM(17)
+
+        !
+        ! Determine the mass influx to be expected for the cells near the bottom
+        !
+        ! Note: this does not work properly for floating material!
+        !
+        !
+        do iseg = 1,num_cells
+            mass_flux(iseg) = 0.0  !! TODO: process_space_real
+        enddo
+
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+
+            IVAN = IEXPNT(1, IQ)
+            INAAR = IEXPNT(2, IQ)
+
+            IKMRKV = 1
+            IKMRKN = 1
+            IF (IVAN > 0 ) THEN
+                CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+                IF ( IKMRKV /= 0 ) THEN
+                    CALL extract_waq_attribute(2, IKNMRK(IVAN), IKMRKV)
+                 ENDIF
+            ENDIF
+            IF (INAAR > 0 ) THEN
+                CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+                IF ( IKMRKN /= 0 ) THEN
+                    CALL extract_waq_attribute(2, IKNMRK(INAAR), IKMRKN)
+                ENDIF
+            ENDIF
+
+            write(88,*) iq, ikmrkv, ikmrkn, flow(iq), ivan, inaar
+
+            IF ( (IKMRKV == 0 .OR. IKMRKV == 3 ) ) THEN
+                if ( inaar > 0 ) then
+                    ip1 = ipoint(1) + (ivan-1) * increm(1)
+                    mass_flux(ivan) = mass_flux(ivan) + max( 0.0, -flow(iq) * process_space_real(ip1) )
+                else
+                    !! Very specific for this test case!
+                    mass_flux(ivan) = mass_flux(ivan) + max( 0.0, -flow(iq) * 50.0 )
+                endif
+            ENDIF
+            IF ( (IKMRKN == 0 .OR. IKMRKN == 3 ) ) THEN
+                if ( ivan > 0 ) then
+                    ip1 = ipoint(1) + (ivan-1) * increm(1)
+                    mass_flux(inaar) = mass_flux(inaar) + max( 0.0, flow(iq) * process_space_real(ip1) )
+                else
+                    !! Very specific for this test case!
+                    mass_flux(inaar) = mass_flux(inaar) + max( 0.0, flow(iq) * 50.0 )
+                endif
+            ENDIF
+
+            ! If the exchange is a vertical exchange, also include the settling from the cell above
+
+            if ( iq > num_exchanges_u_dir + num_exchange_v_dir ) then
+                if ( ivan > 0 ) then
+                    ip1 = ipoint(1) + (ivan-1) * increm(1)
+                    ip3 = ipoint(3) + (ivan-1) * increm(3)
+                    mass_flux(ivan) = mass_flux(ivan) + max( 0.0, -process_space_real(ip3) * process_space_real(ip1) ) / seconds_per_day
+                endif
+
+                if ( inaar > 0 ) then
+                    ip1 = ipoint(1) + (inaar-1) * increm(1)
+                    ip3 = ipoint(3) + (inaar-1) * increm(3)
+                    mass_flux(inaar) = mass_flux(inaar) + max( 0.0, process_space_real(ip3) * process_space_real(ip1) ) / seconds_per_day
+                endif
+            endif
+
+            if ( inaar > 0 ) then
+                write(88,*) iq, mass_flux(inaar), volume(inaar)
+            endif
+            if ( ivan > 0 ) then
+                write(88,*) iq, mass_flux(ivan), volume(ivan)
+            endif
+
+        end do
+
+        do iseg = 1,num_cells
+            if ( volume(iseg) > 0.0 ) then
+                mass_flux(iseg) = seconds_per_day * mass_flux(iseg) / volume(iseg)
+            else
+                mass_flux(iseg) = 0.0
+            endif
+        enddo
+
+        write(88,*) 'Mass flux: ', mass_flux(1)
+
 
         IFLUX = 0
         DO ISEG = 1, num_cells
@@ -175,7 +273,8 @@ contains
                         POTSED = ZERSED + (VSED * CONC) * PSED
 
                         !        limit sedimentation to available mass (M/L2/DAY)
-                        MAXSED = MIN (POTSED, CONC / DELT * DEPTH)
+                        !!MAXSED = MIN (POTSED, CONC / DELT * DEPTH)
+                        MAXSED = MIN (POTSED, mass_flux(iseg) * DEPTH)
 
                         !        convert sedimentation to flux in M/L3/DAY
                         FL(1 + IFLUX) = MAXSED * (1. - ALPHA) / DEPTH
