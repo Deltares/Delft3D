@@ -7,11 +7,10 @@ module m_test_getprof_1d
    implicit none
 contains
 
-!> Sets up minimal network_data with a single rectangular netcell
+    !> Sets up minimal network_data with a single rectangular netcell
     !! centered at (center_x, center_y) with given side length.
     !! This is useful for testing routines like incells that depend on network_data.
     subroutine generate_square_grid(bottom_left_x, bottom_left_y, side_length, rows, columns, array_size_margin)
-        use precision, only: dp
         use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, xzw, yzw, nod, rnod, LINK_2D
         use m_cell_geometry, only: xz, yz, ndx
         use m_alloc, only: realloc
@@ -79,7 +78,7 @@ contains
         end do
 
         ! Initializes node, face and flow geometry stuff.
-        call setnodadm(0)
+        ! call setnodadm(0)
         call findcells(0)
         
         kmax = 100
@@ -166,11 +165,31 @@ contains
 
     !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d, test_getprof_1d,
     subroutine test_getprof_1d() bind(C)
+        use m_flowgeom
+        use m_flow_geominit, only: flow_geominit
+        use network_data
+        use Timers, only: timini, timon
+        use m_partitioninfo, only: jampi
         implicit none
 
-        call getprof_1d()
+        ! Initialize timers (required by flow_geominit)
+        call timini()
+        timon = .false.  ! Keep timers disabled for testing
+        
+        ! Disable MPI (required to avoid MPI calls in test)
+        jampi = 0
 
-    end subroutine
+        call generate_square_grid( &
+            bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
+            rows=1, columns=2 &
+        )
+        call flow_geominit(0)
+
+        call getprof_1D(1, 0.0_dp, 5.0_dp, 1.0_dp, 1, 42, 20.0_dp)
+
+        call cleanup_network_data()
+
+    end subroutine test_getprof_1d
     !$f90tw )
 
 end module m_test_getprof_1d
