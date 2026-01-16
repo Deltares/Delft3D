@@ -69,6 +69,8 @@ contains
    subroutine init_cell_geom_as_polylines()
       use network_data
       use m_alloc
+      USE m_cellmask_from_polygon_set, ONLY: cellmask_from_polygon_set_init, cellmask_initialized
+      use m_missing, only: dmiss
 
       integer :: k, n, k1, total_points, ipoint
 

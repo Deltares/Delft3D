@@ -49,7 +49,8 @@ contains
 !>    it is assumed that kc has been allocated
 !>    it is assumed that findcells has already been called (for 2d cells)
    subroutine find1dcells()
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: point_find_netcell, cleanup_cell_geom_polylines
+      use m_pol_to_cellmask, only: init_cell_geom_as_polylines
 
       implicit none
 

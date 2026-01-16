@@ -2509,7 +2509,8 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: realloc
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: point_find_netcell, cleanup_cell_geom_polylines
+      use m_pol_to_cellmask, only: init_cell_geom_as_polylines
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar

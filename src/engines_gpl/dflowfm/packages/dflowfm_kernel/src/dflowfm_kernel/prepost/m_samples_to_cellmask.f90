@@ -39,7 +39,8 @@ contains
 
       use network_data, only: cellmask, nump1d2d
       use m_samples, only: ns, xs, ys
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: point_find_netcell, cleanup_cell_geom_polylines
+      use m_pol_to_cellmask, only: init_cell_geom_as_polylines
       use m_alloc, only: realloc
 
       integer :: i, k

@@ -406,7 +406,8 @@ contains
    subroutine test_incells_basic_functionality() bind(C)
       ! Test basic incells functionality: point inside/outside netcells
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: point_find_netcell, cleanup_cell_geom_polylines
+      use m_pol_to_cellmask, only: init_cell_geom_as_polylines
       use network_data, only: netcell, nump, xk, yk
       use m_alloc, only: realloc
 
@@ -471,7 +472,8 @@ contains
    subroutine test_incells_complex_geometry() bind(C)
       ! Test incells with more complex netcell geometries (triangles, pentagons, hexagons)
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: point_find_netcell, cleanup_cell_geom_polylines
+      use m_pol_to_cellmask, only: init_cell_geom_as_polylines
       use network_data, only: netcell, nump, xk, yk
 
       integer :: kin_old, kin_new
@@ -524,7 +526,8 @@ contains
    subroutine test_incells_large_grid() bind(C)
       ! Test incells with a larger grid (performance sanity check)
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: point_find_netcell, cleanup_cell_geom_polylines
+      use m_pol_to_cellmask, only: init_cell_geom_as_polylines
       use network_data, only: netcell, nump
 
       integer :: kin_old, kin_new, i, mismatches
@@ -566,7 +569,8 @@ contains
    subroutine test_incells_cache_consistency() bind(C)
       ! Test that cache initialization produces consistent results
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: point_find_netcell, cleanup_cell_geom_polylines
+      use m_pol_to_cellmask, only: init_cell_geom_as_polylines
       use network_data, only: nump
 
       integer :: kin1, kin2, kin_old
@@ -614,7 +618,8 @@ contains
    subroutine test_incells_edge_cases() bind(C)
       ! Test edge cases: empty grid, single cell, point at infinity
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use m_cellmask_from_polygon_set, only: point_find_netcell, cleanup_cell_geom_polylines
+      use m_pol_to_cellmask, only: init_cell_geom_as_polylines
       use network_data, only: netcell, nump
 
       integer :: kin_old, kin_new
