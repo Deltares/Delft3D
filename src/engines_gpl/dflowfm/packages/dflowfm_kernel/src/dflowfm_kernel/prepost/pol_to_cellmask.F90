@@ -36,7 +36,7 @@ module m_pol_to_cellmask
 
    private
 
-   public :: pol_to_cellmask
+   public :: pol_to_cellmask, init_cell_geom_as_polylines
 
 contains
 
@@ -64,5 +64,56 @@ contains
       call cellmask_from_polygon_set_cleanup()
 
    end subroutine pol_to_cellmask
+
+!> Initialize xpl, ypl, zpl arrays with all netcell geometries (called once)
+   subroutine init_cell_geom_as_polylines()
+      use network_data
+      use m_alloc
+
+      integer :: k, n, k1, total_points, ipoint
+
+      if (cellmask_initialized) then !> reuse cellmask cache boolean
+         return
+      end if
+
+      call savepol()
+
+      ! calculate total points needed: sum(netcell(k)%n + 1) for all cells
+      ! +1 for dmiss separator after each polygon
+      total_points = 0
+      do k = 1, nump
+         total_points = total_points + netcell(k)%n + 1 ! +1 for dmiss
+      end do
+
+      ! allocate or reallocate xpl, ypl, zpl
+      call realloc(xpl, total_points, keepexisting=.false.)
+      call realloc(ypl, total_points, keepexisting=.false.)
+      call realloc(zpl, total_points, keepexisting=.false.)
+
+      ! fill arrays with netcell geometry
+      ipoint = 0
+      do k = 1, nump
+         do n = 1, netcell(k)%n
+            ipoint = ipoint + 1
+            k1 = netcell(k)%nod(n)
+            xpl(ipoint) = xk(k1)
+            ypl(ipoint) = yk(k1)
+            zpl(ipoint) = real(k, dp) ! store cell index as z-value
+         end do
+
+         ! add separator
+         ipoint = ipoint + 1
+         xpl(ipoint) = dmiss
+         ypl(ipoint) = dmiss
+         zpl(ipoint) = dmiss
+      end do
+
+      npl = ipoint
+
+      ! initialize the cellmask module with these polygons
+      ! this builds bounding boxes and polygon indices
+      call cellmask_from_polygon_set_init(npl, xpl, ypl, zpl)
+
+   end subroutine init_cell_geom_as_polylines
 
 end module m_pol_to_cellmask
