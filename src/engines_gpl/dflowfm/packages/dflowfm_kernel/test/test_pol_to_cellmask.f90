@@ -842,18 +842,20 @@ contains
       ypl = [0.0_dp, 0.0_dp, 10.0_dp, 10.0_dp, 0.0_dp]
       zpl = [1.0_dp, 1.0_dp, 1.0_dp, 1.0_dp, 1.0_dp]
 
-      ! Initialize
+      ! Initialize AND test first point
       in_result = -1
-      call dbpinpol(0.0_dp, 0.0_dp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
+      xp = 0.0_dp
+      yp = 0.0_dp
+      call dbpinpol(xp, yp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
+      call f90_expect_eq(in_result, 1, "Point (0,0) should be inside polygon")
 
-      ! Test: Point inside should return 1
+      ! Test second point (reusing cached data)
       xp = 5.0_dp
       yp = 5.0_dp
-      in_result = 0
       call dbpinpol(xp, yp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
       call f90_expect_eq(in_result, 1, "Point (5,5) should be inside polygon")
 
-      ! Test: Point outside should return 0
+      ! Test outside point
       xp = 15.0_dp
       yp = 15.0_dp
       call dbpinpol(xp, yp, in_result, dmiss, 1, npl, xpl, ypl, zpl)
