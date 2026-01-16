@@ -90,7 +90,7 @@
      x = c_loc(horton_infiltration_config%decrease_rate)
   case("HortonRecoveryRate") !<  [1/hr] Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
      x = c_loc(horton_infiltration_config%recovery_rate)
-  case("horton_state") !<  [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
+  case("HortonState") !<  [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
      x = c_loc(horton_state)
   case("shx") !<  [m] current position {"shape": ["nshiptxy"]}
      x = c_loc(shx)

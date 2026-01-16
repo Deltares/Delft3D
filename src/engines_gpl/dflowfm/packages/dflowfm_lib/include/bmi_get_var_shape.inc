@@ -105,7 +105,7 @@
        shape(1) = ndx
     case("HortonRecoveryRate")
        shape(1) = ndx
-    case("horton_state")
+    case("HortonState")
        shape(1) = ndx
     case("shx")
        shape(1) = nshiptxy

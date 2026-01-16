@@ -90,7 +90,7 @@ select case(var_name)
     type_name = "double"
   case("HortonRecoveryRate")
     type_name = "double"
-  case("horton_state")
+  case("HortonState")
     type_name = "int"
   case("shx")
     type_name = "double"

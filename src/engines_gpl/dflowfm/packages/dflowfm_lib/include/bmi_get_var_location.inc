@@ -90,7 +90,7 @@ select case(var_name)
     location_name = "face"
   case("HortonRecoveryRate")
     location_name = "face"
-  case("horton_state")
+  case("HortonState")
     location_name = "face"
   case("shx")
     location_name = ""

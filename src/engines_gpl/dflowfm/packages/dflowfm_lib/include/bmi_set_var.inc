@@ -76,7 +76,7 @@
   case("HortonRecoveryRate")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(horton_infiltration_config%recovery_rate))
      horton_infiltration_config%recovery_rate(:) = x_1d_double_ptr
-  case("horton_state")
+  case("HortonState")
      call c_f_pointer(xptr, x_1d_int_ptr, shape(horton_state))
      horton_state(:) = x_1d_int_ptr
   case("shx")

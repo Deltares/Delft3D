@@ -92,7 +92,7 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      horton_infiltration_config%recovery_rate(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("horton_state")
+  case("HortonState")
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
      horton_state(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
