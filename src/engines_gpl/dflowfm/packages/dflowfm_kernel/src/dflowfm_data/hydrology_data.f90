@@ -99,11 +99,4 @@ contains
 
       call reset_hydrology_data()
    end subroutine default_hydrology_data
-
-   !> Resets only hydrology_data variables intended for a restart of an existing flow simulation (same MDU).
-   !! Upon loading of new model/MDU, call default_hydrology_data() instead.
-   subroutine reset_hydrology_data()
-      ! Yet to be filled
-   end subroutine reset_hydrology_data
-
 end module m_hydrology_data
