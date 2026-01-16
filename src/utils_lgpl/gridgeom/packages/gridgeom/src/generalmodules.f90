@@ -103,7 +103,8 @@ module m_polygon
 
    implicit none
 
-   double precision, allocatable :: XPL(:), YPL(:), ZPL(:), XPH(:), YPH(:), ZPH(:), DZL(:), DZR(:), DCREST(:), DTL(:), DTR(:), DVEG(:)
+   double precision, allocatable :: XPL(:), YPL(:), ZPL(:), DZL(:), DZR(:), DCREST(:), DTL(:), DTR(:), DVEG(:)
+   double precision, allocatable, private :: XPH(:), YPH(:), ZPH(:)
    integer, allocatable :: IWEIRT(:)
    integer :: NPL, NPH, MAXPOL, MP, MPS, jakol45 = 0
    character(len=64), allocatable :: nampli(:) ! Names of polylines, set in reapol,
