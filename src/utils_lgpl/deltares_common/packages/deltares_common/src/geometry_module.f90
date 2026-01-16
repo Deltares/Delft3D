@@ -60,6 +60,7 @@ module geometry_module
    public :: sphertocart3D
    public :: cart3Dtospher
    public :: dbpinpol
+   public :: dbpinpol_legacy
    public :: cross
    public :: dbpinpol_optinside_perpol
    public :: get_startend
@@ -865,7 +866,51 @@ contains
       matprod = (/(A(i, 1) * b(1) + A(i, 2) * b(2) + A(i, 3) * b(3), i=1, 3)/)
    end function matprod
 
-   subroutine dbpinpol(xp, yp, in, dmiss, JINS, NPL, xpl, ypl, zpl) ! ALS JE VOOR VEEL PUNTEN MOET NAGAAN OF ZE IN POLYGON ZITTEN
+   subroutine dbpinpol(xp, yp, in, dmiss, JINS, NPL, xpl, ypl, zpl)
+      use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, &
+                                             cellmask_from_polygon_set, &
+                                             cellmask_from_polygon_set_cleanup
+      implicit none
+
+      real(kind=dp), intent(in) :: xp, yp
+      integer, intent(inout) :: in
+      real(kind=dp), intent(in) :: dmiss
+      integer, intent(in) :: JINS, NPL
+      real(kind=dp), optional, intent(in) :: xpl(:), ypl(:), zpl(:)
+
+      integer :: num
+      logical, save :: initialized = .false.
+
+      ! Initialization phase (when in < 0)
+      if (in < 0) then
+         ! Clean up any previous initialization
+         if (initialized) then
+            call cellmask_from_polygon_set_cleanup()
+         end if
+
+         ! Build optimized spatial index
+         if (present(xpl)) then
+            call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
+            initialized = .true.
+         end if
+
+         in = 0 ! Reset for subsequent queries
+         return
+      end if
+
+      ! Query phase (when in >= 0)
+      if (.not. initialized) then
+         ! Safety: if someone forgot to initialize
+         in = 0
+         return
+      end if
+
+      ! Use your optimized point-in-polygon with bounding boxes
+      in = cellmask_from_polygon_set(xp, yp)
+
+   end subroutine dbpinpol
+
+   subroutine dbpinpol_legacy(xp, yp, in, dmiss, JINS, NPL, xpl, ypl, zpl) ! ALS JE VOOR VEEL PUNTEN MOET NAGAAN OF ZE IN POLYGON ZITTEN
       implicit none
       real(kind=dp), intent(in) :: xp, yp !< point coordinates
       integer, intent(inout) :: in !< in(-1): initialization, out(0): outside polygon, out(1): inside polygon
@@ -879,7 +924,7 @@ contains
       else
          call dbpinpol_optinside_perpol(xp, yp, 0, 0, in, num, dmiss, JINS, NPL)
       end if
-   end subroutine dbpinpol
+   end subroutine dbpinpol_legacy
 
    !> The original dbpinpol routine, extended with an optional per-polygon-specified inside-mode.
       !! Used this for checking for many points whether they are inside the global polygons.
