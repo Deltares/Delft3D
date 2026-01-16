@@ -285,76 +285,69 @@ contains
 
 !> optimized ray-casting point-in-polygon test.
 !! pure function that works with array slices or full arrays.
-   pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
+pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
 
-      real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
-      integer, intent(in) :: n !< number of polygon points
-      real(kind=dp), dimension(n), intent(in) :: x, y !< polygon coordinates (at least n elements)
-      logical :: is_inside !< result: true if inside (respecting jins mode)
+    real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
+    integer, intent(in) :: n !< number of polygon points
+    real(kind=dp), dimension(n), intent(in) :: x, y !< polygon coordinates (at least n elements)
+    logical :: is_inside !< result: true if inside (respecting jins mode)
 
-      ! locals
-      integer :: i, j, crossings
-      real(kind=dp) :: x_intersect
+    ! locals
+    integer :: i, j, crossings
+    real(kind=dp) :: x_intersect
+    real(kind=dp), parameter :: edge_tolerance = 1.0e-10_dp
 
-      is_inside = .false.
+    is_inside = .false.
 
-      ! degenerate polygon check
-      if (n <= 2) then
-         is_inside = .true.
-         if (jins == 0) then
+    ! degenerate polygon check
+    if (n <= 2) then
+        is_inside = .true.
+        if (jins == 0) then
             is_inside = .not. is_inside
-         end if
-         return
-      end if
+        end if
+        return
+    end if
 
-      ! ray-casting algorithm: count crossings of horizontal ray from point to +infinity
-      crossings = 0
+    ! ray-casting algorithm: count crossings of horizontal ray from point to +infinity
+    crossings = 0
       j = n ! In order to check the entire polygon, start the first link which lies between the last point (n) and the first point
 
-      do i = 1, n
-         ! check for missing value (polygon separator)
-         if (x(i) == dmiss) then
+    do i = 1, n
+        ! check for missing value (polygon separator)
+        if (x(i) == dmiss) then
             exit
-         end if
+        end if
 
-         ! check if point is exactly on a vertex
-         if (xl == x(j) .and. yl == y(j)) then
-            is_inside = .true.
-            if (jins == 0) then
-               is_inside = .not. is_inside
-            end if
-            return
-         end if
-
-         ! check if ray crosses this edge
-         ! edge crosses horizontal line through test point if one endpoint is above and one below
-         if ((y(j) > yl) .neqv. (y(i) > yl)) then
+        ! check if ray crosses this edge
+        ! edge crosses horizontal line through test point if one endpoint is above and one below
+        if ((y(j) > yl) .neqv. (y(i) > yl)) then
             ! compute x-coordinate of edge-ray intersection
             x_intersect = x(j) + (yl - y(j)) * (x(i) - x(j)) / (y(i) - y(j))
-            if (xl < x_intersect) then
-               ! ray crosses edge to the right of point
-               crossings = crossings + 1
-            else if (xl == x_intersect) then
-               ! point is exactly on the edge
-               is_inside = .true.
-               if (jins == 0) then
-                  is_inside = .not. is_inside
-               end if
-               return
+            
+            if (xl < x_intersect - edge_tolerance) then
+                ! ray crosses edge to the right of point
+                crossings = crossings + 1
+            else if (abs(xl - x_intersect) <= edge_tolerance) then
+                ! point is on or very near the edge (including vertices)
+                is_inside = .true.
+                if (jins == 0) then
+                    is_inside = .not. is_inside
+                end if
+                return
             end if
-         end if
+        end if
          j = i ! current point becomes previous for next iteration
-      end do
+    end do
 
-      ! odd number of crossings = inside, even = outside
-      is_inside = (mod(crossings, 2) == 1)
+    ! odd number of crossings = inside, even = outside
+    is_inside = (mod(crossings, 2) == 1)
 
-      ! respect jins mode
-      if (jins == 0) then
-         is_inside = .not. is_inside
-      end if
+    ! respect jins mode
+    if (jins == 0) then
+        is_inside = .not. is_inside
+    end if
 
-   end function pinpok_raycast
+end function pinpok_raycast
    !
    ! PINPOK
    !
