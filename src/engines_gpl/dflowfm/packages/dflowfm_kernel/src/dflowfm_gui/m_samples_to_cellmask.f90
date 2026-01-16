@@ -56,20 +56,14 @@ contains
       ! This builds bounding boxes and polygon data structures for fast point-in-polygon tests
       call init_cell_geom_as_polylines()
 
-      ! Parallel loop over cells with early exit
-      ! Each cell checks samples until it finds one inside, then exits
       !> Dynamic scheduling in case of unequal work, chunksize guided
-      !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(i)
-      do k = 1, nump1d2d
-         ! Check all samples for this cell
-         do i = 1, ns
-            ! Fast point-in-polygon test with bounding box optimization
-            if (point_find_netcell(xs(i), ys(i)) == k) then
-               ! Found a sample in this cell, mark it and move to next cell
-               cellmask(k) = 1
-               exit
-            end if
-         end do
+      ! Loop over samples (much fewer than cells)
+      !$OMP PARALLEL DO SCHEDULE(GUIDED)
+      do i = 1, ns
+         k = point_find_netcell(xs(i), ys(i))
+         if (k > 0) then
+            cellmask(k) = 1 ! Safe without ATOMIC - all threads write same value
+         end if
       end do
       !$OMP END PARALLEL DO
 
