@@ -82,10 +82,11 @@ contains
         !
         ! For now!
         !
-        real :: mass_flux(1), volume(1), flow(2)
+        real :: mass_flux(num_cells), volume(num_cells), flow(num_exchanges_z_dir)
 
-        volume(1) = 25.0e7
-        flow(1:2) = 200.0
+        volume(:) = 5.0e3
+        volume(19:20) = 0.05e3
+        flow(:) = 0.0
 
 
         IP1 = IPOINT(1)
