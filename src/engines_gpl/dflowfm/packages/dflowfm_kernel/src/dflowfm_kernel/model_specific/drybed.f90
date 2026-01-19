@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -77,15 +77,17 @@ contains
             sa = 0.0
             ua = 0.0
          end if
-         s(m) = sa; u(m) = ua; xx(m) = xm
+         s(m) = sa
+         u(m) = ua
+         xx(m) = xm
          if (m == 2) then
             call movabs(xm, sa)
          else
             call lnabs(xm, sa)
          end if
       end do
-      call movabs(xmx, 0.1d0 * h0)
-      call lnabs(xmx, 0.2d0 * h0)
+      call movabs(xmx, 0.1_dp * h0)
+      call lnabs(xmx, 0.2_dp * h0)
 
       call compareanalytic(s, xx, mmax)
    end subroutine drybed

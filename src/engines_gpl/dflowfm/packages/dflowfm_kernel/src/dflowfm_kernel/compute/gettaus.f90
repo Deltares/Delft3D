@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -65,15 +65,15 @@ contains
          jawaveswartdelwaq_local = jawaveswartdelwaq
       end if
       if (.not. allocated(czs)) then
-         call realloc(czs, ndxi, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(czs, ndxi, keepExisting=.false., fill=0.0_dp, stat=ierr)
       else if (size(czs) < ndxi) then
-         call realloc(czs, ndxi, keepExisting=.false., fill=0d0, stat=ierr)
+         call realloc(czs, ndxi, keepExisting=.false., fill=0.0_dp, stat=ierr)
       end if
       if (typout == SET_CZS_TAUS) then
          if (.not. allocated(taus)) then
-            call realloc(taus, ndxi, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(taus, ndxi, keepExisting=.false., fill=0.0_dp, stat=ierr)
          else if (size(taus) < ndxi) then
-            call realloc(taus, ndxi, keepExisting=.false., fill=0d0, stat=ierr)
+            call realloc(taus, ndxi, keepExisting=.false., fill=0.0_dp, stat=ierr)
          end if
       end if
 

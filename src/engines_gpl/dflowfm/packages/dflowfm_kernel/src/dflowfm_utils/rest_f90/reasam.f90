@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -67,14 +67,20 @@ contains
       MYSAM = 0
       IPSTAT = IPSTAT_NOTOK
       nkol = 0
-      call READYY('Counting nr. of Samples ', 0d0)
+      call READYY('Counting nr. of Samples ', 0.0_dp)
 11    read (MSAM, '()', end=31)
       NSM = NSM + 1
       goto 11
-31    NSMAX = 1.2d0 * (NSM + JADOORLADEN * NS)
-      if (NSMAX > 100000) NDRAW(32) = 7
-      if (NSMAX > 500000) NDRAW(32) = 3
-      if (allocated(XS)) deallocate (XS, YS, ZS)
+31    NSMAX = 1.2_dp * (NSM + JADOORLADEN * NS)
+      if (NSMAX > 100000) then
+         NDRAW(32) = 7
+      end if
+      if (NSMAX > 500000) then
+         NDRAW(32) = 3
+      end if
+      if (allocated(XS)) then
+         deallocate (XS, YS, ZS)
+      end if
       allocate (XS(NSMAX), YS(NSMAX), ZS(NSMAX), STAT=IERR)
       call AERR('XS(NSMAX),YS(NSMAX),ZS(NSMAX)', IERR, NSMAX)
       if (allocated(ipsam)) then
@@ -82,12 +88,12 @@ contains
       end if
       allocate (ipsam(NSMAX), stat=ierr)
       call aerr('ipsam(NSMAX)', ierr, NSMAX)
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
       rewind (MSAM)
 
       write (TEX, '(I10)') NSM
-      call READYY('Reading '//trim(TEX)//' Sample Points', 0d0)
+      call READYY('Reading '//trim(TEX)//' Sample Points', 0.0_dp)
       if (JADOORLADEN == 0) then
          call XMISAR(XS, NSMAX)
          call XMISAR(YS, NSMAX)
@@ -102,7 +108,9 @@ contains
 !    check of dit een PHAROS file is
       JFLOW = 1
 14    read (MSAM, '(A)', end=30) REC1
-      if (rec1(1:1) == '*') goto 14
+      if (rec1(1:1) == '*') then
+         goto 14
+      end if
 
       if (.not. (THISISANUMBER(REC1))) then
          read (MSAM, '(A)', end=30) REC
@@ -122,7 +130,9 @@ contains
       KMOD = max(1, NSM / 100)
 10    continue
       read (MSAM, '(A)', end=30) REC
-      if (REC(1:1) == '*') goto 10
+      if (REC(1:1) == '*') then
+         goto 10
+      end if
       if (.not. (THISISANUMBER(REC))) then
 !        we nemen aan dat er net een blokcode is gelezen
 !        en we lezen meteen de nrow ncol regel, maar checken die regel niet
@@ -133,7 +143,7 @@ contains
             read (REC, *, ERR=40) NUM, XX, YY, ZZ
          else if (NKOL == 4) then
             read (REC, *, ERR=40) XX, YY, ZZ, ZZ2
-            if (zz /= -999d0) then
+            if (zz /= -999.0_dp) then
                zz = sqrt(zz * zz + zz2 * zz2)
             end if
          else
@@ -142,7 +152,7 @@ contains
          end if
 
          if (K <= NSMAX - 1 .and. XX /= XYMIS .and. &
-             ZZ /= dmiss .and. ZZ /= 999.999d0 .and. &
+             ZZ /= dmiss .and. ZZ /= 999.999_dp .and. &
              .not. (ieee_is_nan(XX) .or. ieee_is_nan(YY) .or. ieee_is_nan(ZZ))) then
             K = K + 1
             NS = K
@@ -151,7 +161,7 @@ contains
             ZS(K) = ZZ
          end if
          if (mod(K - K0, KMOD) == 0) then
-            call READYY(' ', min(1d0, dble(K) / NSM))
+            call READYY(' ', min(1.0_dp, real(K, kind=dp) / NSM))
          end if
       end if
       goto 10
@@ -167,15 +177,15 @@ contains
          write (TEX, '(I8)') K
          call QNERROR('YOU TRIED TO LOAD', TEX, 'SAMPLE POINTS')
       end if
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       write (TEX, '(I10)') NS
-      call READYY('Sorting '//trim(TEX)//' Samples Points', 0d0)
+      call READYY('Sorting '//trim(TEX)//' Samples Points', 0.0_dp)
       if (NS > 1) then
          call TIDYSAMPLES(XS, YS, ZS, IPSAM, NS, MXSAM, MYSAM)
          call get_samples_boundingbox()
          IPSTAT = IPSTAT_OK
       end if
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(MSAM)
       return
    end

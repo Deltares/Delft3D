@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -59,7 +59,9 @@ contains
       topo_info = DMISS
 
 !  check if administration is in order
-      if (L > ubound(lnn, 1)) goto 1234
+      if (L > ubound(lnn, 1)) then
+         goto 1234
+      end if
 
 !  check if the landboundary can be taken into account (not necessarily the up-to-date)
       if (ubound(lanseg_map, 1) >= numk) then
@@ -70,9 +72,11 @@ contains
 
       call comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, n)
 
-      topo_info = -dble(n)
+      topo_info = -real(n, kind=dp)
 
-      if (topo_info <= 0d0) topo_info = DMISS
+      if (topo_info <= 0.0_dp) then
+         topo_info = DMISS
+      end if
 
       return
 

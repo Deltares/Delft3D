@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,12 +53,16 @@ contains
 
       if (jatel == 1) then
          if (.not. allocated(itel)) then
-            allocate (itel(ndx), ztel(ndx)); itel = 0; ztel = 0
+            allocate (itel(ndx), ztel(ndx))
+            itel = 0
+            ztel = 0
          end if
 
          do k = 1, ndx
-            xmn = minval(nd(k)%x); xmx = maxval(nd(k)%x)
-            ymn = minval(nd(k)%y); ymx = maxval(nd(k)%y)
+            xmn = minval(nd(k)%x)
+            xmx = maxval(nd(k)%x)
+            ymn = minval(nd(k)%y)
+            ymx = maxval(nd(k)%y)
             if (xs <= xmx .and. xs >= xmn .and. ys <= ymx .and. ys >= ymn) then
                nn = size(nd(k)%x)
                call PINPOK(Xs, Ys, Nn, nd(k)%x, nd(k)%y, IN, jins, dmiss)
@@ -72,10 +76,12 @@ contains
       else
          do k = 1, ndx
             if (itel(k) /= 0) then
-               bl(k) = ztel(k) / dble(itel(k))
+               bl(k) = ztel(k) / real(itel(k), kind=dp)
             end if
          end do
-         if (allocated(itel)) deallocate (itel, ztel)
+         if (allocated(itel)) then
+            deallocate (itel, ztel)
+         end if
       end if
 
    end subroutine pixcount

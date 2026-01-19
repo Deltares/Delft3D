@@ -36,15 +36,16 @@ object Sign : BuildType({
                 """.trimIndent()
             }
         }
-        powerShell {
+        step {
             name = "Sign"
-            platform = PowerShellStep.Platform.x64
-            workingDir = "to_sign"
-            scriptMode = script {
-                content = """
-                    Get-ChildItem -Path . -Recurse -Include *.exe,*.dll | Foreach { signtool sign /v /debug /fd SHA256 /tr "http://timestamp.acs.microsoft.com" /td SHA256 /dlib "C:\ProgramData\Microsoft\MicrosoftTrustedSigningClientTools\Azure.CodeSigning.Dlib.dll" /dmdf "C:\ProgramData\Microsoft\MicrosoftTrustedSigningClientTools\metadata.json" ${'$'}_.fullname }
-                """.trimIndent()
-            }
+            type = "AzureSigningTemplate"
+            param("workingDir", "to_sign")
+            param("binaryPatterns", "*.exe,*.dll")
+            param("timestampUrl", "http://timestamp.acs.microsoft.com")
+            param("digestAlgorithm", "SHA256")
+            param("timestampDigestAlgorithm", "SHA256")
+            param("dlibPath", """C:\\ProgramData\\Microsoft\\MicrosoftTrustedSigningClientTools\\Azure.CodeSigning.Dlib.dll""")
+            param("metadataPath", """C:\\ProgramData\\Microsoft\\MicrosoftTrustedSigningClientTools\\metadata.json""")
         }
         powerShell {
             name = "Move back signed binaries"

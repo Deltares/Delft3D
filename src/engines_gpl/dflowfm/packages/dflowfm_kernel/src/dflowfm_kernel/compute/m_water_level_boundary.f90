@@ -1,6 +1,6 @@
 !----AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -35,7 +35,6 @@ module m_water_level_boundary
    use m_fm_icecover, only: ice_apply_pressure, ice_pressure
    use m_physcoef, only: ag, rhomean
    use precision, only: dp
-
    implicit none
 
    public :: correct_water_level_boundary

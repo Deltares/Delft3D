@@ -7,7 +7,7 @@ subroutine z_vermom_finvol(nmmax     ,kmax      ,icx       ,icy       ,u0       
                          & dzv0      ,w1        ,p0        ,zk        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         

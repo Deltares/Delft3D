@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -107,7 +107,7 @@ contains
       use m_1d_structures, only: initialize_structures_actual_params
       use m_oned_functions, only: set_max_volume_for_1d_nodes
       use m_structures
-      use m_longculverts
+      use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
       use fm_external_forcings
@@ -189,7 +189,7 @@ contains
 
       call statisticsini()
 
-      call setkbotktop(1) ! prior to correctblforzlayerpoints, setting kbot
+      call set_kbot_ktop(jazws0=1) ! prior to correctblforzlayerpoints, setting kbot
 
       call initialize_ec_module()
 
@@ -252,7 +252,9 @@ contains
          call qnerror('Error occurs when reading the restart file.', ' ', ' ')
          return
       end if
-      if (jawelrestart) jarestart = ON ! in the module
+      if (jawelrestart) then
+         jarestart = ON ! in the module
+      end if
 
       call flow_setstarttime() ! the flow time0 and time1 are managed by flow
       ! this is the only function that a user can use to influence the flow times
@@ -260,7 +262,7 @@ contains
 
       call initialize_morphological_start_time()
 
-      call setkbotktop(1) ! set sigmabnds for ec
+      call set_kbot_ktop(jazws0=1) ! set sigmabnds for ec
 
       if (janudge == ON) then
          call setzcs()
@@ -314,7 +316,9 @@ contains
 
       nonlin = max(nonlin1D, nonlin2D)
       if (nonlin >= 2) then
-         if (allocated(s1m)) deallocate (s1m, a1m)
+         if (allocated(s1m)) then
+            deallocate (s1m, a1m)
+         end if
          allocate (s1m(ndx), a1m(ndx), STAT=ierror)
          call aerr('s1m(ndx), a1m(ndx)', ierror, ndx)
          s1m(:) = s1(:)
@@ -322,7 +326,7 @@ contains
 
       call set_data_for_ship_modelling()
 
-      call setkbotktop(1)
+      call set_kbot_ktop(jazws0=1)
 
       if (.not. jawelrestart) then
          call update_s0_and_hs()
@@ -383,12 +387,9 @@ contains
          end if
       end if
 
-      if (kmx < 2) then ! in 2D, use 1
-         if (ja_timestep_auto /= -123) then
-            ja_timestep_auto = ON
-         else
-            ja_timestep_auto = OFF
-         end if
+      ! In 2D set AUTO_TIMESTEP_2D_OUT as default
+      if ((kmx < 2) .and. (autotimestep /= AUTO_TIMESTEP_2D_OUT)) then
+         autotimestep = AUTO_TIMESTEP_2D_OUT
       end if
 
       if (jaimplicit == ON) then
@@ -508,12 +509,12 @@ contains
 
 !> initialize_temperature_with_uniform_value
    subroutine initialize_temperature_with_uniform_value()
-      use m_flowparameters, only: jatem, temini
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_NONE, temini
       use m_flow, only: tem1
 
       implicit none
 
-      if (jatem > OFF) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          tem1(:) = temini
       end if
 
@@ -1117,7 +1118,7 @@ contains
          call setship() ! in flowinit
          if (kmx > 0 .and. jasal > OFF) then
             inquire (file='verticalsalinityprofile.pli', exist=success)
-            call setkbotktop(1)
+            call set_kbot_ktop(jazws0=1)
             if (success) then
                call setinitialverticalprofile(sa1, ndkx, 'verticalsalinityprofile.pli')
             end if
@@ -1408,7 +1409,7 @@ contains
                   if (top_cell == bottom_cell) then
                      rr = 1.0_dp
                   else
-                     rr = dble(cell3D - bottom_cell) / dble(top_cell - bottom_cell)
+                     rr = real(cell3D - bottom_cell, kind=dp) / real(top_cell - bottom_cell, kind=dp)
                   end if
                   sa1(cell3D) = (1.0_dp - rr) * sa1(bottom_cell) + rr * satop(cell)
                end do
@@ -1513,7 +1514,7 @@ contains
 !> Initialize salinity and temperature on boundaries
    subroutine initialize_salinity_temperature_on_boundary()
       use m_flowtimes, only: keepstbndonoutflow
-      use m_flowparameters, only: jasal, jatem
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE
       use m_flowgeom, only: ln
       use m_flow, only: sa1, q1, tem1, kbnds, kbndtm, kmxd, nbnds, nbndtm, zbnds, zbndtm
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -1548,7 +1549,7 @@ contains
          end do
       end if ! jasal
 
-      if (jatem /= OFF) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          do i_boundary = 1, nbndtm
             link = kbndtm(3, i_boundary)
             call getLbotLtop(link, bottom_link, top_link)
@@ -1566,7 +1567,7 @@ contains
                end if
             end do
          end do
-      end if ! jatem
+      end if
 
    end subroutine initialize_salinity_temperature_on_boundary
 
@@ -1712,7 +1713,7 @@ contains
          end do
 
          if (kmx > 0) then
-            call setkbotktop(1) ! wetbed
+            call set_kbot_ktop(jazws0=1) ! wetbed
             if (jasal /= OFF) then
                do k = 1, ndx
                   if (xz(k) <= 0.5_dp * (xzmin + xzmax)) then
@@ -1729,7 +1730,7 @@ contains
 
          xx1 = 0.5_dp * (xzmin + xzmax)
          yy1 = 0.5_dp * (xzmin + xzmax)
-         call setkbotktop(1) ! barocin
+         call set_kbot_ktop(jazws0=1) ! barocin
 
          do k = 1, ndx
             rr = dbdistance(xx1, yy1, xz(k), yz(k), jsferic, jasfer3D, dmiss)
@@ -1743,7 +1744,7 @@ contains
 
       else if (md_IDENT(1:16) == 'internalseichexx') then ! internal seiche hofmeister 2010
 
-         call setkbotktop(1) ! internalseichexx
+         call set_kbot_ktop(jazws0=1) ! internalseichexx
          salup = 0.0_dp
          saldo = 30.0_dp
          do k = 1, ndx
@@ -1772,7 +1773,7 @@ contains
          dmu = 0.0_dp
          do k = 1, numk
             dis = dbdistance(xk(k), yk(k), xx1, yy1, jsferic, jasfer3D, dmiss)
-            if (dis < 5d3) then
+            if (dis < 5.0e3_dp) then
                xx = dis / 1000.0_dp
                yy = 5.0_dp * 1.0_dp * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2.0_dp * var))
                zk(k) = zk(k) + yy
@@ -1798,7 +1799,7 @@ contains
 
             do k = 1, numk
                dis = dbdistance(xk(k), yk(k), xx1, yy1, jsferic, jasfer3D, dmiss)
-               if (dis < 5d3) then
+               if (dis < 5.0e3_dp) then
                   xx = dis / 1000.0_dp
                   yy = 11.0_dp * 1.0_dp * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2.0_dp * var))
                   zk(k) = zk(k) + yy
@@ -1838,7 +1839,7 @@ contains
 
       else if (index(md_ident, 'saltwedge') > 0) then !
 
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
          do k = 1, ndx
             if (xz(k) < 0.5 * (xzmin + xzmax)) then
@@ -1854,7 +1855,7 @@ contains
 
       else if (index(md_ident, 'salthori') > 0 .and. kmx > 0) then !
 
-         call setkbotktop(1) ! ini vertical salinity gradient
+         call set_kbot_ktop(jazws0=1) ! ini vertical salinity gradient
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
@@ -1865,7 +1866,7 @@ contains
       else if (index(md_ident, 'lockexchange') > 0) then !
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
@@ -1901,7 +1902,7 @@ contains
             end do
          end if
 
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
          do k = 1, ndx
 
@@ -1916,24 +1917,24 @@ contains
                else
                   if (xz(k) > 0.5_dp * (xzmin + xzmax) .and. (kk - kb + 1) <= locsaltlev * kmx) then
                      sa1(kk) = locsaltmax
-                     if (jatem > 0) then
+                     if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                         tem1(kk) = 5.0_dp
                      end if
                   else
                      sa1(kk) = locsaltmin
-                     if (jatem > 0) then
+                     if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                         tem1(kk) = 10.0_dp
                      end if
                   end if
                end if
                sa1(k) = sa1(k) + vol1(kk) * sa1(kk)
 
-               if (jatem > 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   tem1(k) = tem1(k) + vol1(kk) * tem1(kk)
                end if
             end do
             sa1(k) = sa1(k) / vol1(k)
-            if (jatem > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                tem1(k) = tem1(k) / vol1(k)
             end if
          end do
@@ -1942,7 +1943,7 @@ contains
          jamodelspecific = ON
       else if (index(md_ident, 'canal-lake') > 0) then
 
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
          do k = 1, ndx
 
             call getkbotktop(k, kb, kt)
@@ -1957,7 +1958,7 @@ contains
       else if (index(md_ident, 'internalwave') > 0) then !
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
@@ -1969,7 +1970,7 @@ contains
       else if (index(md_ident, 'slope1_5') > 0) then !
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
          sa1 = 5.0_dp
 
          s1 = bl + 2.0_dp
@@ -1977,7 +1978,7 @@ contains
       else if (index(md_ident, 'huump3d') > 0) then !
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
-         call setkbotktop(1) !inihump3D
+         call set_kbot_ktop(jazws0=1) !inihump3D
 
          do k = 1, ndx
             if (xz(k) < 0.5 * (xzmin + xzmax)) then
@@ -1995,7 +1996,7 @@ contains
          call thacker1d(1, xz, yz, s1, bl, ndx, 0.0_dp)
 
          if (kmx > 0) then
-            call setkbotktop(1) ! inisaltwedge
+            call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
             do k = 1, ndx
                if (s1(k) > 0.5_dp) then
@@ -2022,8 +2023,12 @@ contains
          call dminmax(xk, numk, xkmin, xkmax, numk)
 
          n = 2
-         if (index(md_ident, '4') > 0) n = 4
-         if (index(md_ident, '8') > 0) n = 8
+         if (index(md_ident, '4') > 0) then
+            n = 4
+         end if
+         if (index(md_ident, '8') > 0) then
+            n = 8
+         end if
 
          xli = 1.0_dp / (xkmax - xkmin)
          amp = .01_dp
@@ -2047,7 +2052,9 @@ contains
             yy = yz(k) * xli
             s1(k) = dep + amp * amp * (cos(2 * pin * xx) + cos(2 * pin * yy)) / (8 * ag * pin * pin)
             if (jasal > 0) then
-               if (yy > 0.20 .and. yy < 0.30) sa1(k) = 30.
+               if (yy > 0.20 .and. yy < 0.30) then
+                  sa1(k) = 30.
+               end if
             end if
          end do
 
@@ -2077,13 +2084,13 @@ contains
                      foutk = foutk + sq(ln(2, La))
                   end if
                end do
-               s0(k) = s0(k) - foutk * 1d-1
+               s0(k) = s0(k) - foutk * 1.0e-1_dp
             end do
 
          end do
 
          chkadvd = 0.0_dp
-         s1(ndx / 2) = s1(ndx / 2) + 1d-5
+         s1(ndx / 2) = s1(ndx / 2) + 1.0e-5_dp
 
       else if (index(md_netfile, 'kelvin') > 0) then
 
@@ -2144,7 +2151,9 @@ contains
       else if (md_netfile == 'rec10x10.net') then
 
          do n = 1, ndx
-            if (xz(n) < 1) s1(n) = s1(n) + 1.0_dp
+            if (xz(n) < 1) then
+               s1(n) = s1(n) + 1.0_dp
+            end if
          end do
 
       else if (md_netfile == 'g04.net') then
@@ -2334,18 +2343,18 @@ contains
 
       else if (index(md_ident, 'slope') > 0) then
 
-         call setkbotktop(1)
+         call set_kbot_ktop(jazws0=1)
          do LL = 1, Lnx
             Ltop(LL) = lbot(LL) + max(kmx, 1) - 1
             hu(LL) = 5.0_dp
             frcu(LL) = frcuni
             call getczz0(hu(LL), frcu(LL), ifrcutp(LL), cz, z00)
-            ustb(LL) = sqrt(ag * 5.0_dp * 5d-5)
+            ustb(LL) = sqrt(ag * 5.0_dp * 5.0e-5_dp)
             cs = csu(LL)
             Lb = Lbot(LL)
             Lt = Ltop(LL)
             do L = Lb, Lt
-               zz = 5.0_dp * dble(L - Lb + 1 - 0.5_dp) / dble(Lt - Lb + 1)
+               zz = 5.0_dp * real(L - Lb + 1 - 0.5_dp, kind=dp) / real(Lt - Lb + 1, kind=dp)
                u1(L) = cs * ustb(LL) * log(c9of1 + zz / z00) / vonkar
             end do
          end do

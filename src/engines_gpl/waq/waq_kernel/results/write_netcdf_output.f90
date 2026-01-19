@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2025.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -385,11 +385,11 @@ contains
             endif
 
             if (meshid2d > 0) then
-                allocate(laythickness(num_layers))
-                laythickness = 1.0 / real(num_layers)  ! Uniform distribution for now !!
-                inc_error = create_layer_dimension(ncidmap, mesh_name2d, num_layers, laythickness, nolayid)
-
-                if (num_layers == 1) then
+                if (num_layers > 1) then
+                    allocate(laythickness(num_layers))
+                    laythickness = 1.0 / real(num_layers)  ! Uniform distribution for now !!
+                    inc_error = create_layer_dimension(ncid, ncidmap, mesh_name2d, num_layers, laythickness, nolayid)
+                else
                     nolayid = dlwqnc_type2d
                 endif
 
@@ -405,7 +405,6 @@ contains
                 write(lunut, 2581)
                 goto 800
             endif
-
 
             ! Write output variables and process library info to NetCDF-file
             ! long name and unit will follow later, they are in the ouput.wrk-file!

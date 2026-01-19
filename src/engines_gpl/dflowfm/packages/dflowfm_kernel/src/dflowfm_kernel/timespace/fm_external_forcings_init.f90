@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -136,7 +136,7 @@ contains
       maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
       if (maxlatsg > 0) then
          call realloc(balat, maxlatsg, keepExisting=.false., fill=0.0_dp)
-         call realloc(qplat, (/max(1, kmx), maxlatsg/), keepExisting=.false., fill=0.0_dp)
+         call realloc(qplat, [max(1, kmx), maxlatsg], keepExisting=.false., fill=0.0_dp)
          call realloc(lat_ids, maxlatsg, keepExisting=.false.)
          call realloc(n1latsg, maxlatsg, keepExisting=.false., fill=0)
          call realloc(n2latsg, maxlatsg, keepExisting=.false., fill=0)
@@ -331,7 +331,7 @@ contains
 
                   case ('qhbnd')
                      ibqh = ibqh + 1
-                     target_index = (/ibqh/)
+                     target_index = [ibqh]
                      if (filetype /= NODE_ID) then
                         location_file = qhpliname(ibqh)
                      end if
@@ -340,7 +340,7 @@ contains
                      target_index = itpenur(ib)
 
                   case default
-                     target_index = (/-1/)
+                     target_index = [-1]
                   end select
 
                   if (target_index(1) <= 0) then
@@ -573,8 +573,12 @@ contains
 
       nlatnd = nlatnd + nlat
 
-      if (allocated(x_coordinates)) deallocate (x_coordinates, stat=ierr)
-      if (allocated(y_coordinates)) deallocate (y_coordinates, stat=ierr)
+      if (allocated(x_coordinates)) then
+         deallocate (x_coordinates, stat=ierr)
+      end if
+      if (allocated(y_coordinates)) then
+         deallocate (y_coordinates, stat=ierr)
+      end if
 
       ! [lateral]
       ! Flow = 1.23 | test.tim | REALTIME
@@ -754,9 +758,6 @@ contains
          case ('pseudoAirPressure')
             kx = 1
             ierr = allocate_pseudo_air_pressure(0.0_dp)
-            write (msgbuf, '(a)') 'quantity '//trim(quantity)//' is found in file '//file_name// &
-                '. Quantity waterLevelCorrection is more preferable.' 
-            call warn_flush()
 
          case ('waterLevelCorrection')
             kx = 1
@@ -920,17 +921,17 @@ contains
             btempforcingtypD = .true.
          case ('solarradiation')
             if (net_solar_radiation_available) then
-                write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
-                call err_flush()
-                return
+               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
+               call err_flush()
+               return
             end if
             btempforcingtypS = .true.
             solar_radiation_available = .true.
          case ('netsolarradiation')
             if (solar_radiation_available) then
-                write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
-                call err_flush()
-                return
+               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
+               call err_flush()
+               return
             end if
             btempforcingtypS = .true.
             net_solar_radiation_available = .true.

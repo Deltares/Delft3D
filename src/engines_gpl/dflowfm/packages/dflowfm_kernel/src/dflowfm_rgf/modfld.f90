@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,7 +51,7 @@ contains
       real(kind=dp) :: pi2, x0, y0, dx0, dy0, rsx, rn, fr, dx, dy, xn, yn
       integer :: m1, n1, m2, n2, ismeer, i, j
 
-      PI2 = asin(1d0)
+      PI2 = asin(1.0_dp)
       X0 = X(MP, NP)
       Y0 = Y(MP, NP)
       DX0 = XH(MP, NP) - X(MP, NP)

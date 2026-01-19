@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,8 @@ contains
          Lb = LL
          Ltx = LL
       else
-         Lb = Lbot(LL); Ltx = Lbot(LL) + kmxL(LL) - 1
+         Lb = Lbot(LL)
+         Ltx = Lbot(LL) + kmxL(LL) - 1
       end if
    end subroutine getLbotLtopmax
 end module m_get_Lbot_Ltop_max

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,8 +58,12 @@ contains
             call OTHERNODE(K1, L, K2)
             call GAANWESTOPPEN(K2, KN316, JASTOP)
 
-            LC(L) = IBR; NRL = NRL + 1
-            LIB(NRL) = L; K1BR(NRL) = K1; IBN(NRL) = IBR; NRLB(L) = NRL
+            LC(L) = IBR
+            NRL = NRL + 1
+            LIB(NRL) = L
+            K1BR(NRL) = K1
+            IBN(NRL) = IBR
+            NRLB(L) = NRL
 
             if (JASTOP == 1) then
                return

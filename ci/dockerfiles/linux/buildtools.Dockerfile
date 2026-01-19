@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.4
+# syntax=containers.deltares.nl/docker-proxy/docker/dockerfile:1.4
 
 FROM containers.deltares.nl/base_linux_containers/8-base:latest AS buildtools
 

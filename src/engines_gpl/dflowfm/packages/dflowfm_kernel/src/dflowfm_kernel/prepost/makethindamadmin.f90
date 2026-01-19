@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -87,11 +87,13 @@ contains
 
                call duitpl(xzw(k1), yzw(k1), xk(k3), yk(k3), xzw(k1), yzw(k1), xk(k4), yk(k4), sig, jsferic)
                call dlinedis(xzw(k1), yzw(k1), xk(k3), yk(k3), xk(k4), yk(k4), JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
-               a = 0d0; b = 0d0
+               a = 0.0_dp
+               b = 0.0_dp
                call getdxdy(xk(k3), yk(k3), xk(k4), yk(k4), a, b, jsferic)
                rrr = sqrt(a * a + b * b)
-               cs = 0d0; sn = 0d0
-               if (rrr /= 0d0) then
+               cs = 0.0_dp
+               sn = 0.0_dp
+               if (rrr /= 0.0_dp) then
                   cs = sig * a / rrr
                   sn = sig * b / rrr
                end if

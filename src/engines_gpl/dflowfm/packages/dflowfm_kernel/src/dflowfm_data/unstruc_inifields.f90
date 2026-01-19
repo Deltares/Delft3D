@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 !! *.ext file for quantities such as initialwaterlevel,
 !! frictioncoefficient, etc.
 module unstruc_inifields
+
    use m_setinitialverticalprofile, only: setinitialverticalprofile
    use m_add_tracer, only: add_tracer
    use m_setzcs, only: setzcs
@@ -40,6 +41,7 @@ module unstruc_inifields
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
 
+   use precision, only: dp
    implicit none
    private
 
@@ -185,7 +187,7 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER
       use m_transportdata, only: itrac2const, constituents
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, quantity_name_config_file_to_internal_name
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
       use fm_external_forcings_utils, only: get_tracername
 
@@ -193,9 +195,9 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_timespaceinitialfield_mpi
       use m_find_name, only: find_name
-      use m_get_kbot_ktop, only : getkbotktop
+      use m_get_kbot_ktop, only: getkbotktop
       use timespace_parameters, only: WEIGHTFACTORS
-      
+
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
       integer :: ierr !< Result status (DFM_NOERR on success)
@@ -264,6 +266,9 @@ contains
          !! Step 1: Read each block
          call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
+         ! convert quantity name used in configuration file to a consistent internal name
+         qid = quantity_name_config_file_to_internal_name(qid)
+
          if (ja == 1) then
             call resolvePath(filename, basedir)
             ib = ib + 1
@@ -314,7 +319,8 @@ contains
                                           target_array_3d, first_index, method)
             else
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count)
+                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count, &
+                                            filetype)
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
@@ -340,10 +346,10 @@ contains
                ec_item = ec_undef_int
                call setzcs()
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, quantity_value_count, filename, &
-                                                   filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
-                                                   varname=varname, tgt_item1=ec_item)
+                                                 filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
+                                                 varname=varname, tgt_item1=ec_item)
                success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                                        tunit, tstart_user, target_array)
+                                                                      tunit, tstart_user, target_array)
                if (.not. success) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                end if
@@ -368,7 +374,7 @@ contains
                   call setzcs()
                   success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, quantity_value_count, filename, filetype, method, operand, &
                                                     varname=varname, z=zcs, pkbot=pkbot, pktop=pktop)
-               else 
+               else
                   success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, quantity_value_count, filename, filetype, method, operand, &
                                                     varname=varname)
                end if
@@ -445,6 +451,7 @@ contains
    subroutine readIniFieldProvider(inifilename, node_ptr, groupname, quantity, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
       use timespace_parameters
+      use fm_external_forcings_utils, only: read_tracer_properties
       use m_ec_interpolationsettings, only: RCEL_DEFAULT
       use m_ec_parameters, only: interpolate_time, interpolate_spacetimeSaveWeightFactors
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
@@ -556,7 +563,6 @@ contains
             end if
          end if
 
-
          if (method == interpolate_spacetimeSaveWeightFactors) then ! 'averaging'
             ! read averagingType
             call prop_get(node_ptr, '', 'averagingType ', averagingType, retVal)
@@ -565,7 +571,7 @@ contains
             end if
             call averagingTypeStringToInteger(averagingType, iav)
             if (iav >= 0) then
-               transformcoef(4) = dble(iav)
+               transformcoef(4) = real(iav, kind=dp)
             else
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='// &
                   trim(quantity)//'. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
@@ -599,7 +605,7 @@ contains
                   call warn_flush()
                   transformcoef(8) = 1.0_dp
                else
-                  transformcoef(8) = dble(averagingNumMin)
+                  transformcoef(8) = real(averagingNumMin, kind=dp)
                end if
             end if
 
@@ -652,7 +658,7 @@ contains
          end if
 
          ! read value
-         if (filetype == inside_polygon) then
+         if (filetype == inside_polygon .and. method == METHOD_CONSTANT) then
             call prop_get(node_ptr, '', 'value', transformcoef(1), retVal)
             if (.not. retVal) then
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
@@ -685,6 +691,10 @@ contains
          if (int_friction_type > 0) then
             transformcoef(3) = real(int_friction_type, dp)
          end if
+      end if
+
+      if (strcmpi(quantity(1:13), 'initialtracer')) then
+         call read_tracer_properties(node_ptr, transformcoef)
       end if
 
       ! We've made it to here, success!
@@ -1282,8 +1292,8 @@ contains
 
       use m_flow, only: s1, hs, sabot, satop, sa1, ndkx, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
-      use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, jatem, &
-                                  initem2D, inivel
+      use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, temperature_model, &
+                                  TEMPERATURE_MODEL_NONE, initem2D, inivel
 
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
@@ -1294,7 +1304,6 @@ contains
       use m_find_name, only: find_name
       use m_add_bndtracer, only: add_bndtracer
       use timespace_parameters, only: WEIGHTFACTORS
-
 
       ! use network_data
       ! use dfm_error
@@ -1423,7 +1432,7 @@ contains
          end if
 
       case ('initialtemperature')
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             target_location_type = UNC_LOC_S
             target_array => tem1
             initem2D = 1
@@ -1475,7 +1484,7 @@ contains
          end if
 
       case ('initialverticaltemperatureprofile')
-         if (jatem > 0 .and. kmx > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE .and. kmx > 0) then
             target_location_type = UNC_LOC_3DV
             target_array => tem1
          end if
@@ -1555,7 +1564,7 @@ contains
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count)
+                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count, filetype)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1563,9 +1572,11 @@ contains
       use messageHandling
       use m_alloc, only: realloc, aerr
       use unstruc_files, only: resolvePath
+      use timespace_parameters, only: NCGRID
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL, UNC_LOC_S3D
       use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
@@ -1573,7 +1584,7 @@ contains
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
       use m_heatfluxes, only: secchisp
-      use m_wind, only: ICdtyp
+      use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
@@ -1584,6 +1595,8 @@ contains
       use processes_input, only: paname, painp, num_spatial_parameters, &
                                  funame, funinp, num_time_functions, &
                                  sfunname, sfuninp, num_spatial_time_fuctions
+      use m_physcoef, only: constant_dicoww, dicoww
+      use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
 
       implicit none
 
@@ -1597,6 +1610,7 @@ contains
       real(kind=sp), dimension(:, :), pointer, intent(out) :: target_array_3d_sp !< pointer to the array that corresponds to the quantity (real(kind=sp)), if it has an extra dimension.
       integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
       integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
+      integer, intent(in) :: filetype !< Type of the file being read (NCGRID, etc).
 
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
@@ -1624,16 +1638,18 @@ contains
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frcu
+         if (filetype == NCGRID) then
+            time_dependent_array = .true.
+            ja_friction_coefficient_time_dependent = 1
+         end if
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
-
       case ('groundlayerthickness')
          target_location_type = UNC_LOC_U
          target_array => grounlay
          jagrounlay = 1
-
-      case ('bedrocksurfaceelevation')
+      case ('bedrock_surface_elevation')
          call initialize_subsupl()
          time_dependent_array = .true.
          select case (ibedlevtyp)
@@ -1645,9 +1661,7 @@ contains
             target_location_type = UNC_LOC_CN
          end select
          ! Note: target_array not needed, handled via quantity in ec_addtimespacerelation()
-
       case ('frictiontrtfactor')
-
          if (jatrt /= 1) then
             call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting QUANTITY '//trim(qid)// &
                       ', but [trachytopes] is not switched on in MDU file. Ignoring this block.')
@@ -1662,9 +1676,7 @@ contains
             target_array => cftrtfac
             jacftrtfac = 1
          end if
-
       case ('horizontaleddyviscositycoefficient')
-
          if (javiusp == 0) then
             if (allocated(viusp)) then
                deallocate (viusp)
@@ -1676,9 +1688,7 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => viusp
-
       case ('horizontaleddydiffusivitycoefficient')
-
          if (jadiusp == 0) then
             if (allocated(diusp)) then
                deallocate (diusp)
@@ -1690,13 +1700,10 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => diusp
-
       case ('ibedlevtype')
          target_location_type = UNC_LOC_U
          target_array_integer => ibot
-
       case ('internaltidesfrictioncoefficient')
-
          if (jaFrcInternalTides2D /= 1) then ! not added yet
             if (allocated(frcInternalTides2D)) then
                deallocate (frcInternalTides2D)
@@ -1711,37 +1718,29 @@ contains
             allocate (DissInternalTidesPerArea(Ndx), stat=ierr)
             call aerr(' DissInternalTidesPerArea(Ndx)', ierr, Ndx)
             DissInternalTidesPerArea = 0.0_dp
-
             jaFrcInternalTides2D = 1
          end if
          target_location_type = UNC_LOC_S
          target_array => frcInternalTides2D
-
       case ('linearfrictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frculin
          jafrculin = 1
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
-
-         ! if ice properties not yet read before, initialize ...
-         if (.not. (ja_ice_area_fraction_read /= 0 .or. ja_ice_thickness_read /= 0)) then
+         if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
             call fm_ice_activate_by_ext_forces(ndx, md_ptr)
          end if
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
-         if (qid == 'sea_ice_area_fraction') then
-            ja_ice_area_fraction_read = 1
-         else
-            ja_ice_thickness_read = 1
-         end if
-
       case ('secchidepth')
-         call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat = ierr)
+         call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat=ierr)
          target_location_type = UNC_LOC_S
          target_array => secchisp
-
+      case ('backgroundverticaleddydiffusivitycoefficient')
+         target_location_type = UNC_LOC_S
+         call realloc(dicoww, ndx, constant_dicoww)
+         call assign_pointer_to_t_array(dicoww, target_array, ierr)
       case ('stemdiameter')
-
          if (.not. allocated(stemdiam)) then
             allocate (stemdiam(ndx), stat=ierr)
             call aerr('stemdiam(ndx)', ierr, ndx)
@@ -1749,9 +1748,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemdiam
-
       case ('stemdensity')
-
          if (.not. allocated(stemdens)) then
             allocate (stemdens(ndx), stat=ierr)
             call aerr('stemdens(ndx)', ierr, ndx)
@@ -1759,9 +1756,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemdens
-
       case ('stemheight')
-
          if (.not. allocated(stemheight)) then
             allocate (stemheight(ndx), stat=ierr)
             call aerr('stemheight(ndx)', ierr, ndx)
@@ -1769,9 +1764,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemheight
-
       case ('windstresscoefficient')
-
          if (jaCdwusp == 0) then
             if (allocated(Cdwusp)) then
                deallocate (Cdwusp)
@@ -1783,15 +1776,14 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => Cdwusp
-         iCdtyp = 1 ! only 1 coeff
-         !
+         wind_drag_type = CD_TYPE_CONST
       case ('wavesignificantheight', 'waveperiod', 'wavedirection')
          if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
          else
             write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', QUANTITY "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, '.'
+               ''', QUANTITY "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1799,10 +1791,10 @@ contains
          if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
-         else            
+         else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
-                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+               ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
+               'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1810,10 +1802,10 @@ contains
          if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
-         else            
+         else
             write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
-                      'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+               ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
+               'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1821,52 +1813,45 @@ contains
          if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
-         else            
+         else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
-                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+               ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
+               'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
             call warn_flush()
             success = .false.
          end if
       case ('waqparameter')
          target_location_type = UNC_LOC_S
-         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values=painp, index_waq_input=target_quantity_index)
          target_array_3d_sp => painp
          ! TODO: UNST-9008: discuss with Michelle whether this case is in fact equal to waqsegmentnumber.
          ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
-
       case ('waqsegmentnumber')
          target_location_type = UNC_LOC_S
-         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values=painp, index_waq_input=target_quantity_index)
          target_array_3d_sp => painp
          ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
-
       case ('waqfunction')
          target_location_type = UNC_LOC_GLOBAL
          time_dependent_array = .true.
-         call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., waq_values_ptr = funinp, index_waq_input = target_quantity_index)
-
+         call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., waq_values_ptr=funinp, index_waq_input=target_quantity_index)
       case ('waqsegmentfunction')
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
-         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., waq_values_ptr = sfuninp, index_waq_input = target_quantity_index)
-
+         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., waq_values_ptr=sfuninp, index_waq_input=target_quantity_index)
       case ('nudgesalinitytemperature')
          target_location_type = UNC_LOC_S3D
          time_dependent_array = .true.
          quantity_value_count = 2
          call alloc_nudging()
-         
       case ('nudgerate')
          target_location_type = UNC_LOC_S
          call alloc_nudging()
          target_array => nudge_rate
-
       case ('nudgetime')
          target_location_type = UNC_LOC_S
          call alloc_nudging()
          target_array => nudge_time
-
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
             ' Field '''//trim(qid)//''' is not a recognized ''[Parameter]'' quantity (refer to User Manual). Ignoring this block.'
@@ -1902,18 +1887,18 @@ contains
       character(len=*), allocatable, dimension(:), intent(inout) :: waq_names !< (input index) List of water quality input names to be searched in.
       integer, intent(inout) :: waq_input_count !< Current count of the water quality inputs. Will be incremented if a new input name is added.
       logical, intent(in) :: is_spatial !< Whether or not this input is a spatial parameter (as opposed to a temporal function). Determines the length of the second dimension in the waq_values array (space-independent has length 1 there).
-      real(kind=real_wp), allocatable, dimension(:,:), optional, intent(inout) :: waq_values !< (input index, location index) Allocatable array of water quality input values, will be increased if a new input name is added. Use either this one or the _pointer argument.
-      real(kind=dp), pointer, dimension(:,:), optional, intent(inout) :: waq_values_ptr !< (input index, location index) Pointer array List of water quality input values, will be increased if a new input name is added. Use either this one or the previous non-_pointer argument.
+      real(kind=real_wp), allocatable, dimension(:, :), optional, intent(inout) :: waq_values !< (input index, location index) Allocatable array of water quality input values, will be increased if a new input name is added. Use either this one or the _pointer argument.
+      real(kind=dp), pointer, dimension(:, :), optional, intent(inout) :: waq_values_ptr !< (input index, location index) Pointer array List of water quality input values, will be increased if a new input name is added. Use either this one or the previous non-_pointer argument.
       integer, intent(out) :: index_waq_input !< Index of the found or added water quality input (in the search set, as well as parameter set).
-      
+
       integer :: waq_location_count
-      
+
       index_waq_input = find_name(waq_names, waq_input_name)
 
       if (index_waq_input == 0) then
          waq_input_count = waq_input_count + 1
          index_waq_input = waq_input_count
-         
+
          if (is_spatial) then
             waq_location_count = Ndkx
          else
@@ -2021,7 +2006,8 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
       use m_grw, only: jaintercept2D
-      use m_fm_icecover, only: fm_ice_activate_by_ext_forces
+      use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
+
       use m_heatfluxes, only: jasecchisp, secchisp
       use m_physcoef, only: secchidepth
       use m_meteo, only: ec_addtimespacerelation
@@ -2046,7 +2032,7 @@ contains
       select case (str_tolower(qid_base))
       case ('initialwaterdepth', 'waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
-      case ('bedrocksurfaceelevation')
+      case ('bedrock_surface_elevation')
          jasubsupl = 1
       case ('infiltrationcapacity')
          where (infiltcap /= dmiss)
@@ -2075,6 +2061,10 @@ contains
          if (qid == 'interceptionlayerthickness') then
             jaintercept2D = 1
          end if
+      case ('sea_ice_area_fraction')
+         ja_ice_area_fraction_read = 1
+      case ('sea_ice_thickness')
+         ja_ice_thickness_read = 1
       case ('secchidepth')
          jaSecchisp = 1
          do n = 1, ndx
@@ -2226,9 +2216,9 @@ contains
       implicit none
 
       real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
-      real(kind=dp), dimension(:,:), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
-                                                                      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
-                                                                      !< The second dimension is the 3D grid cell dimension (1:ndkx)
+      real(kind=dp), dimension(:, :), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
+      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
+      !< The second dimension is the 3D grid cell dimension (1:ndkx)
       integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.
       real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
       real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
@@ -2250,7 +2240,8 @@ contains
             if (kmx == 0) then
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
             else
-               kb = kbot(n); kt = ktop(n)
+               kb = kbot(n)
+               kt = ktop(n)
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
                do k = kb, kt
                   level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))

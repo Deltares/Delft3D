@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -113,6 +113,13 @@
       hyd%crs  = d_hyd%crs
       hyd%conv_type  = d_hyd%conv_type
       hyd%conv_version  = d_hyd%conv_version
+      
+      ! copy waqgeom layer information from first domain
+      hyd%waqgeom%num_layers = d_hyd%waqgeom%num_layers
+      hyd%waqgeom%numtopsig = d_hyd%waqgeom%numtopsig
+      hyd%waqgeom%layertype = d_hyd%waqgeom%layertype
+      allocate( hyd%waqgeom%layer_zs, source = d_hyd%waqgeom%layer_zs )
+      allocate( hyd%waqgeom%interface_zs, source = d_hyd%waqgeom%interface_zs )
 
       ! init totals
       hyd%num_rows  = 1
@@ -596,6 +603,17 @@
             endif
          enddo
       enddo
+      
+      ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
+      ! equals the number of boundary conditions per layer times the number of layers
+      if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
+         ! increase hyd%num_exchanges_u_dir and hyd%num_exchanges, and reallocate hyd%ipoint
+         hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+         hyd%num_exchanges = hyd%num_exchanges + 1
+         call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , keepExisting = .true., fill = 0)
+         ! Insert a dummy exchange as the last of the horizontal exhanges
+         hyd%ipoint(1, hyd%num_exchanges_u_dir) = -hyd%num_boundary_conditions
+      endif
 
       ! pointers in third dimension
       do iseg = 1, hyd%nosegl
@@ -986,6 +1004,17 @@
             end if
          end do
       end do
+      
+      ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
+      ! equals the number of boundary conditions per layer times the number of layers
+      if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
+         ! increase hyd%num_exchanges_u_dir and hyd%num_exchanges, and reallocate hyd%ipoint
+         hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+         hyd%num_exchanges = hyd%num_exchanges + 1
+         call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , keepExisting = .true., fill = 0)
+         ! Insert a dummy exchange as the last of the horizontal exhanges
+         hyd%ipoint(1, hyd%num_exchanges_u_dir) = -hyd%num_boundary_conditions
+      endif
 
       ! pointers in third dimension
       do iseg = 1, hyd%nosegl

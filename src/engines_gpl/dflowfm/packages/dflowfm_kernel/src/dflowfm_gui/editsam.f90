@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -94,7 +94,9 @@ contains
       call DRAWNU(KEY)
       call KTEXT(TEX, 1, 2, 15)
       call putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
-      if (KEY /= 23) JONCE = 0
+      if (KEY /= 23) then
+         JONCE = 0
+      end if
 
       if (NUM /= 0) then
 !        ER IS EEN KEUZE
@@ -276,7 +278,7 @@ contains
          call KTEXT('B Rings Bell', 2, 6, 11)
          call OKAY(0)
       else if (KEY == 81 .or. KEY == 81 + 32) then ! Q (for testing only)
-         call make_orthocenters(0.5d-2, 1000)
+         call make_orthocenters(0.5e-2_dp, 1000)
 !         call copy_sendlist_to_sam()
          NPUT = 58
       end if

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -104,8 +104,8 @@ contains
 
       allocate (this%vol(this%count))
       allocate (this%sur(this%count))
-      this%vol = 0.0d0
-      this%sur = 0.0d0
+      this%vol = 0.0_dp
+      this%sur = 0.0_dp
 
       if (this%numberOfSummerDikes > 0) then
          allocate (this%inundationPhase(this%numberOfSummerDikes))
@@ -115,15 +115,15 @@ contains
          allocate (this%sdinVolume(this%numberOfSummerDikes, this%count))
          allocate (this%sdinArea(this%numberOfSummerDikes, this%count))
          this%inundationPhase = .false.
-         this%sdinVolume = 0d0
-         this%sdinArea = 0d0
+         this%sdinVolume = 0.0_dp
+         this%sdinArea = 0.0_dp
       end if
 
       if (this%hasDecreasingWidths) then
          allocate (this%volDecreasing(this%count))
          allocate (this%surDecreasing(this%count))
-         this%volDecreasing = 0.0d0
-         this%surDecreasing = 0.0d0
+         this%volDecreasing = 0.0_dp
+         this%surDecreasing = 0.0_dp
       end if
    end subroutine allocVoltable
 
@@ -131,21 +131,41 @@ contains
    subroutine deallocVoltable(this)
       class(t_voltable) :: this
 
-      if (allocated(this%vol)) deallocate (this%vol)
-      if (allocated(this%sur)) deallocate (this%sur)
+      if (allocated(this%vol)) then
+         deallocate (this%vol)
+      end if
+      if (allocated(this%sur)) then
+         deallocate (this%sur)
+      end if
 
       if (this%numberOfSummerDikes /= 0) then
-         if (allocated(this%inundationPhase)) deallocate (this%inundationPhase)
-         if (allocated(this%linkNumber)) deallocate (this%linkNumber)
-         if (allocated(this%summerDikeCrestLevel)) deallocate (this%summerDikeCrestLevel)
-         if (allocated(this%summerDikeBaseLevel)) deallocate (this%summerDikeBaseLevel)
-         if (allocated(this%sdinVolume)) deallocate (this%sdinVolume)
-         if (allocated(this%sdinArea)) deallocate (this%sdinArea)
+         if (allocated(this%inundationPhase)) then
+            deallocate (this%inundationPhase)
+         end if
+         if (allocated(this%linkNumber)) then
+            deallocate (this%linkNumber)
+         end if
+         if (allocated(this%summerDikeCrestLevel)) then
+            deallocate (this%summerDikeCrestLevel)
+         end if
+         if (allocated(this%summerDikeBaseLevel)) then
+            deallocate (this%summerDikeBaseLevel)
+         end if
+         if (allocated(this%sdinVolume)) then
+            deallocate (this%sdinVolume)
+         end if
+         if (allocated(this%sdinArea)) then
+            deallocate (this%sdinArea)
+         end if
       end if
 
       if (this%hasDecreasingWidths) then
-         if (allocated(this%volDecreasing)) deallocate (this%volDecreasing)
-         if (allocated(this%surDecreasing)) deallocate (this%surDecreasing)
+         if (allocated(this%volDecreasing)) then
+            deallocate (this%volDecreasing)
+         end if
+         if (allocated(this%surDecreasing)) then
+            deallocate (this%surDecreasing)
+         end if
       end if
    end subroutine deallocVoltable
 
@@ -160,9 +180,9 @@ contains
       integer :: index
       integer :: i
       real(kind=dp) :: heightIncrement
-      index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
+      index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
-      heightIncrement = max(0d0, ((level - this%bedLevel) - dble(index - 1) * tableIncrement))
+      heightIncrement = max(0.0_dp, ((level - this%bedLevel) - real(index - 1, kind=dp) * tableIncrement))
 
       getVolumeVoltable = this%vol(index) + this%sur(index) * heightIncrement
 
@@ -195,11 +215,11 @@ contains
       integer :: index
       integer :: i
       if (level < this%bedlevel) then
-         getSurfaceVoltable = 0d0
+         getSurfaceVoltable = 0.0_dp
          return
       end if
 
-      index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
+      index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
       getSurfaceVoltable = this%sur(index)
 
@@ -227,9 +247,9 @@ contains
 
       integer :: index
       real(kind=dp) :: heightIncrement
-      index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
+      index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
-      heightIncrement = ((level - this%bedLevel) - dble(index - 1) * tableIncrement)
+      heightIncrement = ((level - this%bedLevel) - real(index - 1, kind=dp) * tableIncrement)
 
       getVolumeDecreasingVoltable = this%volDecreasing(index) + this%surDecreasing(index) * heightIncrement
 
@@ -244,7 +264,7 @@ contains
       real(kind=dp), intent(in) :: level !< water level
 
       integer :: index
-      index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
+      index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
       getSurfaceDecreasingVoltable = this%surDecreasing(index)
 
@@ -318,14 +338,14 @@ contains
       allocate (vltb(ndx1d))
       do n = 1, ndx1d
          vltb(n)%count = 0
-         vltb(n)%topHeight = 0d0
+         vltb(n)%topHeight = 0.0_dp
       end do
 
       if (generateVLTBOnLinks) then
          allocate (vltbOnLinks(2, lnx1d))
          do n = 1, lnx1d
             vltbOnLinks(2, n)%count = 0
-            vltbOnLinks(2, n)%topHeight = 0d0
+            vltbOnLinks(2, n)%topHeight = 0.0_dp
          end do
       end if
 
@@ -375,7 +395,7 @@ contains
             end do
 
             if (vltb(n)%numberOfSummerDikes > 0) then
-               vltb(n)%sdinArea(i, vltb(n)%count) = 0d0
+               vltb(n)%sdinArea(i, vltb(n)%count) = 0.0_dp
                vltb(n)%inundationPhase = .true.
             end if
          end if
@@ -590,7 +610,7 @@ contains
             call vltbOnLinks(Lindex, L)%alloc()
 
             ! Distribute storage node contribution over flow links
-            if (vltb(n)%vol(vltb(n)%count) > 0d0) then
+            if (vltb(n)%vol(vltb(n)%count) > 0.0_dp) then
                vltbOnLinks(Lindex, L)%vol = vltb(n)%vol / numlinks
                vltbOnLinks(Lindex, L)%sur(vltb(n)%count) = vltb(n)%sur(vltb(n)%count) / numlinks
             end if
@@ -651,7 +671,7 @@ contains
          if (dxDoubleAt1DEndNodes .and. nd(nod)%lnx == 1) then
             dxL = dx(L)
          else
-            dxL = 0.5d0 * dx(L)
+            dxL = 0.5_dp * dx(L)
          end if
 
          jacustombnd1d = 0
@@ -673,8 +693,8 @@ contains
                ! Use the water level at the inner point of the boundary link
 
                if (vltb(n)%hasDecreasingWidths) then
-                  widthdecr = 0d0
-                  areadecr = 0d0
+                  widthdecr = 0.0_dp
+                  areadecr = 0.0_dp
                end if
             else
                if (L > lnxi) then ! for 1D boundary links, refer to attached link

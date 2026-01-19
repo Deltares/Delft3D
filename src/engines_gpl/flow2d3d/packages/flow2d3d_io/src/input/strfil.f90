@@ -4,7 +4,7 @@ subroutine strfil(lundia    ,error     ,filstr    ,mmax      , &
                 & dphkrv    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -286,6 +286,9 @@ subroutine strfil(lundia    ,error     ,filstr    ,mmax      , &
              error = .true.
              goto 1100
           endif
+       else
+          value1 = 0.0_fp
+          value2 = 0.0_fp
        endif
        !
        ! Define local weir/ gate / rigid sheet / porous plate or

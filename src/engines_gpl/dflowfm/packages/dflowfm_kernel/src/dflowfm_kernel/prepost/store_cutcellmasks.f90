@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -116,8 +116,8 @@ contains
       if (NPOL == 1) then
          call realloc(idxL, numL + 1, keepExisting=.true., fill=1)
       end if
-      call realloc(xdxL, numnew, keepExisting=.true., fill=0d0)
-      call realloc(ydxL, numnew, keepExisting=.true., fill=0d0)
+      call realloc(xdxL, numnew, keepExisting=.true., fill=0.0_dp)
+      call realloc(ydxL, numnew, keepExisting=.true., fill=0.0_dp)
       call realloc(pdxL, numnew, keepExisting=.true., fill=0)
 
 !     shift pointers and data

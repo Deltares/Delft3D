@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,7 +52,8 @@ contains
 
       ! Copy ucx/ucy to ucxeulg/ucyeulg
       ! They will optionally be transformed into Eulerian velocities
-      ucxeulg(1:ndkx) = ucx(1:ndkx); ucyeulg(1:ndkx) = ucy(1:ndkx)
+      ucxeulg(1:ndkx) = ucx(1:ndkx)
+      ucyeulg(1:ndkx) = ucy(1:ndkx)
 
       ! Transform uxy/ucy into Eulerian velocities
       if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then

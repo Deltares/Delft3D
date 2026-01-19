@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -137,10 +137,11 @@ contains
 !! When an output directory is configured, the filename is also prefixed with that, unless switched off by prefixWithDirectory=.false..
    function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
       use precision, only: dp
-      use unstruc_model
       use m_flowtimes
       use time_module, only: seconds_to_datetimestring
       use system_utils, only: makedir, FILESEP
+      use unstruc_model, only: md_ident, md_obsfile, md_mapfile, md_classmap_file, md_waqfilebase, md_netfile, &
+                               md_ldbfile, md_hisfile, md_pipefile, md_comfile, md_avgwavquantfile, md_avgsedquantfile, md_avgsedtrailsfile, getoutputdir
       implicit none
 
       character(len=*), intent(in) :: filecat !< File category for which the filename is requested, e.g. 'obs', 'map', 'hyd'.
@@ -393,7 +394,9 @@ contains
       character(*) FILENAME * 256, BASE * 256
       character(*) RW * 20
 
-      if (mdia /= 0) return
+      if (mdia /= 0) then
+         return
+      end if
 
       L = len_trim(md_ident)
       if (L == 0) then

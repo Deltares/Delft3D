@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -83,7 +83,7 @@ module m_transport
    real(kind=dp), dimension(:), allocatable :: thetavert ! vertical advection fluxes explicit (0) or implicit (1)
 
    real(kind=dp), dimension(:), allocatable :: difsedu ! sum of molecular and user-specified diffusion coefficient
-   real(kind=dp), dimension(:), allocatable :: difsedw ! sum of molecular and user-specified diffusion coefficient
+   real(kind=dp), dimension(:), allocatable :: molecular_diffusion_coeff ! molecular diffusion coefficient
 
    real(kind=dp), allocatable :: dsedx(:, :) !< cell center constituent gradient
    real(kind=dp), allocatable :: dsedy(:, :) !< cell center constituent gradient

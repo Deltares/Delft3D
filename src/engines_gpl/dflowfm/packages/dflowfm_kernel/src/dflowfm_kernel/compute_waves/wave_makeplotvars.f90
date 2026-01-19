@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_wave_makeplotvars
 
+   use precision, only: dp
    implicit none
 
    private
@@ -52,18 +53,20 @@ contains
       integer :: ierror
       integer :: L, LL, Lb, Lt, k1, k2
 
-      ust_mag = 0d0
-      fwav_mag = 0d0
+      ust_mag = 0.0_dp
+      fwav_mag = 0.0_dp
       if (jawave /= WAVE_SURFBEAT) then
-         ustx_cc = 0d0
-         usty_cc = 0d0
+         ustx_cc = 0.0_dp
+         usty_cc = 0.0_dp
       end if
 
       do L = 1, lnx ! safe for 3D
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          call getLbotLtop(L, Lb, Lt)
          do LL = Lb, Lt
-            k1 = ln(1, LL); k2 = ln(2, LL)
+            k1 = ln(1, LL)
+            k2 = ln(2, LL)
             ustx_cc(k1) = ustx_cc(k1) + wcx1(L) * ustokes(LL)
             usty_cc(k1) = usty_cc(k1) + wcy1(L) * ustokes(LL)
             ustx_cc(k2) = ustx_cc(k2) + wcx2(L) * ustokes(LL)
@@ -77,18 +80,19 @@ contains
          do L = 1, lnx
             call getLbotLtop(L, Lb, Lt)
             do LL = Lb, Lt
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
                fwav_mag(k1) = fwav_mag(k1) + wcl(1, L) * hypot(wavfu(LL), wavfv(LL)) * rhomean * hu(L)
                fwav_mag(k2) = fwav_mag(k2) + wcl(2, L) * hypot(wavfu(LL), wavfv(LL)) * rhomean * hu(L)
             end do
          end do
       else
-         fwav_mag = 0d0
+         fwav_mag = 0.0_dp
       end if
       !
       ! bed shear stress
-      workx = 0d0
-      worky = 0d0
+      workx = 0.0_dp
+      worky = 0.0_dp
       do L = 1, lnx
          k1 = ln(1, L)
          k2 = ln(2, L)

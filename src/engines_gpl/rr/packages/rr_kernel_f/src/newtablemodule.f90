@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU Affero General Public License as
@@ -901,7 +901,10 @@ end function newTablesModelFind_ByHandle
                indexj = min (j, LocalNrRows-1)
             else
               indexj = j
-              if (j .eq. LocalNrRows) indexj = 1
+!! was:       if (j .eq. LocalNrRows) indexj = 1
+              if (j .eq. LocalNrRows .and. PeriodCode .le. 0) indexj = j-1
+              if (j .eq. LocalNrRows .and. PeriodCode .gt. 0) indexj = 1
+!! is aangepast nav SOFTSUP-37925
             endif
             model%TableData (idum) = Rlocal(indexj,i)
          Enddo

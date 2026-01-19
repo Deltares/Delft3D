@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -74,7 +74,7 @@ contains
       end if
 
       JA = 0
-      call READYY('Converting ADCIRC data...', 0d0)
+      call READYY('Converting ADCIRC data...', 0.0_dp)
       read (MNET, '(A)', end=777) REC ! COMMENT
 
       read (MNET, '(A)', end=777) REC
@@ -83,7 +83,7 @@ contains
       NUMLN = 3 * NUMP
       call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
 
-      call READYY('Converting ADCIRC data...', .2d0)
+      call READYY('Converting ADCIRC data...', 0.2_dp)
       do K = K0 + 1, K0 + NUMKN
          read (MNET, '(A)', end=777) REC
          read (REC, *, ERR=999) KK, XK(K), YK(K), ZK(K)
@@ -96,18 +96,27 @@ contains
       do K = 1, NUMP
          read (MNET, '(A)', end=777) REC
          read (REC, *, ERR=999) KK, nn, k1, k2, k3
-         L = L + 1; kn(1, L) = k1; kn(2, L) = k2; kn(3, L) = 2
-         L = L + 1; kn(1, L) = k2; kn(2, L) = k3; kn(3, L) = 2
-         L = L + 1; kn(1, L) = k3; kn(2, L) = k1; kn(3, L) = 2
+         L = L + 1
+         kn(1, L) = k1
+         kn(2, L) = k2
+         kn(3, L) = 2
+         L = L + 1
+         kn(1, L) = k2
+         kn(2, L) = k3
+         kn(3, L) = 2
+         L = L + 1
+         kn(1, L) = k3
+         kn(2, L) = k1
+         kn(3, L) = 2
       end do
 
       NUML = L
 
-      call READYY('Converting ADCIRC data...', .4d0)
+      call READYY('Converting ADCIRC data...', 0.4_dp)
       call SETNODADM(0)
       call SAVENET()
 
-      call READYY('Converting ADCIRC data...', .7d0)
+      call READYY('Converting ADCIRC data...', 0.7_dp)
       read (MNET, '(A)', end=777) REC ! NOPE param
       read (REC, *, err=555) NOPE
 
@@ -134,7 +143,9 @@ contains
       if (jamergeweirnodes == 1) then
          NPL = 0
          call increasepol(NVEL + NBOU, 0) ! Store center line of adcirc levee as one polyline per levee, for later use as fixedweir pliz.
-         XPL = dmiss; YPL = dmiss; ZPL = dmiss
+         XPL = dmiss
+         YPL = dmiss
+         ZPL = dmiss
       end if
 
       MXLAN = 0
@@ -165,16 +176,22 @@ contains
                k1 = K0 + NBVV
                k2 = K0 + IBCONN
                MXLAN = MXLAN + 1
-               XLAN(MXLAN) = XK(k1); YLAN(MXLAN) = YK(k1); ZLAN(MXLAN) = BARINHT
-               XLAN(MXLAN + NVELL + 1) = XK(k2); YLAN(MXLAN + NVELL + 1) = YK(k2); ZLAN(MXLAN + NVELL + 1) = BARINHT ! second side comes after the end of the first side
+               XLAN(MXLAN) = XK(k1)
+               YLAN(MXLAN) = YK(k1)
+               ZLAN(MXLAN) = BARINHT
+               XLAN(MXLAN + NVELL + 1) = XK(k2)
+               YLAN(MXLAN + NVELL + 1) = YK(k2)
+               ZLAN(MXLAN + NVELL + 1) = BARINHT ! second side comes after the end of the first side
 
                if (jamergeweirnodes == 1) then
-                  XK(k2) = .5d0 * (XK0(K1) + XK0(K2))
-                  YK(k2) = .5d0 * (YK0(K1) + YK0(K2))
+                  XK(k2) = 0.5_dp * (XK0(K1) + XK0(K2))
+                  YK(k2) = 0.5_dp * (YK0(K1) + YK0(K2))
                   ZK(k2) = max(ZK(K1), ZK(K2))
 
                   NPL = NPL + 1
-                  XPL(NPL) = XK(k2); YPL(NPL) = YK(k2); ZPL(NPL) = BARINHT ! TODO: sill left/right/contract
+                  XPL(NPL) = XK(k2)
+                  YPL(NPL) = YK(k2)
+                  ZPL(NPL) = BARINHT ! TODO: sill left/right/contract
                   if (xpl(npl) < -100) then
                      continue
                   end if
@@ -194,11 +211,11 @@ contains
          end if
 
       end do ! k
-      call READYY('Converting ADCIRC data...', .7d0)
+      call READYY('Converting ADCIRC data...', 0.7_dp)
       call doclose(mnet)
 
       call SETNODADM(0)
-      call READYY('Converting ADCIRC data...', -1d0)
+      call READYY('Converting ADCIRC data...', -1.0_dp)
 
       ja = 0
       return

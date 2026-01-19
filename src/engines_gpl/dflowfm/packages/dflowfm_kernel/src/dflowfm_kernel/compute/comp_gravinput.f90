@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,15 +54,15 @@ contains
       logical :: Ldoit1, Ldoit2
 
 !     initialize
-      GravInput = 0d0
-      SALInput = 0d0
-      force = 0d0
+      GravInput = 0.0_dp
+      SALInput = 0.0_dp
+      force = 0.0_dp
 
-      SALinput2 = 0d0
+      SALinput2 = 0.0_dp
 
 !     reconstruct tidel force at cell centers and compute power at once
       do L = 1, Lnx
-         if (tidef(L) /= 0d0) then
+         if (tidef(L) /= 0.0_dp) then
             k1 = ln(1, L)
             k2 = ln(2, L)
 
@@ -71,8 +71,8 @@ contains
                force = (tidep(1, k2) - tidep(1, k1)) * dxi(L)
 
                !           compute limitation factor (see setextforcechkadvec)
-               dfac = 1d0
-               if (abs(force) > 0d0) then
+               dfac = 1.0_dp
+               if (abs(force) > 0.0_dp) then
                   dfac = tidef(L) / force
                end if
 
@@ -84,8 +84,12 @@ contains
             Ldoit1 = .true.
             Ldoit2 = .true.
             if (jampi == 1) then
-               if (idomain(k1) /= my_rank) Ldoit1 = .false.
-               if (idomain(k2) /= my_rank) Ldoit2 = .false.
+               if (idomain(k1) /= my_rank) then
+                  Ldoit1 = .false.
+               end if
+               if (idomain(k2) /= my_rank) then
+                  Ldoit2 = .false.
+               end if
             end if
 
             if (Ldoit1 .and. k1 <= Ndxi) then ! boundary cells excluded

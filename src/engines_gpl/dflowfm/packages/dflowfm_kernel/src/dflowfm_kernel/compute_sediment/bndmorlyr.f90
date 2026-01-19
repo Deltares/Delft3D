@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -94,7 +94,9 @@ contains
          ! If composition is fixed, nothing to do. So, we can
          ! continue with next boundary.
          !
-         if (icond == 1) cycle
+         if (icond == 1) then
+            cycle
+         end if
          !
          ! In case of an open boundary with prescribed composition
          ! (either mass or volume fractions): get data from table file

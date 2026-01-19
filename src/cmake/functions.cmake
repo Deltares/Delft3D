@@ -147,7 +147,8 @@ function(get_fortran_source_files source_directory source_files)
                         ${source_directory}/*.F90
                         ${source_directory}/*.for
                         ${source_directory}/*.f
-                        ${source_directory}/*.F)
+                        ${source_directory}/*.F
+                        ${source_directory}/*.inc)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 # get_fortran_source_files_recursive
@@ -203,7 +204,7 @@ function(configure_package_installer name description_file  major minor build ge
   set(CPACK_VERBATIM_VARIABLES YES)
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${name}")
-  set(CPACK_PACKAGE_VENDOR "Deltares 2025")
+  set(CPACK_PACKAGE_VENDOR "Deltares 2026")
   set(CPACK_PACKAGE_DESCRIPTION_FILE "${description_file}")
   set(CPACK_RESOURCE_FILE_LICENSE "${checkout_src_root}/Copyright.txt")
   set(CPACK_PACKAGE_VERSION_MAJOR "${major}")

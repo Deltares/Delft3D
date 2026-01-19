@@ -389,6 +389,15 @@ A comparison run does 2 things:
 \item The version of the file to be downloaded from MinIO by using the rewind feature is specified in the configuration.
 \end{itemize}
 
+\subsection{Absolute and relative tolerances}
+The test bench can compare floating point numbers, for example when the type of the files to be compared is NetCDF. The XML can contain both absolute and relative tolerances. The test bench calculates the absolute differences between the case output and the reference file, and reports the maximum absolute value of this difference. It also calculates the range of values seen in the case result file and reports the difference relative to this range, with a maximum of 1 (100\%). If the XML provides a tolerance, then the check fails if the difference exceeds the tolerance. If the parameter has both an absolute and a relative tolerance, then the check passes if one of the two passes. This enables us to express that certain quantities, such as the salt concentration, need to have a low relative error unless the absolute concentration error is small.
+
+For example, we can check a parameter \verb|x| in a NetCDF file with the following line in the XML,
+\begin{verbatim}
+<parameter name="x" toleranceAbsolute="2.5" toleranceRelative="0.2"/>
+\end{verbatim}
+and with reference data \verb|10, 12, 13| and case output \verb|12, 13, 13|. In that case the absolute errors are \verb|2, 1, 0| and the maximum absolute error is \verb|2|. The range of values in the output data runs from \verb|12| to \verb|13|, so the range is \verb|1|. This means that the maximum relative error is $2 / 1 = 2$, but since we limit it to $1$, we report a relative error of $1$. This is more than the relative tolerance. However, since the absolute error is below the absolute tolerance, the check still passes.
+
 \newpage
 \section{Developers}
 This section focuses on updating and maintaining the testbench. These things are:
