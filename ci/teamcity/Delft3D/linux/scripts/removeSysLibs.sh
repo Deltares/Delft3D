@@ -28,4 +28,6 @@ rm -fv \
     libsasl2.so.* \
     libsqlite3.so.* \
     libxml2.so.* \
-    libzstd.so.* 
+    libzstd.so.* \
+    libssl.so.* \
+    libcrypt*
