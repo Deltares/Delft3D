@@ -176,13 +176,12 @@ contains
         use m_missing, only: dmiss
         use m_polygon, only: xpl, ypl, zpl, npl
         use m_longculverts, only: convert1D2DLongCulverts
-        implicit none
+        use m_longculverts_data, only: longculverts
 
         integer, parameter :: COORD_COUNT = 4
         real(kind=dp) :: x_coords(COORD_COUNT)
         real(kind=dp) :: y_coords(COORD_COUNT)
         real(kind=dp) :: z_coords(COORD_COUNT)
-        integer :: links(COORD_COUNT)
         integer :: i
 
         ! Arrange
@@ -201,8 +200,9 @@ contains
         zpl = z_coords
         npl = COORD_COUNT
 
+        allocate(longculverts(1))
         ! Act
-        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT, links)
+        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT)
 
         ! Assert
         call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
@@ -213,9 +213,9 @@ contains
         call F90_ASSERT_EQ(numk, 10) ! 6 Netnodes for the grid, 4 For the long culvert.
         call F90_ASSERT_EQ(numl, 10) ! 7 Netlinks for the grid, 3 For the long culvert.
 
-        call F90_ASSERT_EQ(kn(3, links(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
-        call F90_ASSERT_EQ(kn(3, links(2)), 1, to_c_string("Expected middle link to be a 1D link."))
-        call F90_ASSERT_EQ(kn(3, links(3)), 5, to_c_string("Expected last new link to be a 1D2D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, to_c_string("Expected middle link to be a 1D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, to_c_string("Expected last new link to be a 1D2D link."))
         
         call cleanup_network_data()
     end subroutine test_convert1d2dlongculverts__single_four_point
@@ -228,13 +228,14 @@ contains
         use m_missing, only: dmiss
         use m_polygon, only: xpl, ypl, zpl, npl
         use m_longculverts, only: convert1D2DLongCulverts
+        use m_longculverts_data, only: longculverts
+
         implicit none
 
         integer, parameter :: COORD_COUNT = 2
         real(kind=dp) :: x_coords(COORD_COUNT)
         real(kind=dp) :: y_coords(COORD_COUNT)
         real(kind=dp) :: z_coords(COORD_COUNT)
-        integer :: links(COORD_COUNT)
         integer :: i
 
         npl = 0
@@ -254,8 +255,9 @@ contains
         zpl = z_coords
         npl = COORD_COUNT
 
+        allocate(longculverts(1))
         ! Act
-        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT, links)
+        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT)
 
         ! Assert
         call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
@@ -266,7 +268,7 @@ contains
         call F90_ASSERT_EQ(numk, 8) ! 6 Netnodes for the grid, 2 For the long culvert.
         call F90_ASSERT_EQ(numl, 8) ! 7 Netlinks for the grid, 1 For the long culvert.
 
-        call F90_ASSERT_EQ(kn(3, links(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
         
         call cleanup_network_data()
     end subroutine test_convert1d2dlongculverts__single_two_point
@@ -279,7 +281,9 @@ contains
         use m_missing, only: dmiss
         use m_polygon, only: xpl, ypl, zpl, npl
         use m_longculverts, only: convert1D2DLongCulverts
+         use m_longculverts_data, only: longculverts
         use m_save_ugrid_state, only: meshgeom1d
+
         implicit none
 
         integer, parameter :: COORD_COUNT_LC1 = 4
@@ -288,7 +292,6 @@ contains
         real(kind=dp) :: x_coords(ARRAY_SIZE)
         real(kind=dp) :: y_coords(ARRAY_SIZE)
         real(kind=dp) :: z_coords(ARRAY_SIZE)
-        integer :: links(ARRAY_SIZE)
         integer :: i
 
         npl = 0
@@ -314,8 +317,9 @@ contains
         meshgeom1d%numnode = -1 
         meshgeom1d%nnodes = -1
 
+        allocate(longculverts(1))
         ! Act
-        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, ARRAY_SIZE, links)
+        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, ARRAY_SIZE)
 
         ! Assert
         call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
