@@ -27,14 +27,18 @@
 !
 !-------------------------------------------------------------------------------
 
+!
+!
+
 !> Module for storing the optional hydrology state variables
 module m_hydrology_data
-   use m_horton, only: t_HortonInfiltrationConfig, t_HortonInfiltrationState
-   use precision, only: dp
 
+   use precision, only: dp
    implicit none
-   
+
+   !
    ! Constants
+   !
    integer, parameter :: DFM_HYD_NOINFILT = 0 !< No infiltration active.
    ! NOTE: UNST-3763:        infiltrationmodel = 1 !< will soon be refactored, is actually interception.
    integer, parameter :: DFM_HYD_INFILT_CONST = 2 !< Maximum (constant) infiltration capacity prescribed.
@@ -48,22 +52,28 @@ module m_hydrology_data
    integer :: jadhyd !< Whether or not (1/0) external hydrology processes are enabled.
 
    ! Some hydrology state vars maintained in FM:
-
+   !
    ! Precipitation
+   !
    real(kind=dp), allocatable, target :: Precipitation(:)
    integer :: precipitationTarget
 
+   !
    ! Interception
    integer :: interceptionmodel !< [-] Interception model, one of DFM_HYD_(NOINTERCEPT|INTERCEPT_LAYER)
    real(kind=dp), allocatable, target :: InterceptThickness(:) !< [m] Interception layer thickness (max depth) {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: InterceptHs(:) !< [m] Interception layer water depth at current time {"location": "face", "shape": ["ndx"]}
 
+   !
    ! Evaporation
+   !
    real(kind=dp), allocatable, target :: PotEvap(:) !< [m/s] Potential evaporation {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: ActEvap(:) !< [m/s] Actual evaporation {"location": "face", "shape": ["ndx"]}
    integer :: potEvapTarget
 
+   !
    ! Infiltration
+   !
    integer :: infiltrationmodel !< Infiltration formula, one of DFM_HYD_NOINFILT, DFM_HYD_INFILT_(CONST|DARCY|HORTON).
 
    real(kind=dp) :: infiltcapuni !< [m s-1] Uniform infiltration capacity. Only used if infiltrationmodel == 2 (DFM_HYD_INFILT_CONST).
@@ -73,10 +83,15 @@ module m_hydrology_data
    real(kind=dp), allocatable :: infiltcaproofs(:) !< temporary of the same
 
    ! Horton-specific:
-   type(t_HortonInfiltrationConfig), target :: horton_infiltration_config
-   integer, allocatable, target :: horton_state(:) !< [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: HortonMinInfCap(:) !< [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: HortonMaxInfCap(:) !< [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: HortonDecreaseRate(:) !< [1/hr]  Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: HortonRecoveryRate(:) !< [1/hr]  Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
+   integer, allocatable, target :: HortonState(:) !< [-]     Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
 
+   !
    ! dhydrology state (not used yet, only when WFLOW functionality will be connected)
+   !
    real(kind=dp), allocatable, target :: CanopyGapFraction(:)
    real(kind=dp), allocatable, target :: Cmax(:)
    real(kind=dp), allocatable, target :: CanopyStorage(:)
@@ -88,12 +103,21 @@ module m_hydrology_data
 
 contains
 
-   !> Sets ALL (scalar) variables in this module to their default values.
+!> Sets ALL (scalar) variables in this module to their default values.
+!! For a reinit prior to flow computation, only call reset_hydrology_data() instead.
    subroutine default_hydrology_data()
       jadhyd = 0
       interceptionmodel = 0
 
       infiltrationmodel = DFM_HYD_NOINFILT
       infiltcapuni = 0.0_dp
+
+      call reset_hydrology_data()
    end subroutine default_hydrology_data
+
+!> Resets only hydrology_data variables intended for a restart of an existing flow simulation (same MDU).
+!! Upon loading of new model/MDU, call default_hydrology_data() instead.
+   subroutine reset_hydrology_data()
+   end subroutine reset_hydrology_data
+
 end module m_hydrology_data

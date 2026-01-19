@@ -1458,10 +1458,6 @@ contains
                              'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '', &
                              'mm hr-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
-      call add_output_config(config_set_his, IDX_HIS_INFILTRATION_HORTON_STATE, &
-                             'Wrihis_infiltration', 'infiltration_horton_state', 'Horton infiltration state', '', &
-                             '', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-                             nc_dim_ids=station_nc_dims_2D)
 
       ! Variable (computed) air density
       call add_output_config(config_set_his, IDX_HIS_AIR_DENSITY, &
@@ -2676,10 +2672,6 @@ contains
          if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_CAP), valobs(:, IPNT_infiltcap))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL), valobs(:, IPNT_infiltact))
-         end if
-
-         if (infiltrationmodel == DFM_HYD_INFILT_HORTON .and. jahisinfilt > 0) then
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_HORTON_STATE), valobs(:, IPNT_infilthortonstate))
          end if
 
          if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity > 0) then

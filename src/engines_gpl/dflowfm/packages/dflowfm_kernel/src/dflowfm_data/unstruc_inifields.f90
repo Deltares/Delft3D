@@ -1928,7 +1928,7 @@ contains
       use m_flowgeom, only: ndx
       use fm_external_forcings_data, only: success
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
-                                  horton_infiltration_config, &
+                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, InterceptHs, &
                                   infiltcap, infiltrationmodel
@@ -1944,16 +1944,16 @@ contains
       select case (str_tolower(qid))
       case ('hortonmininfcap')
          target_location_type = UNC_LOC_S
-         target_array => horton_infiltration_config%min_inf_cap
+         target_array => HortonMinInfCap
       case ('hortonmaxinfcap')
          target_location_type = UNC_LOC_S
-         target_array => horton_infiltration_config%max_inf_cap
+         target_array => HortonMaxInfCap
       case ('hortondecreaserate')
          target_location_type = UNC_LOC_S
-         target_array => horton_infiltration_config%decrease_rate
+         target_array => HortonDecreaseRate
       case ('hortonrecoveryrate')
          target_location_type = UNC_LOC_S
-         target_array => horton_infiltration_config%recovery_rate
+         target_array => HortonRecoveryRate
       case ('interceptionlayerthickness')
          target_location_type = UNC_LOC_S
          call realloc(InterceptHs, ndx, keepExisting=.true., fill=0.0_dp)

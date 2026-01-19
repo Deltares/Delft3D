@@ -112,6 +112,8 @@ contains
 
       call reset_sedtra()
 
+      call reset_hydrology_data()
+
       call reset_nearfieldData()
 
       call reset_flow_validatestate()

@@ -71,7 +71,6 @@ module m_observations_data
    integer :: IVAL_RAIN
    integer :: IVAL_INFILTCAP
    integer :: IVAL_INFILTACT
-   integer :: IVAL_INFILTHORTONSTATE
    integer :: IVAL_WAVEH
    integer :: IVAL_WAVET
    integer :: IVAL_WAVED
@@ -194,7 +193,6 @@ module m_observations_data
    integer :: IPNT_RAIN
    integer :: IPNT_INFILTCAP
    integer :: IPNT_INFILTACT
-   integer :: IPNT_INFILTHORTONSTATE
    integer :: IPNT_PATM
    integer :: IPNT_WAVEH
    integer :: IPNT_WAVET
