@@ -1037,7 +1037,6 @@ contains
       !geometry niveau
       newgeomindex = meshgeom1d%ngeometry + 1
 
-      !First determine number of branches that require a culvert.
       ipoly = 0
       jpoint = 1
       do while (jpoint < nplCulv)
@@ -1055,46 +1054,13 @@ contains
             meshgeom1d%ngeometry = meshgeom1d%ngeometry + point_count
             meshgeom1d%nnodes = meshgeom1d%nnodes + 2 ! only 2 network nodes per branch
          end if
-      end do
 
-      call reallocP(meshgeom1d%nbranchorder, meshgeom1d%nbranches, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%nbranchgeometrynodes, meshgeom1d%nbranches, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%nedge_nodes, [2, meshgeom1d%nbranches], keepexisting=.true.)
-      call reallocP(meshgeom1d%nbranchlengths, meshgeom1d%nbranches, keepexisting=.true., fill=-999.0_dp)
-      call realloc(nbranchids, meshgeom1d%nbranches, keepexisting=.true., fill='') 
-      call reallocP(meshgeom1d%nnodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nnodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
-      call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.false., fill=-999)
-      call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%edgeoffsets, meshgeom1d%numedge, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%ngeopointx, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%ngeopointy, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
-
-      jpoint = 1
-      ipoly = 0
-      linksCulv = dmiss
-      links_index = 1
-      do while (jpoint < nplCulv)
-         ! Find next start and end point in pli set:
-         call get_startend(nplCulv - jpoint + 1, xplCulv(jpoint:nplCulv), yplCulv(jpoint:nplCulv), jstart, jend, dmiss)
-         jstart = jstart + jpoint - 1
-         jend = jend + jpoint - 1
-         jpoint = jend + 2 ! Advance pointer
-         point_count = jend - jstart + 1
+      call reallocate_meshgeom1d_arrays()
 
          if (point_count <= 1) then
             call mess(LEVEL_WARN, 'generateLongCulverts: No valid start+end point found in polyline.')
             cycle
          end if
-
-         ! Common setup for all valid polylines
-         ipoly = ipoly + 1
 
          if (point_count == 2) then
             numculvertpoints = 2
@@ -1188,6 +1154,32 @@ contains
          end if
       end do
    end subroutine convert1D2DLongCulverts
+
+subroutine reallocate_meshgeom1d_arrays()
+   use m_save_ugrid_state
+   use m_alloc
+   use network_data, only: kc
+      
+   call reallocP(meshgeom1d%nbranchorder, meshgeom1d%nbranches, keepexisting=.true., fill=-999)
+   call reallocP(meshgeom1d%nbranchgeometrynodes, meshgeom1d%nbranches, keepexisting=.true., fill=-999)
+   call reallocP(meshgeom1d%nedge_nodes, [2, meshgeom1d%nbranches], keepexisting=.true.)
+   call reallocP(meshgeom1d%nbranchlengths, meshgeom1d%nbranches, keepexisting=.true., fill=-999.0_dp)
+   call realloc(nbranchids, meshgeom1d%nbranches, keepexisting=.true., fill='') 
+   call reallocP(meshgeom1d%nnodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+   call reallocP(meshgeom1d%nnodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+   call reallocP(meshgeom1d%nodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+   call reallocP(meshgeom1d%nodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+   call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
+   call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
+   call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.false., fill=-999)
+   call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
+   call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
+   call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
+   call reallocP(meshgeom1d%edgeoffsets, meshgeom1d%numedge, keepexisting=.true., fill=-999.0_dp)
+   call reallocP(meshgeom1d%ngeopointx, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
+   call reallocP(meshgeom1d%ngeopointy, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
+   
+end subroutine reallocate_meshgeom1d_arrays
 
    !> Add new cross section locations on a particular branch in the network.
    !! The cross section definition (defining the long culvert's shape)
