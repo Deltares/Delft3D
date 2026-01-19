@@ -38,7 +38,6 @@ module m_horton
    public :: HORTON_CAPSTAT_DECREASE
    public :: HORTON_CAPSTAT_RECOVERY
    public :: t_HortonInfiltrationConfig
-   public :: t_HortonInfiltrationState
    public :: compute_horton_infiltration
 
    ! Horton infiltration capacity states
@@ -52,16 +51,6 @@ module m_horton
       real(kind=dp), dimension (:), allocatable :: decrease_rate !< [1/hr]  Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
       real(kind=dp), dimension (:), allocatable :: recovery_rate !< [1/hr]  Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
    end type t_HortonInfiltrationConfig
-
-   type :: t_HortonInfiltrationState
-      integer, pointer :: n => null() !< Number of grid cells
-      integer, pointer :: include_rain => null() !< Indicates whether or not (1/0) rainfall array is available
-      real(kind=dp), pointer :: timestep => null() !< [s] Timestep size
-      real(kind=dp), dimension(:), pointer :: inf_cap => null() !< [m/s] Infiltration capacity
-      real(kind=dp), dimension(:), pointer :: waterlevel => null() !< [m] Waterlevel in current timestep
-      real(kind=dp), dimension(:), pointer :: rainfall => null() !< [mm/day] Rainfall in current timestep
-      integer, dimension(:), pointer :: inf_cap_state => null() !< Infiltration capacity state; (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE))
-   end type t_HortonInfiltrationState
 
    contains
    
