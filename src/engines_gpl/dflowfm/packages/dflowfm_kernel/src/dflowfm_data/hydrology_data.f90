@@ -29,7 +29,7 @@
 
 !> Module for storing the optional hydrology state variables
 module m_hydrology_data
-   use m_horton, only: t_HortonInfiltrationConfig, t_HortonInfiltrationState
+   use m_horton, only: t_HortonInfiltrationConfig
    use precision, only: dp
 
    implicit none
