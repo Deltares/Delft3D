@@ -1,3 +1,4 @@
+module precision
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -74,28 +75,29 @@
 !
 !!--pseudo code and references--------------------------------------------------
 ! NONE
-
-module precision
-
-    use precision_basics
-    use iso_c_binding
-
-    implicit none
-
-    ! fp is NOT ANYMORE the generally used precision in Delft3D-FLOW
-    integer, parameter :: fp=hp
-    ! integer, parameter :: fp=sp
-    
-    ! prec is used to switch bodsed/dps from sp to hp
-    integer, parameter :: prec=hp
-    ! integer, parameter :: prec=sp
-
-    ! old hp's in sobek that should stay sp
-    integer, parameter :: fhp=sp 
-
-    ! length of integers which are esm/fsm pointers
-    ! = 4 for 32bit versions
-    ! = 8 for 64bit versions
-    integer, parameter :: pntrsize=c_size_t
+!!--declarations----------------------------------------------------------------
+use precision_basics
+use iso_c_binding
+implicit none
+!
+! fp is the generally used precision in Delft3D-FLOW
+!
+integer, parameter :: fp=hp
+!integer, parameter :: fp=sp
+!
+! prec is used to switch bodsed/dps from sp to hp
+!
+integer, parameter :: prec=hp
+!integer, parameter :: prec=sp
+!
+! old hp's in sobek that should stay sp
+!
+integer, parameter :: fhp=sp 
+!
+! length of integers which are esm/fsm pointers
+! = 4 for 32bit versions
+! = 8 for 64bit versions
+!
+integer, parameter :: pntrsize=c_size_t
 
 end module precision
