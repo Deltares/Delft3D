@@ -49,6 +49,7 @@ module m_save_ugrid_state
    integer :: contactnlinks !< Total number of links in all mesh contacts (typically we'll have one mesh contact with many netlinks part of it)
    integer, allocatable :: contact_cell_idx(:, :) !< cell numbers this contact connects (2D for 2D-2D links, 1D for 1D-2D links). Dimension(2, contactnlinks). Second row is always 2D
    type(t_hashlist) :: hashlist_contactids !< Hash list for quick search for contact ids.
+   character(len=ug_idsLen), allocatable :: contactids_2D2D(:) !< Contact ids in the same order as contactnetlinks
 
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_save_ugrid_state() instead.

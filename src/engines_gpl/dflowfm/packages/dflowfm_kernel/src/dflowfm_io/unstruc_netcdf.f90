@@ -12283,8 +12283,9 @@ contains
          if (n2d2dcontacts > 0) then
             ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_2D2D, trim(contactname_2D2D), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
             ierr = nf90_enddef(ncid)
+
             ! Put the contacts
-            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D)
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D, contactsids=contactsids_2D2D)
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
 

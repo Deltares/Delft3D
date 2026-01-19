@@ -133,7 +133,7 @@ contains
       integer :: istart
       integer :: nlongculverts0
       integer :: mout
-      integer :: longculvertindex, longculvertbranchindex
+      integer :: longculvertindex
       character(len=IdLen) :: temppath, tempname, tempext
       logical :: write_converted_files_
 
@@ -331,7 +331,6 @@ contains
       call replaceCoordinatesInStructures(xpl, ypl, strs_ptr)
       call restorepol()
 
-      longculvertbranchindex = 0
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
       do i = 1, nstr
          str_ptr => strs_ptr%child_nodes(i)%node_ptr
@@ -355,10 +354,8 @@ contains
             call err_flush()
          else
             longculvertindex = longculvertindex + 1
+            call prop_set(str_ptr, '', 'branchId', longculverts(longculvertindex)%branchId)
             if (size(longculverts(longculvertindex)%netlinks) > 1) then
-               longculvertbranchindex = longculvertbranchindex + 1
-               call prop_set(str_ptr, '', 'branchId', nbranchids(longculvertbranchindex))
-               longculverts(longculvertindex)%branchid = nbranchids(longculvertbranchindex)
                call add_longculvert_branch(network, longculverts(longculvertindex))
             end if
          end if
@@ -1049,6 +1046,8 @@ contains
       newnetnodeindex = meshgeom1d%nnodes + 1
       newgeomindex = meshgeom1d%ngeometry + 1
       currentbranchindex = meshgeom1d%nbranches + 1
+      write (ipolychar, '(I0)') i_longculvert
+      longculverts(i_longculvert)%branchId = 'BR_longCulvert_'//trim(ipolychar)
 
       if (poly_point_count == 2) then
          numculvertpoints = 2
@@ -1063,6 +1062,7 @@ contains
          if (allocated(dxe)) then
             dxe(L) = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
          end if
+         call realloc(contactids_2D2D(:), size(contactids_2D2D) + 1)
          longculverts(i_longculvert)%netlinks(1) = L
 
       else ! Multi-point culvert
@@ -1070,8 +1070,7 @@ contains
          !> only multi point culverts get meshgeom1d entries
          call reallocate_meshgeom1d_arrays(poly_point_count)
 
-         write (ipolychar, '(I0)') currentbranchindex
-         nbranchids(currentbranchindex) = 'BR_longCulvert_'//trim(ipolychar)
+         nbranchids(currentbranchindex) = longculverts(i_longculvert)%branchId
          numculvertpoints = poly_point_count - 2
 
          ! Setup network nodes using interior points (skip polyline endpoints)
