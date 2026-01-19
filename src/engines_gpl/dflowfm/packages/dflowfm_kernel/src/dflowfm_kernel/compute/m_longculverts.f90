@@ -129,7 +129,6 @@ contains
       character(len=IdLen) :: csDefId
       character(len=IdLen) :: txt
       integer :: readerr, nstr, i, numcoords
-      integer, allocatable, dimension(:) :: links
       logical :: success
       integer :: istart
       integer :: nlongculverts0
@@ -328,27 +327,8 @@ contains
          end if
       end do
 
-      allocate (links(npl))
       call convert1D2DLongCulverts(xpl, ypl, zpl, npl)
       call replaceCoordinatesInStructures(xpl, ypl, strs_ptr)
-      ! npl = 1
-      ! do i = 1, nlongculverts !< save adjusted xpl and ypl to new structure file
-      !    longculvertindex2 = 0
-      !    do j = 1, tree_num_nodes(strs_ptr) !> check all structure file blocks
-      !       str_ptr_2 => strs_ptr%CHILD_NODES(j)%node_ptr
-      !       call prop_get(str_ptr_2, '', 'type', typestr, success)
-      !       if (success .and. strcmpi(typestr, 'longCulvert')) then
-      !          longculvertindex2 = longculvertindex2 + 1
-      !          if (longculvertindex2 == i) then
-      !             numcoords = size(longculverts(i)%xcoords)
-      !             call tree_remove_child_by_name(str_ptr_2, 'xCoordinates', istart)
-      !             call prop_set(str_ptr_2, '', 'xCoordinates', xpl(npl:npl + numcoords - 1), '')
-      !             npl = npl + numcoords + 1
-      !             exit
-      !          end if
-      !       end if
-      !    end do
-      ! end do
       call restorepol()
 
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
@@ -368,14 +348,17 @@ contains
          end if
 
          call prop_get(str_ptr, '', 'id', st_id, success)
+
          if (.not. success) then
             write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
             call err_flush()
          else
-            longculvertindex = longculvertindex + 1
-            call prop_set(str_ptr, '', 'branchId', nbranchids(longculvertindex))
-            longculverts(longculvertindex)%branchid = nbranchids(longculvertindex)
-            call add_longculvert_branch(network, longculverts(longculvertindex))
+            if (size(longculverts(longculvertindex+1)%netlinks) > 1) then
+               longculvertindex = longculvertindex + 1
+               call prop_set(str_ptr, '', 'branchId', nbranchids(longculvertindex))
+               longculverts(longculvertindex)%branchid = nbranchids(longculvertindex)
+               call add_longculvert_branch(network, longculverts(longculvertindex))
+            end if
          end if
       end do
 
@@ -1065,8 +1048,6 @@ contains
       newgeomindex = meshgeom1d%ngeometry + 1
       currentbranchindex = meshgeom1d%nbranches + 1
 
-      call reallocate_meshgeom1d_arrays(poly_point_count)
-
       if (poly_point_count == 2) then
          numculvertpoints = 2
 
@@ -1074,9 +1055,6 @@ contains
          call longculvert_create_endpoint(xplCulv(poly_point_count), yplCulv(poly_point_count), zplCulv(poly_point_count), k2)
          xplCulv(:) = [xk(k1), xk(k2)]
          yplCulv(:) = [yk(k1), yk(k2)]
-         meshgeom1d%nbranchgeometrynodes(currentbranchindex) = numculvertpoints
-         meshgeom1d%ngeopointx(newgeomindex:newgeomindex + numculvertpoints - 1) = [xk(k1), xk(k2)]
-         meshgeom1d%ngeopointy(newgeomindex:newgeomindex + numculvertpoints - 1) = [yk(k1), yk(k2)]
 
          kn3typ = 5
          call connectdbn(k2, k1, L)
@@ -1086,6 +1064,9 @@ contains
          longculverts(i_longculvert)%netlinks(1) = L
 
       else ! Multi-point culvert
+
+         !> only multi point culverts get meshgeom1d entries
+         call reallocate_meshgeom1d_arrays(poly_point_count)
 
          write (ipolychar, '(I0)') currentbranchindex
          nbranchids(currentbranchindex) = 'BR_longCulvert_'//trim(ipolychar)
@@ -1173,6 +1154,10 @@ contains
       meshgeom1d%nbranches = meshgeom1d%nbranches + 1
       meshgeom1d%nnodes = meshgeom1d%nnodes + 2 ! only 2 network nodes per branch
 
+      meshgeom1d%numnode = meshgeom1d%numnode + poly_point_count - 2
+      meshgeom1d%numedge = meshgeom1d%numedge + poly_point_count - 3
+      meshgeom1d%ngeometry = meshgeom1d%ngeometry + poly_point_count - 2
+
       call reallocP(meshgeom1d%nbranchorder, meshgeom1d%nbranches, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nbranchgeometrynodes, meshgeom1d%nbranches, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nedge_nodes, [2, meshgeom1d%nbranches], keepexisting=.true.)
@@ -1187,25 +1172,15 @@ contains
 
       call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.true., fill=-999)
 
-      if (poly_point_count > 2) then !> these long culverts get actual 1D net geometry
-         meshgeom1d%numnode = meshgeom1d%numnode + poly_point_count - 2
-         meshgeom1d%numedge = meshgeom1d%numedge + poly_point_count - 3
+      call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
+      call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
+      call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
 
-         call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
-         call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
-         call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
+      call reallocP(meshgeom1d%edgeoffsets, meshgeom1d%numedge, keepexisting=.true., fill=-999.0_dp)
 
-         call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
-         call reallocP(meshgeom1d%edgeoffsets, meshgeom1d%numedge, keepexisting=.true., fill=-999.0_dp)
-
-         meshgeom1d%ngeometry = meshgeom1d%ngeometry + poly_point_count - 2
-         call reallocP(meshgeom1d%ngeopointx, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
-         call reallocP(meshgeom1d%ngeopointy, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
-      else
-         meshgeom1d%ngeometry = meshgeom1d%ngeometry + 2
-         call reallocP(meshgeom1d%ngeopointx, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
-         call reallocP(meshgeom1d%ngeopointy, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
-      end if
+      call reallocP(meshgeom1d%ngeopointx, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%ngeopointy, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
 
    end subroutine reallocate_meshgeom1d_arrays
 
