@@ -133,7 +133,7 @@ contains
       integer :: istart
       integer :: nlongculverts0
       integer :: mout
-      integer :: longculvertindex
+      integer :: longculvertindex, longculvertbranchindex
       character(len=IdLen) :: temppath, tempname, tempext
       logical :: write_converted_files_
 
@@ -331,6 +331,7 @@ contains
       call replaceCoordinatesInStructures(xpl, ypl, strs_ptr)
       call restorepol()
 
+      longculvertbranchindex = 0
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
       do i = 1, nstr
          str_ptr => strs_ptr%child_nodes(i)%node_ptr
@@ -353,10 +354,11 @@ contains
             write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
             call err_flush()
          else
-            if (size(longculverts(longculvertindex+1)%netlinks) > 1) then
-               longculvertindex = longculvertindex + 1
-               call prop_set(str_ptr, '', 'branchId', nbranchids(longculvertindex))
-               longculverts(longculvertindex)%branchid = nbranchids(longculvertindex)
+            longculvertindex = longculvertindex + 1
+            if (size(longculverts(longculvertindex)%netlinks) > 1) then
+               longculvertbranchindex = longculvertbranchindex + 1
+               call prop_set(str_ptr, '', 'branchId', nbranchids(longculvertbranchindex))
+               longculverts(longculvertindex)%branchid = nbranchids(longculvertbranchindex)
                call add_longculvert_branch(network, longculverts(longculvertindex))
             end if
          end if
@@ -1244,8 +1246,6 @@ contains
       end if
 
       network%brs%branch(inext)%Id = longculvert%branchId
-!network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMB
-!network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
 
    end subroutine add_longculvert_branch
 
