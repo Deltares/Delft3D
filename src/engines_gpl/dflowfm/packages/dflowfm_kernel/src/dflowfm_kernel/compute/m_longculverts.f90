@@ -59,7 +59,7 @@ module m_longculverts
    public setlongculvert1d2dlinkangles
    public initialize_Long_Culverts
    public convert1D2DLongCulverts
-   !public longculvert_check_polyline
+   public is_2D2D_longculvertlink
 
    interface realloc
       module procedure reallocLongCulverts
@@ -1062,7 +1062,6 @@ contains
          if (allocated(dxe)) then
             dxe(L) = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
          end if
-         call realloc(contactids_2D2D(:), size(contactids_2D2D) + 1)
          longculverts(i_longculvert)%netlinks(1) = L
 
       else ! Multi-point culvert
@@ -1670,5 +1669,22 @@ contains
          end do
       end if
    end function node_has_key
+
+   elemental subroutine is_2D2D_longculvertlink(L, res, i) 
+      integer, intent(in) :: L !< Flowlink number
+      logical, intent(out) :: res
+      integer, intent(out) :: i
+      res = .false.
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%netlinks)) then
+            if (size(longculverts(i)%netlinks) == 1) then
+               if ((longculverts(i)%netlinks(1) == L)) then
+                  res = .true.
+                  exit
+               end if
+            end if
+         end if
+      end do
+   end subroutine is_2D2D_longculvertlink
 
 end module m_longculverts
