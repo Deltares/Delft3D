@@ -111,7 +111,7 @@
 
    use precision, only : sp, hp
    use MessageHandling, only: msgbox, mess, LEVEL_ERROR
-   use geometry_module, only: dbdistance, getdx, getdy, vecprod, inprod, pinpok_legacy, pinpok3D
+   use geometry_module, only: dbdistance, getdx, getdy, vecprod, inprod, pinpok_legacy, pinpok3D, dbpinpol, ave3d, gaussj, getdxdy, cross, cross3D, SPHERTOCART3D
    use m_ec_triangle
    use m_ec_interpolationsettings
    use mathconsts,  only: degrad_hp
@@ -1083,7 +1083,7 @@
       YTMIN = MIN(YT(1),MIN( YT(2),YT(3) ) )
       IF (XP  >=  XTMIN .AND. XP  <=  XTMAX .AND.   &
          YP  >=  YTMIN .AND. YP  <=  YTMAX) THEN
-      CALL PINPOK(XP,YP,3,XT,YT,INTRI, jins, dmiss)
+      CALL PINPOK_LEGACY(XP,YP,3,XT,YT,INTRI, jins, dmiss)
       IF (INTRI == 1) THEN
          NRFIND    = K
          NROLDFIND = NRFIND
@@ -1750,7 +1750,7 @@
           end do
 
           if (ys(k) >= ylow .and. ys(k) <= yhih) then
-             call pinpok(xs(k), ys(k), nn, xh, yh, inhul, jins, dmiss)
+             call pinpok_legacy(xs(k), ys(k), nn, xh, yh, inhul, jins, dmiss)
              if (inhul == 1) then
                 do ivar = 1, ndim
                    select case (iav)
