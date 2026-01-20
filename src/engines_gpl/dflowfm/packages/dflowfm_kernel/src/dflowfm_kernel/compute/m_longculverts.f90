@@ -357,6 +357,8 @@ contains
             call prop_set(str_ptr, '', 'branchId', longculverts(longculvertindex)%branchId)
             if (size(longculverts(longculvertindex)%netlinks) > 1) then
                call add_longculvert_branch(network, longculverts(longculvertindex))
+            else
+               call prop_set(str_ptr, '', 'contactId', longculverts(longculvertindex)%contactId)
             end if
          end if
       end do
@@ -560,6 +562,9 @@ contains
             longculverts(nlongculverts)%allowed_flowdir = allowedFlowDirToInt(txt)
 
             call prop_get(str_ptr, '', 'branchId', longculverts(nlongculverts)%branchId, success)
+            if (.not. success) then
+               call prop_get(str_ptr, '', 'contactId', longculverts(nlongculverts)%contactID, success)
+            end if
             if (success) then
                call prop_get(str_ptr, '', 'csDefId', csDefId, success)
                if (.not. success) then
@@ -1036,6 +1041,7 @@ contains
       integer :: j, k1, k2, numculvertpoints, currentbranchindex, newnodeindex, newedgeindex, newgeomindex, newnetnodeindex
       real(kind=dp) :: x2, y2, z2, pathlength, pathdiff
       character(len=5) :: ipolychar, nodechar
+      character(:), allocatable :: longculvert_name
       integer :: poly_point_count, L
 
       poly_point_count = size(xplCulv)
@@ -1047,7 +1053,7 @@ contains
       newgeomindex = meshgeom1d%ngeometry + 1
       currentbranchindex = meshgeom1d%nbranches + 1
       write (ipolychar, '(I0)') i_longculvert
-      longculverts(i_longculvert)%branchId = 'BR_longCulvert_'//trim(ipolychar)
+      longculvert_name = 'longCulvert_'//trim(ipolychar)
 
       if (poly_point_count == 2) then
          numculvertpoints = 2
@@ -1063,8 +1069,11 @@ contains
             dxe(L) = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
          end if
          longculverts(i_longculvert)%netlinks(1) = L
+         longculverts(i_longculvert)%contactId = longculvert_name
 
       else ! Multi-point culvert
+        
+         longculverts(i_longculvert)%branchId = longculvert_name
 
          !> only multi point culverts get meshgeom1d entries
          call reallocate_meshgeom1d_arrays(poly_point_count)

@@ -42,6 +42,7 @@ module m_longculverts_data
       character(len=IdLen) :: id
       character(len=IdLen) :: branchid !< if newculverts, corresponding network branch
       character(len=IdLen) :: csdefid !< if newculverts, corresponding network crossdef
+      character(len=IdLen) :: contactId !< if newculverts, corresponding 2D-2D contact, cannot exist toghether with branchid
       integer :: numlinks !< Number of links of the long culvert
       integer, dimension(:), allocatable :: netlinks !< Net link numbers of the long culvert
       integer, dimension(:), allocatable :: flowlinks !< Flow link numbers of the long culvert
