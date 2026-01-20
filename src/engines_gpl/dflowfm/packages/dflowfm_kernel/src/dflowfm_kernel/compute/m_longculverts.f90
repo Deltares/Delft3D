@@ -56,7 +56,6 @@ module m_longculverts
    public reduceFlowAreaAtLongculverts
    public get_valve_relative_opening_c_loc
    public find1d2dculvertlinks
-   public setlongculvert1d2dlinkangles
    public initialize_Long_Culverts
    public convert1D2DLongCulverts
    public is_2D2D_longculvertlink
@@ -354,8 +353,8 @@ contains
             call err_flush()
          else
             longculvertindex = longculvertindex + 1
-            call prop_set(str_ptr, '', 'branchId', longculverts(longculvertindex)%branchId)
             if (size(longculverts(longculvertindex)%netlinks) > 1) then
+               call prop_set(str_ptr, '', 'branchId', longculverts(longculvertindex)%branchId)
                call add_longculvert_branch(network, longculverts(longculvertindex))
             else
                call prop_set(str_ptr, '', 'contactId', longculverts(longculvertindex)%contactId)
@@ -1276,13 +1275,14 @@ contains
       use m_hash_search
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use kdtree2Factory, only: treeglob
+      use m_save_ugrid_state, only: contact_cell_idx, contactnetlinks, hashlist_contactids
 
       implicit none
 
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: numcoords !< number of polyline coordinates
       type(t_longculvert), intent(inout) :: longculvert !< A givin long culvert
-      integer :: i, j, branch_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde
+      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
       integer :: ierror
@@ -1300,7 +1300,7 @@ contains
          call realloc(inodeGlob, 2, keepExisting=.false., fill=0)
 
          branch_idx = hashsearch(network%brs%hashlist, longculvert%branchId)
-
+         contact_idx = hashsearch(hashlist_contactids, longculvert%contactId)
          !Find the last 1D node of the branch
          if (branch_idx > 0 .and. network%BRS%size >= i) then
             inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
@@ -1318,6 +1318,10 @@ contains
                   end do
                end if
             end do
+         else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
+            longculvert%flownode_up = contact_cell_idx(1, contact_idx)
+            longculvert%flownode_dn = contact_cell_idx(2, contact_idx)
+            longculvert%flowlinks(1) = contactnetlinks(contact_idx)
          end if
 
          inodeGlob(1:2) = inode(1:2)
@@ -1490,7 +1494,7 @@ contains
          nodes = nodes(longculvert_indices)
 
          num_longculverts = num_longculverts + size(nodes)
-         num_newculverts = num_newculverts + count(node_has_key(nodes, 'branchId'))
+         num_newculverts = num_newculverts + count(node_has_key(nodes, 'branchId')) + count(node_has_key(nodes, 'contactId'))
          deallocate (nodes)
       end do
       if (num_longculverts > 0) then

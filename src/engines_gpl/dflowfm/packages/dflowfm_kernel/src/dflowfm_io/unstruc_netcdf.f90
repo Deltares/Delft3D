@@ -11958,7 +11958,7 @@ contains
             contacts_2D2D(1:2, i) = [n1, n2]
             call is_2D2D_longculvertlink(L, is_longculvert_contact, longculvertindex)
             if (is_longculvert_contact) then
-               contactids_2D2D(i) = longculverts(longculvertindex)%branchid !< reuse branchid for long culvert contacts
+               contactids_2D2D(i) = longculverts(longculvertindex)%contactID !< reuse branchid for long culvert contacts
             end if
          end do
       end if
