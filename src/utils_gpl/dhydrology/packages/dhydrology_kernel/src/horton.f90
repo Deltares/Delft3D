@@ -29,9 +29,8 @@ module m_horton
 
    use dhydrology_error
    use precision_basics
-   use m_flowparameters, only: epshu
 
-   implicit none	
+   implicit none(type, external)
 
    private
    
@@ -97,7 +96,6 @@ module m_horton
                inf_cap_state(i) = HORTON_CAPSTAT_NOCHANGE
 
             else if ((include_rain == 1 .and. (rainfall_local(i) >= config%min_inf_cap(i))) .or. comparereal(waterdepth(i), 0.0_dp) == 1) then
-            ! else if ((include_rain == 1 .and. (rainfall_local(i) >= config%min_inf_cap(i))) .or. comparereal(waterdepth(i), epshu) == 1) then
                
                ! Wet situation, infiltration capacity is decreasing
                inf_cap_state(i) = HORTON_CAPSTAT_DECREASE
