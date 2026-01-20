@@ -748,7 +748,6 @@ contains
 
       if (newculverts) then
          do ilongc = 1, nlongculverts
-            call setLongCulvert1D2DLinkAngles(ilongc)
             do i = 2, longculverts(ilongc)%numlinks - 1
                Lf = abs(longculverts(ilongc)%flowlinks(i))
                if (Lf > 0) then
@@ -1398,27 +1397,6 @@ contains
             continue
          end if
       end associate
-   end subroutine
-
-   subroutine setLongCulvert1D2DLinkAngles(i)
-      use m_flowgeom, only: csu, snu
-      integer, intent(in) :: i !index of current long culvert (this function is called in a loopt)
-
-      integer :: L
-
-      if (longculverts(i)%numlinks >= 3) then
-         L = abs(longculverts(i)%flowlinks(1))
-         if (L > 0) then
-            csu(L) = csu(abs(longculverts(i)%flowlinks(2)))
-            snu(L) = snu(abs(longculverts(i)%flowlinks(2)))
-         end if
-         L = abs(longculverts(i)%flowlinks(longculverts(i)%numlinks))
-         if (L > 0) then
-            csu(L) = csu(abs(longculverts(i)%flowlinks(longculverts(i)%numlinks - 1)))
-            snu(L) = snu(abs(longculverts(i)%flowlinks(longculverts(i)%numlinks - 1)))
-         end if
-      end if
-
    end subroutine
 
    !> Find 2D netcell the longculvert endpoint is located in, add a new node and return its node number
