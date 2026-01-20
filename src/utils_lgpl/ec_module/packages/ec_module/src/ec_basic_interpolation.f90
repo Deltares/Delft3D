@@ -111,13 +111,12 @@
 
    use precision, only : sp, hp
    use MessageHandling, only: msgbox, mess, LEVEL_ERROR
-   use geometry_module
+   use geometry_module, only: dbdistance, getdx, getdy, vecprod, inprod, pinpok_legacy, pinpok3D
    use m_ec_triangle
    use m_ec_interpolationsettings
    use mathconsts,  only: degrad_hp
    use kdtree2Factory
    use m_alloc, only : aerr, realloc
-   !use gridgeom
  
    interface triinterp2
       module procedure triinterp2_dbldbl
@@ -936,7 +935,7 @@
          else
             numsearched = numsearched+1
             if ( jasfer3D == 0 ) then
-               call pinpok(xp,yp,3,xv,yv,intri, jins, dmiss)
+               call pinpok_legacy(xp,yp,3,xv,yv,intri, jins, dmiss)
             else
                call pinpok3D(xp,yp,3,xv,yv,intri, dmiss, jins, 1, 1, dfac=dfac, xz=xz, yz=yz)
             end if
