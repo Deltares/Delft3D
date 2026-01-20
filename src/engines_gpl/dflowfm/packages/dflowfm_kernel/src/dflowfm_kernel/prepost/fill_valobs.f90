@@ -54,7 +54,6 @@ contains
                         jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
                         use_density
       use m_flowtimes, only: handle_extra
-      use m_hydrology_data, only: horton_state
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
       use m_observations_data, only : valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
@@ -71,8 +70,8 @@ contains
          ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, &
          ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, &
          ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
-         ipnt_infiltcap, ipnt_infiltact, ipnt_infilthortonstate, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, &
-         ipnt_qeva, ipnt_qcon, ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot
+         ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, & 
+         ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot
       use m_sediment, only: jahissigwav, stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
       use Timers, only: timon, timstrt, timstop
       use m_gettaus, only: gettaus
@@ -568,11 +567,6 @@ contains
                else
                   valobs(i, IPNT_INFILTACT) = 0.0_dp
                end if
-            end if
-
-            ! Write horton infiltration state (0: NOCHANGE, 1: DECREASING, 2: RECOVERING)
-            if (infiltrationmodel == DFM_HYD_INFILT_HORTON .and. jahisinfilt > 0) then
-               valobs(i, IPNT_INFILTHORTONSTATE) = horton_state(k)
             end if
 
 !        Heatflux
