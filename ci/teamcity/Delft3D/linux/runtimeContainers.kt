@@ -36,6 +36,10 @@ object LinuxRuntimeContainers : BuildType({
         }
     }
 
+    params {
+        param("file_path", "dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
+    }
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -43,6 +47,34 @@ object LinuxRuntimeContainers : BuildType({
 
     steps {
         mergeTargetBranch {}
+        step {
+            name = "Download artifact from Nexus"
+            type = "RawDownloadNexusLinux"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_username", "%nexus_username%")
+            param("download_to", ".")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+        }
+        script {
+            name = "Extract artifact"
+            enabled = false
+            scriptContent = """
+                echo "Extracting %file_path%..."
+
+                tar -xzf %file_path%
+
+                mkdir dimrset
+
+                cp -r lnx64/bin dimrset/bin
+
+                cp -r lnx64/lib dimrset/lib
+
+                cp -r lnx64/share dimrset/share
+            """.trimIndent()
+        }
         exec {
             name = "Copy example and readme.txt"
             path = "ci/teamcity/Delft3D/linux/scripts/copyExampleAndReadMe.sh"

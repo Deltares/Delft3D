@@ -1,7 +1,7 @@
 module properties
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -37,9 +37,10 @@ module properties
    use string_module, only: str_tolower, str_lower, get_version_major_minor_integer
 
    implicit none
+   integer, parameter, public :: max_prop_length = 1024
    private
 
-   integer, parameter :: max_length = 256
+   integer, parameter, public :: max_length = max_prop_length
    integer, parameter :: xml_buffer_length = 1000
    character(len=1), parameter :: space = ' '
    character(len=1), parameter :: tab = achar(9)

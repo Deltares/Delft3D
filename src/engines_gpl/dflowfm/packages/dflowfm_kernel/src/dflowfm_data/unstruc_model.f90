@@ -1,6 +1,6 @@
 !----AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ module unstruc_model
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
    use netcdf, only: nf90_double
-   use properties, only: prop_get, prop_file, tree_create, tree_destroy
+   use properties, only: prop_get, prop_file, tree_create, tree_destroy, max_prop_length
    use m_waveconst
 
    implicit none
@@ -110,99 +110,99 @@ module unstruc_model
 
    integer :: md_paths_relto_parent = 0 !< Option whether or not (1/0) to resolve filenames (e.g. inside the *.ext file) w.r.t. their direct parent, instead of the toplevel MDU working dir. (UNST-1144)
    type(t_filenames) :: md_1dfiles
-   character(len=255) :: md_netfile = ' ' !< Net definition                    (e.g., *_net.nc)
-   character(len=255) :: md_flowgeomfile = ' ' !< Storing flow geometry (output)    (e.g., *_flowgeom.nc)
-   character(len=255) :: md_dryptsfile = ' ' !< Dry points file (list)            (e.g., *.xyz, *.pol)
-   character(len=255) :: md_encfile = ' ' !< Enclosure file (list)             (e.g., *.xyz, *.pol)
-   character(len=255) :: md_s1inifile = ' ' !< Initial water levels sample file using floodfill  (e.g., *.xyz)
-   character(len=255) :: md_ldbfile = ' ' !< Land boundary file    (show)      (e.g., *.ldb)
-   character(len=255) :: md_plifile = ' ' !< polylinefile file     (show)      (e.g., *.pli)
-   character(len=255) :: md_thdfile = ' ' !< Thin dam file (polygons)          (e.g., *_thd.pli) (block flow)
-   character(len=255) :: md_cutcelllist = ' ' !< contains list of cutcell polygons (e.g., *_cut.lst)
-   character(len=255) :: md_fixedweirfile = ' ' !< Fixed weir pliz's                 (e.g., *_fxw.pli), = pli with x,y, Z  column
-   character(len=255) :: md_pillarfile = ' ' !< pillar pliz's                     (e.g., *_pillar.pli), = pli with x,y, diameter and Cd columns
+   character(len=max_prop_length) :: md_netfile = ' ' !< Net definition                    (e.g., *_net.nc)
+   character(len=max_prop_length) :: md_flowgeomfile = ' ' !< Storing flow geometry (output)    (e.g., *_flowgeom.nc)
+   character(len=max_prop_length) :: md_dryptsfile = ' ' !< Dry points file (list)            (e.g., *.xyz, *.pol)
+   character(len=max_prop_length) :: md_encfile = ' ' !< Enclosure file (list)             (e.g., *.xyz, *.pol)
+   character(len=max_prop_length) :: md_s1inifile = ' ' !< Initial water levels sample file using floodfill  (e.g., *.xyz)
+   character(len=max_prop_length) :: md_ldbfile = ' ' !< Land boundary file    (show)      (e.g., *.ldb)
+   character(len=max_prop_length) :: md_plifile = ' ' !< polylinefile file     (show)      (e.g., *.pli)
+   character(len=max_prop_length) :: md_thdfile = ' ' !< Thin dam file (polygons)          (e.g., *_thd.pli) (block flow)
+   character(len=max_prop_length) :: md_cutcelllist = ' ' !< contains list of cutcell polygons (e.g., *_cut.lst)
+   character(len=max_prop_length) :: md_fixedweirfile = ' ' !< Fixed weir pliz's                 (e.g., *_fxw.pli), = pli with x,y, Z  column
+   character(len=max_prop_length) :: md_pillarfile = ' ' !< pillar pliz's                     (e.g., *_pillar.pli), = pli with x,y, diameter and Cd columns
    integer :: md_pillar_use_far_field_velocity = 0 !< 0: use local velocity, 1: use far-field velocity for computing pillar drag force
-   character(len=255) :: md_roofsfile = ' ' !< Roof pliz's                      (e.g., *_roof.pli), = pli with x,y, Z  column
-   character(len=255) :: md_gulliesfile = ' ' !< gullies pliz's                    (e.g., *_gul.pli), = pli with x,y, Z  column
-   character(len=255) :: md_vertplizfile = ' ' !< Vertical layering pliz's          (e.g., *_vlay.pliz), = pliz with x,y, Z, first Z =nr of layers, second Z = laytyp
-   character(len=255) :: md_proflocfile = ' ' !< X,Y,and a profile reference nr    (e.g., *_profloc.xyz)
-   character(len=255) :: md_profdeffile = ' ' !< Profile definition of these nrs   (e.g., *_profdef.txt)
-   character(len=255) :: md_profdefxyzfile = ' ' !< XYZ profile definition in pliz of these nrs ic yz-def (e.g., *_xyzprof.pliz)
-   character(len=255) :: md_1d2dlinkfile = ' ' !< File containing custom parameters for 1D2D links (e.g., *.ini)
-   character(len=255) :: md_pipefile = ' ' !< File containing pipe-based 'culverts' (e.g., *.pliz)
-   character(len=255) :: md_shipdeffile = ' ' !< File containing shipdefinition    (e.g., *.shd)
-   character(len=255) :: md_inifieldfile = ' ' !< File of initial fields            (e.g., *.ini)
+   character(len=max_prop_length) :: md_roofsfile = ' ' !< Roof pliz's                      (e.g., *_roof.pli), = pli with x,y, Z  column
+   character(len=max_prop_length) :: md_gulliesfile = ' ' !< gullies pliz's                    (e.g., *_gul.pli), = pli with x,y, Z  column
+   character(len=max_prop_length) :: md_vertplizfile = ' ' !< Vertical layering pliz's          (e.g., *_vlay.pliz), = pliz with x,y, Z, first Z =nr of layers, second Z = laytyp
+   character(len=max_prop_length) :: md_proflocfile = ' ' !< X,Y,and a profile reference nr    (e.g., *_profloc.xyz)
+   character(len=max_prop_length) :: md_profdeffile = ' ' !< Profile definition of these nrs   (e.g., *_profdef.txt)
+   character(len=max_prop_length) :: md_profdefxyzfile = ' ' !< XYZ profile definition in pliz of these nrs ic yz-def (e.g., *_xyzprof.pliz)
+   character(len=max_prop_length) :: md_1d2dlinkfile = ' ' !< File containing custom parameters for 1D2D links (e.g., *.ini)
+   character(len=max_prop_length) :: md_pipefile = ' ' !< File containing pipe-based 'culverts' (e.g., *.pliz)
+   character(len=max_prop_length) :: md_shipdeffile = ' ' !< File containing shipdefinition    (e.g., *.shd)
+   character(len=max_prop_length) :: md_inifieldfile = ' ' !< File of initial fields            (e.g., *.ini)
 
-   character(len=255) :: md_restartfile = ' ' !< File containing map-files to restart a computation          (e.g., *_map.nc), input only, NOT used for storing the names of output restart files.
+   character(len=max_prop_length) :: md_restartfile = ' ' !< File containing map-files to restart a computation          (e.g., *_map.nc), input only, NOT used for storing the names of output restart files.
 
-   character(len=255) :: md_extfile = ' ' !< External forcing specification file (e.g., *.ext)
-   character(len=255) :: md_extfile_new = ' ' !< External forcing specification file new style (bct format), (e.g., *.ext)
-   character(len=255) :: md_extfile_dir = ' ' !< Directory containing the old-style external forcing specification file (e.g., *.ext) (relative to MDU/current working dir)
+   character(len=max_prop_length) :: md_extfile = ' ' !< External forcing specification file (e.g., *.ext)
+   character(len=max_prop_length) :: md_extfile_new = ' ' !< External forcing specification file new style (bct format), (e.g., *.ext)
+   character(len=max_prop_length) :: md_extfile_dir = ' ' !< Directory containing the old-style external forcing specification file (e.g., *.ext) (relative to MDU/current working dir)
 
-   character(len=255) :: md_structurefile = ' ' !< Structure file, (e.g., *.ini)
-   character(len=255) :: md_structurefile_dir = ' ' !< Directory containing the structure file (e.g., *.ini) (relative to MDU/current working dir).
+   character(len=max_prop_length) :: md_structurefile = ' ' !< Structure file, (e.g., *.ini)
+   character(len=max_prop_length) :: md_structurefile_dir = ' ' !< Directory containing the structure file (e.g., *.ini) (relative to MDU/current working dir).
 
-   character(len=255) :: md_wavefile = ' ' !< File containing wave input (e.g., *_wave.nc)
-   character(len=255) :: md_surfbeatfile = ' ' !< File containing surfbeat input (e.g., params.txt)
+   character(len=max_prop_length) :: md_wavefile = ' ' !< File containing wave input (e.g., *_wave.nc)
+   character(len=max_prop_length) :: md_surfbeatfile = ' ' !< File containing surfbeat input (e.g., params.txt)
 
-   character(len=255) :: md_sedfile = ' ' !< File containing sediment characteristics (e.g., *.sed)
-   character(len=255) :: md_morfile = ' ' !< File containing morphology settings (e.g., *.mor)
-   character(len=255) :: md_dredgefile = ' ' !< File containing dredging settings (e.g., *.dad)
-   character(len=255) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
-   character(len=255) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
-   character(len=255) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
+   character(len=max_prop_length) :: md_sedfile = ' ' !< File containing sediment characteristics (e.g., *.sed)
+   character(len=max_prop_length) :: md_morfile = ' ' !< File containing morphology settings (e.g., *.mor)
+   character(len=max_prop_length) :: md_dredgefile = ' ' !< File containing dredging settings (e.g., *.dad)
+   character(len=max_prop_length) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
+   character(len=max_prop_length) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
+   character(len=max_prop_length) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
 
-   character(len=1024) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
+   character(len=max_prop_length) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
    integer :: md_delete_observation_points_outside_grid !< 0 - do not delete, 1 - delete
-   character(len=255) :: md_crsfile = ' ' !< File containing cross sections (e.g., *_crs.pli, observation cross section *_crs.ini)
-   character(len=255) :: md_rugfile = ' ' !< File containing runup gauges (e.g., *_rug.pli)
-   character(len=255) :: md_foufile = ' ' !< File containing fourier modes to be analyzed
+   character(len=max_prop_length) :: md_crsfile = ' ' !< File containing cross sections (e.g., *_crs.pli, observation cross section *_crs.ini)
+   character(len=max_prop_length) :: md_rugfile = ' ' !< File containing runup gauges (e.g., *_rug.pli)
+   character(len=max_prop_length) :: md_foufile = ' ' !< File containing fourier modes to be analyzed
 
-   character(len=255) :: md_hisfile = ' ' !< Output history file for monitoring  (e.g., *_his.nc)
-   character(len=255) :: md_mapfile = ' ' !< Output map     file for full flow fields (e.g., *_map.nc)
-   character(len=255) :: md_classmapfile = ' ' !< Output classmap file for full flow fields in classes (formerly: incremental file) (e.g., *_clm.nc)
-   character(len=255) :: md_comfile = ' ' !< Output com     file for communication (e.g., *_com.nc)
-   character(len=255) :: md_timingsfile = ' ' !< Output timings file (auto-set)
-   character(len=255) :: md_avgwavquantfile = ' ' !< Output map file for time-averaged wave output (e.g., *_wav.nc)
-   character(len=255) :: md_avgsedquantfile = ' ' !< Output map file for time-averaged sedmor output (e.g., *_sed.nc)
-   character(len=255) :: md_avgsedtrailsfile = ' ' !< Output map file for time-averaged sedtrails output (e.g., *_sedtrails.nc)
-   character(len=255) :: md_waqfilebase = ' ' !< File basename for all Delwaq files. (defaults to md_ident)
-   character(len=255) :: md_waqoutputdir = ' ' !< Output directory for all WAQ communication files (waqgeom, vol, flo, etc.)
-   character(len=255) :: md_waqhoraggr = ' ' !< DELWAQ output horizontal aggregation file (*.dwq)
-   character(len=255) :: md_waqvertaggr = ' ' !< DELWAQ output vertical aggregation file (*.vag)
+   character(len=max_prop_length) :: md_hisfile = ' ' !< Output history file for monitoring  (e.g., *_his.nc)
+   character(len=max_prop_length) :: md_mapfile = ' ' !< Output map     file for full flow fields (e.g., *_map.nc)
+   character(len=max_prop_length) :: md_classmapfile = ' ' !< Output classmap file for full flow fields in classes (formerly: incremental file) (e.g., *_clm.nc)
+   character(len=max_prop_length) :: md_comfile = ' ' !< Output com     file for communication (e.g., *_com.nc)
+   character(len=max_prop_length) :: md_timingsfile = ' ' !< Output timings file (auto-set)
+   character(len=max_prop_length) :: md_avgwavquantfile = ' ' !< Output map file for time-averaged wave output (e.g., *_wav.nc)
+   character(len=max_prop_length) :: md_avgsedquantfile = ' ' !< Output map file for time-averaged sedmor output (e.g., *_sed.nc)
+   character(len=max_prop_length) :: md_avgsedtrailsfile = ' ' !< Output map file for time-averaged sedtrails output (e.g., *_sedtrails.nc)
+   character(len=max_prop_length) :: md_waqfilebase = ' ' !< File basename for all Delwaq files. (defaults to md_ident)
+   character(len=max_prop_length) :: md_waqoutputdir = ' ' !< Output directory for all WAQ communication files (waqgeom, vol, flo, etc.)
+   character(len=max_prop_length) :: md_waqhoraggr = ' ' !< DELWAQ output horizontal aggregation file (*.dwq)
+   character(len=max_prop_length) :: md_waqvertaggr = ' ' !< DELWAQ output vertical aggregation file (*.vag)
 
-   character(len=255) :: md_partitionfile = ' ' !< File with domain partitioning polygons (e.g. *_part.pol)
-   character(len=255) :: md_outputdir = ' ' !< Output directory for map-, his-, rst-, dat- and timings-files
+   character(len=max_prop_length) :: md_partitionfile = ' ' !< File with domain partitioning polygons (e.g. *_part.pol)
+   character(len=max_prop_length) :: md_outputdir = ' ' !< Output directory for map-, his-, rst-, dat- and timings-files
 
 !   processes (WAQ)
-   character(len=255) :: md_subfile = ' ' !< substance file
-   character(len=255) :: md_ehofile = ' ' !< extra history output file
-   character(len=255) :: md_pdffile = ' ' !< [-] process library file
-   character(len=255) :: md_oplfile = ' ' !< [-] open process library dll/so file
-   character(len=255) :: md_blmfile = ' ' !< [-] BLOOM aglae species definition file
-   character(len=255) :: md_sttfile = ' ' !< statistics definition file
+   character(len=max_prop_length) :: md_subfile = ' ' !< substance file
+   character(len=max_prop_length) :: md_ehofile = ' ' !< extra history output file
+   character(len=max_prop_length) :: md_pdffile = ' ' !< [-] process library file
+   character(len=max_prop_length) :: md_oplfile = ' ' !< [-] open process library dll/so file
+   character(len=max_prop_length) :: md_blmfile = ' ' !< [-] BLOOM aglae species definition file
+   character(len=max_prop_length) :: md_sttfile = ' ' !< statistics definition file
    real(kind=dp) :: md_thetav_waq = 0.0_dp !< thetav for waq
    real(kind=dp) :: md_dt_waqproc = 0.0_dp !< processes time step
    real(kind=dp) :: md_dt_waqbal = 0.0_dp !< mass balance output time step (old)
 
    ! TODO: reading for trachytopes is still within rdtrt, below was added for partitioning (when no initialization)
    character(len=4) :: md_trtrfile = ' ' !< Variable that stores information if trachytopes are used ('Y') or not ('N')
-   character(len=255) :: md_trtdfile = ' ' !< File containing trachytopes definitions
-   character(len=255) :: md_trtlfile = ' ' !< File containing distribution of trachytope definitions
+   character(len=max_prop_length) :: md_trtdfile = ' ' !< File containing trachytopes definitions
+   character(len=max_prop_length) :: md_trtlfile = ' ' !< File containing distribution of trachytope definitions
    integer :: md_mxrtrach = 8 !< Maximum recursion level for combined trachytope definitions
-   character(len=255) :: md_trtcllfile = ' ' !< Overall calibration factor file for roughness from trachytopes (see also [calibration] block)
+   character(len=max_prop_length) :: md_trtcllfile = ' ' !< Overall calibration factor file for roughness from trachytopes (see also [calibration] block)
    real(kind=dp) :: md_mnhtrach = 0.1_dp !< Minimum water depth for roughness computations
    integer :: md_mthtrach = 1 !< Area averaging method, 1: Nikuradse k based, 2: Chezy C based (parallel and serial)
 
-   character(len=255) :: md_mptfile = ' ' !< File (.mpt) containing fixed map output times w.r.t. RefDate (in TUnit)
-   character(len=255) :: md_ctvfile = ' ' !< File (.ctv) containing fixed com output times w.r.t. RefDate (in TUnit)
+   character(len=max_prop_length) :: md_mptfile = ' ' !< File (.mpt) containing fixed map output times w.r.t. RefDate (in TUnit)
+   character(len=max_prop_length) :: md_ctvfile = ' ' !< File (.ctv) containing fixed com output times w.r.t. RefDate (in TUnit)
 
 ! calibration factor
-   character(len=256) :: md_cldfile = ' ' !< File containing calibration definitions
-   character(len=256) :: md_cllfile = ' ' !< File containing distribution of calibration definitions area percentage
+   character(len=max_prop_length) :: md_cldfile = ' ' !< File containing calibration definitions
+   character(len=max_prop_length) :: md_cllfile = ' ' !< File containing distribution of calibration definitions area percentage
 
 ! incremental output
-   character(len=256) :: md_classmap_file = ' ' !< File for output of classes output
+   character(len=max_prop_length) :: md_classmap_file = ' ' !< File for output of classes output
 
    character(len=200) :: md_snapshotdir = ' ' !< Directory where hardcopy snapshots should be saved.
                                                  !! Created if non-existent.
@@ -455,7 +455,7 @@ contains
          return
       end if
 
-      ! load the caching file - if there is any
+      ! Load the caching file - if there is any
       call load_caching_file(md_ident, md_netfile, md_usecaching)
 
       ! read and proces dflow1d model
@@ -679,10 +679,10 @@ contains
       use m_dambreak_breach, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
       use m_wind, only: wind_drag_type, cdb, wdb, jaheat_eachstep, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, pavini, pavbnd, &
-          jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext,jaevap, jawind, &
-          wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
-          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
-          CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
+                        jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext, jaevap, jawind, &
+                        wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
+                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
+                        CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
@@ -2176,13 +2176,13 @@ contains
       end if
 
       ! If no temperature is involved, then do not write temperature to output map/his files
-      if (temperature_model == TEMPERATURE_MODEL_NONE) then 
+      if (temperature_model == TEMPERATURE_MODEL_NONE) then
          jamaptem = 0
          jahistem = 0
       end if
 
       ! If no salinity is involved, then do not write salinity to output map/his files
-      if (jasal < 1) then 
+      if (jasal < 1) then
          jamapsal = 0
          jahissal = 0
       end if
@@ -2640,9 +2640,9 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_wind, only: jaspacevarcharn, jaheat_eachstep, wind_drag_type, cdb, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, &
-          pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
-          CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
-          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003      
+                        pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
+                        CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
+                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
@@ -2672,6 +2672,7 @@ contains
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
+      use m_fm_icecover, only: fm_ice_null, ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
       use m_flow_validatestate_data, only: dtavg_min_err, s01maxavg_min_err, s01_max_err, u01_max_err, umag_max_err, s1_max_warn, u1abs_max_warn, umag_max_err, ssc_max_err, umag_max_warn
 
       integer, intent(in) :: mout !< File pointer where to write to.
@@ -3564,7 +3565,7 @@ contains
 
       if (jaspacevarcharn .and. wind_drag_type /= CD_TYPE_CHARNOCK1955) then
          write (msgbuf, '(a,i0,a)') 'A (time- and space-varying) Charnock coefficient was provided via the .ext file. [wind] ICdtyp has been reset from ', &
-             wind_drag_type, ' to 4 (Charnock).'
+            wind_drag_type, ' to 4 (Charnock).'
          call mess(LEVEL_WARN, msgbuf)
          wind_drag_type = CD_TYPE_CHARNOCK1955
       end if
@@ -3792,6 +3793,12 @@ contains
          call prop_set(prop_ptr, 'calibration', 'UseCalibration', jacali, 'Activate calibration factor friction multiplier (1 = yes, 0 = no)') ! Could be updated to check if both strings are empty or filled
          call prop_set(prop_ptr, 'calibration', 'DefinitionFile', trim(md_cldfile), 'File (*.cld) containing calibration definitions')
          call prop_set(prop_ptr, 'calibration', 'AreaFile', trim(md_cllfile), 'File (*.cll) containing area distribution of calibration definitions')
+      end if
+
+      ! Ice
+      if (writeall .or. ja_icecover /= ICECOVER_NONE) then
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'IceCoverModel', trim(fm_ice_convert_value_to_string('IceCoverModel', ice_data)), 'Type of ice model (None, External, Semtner)')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'AddIceToMap', ice_data%mapout%default, 'Add ice quantities to map file (1 = yes, 0 = no)')
       end if
 
 ! Output

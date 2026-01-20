@@ -9805,7 +9805,7 @@
 
     <!-- Test cases for robust input -->
     <testCase name="e03_f14_c01_rewind_timeseries" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f14_robust_input/robust-001</path>
+        <path version="2025-12-23T14:30:00">e03_waq/f14_robust_input/c01_rewind_timeseries</path>
         <checks>
             <file name="robust-001.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">

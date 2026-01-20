@@ -5,7 +5,7 @@
 # kill_d3dflow.tcl - Script to kill running processes, identified with mask strings
 # belonging to Delft3D-FLOW on specified hosts
 #
-# Copyright (C)  Stichting Deltares, 2011-2025.
+# Copyright (C)  Stichting Deltares, 2011-2026.
 #
 # Authors: Adri Mourits
 #

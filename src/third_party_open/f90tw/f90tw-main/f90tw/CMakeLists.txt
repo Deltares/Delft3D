@@ -159,6 +159,7 @@ function(F90TWTEST NAME)
             COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${NAME}> $<TARGET_RUNTIME_DLLS:${NAME}>
             COMMAND_EXPAND_LISTS
         )
+        
     endif()
     gtest_discover_tests(${NAME} WORKING_DIRECTORY $<TARGET_FILE_DIR:${NAME}>)
 endfunction()

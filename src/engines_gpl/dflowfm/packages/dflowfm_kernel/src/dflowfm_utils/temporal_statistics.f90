@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2024-2025.
+!  Copyright (C)  Stichting Deltares, 2024-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
