@@ -320,6 +320,7 @@ contains
         real(sp) :: vznew                   ! particle velocity in z dir. corrected
         real(sp) :: vzs                     ! vertical velocity due to settling
         real(sp) :: wdirr                   ! is wind direction in radians
+        real(sp) :: wdirr_lee               ! wind direction corrected for leeway
         real(sp) :: wstick                  ! used in fraction computation with oil
         real(sp) :: wsum                    ! used to sum the weights of a particle
         real(sp) :: xnew                    ! new x value
@@ -1269,18 +1270,20 @@ contains
                     ynew = ynew + (cdrag * (vyw - vyr) / dyp) * itdelt    !
                 endif
             else
+                ! Leeway feature
                 if (apply_wind_drag) then
                     if (kp==ktopp) then
                         zpabs = zp * locdep(n0, kp)
                         if (zpabs < max_wind_drag_depth) then
                             leeway_ang_sign = mod(ipart, 3) - 1
-                            vxw  = - wvelo(n0) * sin( wdirr + leeway_ang_sign * defang + sangl )
-                            vyw  = - wvelo(n0) * cos( wdirr + leeway_ang_sign * defang + sangl )
-                            vw_net = sqrt((vxw-vxr)**2 + (vyw-vyr)**2)  ! net wind for drag (to accommodate scaling the modifier)
+                            wdirr_lee  = wdirr + leeway_ang_sign * defang + sangl
+                            vxw        = - wvelo(n0) * sin(wdirr_lee)
+                            vyw        = - wvelo(n0) * cos(wdirr_lee)
+                            vw_net     = sqrt((vxw-vxr)**2 + (vyw-vyr)**2)  ! net wind for drag (to accommodate scaling the modifier)
                             ! drag on the difference vector: cd * (wind - flow)
-                            if ( vw_net .gt. 0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
-                                xnew = xnew  + ((cdrag*(vxw-vxr) + leeway_modifier * sin ((vxw-vxr)/vw_net))/dxp) * itdelt    ! This modifier may need to be adjusted to the angle
-                                ynew = ynew  + ((cdrag*(vyw-vyr) + leeway_modifier * cos ((vyw-vyr)/vw_net))/dyp) * itdelt    !
+                            if ( vw_net > 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
+                                xnew = xnew  + (cdrag*(vxw-vxr) + leeway_modifier * sin(wdirr_lee)) * itdelt    ! This modifier may need to be adjusted to the angle
+                                ynew = ynew  + (cdrag*(vyw-vyr) + leeway_modifier * cos(wdirr_lee)) * itdelt    !
                             endif
                         end if
                     end if

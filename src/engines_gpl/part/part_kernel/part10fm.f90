@@ -357,6 +357,7 @@ contains
         real(kind = dp) :: tp                      ! real value of iptime(ipart)
         real(kind = dp) :: trp                     ! horizontal random walk
         real(kind = dp) :: wdirr                   ! is wind direction in radians
+        real(kind = dp) :: wdirr_lee               ! wind direction corrected for leeway
         real(kind = dp) :: defang_rad              ! deflection angle in radians
         real(kind = dp), dimension(noslay)  :: totdepthlay             ! total depth (below water surface) of bottom of layers
         real(kind = dp) :: thicknessl, depthp              ! layerthickness, depth particle
@@ -419,8 +420,10 @@ contains
         uy0 = u0y(mpart(ipart)) + alphafm(mpart(ipart)) * (ypart(ipart) - yzwcell(mpart(ipart)))
         ux0old = u0x(mpartold) + alphafm(mpartold) * (xpartold - xzwcell(mpartold))  ! in m/s ?
         uy0old = u0y(mpartold) + alphafm(mpartold) * (ypartold - yzwcell(mpartold))
+
         dwx = cdrag * (dpxwind - ux0) * dts
         dwy = cdrag * (dpywind - uy0) * dts  !this is for carthesian grids.
+
         ! TODO implement the drag for near surface particles, in part10 this is resolved by, this needs to be done for fm:
         if (apply_wind_drag) then  ! calculate particle deth from surface
             partcel = abs(cell2nod(mpart(ipart)))  ! the segment number of the layer 1
@@ -443,16 +446,17 @@ contains
                 depthp = totdepthlay(partlay-1) + thicknessl * hpart(ipart)
             endif
 
-            if (depthp .lt. max_wind_drag_depth) then
-                if ( leeway ) leeway_ang_sign = float(mod(ipart, 3) - 1)
-                vxw  = - wvelo(mpart(ipart)) * sin( wdirr + leeway_ang_sign * defang_rad )
-                vyw  = - wvelo(mpart(ipart)) * cos( wdirr + leeway_ang_sign * defang_rad )
-                vw_net = sqrt((vxw-ux0)**2 + (vyw-uy0)**2)  ! net wind for drag (to accommodate scaling the modifier)
+            if (depthp < max_wind_drag_depth .and. leeway) then
+                leeway_ang_sign = float(mod(ipart, 3) - 1)
+
+                wdirr_lee = wdirr + leeway_ang_sign * defang_rad
+                vxw       = - wvelo(mpart(ipart)) * sin(wdirr_lee)
+                vyw       = - wvelo(mpart(ipart)) * cos(wdirr_lee)
 
                 ! drag on the difference vector: cd * (wind - flow)
-                if ( abs( vw_net ) .gt. 0 .and. leeway ) then    ! if no net wind velocity (so no drag) then nothing will happen
-                    dwx = ((cdrag*(vxw-ux0old) + leeway_modifier * sin ((vxw-ux0old)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
-                    dwy = ((cdrag*(vyw-uy0old) + leeway_modifier * cos ((vyw-uy0old)/vw_net))) * dts    !
+                if ( abs(vxw-ux0old) == 0.0 .and. abs(vyw-uy0old) == 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
+                    dwx = (cdrag*(vxw-ux0old) + leeway_modifier * sin(wdirr_lee)) * dts    ! THis modifier may need to be adjusted de to the angle
+                    dwy = (cdrag*(vyw-uy0old) + leeway_modifier * cos(wdirr_lee)) * dts    !
                 endif
             end if
         end if
@@ -483,7 +487,7 @@ contains
             dpywind = windcurratio * uy0old
             dpxwind = windcurratio * ux0old
 
-            !now we can calculate the new displacement in the direction of hte flow
+            ! now we can calculate the new displacement in the direction of the flow
             dwx = (cdrag * (dpxwind - ux0old)) * dts
             dwy = (cdrag * (dpywind - uy0old)) * dts
 
