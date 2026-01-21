@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var
+
+implicit none
+
+private
+
+public :: bmi_get_var
+
+contains
+
   select case(var_name)
   case("DFM_COMM_DFMWORLD") !<  [-] The MPI communicator for dflowfm (FORTRAN handle). {"rank": 0}
      x = c_loc(DFM_COMM_DFMWORLD)
@@ -36,6 +46,8 @@
      x = c_loc(hwav)
   case("twav") !<  [s] wave period {"location": "face", "shape": ["ndx"]}
      x = c_loc(twav)
+  case("twavcom") !<  [s] wave period from external source {"location": "face", "shape": ["ndx"]}
+     x = c_loc(twavcom)
   case("uorb") !<  [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
      x = c_loc(uorb)
   case("bodsed") !<  [kg m-2] Available sediment in the bed in flow cell center. {"location": "face", "shape": ["stmpar%morlyr%settings%nfrac", "ndx"], "internal": "stmpar%morlyr%state%bodsed"}
@@ -78,19 +90,9 @@
      x = c_loc(ActEvap)
   case("infilt") !<  [m3 s-1] Actual infiltration flux at current time {"location": "face", "shape": ["ndx"]}
      x = c_loc(infilt)
-  case("infiltcap0") !<  [mm h-1] Maximum infiltration capacity on each cell at previous timestep {"location": "face", "shape": ["ndx"]}
-     x = c_loc(infiltcap0)
   case("infiltcap") !<  [m s-1] Maximum infiltration capacity on each cell {"location": "face", "shape": ["ndx"]}
      x = c_loc(infiltcap)
-  case("HortonMinInfCap") !<  [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(horton_infiltration_config%min_inf_cap)
-  case("HortonMaxInfCap") !<  [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(horton_infiltration_config%max_inf_cap)
-  case("HortonDecreaseRate") !<  [1/hr] Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(horton_infiltration_config%decrease_rate)
-  case("HortonRecoveryRate") !<  [1/hr] Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(horton_infiltration_config%recovery_rate)
-  case("HortonState") !<  [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
+  case("horton_state") !<  [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
      x = c_loc(horton_state)
   case("shx") !<  [m] current position {"shape": ["nshiptxy"]}
      x = c_loc(shx)
@@ -152,7 +154,7 @@
      x = c_loc(numlatsg)
   case("qplat") !<  [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
      x = c_loc(qplat)
-  case("qqlat") !<  [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","nlatnd"]}
+  case("qqlat") !<  [m3/s] Lateral discharge at xz,yz {"location": "face": ["num_layers","nlatnd"]}
      x = c_loc(qqlat)
   case("balat") !<  [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
      x = c_loc(balat)
@@ -178,8 +180,10 @@
      x = c_loc(nnlat)
   case("kclat") !<  [-] for each cell: 0 when not accepting lateral discharge (e.g. pipe) {"location": "face", "shape": ["ndx"]}
      x = c_loc(kclat)
-  case("Qsunmap") !<  [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
-     x = c_loc(Qsunmap)
+  case("qsunmap") !<  [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
+     x = c_loc(qsunmap)
+  case("secchisp") !<  [m] Space-varying secchi depth {"location": "face", "shape": ["ndx"]}
+     x = c_loc(secchisp)
   case("zbndz") !<  [m] waterlevel boundary points function {"location": "edge", "shape": ["nbndz"]}
      x = c_loc(zbndz)
   case("zbndu") !<  [m/s] velocity   boundary points function {"location": "edge", "shape": ["nbndu"]}
@@ -190,6 +194,8 @@
      x = c_loc(turkin1)
   case("vicwws") !<  [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
      x = c_loc(vicwws)
+  case("difwws") !<  [m2/s] vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+     x = c_loc(difwws)
   case("rnveg") !<  [1/m2] 3D plant density , 2D part is basis input (1/m2) {"location": "face", "shape": ["ndkx"]}
      x = c_loc(rnveg)
   case("diaveg") !<  [m] 3D plant diameter, 2D part is basis input (m) {"location": "face", "shape": ["ndkx"]}
@@ -384,3 +390,5 @@
      x = c_loc(ndx1d)
   end select
 
+
+end module m_bmi_get_var

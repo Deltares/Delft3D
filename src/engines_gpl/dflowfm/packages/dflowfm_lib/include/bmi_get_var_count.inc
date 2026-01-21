@@ -27,7 +27,19 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-  integer, parameter :: var_count = 177
+module m_bmi_get_var_count
+
+implicit none
+
+private
+
+public :: bmi_get_var_count
+
+contains
+
+  integer, parameter :: var_count = 175
 
 
 
+
+end module m_bmi_get_var_count

@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_location
+
+implicit none
+
+private
+
+public :: bmi_get_var_location
+
+contains
+
 select case(var_name)
   case("DFM_COMM_DFMWORLD")
     location_name = ""
@@ -35,6 +45,8 @@ select case(var_name)
   case("hwav")
     location_name = "face"
   case("twav")
+    location_name = "face"
+  case("twavcom")
     location_name = "face"
   case("uorb")
     location_name = "face"
@@ -78,19 +90,9 @@ select case(var_name)
     location_name = "face"
   case("infilt")
     location_name = "face"
-  case("infiltcap0")
-    location_name = "face"
   case("infiltcap")
     location_name = "face"
-  case("HortonMinInfCap")
-    location_name = "face"
-  case("HortonMaxInfCap")
-    location_name = "face"
-  case("HortonDecreaseRate")
-    location_name = "face"
-  case("HortonRecoveryRate")
-    location_name = "face"
-  case("HortonState")
+  case("horton_state")
     location_name = "face"
   case("shx")
     location_name = ""
@@ -153,7 +155,7 @@ select case(var_name)
   case("qplat")
     location_name = ""
   case("qqlat")
-    location_name = "face"
+    location_name = ""
   case("balat")
     location_name = ""
   case("qplatCum")
@@ -178,7 +180,9 @@ select case(var_name)
     location_name = ""
   case("kclat")
     location_name = "face"
-  case("Qsunmap")
+  case("qsunmap")
+    location_name = "face"
+  case("secchisp")
     location_name = "face"
   case("zbndz")
     location_name = "edge"
@@ -189,6 +193,8 @@ select case(var_name)
   case("turkin1")
     location_name = "edge"
   case("vicwws")
+    location_name = "face"
+  case("difwws")
     location_name = "face"
   case("rnveg")
     location_name = "face"
@@ -385,3 +391,5 @@ select case(var_name)
   case default
     location_name = ""
 end select
+
+end module m_bmi_get_var_location

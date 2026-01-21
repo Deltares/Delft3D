@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_shape
+
+implicit none
+
+private
+
+public :: bmi_get_var_shape
+
+contains
+
   ! return in c memory order
   select case(var_name)
 
@@ -37,6 +47,8 @@
     case("hwav")
        shape(1) = ndx
     case("twav")
+       shape(1) = ndx
+    case("twavcom")
        shape(1) = ndx
     case("uorb")
        shape(1) = ndx
@@ -93,19 +105,9 @@
        shape(1) = ndx
     case("infilt")
        shape(1) = ndx
-    case("infiltcap0")
-       shape(1) = ndx
     case("infiltcap")
        shape(1) = ndx
-    case("HortonMinInfCap")
-       shape(1) = ndx
-    case("HortonMaxInfCap")
-       shape(1) = ndx
-    case("HortonDecreaseRate")
-       shape(1) = ndx
-    case("HortonRecoveryRate")
-       shape(1) = ndx
-    case("HortonState")
+    case("horton_state")
        shape(1) = ndx
     case("shx")
        shape(1) = nshiptxy
@@ -169,8 +171,7 @@
        shape(2) = num_layers
        shape(1) = numlatsg
     case("qqlat")
-       shape(2) = num_layers
-       shape(1) = nlatnd
+       shape(1) = 0
     case("balat")
        shape(1) = numlatsg
     case("qplatCum")
@@ -195,7 +196,9 @@
        shape(1) = nlatnd
     case("kclat")
        shape(1) = ndx
-    case("Qsunmap")
+    case("qsunmap")
+       shape(1) = ndx
+    case("secchisp")
        shape(1) = ndx
     case("zbndz")
        shape(1) = nbndz
@@ -206,6 +209,8 @@
     case("turkin1")
        shape(1) = lnkx
     case("vicwws")
+       shape(1) = ndkx
+    case("difwws")
        shape(1) = ndkx
     case("rnveg")
        shape(1) = ndkx
@@ -409,3 +414,5 @@
     case("ndx1d")
        shape(1) = 0
   end select
+
+end module m_bmi_get_var_shape

@@ -27,149 +27,151 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_type
+
+implicit none
+
+private
+
+public :: bmi_get_var_type
+
+contains
+
 select case(var_name)
   case("DFM_COMM_DFMWORLD")
     type_name = "int"
   case("iglobal_s")
     type_name = "int"
   case("hwav")
-    type_name = "double"
+    type_name = "float"
   case("twav")
-    type_name = "double"
+    type_name = "float"
+  case("twavcom")
+    type_name = "float"
   case("uorb")
-    type_name = "double"
+    type_name = "float"
   case("bodsed")
-    type_name = "double"
+    type_name = "float"
   case("dpsed")
-    type_name = "double"
+    type_name = "float"
   case("msed")
-    type_name = "double"
+    type_name = "float"
   case("thlyr")
-    type_name = "double"
+    type_name = "float"
   case("rsedeq")
-    type_name = "double"
+    type_name = "float"
   case("sbcx")
-    type_name = "double"
+    type_name = "float"
   case("sbcy")
-    type_name = "double"
+    type_name = "float"
   case("sbwx")
-    type_name = "double"
+    type_name = "float"
   case("sbwy")
-    type_name = "double"
+    type_name = "float"
   case("sscx")
-    type_name = "double"
+    type_name = "float"
   case("sscy")
-    type_name = "double"
+    type_name = "float"
   case("sswx")
-    type_name = "double"
+    type_name = "float"
   case("sswy")
-    type_name = "double"
+    type_name = "float"
   case("taucr")
-    type_name = "double"
+    type_name = "float"
   case("tetacr")
-    type_name = "double"
+    type_name = "float"
   case("InterceptThickness")
-    type_name = "double"
+    type_name = "float"
   case("InterceptHs")
-    type_name = "double"
+    type_name = "float"
   case("PotEvap")
-    type_name = "double"
+    type_name = "float"
   case("ActEvap")
-    type_name = "double"
+    type_name = "float"
   case("infilt")
-    type_name = "double"
-  case("infiltcap0")
-    type_name = "double"
+    type_name = "float"
   case("infiltcap")
-    type_name = "double"
-  case("HortonMinInfCap")
-    type_name = "double"
-  case("HortonMaxInfCap")
-    type_name = "double"
-  case("HortonDecreaseRate")
-    type_name = "double"
-  case("HortonRecoveryRate")
-    type_name = "double"
-  case("HortonState")
+    type_name = "float"
+  case("horton_state")
     type_name = "int"
   case("shx")
-    type_name = "double"
+    type_name = "float"
   case("shy")
-    type_name = "double"
+    type_name = "float"
   case("shi")
-    type_name = "double"
+    type_name = "float"
   case("zsp")
-    type_name = "double"
+    type_name = "float"
   case("zsp0")
-    type_name = "double"
+    type_name = "float"
   case("zspc")
-    type_name = "double"
+    type_name = "float"
   case("zspc0")
-    type_name = "double"
+    type_name = "float"
   case("v0ship")
-    type_name = "double"
+    type_name = "float"
   case("v1ship")
-    type_name = "double"
+    type_name = "float"
   case("qinship")
-    type_name = "double"
+    type_name = "float"
   case("vicushp")
-    type_name = "double"
+    type_name = "float"
   case("shL")
-    type_name = "double"
+    type_name = "float"
   case("shB")
-    type_name = "double"
+    type_name = "float"
   case("shd")
-    type_name = "double"
+    type_name = "float"
   case("stuw")
-    type_name = "double"
+    type_name = "float"
   case("fstuw")
-    type_name = "double"
+    type_name = "float"
   case("stuwmx")
-    type_name = "double"
+    type_name = "float"
   case("roer")
-    type_name = "double"
+    type_name = "float"
   case("froer")
-    type_name = "double"
+    type_name = "float"
   case("roermx")
-    type_name = "double"
+    type_name = "float"
   case("wx")
-    type_name = "double"
+    type_name = "float"
   case("wy")
-    type_name = "double"
+    type_name = "float"
   case("rain")
-    type_name = "double"
+    type_name = "float"
   case("evap")
-    type_name = "double"
+    type_name = "float"
   case("qext")
-    type_name = "double"
+    type_name = "float"
   case("qextreal")
-    type_name = "double"
+    type_name = "float"
   case("vextcum")
-    type_name = "double"
+    type_name = "float"
   case("rainuni")
-    type_name = "double"
+    type_name = "float"
   case("numlatsg")
     type_name = "int"
   case("qplat")
-    type_name = "double"
+    type_name = "float"
   case("qqlat")
-    type_name = "double"
+    type_name = "float"
   case("balat")
-    type_name = "double"
+    type_name = "float"
   case("qplatCum")
-    type_name = "double"
+    type_name = "float"
   case("qplatCumPre")
-    type_name = "double"
+    type_name = "float"
   case("qplatAve")
-    type_name = "double"
+    type_name = "float"
   case("qLatReal")
-    type_name = "double"
+    type_name = "float"
   case("qLatRealCum")
-    type_name = "double"
+    type_name = "float"
   case("qLatRealCumPre")
-    type_name = "double"
+    type_name = "float"
   case("qLatRealAve")
-    type_name = "double"
+    type_name = "float"
   case("n1latsg")
     type_name = "int"
   case("n2latsg")
@@ -178,36 +180,40 @@ select case(var_name)
     type_name = "int"
   case("kclat")
     type_name = "int"
-  case("Qsunmap")
-    type_name = "double"
+  case("qsunmap")
+    type_name = "float"
+  case("secchisp")
+    type_name = "float"
   case("zbndz")
-    type_name = "double"
+    type_name = "float"
   case("zbndu")
-    type_name = "double"
+    type_name = "float"
   case("zbndq")
-    type_name = "double"
+    type_name = "float"
   case("turkin1")
-    type_name = "double"
+    type_name = "float"
   case("vicwws")
-    type_name = "double"
+    type_name = "float"
+  case("difwws")
+    type_name = "float"
   case("rnveg")
-    type_name = "double"
+    type_name = "float"
   case("diaveg")
-    type_name = "double"
+    type_name = "float"
   case("cfuveg")
-    type_name = "double"
+    type_name = "float"
   case("alfaveg")
-    type_name = "double"
+    type_name = "float"
   case("stemdens")
-    type_name = "double"
+    type_name = "float"
   case("stemdiam")
-    type_name = "double"
+    type_name = "float"
   case("stemheight")
-    type_name = "double"
+    type_name = "float"
   case("Cdvegsp")
-    type_name = "double"
+    type_name = "float"
   case("zws")
-    type_name = "double"
+    type_name = "float"
   case("kbot")
     type_name = "int"
   case("ktop")
@@ -217,67 +223,67 @@ select case(var_name)
   case("Ltop")
     type_name = "int"
   case("s0")
-    type_name = "double"
+    type_name = "float"
   case("s1")
-    type_name = "double"
+    type_name = "float"
   case("s1max")
-    type_name = "double"
+    type_name = "float"
   case("a0")
-    type_name = "double"
+    type_name = "float"
   case("a1")
-    type_name = "double"
+    type_name = "float"
   case("vol1")
-    type_name = "double"
+    type_name = "float"
   case("vol0")
-    type_name = "double"
+    type_name = "float"
   case("vol1_f")
-    type_name = "double"
+    type_name = "float"
   case("hs")
-    type_name = "double"
+    type_name = "float"
   case("ucx")
-    type_name = "double"
+    type_name = "float"
   case("ucy")
-    type_name = "double"
+    type_name = "float"
   case("ucz")
-    type_name = "double"
+    type_name = "float"
   case("ucmag")
-    type_name = "double"
+    type_name = "float"
   case("ucx_mor")
-    type_name = "double"
+    type_name = "float"
   case("ucy_mor")
-    type_name = "double"
+    type_name = "float"
   case("sa0")
-    type_name = "double"
+    type_name = "float"
   case("sa1")
-    type_name = "double"
+    type_name = "float"
   case("satop")
-    type_name = "double"
+    type_name = "float"
   case("sabot")
-    type_name = "double"
+    type_name = "float"
   case("tem0")
-    type_name = "double"
+    type_name = "float"
   case("tem1")
-    type_name = "double"
+    type_name = "float"
   case("u1")
-    type_name = "double"
+    type_name = "float"
   case("u_to_umain")
-    type_name = "double"
+    type_name = "float"
   case("q1")
-    type_name = "double"
+    type_name = "float"
   case("q1_main")
-    type_name = "double"
+    type_name = "float"
   case("au")
-    type_name = "double"
+    type_name = "float"
   case("au_nostrucs")
-    type_name = "double"
+    type_name = "float"
   case("hu")
-    type_name = "double"
+    type_name = "float"
   case("frcu")
-    type_name = "double"
+    type_name = "float"
   case("viusp")
-    type_name = "double"
+    type_name = "float"
   case("diusp")
-    type_name = "double"
+    type_name = "float"
   case("ndxi")
     type_name = "int"
   case("ndx1db")
@@ -285,13 +291,13 @@ select case(var_name)
   case("kfs")
     type_name = "int"
   case("bare")
-    type_name = "double"
+    type_name = "float"
   case("ba_mor")
-    type_name = "double"
+    type_name = "float"
   case("bl")
-    type_name = "double"
+    type_name = "float"
   case("bl_min")
-    type_name = "double"
+    type_name = "float"
   case("lnx1D")
     type_name = "int"
   case("lnxi")
@@ -311,27 +317,27 @@ select case(var_name)
   case("iadv")
     type_name = "int"
   case("dx")
-    type_name = "double"
+    type_name = "float"
   case("wu")
-    type_name = "double"
+    type_name = "float"
   case("wu_mor")
-    type_name = "double"
+    type_name = "float"
   case("wu1D2D")
-    type_name = "double"
+    type_name = "float"
   case("hh1D2D")
-    type_name = "double"
+    type_name = "float"
   case("bob")
-    type_name = "double"
+    type_name = "float"
   case("bob0")
-    type_name = "double"
+    type_name = "float"
   case("blup")
-    type_name = "double"
+    type_name = "float"
   case("xu")
-    type_name = "double"
+    type_name = "float"
   case("yu")
-    type_name = "double"
+    type_name = "float"
   case("vort")
-    type_name = "double"
+    type_name = "float"
   case("xzw")
     type_name = "double"
   case("yzw")
@@ -347,41 +353,43 @@ select case(var_name)
   case("numk")
     type_name = "int"
   case("zbnd1d2d1")
-    type_name = "double"
+    type_name = "float"
   case("zbnd1d2d0")
-    type_name = "double"
+    type_name = "float"
   case("zcrest1d2d")
-    type_name = "double"
+    type_name = "float"
   case("edgenumbers1d2d")
     type_name = "int"
   case("kbnd1d2d")
     type_name = "int"
   case("width_1d")
-    type_name = "double"
+    type_name = "float"
   case("qzeta_1d2d")
-    type_name = "double"
+    type_name = "float"
   case("qlat_1d2d")
-    type_name = "double"
+    type_name = "float"
   case("qtotal_1d2d")
-    type_name = "double"
+    type_name = "float"
   case("is_sumvalsnd")
-    type_name = "double"
+    type_name = "float"
   case("is_maxvalsnd")
-    type_name = "double"
+    type_name = "float"
   case("is_dtint")
-    type_name = "double"
+    type_name = "float"
   case("ndx2d")
     type_name = "int"
   case("ndx")
     type_name = "int"
   case("xz")
-    type_name = "double"
+    type_name = "float"
   case("yz")
-    type_name = "double"
+    type_name = "float"
   case("ba")
-    type_name = "double"
+    type_name = "float"
   case("ndx1d")
     type_name = "int"
   case default
     type_name = ""
 end select
+
+end module m_bmi_get_var_type
