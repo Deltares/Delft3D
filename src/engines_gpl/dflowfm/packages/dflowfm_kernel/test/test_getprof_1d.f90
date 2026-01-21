@@ -7,6 +7,65 @@ module m_test_getprof_1d
    implicit none
 contains
 
+    !> Initialize a simple circular cross section for testing
+    subroutine setup_circular_cross_section(network, diameter, friction_type, friction_value)
+        use m_network
+        use m_CrossSections, only: AddRoundCrossSectionDefinition
+        use m_GlobalParameters, only: CS_CIRCLE
+        
+        type(t_network), intent(inout) :: network
+        real(kind=dp), intent(in) :: diameter
+        integer, intent(in) :: friction_type
+        real(kind=dp), intent(in) :: friction_value
+        
+        integer :: idef, icrs
+        type(t_CrossSection), pointer :: pcrs
+        type(t_CSType), pointer :: pcsDef
+        
+        ! Add a cross section definition (the geometry)
+        idef = AddRoundCrossSectionDefinition(
+            network%CSDefinitions, id='test_circle', &
+            diameter=diameter, shape=CS_CIRCLE, & 
+            groundLayerUsed=.false., groundLayer=0.0_dp &
+        )
+        
+        ! Allocate space for one cross section
+        call realloc(network%crs)
+        network%crs%count = 1
+        
+        ! Link the cross section to the definition
+        icrs = 1
+        pcrs => network%crs%cross(icrs)
+        pcsDef => network%CSDefinitions%cs(idef)
+        
+        pcrs%csid = 'test_circle'
+        pcrs%iTabDef = idef
+        pcrs%tabDef => pcsDef
+        pcrs%shift = 0.0_dp  ! bed level adjustment
+        
+        ! Set up friction parameters
+        pcrs%frictionSectionsCount = 1
+        allocate(pcrs%frictionSectionID(1))
+        allocate(pcrs%frictionSectionFrom(1))
+        allocate(pcrs%frictionSectionTo(1))
+        allocate(pcrs%frictionTypePos(1))
+        allocate(pcrs%frictionValuePos(1))
+        allocate(pcrs%frictionTypeNeg(1))
+        allocate(pcrs%frictionValueNeg(1))
+        
+        pcrs%frictionSectionID(1) = 'main'
+        pcrs%frictionSectionFrom(1) = 0.0_dp
+        pcrs%frictionSectionTo(1) = diameter
+        pcrs%frictionTypePos(1) = friction_type  ! 1=Chezy, 2=Manning, etc.
+        pcrs%frictionValuePos(1) = friction_value
+        pcrs%frictionTypeNeg(1) = friction_type
+        pcrs%frictionValueNeg(1) = friction_value
+        
+        ! Finalize the cross section setup
+        call SetParsCross(pcsDef, pcrs)
+        
+    end subroutine setup_circular_cross_section
+
     !> Sets up minimal network_data with a single rectangular netcell
     !! centered at (center_x, center_y) with given side length.
     !! This is useful for testing routines like incells that depend on network_data.
@@ -170,7 +229,13 @@ contains
         use network_data
         use Timers, only: timini, timon
         use m_partitioninfo, only: jampi
+        use gridoperations, only: incells, setnewpoint, connectdbn, findcells
+        use m_network, only: initialize_1dadmin
+        use unstruc_channel_flow, only: network
         implicit none
+
+        integer :: left_center, right_center, left_node, right_node, new_link
+        real(kind=dp) :: area, width
 
         ! Initialize timers (required by flow_geominit)
         call timini()
@@ -181,11 +246,27 @@ contains
 
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
-            rows=1, columns=2 &
+            rows=1, columns=2, array_size_margin=2 &
         )
+        
+        call incells(5.0_dp, 5.0_dp, left_center)
+        call incells(15.0_dp, 5.0_dp, right_center)
+        if (left_center == 0 .or. right_center == 0) then
+            call F90_ASSERT_FALSE(.true., "Failed to find cell centers." // c_null_char)
+            return
+        end if
+        
+        call setnewpoint(xzw(left_center), yzw(left_center), 0.0_dp, left_node)
+        call setnewpoint(xzw(right_center), yzw(right_center), 0.0_dp, right_node)
+        
+        kn3typ = 5
+        call connectdbn(left_node, right_node, new_link)
         call flow_geominit(0)
+        call initialize_1dadmin(network, network%numl, numl)
+        network%loaded = .true.
+        
 
-        call getprof_1D(1, 0.0_dp, 5.0_dp, 1.0_dp, 1, 42, 20.0_dp)
+        call getprof_1D(1, 0.0_dp, area, width, 0, 0, 0.0_dp)
 
         call cleanup_network_data()
 
