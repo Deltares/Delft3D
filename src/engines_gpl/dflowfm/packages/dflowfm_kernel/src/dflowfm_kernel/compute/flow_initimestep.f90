@@ -227,10 +227,6 @@ contains
       end if
       call update_icecover()
 
-      if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
-         infiltcap0 = infiltcap / mmphr_to_mps
-      end if
-
       call timstop(handle_inistep)
 
       iresult = DFM_NOERR
