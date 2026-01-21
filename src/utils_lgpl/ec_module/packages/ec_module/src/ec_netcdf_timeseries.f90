@@ -216,9 +216,6 @@ contains
             isVector = .false.
          end if
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, name=ncptr%variable_names(iVars)) ! Variable name
-         !TK_Temp: Tempororary, set veraiabble names in capitals
-         call str_upper(ncptr%variable_names(iVars),len(trim(ncptr%variable_names(iVars))))
-         
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
          if (ierr /= NF90_NOERR) ncptr%fillvalues(iVars) = -huge(dp)
          ierr = nf90_get_att(ncptr%ncid, iVars, 'scale_factor', ncptr%scales(iVars))
@@ -245,8 +242,6 @@ contains
             do iTims = 1, nTims
                ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid(iTims), (/1, iTims/), (/tslen, 1/))
                if (ierr /= NF90_NOERR) return
-               ! TK_Temp: Dont like this but bcname is in capitals and hence station names should be in capitals
-               ! call str_upper(ncptr%tsid(iTims),len(trim(ncptr%tsid(iTims))))
                call replace_char(ncptr%tsid(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
             end do
             ncptr%tsidvarid = iVars ! For convenience also store the Station ID explicitly

@@ -403,7 +403,7 @@ module m_ec_elementSet
                   newSize = size(zArray)
                   call reallocP(elementSetPtr%z, newSize, stat = istat, keepExisting = .false.)
                   if (istat == 0) then
-                     elementSetPtr%z(1:newSize) = zArray(1:newSize)
+                     elementSetPtr%z => zArray
                      success = .true.
                   end if
                end if ! if ( Lpointer) 
@@ -414,6 +414,7 @@ module m_ec_elementSet
             call setECMessage("ERROR: ec_elementSet::ecElementSetSetZArray: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetZArray
+
       
       function ecElementSetSetKbotKtop(instancePtr, elementSetId, kbot, ktop, Lpointer_) result(success)
          logical                               :: success      !< function status
