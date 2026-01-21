@@ -312,8 +312,8 @@ EOF-tiff
 FROM base AS hdf5
 
 ARG INTEL_FORTRAN_COMPILER
-ARG DEBUG
 ARG CACHE_ID_SUFFIX
+# Do not allow a debug build, since the build fails for --enable-build-mode="debug"
 
 COPY --from=compression-libs --link /usr/local/ /usr/local/
 
@@ -331,12 +331,11 @@ else
 fi
 
 MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
-[[ $DEBUG = "0" ]] && BUILD_MODE="production" || BUILD_MODE="debug"
 
 pushd "/var/cache/src/${BASEDIR}"
 ./configure CC=mpiicx CXX=mpiicpx FC=$MPIFC \
     --prefix=/usr/local \
-    --enable-build-mode=$BUILD_MODE \
+    --enable-build-mode="production" \
     --enable-fortran \
     --enable-parallel \
     --disable-szlib \
@@ -579,18 +578,35 @@ EOF-esmf
 
 FROM base AS boost
 
-RUN <<"EOF-boost" 
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=boost-${CACHE_ID_SUFFIX} <<"EOF-boost"
+source /etc/bashrc
 set -eo pipefail
-dnf install --assumeyes boost-devel
 
-mkdir -p /usr/local/lib
-cp /usr/lib64/libboost_*.so* /usr/local/lib/
+URL='https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz'
+BASEDIR='boost_1_90_0'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
 
-mkdir -p /usr/local/include
-cp -r /usr/include/boost /usr/local/include/
+pushd "/var/cache/src/${BASEDIR}"
 
-mkdir -p /usr/local/share/licenses/boost-devel
-cp /usr/share/licenses/boost-devel/LICENSE_1_0.txt /usr/local/share/licenses/boost-devel/
+export CC=icx CXX=icpx
+[[ $DEBUG = "0" ]] && VARIANT=release || VARIANT=debug
+
+./bootstrap.sh --prefix=/usr/local
+
+# Patch intel-linux.jam to remove -ip flag (not supported by icpx)
+sed -i 's/-O3 -ip/-O3/g' tools/build/src/tools/intel-linux.jam
+
+./b2 --without-python variant=${VARIANT} toolset=intel-linux link=shared pch=off threading=multi -j$(nproc) install
+
+popd
 EOF-boost
 
 FROM base AS googletest
@@ -606,6 +622,92 @@ cp /usr/lib64/libgtest_main.so* /usr/local/lib/
 mkdir -p /usr/local/include
 cp -r /usr/include/gtest /usr/local/include/
 EOF-googletest
+
+FROM base AS eigen
+
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=eigen-${CACHE_ID_SUFFIX} <<"EOF-eigen"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.tar.gz'
+BASEDIR='eigen-5.0.1'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}"
+
+cmake -S . -B build \
+    -D CMAKE_C_COMPILER=icx -D CMAKE_CXX_COMPILER=icpx -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D EIGEN_BUILD_TESTING=OFF -D EIGEN_BUILD_BLAS=OFF -D EIGEN_BUILD_LAPACK=OFF -D EIGEN_BUILD_DOC=OFF -D EIGEN_BUILD_DEMOS=OFF
+cmake --install build
+popd
+EOF-eigen
+
+FROM base AS libxml2
+
+RUN <<"EOF-libxml2"
+set -eo pipefail
+dnf install --assumeyes libxml2-devel
+
+mkdir -p /usr/local/lib
+cp /usr/lib64/libxml2.so* /usr/local/lib/
+
+mkdir -p /usr/local/include
+cp -r /usr/include/libxml2 /usr/local/include/
+
+mkdir -p /usr/local/lib/pkgconfig
+cp /usr/lib64/pkgconfig/libxml-2.0.pc /usr/local/lib/pkgconfig/
+EOF-libxml2
+
+FROM base AS precice
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+COPY --from=libxml2 --link /usr/local/ /usr/local/
+COPY --from=eigen --link /usr/local/ /usr/local/
+COPY --from=boost --link /usr/local/ /usr/local/
+
+RUN --mount=type=cache,target=/var/cache/src/,id=precice-${CACHE_ID_SUFFIX} <<"EOF-precice"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://github.com/precice/precice/archive/v3.3.1.tar.gz'
+BASEDIR='precice-3.3.1'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake --preset=development \
+    -D CMAKE_C_COMPILER=icx -D CMAKE_CXX_COMPILER=icpx \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib \
+    -D PRECICE_FEATURE_PETSC_MAPPING=OFF \
+    -D PRECICE_FEATURE_GINKGO_MAPPING=OFF \
+    -D PRECICE_FEATURE_PYTHON_ACTIONS=OFF \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D BUILD_SHARED_LIBS=ON \
+    -D BUILD_TESTING=OFF \
+    -D CMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion"
+
+cmake --build build --parallel $(nproc)
+cmake --install build
+popd
+EOF-precice
 
 FROM base AS all
 
@@ -628,4 +730,5 @@ COPY --from=gdal --link /usr/local/ /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
 COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=googletest --link /usr/local/ /usr/local/
+COPY --from=precice --link /usr/local/ /usr/local/
 COPY --from=curl-custom --link /usr/local /usr/local/

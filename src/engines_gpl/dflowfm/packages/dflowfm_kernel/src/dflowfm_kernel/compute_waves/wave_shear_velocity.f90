@@ -30,28 +30,26 @@
 !
 !
 
-module m_tauwavehk
+module m_wave_shear_velocity
 
    implicit none
 
    private
 
-   public :: tauwavehk
+   public :: compute_wave_shear_velocity
 
 contains
 
-   subroutine tauwavehk(Hrms, Tsig, Depth, Uorbi, rlabd, ust)
+   subroutine compute_wave_shear_velocity(Hrms, Tsig, Depth, Uorbi, rlabd, ust)
       use precision, only: dp
       use m_getwavenr, only: getwavenr
-      use m_flow, only: rhog
       use m_sferic, only: twopi, pi
-      use m_drawthis, only: ndraw
       use m_waves, only: gammax, jauorb
 
       implicit none
       real(kind=dp) :: Hrms, Tsig, Depth, uorbi, hrm, ust
-      real(kind=dp) :: hk, sh2hk, hksh2, asg, ew, sxx, syy, sxy, syx, shs, cp, cg, omeg
-      real(kind=dp) :: rk, rkx, rky, cgcp, rk2cgcp, cgcp5, arms, rlabd
+      real(kind=dp) :: shs,omeg
+      real(kind=dp) :: rk, rlabd, arms
       real(kind=dp), external :: tanhsafe, sinhsafe, sinhsafei
 
       if (depth < 0.01_dp .or. Tsig < 0.1_dp) then ! flume cases with wave nr 5
@@ -74,36 +72,6 @@ contains
 
       return
 
-      if (ndraw(28) > 40) then
-         omeg = twopi / tsig ! omega
-         cp = omeg / rk ! fase velocity
-         hk = rk * depth ! kh
-         sh2hk = sinhsafei(2.0_dp * hk) ! 1/sinh(2hk)
-         hksh2 = hk * sh2hk ! kh/sinh(2kh)
-         cgcp = 0.5_dp + hksh2 ! cg/cp
-         cg = cp * cgcp ! group velocity
-         asg = 0.5_dp * hrms ! rms wave amplitude
-         ew = 0.5_dp * rhog * asg * asg ! wave energy
-         !ustokes(z) =       rk*omeg*asg*asg*exp(2d0*rk*z)                         ! Vertical Stokes drift profile deep water
-         !ustokes    =    0.5d0*omeg*asg*asg/depth                                 ! deep water vertical averaged
-         !ustokes(z) = 0.5d0*rk*omeg*asg*asg*cosh(2d0*rk*(z+depth)/sinh2(rk*depth) ! Stokes drift profile  (5) Monismithetal2007.pdf
+   end subroutine compute_wave_shear_velocity
 
-         Sxx = ew * (0.5_dp + 2.0_dp * hksh2) ! radiation stress in wave dir
-         Syy = ew * hksh2 ! radiation stress perpendicular to wave dir
-
-         rk2cgcp = rk * rk * cgcp ! or, Wikipedia
-         cgcp5 = cgcp - 0.5_dp
-         Sxx = ew * (rkx * rkx / rk2cgcp + cgcp5)
-         Syy = ew * (rky * rky / rk2cgcp + cgcp5)
-         Syx = ew * (rkx * rky / rk2cgcp + 0.0_dp)
-         Sxy = Syx
-
-         ! standard deviation or RMS of sine wave a*sin(om*t) : 0.5*sqrt(2)*a
-         ! Hsig or HRMS is equal to 4 times RMS
-         ! Hsig = 4*0.5*sqrt(2)*a = 2*sqrt(2)*a = 2.8*a
-
-      end if
-
-   end subroutine tauwavehk
-
-end module m_tauwavehk
+end module m_wave_shear_velocity
