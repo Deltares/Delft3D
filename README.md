@@ -45,8 +45,8 @@ Replace "..." by the actual path on your system to the checkout directory.
 
 # Workflow
 - Request for access on https://github.com/Deltares/Delft3D
-- Create an issue in https://issuetracker.deltares.nl
-  If an issue is not created, you have to create a branch of type research
+- Create an issue in https://issuetracker.deltares.nl (only for Deltares employees)
+  If an issue is not created, you (external collaborators) have to create a branch of type research
 - Clone the repository
 - Create a branch using the naming convention below
   The frequency of updating your branch from main is up to personal taste.
