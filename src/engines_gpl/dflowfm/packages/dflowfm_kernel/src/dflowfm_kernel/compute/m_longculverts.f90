@@ -729,17 +729,23 @@ contains
 
             ! Set upstream flow node
             Lf = abs(longculverts(ilongc)%flowlinks(1))
-            if (ln(1, Lf) <= ndx2d) then
-               longculverts(ilongc)%flownode_up = ln(1, Lf)
+
+            if (longculverts(ilongc)%numlinks == 1) then
+               longculverts(ilongc)%flownode_up = ln(2, lf)
+               longculverts(ilongc)%flownode_dn = ln(1, lf)
             else
-               longculverts(ilongc)%flownode_up = ln(2, Lf)
-            end if
-            ! Set downstream flow node
-            Lf = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
-            if (ln(2, Lf) <= ndx2d) then
-               longculverts(ilongc)%flownode_dn = ln(2, Lf)
-            else
-               longculverts(ilongc)%flownode_dn = ln(1, Lf)
+               if (ln(1, Lf) <= ndx2d) then
+                  longculverts(ilongc)%flownode_up = ln(1, Lf)
+               else
+                  longculverts(ilongc)%flownode_up = ln(2, Lf)
+               end if
+               ! Set downstream flow node
+               Lf = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
+               if (ln(2, Lf) <= ndx2d) then
+                  longculverts(ilongc)%flownode_dn = ln(2, Lf)
+               else
+                  longculverts(ilongc)%flownode_dn = ln(1, Lf)
+               end if
             end if
          end do
       end if
