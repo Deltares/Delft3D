@@ -775,15 +775,16 @@ contains
                bob(1, Lf) = longculverts(ilongc)%bl(1)
                bob(2, Lf) = bl(ln(2, Lf))
             end if
-
-            Lf = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
-            if (Lf > 0 .and. longculverts(ilongc)%numlinks > 1) then
-               wu(Lf) = longculverts(ilongc)%width
-               prof1D(1, Lf) = wu(Lf)
-               prof1D(2, Lf) = longculverts(ilongc)%height
-               prof1D(3, Lf) = -2
-               bob(1, Lf) = longculverts(ilongc)%bl(longculverts(ilongc)%numlinks - 1)
-               bob(2, Lf) = bl(ln(2, Lf))
+            if (longculverts(ilongc)%numlinks > 1) then
+               Lf = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
+               if (Lf > 0) then
+                  wu(Lf) = longculverts(ilongc)%width
+                  prof1D(1, Lf) = wu(Lf)
+                  prof1D(2, Lf) = longculverts(ilongc)%height
+                  prof1D(3, Lf) = -2
+                  bob(1, Lf) = longculverts(ilongc)%bl(longculverts(ilongc)%numlinks - 1)
+                  bob(2, Lf) = bl(ln(2, Lf))
+               end if
             end if
          end do
       else !voor nu houden we de oude implementatie intact
@@ -1381,7 +1382,7 @@ contains
                         othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
                         if (j <= ie) then
-                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), xpl(j+1), eps10) == 0 .and. comparereal(yz(othernode), ypl(j+1), eps10) == 0)) then
+                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), xpl(j + 1), eps10) == 0 .and. comparereal(yz(othernode), ypl(j + 1), eps10) == 0)) then
                               longculvert%flowlinks(j) = -1 * linknum
                               exit
                            end if
