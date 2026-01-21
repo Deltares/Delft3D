@@ -1070,7 +1070,7 @@ contains
          longculverts(i_longculvert)%contactId = longculvert_name
 
       else ! Multi-point culvert
-        
+
          longculverts(i_longculvert)%branchId = longculvert_name
 
          !> only multi point culverts get meshgeom1d entries
@@ -1099,7 +1099,6 @@ contains
 
             if (j == 2) then
                kn3typ = 5 ! 1D2D netlink type for entry-side
-               pathdiff = dbdistance(x2, y2, xplCulv(1), yplCulv(1), jsferic, jasfer3D, dmiss)
             else
                pathdiff = dbdistance(x2, y2, xplCulv(j - 1), yplCulv(j - 1), jsferic, jasfer3D, dmiss)
                kn3typ = 1 ! purely 1D netlink type for inner pipe pieces
@@ -1118,7 +1117,7 @@ contains
 
             call connectdbn(k1, k2, L)
             if (allocated(dxe)) then
-               dxe(L) = pathdiff
+               dxe(L) = dbdistance(xplCulv(j - 1), yplCulv(j - 1), x2, y2, jsferic, jasfer3D, dmiss)
             end if
 
             longculverts(i_longculvert)%netlinks(j - 1) = L
@@ -1305,23 +1304,8 @@ contains
          if (branch_idx > 0 .and. network%BRS%size >= i) then
             inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
             inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
-            !find Flownode connected to this node by 1D2D link
-            do j = 1, 2
-               if (inode(j) > 0) then !> node lies on this partition
-                  do i = 1, nd(inode(j))%lnx
-                     linknum = nd(inode(j))%ln(i)
-                     linkabs = abs(linknum)
-                     if (kcu(linkabs) == 5) then
-                        inode(j) = ln(1, linkabs) + ln(2, linkabs) - inode(j)
-                        exit
-                     end if
-                  end do
-               end if
-            end do
          else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
-            longculvert%flownode_up = contact_cell_idx(1, contact_idx)
-            longculvert%flownode_dn = contact_cell_idx(2, contact_idx)
-            longculvert%flowlinks(1) = contactnetlinks(contact_idx)
+            inode(1:2) = contact_cell_idx(1:2, contact_idx)
          end if
 
          inodeGlob(1:2) = inode(1:2)
@@ -1374,31 +1358,38 @@ contains
          end if
 
          if (jafounds == 1 .and. jafounde == 1) then
-            ! For the interior polyline points
-            do j = is, ie + 1 ! j is link index, or , right node index
-               if (j > is) then
-                  nodenum = othernode
-               end if
-               if (nodenum > 0) then
-                  do i = 1, nd(nodenum)%lnx
-                     linknum = nd(nodenum)%ln(i)
-                     linkabs = abs(linknum)
-                     othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
+            if (contact_idx > 0) then
+               longculvert%flowlinks(1) = contactnetlinks(contact_idx)
+            else
+               do i = 1, nd(nodenum)%lnx
+                  linknum = nd(nodenum)%ln(i)
+                  if (kcu(abs(linknum)) == 5) then
+                     longculvert%flowlinks(1) = -1 * linknum
+                     is = is + 1
+                     exit
+                  end if
+               end do
+               ! For the interior polyline points
+               do j = is, ie - 1 ! j is link index, or , right node index
+                  if (j > is) then !> don't traverse 1D2D links
+                     nodenum = othernode
+                  end if
+                  if (nodenum > 0) then
+                     do i = 1, nd(nodenum)%lnx
+                        linknum = nd(nodenum)%ln(i)
+                        linkabs = abs(linknum)
+                        othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
-                     if (j <= ie) then
-                        if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), xpl(j), eps10) == 0 .and. comparereal(yz(othernode), ypl(j), eps10) == 0)) then
-                           longculvert%flowlinks(j) = -1 * linknum
-                           exit
+                        if (j <= ie) then
+                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), xpl(j+1), eps10) == 0 .and. comparereal(yz(othernode), ypl(j+1), eps10) == 0)) then
+                              longculvert%flowlinks(j) = -1 * linknum
+                              exit
+                           end if
                         end if
-                     else if (kcu(linkabs) == 5) then ! 1D2D link
-                        longculvert%flowlinks(j) = -1 * linknum
-                        exit
-                     end if
-                  end do
-               end if
-            end do
-         else
-            continue
+                     end do
+                  end if
+               end do
+            end if
          end if
       end associate
    end subroutine
@@ -1661,7 +1652,7 @@ contains
       end if
    end function node_has_key
 
-   elemental subroutine is_2D2D_longculvertlink(L, res, i) 
+   elemental subroutine is_2D2D_longculvertlink(L, res, i)
       integer, intent(in) :: L !< Flowlink number
       logical, intent(out) :: res
       integer, intent(out) :: i
