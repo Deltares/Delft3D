@@ -37,33 +37,96 @@
      iglobal_s(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
   case("hwav")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     hwav(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     hwav(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("twav")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     twav(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     twav(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
+  case("twavcom")
+
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     twavcom(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("uorb")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     uorb(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     uorb(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
+  case("bodsed")
 
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     bodsed(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("dpsed")
+
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     dpsed(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
+  case("msed")
+
+     call c_f_pointer(xptr, x_3d_float_ptr, (/c_count(1), c_count(2), c_count(3)/))
+     msed(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2)),c_start(3)+1:(c_start(3)+c_count(3))) = x_3d_float_ptr
+  case("thlyr")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     thlyr(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("rsedeq")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     rsedeq(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("sbcx")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     sbcx(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("sbcy")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     sbcy(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("sbwx")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     sbwx(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("sbwy")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     sbwy(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("sscx")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     sscx(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("sscy")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     sscy(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("sswx")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     sswx(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("sswy")
+
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     sswy(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
+  case("taucr")
+
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     taucr(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
+  case("tetacr")
+
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     tetacr(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("InterceptThickness")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     InterceptThickness(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     InterceptThickness(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("InterceptHs")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     InterceptHs(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     InterceptHs(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("PotEvap")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     PotEvap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     PotEvap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ActEvap")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ActEvap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ActEvap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("infilt")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -78,112 +141,112 @@
      horton_state(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
   case("shx")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     shx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     shx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("shy")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     shy(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     shy(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("shi")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     shi(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     shi(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zsp")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zsp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zsp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zsp0")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zsp0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zsp0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zspc")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zspc(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zspc(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zspc0")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zspc0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zspc0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("v0ship")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     v0ship(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     v0ship(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("v1ship")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     v1ship(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     v1ship(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qinship")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qinship(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qinship(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("vicushp")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vicushp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     vicushp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("shL")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     shL(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     shL(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("shB")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     shB(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     shB(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("shd")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     shd(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     shd(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("stuw")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     stuw(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     stuw(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("fstuw")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     fstuw(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     fstuw(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("stuwmx")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     stuwmx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     stuwmx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("roer")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     roer(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     roer(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("froer")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     froer(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     froer(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("roermx")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     roermx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     roermx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("wx")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     wx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     wx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("wy")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     wy(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     wy(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("rain")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     rain(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     rain(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("evap")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     evap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     evap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qext")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qext(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qext(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qextreal")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qextreal(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qextreal(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("vextcum")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vextcum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     vextcum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("rainuni")
      ! Does not apply to scalar variables
      continue
@@ -192,44 +255,43 @@
      continue
   case("qplat")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
-     qplat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     qplat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
   case("qqlat")
-
-     call c_f_pointer(xptr, x_3d_double_ptr, (/c_count(1), c_count(2), c_count(3)/))
-     qqlat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
+     ! Does not apply to scalar variables
+     continue
   case("balat")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     balat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     balat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qplatCum")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qplatCum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qplatCum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qplatCumPre")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qplatCumPre(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qplatCumPre(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qplatAve")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qplatAve(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qplatAve(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qLatReal")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qLatReal(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qLatReal(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qLatRealCum")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qLatRealCum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qLatRealCum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qLatRealCumPre")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qLatRealCumPre(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qLatRealCumPre(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qLatRealAve")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qLatRealAve(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qLatRealAve(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("n1latsg")
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
@@ -246,66 +308,74 @@
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
      kclat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
-  case("Qsunmap")
+  case("qsunmap")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     Qsunmap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qsunmap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
+  case("secchisp")
+
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     secchisp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zbndz")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zbndz(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zbndz(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zbndu")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zbndu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zbndu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zbndq")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zbndq(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zbndq(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("turkin1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     turkin1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     turkin1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("vicwws")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vicwws(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     vicwws(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
+  case("difwws")
+
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     difwws(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("rnveg")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     rnveg(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     rnveg(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("diaveg")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     diaveg(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     diaveg(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("cfuveg")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     cfuveg(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     cfuveg(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("alfaveg")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     alfaveg(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     alfaveg(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("stemdens")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     stemdens(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     stemdens(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("stemdiam")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     stemdiam(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     stemdiam(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("stemheight")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     stemheight(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     stemheight(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("Cdvegsp")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     Cdvegsp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     Cdvegsp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zws")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zws(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zws(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("kbot")
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
@@ -324,128 +394,128 @@
      Ltop(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
   case("s0")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     s0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     s0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("s1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     s1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     s1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("s1max")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     s1max(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     s1max(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("a0")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     a0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     a0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("a1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     a1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     a1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("vol1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vol1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     vol1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("vol0")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vol0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     vol0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("vol1_f")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vol1_f(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     vol1_f(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("hs")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     hs(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     hs(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ucx")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ucx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ucx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ucy")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ucy(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ucy(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ucz")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ucz(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ucz(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ucmag")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ucmag(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ucmag(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ucx_mor")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ucx_mor(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ucx_mor(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ucy_mor")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ucy_mor(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ucy_mor(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("sa0")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     sa0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     sa0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("sa1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     sa1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     sa1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("satop")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     satop(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     satop(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("sabot")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     sabot(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     sabot(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("tem0")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     tem0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     tem0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("tem1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     tem1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     tem1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("u1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     u1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     u1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("u_to_umain")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     u_to_umain(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     u_to_umain(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("q1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     q1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     q1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("q1_main")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     q1_main(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     q1_main(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("au")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     au(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     au(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("au_nostrucs")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     au_nostrucs(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     au_nostrucs(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("hu")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     hu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     hu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("frcu")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     frcu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     frcu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("viusp")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     viusp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     viusp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("diusp")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     diusp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     diusp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ndxi")
      ! Does not apply to scalar variables
      continue
@@ -458,20 +528,20 @@
      kfs(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
   case("bare")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     bare(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     bare(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ba_mor")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ba_mor(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ba_mor(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("bl")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     bl(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     bl(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("bl_min")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     bl_min(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     bl_min(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("lnx1D")
      ! Does not apply to scalar variables
      continue
@@ -506,48 +576,48 @@
      iadv(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
   case("dx")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     dx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     dx(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("wu")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     wu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     wu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("wu_mor")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     wu_mor(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     wu_mor(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("wu1D2D")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     wu1D2D(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     wu1D2D(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("hh1D2D")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     hh1D2D(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     hh1D2D(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("bob")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
-     bob(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     bob(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
   case("bob0")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
-     bob0(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     bob0(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
   case("blup")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     blup(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     blup(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("xu")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     xu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     xu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("yu")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     yu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     yu(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("vort")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vort(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     vort(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("xzw")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -577,16 +647,16 @@
      continue
   case("zbnd1d2d1")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zbnd1d2d1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zbnd1d2d1(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zbnd1d2d0")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zbnd1d2d0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zbnd1d2d0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("zcrest1d2d")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     zcrest1d2d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     zcrest1d2d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("edgenumbers1d2d")
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
@@ -597,28 +667,28 @@
      kbnd1d2d(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_int_ptr
   case("width_1d")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     width_1d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     width_1d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qzeta_1d2d")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qzeta_1d2d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qzeta_1d2d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qlat_1d2d")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qlat_1d2d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qlat_1d2d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("qtotal_1d2d")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qtotal_1d2d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     qtotal_1d2d(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("is_sumvalsnd")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
-     is_sumvalsnd(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     is_sumvalsnd(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
   case("is_maxvalsnd")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
-     is_maxvalsnd(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_2d_float_ptr, (/c_count(1), c_count(2)/))
+     is_maxvalsnd(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_float_ptr
   case("is_dtint")
      ! Does not apply to scalar variables
      continue
@@ -630,16 +700,16 @@
      continue
   case("xz")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     xz(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     xz(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("yz")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     yz(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     yz(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ba")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     ba(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_1d_float_ptr, (/c_count(1)/))
+     ba(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_float_ptr
   case("ndx1d")
      ! Does not apply to scalar variables
      continue

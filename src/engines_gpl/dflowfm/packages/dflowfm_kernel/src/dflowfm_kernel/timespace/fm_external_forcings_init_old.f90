@@ -1391,24 +1391,30 @@ contains
                if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7', trim(qid))
+                  write(msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write(msgbuf, '(a,i0,a)')  'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "waveperiod") then
                if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7', trim(qid))
+                  write(msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write(msgbuf, '(a,i0,a)')  'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "wavedirection") then
                if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write(msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write(msgbuf, '(a,i0,a)')  'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "wavebreakerdissipation") then
@@ -1416,8 +1422,10 @@ contains
                if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write(msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write(msgbuf, '(a,i0,a,i0,a)')  'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "whitecappingdissipation") then
@@ -1425,32 +1433,40 @@ contains
                if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write(msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write(msgbuf, '(a,i0,a,i0,a)')  'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "xwaveforce") then
                if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write(msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS,' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write(msgbuf, '(a,i0,a,i0,a,i0,a)')  'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS,' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "ywaveforce") then
                if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write(msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS,' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write(msgbuf, '(a,i0,a,i0,a,i0,a)')  'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_RADIATION_STRESS,' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else if (trim(qid) == "totalwaveenergydissipation") then
                if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
-                  call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
-                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', 'QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7', trim(qid))
+                  write(msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+                  call mess(LEVEL_WARN, msgbuf)
+                  write(msgbuf, '(a,i0,a,i0,a)')  'QUANTITY'//trim(qid)//' found but "Wavemodelnr" is not ', WAVE_NC_OFFLINE, ' or "waveforcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+                  call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', msgbuf, trim(qid))
                   success = .false.
                end if
             else

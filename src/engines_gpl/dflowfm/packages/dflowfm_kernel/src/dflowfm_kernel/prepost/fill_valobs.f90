@@ -45,7 +45,7 @@ contains
       use precision, only: dp
       use m_linkstocentercartcomp, only: linkstocentercartcomp
       use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, jahistaucurrent, jahisvelocity, jahisvelvec, ucmag, jaeulervel, &
-                        flowwithoutwaves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, jahistur, javiusp, viclu, viusp, &
+                        flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, jahistur, javiusp, viclu, viusp, &
                         vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jahisrho, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
@@ -135,7 +135,7 @@ contains
       end if
 
       if (jahistaucurrent > 0) then
-         if ((jawave == NO_WAVES .or. flowWithoutWaves)) then
+         if ((jawave == NO_WAVES .or. flow_without_waves)) then
             ! fill taus
             call gettaus(1, 1)
 
@@ -214,7 +214,7 @@ contains
                nlayb = 1
             end if
 
-            if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+            if (jawave > NO_WAVES .and. .not. flow_without_waves) then
                wa = 0.0_dp
                call linkstocentercartcomp(k, ustokes, wa) ! wa now 2*1 value or 2*1 vertical slice
             end if
@@ -262,7 +262,7 @@ contains
             if (jawave > NO_WAVES .and. allocated(hwav)) then
                valobs(i, IPNT_WAVEH) = hwav(k) * wavfac
                valobs(i, IPNT_WAVET) = twav(k)
-               if (.not. flowWithoutWaves) then
+               if (.not. flow_without_waves) then
                   valobs(i, IPNT_WAVED) = modulo(270.0_dp - phiwav(k), 360.0_dp) ! Direction from
                   valobs(i, IPNT_WAVEL) = rlabda(k)
                   valobs(i, IPNT_WAVEU) = uorb(k)
@@ -291,7 +291,7 @@ contains
                   ii = j - IVAL_SSCY1 + 1
                   valobs(i, IPNT_SSCY1 + ii - 1) = sedtra%sscy(k, ii)
                end do
-               if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (jawave > NO_WAVES .and. .not. flow_without_waves) then
                   do j = IVAL_SBWX1, IVAL_SBWXN
                      ii = j - IVAL_SBWX1 + 1
                      valobs(i, IPNT_SBWX1 + ii - 1) = sedtra%sbwx(k, ii)
@@ -416,7 +416,7 @@ contains
                   valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
                end if
 
-               if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (jawave > NO_WAVES .and. .not. flow_without_waves) then
                   if (hs(k) > epshu) then
                      if (kmx == 0) then
                         kk_const = 1

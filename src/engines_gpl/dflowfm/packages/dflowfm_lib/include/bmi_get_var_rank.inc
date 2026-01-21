@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var_rank
+
+implicit none
+
+private
+
+public :: bmi_get_var_rank
+
+contains
+
   select case(var_name)
   case("DFM_COMM_DFMWORLD")
      rank = 0
@@ -35,6 +45,8 @@
   case("hwav")
      rank = 1
   case("twav")
+     rank = 1
+  case("twavcom")
      rank = 1
   case("uorb")
      rank = 1
@@ -143,7 +155,7 @@
   case("qplat")
      rank = 2
   case("qqlat")
-     rank = 3
+     rank = 0
   case("balat")
      rank = 1
   case("qplatCum")
@@ -168,7 +180,9 @@
      rank = 1
   case("kclat")
      rank = 1
-  case("Qsunmap")
+  case("qsunmap")
+     rank = 1
+  case("secchisp")
      rank = 1
   case("zbndz")
      rank = 1
@@ -179,6 +193,8 @@
   case("turkin1")
      rank = 1
   case("vicwws")
+     rank = 1
+  case("difwws")
      rank = 1
   case("rnveg")
      rank = 1
@@ -375,3 +391,5 @@
   case default
      rank = 0
   end select
+
+end module m_bmi_get_var_rank

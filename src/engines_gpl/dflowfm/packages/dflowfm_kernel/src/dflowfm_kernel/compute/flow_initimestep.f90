@@ -190,7 +190,7 @@ contains
 
       ! Add wave model dependent wave force in RHS
       ! After setdt because surfbeat needs updated dts
-      if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          call compute_wave_forcing_RHS()
       end if
 

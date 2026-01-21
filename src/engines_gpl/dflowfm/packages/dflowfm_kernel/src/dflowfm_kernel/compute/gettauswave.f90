@@ -38,7 +38,7 @@ contains
 !> Make output arrays for bed shear stress icm jawave>0, depending on waq coupling and 2D/3D
    subroutine gettauswave(waveswartdelwaq)
       use precision, only: dp
-      use m_flow, only: taus, workx, worky, kmx, taubu, frcu, hu, u1, v, ifrcutp, ag, au, ustb, z0ucur, epsz0, ucx, ucy, rhomean, taubxu, flowwithoutwaves
+      use m_flow, only: taus, workx, worky, kmx, taubu, frcu, hu, u1, v, ifrcutp, ag, au, ustb, z0ucur, epsz0, ucx, ucy, rhomean, taubxu, flow_without_waves
       use m_waves, only: twav, uorb, ftauw, phiwav, ustokes
       use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2, ndx, nd, dx
       use m_get_kbot_ktop, only: getkbotktop
@@ -140,7 +140,7 @@ contains
       end select
 
       ! Calculate direction from GLM velocities, ustokes unavailable
-      if (flowwithoutwaves) then
+      if (flow_without_waves) then
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
             ucxb = ucx(kb)

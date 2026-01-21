@@ -143,7 +143,7 @@ module m_flowparameters
 
    integer :: waveforcing !< Wave forcing type, 0=no, 1=based on radiation stress gradients, 2=based on dissipation, NOT implemented yet, 3=based on dissipation at free surface and water column, NOT implemented yet
 
-   logical :: flowWithoutWaves = .false. !< True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
+   logical :: flow_without_waves = .false. !< True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
 
    integer :: jawavestreaming !< Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 
