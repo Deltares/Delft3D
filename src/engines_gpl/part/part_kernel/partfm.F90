@@ -89,8 +89,8 @@ contains
         call init_alloc(lunmem, lunpr)
 
         if (hyd%num_layers /= 1) then
-            write (lunpr, *) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
-            write (*, *) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
+            write (lunpr, *) ' 3D hydrodynamics on unstructured grids is applied!'  
+            write (*, *) ' 3D hydrodynamics on unstructured grids is applied!'
         endif
         !dts   = real(hyd%cnv_step_sec, 8)  !idelt in seconds taken from the hyd file (conversion timestep)
         tzone = 0.0_dp
