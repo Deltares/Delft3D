@@ -37,6 +37,8 @@ module m_longculverts_data
 
    private
 
+   public :: is_2D2D_longculvertlink
+
    !> Type definition for longculvert data.
    type, public :: t_longculvert
       character(len=IdLen) :: id
@@ -67,5 +69,25 @@ module m_longculverts_data
 
    integer, public :: nlongculverts !< Number of longculverts
    logical, public :: newculverts
+
+contains
+
+   !> simple routine which checks if a given flowlink L is part of a 2D-2D longculvert. Lives here to avoid cyclic dependency.
+   elemental subroutine is_2D2D_longculvertlink(L, res, i)
+      integer, intent(in) :: L !< Flowlink number
+      logical, intent(out) :: res !< Result: true if L is part of a 2D-2D longculvert
+      integer, intent(out) :: i !< Index of the longculvert in longculverts derived type array
+      res = .false.
+      do i = 1, nlongculverts
+         if (allocated(longculverts(i)%netlinks)) then
+            if (size(longculverts(i)%netlinks) == 1) then
+               if ((longculverts(i)%netlinks(1) == L)) then
+                  res = .true.
+                  exit
+               end if
+            end if
+         end if
+      end do
+   end subroutine is_2D2D_longculvertlink
 
 end module m_longculverts_data

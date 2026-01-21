@@ -11865,8 +11865,8 @@ contains
       use m_set_nod_adm
       use m_inquire_link_type, only: is_valid_2d2d_netlink, is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
       use m_cell_geometry, only: blcell
-      use m_longculverts_data, only: longculverts
-      use m_longculverts, only: is_2D2D_longculvertlink
+      use m_longculverts_data, only: longculverts, is_2D2D_longculvertlink
+
       implicit none
 
       integer, intent(in) :: ncid !< NetCDF file id

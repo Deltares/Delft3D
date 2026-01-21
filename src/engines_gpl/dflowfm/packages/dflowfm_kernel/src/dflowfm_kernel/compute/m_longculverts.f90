@@ -58,7 +58,6 @@ module m_longculverts
    public find1d2dculvertlinks
    public initialize_Long_Culverts
    public convert1D2DLongCulverts
-   public is_2D2D_longculvertlink
 
    interface realloc
       module procedure reallocLongCulverts
@@ -1574,9 +1573,7 @@ contains
       character(len=:), allocatable :: converted_crsdefsstring
       character(len=:), allocatable :: tempstring_crsdef
       character(len=:), allocatable :: tempstring_fnames
-      !character(len=:), allocatable :: tempstring_netfile
       character(len=200), dimension(:), allocatable :: fnames
-      ! character(len=IDLEN) :: temppath, tempname, tempext
 
       logical :: write_converted_files_
       integer :: istat, ifil, ierr, i
@@ -1652,22 +1649,5 @@ contains
          end do
       end if
    end function node_has_key
-
-   elemental subroutine is_2D2D_longculvertlink(L, res, i)
-      integer, intent(in) :: L !< Flowlink number
-      logical, intent(out) :: res
-      integer, intent(out) :: i
-      res = .false.
-      do i = 1, nlongculverts
-         if (allocated(longculverts(i)%netlinks)) then
-            if (size(longculverts(i)%netlinks) == 1) then
-               if ((longculverts(i)%netlinks(1) == L)) then
-                  res = .true.
-                  exit
-               end if
-            end if
-         end if
-      end do
-   end subroutine is_2D2D_longculvertlink
 
 end module m_longculverts
