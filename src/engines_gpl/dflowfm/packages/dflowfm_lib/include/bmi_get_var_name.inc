@@ -37,48 +37,46 @@
   case(3)
      var_name = "twav"
   case(4)
-     var_name = "twavcom"
-  case(5)
      var_name = "uorb"
-  case(6)
+  case(5)
      var_name = "bodsed"
-  case(7)
+  case(6)
      var_name = "dpsed"
-  case(8)
+  case(7)
      var_name = "msed"
-  case(9)
+  case(8)
      var_name = "thlyr"
-  case(10)
+  case(9)
      var_name = "rsedeq"
-  case(11)
+  case(10)
      var_name = "sbcx"
-  case(12)
+  case(11)
      var_name = "sbcy"
-  case(13)
+  case(12)
      var_name = "sbwx"
-  case(14)
+  case(13)
      var_name = "sbwy"
-  case(15)
+  case(14)
      var_name = "sscx"
-  case(16)
+  case(15)
      var_name = "sscy"
-  case(17)
+  case(16)
      var_name = "sswx"
-  case(18)
+  case(17)
      var_name = "sswy"
-  case(19)
+  case(18)
      var_name = "taucr"
-  case(20)
+  case(19)
      var_name = "tetacr"
-  case(21)
+  case(20)
      var_name = "InterceptThickness"
-  case(22)
+  case(21)
      var_name = "InterceptHs"
-  case(23)
+  case(22)
      var_name = "PotEvap"
-  case(24)
+  case(23)
      var_name = "ActEvap"
-  case(25)
+  case(24)
      var_name = "infilt"
   case(25)
      var_name = "infiltcap"

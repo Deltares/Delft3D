@@ -27,16 +27,6 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-module m_bmi_get_var_location
-
-implicit none
-
-private
-
-public :: bmi_get_var_location
-
-contains
-
 select case(var_name)
   case("DFM_COMM_DFMWORLD")
     location_name = ""
@@ -45,8 +35,6 @@ select case(var_name)
   case("hwav")
     location_name = "face"
   case("twav")
-    location_name = "face"
-  case("twavcom")
     location_name = "face"
   case("uorb")
     location_name = "face"
@@ -155,7 +143,7 @@ select case(var_name)
   case("qplat")
     location_name = ""
   case("qqlat")
-    location_name = ""
+    location_name = "face"
   case("balat")
     location_name = ""
   case("qplatCum")
@@ -180,9 +168,7 @@ select case(var_name)
     location_name = ""
   case("kclat")
     location_name = "face"
-  case("qsunmap")
-    location_name = "face"
-  case("secchisp")
+  case("Qsunmap")
     location_name = "face"
   case("zbndz")
     location_name = "edge"
@@ -193,8 +179,6 @@ select case(var_name)
   case("turkin1")
     location_name = "edge"
   case("vicwws")
-    location_name = "face"
-  case("difwws")
     location_name = "face"
   case("rnveg")
     location_name = "face"
@@ -391,5 +375,3 @@ select case(var_name)
   case default
     location_name = ""
 end select
-
-end module m_bmi_get_var_location

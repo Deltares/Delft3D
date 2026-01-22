@@ -27,16 +27,6 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-module m_bmi_get_var
-
-implicit none
-
-private
-
-public :: bmi_get_var
-
-contains
-
   select case(var_name)
   case("DFM_COMM_DFMWORLD") !<  [-] The MPI communicator for dflowfm (FORTRAN handle). {"rank": 0}
      x = c_loc(DFM_COMM_DFMWORLD)
@@ -46,8 +36,6 @@ contains
      x = c_loc(hwav)
   case("twav") !<  [s] wave period {"location": "face", "shape": ["ndx"]}
      x = c_loc(twav)
-  case("twavcom") !<  [s] wave period from external source {"location": "face", "shape": ["ndx"]}
-     x = c_loc(twavcom)
   case("uorb") !<  [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
      x = c_loc(uorb)
   case("bodsed") !<  [kg m-2] Available sediment in the bed in flow cell center. {"location": "face", "shape": ["stmpar%morlyr%settings%nfrac", "ndx"], "internal": "stmpar%morlyr%state%bodsed"}
@@ -154,7 +142,7 @@ contains
      x = c_loc(numlatsg)
   case("qplat") !<  [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
      x = c_loc(qplat)
-  case("qqlat") !<  [m3/s] Lateral discharge at xz,yz {"location": "face": ["num_layers","nlatnd"]}
+  case("qqlat") !<  [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","nlatnd"]}
      x = c_loc(qqlat)
   case("balat") !<  [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
      x = c_loc(balat)
@@ -180,10 +168,8 @@ contains
      x = c_loc(nnlat)
   case("kclat") !<  [-] for each cell: 0 when not accepting lateral discharge (e.g. pipe) {"location": "face", "shape": ["ndx"]}
      x = c_loc(kclat)
-  case("qsunmap") !<  [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
-     x = c_loc(qsunmap)
-  case("secchisp") !<  [m] Space-varying secchi depth {"location": "face", "shape": ["ndx"]}
-     x = c_loc(secchisp)
+  case("Qsunmap") !<  [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
+     x = c_loc(Qsunmap)
   case("zbndz") !<  [m] waterlevel boundary points function {"location": "edge", "shape": ["nbndz"]}
      x = c_loc(zbndz)
   case("zbndu") !<  [m/s] velocity   boundary points function {"location": "edge", "shape": ["nbndu"]}
@@ -194,8 +180,6 @@ contains
      x = c_loc(turkin1)
   case("vicwws") !<  [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
      x = c_loc(vicwws)
-  case("difwws") !<  [m2/s] vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
-     x = c_loc(difwws)
   case("rnveg") !<  [1/m2] 3D plant density , 2D part is basis input (1/m2) {"location": "face", "shape": ["ndkx"]}
      x = c_loc(rnveg)
   case("diaveg") !<  [m] 3D plant diameter, 2D part is basis input (m) {"location": "face", "shape": ["ndkx"]}
@@ -389,6 +373,3 @@ contains
   case("ndx1d") !<  [-] volume table size {"rank": 0}
      x = c_loc(ndx1d)
   end select
-
-
-end module m_bmi_get_var
