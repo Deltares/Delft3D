@@ -13,7 +13,7 @@ description = """\
     functionality.\
 """
 authors = [
-    {name = "Team Black Ops", email = "blackops@deltares.nl"},  # Main point of contact.
+    {name = "Team Black Ops", email = "black-ops@deltares.nl"},  # Main point of contact.
     {name = "Hidde Elzinga"},
     {name = "Adri Mourits"},
     {name = "Jan Mooiman"},
@@ -33,7 +33,9 @@ dependencies = [
     "minio ~= 7.2",
     "s3-path-wrangler ~= 0.5",
     "urllib3 >= 2.6.3",
-    "pyreadline3 ~= 3.5.4 ; platform_system == 'Windows'"
+    "pyreadline3 ~= 3.5.4 ; platform_system == 'Windows'",
+    "dvc ~= 3.0",
+    "dvc-s3 ~= 3.0",
 ]
 
 [project.optional-dependencies]
@@ -122,7 +124,12 @@ addopts = """\
     --doctest-modules \
     --verbose \
     --junitxml=logs/pytest_results.xml \
-    -W error\
+    -W error \
+    --ignore=conversion \
+    --ignore=conversion-sobek \
+    --ignore=src \
+    --ignore=thirdparty \
+    --ignore=tools \
 """
 testpaths = ["test", "tools/minio/utils.py"]
 junit_family = "xunit2"

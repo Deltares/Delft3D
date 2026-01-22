@@ -246,6 +246,7 @@ module m_output_config
    integer, public :: IDX_HIS_RAIN
    integer, public :: IDX_HIS_INFILTRATION_CAP
    integer, public :: IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL
+   integer, public :: IDX_HIS_INFILTRATION_HORTON_STATE
 
    integer, public :: IDX_HIS_AIR_DENSITY
 

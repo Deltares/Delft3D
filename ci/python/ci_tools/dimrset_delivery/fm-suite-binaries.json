@@ -495,8 +495,15 @@
         {
             "file": "lib\\gdal.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_date_time-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_filesystem-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
         }
-
     ],
     "notSigned": [
         "bin\\tclkitsh852.exe"

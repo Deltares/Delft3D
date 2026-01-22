@@ -4254,7 +4254,7 @@ contains
       use m_xbeach_data, m_xbeach_data_hminlw => hminlw
       use m_flowgeom
       use m_flowtimes, only: dnt
-      use m_flow, only: epshu, flowwithoutwaves
+      use m_flow, only: epshu, flow_without_waves
       use network_data, only: xk, yk, numk
       use m_sferic, only: pi, dg2rd, rd2dg
       use m_physcoef, only: ag, rhomean
@@ -4487,7 +4487,7 @@ contains
       end if
       !
       ! this part is for online interacter visualisation
-      if (jaGUI == 1 .and. .not. flowWithoutWaves) then
+      if (jaGUI == 1 .and. .not. flow_without_waves) then
          if (ntek > 0) then
             if (mod(int(dnt), ntek) == 0) then
                call wave_makeplotvars()

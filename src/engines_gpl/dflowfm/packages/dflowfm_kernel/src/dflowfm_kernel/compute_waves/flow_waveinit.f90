@@ -74,13 +74,6 @@ contains
 
       ierr = DFM_NOERR
 
-      call realloc(uin, nbndu, stat=ierr, keepExisting=.false., fill=0.0_dp)
-      call aerr('uin  (nbndu)', ierr, nbndu)
-      call realloc(vin, nbndu, stat=ierr, keepExisting=.false., fill=0.0_dp)
-      call aerr('vin  (nbndu)', ierr, nbndu)
-      call realloc(u1rm, nbndu, stat=ierr, keepExisting=.false., fill=0.0_dp) ! remember u1 state
-      call aerr('u1rm  (nbndu)', ierr, nbndu)
-
       call realloc(ktb, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ktb  (ndx)', ierr, ndx)
       call realloc(ust_mag, ndkx, stat=ierr, keepExisting=.false., fill=0.0_dp)
@@ -125,9 +118,7 @@ contains
          call aerr('dwcap(ndx)', ierr, ndx)
          call realloc(distot, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('distot(ndx)', ierr, ndx)
-      end if
-      !
-      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
+         !
          call realloc(hwavcom, ndx, stat=ierr, keepExisting=.false., fill=hwavuni)
          call aerr('hwavcom   (ndx)', ierr, ndx)
          call realloc(twavcom, ndx, stat=ierr, keepExisting=.false., fill=twavuni)
@@ -135,8 +126,14 @@ contains
       end if
       !
       if (jawave == WAVE_SURFBEAT) then
+         call realloc(uin, nbndu, stat=ierr, keepExisting=.false., fill=0.0_dp)
+         call aerr('uin  (nbndu)', ierr, nbndu)
+         call realloc(vin, nbndu, stat=ierr, keepExisting=.false., fill=0.0_dp)
+         call aerr('vin  (nbndu)', ierr, nbndu)
+         call realloc(u1rm, nbndu, stat=ierr, keepExisting=.false., fill=0.0_dp) ! remember u1 state
+         call aerr('u1rm  (nbndu)', ierr, nbndu)
          if (trim(instat) == 'stat' .or. &
-             trim(instat) == 'stat_table') then
+            trim(instat) == 'stat_table') then
             call allocstatsolverarrays(0, ierr)
          end if
          !

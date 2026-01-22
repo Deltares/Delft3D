@@ -115,7 +115,7 @@ contains
 !> prepare_wind_model_data
    subroutine prepare_wind_model_data(time_in_seconds, iresult)
       use m_wind
-      use m_flowparameters, only: jawave, flowWithoutWaves
+      use m_flowparameters, only: jawave, flow_without_waves
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
@@ -245,7 +245,7 @@ contains
          end do
       end if
 
-      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flow_without_waves) then
          call tauwavefetch(time_in_seconds)
       end if
 
