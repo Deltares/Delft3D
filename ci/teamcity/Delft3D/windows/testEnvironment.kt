@@ -34,6 +34,7 @@ object WindowsTestEnvironment : BuildType({
 
     steps {
         mergeTargetBranch {}
+        cleanupTemporaryRemote {}
         powerShell {
             name = "Get tooling from network share"
             platform = PowerShellStep.Platform.x64

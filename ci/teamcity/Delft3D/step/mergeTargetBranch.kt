@@ -19,3 +19,17 @@ fun BuildSteps.mergeTargetBranch(init: ScriptBuildStep.() -> Unit): ScriptBuildS
     """.trimIndent()
     return result
 }
+
+fun BuildSteps.cleanupTemporaryRemote(init: ScriptBuildStep.() -> Unit): ScriptBuildStep {
+    val result = ScriptBuildStep(init)
+    step(result)
+    result.name = "Cleanup temporary remote"
+    result.conditions {
+        contains("teamcity.build.branch", "pull")
+    }
+    result.workingDir = "."
+    result.scriptContent = """
+        git remote remove temporary
+    """.trimIndent()
+    return result
+}

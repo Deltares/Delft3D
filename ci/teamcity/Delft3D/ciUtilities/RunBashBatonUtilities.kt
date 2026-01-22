@@ -49,6 +49,7 @@ object RunBashBatonUtilities : BuildType({
 
     steps {
         mergeTargetBranch {}
+        cleanupTemporaryRemote {}
 
         script {
             name = "Display versions"

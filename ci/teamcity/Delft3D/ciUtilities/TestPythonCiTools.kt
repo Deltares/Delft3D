@@ -52,6 +52,7 @@ object TestPythonCiTools : BuildType({
 
     steps {
         mergeTargetBranch {}
+        cleanupTemporaryRemote {}
         python {
             name = "Check code formatting"
             workingDir = "ci/python"

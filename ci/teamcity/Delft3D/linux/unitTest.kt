@@ -38,6 +38,7 @@ object LinuxUnitTest : BuildType({
 
     steps {
         mergeTargetBranch {}
+        cleanupTemporaryRemote {}
         step {
             name = "Download artifact from Nexus"
             type = "RawDownloadNexusLinux"

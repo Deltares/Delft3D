@@ -38,6 +38,7 @@ object WindowsCollect : BuildType({
 
     steps {
         mergeTargetBranch {}
+        cleanupTemporaryRemote {}
         python {
             name = "Run artifacts_cleaner.py"
             command = file {
