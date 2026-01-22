@@ -4,7 +4,7 @@ subroutine rdtddn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
                 & disint    ,parnam    ,parunt    ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -200,7 +200,7 @@ subroutine rdtddn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
        call flhnew(lunrd     ,lundia    ,error     ,record(:lrecrd)      ,access    , &
                  & irecrd    ,namsrc(n) ,disflg    ,disint(n) ,itdate    , &
                  & timscl    ,ntimrd    ,parrd     ,npara     ,nparrd    , &
-                 & bubble    ,gdp       )
+                 & bubble    ,''        ,gdp       )
        if (error) then
           exit
        endif

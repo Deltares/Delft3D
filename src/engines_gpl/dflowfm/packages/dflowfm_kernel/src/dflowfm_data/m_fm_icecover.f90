@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -402,7 +402,8 @@ contains
         !! qh_ice2wat(n) = -2.4_fp
          !
          if (ieee_is_nan(qh_ice2wat(n))) then
-            write (msgbuf, '(a,i5,10f10.3)') 'NAN in PREPROCESS_ICECOVER', n, qh_ice2wat(n); call msg_flush()
+            write (msgbuf, '(a,i5,10f10.3)') 'NAN in PREPROCESS_ICECOVER', n, qh_ice2wat(n)
+            call msg_flush()
          end if
          !
       case default
@@ -468,6 +469,7 @@ contains
                   ice_area_fraction(n) = 1.0_fp
                else
                   ice_thickness(n) = 0.0_fp
+                  snow_thickness(n) = 0.0_fp
                   ice_area_fraction(n) = 0.0_fp
                   ice_temperature(n) = celsius_to_kelvin(0.0_fp)
                end if
@@ -525,5 +527,30 @@ contains
 
       call icecover_prepare_output(ice_data, water_level_fp, water_density, ag_fp)
    end subroutine fm_icecover_prepare_output
+
+   !> Convert a value into the corresponding input string. This is the opposite of reading the input file.
+   !! This function is used to output the mdu-file
+   function fm_ice_convert_value_to_string(keyword, ice_data) result(string)
+      character(len=20) :: string !< value of "keyword", converted to (input-)string
+      character(len=*), intent(in) :: keyword !< keyword inside ice_data that needs to be converted
+      type(icecover_type), intent(in) :: ice_data
+
+      string = ''
+      select case (keyword)
+      case ('IceCoverModel')
+         select case (ice_data%model_type)
+         case (ICECOVER_NONE)
+            string = 'None'
+         case (ICECOVER_EXT)
+            string = 'External'
+         case (ICECOVER_SEMTNER)
+            string = 'Semtner'
+         case default
+            continue
+         end select
+      case default
+         continue
+      end select
+   end function fm_ice_convert_value_to_string
 
 end module m_fm_icecover

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -92,8 +92,10 @@ contains
          end if
          !
          huL = max(huL, 1.0e-2_dp)
-         k1 = ln(1, L); k2 = ln(2, L)
-         ac1 = acl(L); ac2 = 1.0_dp - ac1
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         ac1 = acl(L)
+         ac2 = 1.0_dp - ac1
          !
          ! Use Eulerian velocities
          uuu = u1(L) - ustokes(L)
@@ -124,7 +126,7 @@ contains
          ! get current related roughness height
          !
          if (frcu(L) > 0.0_dp) then
-            cz = get_chezy(huL, dble(frcu(L)), u1(L), v(L), ifrcutp(L))
+            cz = get_chezy(huL, real(frcu(L), kind=dp), u1(L), v(L), ifrcutp(L))
          else
             cz = get_chezy(huL, frcuni, u1(L), v(L), ifrctypuni)
          end if
@@ -132,9 +134,12 @@ contains
 
          if (modind > 0 .and. modind < 10) then
             !
-            cosk1 = cos(phiwav(k1) * dg2rd); sink1 = sin(phiwav(k1) * dg2rd)
-            cosk2 = cos(phiwav(k2) * dg2rd); sink2 = sin(phiwav(k2) * dg2rd)
-            csw = ac1 * cosk1 + ac2 * cosk2; snw = ac1 * sink1 + ac2 * sink2
+            cosk1 = cos(phiwav(k1) * dg2rd)
+            sink1 = sin(phiwav(k1) * dg2rd)
+            cosk2 = cos(phiwav(k2) * dg2rd)
+            sink2 = sin(phiwav(k2) * dg2rd)
+            csw = ac1 * cosk1 + ac2 * cosk2
+            snw = ac1 * sink1 + ac2 * sink2
             !
             cphi = csw * csu(L) + snw * snu(L)
             sphi = -csw * snu(L) + snw * csu(L)

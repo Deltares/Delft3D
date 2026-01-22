@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2025.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -299,6 +299,8 @@ call SOFLOW( &
         &   debug_wr                                   , &
 !units  
         &   juer                                       , &
+!derived type with all info
+        &   f1dimppar                                 , &
 !close
         &)
     

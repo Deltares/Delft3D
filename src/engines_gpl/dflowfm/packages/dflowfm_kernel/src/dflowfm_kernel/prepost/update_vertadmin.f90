@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -59,16 +59,20 @@ contains
 
       ierror = 0
 
-      if (jampi == 0) return ! intended for parallel computations only
+      if (jampi == 0) then
+         return ! intended for parallel computations only
+      end if
 
-      if (kmx <= 0) return ! 3D only
+      if (kmx <= 0) then
+         return ! 3D only
+      end if
 
 !  allocate dummy array
       allocate (dum(2, Ndx))
 
 !  bl, kmxn: filly dummy array
       do k = 1, Ndx
-         dum(1, k) = dble(kmxn(k))
+         dum(1, k) = real(kmxn(k), kind=dp)
          dum(2, k) = bl(k)
       end do
 !  udpate dummy array
@@ -104,7 +108,7 @@ contains
 
 !  kmxL: filly dummy array
       do L = 1, Lnx
-         dum(1, L) = dble(kmxL(L))
+         dum(1, L) = real(kmxL(L), kind=dp)
       end do
 !  update dummy array
       call update_ghosts(ITYPE_U, 1, Lnx, dum, ierror)

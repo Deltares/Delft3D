@@ -1,6 +1,6 @@
 """Common static functions.
 
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import os

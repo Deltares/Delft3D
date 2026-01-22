@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -80,13 +80,15 @@ contains
 
 !     reallocate if necessary
          if (numj > ubound(xlist, 1)) then
-            numnew = int(1.2_dp * dble(numj)) + 1
+            numnew = int(1.2_dp * real(numj, kind=dp)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if
 
 !     non-cross splines may only cross with cross splines visa versa
-         if ((num == 2 .and. numj == 2) .or. (num > 2 .and. numj > 2)) cycle
+         if ((num == 2 .and. numj == 2) .or. (num > 2 .and. numj > 2)) then
+            cycle
+         end if
 
 !     get the intersection of the splines
          xlist(1:numj) = xsp(js, 1:numj)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,7 +64,9 @@ contains
 
       else if (stage == 2) then
 
-         if (.not. bfm_included) return
+         if (.not. bfm_included) then
+            return
+         end if
          !
          call fm_rdbedformpar(bfmpar, md_bedformfile, error)
          if (error) then

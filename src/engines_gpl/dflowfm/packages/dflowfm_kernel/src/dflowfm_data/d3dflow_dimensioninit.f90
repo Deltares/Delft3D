@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,7 +57,9 @@ contains
       griddim%parttype = PARTITION_NONCONT
 
       allocate (griddim%ncellnodes(ndx), stat=istat)
-      if (istat == 0) allocate (griddim%indexnode1(ndx), stat=istat)
+      if (istat == 0) then
+         allocate (griddim%indexnode1(ndx), stat=istat)
+      end if
       if (istat == 0) then
          istart = 1
          do nm = 1, ndxi
@@ -80,7 +82,9 @@ contains
          end do
          griddim%celltype(ndxi + 1:ndx) = 2 ! Boundary cells
       end if
-      if (istat == 0) allocate (griddim%cell2node(istart - 1), stat=istat)
+      if (istat == 0) then
+         allocate (griddim%cell2node(istart - 1), stat=istat)
+      end if
       if (istat == 0) then
          istart = 1
          do nm = 1, ndxi

@@ -5,6 +5,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 object SigCi : BuildType({
     name = "Sig Ci"
+    buildNumberPattern = "%build.vcs.number%"
     
     vcs {
         root(DslContext.settingsRoot)

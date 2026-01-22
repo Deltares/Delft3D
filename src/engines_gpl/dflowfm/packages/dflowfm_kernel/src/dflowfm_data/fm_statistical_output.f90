@@ -138,7 +138,10 @@ contains
 
       call allocate_and_associate(source_input, dadpar%dredge_dimension_length, time_dredged, time_ploughed)
 
-      cof0 = 1.0_dp; if (time1 > 0.0_dp) cof0 = time1
+      cof0 = 1.0_dp
+      if (time1 > 0.0_dp) then
+         cof0 = time1
+      end if
       time_dredged = dadpar%tim_dredged / cof0
       time_ploughed = dadpar%tim_ploughed / cof0
 
@@ -1455,6 +1458,10 @@ contains
                              'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '', &
                              'mm hr-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_INFILTRATION_HORTON_STATE, &
+                             'Wrihis_infiltration', 'infiltration_horton_state', 'Horton infiltration state', '', &
+                             '', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
 
       ! Variable (computed) air density
       call add_output_config(config_set_his, IDX_HIS_AIR_DENSITY, &
@@ -2594,7 +2601,7 @@ contains
             end if
          end if
 
-         if (jatem > 0 .and. jahistem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jahistem > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_TEM1:IPNT_TEM1 + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TEMPERATURE), temp_pointer)
@@ -2631,7 +2638,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_R), valobs(:, IPNT_WAVER))
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UORB), valobs(:, IPNT_WAVEU))
-            if (model_is_3D() .and. .not. flowwithoutwaves) then
+            if (model_is_3D() .and. .not. flow_without_waves) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCXST:IPNT_UCXST + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), temp_pointer)
 
@@ -2671,27 +2678,36 @@ contains
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL), valobs(:, IPNT_infiltact))
          end if
 
+         if (infiltrationmodel == DFM_HYD_INFILT_HORTON .and. jahisinfilt > 0) then
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_HORTON_STATE), valobs(:, IPNT_infilthortonstate))
+         end if
+
          if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_AIR_DENSITY), valobs(:, IPNT_AIRDENSITY))
          end if
 
-         ! Heat flux model
-         if (jatem > 1 .and. jahisheatflux > 0) then
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
-            if (jatem == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RHUM), valobs(:, IPNT_RHUM))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CLOU), valobs(:, IPNT_CLOU))
+         ! Write heat flux model statistical output
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            if (jahisheatflux > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
+
+               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RHUM), valobs(:, IPNT_RHUM))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CLOU), valobs(:, IPNT_CLOU))
+               end if
+
+               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QSUN), valobs(:, IPNT_QSUN))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QEVA), valobs(:, IPNT_QEVA))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QLONG), valobs(:, IPNT_QLON))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFREVA), valobs(:, IPNT_QFRE))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFRCON), valobs(:, IPNT_QFRC))
+               end if
+
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
             end if
-            if (jatem == 5) then
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QSUN), valobs(:, IPNT_QSUN))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QEVA), valobs(:, IPNT_QEVA))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QLONG), valobs(:, IPNT_QLON))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFREVA), valobs(:, IPNT_QFRE))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFRCON), valobs(:, IPNT_QFRC))
-            end if
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
          end if
 
          ! Ice model
@@ -2772,12 +2788,12 @@ contains
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCY), SSCY)
                end if
-               if (stmpar%morpar%moroutput%sbwuv .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sbwuv .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
                   function_pointer => calculate_sediment_SBW
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWY), SBWY)
                end if
-               if (stmpar%morpar%moroutput%sswuv .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sswuv .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
                   function_pointer => calculate_sediment_SSW
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWY), SSWY)

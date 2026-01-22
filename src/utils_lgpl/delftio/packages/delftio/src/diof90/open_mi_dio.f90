@@ -1,7 +1,7 @@
 module open_mi_dio
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -33,7 +33,7 @@ module open_mi_dio
 !!!
 !!! open_mi_dio.F90: OD - module (*O*penMI exchange by means of *D*elftIO)
 !!!
-!!! (c) Deltares, 2025
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

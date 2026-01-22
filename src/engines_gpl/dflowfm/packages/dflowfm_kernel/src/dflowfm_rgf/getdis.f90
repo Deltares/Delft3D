@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,7 +53,7 @@ contains
 
       Lcurv = (H > 1.0e-8_dp)
 
-      TS = min(TS, dble(N))
+      TS = min(TS, real(N, kind=dp))
       DT = 0.1
       SS = 0
       T0 = 0
@@ -63,10 +63,14 @@ contains
       T1 = T0 + DT
       if (T1 < TS) then
          call SPLINTXY(X, Y, X2, Y2, N, T1, XT1, YT1)
-         if (Lcurv) call comp_curv(N, X, Y, X2, Y2, 0.5_dp * (T0 + T1), curv, dnx, dny, dsx, dsy)
+         if (Lcurv) then
+            call comp_curv(N, X, Y, X2, Y2, 0.5_dp * (T0 + T1), curv, dnx, dny, dsx, dsy)
+         end if
       else
          call SPLINTXY(X, Y, X2, Y2, N, TS, XT1, YT1)
-         if (Lcurv) call comp_curv(N, X, Y, X2, Y2, 0.5_dp * (T0 + TS), curv, dnx, dny, dsx, dsy)
+         if (Lcurv) then
+            call comp_curv(N, X, Y, X2, Y2, 0.5_dp * (T0 + TS), curv, dnx, dny, dsx, dsy)
+         end if
       end if
       if (.not. Lcurv) then
 !         SS  = SS + SQRT( (XT1-XT0)**2 + (YT1-YT0)**2 )
@@ -78,7 +82,9 @@ contains
       T0 = T1
       XT0 = XT1
       YT0 = YT1
-      if (T1 < TS) goto 10
+      if (T1 < TS) then
+         goto 10
+      end if
 
       return
    end

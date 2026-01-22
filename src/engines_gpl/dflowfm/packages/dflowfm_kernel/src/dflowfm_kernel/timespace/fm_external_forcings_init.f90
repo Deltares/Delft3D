@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -573,8 +573,12 @@ contains
 
       nlatnd = nlatnd + nlat
 
-      if (allocated(x_coordinates)) deallocate (x_coordinates, stat=ierr)
-      if (allocated(y_coordinates)) deallocate (y_coordinates, stat=ierr)
+      if (allocated(x_coordinates)) then
+         deallocate (x_coordinates, stat=ierr)
+      end if
+      if (allocated(y_coordinates)) then
+         deallocate (y_coordinates, stat=ierr)
+      end if
 
       ! [lateral]
       ! Flow = 1.23 | test.tim | REALTIME

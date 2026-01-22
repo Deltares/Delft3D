@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -123,9 +123,15 @@ contains
       z0 = z0 + dz
       c20 = c20 + dc2
       u20 = u20 + du2
-      if (abs(dz) > eps) goto 10
-      if (abs(dc2) > eps) goto 10
-      if (abs(du2) > eps) goto 10
+      if (abs(dz) > eps) then
+         goto 10
+      end if
+      if (abs(dc2) > eps) then
+         goto 10
+      end if
+      if (abs(du2) > eps) then
+         goto 10
+      end if
 !c
 !c correct shock speeds (z, c2 and u2) are found
 !c

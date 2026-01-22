@@ -985,7 +985,7 @@
       WRITE (VERTXT, '(F5.2)') VERNUM                                     40.03
 !      CALL BUGFIX ('A')
 !      CALL BUGFIX ('B')
-      VERTXT ='41.51.3'
+      VERTXT ='41.51.9'
       IF (SIZEOF(GRAV) == 8) THEN
         VERTXT = TRIM(VERTXT) // " Double-Prec."
       END IF
@@ -4968,6 +4968,8 @@
             IF (JWLV1.GT.1) COMPDA(INDX,JWLV1) = WLVL                     40.00
             IF (JWLV3.GT.1) COMPDA(INDX,JWLV3) = WLVL                     40.00
             DEP = DEP + WLVL
+          ELSE
+            COMPDA(INDX,JWLV2) = WLEV
           ENDIF
 !         add constant water level
           DEPW = DEP + WLEV                                               30.70
@@ -5154,6 +5156,8 @@
             IF (JWLV1.GT.1) COMPDA(INDX,JWLV1) = WLVL                     40.80
             IF (JWLV3.GT.1) COMPDA(INDX,JWLV3) = WLVL                     40.80
             DEP = DEP + WLVL
+         ELSE
+            COMPDA(INDX,JWLV2) = WLEV
          ENDIF
 !        add constant water level
          DEPW = DEP + WLEV                                                40.80
@@ -6949,6 +6953,11 @@
 !
       INTEGER     IERR
       REAL        TSTVAL(10)                                              40.00
+      REAL, PARAMETER :: DEPWMAX=100000.
+!           NetCDF fill values (E+30) might appear in depth and/or
+!           waterlevel arrays on dry points and be picked up when
+!           computing gradients. This is avoided by setting the actual
+!           depth to zero when it is above DEPWMAX.
       TYPE(BSPCDAT), POINTER :: CURBFL                                    40.31
       LOGICAL LPB                                                         40.80
       SAVE  IENT
@@ -7178,6 +7187,9 @@
               COMPDA(INDX,JDP1) = COMPDA(INDX,JDP2)
               WLVL = COMPDA(INDX,JWLV2)
               DEPW = DEP + WLVL + WLEV
+              IF (DEPW>DEPWMAX) THEN
+                DEPW = 0.
+              ENDIF
               COMPDA(INDX,JDP2) = DEPW
               IF (LSETUP.GT.0) THEN                                       40.14
                 COMPDA(INDX,JDPSAV) = COMPDA(INDX,JDP2)                   40.14
@@ -7202,6 +7214,9 @@
            COMPDA(INDX,JDP1) = COMPDA(INDX,JDP2)
            WLVL = COMPDA(INDX,JWLV2)
            DEPW = DEP + WLVL + WLEV
+           IF (DEPW>DEPWMAX) THEN
+              DEPW = 0.
+           ENDIF
            COMPDA(INDX,JDP2) = DEPW
            IF (LSETUP.GT.0) THEN
               COMPDA(INDX,JDPSAV) = COMPDA(INDX,JDP2)

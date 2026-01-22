@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -64,6 +64,7 @@ module m_ec_provider
    public :: ecProviderCreateQhtableItems
    public :: ecProviderCreateTimeInterpolatedItem
    public :: ecProviderInitializeTimeFrame
+   public :: ecProviderSearchStdOrVarnames
    public :: items_from_bc_quantities
 
    interface ecSetFileReaderProperties
@@ -391,7 +392,8 @@ contains
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
-                  "pseudoairpressure", "waterlevelcorrection")
+                  "pseudoairpressure", "waterlevelcorrection", &
+                  "frictioncoefficient")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2484,8 +2486,8 @@ contains
       character(len=NF90_MAX_NAME) :: coord_name !< helper variable
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: coord_names !< helper variable
       character(len=NF90_MAX_NAME) :: name !< helper variable
-      character(len=NF90_MAX_NAME), dimension(4) :: ncstdnames !< helper variable : temp. list of standard names to search for in netcdf
-      character(len=NF90_MAX_NAME), dimension(1) :: ncstdnames_fallback !< idem
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< helper variable : temp. list of standard names to search for in netcdf
+      character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< idem
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< helper variable : temp. list of variable names to search for in netcdf
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: nccustomnames !< helper variable : temp. list of user-defined variables names to search for
       integer :: quantityId !< helper variable
@@ -2536,180 +2538,10 @@ contains
       ! (already stored in the filereader)
       ! For now assuming the MATROOS-definitions of variables, listed at
       ! https://publicwiki.deltares.nl/display/NETCDF/Matroos+Standard+names
-      ncstdnames(:) = ''
-      allocate (ncvarnames(4)) ! todo: error handling
-      ncvarnames(:) = ''
-      ncstdnames_fallback = ' '
       idvar = -1
-      select case (str_tolower(trim(quantityName)))
-      case ('rainfall')
-         ncvarnames(1) = 'rainfall'
-         ncstdnames(1) = 'precipitation_amount'
-      case ('rainfall_rate')
-         ncvarnames(1) = 'rainfall'
-         ncstdnames(1) = 'rainfall_rate'
-      case ('windx')
-         ncvarnames(1) = 'u10' ! 10 meter eastward wind
-         ncstdnames(1) = 'eastward_wind'
-      case ('windy')
-         ncvarnames(1) = 'v10' ! 10 meter northward wind
-         ncstdnames(1) = 'northward_wind'
-      case ('windxy')
-         ncvarnames(1) = 'u10' ! 10 meter eastward wind
-         ncstdnames(1) = 'eastward_wind'
-         ncvarnames(2) = 'v10' ! 10 meter northward wind
-         ncstdnames(2) = 'northward_wind'
-      case ('stressx')
-         ncvarnames(1) = 'tauu' ! eastward wind stress
-         ncstdnames(1) = 'surface_downward_eastward_stress'
-      case ('stressy')
-         ncvarnames(1) = 'tauv' ! northward wind stress
-         ncstdnames(1) = 'surface_downward_northward_stress'
-      case ('stressxy')
-         ncvarnames(1) = 'tauu' ! eastward wind stress
-         ncstdnames(1) = 'surface_downward_eastward_stress'
-         ncvarnames(2) = 'tauv' ! northward wind stress
-         ncstdnames(2) = 'surface_downward_northward_stress'
-      case ('airpressure', 'atmosphericpressure')
-         ncvarnames(1) = 'msl' ! mean sea-level pressure
-         ncstdnames(1) = 'air_pressure'
-      case ('pseudoairpressure')
-         ncvarnames(1) = 'msl' ! mean sea-level pressure
-         ncstdnames(1) = 'air_pressure'
-      case ('waterlevelcorrection')
-         ncvarnames(1) = 'ssh' ! water level correction
-         ncstdnames(1) = 'sea_surface_height' 
-      case ('airdensity')
-         ! UNST-6593: air_density has variable name p140209 and no standard_name, will be changed in the future according to ECMWF.
-         ncvarnames(1) = 'p140209' ! air density above sea
-         ncstdnames(1) = 'air_density'
-      case ('airpressure_windx_windy')
-         ncvarnames(1) = 'msl' ! mean sea-level pressure
-         ncstdnames(1) = 'air_pressure'
-         ncvarnames(2) = 'u10' ! 10 meter eastward wind
-         ncstdnames(2) = 'eastward_wind'
-         ncvarnames(3) = 'v10' ! 10 meter northward wind
-         ncstdnames(3) = 'northward_wind'
-      case ('airpressure_stressx_stressy')
-         ncvarnames(1) = 'msl' ! mean sea-level pressure
-         ncstdnames(1) = 'air_pressure'
-         ncvarnames(2) = 'tauu' ! eastward wind stress
-         ncstdnames(2) = 'surface_downward_eastward_stress'
-         ncvarnames(3) = 'tauv' ! northward wind stress
-         ncstdnames(3) = 'surface_downward_northward_stress'
-      case ('airpressure_windx_windy_charnock')
-         ncvarnames(1) = 'msl' ! mean sea-level pressure
-         ncstdnames(1) = 'air_pressure'
-         ncvarnames(2) = 'u10' ! 10 meter eastward wind
-         ncstdnames(2) = 'eastward_wind'
-         ncvarnames(3) = 'v10' ! 10 meter northward wind
-         ncstdnames(3) = 'northward_wind'
-         ncvarnames(4) = 'c' ! space varying Charnock coefficients
-         ncstdnames(4) = 'charnock'
-      case ('charnock')
-         ncvarnames(1) = 'c' ! space varying Charnock coefficients
-         ncstdnames(1) = 'charnock'
-      case ('airtemperature')
-         ncvarnames(1) = 't2m' ! 2-meter air temperature
-         ncstdnames(1) = 'air_temperature'
-      case ('cloudiness')
-         ncvarnames(1) = 'tcc' ! cloud cover (fraction)
-         ncstdnames(1) = 'cloud_area_fraction'
-      case ('humidity')
-         ncstdnames(1) = 'humidity'
-         ncstdnames_fallback(1) = 'relative_humidity'
-      case ('dewpoint')
-         ncvarnames(1) = 'd2m' ! dew-point temperature
-         ncstdnames(1) = 'dew_point_temperature'
-      case ('wind_speed')
-         ncstdnames(1) = 'wind_speed'
-      case ('wind_from_direction')
-         ncstdnames(1) = 'wind_from_direction'
-      case ('humidity_airtemperature_cloudiness')
-         ncvarnames(1) = 'rhum' ! relative_humidity
-         ncstdnames(1) = 'relative_humidity'
-         ncvarnames(2) = 't2m' ! 2-meter air temperature
-         ncstdnames(2) = 'air_temperature'
-         ncvarnames(3) = 'tcc' ! cloud cover (fraction)
-         ncstdnames(3) = 'cloud_area_fraction'
-      case ('dewpoint_airtemperature_cloudiness')
-         ncvarnames(1) = 'd2m' ! dew-point temperature
-         ncstdnames(1) = 'dew_point_temperature'
-         ncvarnames(2) = 't2m' ! 2-meter air temperature
-         ncstdnames(2) = 'air_temperature'
-         ncvarnames(3) = 'tcc' ! cloud cover (fraction)
-         ncstdnames(3) = 'cloud_area_fraction'
-      case ('dewpoint_airtemperature_cloudiness_solarradiation')
-         ncvarnames(1) = 'd2m' ! dew-point temperature
-         ncstdnames(1) = 'dew_point_temperature'
-         ncvarnames(2) = 't2m' ! 2-meter air temperature
-         ncstdnames(2) = 'air_temperature'
-         ncvarnames(3) = 'tcc' ! cloud cover (fraction)
-         ncstdnames(3) = 'cloud_area_fraction'
-         ncvarnames(4) = 'ssrd'
-         ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
-      case ('solarradiation')
-         ncvarnames(1) = 'ssrd'
-         ncstdnames(1) = 'surface_downwelling_shortwave_flux_in_air'
-         ncstdnames_fallback(1) = 'solar_irradiance'
-      case ('netsolarradiation')
-         ncvarnames(1) = 'ssr'
-         ncstdnames(1) = 'surface_net_downward_shortwave_flux'
-         ncstdnames_fallback(1) = 'solar_irradiance'
-      case ('longwaveradiation')
-         ncvarnames(1) = 'strd'
-         ncstdnames(1) = 'surface_net_downward_longwave_flux'
-      case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
-         ncvarnames(1) = 'thetao' ! temperature
-         ncstdnames(1) = 'sea_water_potential_temperature'
-         ncvarnames(2) = 'so' ! salinity
-         ncstdnames(2) = 'sea_water_salinity'
-      case ('sea_ice_area_fraction', 'sea_ice_thickness')
-         ncstdnames(1) = quantityName
-      case ('friction_coefficient_time_dependent')
-         ncvarnames(1) = 'friction_coefficient'
-         ncstdnames(1) = 'friction_coefficient'
-      case ('wavesignificantheight')
-         ncvarnames(1) = 'hs' ! significant wave height
-         ncstdnames(1) = 'sea_surface_wave_significant_height'
-      case ('waveperiod')
-         ncvarnames(1) = varname ! wave period
-         ncstdnames(1) = varname
-      case ('wavedirection')
-         ncvarnames(1) = 'theta0'
-         ncstdnames(1) = 'sea_surface_wave_from_direction'
-         ncvarnames(2) = 'hs'
-         ncstdnames(2) = 'sea_surface_wave_significant_height'
-      case ('xwaveforce')
-         ncvarnames(1) = 'xfor'
-         ncstdnames(1) = 'eastward_wave_force'
-      case ('ywaveforce')
-         ncvarnames(1) = 'yfor'
-         ncstdnames(1) = 'northward_wave_force'
-      case ('wavebreakerdissipation')
-         ncvarnames(1) = 'ssurf'
-         ncstdnames(1) = 'depth_induced_surf_breaking_energy_dissipation'
-      case ('whitecappingdissipation')
-         ncvarnames(1) = 'swcap'
-         ncstdnames(1) = 'whitecapping_energy_dissipation'
-      case ('totalwaveenergydissipation')
-         ncvarnames(1) = 'dissip'
-         ncstdnames(1) = 'total_energy_dissipation'
-      case default ! experiment: gather miscellaneous variables from an NC-file,
-         if (index(quantityName, 'waqsegmentfunction') == 1) then
-            ncvarnames(1) = quantityName
-            ncstdnames(1) = quantityName
-         else if (index(quantityName, 'initialtracer') == 1) then
-            ncvarnames(1) = quantityName(14:)
-            ncstdnames(1) = quantityName(14:)
-         else
-            ! we have faulty
-            call setECMessage("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileReaderPtr%filename)//", unknown.")
-            !TODO: user defined quantity name
-            !ncvarnames(1) = varname
-            !ncstdnames(1) = varname
-         end if
-      end select
+
+      ! Look up the standard names and variable names according to quantityName to fill ncstdnames and ncvarnames
+      call ecSupportNetcdfGetQuantityCandidateNames(fileReaderPtr%filename, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
 
       ! ------------------------------------------------------------------------------------------------
       ! Inquiry of the dimids and the varids of lon/lat/time coordinate according to the CF-convention
@@ -2734,7 +2566,11 @@ contains
          if (x_dimid > 0 .and. x_dimid == y_dimid) nod_dimid = x_dimid ! stations with x/y
       end if
 
-      expectedLength = count(ncstdnames > ' ')
+      if (allocated(ncstdnames)) then
+         expectedLength = size(ncstdnames)
+      else
+         expectedLength = 0
+      end if
 
       ! Fill a string array with user-defined variable names
       if (len_trim(varname) > 0) then
@@ -2754,7 +2590,7 @@ contains
 
       do i = 1, expectedLength
          call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames, ncvarnames, uservarnames=nccustomnames)
-         if (idvar <= 0 .and. ncstdnames_fallback(1) /= ' ') then
+         if (idvar <= 0 .and. allocated(ncstdnames_fallback)) then
             call ecProviderSearchStdOrVarnames(fileReaderPtr, i, idvar, ncstdnames_fallback, ncvarnames)
          end if
          if (idvar <= 0) then ! Variable not found among standard names and variable names either
@@ -2763,7 +2599,7 @@ contains
             else
                nameVar = trim(ncvarnames(i))
             end if
-            call setECMessage("Variable '"//nameVar//"' not found in NetCDF file '"//trim(fileReaderPtr%filename))
+            call setECMessage("Variable '" // nameVar // "' not found in NetCDF file '" // trim(fileReaderPtr%filename) // "'.")
             return
          end if
          fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
@@ -2860,7 +2696,7 @@ contains
                   call ecProviderSearchStdOrVarnames(fileReaderPtr, j, varid, ncvarnames=coord_names, ignore_case=.true.)
                   if (varid < 0) then
                      call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                       //' coordinates variable '//trim(coord_names(2))//' referenced but not found')
+                                       //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.")
                   else
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_x_coordinate')) then
@@ -2886,11 +2722,11 @@ contains
          if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                 //' requires ''projection_x_coordinate'' and ''projection_y_coordinate''.')
+                                 //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
             end if
             if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
                call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                 //' either requires ''latitude'' and ''longitude'' or ''grid_latitude'' and ''grid_longitude''.')
+                                 //"' either requires 'latitude' and 'longitude' or 'grid_latitude' and 'grid_longitude'.")
             end if
             return
          end if
@@ -3188,6 +3024,7 @@ contains
       success = .true.
 
    end function ecProviderCreateNetcdfItems
+
 
    !> Search for a single variabele index in a (NetCDF) dataset, using standard_name values, hardcoded values, or user-defined values.
    subroutine ecProviderSearchStdOrVarnames(fileReaderPtr, ncIndex, id, ncstdnames, ncvarnames, uservarnames, ignore_case)
