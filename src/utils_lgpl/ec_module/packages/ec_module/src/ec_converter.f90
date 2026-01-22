@@ -1744,7 +1744,6 @@ contains
                                                       kbeginL, kendL, &
                                                       zmin(i), zmax(i), sigmaL)) return
                         ! Prepare sigmaR and valR
-                        
                         maxlay_srcR = 0
                         sigmaRR = ec_undef_hp
                         vmaskR = .false.
