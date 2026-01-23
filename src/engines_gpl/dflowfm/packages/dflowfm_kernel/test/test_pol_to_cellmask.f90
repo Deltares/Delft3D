@@ -817,72 +817,72 @@ contains
    !$f90tw)
 
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_simple, test_find_cells_crossed_by_polyline_simple,
-subroutine test_find_cells_crossed_by_polyline_simple() bind(C)
-   ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
-   use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
-   use network_data, only: nump
-   use m_alloc, only: realloc
-   
-   real(kind=dp), allocatable :: xpoly(:), ypoly(:)
-   integer, allocatable :: crossed_cells(:)
-   character, dimension(:), allocatable :: error
-   integer :: i
-   logical :: found_cell
-   
-   npl = 0 ! Reset from previous tests
-   
-   ! Setup 3x3 grid of square cells (0-30 in x, 0-30 in y)
-   ! Cell layout:
-   ! 7 | 8 | 9
-   ! --|---|--
-   ! 4 | 5 | 6
-   ! --|---|--
-   ! 1 | 2 | 3
-   nump = 9
-   call setup_grid_netcells(3, 3, 10.0_dp)
-   
-   ! Initialize cache
-   call init_cell_geom_as_polylines()
-   
-   ! Create polyline from (1, 3) to (29, 27)
-   ! This goes slightly off-diagonal, crossing cells: 1, 4, 5, 6, 9
-   ! Missing cells: 3, 2, 7, 8
-   allocate(xpoly(2), ypoly(2))
-   xpoly(1) = 1.0_dp
-   ypoly(1) = 3.0_dp
-   xpoly(2) = 29.0_dp
-   ypoly(2) = 27.0_dp
-   
-   ! Call the function
-   call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
-   
-   ! Check for errors
-   call f90_expect_true(.not. allocated(error), "No error should occur")
-   
-   ! Should find exactly 5 cells
-   call f90_expect_eq(size(crossed_cells), 5, "Should cross 5 cells")
-   
-   ! Check that cells 1, 2, 5, 6, 9 are in the result
-   call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
-   call f90_expect_true(cellmask(4) == 1, "Cell 4 should be crossed")
-   call f90_expect_true(cellmask(5) == 1, "Cell 5 should be crossed")
-   call f90_expect_true(cellmask(6) == 1, "Cell 6 should be crossed")
-   call f90_expect_true(cellmask(9) == 1, "Cell 9 should be crossed")
-   
-   ! Check that cells 3, 4, 7, 8 are NOT in the result
-   call f90_expect_true(cellmask(3) == 0, "Cell 3 should not be crossed")
-   call f90_expect_true(cellmask(2) == 0, "Cell 2 should not be crossed")
-   call f90_expect_true(cellmask(7) == 0, "Cell 7 should not be crossed")
-   call f90_expect_true(cellmask(8) == 0, "Cell 8 should not be crossed")
-   
-   call f90_expect_true(count(cellmask > 0) == size(crossed_cells), "Exactly 5 cells should be crossed")
-   ! Cleanup
-   deallocate(xpoly, ypoly)
-   if (allocated(crossed_cells)) deallocate(crossed_cells)
-   call cleanup_cell_geom_polylines()
-   call cleanup_netcells()
-   
-end subroutine test_find_cells_crossed_by_polyline_simple
+   subroutine test_find_cells_crossed_by_polyline_simple() bind(C)
+      ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
+      use network_data, only: nump
+      use m_alloc, only: realloc
+
+      real(kind=dp), allocatable :: xpoly(:), ypoly(:)
+      integer, allocatable :: crossed_cells(:)
+      character, dimension(:), allocatable :: error
+      integer :: i
+      logical :: found_cell
+
+      npl = 0 ! Reset from previous tests
+
+      ! Setup 3x3 grid of square cells (0-30 in x, 0-30 in y)
+      ! Cell layout:
+      ! 7 | 8 | 9
+      ! --|---|--
+      ! 4 | 5 | 6
+      ! --|---|--
+      ! 1 | 2 | 3
+      nump = 9
+      call setup_grid_netcells(3, 3, 10.0_dp)
+
+      ! Initialize cache
+      call init_cell_geom_as_polylines()
+
+      ! Create polyline from (1, 3) to (29, 27)
+      ! This goes slightly off-diagonal, crossing cells: 1, 4, 5, 6, 9
+      ! Missing cells: 3, 2, 7, 8
+      allocate (xpoly(2), ypoly(2))
+      xpoly(1) = 1.0_dp
+      ypoly(1) = 3.0_dp
+      xpoly(2) = 29.0_dp
+      ypoly(2) = 27.0_dp
+
+      ! Call the function
+      call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+
+      ! Check for errors
+      call f90_expect_true(.not. allocated(error), "No error should occur")
+
+      ! Should find exactly 5 cells
+      call f90_expect_eq(size(crossed_cells), 5, "Should cross 5 cells")
+
+      ! Check that cells 1, 2, 5, 6, 9 are in the result
+      call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
+      call f90_expect_true(cellmask(4) == 1, "Cell 4 should be crossed")
+      call f90_expect_true(cellmask(5) == 1, "Cell 5 should be crossed")
+      call f90_expect_true(cellmask(6) == 1, "Cell 6 should be crossed")
+      call f90_expect_true(cellmask(9) == 1, "Cell 9 should be crossed")
+
+      ! Check that cells 3, 4, 7, 8 are NOT in the result
+      call f90_expect_true(cellmask(3) == 0, "Cell 3 should not be crossed")
+      call f90_expect_true(cellmask(2) == 0, "Cell 2 should not be crossed")
+      call f90_expect_true(cellmask(7) == 0, "Cell 7 should not be crossed")
+      call f90_expect_true(cellmask(8) == 0, "Cell 8 should not be crossed")
+
+      call f90_expect_true(count(cellmask > 0) == size(crossed_cells), "Exactly 5 cells should be crossed")
+      ! Cleanup
+      deallocate (xpoly, ypoly)
+      if (allocated(crossed_cells)) deallocate (crossed_cells)
+      call cleanup_cell_geom_polylines()
+      call cleanup_netcells()
+
+   end subroutine test_find_cells_crossed_by_polyline_simple
 !$f90tw)
 
 ! ============================================================================
