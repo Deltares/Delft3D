@@ -73,7 +73,7 @@ module m_flowtimes
    real(kind=dp) :: time_user !< Next time of external forcings update (steps increment by dt_user).
 
    real(kind=dp) :: dts !< internal computational timestep (s)
-   real(kind=dp) :: dtsc !< max timestep of limiting point kkcflmx (s)
+   real(kind=dp) :: dtsc !< max timstep of limiting point kkcflmx, zero if larger than dt_max
    real(kind=dp) :: dt_fac_max !< max dts increase factor
    real(kind=dp) :: dti !< inverse  computational timestep (1/s)
    real(kind=dp) :: dtprev !< previous computational timestep (s)  (1s is a bit like sobek)
