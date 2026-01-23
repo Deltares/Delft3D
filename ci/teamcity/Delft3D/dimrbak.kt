@@ -69,7 +69,7 @@ object DIMRbak : BuildType({
         python {
             name = "Assert access rights"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_0_assert_preconditions"
+                module = "ci_tools.dimrset_delivery.assert_preconditions"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -92,7 +92,7 @@ object DIMRbak : BuildType({
         python {
             name = "Download artifacts from TeamCity and on file share using H7"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_1_download_and_install_artifacts"
+                module = "ci_tools.dimrset_delivery.download_and_install_artifacts"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -112,7 +112,7 @@ object DIMRbak : BuildType({
         python {
             name = "Generate test report summary"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_2_teamcity_test_results"
+                module = "ci_tools.dimrset_delivery.teamcity_test_results"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -129,7 +129,7 @@ object DIMRbak : BuildType({
         python {
             name = "Update Excel sheet"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_3_update_excel_sheet"
+                module = "ci_tools.dimrset_delivery.update_excel_sheet"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -148,7 +148,7 @@ object DIMRbak : BuildType({
         python {
             name = "Prepare email template"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_4_prepare_email"
+                module = "ci_tools.dimrset_delivery.prepare_email"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -165,7 +165,7 @@ object DIMRbak : BuildType({
         python {
             name = "Generate DIMRset release notes"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_5_publish_release_changelog"
+                module = "ci_tools.dimrset_delivery.publish_release_changelog"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --jira-username "%dimrbakker_username%"

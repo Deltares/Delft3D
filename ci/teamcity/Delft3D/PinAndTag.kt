@@ -16,12 +16,6 @@ object PinAndTag : BuildType({
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 
-    features {
-        approval {
-            approvalRules = "group:DIMR_BAKKERS:1"
-        }
-    }
-
     val branchFilters = """
         +:<default>
         +:main
@@ -49,7 +43,7 @@ object PinAndTag : BuildType({
         python {
             name = "Pin and tag TeamCity builds"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_6_pin_and_tag_builds"
+                module = "ci_tools.dimrset_delivery.pin_and_tag_builds"
                 scriptArguments = """ 
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -67,7 +61,7 @@ object PinAndTag : BuildType({
         python {
             name = "Tag DIMRset release in Git"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_7_git_tagging"
+                module = "ci_tools.dimrset_delivery.git_tagging"
                 scriptArguments = """ 
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
