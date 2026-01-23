@@ -333,7 +333,7 @@ contains
 
    end function point_find_netcell
 
-!> Find all cells crossed by polyline using brute force on cached geometry
+!> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
    subroutine find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
       use m_alloc, only: realloc
       use network_data, only: cellmask, nump
@@ -455,18 +455,48 @@ contains
 
       denom = dx1 * dy2 - dy1 * dx2
       if (abs(denom) < eps) then !> parallel or collinear, no intersection
+         if (point_to_line_distance(x1a, y1a, x2a, y2a, x2b, y2b) < eps) then
+            intersects = .true. !> include collinear as intersecting
+         end if
          return
       end if
 
       t1 = ((x2a - x1a) * dy2 - (y2a - y1a) * dx2) / denom
       t2 = ((x2a - x1a) * dy1 - (y2a - y1a) * dx1) / denom
 
-      !> exclude vertices by a margin of eps, only interior intersections are counted
-      if (t1 > eps .and. t1 <= 1.0_dp - eps .and. &
-          t2 > eps .and. t2 <= 1.0_dp - eps) then
+      !> small epsilon margin to be inclusive of endpoints
+      if (t1 > -eps .and. t1 <= 1.0_dp + eps .and. &
+          t2 > -eps .and. t2 <= 1.0_dp + eps) then
          intersects = .true.
       end if
 
    end function line_segments_intersect
+
+!> Compute distance from a point to the infinite extension of a line (not clamped to segment)
+   elemental function point_to_line_distance(px, py, x1, y1, x2, y2) result(dist)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: px, py !< Point
+      real(kind=dp), intent(in) :: x1, y1, x2, y2 !< Two points defining the line
+      real(kind=dp) :: dist
+
+      real(kind=dp) :: dx, dy, line_length, cross_product
+
+      dx = x2 - x1
+      dy = y2 - y1
+      line_length = sqrt(dx * dx + dy * dy)
+
+      if (line_length < 1.0e-20_dp) then
+         ! Degenerate line - return distance to point
+         dist = sqrt((px - x1)**2 + (py - y1)**2)
+         return
+      end if
+
+      ! Distance from point to line = |cross product| / |line vector|
+      ! Cross product in 2D: (p - p1) × (p2 - p1)
+      cross_product = abs((px - x1) * dy - (py - y1) * dx)
+      dist = cross_product / line_length
+
+   end function point_to_line_distance
 
 end module m_cellmask_from_polygon_set

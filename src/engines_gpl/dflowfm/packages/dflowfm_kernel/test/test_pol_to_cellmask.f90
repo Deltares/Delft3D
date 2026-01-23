@@ -930,10 +930,16 @@ contains
 
       ! Check that cells 1, 2, 5, 6, 9 are in the result
       call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
+      call f90_expect_true(cellmask(2) == 1, "Cell 2 should be crossed")
+      call f90_expect_true(cellmask(3) == 1, "Cell 3 should be crossed")
+      call f90_expect_true(cellmask(4) == 1, "Cell 4 should be crossed")
       call f90_expect_true(cellmask(5) == 1, "Cell 5 should be crossed")
+      call f90_expect_true(cellmask(6) == 1, "Cell 6 should be crossed")
+      call f90_expect_true(cellmask(7) == 0, "Cell 7 should not be crossed")
+      call f90_expect_true(cellmask(8) == 1, "Cell 8 should be crossed")
       call f90_expect_true(cellmask(9) == 1, "Cell 9 should be crossed")
 
-      call f90_expect_true(count(cellmask > 0) == size(crossed_cells), "Exactly 3 cells should be crossed")
+      call f90_expect_true(count(cellmask > 0) == size(crossed_cells), "cellmask should equal crossed cells")
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
