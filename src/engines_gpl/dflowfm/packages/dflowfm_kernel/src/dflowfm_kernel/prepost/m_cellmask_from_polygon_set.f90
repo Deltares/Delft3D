@@ -38,6 +38,7 @@ module m_cellmask_from_polygon_set
 
    public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
    public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+   public :: find_cells_crossed_by_polyline
 
    integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
    real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
@@ -334,7 +335,7 @@ contains
 
 !> Find all cells crossed by polyline using brute force on cached geometry
 subroutine find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
-   use m_alloc
+   use m_alloc, only: realloc
    use network_data, only: cellmask, nump
    use m_missing, only: dmiss
    
@@ -437,7 +438,6 @@ end subroutine find_cells_for_segment
 !> Check if two line segments intersect and return parameter along first segment
 elemental function line_segments_intersect(x1a, y1a, x1b, y1b, x2a, y2a, x2b, y2b) result(intersects)
    use precision, only: dp
-   implicit none
    
    real(kind=dp), intent(in) :: x1a, y1a, x1b, y1b  !< First line segment endpoints
    real(kind=dp), intent(in) :: x2a, y2a, x2b, y2b  !< Second line segment endpoints
