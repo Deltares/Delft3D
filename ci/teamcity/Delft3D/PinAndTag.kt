@@ -80,7 +80,14 @@ object PinAndTag : BuildType({
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
     }
-
+    dependencies {
+        dependency(Publish) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
+    }
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
         triggers {
             finishBuildTrigger {
