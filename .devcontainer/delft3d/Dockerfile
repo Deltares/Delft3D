@@ -1,5 +1,6 @@
-FROM containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release AS base
+ARG THIRD_PARTY_LIBS_TAG=oneapi-2024-ifx-release
 
+FROM containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:${THIRD_PARTY_LIBS_TAG} AS base
 
 ARG USER_UID=1000
 
@@ -8,6 +9,7 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
 # Install some tools from the almalinux package manager
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<"EOF"
+
 dnf install -y sudo git dos2unix which less tree strace \
     jq java-17-openjdk java-17-openjdk-devel maven 
 update-alternatives --set java java-17-openjdk.x86_64
