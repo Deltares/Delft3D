@@ -10,7 +10,7 @@
 
 set -eo pipefail
 
-if ! util.check_vars_are_set BUCKET CURRENT_PREFIX VAHOME ; then
+if ! util.check_vars_are_set BUCKET CURRENT_PREFIX VAHOME; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -26,9 +26,9 @@ function zip_output {
     zip -r "$ZIP_PATH" . \
         -i '*_map.nc' -i '*_his.nc' -i '*_fou.nc' \
         -i '*.dia' -i '*.out' -i '*.tek'
-    
+
     # Remove zip if it is empty
-    if ! zipinfo "$ZIP_PATH" | grep -q '^-' ; then
+    if ! zipinfo "$ZIP_PATH" | grep -q '^-'; then
         echo "removing empty zip: $ZIP_PATH"
         rm -f "$ZIP_PATH"
     fi
@@ -40,8 +40,8 @@ rm -rf "$TMP_ARCHIVE_DIR"
 mkdir -p "$TMP_ARCHIVE_DIR"
 
 # Archive all output per individual (non-empty) model directory.
-find "${VAHOME}/input" -mindepth 1 -maxdepth 1 -type d '!' -empty -print0 \
-    | xargs -0 -P8 -I'{}' bash -c 'zip_output "{}"'
+find "${VAHOME}/input" -mindepth 1 -maxdepth 1 -type d '!' -empty -print0 |
+    xargs -0 -P8 -I'{}' bash -c 'zip_output "{}"'
 
 # Upload the archives to MinIO.
 docker run --rm \

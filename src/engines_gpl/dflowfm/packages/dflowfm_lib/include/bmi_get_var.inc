@@ -83,15 +83,15 @@
   case("infiltcap") !<  [m s-1] Maximum infiltration capacity on each cell {"location": "face", "shape": ["ndx"]}
      x = c_loc(infiltcap)
   case("HortonMinInfCap") !<  [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonMinInfCap)
+     x = c_loc(horton_infiltration_config%min_inf_cap)
   case("HortonMaxInfCap") !<  [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonMaxInfCap)
+     x = c_loc(horton_infiltration_config%max_inf_cap)
   case("HortonDecreaseRate") !<  [1/hr] Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonDecreaseRate)
+     x = c_loc(horton_infiltration_config%decrease_rate)
   case("HortonRecoveryRate") !<  [1/hr] Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonRecoveryRate)
+     x = c_loc(horton_infiltration_config%recovery_rate)
   case("HortonState") !<  [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonState)
+     x = c_loc(horton_state)
   case("shx") !<  [m] current position {"shape": ["nshiptxy"]}
      x = c_loc(shx)
   case("shy") !<  [m] current position {"shape": ["nshiptxy"]}

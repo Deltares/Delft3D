@@ -415,7 +415,7 @@ contains
             call TEKFN(7, 13, 1, ucy(kb:kt), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'y-velocity', 0, 2, 0.0_dp, kplot)
          end if
 
-         if (jawave > NO_WAVES .and. jawaveStokes > NO_STOKES_DRIFT .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then
             vmin = minval(ucx(kb:kt) - ustokes(Lb:Lt))
             vmax = maxval(ucx(kb:kt) - ustokes(Lb:Lt))
             vmax = max(abs(vmin), abs(vmax))

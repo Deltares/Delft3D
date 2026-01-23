@@ -20,7 +20,7 @@ from src.config.location import Location
 from src.config.parameter import Parameter
 from src.config.test_case_config import TestCaseConfig
 from src.config.types.path_type import PathType
-from src.suite.test_bench_settings import TestBenchSettings
+from src.suite.command_line_settings import CommandLineSettings
 from src.utils.logging.console_logger import ConsoleLogger
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.log_level import LogLevel
@@ -298,7 +298,7 @@ class ConfigParser:
 
     def __init__(
         self,
-        settings: TestBenchSettings,
+        settings: CommandLineSettings,
         xml_parser: XmlConfigParser,
         logger: IMainLogger,
     ) -> None:
@@ -324,10 +324,10 @@ class ConfigParser:
 
         # Now that we're pretty sure we're reading a TestBench config file: Parse the XML.
         self._settings.config_file = str(config)
-        local_paths, _, test_case_configs = self._xml_parser.load(self._settings, self._logger)
+        xml_config = self._xml_parser.load(self._settings, self._logger)
 
         test_cases = sorted(
-            (TestCaseData.from_config(config, local_paths) for config in test_case_configs),
+            (TestCaseData.from_config(config, xml_config.local_paths) for config in xml_config.testcase_configs),
             key=lambda test_case: test_case.name,
         )
 
@@ -355,7 +355,7 @@ class ConfigParser:
         credentials = Credentials()
         credentials.name = "commandline"
 
-        settings = TestBenchSettings()
+        settings = CommandLineSettings()
         settings.server_base_url = cls.DEFAULT_SERVER_BASE_URL
         settings.credentials = credentials
         settings.override_paths = ""

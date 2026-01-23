@@ -1458,6 +1458,10 @@ contains
                              'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '', &
                              'mm hr-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_INFILTRATION_HORTON_STATE, &
+                             'Wrihis_infiltration', 'infiltration_horton_state', 'Horton infiltration state', '', &
+                             '', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
 
       ! Variable (computed) air density
       call add_output_config(config_set_his, IDX_HIS_AIR_DENSITY, &
@@ -2634,7 +2638,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_R), valobs(:, IPNT_WAVER))
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UORB), valobs(:, IPNT_WAVEU))
-            if (model_is_3D() .and. .not. flowwithoutwaves) then
+            if (model_is_3D() .and. .not. flow_without_waves) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCXST:IPNT_UCXST + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), temp_pointer)
 
@@ -2672,6 +2676,10 @@ contains
          if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_CAP), valobs(:, IPNT_infiltcap))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL), valobs(:, IPNT_infiltact))
+         end if
+
+         if (infiltrationmodel == DFM_HYD_INFILT_HORTON .and. jahisinfilt > 0) then
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_HORTON_STATE), valobs(:, IPNT_infilthortonstate))
          end if
 
          if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity > 0) then
@@ -2780,12 +2788,12 @@ contains
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCY), SSCY)
                end if
-               if (stmpar%morpar%moroutput%sbwuv .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sbwuv .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
                   function_pointer => calculate_sediment_SBW
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWY), SBWY)
                end if
-               if (stmpar%morpar%moroutput%sswuv .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sswuv .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
                   function_pointer => calculate_sediment_SSW
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWY), SSWY)

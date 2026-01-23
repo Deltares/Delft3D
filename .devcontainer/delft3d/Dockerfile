@@ -1,5 +1,6 @@
 FROM containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release AS base
 
+
 ARG USER_UID=1000
 
 # Set bash as the default shell for RUN commands.
@@ -8,11 +9,18 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 # Install some tools from the almalinux package manager
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<"EOF"
 dnf install -y sudo git dos2unix which less tree strace \
-    jq java-17-openjdk java-17-openjdk-devel maven
+    jq java-17-openjdk java-17-openjdk-devel maven 
 update-alternatives --set java java-17-openjdk.x86_64
 EOF
 
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+
+# Remove curl installed in third-party-libs container as this is without SSl support and nothing works anymore
+RUN <<"EOF"
+rm /usr/local/bin/curl
+rm /usr/local/lib/libcurl*
+EOF
+
 
 # Create non-root user and grant it sudo privileges:
 # See: https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user
@@ -21,6 +29,7 @@ useradd --uid $USER_UID -ms /bin/bash dev
 echo "dev ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/dev
 chmod 0440 /etc/sudoers.d/dev
 EOF
+
 
 # Change user from 'root' to 'dev', and set 'dev's home directory as the image workdir.
 USER dev
@@ -51,16 +60,6 @@ ADD --chmod=755 \
 
 # Configure interactive bash environment.
 RUN cat >> /home/dev/.bashrc <<EOF
-# Source Intel OneApi 
-source /opt/intel/oneapi/setvars.sh
-
-# Set Compilers and library path
-export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH
-export FC=mpiifx
-export CXX=mpicxx
-export CC=mpiicx
-
 # Bash history
 export PROMPT_COMMAND='history -a'
 export HISTFILE=/home/dev/.history/.bash_history

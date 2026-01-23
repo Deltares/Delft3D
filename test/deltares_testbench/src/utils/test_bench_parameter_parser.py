@@ -11,7 +11,7 @@ from typing import Any, List, Optional
 from src.config.credentials import Credentials
 from src.config.types.mode_type import ModeType
 from src.config.types.path_type import PathType
-from src.suite.test_bench_settings import TestBenchSettings
+from src.suite.command_line_settings import CommandLineSettings
 from src.utils.common import get_log_level
 from src.utils.handlers.credential_handler import CredentialHandler
 from src.utils.logging.log_level import LogLevel
@@ -21,17 +21,17 @@ class TestBenchParameterParser:
     """Handles the parsing of the testbench parameters."""
 
     @classmethod
-    def parse_arguments_to_settings(cls) -> TestBenchSettings:
-        """Parse args (namespace) to a TestBenchSettings object.
+    def parse_arguments_to_settings(cls) -> CommandLineSettings:
+        """Parse args (namespace) to a CommandLineSettings object.
 
         Returns
         -------
-            TestBenchSettings: Parsed settings
+            CommandLineSettings: Parsed settings
         """
         parser = cls.__create_argument_parser()
         args: Namespace = parser.parse_args()
 
-        settings = TestBenchSettings()
+        settings = CommandLineSettings()
 
         # Store path of TestBench.py into os environment
         script_path, script_name = os.path.split(os.path.abspath(__file__))

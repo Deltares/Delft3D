@@ -53,7 +53,9 @@ class TestMinioHandler:
         )
 
         # Assert
-        minio_patch.assert_called_once_with(expected_host_name, access_key="user", secret_key="pass")
+        minio_patch.assert_called_once_with(
+            expected_host_name, access_key="user", secret_key="pass", secure=True, http_client=mocker.ANY
+        )
         rewinder_patch.assert_called_once_with(minio_instance, logger)
         rewinder_instance.download.assert_called_once_with(
             expected_bucket_name,
@@ -124,7 +126,9 @@ class TestMinioHandler:
         )
 
         # Assert
-        minio_patch.assert_called_once_with("s3.deltares.nl", access_key="user", secret_key="pass")
+        minio_patch.assert_called_once_with(
+            "s3.deltares.nl", access_key="user", secret_key="pass", secure=True, http_client=mocker.ANY
+        )
         rewinder_patch.assert_called_once_with(minio_instance, logger)
         rewinder_instance.download.assert_called_once_with("bucket_name", "prefix", Path("test/data"), mocker.ANY)
         assert datetime.now(timezone.utc) - rewinder_instance.download.call_args.args[-1] < timedelta(seconds=1)

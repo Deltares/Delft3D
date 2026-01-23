@@ -11,4 +11,3 @@ aws --endpoint-url=https://s3.deltares.nl \
     s3 cp "${REFERENCE_PREFIX}/logs/logs.zip" reference_logs.zip
 aws --endpoint-url=https://s3.deltares.nl \
     s3 cp "${CURRENT_PREFIX}/verschillentool/${REFERENCE_TAG}/verschillen.zip" verschillen.zip
-            
