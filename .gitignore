@@ -50,3 +50,8 @@ src/**/FortranCInterface.h
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
 unit-test-report-windows.xml
+
+# my local files
+/test/deltares_testbench/venv_test
+/test/deltares_testbench/*.bat
+*.bat
