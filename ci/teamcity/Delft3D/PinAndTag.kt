@@ -33,6 +33,7 @@ object PinAndTag : BuildType({
     }
 
     params {
+        param("release_version", "%dep.${Publish.id}.release_version%")
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", DslContext.getParameter("dimrbakker_password"))
         password("dimrbakker_personal_access_token", DslContext.getParameter("dimrbakker_personal_access_token"))
