@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -70,7 +70,9 @@ contains
       real(kind=dp) :: t0, t1
       character(len=128) :: mesg
 
-      if (num_rugs < 1) return
+      if (num_rugs < 1) then
+         return
+      end if
 
       intersection_count = 0
 
@@ -167,7 +169,9 @@ contains
          if (allocated(istartcrs)) then
             deallocate (istartcrs)
          end if
-         if (allocated(xx)) deallocate (xx, yy)
+         if (allocated(xx)) then
+            deallocate (xx, yy)
+         end if
 
          call wall_clock_time(t1)
          write (mesg, "('runup gauges with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
@@ -185,7 +189,7 @@ contains
       call READYY('Enabling runup gauges on grid', 0.0_dp)
       do ic = 1, num_rugs
          if (mod(ic, icMOD) == 0) then
-            call READYY('Enabling runup gauges on grid', dble(ic) / dble(num_rugs))
+            call READYY('Enabling runup gauges on grid', real(ic, kind=dp) / real(num_rugs, kind=dp))
          end if
          !
          !if ( .not. success ) then   to do: caching

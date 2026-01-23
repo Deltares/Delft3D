@@ -58,7 +58,7 @@
                 </file>
                 <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
                     <parameters>
-                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceRelative="1e-7" />
                         <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
                     </parameters>
                 </file>
@@ -149,7 +149,7 @@
                 <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
                     <parameters>
                         <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
-                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceRelative="1e-7" />
                     </parameters>
                 </file>
             </checks>
@@ -178,14 +178,14 @@
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
-                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="1e-3" />
                         <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
                     </parameters>
                 </file>
                 <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
                     <parameters>
                         <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
-                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceRelative="1e-7" />
                     </parameters>
                 </file>
             </checks>

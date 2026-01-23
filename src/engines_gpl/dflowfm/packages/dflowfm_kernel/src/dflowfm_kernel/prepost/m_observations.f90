@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -80,7 +80,8 @@ contains
 !! IPNT_XXX are the pointers in the "valobs" array,
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
-      use m_flowparameters, only: jawave, jahistaucurrent, jatem, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
+      use m_flowparameters, only: jawave, jahistaucurrent, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
+         TEMPERATURE_MODEL_COMPOSITE, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
       use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
@@ -164,6 +165,7 @@ contains
       IVAL_RAIN = 0
       IVAL_INFILTCAP = 0
       IVAL_INFILTACT = 0
+      IVAL_INFILTHORTONSTATE = 0
       IVAL_RHOP = 0
       IVAL_RHO = 0
       IVAL_SBCX1 = 0 ! should be done per fraction
@@ -213,7 +215,7 @@ contains
 
 !  2D
       i = 0
-      i0 = i; 
+      i0 = i
       IVAL_S1 = next_index(i)
       IVAL_HS = next_index(i)
       IVAL_BL = next_index(i)
@@ -238,13 +240,13 @@ contains
          IVAL_TAUX = next_index(i)
          IVAL_TAUY = next_index(i)
       end if
-      if (jatem > 1) then
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          IVAL_TAIR = next_index(i)
       end if
       if (jawind > 0) then
          IVAL_WIND = next_index(i)
       end if
-      if (jatem == 5) then
+      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          IVAL_RHUM = next_index(i)
          IVAL_CLOU = next_index(i)
          IVAL_QSUN = next_index(i)
@@ -254,7 +256,7 @@ contains
          IVAL_QFRE = next_index(i)
          IVAL_QFRC = next_index(i)
       end if
-      if (jatem > 1) then
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          IVAL_QTOT = next_index(i)
       end if
       call set_value_indices_for_ice(i)
@@ -267,6 +269,7 @@ contains
       if (jahisinfilt > 0) then
          IVAL_INFILTCAP = next_index(i)
          IVAL_INFILTACT = next_index(i)
+         IVAL_INFILTHORTONSTATE = next_index(i)
       end if
       if (numwqbots > 0) then
          IVAL_WQB1 = next_index(i)
@@ -321,7 +324,7 @@ contains
       MAXNUMVALOBS2D = i - i0
 
 !  3D, layer centered
-      i0 = i; 
+      i0 = i
       IVAL_UCX = next_index(i)
       IVAL_UCY = next_index(i)
       if (kmx > 0) then
@@ -336,7 +339,7 @@ contains
       if (jasal > 0) then
          IVAL_SA1 = next_index(i)
       end if
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          IVAL_TEM1 = next_index(i)
       end if
       IVAL_UMAG = next_index(i)
@@ -497,6 +500,7 @@ contains
       IPNT_RAIN = ivalpoint(IVAL_RAIN, kmx, nlyrs)
       IPNT_INFILTCAP = ivalpoint(IVAL_INFILTCAP, kmx, nlyrs)
       IPNT_INFILTACT = ivalpoint(IVAL_INFILTACT, kmx, nlyrs)
+      IPNT_INFILTHORTONSTATE = ivalpoint(IVAL_INFILTHORTONSTATE, kmx, nlyrs)
       IPNT_WQB1 = ivalpoint(IVAL_WQB1, kmx, nlyrs)
       IPNT_SINK1 = ivalpoint(IVAL_SINK1, kmx, nlyrs)
       IPNT_BODSED1 = ivalpoint(IVAL_BODSED1, kmx, nlyrs)
@@ -601,7 +605,9 @@ contains
       istart = iend + 1
       iend = iend + MAXNUMVALOBS2D
       do i = 1, MAXNUMVALOBS2D
-         if (i == ivar) return
+         if (i == ivar) then
+            return
+         end if
          ipnt = ipnt + 1
       end do
 
@@ -609,7 +615,9 @@ contains
       istart = iend + 1
       iend = iend + MAXNUMVALOBS3D
       do i = istart, iend
-         if (i == ivar) return
+         if (i == ivar) then
+            return
+         end if
          ipnt = ipnt + max(kmx, 1)
       end do
 
@@ -617,7 +625,9 @@ contains
       istart = iend + 1
       iend = iend + MAXNUMVALOBS3Dw
       do i = istart, iend
-         if (i == ivar) return
+         if (i == ivar) then
+            return
+         end if
          ipnt = ipnt + max(kmx, 1) + 1
       end do
 
@@ -626,7 +636,9 @@ contains
          istart = iend + 1
          iend = iend + MAXNUMVALOBSLYR
          do i = istart, iend
-            if (i == ivar) return
+            if (i == ivar) then
+               return
+            end if
             ipnt = ipnt + nlyrs
          end do
       end if

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -74,7 +74,9 @@ contains
       cs = csu(L)
       sn = snu(L)
       process1D = jaPure1D > 0
-      if (jaJunction1D == 0 .and. nd(k12)%lnx > 2) process1D = .false.
+      if (jaJunction1D == 0 .and. nd(k12)%lnx > 2) then
+         process1D = .false.
+      end if
 
       do LL = 1, nd(k12)%lnx ! loop over all attached links
          L2 = nd(k12)%ln(LL)

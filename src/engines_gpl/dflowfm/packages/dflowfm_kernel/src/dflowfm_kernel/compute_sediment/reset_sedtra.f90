@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,7 +50,9 @@ contains
 
       integer :: istat
 
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
       istat = clrstm(stmpar)
       call clrsedtra(istat, sedtra)
       if (associated(mtd%dzbdt)) then

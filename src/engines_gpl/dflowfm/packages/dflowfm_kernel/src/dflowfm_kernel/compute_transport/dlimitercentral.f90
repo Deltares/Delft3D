@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,9 @@ contains
       real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
       dlimitercentral = 0.0_dp
-      if (limtyp == 0) return
+      if (limtyp == 0) then
+         return
+      end if
 !   if ( d1*d2.lt.dtol ) return
 !
 !   r = d1/d2    ! d1/d2
@@ -52,7 +54,9 @@ contains
 !  compute left slope (assume uniform mesh)
       d1 = 2.0_dp * dc - d2
 
-      if (d1 * d2 < dtol) return
+      if (d1 * d2 < dtol) then
+         return
+      end if
 
       r = d1 / d2 ! d1/d2
 

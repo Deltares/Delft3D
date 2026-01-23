@@ -12,6 +12,7 @@ import Delft3D.step.*
 object TestPythonCiTools : BuildType({
     id("TestPythonCiTools")
     name = "Test Python CI tools"
+    buildNumberPattern = "%build.vcs.number%"
     description = """
         Runs tests and quality checks on the python CI tools (including DIMRset delivery).
     """.trimIndent()

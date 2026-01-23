@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -65,7 +65,9 @@ contains
          end if
       end do
 
-      if (ndxi < 1) return
+      if (ndxi < 1) then
+         return
+      end if
 
       avedif = 0.0_dp
       do k = 1, ndxi

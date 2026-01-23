@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -71,7 +71,9 @@ contains
                K1 = KN(1, L)
                K2 = KN(2, L)
                if (K1 /= 0 .and. K2 /= 0) then
-                  if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) cycle
+                  if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) then
+                     cycle
+                  end if
                   XP = 0.5_dp * (XK(K1) + XK(K2))
                   YP = 0.5_dp * (YK(K1) + YK(K2))
                   ZP = 0.5_dp * (ZK(K1) + ZK(K2))

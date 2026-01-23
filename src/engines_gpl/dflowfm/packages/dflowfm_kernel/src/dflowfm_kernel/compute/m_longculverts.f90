@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -86,7 +86,7 @@ contains
 
    !> Loads the long culverts from a structures.ini file and
    !! creates extra netnodes+links for them.
-   subroutine convertLongCulvertsAsNetwork(structurefile, jaKeepExisting, culvertprefix, structures_output, crsdef_output, ierr, crsdeffile)
+   subroutine convertLongCulvertsAsNetwork(structurefile, jaKeepExisting, culvertprefix, structures_output, crsdef_output, ierr, crsdeffile, write_converted_files)
       use dfm_error, only: dfm_noerr, dfm_wronginput
       use m_polygon, only: savepol, xpl, ypl, zpl, npl, increasepol, restorepol
       use m_missing, only: dmiss
@@ -112,6 +112,7 @@ contains
       character(len=:), allocatable, intent(out) :: structures_output !< structures ini output file ( = culvertprefix // structurefile )
       character(len=:), allocatable, intent(out) :: crsdef_output !< crs def ini output file
       character(len=*), optional, intent(in) :: crsdeffile !< File name of the original crsdef.ini file.
+      logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
       integer, intent(out) :: ierr !< Result status, DFM_NOERR in case of success.
 
       character(len=128) :: crsdef_filename
@@ -130,10 +131,11 @@ contains
       logical :: success
       integer :: istart
       integer :: nlongculverts0
-      !integer :: mout
+      integer :: mout
       integer :: longculvertindex
       integer :: longculvertindex2
       character(len=IdLen) :: temppath, tempname, tempext
+      logical :: write_converted_files_
 
       ierr = DFM_NOERR
 
@@ -146,6 +148,11 @@ contains
       else
          crsdef_filename = trim(culvertprefix)//crsdef_filename
          crsdef_output = crsdef_filename
+      end if
+
+      write_converted_files_ = .false.
+      if (present(write_converted_files)) then
+         write_converted_files_ = write_converted_files
       end if
 
       ! Determine new structures file name
@@ -225,7 +232,9 @@ contains
             write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
             call err_flush()
          end if
-         if (success) call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         if (success) then
+            call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         end if
          if (success) then
 
             call tree_create_node(prop_ptr, 'Definition', block_ptr)
@@ -373,16 +382,29 @@ contains
          end if
       end do
 
+      ! Write converted cross sections file.
+      if (write_converted_files_) then
+         call newfil(mout, crsdef_output)
+         if (mout == 0) then
+            call SetMessage(LEVEL_ERROR, 'Failed to open file ''' // trim(crsdef_output) // ''' for writing.')
+         else
+            call prop_write_inifile(mout, prop_ptr, ierr)
+         end if
+      end if
+      
       call parseCrossSectionDefinitionFile(prop_ptr, network)
       call tree_destroy(prop_ptr)
       call fill_hashtable(network%CSDefinitions)
-      ! write new crsdef file
-      !call newfil(mout, crsdef_output)
-      !call prop_write_inifile(mout, prop_ptr, ierr)
-      !call tree_destroy(prop_ptr)
-      ! write new structures file
-      !call newfil(mout, structures_output)
-      !call prop_write_inifile(mout, strs_ptr, ierr)
+      
+      ! Write converted structures file.
+      if (write_converted_files_) then
+         call newfil(mout, structures_output)
+         if (mout == 0) then
+            call SetMessage(LEVEL_ERROR, 'Failed to open file ''' // trim(structures_output) // ''' for writing.')
+         else
+            call prop_write_inifile(mout, strs_ptr, ierr)
+         end if
+      end if
       call tree_destroy(strs_ptr)
 
    end subroutine convertLongCulvertsAsNetwork
@@ -471,7 +493,9 @@ contains
             write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
             call err_flush()
          end if
-         if (success) call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         if (success) then
+            call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         end if
          if (success) then
             longculverts(nlongculverts)%id = st_id
 
@@ -1002,7 +1026,6 @@ contains
       call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%linkedge, size(kc), keepexisting=.false., fill=-999)
       call reallocP(meshgeom1d%edgeoffsets, meshgeom1d%numedge, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%ngeopointx, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%ngeopointy, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
@@ -1073,9 +1096,6 @@ contains
             meshgeom1d%nodeoffsets(newnodeindex) = pathlength
             newnodeindex = newnodeindex + 1
             call connectdbn(k1, k2, linksCulv(j))
-            if (kn3typ /= 5) then ! Save 1D edge mapping for flowgeom writing
-               meshgeom1d%linkedge(linksCulv(j)) = newedgeindex - 1
-            end if
             if (allocated(dxe)) then
                dxe(linksCulv(j)) = pathdiff
             end if
@@ -1087,7 +1107,6 @@ contains
          kn3typ = 5
          call longculvert_create_endpoint(jend, k1)
          call connectdbn(k2, k1, linksCulv(jend + 1))
-
          !advance pointer
          jpoint = jend + 2
       end do
@@ -1133,7 +1152,7 @@ contains
             write (kchar, '(I0)') k
             pCrs%csid = trim(branchId)//'_'//trim(kchar)
             pCrs%branchid = indx
-            pCrs%bedLevel = 0.0d0
+            pCrs%bedLevel = 0.0_dp
             pCrs%shift = zpl(k) !number of gridpoints in branch should match zpl+2!!
             pCrs%chainage = network%brs%branch(indx)%gridpointschainages(k)
             call finalizeCrs(network, pCrs, iref, inext)
@@ -1438,13 +1457,21 @@ contains
 
    end subroutine count_long_culverts_in_structure_file
 
-   subroutine initialize_long_culverts(md_1dfiles, md_convertlongculverts)
+   subroutine initialize_long_culverts(md_1dfiles, md_convertlongculverts, write_converted_files)
       use m_set_nod_adm, only: setnodadm
       use m_globalparameters, only: t_filenames
 
-      type(t_filenames), intent(in) :: md_1dfiles
+      type(t_filenames), intent(inout) :: md_1dfiles
       integer, intent(in) :: md_convertlongculverts !< Flag to indicate whether to convert old-style long culverts on-the-fly.
+      logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
       character(:), allocatable :: structure_files
+      logical :: write_converted_files_
+
+      write_converted_files_ = .false.
+      if (present(write_converted_files)) then
+         write_converted_files_ = write_converted_files
+      end if
+
       structure_files = md_1dfiles%structures
       call count_long_culverts_in_structure_file(structure_files)
       if (nlongculverts > 0) then
@@ -1453,7 +1480,7 @@ contains
             call initialize_existing_long_culverts(structure_files)
          else !> old style long culvert input
             if (md_convertlongculverts > 0) then !> convert on-the-fly
-               call makelongculverts_commandline(md_1dfiles)
+               call makelongculverts_commandline(md_1dfiles, write_converted_files=write_converted_files_)
                newculverts = .true.
             else ! initialize old-style (Herman) long culverts
                call initialize_existing_long_culverts(structure_files)
@@ -1482,7 +1509,7 @@ contains
       end do
    end subroutine initialize_existing_long_culverts
 
-   subroutine makelongculverts_commandline(md_1dfiles)
+   subroutine makelongculverts_commandline(md_1dfiles, write_converted_files)
       use m_readstructures
       use string_module, only: strsplit
       use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
@@ -1496,8 +1523,9 @@ contains
       use m_1d_networkreader, only: construct_network_from_meshgeom
       use m_save_ugrid_state
 
-      type(t_filenames), intent(in) :: md_1dfiles
-      character(len=9), allocatable :: md_culvertprefix
+      type(t_filenames), intent(inout) :: md_1dfiles
+      logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
+      character(len=:), allocatable :: md_culvertprefix
       character(len=:), allocatable :: converted_fnamesstring
       character(len=:), allocatable :: converted_crsdefsstring
       character(len=:), allocatable :: tempstring_crsdef
@@ -1506,7 +1534,14 @@ contains
       character(len=200), dimension(:), allocatable :: fnames
       ! character(len=IDLEN) :: temppath, tempname, tempext
 
+      logical :: write_converted_files_
       integer :: istat, ifil, ierr, i
+
+      write_converted_files_ = .false.
+      if (present(write_converted_files)) then
+         write_converted_files_ = write_converted_files
+      end if
+
       call findcells(0)
       md_culvertprefix = 'converted_'
       if (len_trim(md_1dfiles%structures) > 0) then
@@ -1514,12 +1549,12 @@ contains
          call strsplit(md_1dfiles%structures, 1, fnames, 1)
 
          if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
-            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions)
+            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions, write_converted_files=write_converted_files_)
          else
-            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat)
+            call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, write_converted_files=write_converted_files_)
          end if
          do ifil = 2, size(fnames)
-            call convertLongCulvertsAsNetwork(fnames(ifil), 1, md_culvertprefix, tempstring_fnames, tempstring_crsdef, istat)
+            call convertLongCulvertsAsNetwork(fnames(ifil), 1, md_culvertprefix, tempstring_fnames, tempstring_crsdef, istat, write_converted_files=write_converted_files_)
             converted_crsdefsstring = trim(trim(converted_crsdefsstring)//', ')//tempstring_crsdef
             converted_fnamesstring = trim(trim(converted_fnamesstring)//', ')//tempstring_fnames
          end do
@@ -1527,11 +1562,6 @@ contains
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
-         !call split_filename(md_netfile, temppath, tempname, tempext)
-         !tempname = trim(md_culvertprefix)//tempname
-         !tempstring_netfile = cat_filename(temppath, tempname, tempext)
-
-         call unc_write_net('testnet.nc', janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
          nbranchlongnames = nbranchids
          nnodelongnames = nnodeids
          allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
@@ -1542,12 +1572,11 @@ contains
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
          end do
+         i = 0
+         call admin_network(network, i)
 
-         !md_netfile = tempstring_netfile
-         !md_1dfiles%structures = converted_fnamesstring
-         !md_1dfiles%cross_section_definitions = converted_crsdefsstring
-         !converted_fnamesstring = trim(trim(md_culvertprefix)//md_ident)//'.mdu'
-         !call writeMDUFile(converted_fnamesstring, istat)
+         md_1dfiles%structures = converted_fnamesstring
+         md_1dfiles%cross_section_definitions = converted_crsdefsstring
       end if
 
    end subroutine makelongculverts_commandline

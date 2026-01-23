@@ -163,12 +163,13 @@ object Publish : BuildType({
         }
         python {
             name = "Set latest development tag parameter"
+            pythonVersion = customPython { executable = "python3.11" }
             command = module {
                 module = "ci_tools.harbor.harbor_version_checker"
                 scriptArguments = """
-                    --harbor-username "%delft3d-user%"
-                    --harbor-password "%delft3d-secret%"
-                    --new-tag "%new_tag%"
+                    --harbor-username '%delft3d-user%'
+                    --harbor-password '%delft3d-secret%'
+                    --new-tag '%new_tag%'
                 """.trimIndent()
             }
             workingDir = "ci/python"

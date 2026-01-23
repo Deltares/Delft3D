@@ -115,7 +115,7 @@ end subroutine write_swan_data_to_precice
 subroutine swan_tot(n_swan_grids, wavedata, selectedtime, precice_state)
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
