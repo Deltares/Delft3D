@@ -461,8 +461,9 @@ contains
       t1 = ((x2a - x1a) * dy2 - (y2a - y1a) * dx2) / denom
       t2 = ((x2a - x1a) * dy1 - (y2a - y1a) * dx1) / denom
 
-      if (t1 >= 0.0_dp .and. t1 <= 1.0_dp .and. &
-          t2 >= 0.0_dp .and. t2 <= 1.0_dp) then
+      !> exclude vertices by a margin of eps, only interior intersections are counted
+      if (t1 > eps .and. t1 <= 1.0_dp - eps .and. &
+          t2 > eps .and. t2 <= 1.0_dp - eps) then
          intersects = .true.
       end if
 
