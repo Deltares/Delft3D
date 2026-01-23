@@ -443,7 +443,7 @@ contains
 
       real(kind=dp) :: dx1, dy1, dx2, dy2
       real(kind=dp) :: denom, t1, t2
-      real(kind=dp), parameter :: eps = 1.0e-10_dp
+      real(kind=dp), parameter :: EPS = 1.0e-10_dp
 
       intersects = .false.
       t1 = -1.0_dp
@@ -454,8 +454,8 @@ contains
       dy2 = y2b - y2a
 
       denom = dx1 * dy2 - dy1 * dx2
-      if (abs(denom) < eps) then !> parallel or collinear, no intersection
-         if (point_to_line_distance(x1a, y1a, x2a, y2a, x2b, y2b) < eps) then
+      if (abs(denom) < EPS) then !> parallel or collinear, no intersection
+         if (point_to_line_distance(x1a, y1a, x2a, y2a, x2b, y2b) < EPS) then
             intersects = .true. !> include collinear as intersecting
          end if
          return
@@ -465,8 +465,8 @@ contains
       t2 = ((x2a - x1a) * dy1 - (y2a - y1a) * dx1) / denom
 
       !> small epsilon margin to be inclusive of endpoints
-      if (t1 > -eps .and. t1 <= 1.0_dp + eps .and. &
-          t2 > -eps .and. t2 <= 1.0_dp + eps) then
+      if (t1 > -EPS .and. t1 <= 1.0_dp + EPS .and. &
+          t2 > -EPS .and. t2 <= 1.0_dp + EPS) then
          intersects = .true.
       end if
 
@@ -476,8 +476,8 @@ contains
    elemental function point_to_line_distance(px, py, x1, y1, x2, y2) result(dist)
       use precision, only: dp
 
-      real(kind=dp), intent(in) :: px, py !< Point
-      real(kind=dp), intent(in) :: x1, y1, x2, y2 !< Two points defining the line
+      real(kind=dp), intent(in) :: px, py !< Point coordinates x and y
+      real(kind=dp), intent(in) :: x1, y1, x2, y2 !< line start and end coordinates
       real(kind=dp) :: dist
 
       real(kind=dp) :: dx, dy, line_length, cross_product
