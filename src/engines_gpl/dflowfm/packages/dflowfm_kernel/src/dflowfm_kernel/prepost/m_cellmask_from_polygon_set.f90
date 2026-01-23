@@ -315,7 +315,7 @@ contains
       ! Loop over all netcell polygons with fast bounding box checks
       do i_poly = 1, polygons
 
-         ! Quick bbox rejection (most cells rejected here)
+         ! Quick bbox rejection
          if (x < x_poly_min(i_poly) .or. x > x_poly_max(i_poly) .or. &
              y < y_poly_min(i_poly) .or. y > y_poly_max(i_poly)) then
             cycle
@@ -344,7 +344,7 @@ contains
       real(kind=dp), intent(in) :: xpoly(:) !< Polyline x-coordinates
       real(kind=dp), intent(in) :: ypoly(:) !< Polyline y-coordinates
       integer, allocatable, intent(out) :: crossed_cells(:) !> Indices of crossed cells in network_data::netcells
-      character, dimension(:), allocatable, intent(out) :: error
+      character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
 
       integer :: npoly, i
 
@@ -356,14 +356,13 @@ contains
          return
       end if
 
-      ! Initialize cache if needed
       if (.not. cellmask_initialized) then
          call init_cell_geom_as_polylines()
       end if
 
       call realloc(cellmask, nump, keepexisting=.false., fill=0)
 
-      ! Process each segment - directly marks cellmask
+      ! Process each segment and put the result in cellmask
       do i = 1, npoly - 1
          call find_cells_for_segment(xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
       end do
@@ -422,11 +421,10 @@ contains
             x2 = xpl(ip1)
             y2 = ypl(ip1)
 
-            ! Check intersection
             intersects = line_segments_intersect(xa, ya, xb, yb, x1, y1, x2, y2)
 
             if (intersects) then
-               cellmask(i_poly) = 1 ! Mark this cell
+               cellmask(i_poly) = 1
                exit ! No need to check other edges
             end if
          end do
@@ -435,7 +433,7 @@ contains
 
    end subroutine find_cells_for_segment
 
-!> Check if two line segments intersect and return parameter along first segment
+!> Check if two line segments intersect
    elemental function line_segments_intersect(x1a, y1a, x1b, y1b, x2a, y2a, x2b, y2b) result(intersects)
       use precision, only: dp
 
