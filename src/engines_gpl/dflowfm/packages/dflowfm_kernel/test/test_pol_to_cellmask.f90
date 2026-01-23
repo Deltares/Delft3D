@@ -845,8 +845,8 @@ subroutine test_find_cells_crossed_by_polyline_simple() bind(C)
    call init_cell_geom_as_polylines()
    
    ! Create polyline from (1, 3) to (29, 27)
-   ! This goes slightly off-diagonal, crossing cells: 1, 2, 5, 6, 9
-   ! Missing cells: 3, 4, 7, 8
+   ! This goes slightly off-diagonal, crossing cells: 1, 4, 5, 6, 9
+   ! Missing cells: 3, 2, 7, 8
    allocate(xpoly(2), ypoly(2))
    xpoly(1) = 1.0_dp
    ypoly(1) = 3.0_dp
@@ -857,24 +857,25 @@ subroutine test_find_cells_crossed_by_polyline_simple() bind(C)
    call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
    
    ! Check for errors
-   call f90_expect_true(size(error) == 0 .or. error(1) == char(0), "No error should occur")
+   call f90_expect_true(.not. allocated(error), "No error should occur")
    
    ! Should find exactly 5 cells
    call f90_expect_eq(size(crossed_cells), 5, "Should cross 5 cells")
    
    ! Check that cells 1, 2, 5, 6, 9 are in the result
-   call f90_expect_true(crossed_cells(1) == 1, "Cell 1 should be crossed")
-   call f90_expect_true(crossed_cells(2) == 1, "Cell 2 should be crossed")
-   call f90_expect_true(crossed_cells(5) == 1, "Cell 5 should be crossed")
-   call f90_expect_true(crossed_cells(6) == 1, "Cell 6 should be crossed")
-   call f90_expect_true(crossed_cells(9) == 1, "Cell 9 should be crossed")
+   call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
+   call f90_expect_true(cellmask(4) == 1, "Cell 4 should be crossed")
+   call f90_expect_true(cellmask(5) == 1, "Cell 5 should be crossed")
+   call f90_expect_true(cellmask(6) == 1, "Cell 6 should be crossed")
+   call f90_expect_true(cellmask(9) == 1, "Cell 9 should be crossed")
    
    ! Check that cells 3, 4, 7, 8 are NOT in the result
-   call f90_expect_true(crossed_cells(3) == 0, "Cell 3 should not be crossed")
-   call f90_expect_true(crossed_cells(4) == 0, "Cell 4 should not be crossed")
-   call f90_expect_true(crossed_cells(7) == 0, "Cell 7 should not be crossed")
-   call f90_expect_true(crossed_cells(8) == 0, "Cell 8 should not be crossed")
+   call f90_expect_true(cellmask(3) == 0, "Cell 3 should not be crossed")
+   call f90_expect_true(cellmask(2) == 0, "Cell 2 should not be crossed")
+   call f90_expect_true(cellmask(7) == 0, "Cell 7 should not be crossed")
+   call f90_expect_true(cellmask(8) == 0, "Cell 8 should not be crossed")
    
+   call f90_expect_true(count(cellmask > 0) == size(crossed_cells), "Exactly 5 cells should be crossed")
    ! Cleanup
    deallocate(xpoly, ypoly)
    if (allocated(crossed_cells)) deallocate(crossed_cells)
