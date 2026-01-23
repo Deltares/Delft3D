@@ -50,6 +50,3 @@ src/**/FortranCInterface.h
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
 unit-test-report-windows.xml
-
-# unit test preset file
-src/cmake/CMakePresets.json
