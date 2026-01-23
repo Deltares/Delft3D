@@ -4,9 +4,9 @@ from unittest.mock import Mock, call, patch
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.pin_and_tag_builds import PinAndTagger
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings, TeamcityIds
-from ci_tools.dimrset_delivery.pin_and_tag_builds import PinAndTagger
 from ci_tools.example_utils.logger import LogLevel
 
 

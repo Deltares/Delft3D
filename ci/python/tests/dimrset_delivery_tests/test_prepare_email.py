@@ -5,9 +5,9 @@ from unittest.mock import Mock, patch
 
 from ci_tools.dimrset_delivery.common_utils import ResultTestBankParser, SummaryResults, parse_version
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.prepare_email import EmailHelper
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
-from ci_tools.dimrset_delivery.prepare_email import EmailHelper
 
 
 class TestEmailHelper:
@@ -46,9 +46,7 @@ class TestEmailHelper:
             SummaryResults.EXCEPTION: exceptions,
         }.get(key)
 
-        with patch(
-            "ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser", return_value=mock_parser
-        ):
+        with patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser", return_value=mock_parser):
             return EmailHelper(mock_context, mock_services)  # type: ignore
 
     def test_generate_template_calls_all(self) -> None:

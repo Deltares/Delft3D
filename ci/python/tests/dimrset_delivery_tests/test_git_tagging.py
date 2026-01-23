@@ -3,11 +3,11 @@
 from unittest.mock import Mock
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.git_tagging import GitTagger
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
-from ci_tools.dimrset_delivery.git_tagging import GitTagger
 from ci_tools.example_utils.logger import LogLevel
 
 

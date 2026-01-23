@@ -8,8 +8,8 @@ from unittest.mock import Mock
 import pytest
 
 from ci_tools.dimrset_delivery import publish_release_changelog as changelog_module
-from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.publish_release_changelog import ChangeLogPublisher
+from ci_tools.dimrset_delivery.services import Services
 from ci_tools.example_utils.logger import LogLevel
 
 
