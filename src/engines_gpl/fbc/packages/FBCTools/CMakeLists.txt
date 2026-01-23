@@ -21,6 +21,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # Enable OpenMP
 find_package(OpenMP)
+if(OPENMP_FOUND)
+    add_compile_options("${OpenMP_CXX_FLAGS}")
+endif()
 
 # Boost C++, it is a required package, if not found configuration will abort
 set(Boost_USE_RELEASE_LIBS ON)
