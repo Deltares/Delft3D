@@ -1801,6 +1801,7 @@ contains
       !
 
 !        initialization
+      
       quantityname = quantityname_in
       success = .false.
       itemPT => null()
