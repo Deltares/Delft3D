@@ -238,13 +238,21 @@ contains
       end do
 
       if (num_deprecated > 0) then
-         call mess(LEVEL_WARN, prefix//': Deprecated keywords used (see the lines above):  '//trim(keyword_set%additional_information))
+         write (msgbuf, '(A, I0, A)')  &
+            prefix // ': Summary warning: ', num_deprecated, &
+            ' deprecated keyword(s) detected. All individual warning messages are listed above. ' // &
+            trim(keyword_set%additional_information)
+         call mess(LEVEL_WARN, msgbuf)
       end if
-
-      threshold_abort = temp_threshold !> restore threshold_abort
-
+      
+      threshold_abort = temp_threshold   ! restore threshold_abort
+      
       if (num_obsolete > 0) then
-         call mess(LEVEL_ERROR, prefix//': Old unsupported keywords used (see the lines above): '//trim(keyword_set%additional_information))
+         write (msgbuf, '(A, I0, A)')  &
+            prefix // ': Summary error: ', num_obsolete, &
+            ' obsolete/unsupported keyword(s) detected. All individual error messages are listed above. ' // &
+            trim(keyword_set%additional_information)
+         call mess(LEVEL_ERROR, msgbuf)
          status = DFM_WRONGINPUT
       end if
 
