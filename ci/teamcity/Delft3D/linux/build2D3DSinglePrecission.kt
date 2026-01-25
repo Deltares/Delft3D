@@ -70,7 +70,7 @@ object LinuxBuild2D3DSP : BuildType({
             }
             scriptContent = """
                 #!/usr/bin/env bash
-                source /opt/bashrc
+                source /etc/bashrc
                 set -eo pipefail
                 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${'$'}PKG_CONFIG_PATH
                 export LD_LIBRARY_PATH=/usr/local/lib:${'$'}LD_LIBRARY_PATH

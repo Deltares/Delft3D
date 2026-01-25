@@ -12,7 +12,7 @@ from ci_tools.example_utils.logger import LogLevel
 
 class PinAndTagger(StepExecutorInterface):
     """
-    Executes pinning and tagging of builds in TeamCity and Git.
+    Executes pinning and tagging of builds in TeamCity.
 
     This class retrieves artifacts from TeamCity, deploys them via SSH, and performs installation tasks
     as part of the DIMR automation workflow.
@@ -36,21 +36,19 @@ class PinAndTagger(StepExecutorInterface):
         context : DimrAutomationContext
             The automation context containing configuration and state.
         services : Services
-            External service clients for TeamCity and Git operations.
+            External service client for TeamCity operations.
         """
         self.__context = context
         self.__dry_run = context.dry_run
-        self.__kernel_versions = context.kernel_versions
         self.__dimr_version = context.dimr_version
         self.__build_id = context.build_id
         self.__teamcity_ids = context.settings.teamcity_ids
 
-        self.__git_client = services.git
         self.__teamcity = services.teamcity
 
     def execute_step(self) -> bool:
         """
-        Execute the step to pin and tag builds in TeamCity and Git.
+        Execute the step to pin and tag builds in TeamCity.
 
         This method logs the process, checks for required clients, and performs the pinning and tagging
         operations. In dry-run mode, it logs intended actions without making changes.
@@ -70,13 +68,9 @@ class PinAndTagger(StepExecutorInterface):
         if self.__teamcity is None:
             self.__context.log("TeamCity client is required but not initialized.", severity=LogLevel.ERROR)
             return False
-        if self.__git_client is None:
-            self.__context.log("Git client is required but not initialized.", severity=LogLevel.ERROR)
-            return False
 
         try:
             self.__pin_and_tag_builds_teamcity()
-            self.__git_client.tag_commit(self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}")
             self.__context.log("Build pinning and tagging completed successfully!")
             return True
         except Exception as e:
@@ -111,7 +105,7 @@ class PinAndTagger(StepExecutorInterface):
 if __name__ == "__main__":
     try:
         args = parse_common_arguments()
-        context = create_context_from_args(args, require_ssh=False, require_jira=False)
+        context = create_context_from_args(args, require_ssh=False, require_jira=False, require_git=False)
         services = Services(context)
 
         context.log("Starting pinning and tagging...")

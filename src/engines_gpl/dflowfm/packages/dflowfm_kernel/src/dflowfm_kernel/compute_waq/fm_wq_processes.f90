@@ -1387,7 +1387,7 @@ contains
       use m_flowgeom, only: Ndxi, ba
       use m_flow, only: vol1, ucx, ucy
       use m_flowtimes, only: irefdate, tunit
-      use m_flowparameters, only: flowWithoutWaves, jawaveswartdelwaq
+      use m_flowparameters, only: flow_without_waves, jawaveswartdelwaq
       use m_fm_wq_processes
       use m_transport, only: constituents, itemp, isalt
       use m_sferic, only: twopi, rd2dg
@@ -1459,7 +1459,7 @@ contains
 
       if (isftau > 0) then
          ipoitau = arrpoi(iisfun) + (isftau - 1) * num_cells
-         if (jawave == NO_WAVES .or. flowWithoutWaves) then
+         if (jawave == NO_WAVES .or. flow_without_waves) then
             call gettaus(1, 2)
          else
             call gettauswave(jawaveswartdelwaq)
