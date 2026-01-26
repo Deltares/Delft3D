@@ -41,7 +41,7 @@ contains
    subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
       use precision, only: dp
       use m_getsoulsbywci, only: getsoulsbywci
-      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, c9of1, jaustarint, vonkar, z0ucur, v, jawave, flowwithoutwaves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, viskin, vicwwu, vicoww, jafrculin, frculin
+      use m_flow, only: frcu, ifrcutp, hu, trsh_u1lb, ag, s1, u1, c9of1, jaustarint, vonkar, z0ucur, v, jawave, flow_without_waves, jawavestokes, rhomean, modind, epsz0, taubu, taubxu, z0urou, jawavestreaming, ltop, adve, viskin, vicwwu, vicoww, jafrculin, frculin
       use m_get_ustwav, only: getustwav
       use m_get_czz0, only: getczz0
       use m_flowgeom, only: ln, dxi, csu, snu
@@ -139,7 +139,7 @@ contains
 
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
          ! updated ustokes needed before conversion to eulerian velocities
-         if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
             if (jawaveStokes > NO_STOKES_DRIFT) then
@@ -155,7 +155,7 @@ contains
 
          ustbLL = sqcf * umod ! ustar based upon bottom layer/layer integral velocity
 
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             rhoL = rhomean ! for now
             if (ustw2 > 1.0e-8_dp) then
                !
@@ -276,7 +276,7 @@ contains
          cfuhiLL = sqcf * sqcf / hu(Lb) ! cfuhiLL   = g / (H.C.C) = (g.K.K) / (A.A)
          cfuhi3D = cfuhiLL * umod ! cfuhi3D = frc. contr. to diagonal
 
-         if (jawave == NO_WAVES .or. flowWithoutWaves) then
+         if (jawave == NO_WAVES .or. flow_without_waves) then
             z0urou(LL) = z0ucur(LL) ! morfo, bedforms, trachytopes
          end if
 
@@ -284,7 +284,7 @@ contains
          nit = 0
          u1Lb = u1(Lb)
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
-         if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             ! strictly, not necessary as ust==0 for jawavestokes==0
             if (jawavestokes > NO_STOKES_DRIFT) then

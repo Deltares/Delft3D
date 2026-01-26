@@ -24,21 +24,21 @@ class TestBench:
     def run(self) -> None:
         """Run the testbench."""
         log_header("Start of test-bench", self.logger)
-        if self.settings.run_mode == ModeType.LIST:
+        if self.settings.command_line_settings.run_mode == ModeType.LIST:
             self.__print_filter_usage()
             return
 
-        if self.settings.run_mode == ModeType.TEST_CASE_LIST:
+        if self.settings.command_line_settings.run_mode == ModeType.TEST_CASE_LIST:
             self.__print_test_case_list()
             return
 
         runner: Optional[TestSetRunner] = None
-        if self.settings.run_mode == ModeType.COMPARE:
+        if self.settings.command_line_settings.run_mode == ModeType.COMPARE:
             runner = ComparisonRunner(self.settings, self.logger)
-        elif self.settings.run_mode == ModeType.REFERENCE:
+        elif self.settings.command_line_settings.run_mode == ModeType.REFERENCE:
             runner = ReferenceRunner(self.settings, self.logger)
         else:
-            self.logger.error(f"Run mode {self.settings.run_mode} is currently unsupported")
+            self.logger.error(f"Run mode {self.settings.command_line_settings.run_mode} is currently unsupported")
 
         try:
             if runner:

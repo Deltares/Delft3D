@@ -69,7 +69,7 @@ class Paths:
         else:
             result = ""
         # split in windows paths
-        wpes = self.convertAbsoluteToLiteral(path).split("\\")
+        wpes = self.__convertAbsoluteToLiteral(path).split("\\")
         for wpe in wpes:
             # split in linux path elements
             lpes = wpe.split("/")
@@ -80,7 +80,7 @@ class Paths:
         return result
 
     # convert a path string containing \ -> \\
-    def convertAbsoluteToLiteral(self, path):
+    def __convertAbsoluteToLiteral(self, path):
         # convert double backslash to single
         conv = re.sub(r"(\\\\)", r"\\", path)
         return re.sub(r"(?<!\\)+\\(?!\\)+", r"\\", conv)
@@ -91,6 +91,11 @@ class Paths:
     def mergePathElements(self, left, right):
         fws = "/"
         bws = "\\"
+
+        if left in (None, ""):
+            return right or ""
+        if right in (None, ""):
+            return left
 
         # Make sure that the handlers can accept URIs that contain spaces.
         if "://" in left:
@@ -133,8 +138,12 @@ class Paths:
     # input: left and rest (variable args)
     # output: string formatted on left as origin
     def mergeFullPath(self, left, *args):
-        result = left
-        for a in args:
+        parts = [p for p in (left, *args) if p not in (None, "")]
+        if not parts:
+            return ""
+
+        result = parts[0]
+        for a in parts[1:]:
             result = self.mergePathElements(result, a)
         return result
 

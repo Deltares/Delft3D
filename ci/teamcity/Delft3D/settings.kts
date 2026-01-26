@@ -24,6 +24,9 @@ project {
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
 
+        param("nexus_username", DslContext.getParameter("nexus_username"))
+        password("nexus_password", DslContext.getParameter("nexus_password"))
+
         param("product", "dummy_value")
 
     }
@@ -46,9 +49,11 @@ project {
             name = "Build-environment Containers"
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
+            buildType(LinuxDevContainer)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
+                LinuxDevContainer,
             )
         }        
         subProject {
@@ -127,9 +132,10 @@ project {
         buildType(TestFortranStyler)
         buildType(CopyExamples)
         buildType(SigCi)
+        buildType(RunBashBatonUtilities)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities
         )
     }
 
@@ -147,11 +153,13 @@ project {
     buildType(PublishToGui)
     buildType(DIMRbak)
     buildType(Publish)
+    buildType(PinAndTag)
     buildTypesOrder = arrayListOf(
         Trigger,
         PublishToGui,
         DIMRbak,
-        Publish
+        Publish,
+        PinAndTag
     )
         
     features {

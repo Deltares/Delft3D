@@ -51,6 +51,8 @@ contains
       use m_sferic, only: dtol_pole
       use gridoperations
       use m_qnerror
+      use m_alloc
+
       use m_makenetnodescoding
 
       integer :: l1
@@ -74,7 +76,15 @@ contains
       integer :: n2
 
       real(kind=dp) :: XR, YR, XN, YN, XR1, YR1, XR2, YR2, AR1, DIS
-      call SAVEPOL()
+      real(kind=dp), allocatable :: XTMP(:), YTMP(:)
+      
+      if (NPL > 0) then
+         call realloc(XTMP, maxpol, keepExisting=.false.)
+         call realloc(XTMP, maxpol, keepExisting=.false.)
+         XTMP(1:NPL) = XPL(1:NPL)
+         YTMP(1:NPL) = YPL(1:NPL)
+      end if
+      ! call SAVEPOL()
 
       if (L1 > L2) then
          LL = L1
@@ -109,8 +119,8 @@ contains
       end if
 
       do N = 1, L1 - 1
-         XPL(N) = XPH(N)
-         YPL(N) = YPH(N)
+         XPL(N) = XTMP(N)
+         YPL(N) = YTMP(N)
       end do
 
       L = N2
@@ -175,8 +185,8 @@ contains
 
       do I = L2 + 1, NPH
          N = N + 1
-         XPL(N) = XPH(I)
-         YPL(N) = YPH(I)
+         XPL(N) = XTMP(I)
+         YPL(N) = YTMP(I)
       end do
 
       NPL = N

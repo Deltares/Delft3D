@@ -65,14 +65,14 @@ contains
 
       ! Fetch models
       !
-      if (jawave < WAVE_SWAN_ONLINE .and. .not. flowWithoutWaves) then
+      if (jawave < WAVE_SWAN_ONLINE) then
          if (kmx == 0) then
             call tauwave() ! 3D, done in update_verticalprofiles
          end if
       end if
 
       ! SWAN
-      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) then
          if (kmx == 0) then
             call tauwave() ! 3D, done in update_verticalprofiles
          end if
@@ -81,7 +81,7 @@ contains
       end if
       !
       ! Surfbeat model
-      if (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. nwbnd > 0 .and. .not. flowWithoutWaves) then
+      if (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. nwbnd > 0) then
          if (swave == 1) then
             call xbeach_wave_bc()
             call xbeach_apply_wave_bc()
@@ -107,14 +107,14 @@ contains
       end if
       !
       ! Uniform wave field
-      if (jawave == WAVE_UNIFORM .and. .not. flowWithoutWaves) then
+      if (jawave == WAVE_UNIFORM) then
          if (kmx == 0) then
             call tauwave()
          end if
       end if
       !
       ! this part is for online interacter visualisation
-      if (jaGUI == 1 .and. jawave > WAVE_FETCH_YOUNG .and. .not. flowWithoutWaves) then
+      if (jaGUI == 1 .and. jawave > WAVE_FETCH_YOUNG) then
          if (ntek > 0) then
             if (mod(int(dnt), ntek) == 0) then
                call wave_makeplotvars()
