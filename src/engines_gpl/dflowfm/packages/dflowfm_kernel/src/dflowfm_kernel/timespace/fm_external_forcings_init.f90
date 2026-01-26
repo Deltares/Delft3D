@@ -1129,67 +1129,36 @@ contains
    function init_bubblescreen_forcings(node_ptr, base_dir, file_name, group_name) result(is_successful)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings_data, only: numsrc, qstss
+      use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
       use m_filez, only: oldfil
       use m_reapol, only: reapol
       use m_transport, only: NAMLEN, NUMCONST
       use messageHandling, only: err_flush, msgbuf
       use netcdf_utils, only: ncu_sanitize_name
-      use properties, only: prop_get
       use tree_data_types, only: tree_data
-      use unstruc_files, only: resolvePath
 
-      ! Arguments
+      ! Parameters
       type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the sourcesink block.
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from node_ptr.
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages.
+      character(len=:), allocatable :: id !< Bubblescreen id
+      character(len=:), allocatable :: location_file !< Bubblescreen location file
+      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
       ! Local variables
-      character(len=INI_VALUE_LEN) :: bubblescreen_id
-      character(len=INI_VALUE_LEN) :: bubblescreen_name
-      character(len=INI_VALUE_LEN) :: location_file
-      character(len=INI_VALUE_LEN) :: discharge_input
       character(len=INI_VALUE_LEN) :: quantity_id
-      integer :: len
       integer :: file_pointer
-      integer :: ierr
       logical :: is_successful
-      logical :: is_read
-      logical :: have_location_file
 
       is_successful = .false.
 
-      ! (required) Read out 'id' keyword
-      bubblescreen_id = ' '
-      call prop_get(node_ptr, '', 'id', bubblescreen_id, is_read)
-      if (.not. is_read .or. len_trim(bubblescreen_id) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
-         call err_flush()
-         return
-      end if
+      ! Read bubblescreen attributes from the tree node
+      is_successful = read_bubblescreen_forcing_attributes(node_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
 
-      ! (optional) Read out 'name' keyword
-      call prop_get(node_ptr, '', 'name', bubblescreen_name, is_read)
-
-      ! (required) Read out 'locationFile' keyword
-      call prop_get(node_ptr, '', 'locationFile', location_file, have_location_file)
-      if (have_location_file) then
-         call resolvePath(location_file, base_dir)
-      end if
-      len = len_trim(location_file)
-      if (.not. have_location_file .or. len_trim(location_file) == 0) then ! Check if locationFile is given
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file is incomplete or missing.'
-         call err_flush()
-         return
-      else if (location_file(len-4:len) /= '.pliz') then ! Check if locationFile has .pliz extension
-         write (msgbuf, '(5a)') 'Incorrect locationFile specified in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file should have ".pliz" extension.'
-         call err_flush()
-         return
-      end if
-
-      ! Read locationFile to polyline
-      if (have_location_file) then
+      ! Read location_file to polyline
+      if (allocated(location_file)) then
          ! Get polygon data from location_file
          call oldfil(file_pointer, location_file)
          call reapol(file_pointer, 0)
@@ -1200,21 +1169,6 @@ contains
          ! ====================================================================================================
       end if
 
-      ! (required) Read out 'discharge' keyword
-      call prop_get(node_ptr, '', 'discharge', discharge_input, is_read)
-      if (.not. is_read) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
-         call err_flush()
-         return
-      end if
-
-      if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Bubble screen with id='//trim(bubblescreen_id)//'. could not be added.'
-         call err_flush()
-         return
-      end if
-
       ! ====================================================================================================
       ! TODO: Readout the .bc file containing the bubblescreen discharge timeseries
       ! TODO: Connect the bubblescreen time series to the EC module
@@ -1222,11 +1176,11 @@ contains
       
       ! Read out the .bc file containing the bubblescreen discharge timeseries
       quantity_id = 'bubblescreen_discharge'
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'bubble screen', trim(bubblescreen_id), 'discharge', &
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'bubble screen', trim(id), 'discharge', &
                                                      trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, 1, qstss)
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(bubblescreen_id)//'.'
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
          call err_flush()
          return
       end if
