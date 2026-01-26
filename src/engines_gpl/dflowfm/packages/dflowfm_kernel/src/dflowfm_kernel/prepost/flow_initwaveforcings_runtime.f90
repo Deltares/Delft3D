@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,6 +34,7 @@
 ! This is the general hook-up to wave conditions for online wave coupling
 module m_flow_initwaveforcings_runtime
 
+   use precision, only: dp
    implicit none
 
    private
@@ -104,7 +105,7 @@ contains
       if (.not. allocated(twavcom)) then
          allocate (twavcom(ndx), stat=ierr)
          call aerr('twavcom(ndx)', ierr, ndx)
-         twavcom = 0d0
+         twavcom = 0.0_dp
       end if
       success = ec_addtimespacerelation(qid_l, xz(1:ndx), yz(1:ndx), kcw, kx, md_wavefile, filetype_l, method_l, operand_l, quiet=.true.)
       !

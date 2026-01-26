@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,7 +46,7 @@ contains
       use m_physcoef
       use m_trachy
       use m_trtrou
-      use m_flowparameters, only: eps8, epshs, jacali, jawave, flowwithoutwaves
+      use m_flowparameters, only: eps8, epshs, jacali, jawave, flow_without_waves
       use network_data, only: numl, lne
       use m_monitoring_crosssections
       use m_observations_data, only: valobs, IPNT_S1
@@ -137,7 +137,7 @@ contains
          ! - D3D4 uses GLM velocities for trachytopes. Not sure if that is conceptually correct, to discuss.
          !   For now, I added the code to use eulerian vector for consistency
          !
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             if (.not. allocated(u1eul)) then
                allocate (u1eul(1:lnkx), stat=ierr)
             end if
@@ -160,8 +160,11 @@ contains
       ! Update water levels and link info (open or closed) on net-links
       !
       do L = 1, numl
-         kL = lne(1, L); kR = lne(2, L)
-         if (kL == 0 .and. kR == 0) cycle
+         kL = lne(1, L)
+         kR = lne(2, L)
+         if (kL == 0 .and. kR == 0) then
+            cycle
+         end if
          LF = lne2ln(L)
          if (LF > 0) then
             ! flow link crosses with net link
@@ -185,8 +188,11 @@ contains
       if (init_trt) then
          !
          do L = 1, numl
-            kL = lne(1, L); kR = lne(2, L)
-            if (kL == 0 .and. kR == 0) cycle
+            kL = lne(1, L)
+            kR = lne(2, L)
+            if (kL == 0 .and. kR == 0) then
+               cycle
+            end if
             trachy_fl%dir(1)%zsu_prev(L) = trachy_fl%dir(1)%blu_trt(L) + hu_trt(L)
          end do
          !
@@ -199,8 +205,11 @@ contains
             end if
          end do
          do L = 1, numl
-            kL = lne(1, L); kR = lne(2, L)
-            if (kL == 0 .and. kR == 0) cycle
+            kL = lne(1, L)
+            kR = lne(2, L)
+            if (kL == 0 .and. kR == 0) then
+               cycle
+            end if
             LF = lne2ln(L)
             if (LF > 0) then
                cftrt(L, 3) = frcu(LF) !link is on flow-link

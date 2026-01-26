@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2025.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -78,20 +78,10 @@
      x = c_loc(ActEvap)
   case("infilt") !<  [m3 s-1] Actual infiltration flux at current time {"location": "face", "shape": ["ndx"]}
      x = c_loc(infilt)
-  case("infiltcap0") !<  [mm h-1] Maximum infiltration capacity on each cell at previous timestep {"location": "face", "shape": ["ndx"]}
-     x = c_loc(infiltcap0)
   case("infiltcap") !<  [m s-1] Maximum infiltration capacity on each cell {"location": "face", "shape": ["ndx"]}
      x = c_loc(infiltcap)
-  case("HortonMinInfCap") !<  [mm/hr] Minimum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonMinInfCap)
-  case("HortonMaxInfCap") !<  [mm/hr] Maximum infiltration capacity in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonMaxInfCap)
-  case("HortonDecreaseRate") !<  [1/hr] Decrease rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonDecreaseRate)
-  case("HortonRecoveryRate") !<  [1/hr] Recovery rate in Horton's equation {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonRecoveryRate)
-  case("HortonState") !<  [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
-     x = c_loc(HortonState)
+  case("horton_state") !<  [-] Infiltration capacity state (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE)) {"location": "face", "shape": ["ndx"]}
+     x = c_loc(horton_state)
   case("shx") !<  [m] current position {"shape": ["nshiptxy"]}
      x = c_loc(shx)
   case("shy") !<  [m] current position {"shape": ["nshiptxy"]}
@@ -383,4 +373,3 @@
   case("ndx1d") !<  [-] volume table size {"rank": 0}
      x = c_loc(ndx1d)
   end select
-

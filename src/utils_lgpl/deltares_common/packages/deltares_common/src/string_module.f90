@@ -1,7 +1,7 @@
 module string_module
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,7 @@ module string_module
 ! NONE
 !!--declarations----------------------------------------------------------------
 
+   use precision, only: dp, sp
    implicit none
 
    private
@@ -53,6 +54,7 @@ module string_module
    public :: remove_leading_spaces
    public :: remove_all_spaces
    public :: replace_multiple_spaces_by_single_spaces
+   public :: find_candidates_in_targets
    public :: find_first_word
    public :: find_first_letter
    public :: find_first_char
@@ -70,16 +72,27 @@ module string_module
    public :: int2str
    public :: get_version_major_minor_integer
    public :: str_split 
+   public :: convert_to_logical
+   public :: convert_to_real
    
    interface strip_quotes
       module procedure strip_quotes1
       module procedure strip_quotes2
    end interface strip_quotes
+   
+   interface convert_to_real
+      module procedure convert_to_real_sp
+      module procedure convert_to_real_dp
+   end interface convert_to_real
 
    ! parameters
    integer, parameter, public :: ichar_space = ichar(' ')
    integer, parameter, public :: ichar_forward_slash = ichar('/')
    integer, parameter, public :: ichar_underscore = ichar('_')
+   
+   integer, parameter, public :: no_error = 0
+   integer, parameter, public :: empty_string = 1
+   integer, parameter, public :: conversion_error = 2
    
 contains
 
@@ -116,7 +129,7 @@ contains
    !   delims      on input : Optional string with delimiter characters.
    !                          Default: space, tab, LF, CR: 32, 9, 10, 13.
    ! ------------------------------------------------------------------------------
-   subroutine str_token(string, token, quote, delims)
+   pure subroutine str_token(string, token, quote, delims)
       !
       ! Arguments
       !
@@ -206,7 +219,7 @@ contains
    !> Return copy of input string with all lowercase characters changed
       !! into uppercase.
       !! This is the function version of subroutine str_upper()
-   function str_toupper(string) result(stringout)
+   pure function str_toupper(string) result(stringout)
       character(len=*), intent(in) :: string !< String to be converted.
       character(len=len(string)) :: stringout
 
@@ -217,7 +230,7 @@ contains
    !> Return copy of input string with all uppercase characters changed
       !! into lowercase.
       !! This is the function version of subroutine str_lower()
-   function str_tolower(string) result(stringout)
+   pure function str_tolower(string) result(stringout)
       character(len=*), intent(in) :: string !< String to be converted.
       character(len=len(string)) :: stringout
 
@@ -272,12 +285,12 @@ contains
    !   string      String to be converted
    !   lenstr      Optional length of string to be converted
    ! ------------------------------------------------------------------------------
-   subroutine str_upper(string, lenstr)
+   elemental subroutine str_upper(string, lenstr)
       !
       ! Arguments
       !
+      character(*), intent(inout) :: string
       integer, optional, intent(in) :: lenstr
-      character(*) :: string
       !
       ! Local variables
       !
@@ -310,11 +323,11 @@ contains
    !   string      String to be converted
    !   lenstr      Optional trimmed length of string after removal of spaces
    ! ------------------------------------------------------------------------------
-   subroutine remove_all_spaces(string, lenstr)
+   elemental subroutine remove_all_spaces(string, lenstr)
       !
       ! Arguments
       !
-      character(*) :: string
+      character(*), intent(inout) :: string
       integer, optional, intent(out) :: lenstr
       !
       ! Local variables
@@ -353,11 +366,11 @@ contains
    !   Arguments:
    !   string      String to be converted
    ! ------------------------------------------------------------------------------
-   subroutine replace_multiple_spaces_by_single_spaces(string)
+   elemental subroutine replace_multiple_spaces_by_single_spaces(string)
       !
       ! Arguments
       !
-      character(*) :: string
+      character(*), intent(inout) :: string
       !
       ! Local variables
       !
@@ -409,11 +422,11 @@ contains
    !   string      String to be converted
    !   lenstr      Optional trimmed length of string after removal of spaces
    ! ------------------------------------------------------------------------------
-   subroutine remove_leading_spaces(string, lenstr)
+   elemental subroutine remove_leading_spaces(string, lenstr)
       !
       ! Arguments
       !
-      character(*) :: string
+      character(*), intent(inout) :: string
       integer, optional, intent(out) :: lenstr
       !
       ! Local variables
@@ -543,7 +556,7 @@ contains
 
    !> Determine the index of the first non-whitespace character in a string.
       !! Failure is indicated by: idx = 0
-   function find_first_char(string) result(idx)
+   pure function find_first_char(string) result(idx)
       integer :: idx !< index of the first non-whitespace character in string.
       character(len=*), intent(in) :: string !< string to inspect
 
@@ -560,7 +573,7 @@ contains
 
    !> Determine the indices of the first letter (not number) and last character of the first word in a string.
       !! Failure is indicated by: i1 = 0; i2 = 0
-   subroutine find_first_word(string, i1, i2)
+   pure subroutine find_first_word(string, i1, i2)
       character(len=*), intent(in) :: string !< string to inspect
       integer, intent(out) :: i1 !< string index of the first letter of the first word
       integer, intent(out) :: i2 !< string index of the last character of the first word
@@ -585,8 +598,8 @@ contains
    end subroutine find_first_word
 
    !> Determine the index of the first letter in a string.
-      !! Failure is indicated by: index = 0
-   function find_first_letter(string) result(idx)
+   !! Failure is indicated by: index = 0
+   pure function find_first_letter(string) result(idx)
       integer :: idx !< index of first letter
       character(len=*), intent(in) :: string !< string to inspect
       !
@@ -608,7 +621,7 @@ contains
    end function find_first_letter
 
    !> Count the number of whitespace separated character groups.
-   function count_words(string) result(number)
+   pure function count_words(string) result(number)
       integer :: number !< number of words
       character(len=*), intent(in) :: string !< string to inspect
       !
@@ -635,7 +648,7 @@ contains
    end function count_words
 
    !> Checks whether the character is whitespace.
-   function is_whitespace(letter)
+   elemental function is_whitespace(letter)
       logical :: is_whitespace !<
       character(len=1), intent(in) :: letter !<
       !
@@ -649,7 +662,7 @@ contains
    end function is_whitespace
 
    !> Replace character with code ichar1 by code ichar2
-   subroutine replace_char(r, ichar1, ichar2)
+   pure subroutine replace_char(r, ichar1, ichar2)
       character(len=*), intent(inout) :: r
       integer, intent(in) :: ichar1
       integer, intent(in) :: ichar2
@@ -713,7 +726,7 @@ contains
    end function replace_string
 
    !> For each character in the given set, remove any occurrence in the subject
-   subroutine remove_chars(r, charset)
+   pure subroutine remove_chars(r, charset)
       character(len=*), intent(inout) :: r !< subject on which to perform removal
       character(len=*), intent(in) :: charset !< collection of characters to be removed
       !
@@ -730,7 +743,7 @@ contains
    end subroutine remove_chars
 
    !> Remove substring substr from r
-   subroutine remove_substr(r, substr)
+   pure subroutine remove_substr(r, substr)
       character(len=*), intent(inout) :: r
       character(len=*), intent(in) :: substr
       !
@@ -776,11 +789,12 @@ contains
       end do
    end function char_array_to_string_by_len
 
-   subroutine get_substr_ndx(tgt, ndx0, ndx, sep)
+   pure subroutine get_substr_ndx(tgt, ndx0, ndx, sep)
       character(len=*), intent(in) :: tgt
       integer, intent(inout) :: ndx0
       integer, intent(inout) :: ndx
       character(len=*), intent(in), optional :: sep
+      
       integer :: ltrim
       logical :: single_quoted
       logical :: double_quoted
@@ -810,7 +824,7 @@ contains
 
    !> Fill allocatable string array with elements of a space-delimited string
    !> The incoming string array must be unallocated
-   recursive subroutine strsplit(tgt, ndx0, pcs, npc, sep)
+   recursive pure subroutine strsplit(tgt, ndx0, pcs, npc, sep)
       integer, intent(in) :: npc !< element index
       character(len=*), intent(in) :: tgt !< input string
       integer, intent(in) :: ndx0 !< start position in string tgt
@@ -835,7 +849,7 @@ contains
 
    !> check on single or double quotes at start or end
       !! return (new) first and last positions
-   subroutine strip_quotes1(tgt, pos1, pos2)
+   pure subroutine strip_quotes1(tgt, pos1, pos2)
       character(len=*), intent(in) :: tgt !< input string
       integer, intent(inout) :: pos1 !< first position
       integer, intent(inout) :: pos2 !< last position
@@ -852,7 +866,7 @@ contains
 
    !> check on single or double quotes at start or end
       !! returns cropped string
-   subroutine strip_quotes2(tgt)
+   pure subroutine strip_quotes2(tgt)
       character(len=:), allocatable, intent(inout) :: tgt !< input string
 
       integer :: pos1 ! first position
@@ -875,16 +889,16 @@ contains
 
    !> convert a real to a string with user defined format.
       !! if it does not fit, fall back on a more general format
-   subroutine real2string(cnumber, formatReal, valueReal)
-      character(len=*), intent(in) :: formatReal !< format string to be used
-      real(kind=8), intent(in) :: valueReal !< number to be convert
+   pure subroutine real2string(cnumber, format_real, value_real)
+      character(len=*), intent(in) :: format_real !< format string to be used
+      real(kind=8), intent(in) :: value_real !< number to be convert
       character(len=*), intent(out) :: cnumber !< output string
 
       integer :: ierr
 
-      write (cnumber, formatReal, iostat=ierr) valueReal
+      write (cnumber, format_real, iostat=ierr) value_real
       if (ierr /= 0 .or. index(cnumber, '*') > 0) then
-         write (cnumber, '(ES14.5E3)') valueReal
+         write (cnumber, '(ES14.5E3)') value_real
       end if
 
    end subroutine real2string
@@ -892,12 +906,12 @@ contains
    !> convert a real to a string with user defined format.
       !! if it does not fit, fall back on a more general format
       !! align the string to the left (to allow printing with only trim())
-   subroutine real2stringLeft(cnumber, formatReal, valueReal)
-      character(len=*), intent(in) :: formatReal !< format string to be used
-      real(kind=8), intent(in) :: valueReal !< number to be convert
+   pure subroutine real2stringLeft(cnumber, format_real, value_real)
+      character(len=*), intent(in) :: format_real !< format string to be used
+      real(kind=8), intent(in) :: value_real !< number to be convert
       character(len=*), intent(out) :: cnumber !< output string
 
-      call real2string(cnumber, formatReal, valueReal)
+      call real2string(cnumber, format_real, value_real)
       cnumber = adjustl(cnumber)
 
    end subroutine real2stringLeft
@@ -925,12 +939,12 @@ contains
       character(*), intent(out), optional :: iomsg
       !---------------------------------------------------------------------------
       ! Local variables
-      character(len=256) :: buffer ! Buffer to read the line (or partial line).
-      integer :: size ! Number of characters read from the file.
-      integer :: size_trim ! Number of characters read from the file  (trimmed).
-      logical :: isFirstBuffer ! flag to handle first read different from others
+      character(len=256) :: buffer !< Buffer to read the line (or partial line).
+      integer :: size !< Number of characters read from the file.
+      integer :: size_trim !< Number of characters read from the file  (trimmed).
+      logical :: is_first_buffer !< flag to handle first read different from others
       !***************************************************************************
-      isFirstBuffer = .true.
+      is_first_buffer = .true.
       do
          buffer = ''
          if (present(iomsg)) then
@@ -969,10 +983,10 @@ contains
             line = ''
             exit ! Some sort of error.
          end if
-         if (isFirstBuffer) then
+         if (is_first_buffer) then
             size = max(1, size)
             line = buffer(:size)
-            isFirstBuffer = .false.
+            is_first_buffer = .false.
          else
             line = line//buffer(:size)
          end if
@@ -984,7 +998,7 @@ contains
    end subroutine GetLine
 
    !> convert an integer into a string
-   function int2str(i) result(string)
+   pure function int2str(i) result(string)
       integer, intent(in) :: i !< integer to be represented by a string
 
       character(len=11) :: string11 !< temporary fixed-length string: 11 is long enough for any 64bit integer
@@ -997,7 +1011,7 @@ contains
    !> Get integer of major and minor version information from a FileVersion string.
       !! Version string should contain <<major>>.<<minor>>.
       !! Dummy argument 'success' is set to false, when no '.' is found.
-   subroutine get_version_major_minor_integer(version_string, major, minor, success)
+   pure subroutine get_version_major_minor_integer(version_string, major, minor, success)
       character(len=*), intent(in) :: version_string !< Version string
       integer, intent(out) :: major !< Major number in the version string
       integer, intent(out) :: minor !< Minor number in the version string
@@ -1042,9 +1056,7 @@ contains
    !! The string is split into tokens, which are stored in the words array.
    !! The `last_token` variable indicates the number of tokens found.
    !! The subroutine allocates the words array, so it should be deallocated after use.
-   subroutine str_split(words,last_token,string, token, quote, delims)
-   
-   use m_alloc, only: realloc
+   pure subroutine str_split(words,last_token,string, token, quote, delims)
       !
       ! Arguments
       !
@@ -1080,5 +1092,157 @@ contains
    last_token=MAXTOKENS
    
    end subroutine str_split
+   
+      
+   !> Convert the first token into a logical value
+   !! Requires a string as input, returns a logical (bool) as output.
+   !! The logical is unassigned in case of a conversion error.
+   !! The function returns an error code ierr that equals
+   !!    no_error, empty_string, conversion_error
+   subroutine convert_to_logical(string, bool, ierr)
+      use precision_basics, only: comparereal, dp
+      !
+      character(len=*), intent(in) :: string !< Input string to be converted
+      logical, intent(inout) :: bool !< Converted logical value
+      integer, intent(out) :: ierr !< Error code: 0 if successful, non-zero otherwise
+      !
+      ! Local variables
+      !
+      integer :: spacepos
+      integer :: vallength
+      real(dp) :: float
+      !
+      ierr = conversion_error
+      vallength = len_trim(string)
+      if (vallength == 0) then
+         ierr = empty_string
+         return
+      end if
+      spacepos = index(string, ' ')
+      if (spacepos > 0) vallength = spacepos - 1
+      !
+      ! Extract the logical part
+      !
+      select case (str_toupper(string(1:vallength)))
+      case ('TRUE', 'T', 'Y', 'YES', '.TRUE.', 'J', 'JA', 'W', 'WAAR', 'ON', '1')
+         bool = .true.
+         ierr = no_error
+      case ('FALSE', 'F', 'N', 'NO', '.FALSE.', 'NEE', 'O', 'OFF', 'ONWAAR', '0')
+         bool = .false.
+         ierr = no_error
+      end select
+      if (ierr /= no_error) then
+         call convert_to_real(string, float, ierr)
+         if (ierr == no_error) then
+            if (comparereal(float,0.0_dp) == 0) then
+               bool = .false.
+            else
+               bool = .true.
+            end if
+         else
+            ierr = conversion_error
+         end if
+      end if
+   end subroutine convert_to_logical
+
+   !> Convert the first token into a single precision floating point value
+   !! Requires a string as input, returns a value as output.
+   !! The value is unassigned in case of a conversion error.
+   !! The routine returns an error code ierr that equals
+   !!    no_error, empty_string, conversion_error
+   pure subroutine convert_to_real_sp(string, value, ierr)
+   character(len=*), intent(in) :: string !< Input string to be converted
+   real(kind=sp), intent(inout) :: value !< Converted real value
+   integer, intent(out) :: ierr !< Error code: no_error if successful, non-zero otherwise
+   
+   real(kind=dp) :: value_dp !< temporary double precision variable
+   call convert_to_real_dp(string, value_dp, ierr)
+   if (ierr == no_error) then
+      value = real(value_dp, kind=sp)
+   end if
+   end subroutine convert_to_real_sp
+
+   !> Convert the first token into a double precision floating point value
+   !! Requires a string as input, returns a value as output.
+   !! The value is unassigned in case of a conversion error.
+   !! The routine returns an error code ierr that equals
+   !!    no_error, empty_string, conversion_error
+   pure subroutine convert_to_real_dp(string, value, ierr)
+   character(len=*), intent(in) :: string !< Input string to be converted
+   real(kind=dp), intent(inout) :: value !< Converted real value
+   integer, intent(out) :: ierr !< Error code: 0 if successful, non-zero otherwise
+
+   character(len=17), parameter :: REAL_CHARS = '0123456789-+.eEdD' !< characters that may appear in a real number
+   character(len=2), parameter :: SPACE_CHARS = ' '//achar(9) !< space and tab characters
+   integer :: i !< loop index for scanning the string
+   integer :: ifirst !< index of first non-space character (beginning of token)
+   integer :: ilast !< index of last non-space character (end of token)
+   
+   ifirst = -1
+   ilast = len_trim(string)
+   if (ilast == 0) then
+      ierr = empty_string
+      return
+   end if
+   
+   ierr = no_error
+   do i = 1, len_trim(string)
+      if (ifirst < 0) then
+         if (index(SPACE_CHARS, string(i:i)) > 0) then
+            ! reading spaces before float
+         elseif (index(REAL_CHARS, string(i:i)) > 0) then
+            ifirst = i
+         else
+            ! unsupported character encountered before number reading started
+            ierr = conversion_error
+            return
+         end if
+      else
+         if (index(SPACE_CHARS, string(i:i)) > 0) then
+            ! found space after float
+            ilast = i - 1
+            exit
+         elseif (index(REAL_CHARS, string(i:i)) > 0) then
+            ! reading character that may represent a real
+         else
+            ! unsupported character encountered after number reading started
+            ierr = conversion_error
+            return
+         end if
+      end if
+   end do
+   !
+   ! reached the end of the string without encountering an unsupported character
+   ! try to convert
+   !
+   read (string(ifirst:ilast), *, iostat=ierr) value
+   if (ierr /= 0) then
+      ierr = conversion_error
+   end if
+
+   end subroutine convert_to_real_dp
+
+   !> Find the first index in `targets` where an element of `candidates` match (case insensitive).
+   !> `targets` and `candidates` are both arrays of strings.
+   !> When no match is found, -1 is returned
+   function find_candidates_in_targets(targets, candidates) result(return_value)
+      character(len=*), dimension(:), intent(in) :: targets
+      character(len=*), dimension(:), intent(in) :: candidates
+      integer :: return_value
+      integer :: i_candidate
+      integer :: i_target
+
+      return_value = -1
+
+      candidates_loop: do i_candidate = 1, size(candidates)
+         do i_target = 1, size(targets)
+            if (strcmpi(targets(i_target), candidates(i_candidate))) then
+               return_value = i_target
+               exit candidates_loop
+            end if
+         end do
+      end do candidates_loop
+
+   end function find_candidates_in_targets
    
 end module string_module

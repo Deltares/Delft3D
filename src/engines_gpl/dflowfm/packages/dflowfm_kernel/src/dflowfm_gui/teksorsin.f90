@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,15 +52,19 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: xp, yp
 
-      if (ndraw(41) <= 1 .or. numsrc == 0) return
+      if (ndraw(41) <= 1 .or. numsrc == 0) then
+         return
+      end if
 
       call IGrCharJustify('L')
-      call settextsizefac(1.0d0)
+      call settextsizefac(1.0_dp)
 
       do n = 1, numsrc ! teksorsin
          k = ksrc(1, n)
          if (k /= 0) then
-            n2 = 1; xp = xsrc(n, n2); yp = ysrc(n, n2)
+            n2 = 1
+            xp = xsrc(n, n2)
+            yp = ysrc(n, n2)
             if (inview(xp, yp)) then
                if (qsrc(n) > 0) then
                   ncol = 3
@@ -74,12 +78,12 @@ contains
                   write (tex, '(f10.3)') - qsrc(n)
                   call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
                else if (ndraw(41) == 5 .and. isalt > 0) then
-                  if (qsrc(n) < 0d0) then
+                  if (qsrc(n) < 0.0_dp) then
                      write (tex, '(f10.3)') ccsrc(isalt, n)
                      call gtext(trim(tex)//' (ppt)', xp, yp, klsrc)
                   end if
                else if (ndraw(41) == 6 .and. itemp > 0) then
-                  if (qsrc(n) < 0d0) then
+                  if (qsrc(n) < 0.0_dp) then
                      write (tex, '(f10.3)') ccsrc(itemp, n)
                      call gtext(trim(tex)//' (degC)', xp, yp, klsrc)
                   end if
@@ -88,7 +92,9 @@ contains
          end if
          k = ksrc(4, n)
          if (k /= 0) then
-            n2 = nxsrc(n); xp = xsrc(n, n2); yp = ysrc(n, n2)
+            n2 = nxsrc(n)
+            xp = xsrc(n, n2)
+            yp = ysrc(n, n2)
             if (inview(xp, yp)) then
                if (qsrc(n) > 0) then
                   ncol = 221
@@ -102,12 +108,12 @@ contains
                   write (tex, '(f10.3)') qsrc(n)
                   call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
                else if (ndraw(41) == 5 .and. isalt > 0) then
-                  if (qsrc(n) > 0d0) then
+                  if (qsrc(n) > 0.0_dp) then
                      write (tex, '(f10.3)') ccsrc(isalt, n)
                      call gtext(trim(tex)//' (ppt)', xp, yp, klsrc)
                   end if
                else if (ndraw(41) == 6 .and. itemp > 0) then
-                  if (qsrc(n) > 0d0) then
+                  if (qsrc(n) > 0.0_dp) then
                      write (tex, '(f10.3)') ccsrc(itemp, n)
                      call gtext(trim(tex)//' (degC)', xp, yp, klsrc)
                   end if

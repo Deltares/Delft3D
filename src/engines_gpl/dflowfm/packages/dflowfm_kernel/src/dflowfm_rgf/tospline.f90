@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,7 @@ contains
 
       IN = 1 ! Pick first spline
       call NUMP(IN, NUMPI)
-      TV = NUMPI / 2d0
+      TV = NUMPI / 2.0_dp
       call get_ij(XSP, XI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
       call get_ij(YSP, YI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
       call SPLINE(XI, NUMPI, XI2)

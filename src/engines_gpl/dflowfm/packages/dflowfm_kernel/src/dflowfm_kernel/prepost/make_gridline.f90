@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -85,10 +85,10 @@ contains
       call spline(ysp, num, ysp2)
 
 !  make a gridline on the spline
-      dmaxwidth = huge(1d0)
+      dmaxwidth = huge(1.0_dp)
 
       dspllength = splinelength(num, xsp, ysp)
-      mfac_loc = int(0.9999d0 + dspllength / dwidth)
+      mfac_loc = int(0.9999_dp + dspllength / dwidth)
       mfac = min(mfac_loc, mfacmax)
 
       do while (dmaxwidth > dwidth)
@@ -100,9 +100,11 @@ contains
          end if
 
 !     determine maximum mesh width
-         dmaxwidth = 0d0
+         dmaxwidth = 0.0_dp
          do i = 1, mfac
-            if (xg(i) == DMISS .or. xg(i + 1) == DMISS) cycle
+            if (xg(i) == DMISS .or. xg(i + 1) == DMISS) then
+               cycle
+            end if
             dmaxwidth = max(dbdistance(xg(i), yg(i), xg(i + 1), yg(i + 1), jsferic, jasfer3D, dmiss), dmaxwidth)
          end do
 

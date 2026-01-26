@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,18 +54,22 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("decaytracers", ithndl)
+      if (timon) then
+         call timstrt("decaytracers", ithndl)
+      end if
 
       do i = ITRA1, ITRAN
          decaytime = decaytimetracers(i - itra1 + 1)
-         if (decaytime > 0d0) then
+         if (decaytime > 0.0_dp) then
             do k = 1, ndkx
-               constituents(i, k) = constituents(i, k) / (1d0 + dts / decaytime)
+               constituents(i, k) = constituents(i, k) / (1.0_dp + dts / decaytime)
             end do
          end if
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine decaytracers
 
 end module m_decaytracers

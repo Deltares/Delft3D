@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -72,7 +72,7 @@ contains
 
       character(len=128) :: txt
 
-      real(kind=dp), parameter :: dtol2 = 1d-8 ! sample-on-top of each other tolerance, squared
+      real(kind=dp), parameter :: dtol2 = 1.0e-8_dp ! sample-on-top of each other tolerance, squared
 
       character OUD * 8
       NSORG = NS
@@ -94,9 +94,9 @@ contains
          jsferic = 0
 !        get non-missing sample coordinates
          allocate (xx(NS))
-         xx = 0d0
+         xx = 0.0_dp
          allocate (yy(NS))
-         yy = 0d0
+         yy = 0.0_dp
          allocate (iperm(NS))
          iperm = 0
 
@@ -125,7 +125,9 @@ contains
             end if
 
 !           deallocate kdtree
-            if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+            if (treeglob%itreestat /= ITREE_EMPTY) then
+               call delete_kdtree2(treeglob)
+            end if
 
 !           disable kdtree
             jakdtree = 0
@@ -143,7 +145,9 @@ contains
          do ii = 1, num
             i = iperm(ii)
 
-            if (i == 0) cycle ! already merged
+            if (i == 0) then
+               cycle ! already merged
+            end if
 
 !           fill query vector
             call make_queryvector_kdtree(treeglob, xs(i), ys(i), jsferic)
@@ -228,7 +232,9 @@ contains
 !     set new number of samples
       NS = K
 
-      if (JADOUBLE == 1) goto 5
+      if (JADOUBLE == 1) then
+         goto 5
+      end if
 
       NUMWEG = NSORG - K
       if (NUMWEG >= 1) then
@@ -259,7 +265,9 @@ contains
          end if
 
 !         deallocate kdtree
-         if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+         if (treeglob%itreestat /= ITREE_EMPTY) then
+            call delete_kdtree2(treeglob)
+         end if
       end if
 
 !     restore jsferic

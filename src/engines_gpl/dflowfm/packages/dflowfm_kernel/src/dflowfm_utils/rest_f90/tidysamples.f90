@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,11 +57,13 @@ contains
 
 !     remove double/missing samples (non-structured sample data only)
       if (MXSAM * MYSAM /= NS) then
-         call READYY(' ', 0.3d0)
-         if (NS > 1) call RMDOUBLE(XS, YS, ZS, IPSAM, NS)
+         call READYY(' ', 0.3_dp)
+         if (NS > 1) then
+            call RMDOUBLE(XS, YS, ZS, IPSAM, NS)
+         end if
       end if
 
-      call READYY(' ', 1d0)
+      call READYY(' ', 1.0_dp)
 
       return
    end

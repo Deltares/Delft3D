@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,10 +47,13 @@ contains
       use m_comp_samplehessian, only: comp_samplehessian
       use m_samples, only: mxsam, mysam, ns, zs
       use m_samples_refine, only: ihesstat, ihesstat_ok, ndim, nsamplesmooth, zss, nsamplesmooth_last
+      use m_qnerror, only: qnerror
 
       integer, intent(out) :: ierror !< error (1) or not (0)
 
+      call qnerror('Please provide a jacobi routine to compute the samples Hessian', '', '')
       ierror = 1
+      return
 
       if (iHesstat /= iHesstat_OK) then
 !     (re)allocate
@@ -62,7 +65,9 @@ contains
 
 !     compute sample Hessians
          call comp_sampleHessian(ierror)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
       end if
 
       iHesstat = iHesstat_OK

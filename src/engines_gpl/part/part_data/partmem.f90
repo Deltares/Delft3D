@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2025.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -37,7 +37,7 @@ module partmem
     logical :: alone                  ! if .false. coupled with Delwaq
     integer(int_wp) :: itrakc, itraki, npwndn, npwndw, nstep, nstept
     real   (sp) :: defang, hmin, ptlay, accrjv
-    logical :: oil, oil2dh, oil3d, ltrack, acomp, fout
+    logical :: oil, oil2dh, oil3d, ltrack, acomp, fout, accept_sigma_z
 
     type(t_hydrodynamics) :: hyd           ! description of the hydrodynamics
     integer  (int_wp) :: bufsize       ! size of rbuffr

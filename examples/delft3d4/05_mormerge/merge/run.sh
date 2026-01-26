@@ -1,8 +1,18 @@
 #!/bin/bash
+# Usage:
+#     Either:
+#         Call this script with one argument being the path to a Dimrset-bin folder containing a matching run script
+#     Or:
+#         Build the source code
+#         In this script: Set dimrset_bin to point to the appropriate "install-folder\bin"
+#         Execute this script
+# 
 
-    # At present, this runscript will only work after having executed the following command in a command-box, at the top folder of the source tree:
-    # build.sh all
-    # See README.md there for more information
+if [ -z "$1" ]; then
+    dimrset_bin=../../../build_all/lnx64/bin
+else
+    dimrset_bin=$1
+fi
 
-../../../build_delft3d4/install/bin/run_mormerge.sh basin_linux.mm
+$dimrset_bin/run_mormerge.sh basin_linux.mm
 

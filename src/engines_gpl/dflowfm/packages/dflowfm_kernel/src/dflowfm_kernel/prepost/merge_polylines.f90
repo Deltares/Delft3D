@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,7 @@ contains
       integer :: jpoint1, jstart1, jend1, jpoint2, jstart2, jend2
       integer :: ipol1, ipol2
 
-      real(kind=dp), parameter :: dtol = 1d-2
+      real(kind=dp), parameter :: dtol = 1.0e-2_dp
 
       jpoint1 = 1
       do while (jpoint1 < NPL)
@@ -100,8 +100,10 @@ contains
 !        merge polylines
             if (ipol1 > 0 .and. ipol2 > 0) then
 !           delete first coinciding node
-               call modln2(xpl, ypl, zpl, MAXPOL, NPL, ipol1, 0d0, 0d0, -2)
-               if (ipol1 == jend1) ipol1 = ipol1 - 1
+               call modln2(xpl, ypl, zpl, MAXPOL, NPL, ipol1, 0.0_dp, 0.0_dp, -2)
+               if (ipol1 == jend1) then
+                  ipol1 = ipol1 - 1
+               end if
                ipol2 = ipol2 - 1
 !           merge
                call mergepoly(xpl, ypl, zpl, MAXPOL, NPL, ipol1, ipol2)

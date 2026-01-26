@@ -1,7 +1,7 @@
 '''
 Description: DIMR artifacts organisator
 -----------------------------------------------------
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 '''
 
 from __future__ import print_function   # if code has to work in python 2 and 3!
@@ -99,7 +99,6 @@ def ossRemove():
         'libc.so.6',
         'libtool',
         'libtool_install.sh',
-        'libDelftOnline.a',
         'libdelwaq.a',
         'libdimr.a',
         'libflow2d3d.a',
@@ -154,7 +153,6 @@ def dimrsetRemove():
         'dflowfm_kernel_test',
         'libtool',
         'libtool_install.sh',
-        'libDelftOnline.a',
         'libdelwaq.a',
         'libdimr.a',
         'libflow2d3d.a',
@@ -236,7 +234,6 @@ def delft3d4Remove():
         'run_dflowfm.sh',
         'run_dflowfm_processes.sh',
         'run_dfmoutput.sh',
-        'libDelftOnline.a',
         'libdelwaq.a',
         'libdimr.a',
         'libflow2d3d.a',

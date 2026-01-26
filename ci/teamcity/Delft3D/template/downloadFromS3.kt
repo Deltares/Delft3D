@@ -26,23 +26,34 @@ object TemplateDownloadFromS3 : Template({
     steps {
         script {
             name = "split engine_name_and_dir"
-            scriptContent = """call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%""".trimIndent()
+            scriptContent = "call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%"
         }
         script {
             name = "Set time variable step"
-            scriptContent = """call ci/teamcity/Delft3D/windows/scripts/setTimeParam.bat""".trimIndent()
+            scriptContent = "call ci/teamcity/Delft3D/windows/scripts/setTimeParam.bat"
             conditions {
                 doesNotContain("env.TIME_ISO_8601", ":")
             }
         }
+        script {
+            name = "Create destination directory"
+            scriptContent = "mkdir %engine_dir%"
+        }
         python {
             name = "Checkout Testbench cases from MinIO"
             environment = venv {
-                requirementsFile = "ci/teamcity/Delft3D/documentation/scripts/requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable ./ci/python"
             }
-            command = file {
-                filename = "ci/teamcity/Delft3D/documentation/scripts/download_docs_from_s3.py"
-                scriptArguments = "--engine_dir %engine_dir% --iso_time \"%env.TIME_ISO_8601%\""
+            command = module {
+                module = "ci_tools.minio.synchronize.cli"
+                scriptArguments = """
+                    --source=s3://dsc-testbench/cases/%engine_dir%/
+                    --destination=%engine_dir%
+                    "--timestamp=%env.TIME_ISO_8601%"
+                    "--regex=^(.*doc/.*)|(.*[.]tex)${'$'}"
+                    --no-progress
+                """.trimIndent()
             }
         }
     }

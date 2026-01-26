@@ -34,7 +34,7 @@
 nPart=3
 
 # Set the path to the folder containing the singularity image and the execute_singularity.sh script. For example: 
-singularitydir=/p/d-hydro/delft3dfm_containers/delft3dfm_2022.03
+singularitydir=/path/to/delft3dfm_2022.03
 
 
 # DIMR input file; must already exist!

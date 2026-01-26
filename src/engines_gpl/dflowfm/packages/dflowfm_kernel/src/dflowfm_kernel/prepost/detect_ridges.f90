@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -71,7 +71,9 @@ contains
       Nsamplesmooth = 4
 
 !  check if the sample set is structured and non-empty
-      if (MXSAM * MYSAM /= NS .or. NS == 0) goto 1234
+      if (MXSAM * MYSAM /= NS .or. NS == 0) then
+         goto 1234
+      end if
 
 !  compute sample mesh width
       Dh = min(dbdistance(xs(1), ys(1), xs(2), ys(2), jsferic, jasfer3D, dmiss), dbdistance(xs(1), ys(1), xs(1 + MXSAM), ys(1 + MXSAM), jsferic, jasfer3D, dmiss))
@@ -80,7 +82,9 @@ contains
       call savesam()
 
       call prepare_sampleHessian(ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
 !  plot ridges
       call plot_ridges(ierror)
@@ -93,7 +97,7 @@ contains
 
             Dh = comp_sampleDh(i, j)
 
-            if (abs(zss(5, i, j)) > 0.5d0 * Dh .or. zss(4, i, j) > -1d-8 .or. zss(5, i, j) == DMISS) then
+            if (abs(zss(5, i, j)) > 0.5_dp * Dh .or. zss(4, i, j) > -1.0e-8_dp .or. zss(5, i, j) == DMISS) then
                xs(ip) = DMISS
                ys(ip) = DMISS
 !            zs(ip) = DMISS

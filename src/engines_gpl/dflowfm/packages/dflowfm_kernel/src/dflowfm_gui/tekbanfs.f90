@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,7 +53,9 @@ contains
       real(kind=dp) :: seq(mxgr) !< sed equilibrium transport rate (kg/m/s) , dimension = mxgr
       real(kind=dp) :: wse(mxgr) !< effective fall velocity (m/s)           , dimension = mxgr, ws*crefa=wse*seq
 
-      if (ndraw(34) <= 1 .or. jaceneqtr == 1 .or. jased == 0) return
+      if (ndraw(34) <= 1 .or. jaceneqtr == 1 .or. jased == 0) then
+         return
+      end if
       call setcol(3)
       do kk = 1, mxban
 
@@ -62,8 +64,8 @@ contains
          n = nban(1, kk) ! net node
          k = nban(2, kk) ! flow node
 
-         x = 0.5d0 * (xk(n) + xz(k))
-         y = 0.5d0 * (yk(n) + yz(k))
+         x = 0.5_dp * (xk(n) + xz(k))
+         y = 0.5_dp * (yk(n) + yz(k))
          v = seq(jgrtek)
          call isocol(v, ncol)
 

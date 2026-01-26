@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -90,6 +90,8 @@ contains
       write (*, param_format) '--new-tables', separator, 'This optional argument will disregard the content of any existing *.csv files.'
       write (*, '(A,t32,A)') ' ', 'If any are found, they will be overwritten.'
       write (*, *)
+
+      call show_help_manual()
    end subroutine show_help
 
 end module m_waqpb_import_settings

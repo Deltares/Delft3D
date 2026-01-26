@@ -14,7 +14,7 @@ object VerschilanalyseProject : Project ({
 
     params {
         param("h7_account_username", DslContext.getParameter("va_h7_account_username"))
-        password("h7_account_password", "credentialsJSON:9518588e-a8ba-4770-99b3-d8b26820b80f")
+        password("h7_account_password", DslContext.getParameter("va_h7_account_password"))
     }
     
     buildType(StartVerschilanalyse)

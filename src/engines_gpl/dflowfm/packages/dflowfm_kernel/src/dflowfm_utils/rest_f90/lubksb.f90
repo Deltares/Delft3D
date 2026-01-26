@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,7 +54,7 @@ contains
             do J = II, I - 1
                SUM = SUM - A(I, J) * B(J)
             end do
-         else if (SUM /= 0d0) then
+         else if (SUM /= 0.0_dp) then
             II = I
          end if
          B(I) = SUM

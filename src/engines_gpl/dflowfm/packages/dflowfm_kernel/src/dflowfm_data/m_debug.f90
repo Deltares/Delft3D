@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -81,10 +81,10 @@ contains
 
       call realloc(debugarr1d, dim1, keepExisting=.false., fill=dmiss)
       if (dim2_ > 0) then
-         call realloc(debugarr2d, (/dim1, dim2_/), keepExisting=.false., fill=dmiss)
+         call realloc(debugarr2d, [dim1, dim2_], keepExisting=.false., fill=dmiss)
       end if
       if (dim2_ > 0 .and. dim3_ > 0) then
-         call realloc(debugarr3d, (/dim1, dim2_, dim3_/), keepExisting=.false., fill=dmiss)
+         call realloc(debugarr3d, [dim1, dim2_, dim3_], keepExisting=.false., fill=dmiss)
       end if
    end subroutine init_debugarr
 

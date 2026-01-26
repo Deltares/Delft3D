@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -87,7 +87,8 @@ contains
             Lf = linklist(iLf)
          end if
 
-         n1 = ln(1, Lf); n2 = ln(2, Lf)
+         n1 = ln(1, Lf)
+         n2 = ln(2, Lf)
          L = ln2lne(Lf)
          if (n1 <= 0 .or. n2 <= 0 .or. L <= 0 .or. &
              n1 > ndx .or. n2 > ndx .or. L > numl) then
@@ -98,7 +99,9 @@ contains
             if (includeghosts /= 1) then
 !             exclude ghost links
                call link_ghostdata(my_rank, idomain(ln(1, Lf)), idomain(ln(2, Lf)), jaghost, idmn_ghost, ighostlev(ln(1, Lf)), ighostlev(ln(2, Lf)))
-               if (jaghost == 1) cycle
+               if (jaghost == 1) then
+                  cycle
+               end if
             end if
          end if
 
@@ -109,17 +112,19 @@ contains
             y2 = yk(lncn(2, Lf))
          else !   For 1D links: produce fictious 'cross/netlink'
             call normalout(xz(n1), yz(n1), xz(n2), yz(n2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
-            xn = -xn; yn = -yn ! flow link should be perpendicular to 'crs', and not vice versa.
-            xn = wu(Lf) * xn; yn = wu(Lf) * yn
+            xn = -xn
+            yn = -yn ! flow link should be perpendicular to 'crs', and not vice versa.
+            xn = wu(Lf) * xn
+            yn = wu(Lf) * yn
             if (jsferic == 1) then
                xn = rd2dg * xn / ra
                yn = rd2dg * yn / ra
             end if
 
-            x1 = .5d0 * (xz(n1) + xz(n2)) - .5d0 * xn
-            y1 = .5d0 * (yz(n1) + yz(n2)) - .5d0 * yn
-            x2 = .5d0 * (xz(n1) + xz(n2)) + .5d0 * xn
-            y2 = .5d0 * (yz(n1) + yz(n2)) + .5d0 * yn
+            x1 = 0.5_dp * (xz(n1) + xz(n2)) - 0.5_dp * xn
+            y1 = 0.5_dp * (yz(n1) + yz(n2)) - 0.5_dp * yn
+            x2 = 0.5_dp * (xz(n1) + xz(n2)) + 0.5_dp * xn
+            y2 = 0.5_dp * (yz(n1) + yz(n2)) + 0.5_dp * yn
          end if
          if (jaloc3 > 0) then ! for Crs defined by branchID and chainage
             call increaseCrossSectionPath(path, 0, 1)
@@ -139,21 +144,21 @@ contains
 
             !  determine permutation array of flowlinks by increasing arc length order
             do i = 1, path%lnx
-               path%sp(i) = dble(path%indexp(i)) + (1d0 - path%wfp(i))
+               path%sp(i) = real(path%indexp(i), kind=dp) + (1.0_dp - path%wfp(i))
             end do
 
             call sort_index(path%sp(1:path%lnx), path%iperm(1:path%lnx))
 
             !  compute arc length
             allocate (dpl(path%np))
-            dpl(1) = 0d0
+            dpl(1) = 0.0_dp
             do i = 2, path%np
                dpl(i) = dpl(i - 1) + dbdistance(path%xp(i - 1), path%yp(i - 1), path%xp(i), path%yp(i), jsferic, jasfer3D, dmiss)
             end do
 
             do i = 1, path%lnx
                path%sp(i) = dpl(path%indexp(i)) * path%wfp(i) + &
-                            dpl(path%indexp(i) + 1) * (1d0 - path%wfp(i))
+                            dpl(path%indexp(i) + 1) * (1.0_dp - path%wfp(i))
             end do
 
             deallocate (dpl)

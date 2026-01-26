@@ -45,7 +45,7 @@
    UseHotFile            = false                        
    WriteCOM              = true                        
    COMWriteInterval      =  6.00000000000000000e+001         
-   COMFile               = ../fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_com.nc                
+   COMFile               = ../fm/output/weirtimeseries_com.nc                
    locationFile          = ../fm/obs.xyn
    writetable            = true
    MapWriteNetCDF        = true                         

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,19 +51,25 @@ contains
       integer :: i, l, k1, k2
 
       if (jaauto > 0) then
-         rmin = 1d30; lnmin = 0
-         rmax = -1d30; lnmax = 0
+         rmin = 1.0e30_dp
+         lnmin = 0
+         rmax = -1.0e30_dp
+         lnmax = 0
          do L = 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)
             if (inview(xz(k1), yz(k1)) .or. inview(xz(k2), yz(k2))) then
                zn = zlin(L)
-               if (zn == DMISS) cycle
+               if (zn == DMISS) then
+                  cycle
+               end if
                if (zn < rmin) then
-                  rmin = zn; lnmin = L
+                  rmin = zn
+                  lnmin = L
                end if
                if (zn > rmax) then
-                  rmax = zn; lnmax = L
+                  rmax = zn
+                  lnmax = L
                end if
             end if
          end do

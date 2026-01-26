@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_makeq1qaatstart
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -68,7 +69,7 @@ contains
       if (jaq1 == 1) then
          do L = 1, lnx
             if (hu(L) > 0) then
-               q1(L) = au(L) * (teta(L) * u1(L) + (1d0 - teta(L)) * u0(L))
+               q1(L) = au(L) * (teta(L) * u1(L) + (1.0_dp - teta(L)) * u0(L))
             else
                q1(L) = 0
             end if

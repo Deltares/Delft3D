@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -89,8 +89,8 @@ contains
         call init_alloc(lunmem, lunpr)
 
         if (hyd%num_layers /= 1) then
-            write (lunpr, *) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
-            write (*, *) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
+            write (lunpr, *) ' 3D hydrodynamics on unstructured grids is applied!'  
+            write (*, *) ' 3D hydrodynamics on unstructured grids is applied!'
         endif
         !dts   = real(hyd%cnv_step_sec, 8)  !idelt in seconds taken from the hyd file (conversion timestep)
         tzone = 0.0_dp
@@ -128,6 +128,7 @@ contains
 
 
         !  calculate dump-sites in the grids
+
 
         call part06fm (lun(2), nodye, nocont, xwaste, &
                 ywaste, zwaste, nwaste, mwaste)
@@ -175,6 +176,7 @@ contains
             goto 1234
         end if
 
+
         do while (istat == 0)
             !     determine if map and track files must be produced
 
@@ -215,6 +217,7 @@ contains
             !     transport (advection, dispersion, winddrag)
             !      jsfer_old = jsferic
             !      jsferic = 0 ! everything in part10fm is in meters
+
             call update_part(itime)
             call part10fm()
             !      jsferic = jsfer_old ! back to what it should be

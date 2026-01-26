@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_inularr
 
+   use precision, only: dp
    implicit none
 
    private
@@ -48,7 +49,7 @@ contains
       integer, intent(inout) :: X(MMAX, NMAX)
       do J = 1, NMAX
          do I = 1, MMAX
-            X(I, J) = 0d0
+            X(I, J) = 0.0_dp
          end do
       end do
       return

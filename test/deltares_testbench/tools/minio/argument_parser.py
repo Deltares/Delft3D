@@ -18,7 +18,7 @@ from src.config.types.path_type import PathType
 from src.utils.handlers.credential_handler import CredentialHandler
 from src.utils.minio_rewinder import Rewinder
 from tools.minio import config, error, prompt
-from tools.minio.config import TestBenchConfigWriter
+from tools.minio.config import TestBenchConfigWriter, TestCaseIndex
 from tools.minio.minio_tool import MinioTool
 
 HELP_CONFIG = "Path to test bench config file."
@@ -150,7 +150,6 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
     else:
         prompter = prompt.DefaultPrompt(force_yes=namespace.force)
 
-    index_builder = config.ConfigIndexBuilder.from_default_settings()
     configs: Iterable[Path]
     if namespace.config is not None:
         configs = [namespace.config]
@@ -180,7 +179,7 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
     return MinioTool(
         bucket=namespace.bucket,
         rewinder=Rewinder(minio_client, logger),  # type: ignore
-        test_case_index=index_builder.build_index(configs),
+        test_case_index=TestCaseIndex(configs),
         test_case_writer=TestBenchConfigWriter(),
         prompt=prompter,
         tags=tags,

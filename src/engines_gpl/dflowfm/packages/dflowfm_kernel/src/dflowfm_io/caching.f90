@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -167,7 +167,9 @@ contains
          deallocate (cached_netcell_dry)
       end if
 
-      if (allocated(cache_cross_sections)) call deallocCrossSections(cache_cross_sections)
+      if (allocated(cache_cross_sections)) then
+         call deallocCrossSections(cache_cross_sections)
+      end if
 
       if (allocated(cached_thin_dams)) then
          deallocate (cached_thin_dams)
@@ -805,7 +807,9 @@ contains
                success = .false.
                exit
             end if
-            if (np == 0) cycle
+            if (np == 0) then
+               cycle
+            end if
             if (any(cache_cross_sections(i)%path%xp(1:np) /= crs(i)%path%xp(1:np)) .or. &
                 any(cache_cross_sections(i)%path%yp(1:np) /= crs(i)%path%yp(1:np))) then
                success = .false.

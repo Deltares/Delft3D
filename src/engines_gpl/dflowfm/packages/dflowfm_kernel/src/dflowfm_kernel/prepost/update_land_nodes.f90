@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,7 +53,9 @@ contains
       integer :: k, ncol, j
       real(kind=dp) :: old_zk
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
       k = node_index
 
@@ -62,7 +64,7 @@ contains
          zk(k) = new_zk
          if (jaceneqtr == 2 .and. jased > 0) then
             do j = 1, mxgr
-               grainlay(j, k) = max(0d0, grainlay(j, k) + (old_zk - new_zk) / mxgr)
+               grainlay(j, k) = max(0.0_dp, grainlay(j, k) + (old_zk - new_zk) / mxgr)
             end do
          end if
          call isocol(zk(k), ncol)
@@ -73,7 +75,7 @@ contains
          zk(k) = new_zk
          if (jaceneqtr == 2 .and. jased > 0) then
             do j = 1, mxgr
-               grainlay(j, k) = max(0d0, grainlay(j, k) + (old_zk - new_zk) / mxgr)
+               grainlay(j, k) = max(0.0_dp, grainlay(j, k) + (old_zk - new_zk) / mxgr)
             end do
          end if
          call isocol(zk(k), ncol)

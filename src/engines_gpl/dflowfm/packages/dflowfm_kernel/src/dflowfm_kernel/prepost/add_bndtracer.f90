@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@
 !> add tracer boundary
 module m_add_bndtracer
 
+   use precision, only: dp
    implicit none
 
    private
@@ -79,12 +80,12 @@ contains
          call realloc(nbndtr, numtracers, keepExisting=.true., fill=0)
          call realloc(trnames, numtracers, keepExisting=.true., fill='')
          call realloc(trunits, numtracers, keepExisting=.true., fill='')
-         call realloc(wstracers, numtracers, keepExisting=.true., fill=0d0)
-         call realloc(decaytimetracers, numtracers, keepExisting=.true., fill=0d0)
+         call realloc(wstracers, numtracers, keepExisting=.true., fill=0.0_dp)
+         call realloc(decaytimetracers, numtracers, keepExisting=.true., fill=0.0_dp)
          if (transformcoef(24) /= DMISS) then
             wstracers(numtracers) = transformcoef(24)
          end if
-         if (transformcoef(25) /= dmiss .and. transformcoef(25) /= 0d0) then
+         if (transformcoef(25) /= dmiss .and. transformcoef(25) /= 0.0_dp) then
             jadecaytracers = 1
             decaytimetracers(numtracers) = transformcoef(25)
          end if
@@ -92,12 +93,12 @@ contains
          trnames(numtracers) = trim(tracnam)
          itrac = numtracers
       else
-         if (transformcoef(24) /= dmiss .and. transformcoef(24) /= 0d0 .and. transformcoef(24) /= wstracers(itrac)) then
+         if (transformcoef(24) /= dmiss .and. transformcoef(24) /= 0.0_dp .and. transformcoef(24) /= wstracers(itrac)) then
             write (msgbuf, '(a,e12.5,a,e12.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a fall velocity (', &
                wstracers(itrac), '). Ignoring different value (', transformcoef(24), ').'
             call warn_flush()
          end if
-         if (transformcoef(25) /= dmiss .and. transformcoef(25) /= 0d0 .and. transformcoef(25) /= decaytimetracers(itrac)) then
+         if (transformcoef(25) /= dmiss .and. transformcoef(25) /= 0.0_dp .and. transformcoef(25) /= decaytimetracers(itrac)) then
             write (msgbuf, '(a,e12.5,a,e12.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a decay time (', &
                decaytimetracers(itrac), '). Ignoring different value (', transformcoef(25), ').'
             call warn_flush()

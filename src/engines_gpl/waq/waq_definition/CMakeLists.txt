@@ -5,4 +5,5 @@ create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir .)
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE ${waq_default_flags})
+target_link_libraries(${library_name} PRIVATE deltares_common)
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -36,7 +36,7 @@ module m_ec_bcreader
   use m_alloc
   use multi_file_io
   use string_module
-  use physicalconsts, only : CtoKelvin
+  use physicalconsts, only : C_TO_KELVIN
   implicit none
 
   private
@@ -617,7 +617,7 @@ contains
 
     if (bc%quantity%unit == 'K' .or. bc%quantity%unit == 'KELVIN' .or. bc%quantity%unit == 'Kelvin') then
        ! convert Kelvin to degrees Celsius (kernel expects degrees Celsius)
-       bc%quantity%offset = bc%quantity%offset - CtoKelvin
+       bc%quantity%offset = bc%quantity%offset - C_TO_KELVIN
     endif
 
     ! Fill bc%quantity%col2elm(nq) which holds the mapping of columns in the file to vector positions

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -65,7 +65,9 @@ contains
 
 !  allocate
       allocate (xlist(1), ylist(1))
-      if (allocated(splineprops)) call deallocate_splineprops()
+      if (allocated(splineprops)) then
+         call deallocate_splineprops()
+      end if
       call allocate_splineprops()
 
       do is = 1, mcs
@@ -74,7 +76,7 @@ contains
 
 !     reallocate if necessary
          if (num > ubound(xlist, 1)) then
-            numnew = int(1.2d0 * dble(num)) + 1
+            numnew = int(1.2_dp * real(num, kind=dp)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if
@@ -101,11 +103,15 @@ contains
 ! then, check the cross splines; the center spline is the middle spline that crosses the cross spline
       do js = 1, mcs
          call nump(js, num)
-         if (num /= 2) cycle ! cross splines only
+         if (num /= 2) then
+            cycle ! cross splines only
+         end if
 
          ncs = splineprops(js)%ncs
 
-         if (ncs < 1) cycle
+         if (ncs < 1) then
+            cycle
+         end if
 
 !     determine the middle
          imiddle = min(ncs / 2 + 1, ncs)
@@ -164,10 +170,10 @@ contains
          if (ncs == 0) then
             splineprops(is)%hmax = daspect * dslength
          else
-            hmax = 0d0
+            hmax = 0.0_dp
             do i = 1, ncs
-               hsumL = 0d0
-               hsumR = 0d0
+               hsumL = 0.0_dp
+               hsumR = 0.0_dp
                do j = 1, splineprops(is)%NsubL(i)
                   hsumL = hsumL + splineprops(is)%hL(j, i)
                end do

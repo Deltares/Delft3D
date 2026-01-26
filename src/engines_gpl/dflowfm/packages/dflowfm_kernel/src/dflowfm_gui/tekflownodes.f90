@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -75,7 +75,7 @@ contains
          end if
          if (nodewhat >= 2) then
             ja2 = 1
-            if (wetplot > 0d0) then
+            if (wetplot > 0.0_dp) then
                if (hs(k) < wetplot) then
                   ja2 = 0
                end if
@@ -83,7 +83,9 @@ contains
             if (ja2 == 1 .or. nodewhat == 3) then ! nodewhat==3: always show bottom
                if (inview(xz(k), yz(k))) then
                   zn = znod(k)
-                  if (zn == DMISS) cycle
+                  if (zn == DMISS) then
+                     cycle
+                  end if
                   if (nodemode == 3 .or. nodemode == 3 + 3) then ! isolines within cell
                      if (k <= ndx2d) then
                         call ISOSMOOTHflownode(k)

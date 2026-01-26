@@ -1,9 +1,0 @@
-openfile 'ref\trim-2dis.dat'
-alln 0
-editn 4
-selectfield 'temperature'
-quickview
-openfile 'trim-2dis.dat'
-quickview
-difffiles 'ref\trim-2dis.dat' 'trim-2dis.dat' '[(ref\) - (.)]\trim-2dis.dat'
-quickview

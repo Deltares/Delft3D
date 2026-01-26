@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -107,5 +107,6 @@ extern DLLEXPORT BInt4 Putelt ( BInt4 *, BText  , BText  , BInt4 *, BInt4 *, BDa
 extern DLLEXPORT BInt4 Getnfv ( BText *);
 extern DLLEXPORT BInt4 Resnfv ( BInt4, BInt4);
 extern DLLEXPORT BInt4 Clsanf ( );
+extern DLLEXPORT BInt4 Reserr ( );
 
 #endif /* __NEFIS_H__ */

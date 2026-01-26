@@ -12,6 +12,7 @@ import java.io.File
 object TestBenchValidation : BuildType({
     id("TestBenchValidation")
     name = "TestBench validation"
+    buildNumberPattern = "%build.vcs.number%"
     description = """
         Runs the TestBench validation. 
         This includes the pytest test-suite, the formatter check, the linter and the type checker.

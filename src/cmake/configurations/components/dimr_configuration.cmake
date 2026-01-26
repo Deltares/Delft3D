@@ -1,4 +1,8 @@
 # Specify the modules to be included
+if(NOT TARGET getopt)
+  add_subdirectory(${checkout_src_root}/${getopt_module} getopt)
+endif()
+
 if(NOT TARGET deltares_common)
   add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
@@ -10,9 +14,6 @@ endif()
 # DIMR specific components
 add_subdirectory(${checkout_src_root}/${dimr_lib_module} dimr_lib)
 add_subdirectory(${checkout_src_root}/${dimr_module} dimr)
-
-# install
-add_subdirectory(${checkout_src_root}/${install_dimr_module} install_dimr)
 
 add_subdirectory(${checkout_src_root}/${expat_module} expat)
 

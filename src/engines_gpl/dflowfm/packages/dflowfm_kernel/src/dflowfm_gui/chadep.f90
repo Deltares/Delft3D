@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -65,22 +65,26 @@ contains
       if (KEY == 171) then
          call HELP(WRDKEY, 3)
       else if (KEY == 45 .or. KEY == 160) then
-         if (RD == dmiss) RD = 6.9d0
+         if (RD == dmiss) then
+            RD = 6.9_dp
+         end if
          if (JPLUS /= -1) then
-            FAC = 1d0
-            F = max(.001d0, .01d0 * RD)
+            FAC = 1.0_dp
+            F = max(0.001_dp, 0.01_dp * RD)
          end if
          RD = RD - F * FAC
-         FAC = FAC * 1.01d0
+         FAC = FAC * 1.01_dp
          JPLUS = -1
       else if (KEY == 43 .or. KEY == 162) then
-         if (RD == dmiss) RD = 6.9d0
+         if (RD == dmiss) then
+            RD = 6.9_dp
+         end if
          if (JPLUS /= 1) then
-            FAC = 1d0
-            F = max(.001d0, .01d0 * RD)
+            FAC = 1.0_dp
+            F = max(0.001_dp, 0.01_dp * RD)
          end if
          RD = RD + F * FAC
-         FAC = FAC * 1.01d0
+         FAC = FAC * 1.01_dp
          JPLUS = 1
       else if (KEY == 32) then
          call TYPEVALUE(RD, KEY)

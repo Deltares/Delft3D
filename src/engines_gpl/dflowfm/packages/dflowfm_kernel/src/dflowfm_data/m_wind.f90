@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,7 @@
 module m_wind
 
    use precision, only: dp
-   
+
    implicit none
 
    real(kind=dp), dimension(:), allocatable, target :: wx !< [m/s] wind x velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
@@ -62,7 +62,7 @@ module m_wind
    real(kind=dp), dimension(:), allocatable, target :: cloudiness !< air cloudiness (%)
    real(kind=dp), dimension(:), allocatable, target :: air_density !< air density (kg/m3)
    real(kind=dp), dimension(:), allocatable, target :: solar_radiation !< solar radiation (W/m2)
-   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< solar radiation (W/m2) incl. albedo correction
+   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< net solar radiation (W/m2) incl. albedo correction
    real(kind=dp), dimension(:), allocatable, target :: long_wave_radiation !< long wave radiation (W/m2)
    real(kind=dp), dimension(:), allocatable :: heatsrc !< resulting 2D or 3D heat source per cell (Km3/s)
    real(kind=dp), dimension(:), allocatable :: heatsrc0 !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
@@ -78,6 +78,7 @@ module m_wind
    integer :: jaevap !< use evap yes or no
    integer :: ja_airdensity !< use variabele air density yes or no
    logical :: solar_radiation_available = .false. !< solar radiation provided by user
+   logical :: net_solar_radiation_available = .false. !< net solar radiation provided by user
    logical :: long_wave_radiation_available = .false. !< long wave radiation provided by user
    integer :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
    integer :: jaQext !< use Qin externally provided yes or no
@@ -102,10 +103,21 @@ module m_wind
 
    real(kind=dp) :: cdb(3) !< breakpoints cd function cd coefficient
    real(kind=dp) :: wdb(3) !< breakpoints cd function windspeed
-   integer :: ICdtyp !< 1=Const; 2=Smith&Banke (2 pts); 3=S&B (3 pts); 4=Charnock 1955; 5=Hwang 2005; 6=Wuest 2005; 7=Hersbach 2010 (2 pts), 8: 4+viscous), 9=Garratt 1977.
+   integer :: wind_drag_type !< 1=Const; 2=Smith&Banke (2 pts); 3=S&B (3 pts); 4=Charnock 1955; 5=Hwang 2005; 6=Wuest 2005; 7=Hersbach 2010 (2 pts), 8: 4+viscous), 9=Garratt 1977.
    real(kind=dp) :: relativewind !< factor for top layer speed in relative wind, 0=no, 1 =full top layer speed
    integer :: jawindhuorzwsbased !< 1 = finite volume , 0 = hu
    integer :: jawindpartialdry !< Reduce windstress on water if link partially dry, only for bedlevtyp=3, 0 = no, 1 = yes
+
+   integer, parameter :: CD_TYPE_CONST = 1
+   integer, parameter :: CD_TYPE_SMITHBANKE_2PT = 2
+   integer, parameter :: CD_TYPE_SMITHBANKE_3PT = 3
+   integer, parameter :: CD_TYPE_CHARNOCK1955 = 4
+   integer, parameter :: CD_TYPE_HWANG2005 = 5
+   integer, parameter :: CD_TYPE_WUEST2003 = 6
+   integer, parameter :: CD_TYPE_HERSBACH2011 = 7
+   integer, parameter :: CD_TYPE_CHARNOCK_PLUS_VISCOUS = 8
+   integer, parameter :: CD_TYPE_GARRATT1977 = 9
+
 contains
 
 !> Sets ALL (scalar) variables in this module to their default values.
@@ -126,7 +138,7 @@ contains
       wdb(2) = 100
       cdb(3) = 0.003_dp !< third  wind breakpoint
       wdb(3) = 30
-      icdtyp = 2
+      wind_drag_type = CD_TYPE_SMITHBANKE_2PT
       relativewind = 0.0_dp !< factor for top layer speed in wind relative wind, 0=no, 1 =full top layer speed
       jawindhuorzwsbased = 0 !< default: HU-based both in 2D and 3D (and not zws-based)
       jawindpartialdry = 1 !< default: partially dry cells switched off

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -61,18 +61,22 @@ contains
       ierror = 0
 
 !  check if polygon exists
-      if (NPL < 3) return
+      if (NPL < 3) then
+         return
+      end if
 
       ierror = 1
 
 !  get reference point: first non-missing
-      i = 1; 
+      i = 1
       do while (i <= NPL .and. (xpl(i) == DMISS .or. ypl(i) == DMISS))
          i = i + 1
       end do
 
 !  check if point was found
-      if (i > NPL) goto 1234
+      if (i > NPL) then
+         goto 1234
+      end if
 
       xref = xpl(i)
       yref = ypl(i)
@@ -81,9 +85,9 @@ contains
       sna = sin(dg2rd * ANGLE)
 
 !  get polygon min/max in rotated (xi,eta) coordinaes
-      ximin = huge(1d0)
+      ximin = huge(1.0_dp)
       ximax = -ximin
-      etamin = huge(1d0)
+      etamin = huge(1.0_dp)
       etamax = -etamin
       do i = 1, NPL
          if (xpl(i) /= DMISS) then

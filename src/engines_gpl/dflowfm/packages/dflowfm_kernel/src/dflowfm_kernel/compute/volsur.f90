@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,7 +56,7 @@ contains
          !$OMP PARALLEL DO                              &
          !$OMP PRIVATE(n,hh)
          do n = 1, ndx2d
-            hh = max(0d0, s1(n) - bl(n))
+            hh = max(0.0_dp, s1(n) - bl(n))
             vol1(n) = ba(n) * hh
             a1(n) = ba(n)
          end do
@@ -64,32 +64,33 @@ contains
 
       else
 
-         vol1(1:ndx2d) = 0d0
-         a1(1:ndx2d) = 0d0
+         vol1(1:ndx2d) = 0.0_dp
+         a1(1:ndx2d) = 0.0_dp
 
       end if
 
       if (nonlin == 0) then
 
          do n = ndx2d + 1, ndxi
-            hh = max(0d0, s1(n) - bl(n))
+            hh = max(0.0_dp, s1(n) - bl(n))
             vol1(n) = ba(n) * hh
             a1(n) = ba(n)
          end do
 
       else
-         vol1(ndx2D + 1:ndxi) = 0d0
-         a1(ndx2D + 1:ndxi) = 0d0
+         vol1(ndx2D + 1:ndxi) = 0.0_dp
+         a1(ndx2D + 1:ndxi) = 0.0_dp
       end if
 
       if (nonlin >= 2) then
-         a1m = 0d0
+         a1m = 0.0_dp
       end if
 
       call VOL12D(japerim) ! and add area's and volumes of 1D links
 
       do L = lnxi + 1, Lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          a1(k1) = ba(k2) ! set bnd a1 to ba of inside point
          vol1(k1) = vol1(k2) ! a1(k1)*(s1(k1) - bl(k1))
       end do

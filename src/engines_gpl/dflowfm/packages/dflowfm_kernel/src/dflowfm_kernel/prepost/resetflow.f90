@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -65,6 +65,8 @@ contains
       use m_sedtrails_data
       use m_nearfield, only: reset_nearfieldData
       use m_laterals, only: reset_lateral
+      use m_flow_validatestate, only: reset_flow_validatestate
+
       implicit none
 
       ! Only reset counters and other scalars, allocatables should be
@@ -110,9 +112,9 @@ contains
 
       call reset_sedtra()
 
-      call reset_hydrology_data()
-
       call reset_nearfieldData()
+
+      call reset_flow_validatestate()
 
    end subroutine resetFlow
 

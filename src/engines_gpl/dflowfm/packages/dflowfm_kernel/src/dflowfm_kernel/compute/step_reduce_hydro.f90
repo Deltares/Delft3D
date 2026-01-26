@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -92,7 +92,7 @@ contains
       setback: do
 
          time1 = time0 + dts ! try to reach time1
-         dti = 1d0 / dts
+         dti = 1.0_dp / dts
          nums1it = 0
          nums1mit = 0
          dnums1it = 0
@@ -106,7 +106,7 @@ contains
          ! In that case put this in initimestep and accept non smooth bndc's
 
 !-----------------------------------------------------------------------------------------------
-         hs = max(hs, 0d0)
+         hs = max(hs, 0.0_dp)
          call furu() ! staat in s0
 
          if (itstep /= 4) then ! implicit time-step
@@ -116,7 +116,8 @@ contains
                   ! Nested newton iteration, start with s1m at bed level.
                   s1m = bl !  s1mini
                   call volsur()
-                  difmaxlevm = 0d0; noddifmaxlevm = 0
+                  difmaxlevm = 0.0_dp
+                  noddifmaxlevm = 0
                end if
 
                call s1ini()
@@ -124,7 +125,7 @@ contains
 
                !-----------------------------------------------------------------------------------------------
 
-               nonlincont: do ! entry point for non-linear continuity
+               nonlincont: do ! entry point for non-linear continuity interation
                   call s1nod()
                   if (ifixedWeirScheme1d2d == 1) then
                      if (last_iteration) then
@@ -145,10 +146,14 @@ contains
 
 !    synchronise all water-levels
                   if (jampi == 1) then
-                     if (jatimer == 1) call starttimer(IUPDSALL)
+                     if (jatimer == 1) then
+                        call starttimer(IUPDSALL)
+                     end if
                      itype = merge(ITYPE_SALL, ITYPE_Snonoverlap, jaoverlap == 0)
                      call update_ghosts(itype, 1, Ndx, s1, ierror)
-                     if (jatimer == 1) call stoptimer(IUPDSALL)
+                     if (jatimer == 1) then
+                        call stoptimer(IUPDSALL)
+                     end if
                   end if
 
                   if (firstnniteration .and. nonlin1D >= 3) then
@@ -188,7 +193,9 @@ contains
                      if (jposhchk == 2 .or. jposhchk == 4) then ! redo without timestep reduction, setting hu=0 => wetdry s1ini
                         cycle wetdry
                      else
-                        if (jampi == 1 .and. my_rank == 0) call mess(LEVEL_WARN, 'Redo with timestep reduction.')
+                        if (jampi == 1 .and. my_rank == 0) then
+                           call mess(LEVEL_WARN, 'Redo with timestep reduction.')
+                        end if
                         cycle setback
                      end if
                   end if
@@ -206,7 +213,8 @@ contains
 
                   if (nonlin > 0) then
 
-                     difmaxlev = 0d0; noddifmaxlev = 0
+                     difmaxlev = 0.0_dp
+                     noddifmaxlev = 0
 
                      do k = 1, ndx
                         dif = abs(s1(k) - s00(k))
@@ -225,13 +233,13 @@ contains
                            noiterations(noddifmaxlev) = noiterations(noddifmaxlev) + 1
                         end if
 
-                        write (msgbuf, '(''No convergence in nonlinear solver at time '', g12.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5d0 * dts
+                        write (msgbuf, '(''No convergence in nonlinear solver at time '', g12.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5_dp * dts
                         !if (nonlin1D == 2) then
                         !   ! Nested Newton
                         !   !call err_flush()
                         !else
                         call warn_flush()
-                        dts = 0.5d0 * dts
+                        dts = 0.5_dp * dts
                         dsetb = dsetb + 1 ! total nr of setbacks
                         s1 = s0
                         if (dts < dtmin) then
@@ -252,9 +260,13 @@ contains
                      !endif
 
                      if (jampi == 1) then
-                        if (jatimer == 1) call starttimer(IMPIREDUCE)
+                        if (jatimer == 1) then
+                           call starttimer(IMPIREDUCE)
+                        end if
                         call reduce_double_max(difmaxlev)
-                        if (jatimer == 1) call stoptimer(IMPIREDUCE)
+                        if (jatimer == 1) then
+                           call stoptimer(IMPIREDUCE)
+                        end if
                      end if
 
                      if (difmaxlev > epsmaxlev) then
@@ -271,7 +283,8 @@ contains
                      ! beyond or past this point s1 is converged
 
                      if (nonlin >= 2) then
-                        difmaxlevm = 0d0; noddifmaxlevm = 0
+                        difmaxlevm = 0.0_dp
+                        noddifmaxlevm = 0
                         do k = 1, ndx
                            dif = abs(s1m(k) - s1(k))
                            if (dif > difmaxlevm) then

@@ -10,11 +10,11 @@
 function print_usage_info {
     echo "Purpose: Sets LD_LIBRARY_PATH and runs maptonetcdf on Linux with all given command line arguments."
     echo
-    echo "Usage: ${0##*/} <mapFile.map> <ncFile.nc> <numLayers> [OPTIONS]"
+    echo "Usage: ${0##*/} <mapFile.map> <waqgeomFile.nc> <numLayers>"
     echo
     echo "Command line arguments:"
     echo "<mapFile.map>       maptonetcdf .map input file (mandatory)."
-    echo "<ncFile.nc>         maptonetcdf .nc output file (mandatory)."
+    echo "<waqgeomFile.nc>    name of the waqgeom file to be used (mandatory)."
     echo "<numLayers>         number of layers (mandatory)."
     echo "-h, --help, --usage print this help message and exit"
 }
@@ -68,7 +68,7 @@ echo
 ## Run
 echo "executing:"
 echo "$bindir/maptonetcdf $mapfile $ncfile $numLayers"
-echo 
+echo
 $bindir/maptonetcdf $mapfile $ncfile $numLayers
 
 ## Wait until all child processes are finished

@@ -1,0 +1,24 @@
+{
+    "models": {
+        "e02_f014_c001_trench_EH_par_crs": {
+            "nodes": 2,
+            "tasks_per_node": 2
+        },
+        "e109_f01_c010_weir_timeseries": {
+            "nodes": 1,
+            "tasks_per_node": 1
+        },
+        "e112_f01_c11_waardenburg": {
+            "nodes": 1,
+            "tasks_per_node": 1
+        },
+        "e02_f030_c001_frisianinlet_dynamo": {
+            "nodes": 1,
+            "tasks_per_node": 1
+        },
+        "e100_f00_c00": {
+            "nodes": 1,
+            "tasks_per_node": 1
+        }
+    }
+}

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,8 +54,12 @@ contains
       integer :: ierr
       real(kind=dp) :: tem_dif
 
-      if (.not. stm_included) return
-      if (.not. stmpar%morpar%moroutput%morstats) return
+      if (.not. stm_included) then
+         return
+      end if
+      if (.not. stmpar%morpar%moroutput%morstats) then
+         return
+      end if
 
       ierr = 1
       if (stmpar%morpar%moroutput%morstats .and. ti_sed > 0) then
@@ -66,7 +70,7 @@ contains
                time_sed = tstop_user + 1
             else
                tem_dif = (tim - ti_seds) / ti_sed
-               time_sed = max(ti_seds + (floor(tem_dif + 0.001d0) + 1) * ti_sed, ti_seds)
+               time_sed = max(ti_seds + (floor(tem_dif + 0.001_dp) + 1) * ti_sed, ti_seds)
 
                if (comparereal(time_sed, ti_sede, eps10) == 1) then
                   ! next time_map would be beyond end of map-window, write one last map exactly at that end.

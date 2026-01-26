@@ -44,7 +44,7 @@ BInt4   set;
 
 retrieve * array_retrieve_ptrs[MAX_NEFIS_FILES];
 BUInt8 *** retrieve_var;
-BUInt8 *** new_capacity_retrieve_var( BUInt8 *** retrieve, BInt4 length, BInt4 new_length);
+BUInt8 *** new_capacity_retrieve_var_v2( BUInt8 *** retrieve, BInt4 length, BInt4 new_length);
 
 
 int main( int argc, char **argv )
@@ -88,7 +88,7 @@ fprintf(stdout,"\tNEFIS-set: %d\n", set);
     if (set >= cap_nefis_files)
     {
         cap_nefis_files += incr_nefis_files;
-        retrieve_var = new_capacity_retrieve_var( retrieve_var, cap_nefis_files-incr_nefis_files, cap_nefis_files);
+        retrieve_var = new_capacity_retrieve_var_v2( retrieve_var, cap_nefis_files-incr_nefis_files, cap_nefis_files);
     }
 } // end for-loop set
 
@@ -163,7 +163,7 @@ retrieve * free_retrieve_ptrs( retrieve * p )
     return p;
 }
 /*==========================================================================*/
-BUInt8 *** new_capacity_retrieve_var( BUInt8 *** retrieve, BInt4 length, BInt4 new_length)
+BUInt8 *** new_capacity_retrieve_var_v2( BUInt8 *** retrieve, BInt4 length, BInt4 new_length)
 {
     long i, j;
 

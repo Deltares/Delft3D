@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,7 +50,7 @@ contains
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_laterals, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
                             qqlat, qplat, get_lateral_volume_per_layer, &
-                            lateral_volume_per_layer, distribute_lateral_discharge
+                            lateral_volume_per_layer, distribute_lateral_discharge, average_waterlevels_per_lateral
 
       real(kind=dp), intent(in) :: dtrange
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -65,7 +65,7 @@ contains
 
       iresult = DFM_GENERICERROR
       if (dtrange < 0) then
-         timetarget = time1 + epsilon(1d0) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
+         timetarget = time1 + epsilon(1.0_dp) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
       else
          timetarget = time1 + dtrange
       end if
@@ -104,6 +104,7 @@ contains
          call finish_outgoing_lat_concentration(dtrange)
          call get_lateral_volume_per_layer(lateral_volume_per_layer)
       end if
+      call average_waterlevels_per_lateral%update()
 
       iresult = DFM_NOERR
       return ! Return with success.

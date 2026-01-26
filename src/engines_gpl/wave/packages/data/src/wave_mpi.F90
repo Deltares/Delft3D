@@ -5,7 +5,7 @@
 module wave_mpi
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -73,7 +73,6 @@ private               :: running_in_mpi_environment
     !!    - engine_comm_world will be set by DIMR and differ from be MPI_COMM_NULL
     !! Not supported:
     !! - D-Waves in parallel without DIMR
-    !! - D-Waves in parallel with numranks=1
 subroutine initialize_wave_mpi()
    character(256)       :: msgstr
    logical              :: mpi_is_initialized

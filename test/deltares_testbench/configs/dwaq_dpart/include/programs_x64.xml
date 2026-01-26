@@ -48,6 +48,9 @@
             <from>teamcity_artifacts/x64</from>
         </location>
         <path>bin/run_delpar.bat</path>
+        <environments>
+            <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+        </environments>
     </program>
 
     <program name="plct" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">

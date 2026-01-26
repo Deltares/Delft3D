@@ -98,7 +98,7 @@
     <!-- PERFORMANCE TESTS - ONE DOMAIN -->
 
     <testCase name="e02_f091_c040_rws_waal" ref="dflowfm_default">
-      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
+      <path version="2025-08-11T15:31:48.975000">e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
       <programs>
         <program ref="dflowfm" seq="1">
 		  <workingDirectory>dflowfm</workingDirectory>

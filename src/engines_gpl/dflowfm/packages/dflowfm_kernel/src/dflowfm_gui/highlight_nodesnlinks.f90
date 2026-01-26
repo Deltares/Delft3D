@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@
 !> Highlights net/flow nodes and/or links, when specified in display parameters.
 module m_highlight_nodesnlinks
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -50,8 +51,8 @@ contains
       end if
 
       if (nhlNetLink > 0 .and. nhlNetLink <= numl) then
-         call cirr(.5d0 * (xk(kn(1, nhlNetLink)) + xk(kn(2, nhlNetLink))), &
-                   .5d0 * (yk(kn(1, nhlNetLink)) + yk(kn(2, nhlNetLink))), ncolhl)
+         call cirr(0.5_dp * (xk(kn(1, nhlNetLink)) + xk(kn(2, nhlNetLink))), &
+                   0.5_dp * (yk(kn(1, nhlNetLink)) + yk(kn(2, nhlNetLink))), ncolhl)
          call teklink(nhlNetLink, ncolhl)
       end if
 

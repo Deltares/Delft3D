@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -66,9 +66,13 @@ contains
 
       numadd = jend - jstart + 1
 
-      if (numadd < 2 .or. ipol < jstart .or. ipol > jend) return ! no polygon found
+      if (numadd < 2 .or. ipol < jstart .or. ipol > jend) then
+         return ! no polygon found
+      end if
 
-      if (Lotherpart) numadd = 2 * numadd
+      if (Lotherpart) then
+         numadd = 2 * numadd
+      end if
 
 !        copy polygon
       jpoint = NPL
@@ -89,12 +93,12 @@ contains
 !        allocate
       allocate (dnx(numadd), dny(numadd))
 
-      dnxLi = 0d0
-      dnyLi = 0d0
-      dnxRi = 0d0
-      dnyRi = 0d0
-      dnxi = 0d0
-      dnyi = 0d0
+      dnxLi = 0.0_dp
+      dnyLi = 0.0_dp
+      dnxRi = 0.0_dp
+      dnyRi = 0.0_dp
+      dnxi = 0.0_dp
+      dnyi = 0.0_dp
 !        compute normal vectors
       do i = jstart, jend
          if (i < jend) then
@@ -112,7 +116,7 @@ contains
             dnyL = dnyR
          end if
 
-         fac = 1d0 / (1d0 + dnxL * dnxR + dnyL * dnyR)
+         fac = 1.0_dp / (1.0_dp + dnxL * dnxR + dnyL * dnyR)
          dnx(i - jstart + 1) = fac * (dnxL + dnxR)
          dny(i - jstart + 1) = fac * (dnyL + dnyR)
 
@@ -133,20 +137,24 @@ contains
 !        determine layer thickness
       call getdxdy(xpl(ipol), ypl(ipol), xp, yp, dx, dy, jsferic)
       det = dx * dnyi - dy * dnxi
-      if (det > 1d-8) then
+      if (det > 1.0e-8_dp) then
          dist = dx * dnxRi + dy * dnyRi
-      else if (det < -1d-8) then
+      else if (det < -1.0e-8_dp) then
          dist = dx * dnxLi + dy * dnyLi
       else
          dist = dx * dnxi + dy * dnyi
       end if
 
 !        add new polygon
-      if (jsferic == 1) dist = dist / (Ra * dg2rd)
+      if (jsferic == 1) then
+         dist = dist / (Ra * dg2rd)
+      end if
       do i = jstart, jend
          dy = dny(i - jstart + 1) * dist
          dx = dnx(i - jstart + 1) * dist
-         if (jsferic == 1) dx = dx / cos((ypl(i) + 0.5d0 * dy) * dg2rd)
+         if (jsferic == 1) then
+            dx = dx / cos((ypl(i) + 0.5_dp * dy) * dg2rd)
+         end if
          xpl(jpoint + i - jstart) = xpl(i) + dx
          ypl(jpoint + i - jstart) = ypl(i) + dy
          zpl(jpoint + i - jstart) = zpl(i)

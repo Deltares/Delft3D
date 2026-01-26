@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -92,7 +92,9 @@ contains
 
       call makenetnodescoding()
 
-      if (nump < 1) return
+      if (nump < 1) then
+         return
+      end if
 
       iter = 0
       numchanged = 1
@@ -112,7 +114,7 @@ contains
          call sort_index(areas, perm)
 
          !  set optimal area as the average area
-         area_opt = sum(areas) / dble(nump)
+         area_opt = sum(areas) / real(nump, kind=dp)
 
          k1 = 0
          do k_ = 1, nump
@@ -145,8 +147,8 @@ contains
             end if
 
             if (Ldoit) then
-               area_tot = 0d0
-               funct = 0d0
+               area_tot = 0.0_dp
+               funct = 0.0_dp
 
                call getcellsurface(k, area, xc, yc)
                area_tot = area_tot + area
@@ -159,9 +161,9 @@ contains
 
                !     compute the area increase of the indirectly connected cells
                if (nindirect > 0) then
-                  Darea = area_tot / dble(nindirect)
+                  Darea = area_tot / real(nindirect, kind=dp)
                else
-                  Darea = 0d0
+                  Darea = 0.0_dp
                end if
 
                !     compute the change in the functional
@@ -174,11 +176,13 @@ contains
 
                !        funct = -1d0
 
-               if (funct < 0d0) then ! delete cell
+               if (funct < 0.0_dp) then ! delete cell
                   !     if (k.eq.395 ) then
                   if (Lstepbystep) then
                      !           unhighlight mesh
-                     if (k1 >= 1 .and. k1 <= nump) call teknode(k1, 1)
+                     if (k1 >= 1 .and. k1 <= nump) then
+                        call teknode(k1, 1)
+                     end if
                      !           whipe out previous net image
                      do kk = 1, netcell(k)%N
                         call teknode(netcell(k)%nod(kk), 211)
@@ -188,7 +192,9 @@ contains
 
                   !        delete the cell and update administration
                   call deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, .false., ja)
-                  if (ja == 1) numchanged = numchanged + 1
+                  if (ja == 1) then
+                     numchanged = numchanged + 1
+                  end if
 
                   if (Lstepbystep) then
                      !           new net image
@@ -210,8 +216,8 @@ contains
                      kkk = kdirect(kk)
                      N = netcell(kkk)%N
                      if (N > 0) then
-                        xc = sum(xk(netcell(kkk)%nod(1:N))) / dble(N)
-                        yc = sum(yk(netcell(kkk)%nod(1:N))) / dble(N)
+                        xc = sum(xk(netcell(kkk)%nod(1:N))) / real(N, kind=dp)
+                        yc = sum(yk(netcell(kkk)%nod(1:N))) / real(N, kind=dp)
                         call cirr(xc, yc, ncolhl)
                      end if
                   end do
@@ -273,7 +279,9 @@ contains
          write (6, *) 'coarsen mesh: ', area_opt, iter, numchanged
       end do
 
-      if (Lstepbystep) call READLOCATOR(X, Y, KEY)
+      if (Lstepbystep) then
+         call READLOCATOR(X, Y, KEY)
+      end if
 
       return
    end subroutine coarsen_mesh

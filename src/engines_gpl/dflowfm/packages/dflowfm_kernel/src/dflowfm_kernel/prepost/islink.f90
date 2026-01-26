@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,7 +57,7 @@ contains
       real(kind=dp) :: zkk
       real(kind=dp) :: xprange(4), yprange(4)
       real(kind=dp) :: xk1p, yk1p, xk2p, yk2p, rx, ry
-      real(kind=dp) :: H = 0.5d0
+      real(kind=dp) :: H = 0.5_dp
 
 ! store
       jins_old = jins
@@ -65,17 +65,22 @@ contains
 
       LL = 0
       do L = 1, NUML
-         K1 = KN(1, L); K2 = KN(2, L)
+         K1 = KN(1, L)
+         K2 = KN(2, L)
          if (K1 /= 0 .and. K2 /= 0) then
             call DRIETWEE(H * (XK(K1) + XK(K2)), H * (YK(K1) + YK(K2)), H * (ZK(K1) + ZK(K2)), XKK, YKK, ZKK)
             ! Get screen-projected coordinates of link nodes 1 and 2, and construct search range around it.
             call DRIETWEE(XK(K1), YK(K1), ZK(K1), xk1p, yk1p, ZKK)
             call DRIETWEE(XK(K2), YK(K2), ZK(K2), xk2p, yk2p, ZKK)
             call normalout(xk1p, yk1p, xk2p, yk2p, rx, ry, jsferic, jasfer3D, dmiss, dxymis)
-            xprange(1) = xk1p; yprange(1) = yk1p
-            xprange(2) = xkk + rcir * rx; yprange(2) = ykk + rcir * ry
-            xprange(3) = xk2p; yprange(3) = yk2p
-            xprange(4) = xkk - rcir * rx; yprange(4) = ykk - rcir * ry
+            xprange(1) = xk1p
+            yprange(1) = yk1p
+            xprange(2) = xkk + rcir * rx
+            yprange(2) = ykk + rcir * ry
+            xprange(3) = xk2p
+            yprange(3) = yk2p
+            xprange(4) = xkk - rcir * rx
+            yprange(4) = ykk - rcir * ry
 
 !        call movabs(xprange(1), yprange(1))
 !        call clnabs(xprange(2), yprange(2), 41)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,8 +51,8 @@ contains
       real(kind=dp) :: dcos, dcosR, xn, yn
       integer :: i, iL, iR, iRR, idum, iL0, iR0, j, ja, iter, numchanged
       real(kind=dp), parameter :: dcosmax = 0.93969
-      real(kind=dp), parameter :: dtol = 1d-2
-      real(kind=dp), parameter :: dtolcos = 1d-2
+      real(kind=dp), parameter :: dtol = 1.0e-2_dp
+      real(kind=dp), parameter :: dtolcos = 1.0e-2_dp
 
       call tekgrid(i)
 
@@ -75,21 +75,31 @@ contains
                      i = iR
                   else
                      i = i + 1
-                     if (i >= mc) exit
+                     if (i >= mc) then
+                        exit
+                     end if
                   end if
 
-                  if (xc(i, j) == DMISS) cycle
+                  if (xc(i, j) == DMISS) then
+                     cycle
+                  end if
 
                   call get_LR(mc, xc(:, j), yc(:, j), i, iL, iR)
 
-                  if (dbdistance(xc(i, j), yc(i, j), xc(iR, j), yc(iR, j), jsferic, jasfer3D, dmiss) < dtol) cycle
+                  if (dbdistance(xc(i, j), yc(i, j), xc(iR, j), yc(iR, j), jsferic, jasfer3D, dmiss) < dtol) then
+                     cycle
+                  end if
 
                   !        detect triangular cell
-                  if (xc(i, j + 1) == DMISS) cycle
+                  if (xc(i, j + 1) == DMISS) then
+                     cycle
+                  end if
 
                   call get_LR(mc, xc(:, j + 1), yc(:, j + 1), i, iL0, iR0)
 
-                  if (dbdistance(xc(iL, j), yc(iL, j), xc(i, j), yc(i, j), jsferic, jasfer3D, dmiss) < dtol) iL = i
+                  if (dbdistance(xc(iL, j), yc(iL, j), xc(i, j), yc(i, j), jsferic, jasfer3D, dmiss) < dtol) then
+                     iL = i
+                  end if
 
                   if (xc(iR, j + 1) /= DMISS) then
                      if (dbdistance(xc(i, j + 1), yc(i, j + 1), xc(iR, j + 1), yc(iR, j + 1), jsferic, jasfer3D, dmiss) < dtol .and. &
@@ -114,8 +124,8 @@ contains
                            numchanged = numchanged + 1
                            write (6, "(I0, '-', I0, 'R ')", advance="no") iR, iRR - 1
                         else ! move both nodes
-                           xn = 0.5d0 * (xc(i, j) + xc(iR, j))
-                           yn = 0.5d0 * (yc(i, j) + yc(iR, j))
+                           xn = 0.5_dp * (xc(i, j) + xc(iR, j))
+                           yn = 0.5_dp * (yc(i, j) + yc(iR, j))
                            call cirr(xn, yn, 211)
                            xc(i:iR - 1, j) = xn
                            yc(i:iR - 1, j) = yn
@@ -128,7 +138,9 @@ contains
                   end if
                end do
                write (6, *)
-               if (numchanged == 0) exit
+               if (numchanged == 0) then
+                  exit
+               end if
             end do
             write (6, *) iter, numchanged
          end do

@@ -32,8 +32,10 @@ contains
          end do
       case (ILATTP_2D) ! in everything 2D
          do L = lnx1D + 1, lnxi
-            k1 = ln(1, L); kc(k1) = 1
-            k2 = ln(2, L); kc(k2) = 1
+            k1 = ln(1, L)
+            kc(k1) = 1
+            k2 = ln(2, L)
+            kc(k2) = 1
          end do
       case (ILATTP_ALL) ! both to everything 2D, and 1D, except to 1D pipes
          do L = 1, lnx1D
@@ -41,15 +43,19 @@ contains
             ! * (X)YZ profiles pointering to profiles number: always allow
             ! * direct profiles (rect/circle, etc.):no pipes pos or neg, others only if pos (==non-closed)
             if (prof1D(1, L) < 0 .or. (abs(prof1D(3, L)) /= 1 .and. prof1D(3, L) > 0)) then
-               k1 = ln(1, L); kc(k1) = 1
-               k2 = ln(2, L); kc(k2) = 1
+               k1 = ln(1, L)
+               kc(k1) = 1
+               k2 = ln(2, L)
+               kc(k2) = 1
             else
                continue
             end if
          end do
          do L = lnx1D + 1, lnxi
-            k1 = ln(1, L); kc(k1) = 1
-            k2 = ln(2, L); kc(k2) = 1
+            k1 = ln(1, L)
+            kc(k1) = 1
+            k2 = ln(2, L)
+            kc(k2) = 1
          end do
       end select
    end subroutine prepare_lateral_mask

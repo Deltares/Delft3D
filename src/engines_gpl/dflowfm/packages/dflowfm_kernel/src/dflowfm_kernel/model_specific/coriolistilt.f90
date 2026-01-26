@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,12 +55,14 @@ contains
       integer :: k, L
       real(kind=dp) :: s1k, yy, samp, ux, uy, dif, alf, tim
 
-      ux = 0.1d0; uy = 0d0; samp = ux * fcorio / ag
-      if (tim == 0d0) then
+      ux = 0.1_dp
+      uy = 0.0_dp
+      samp = ux * fcorio / ag
+      if (tim == 0.0_dp) then
 
          do k = 1, numk
             alf = (yk(k) - ykmin) / (ykmax - ykmin)
-            zk(k) = -600d0 + 500d0 * cos(pi * alf)
+            zk(k) = -600.0_dp + 500.0_dp * cos(pi * alf)
          end do
 
          call setbobs()
@@ -76,8 +78,9 @@ contains
          yy = yz(k)
          s1k = -samp * yy
 
-         if (tim == 0d0) then
-            s1(k) = max(bl(k), s1k); s0(k) = s1(k)
+         if (tim == 0.0_dp) then
+            s1(k) = max(bl(k), s1k)
+            s0(k) = s1(k)
          end if
 
          dif = abs(s1(k) - s1k)

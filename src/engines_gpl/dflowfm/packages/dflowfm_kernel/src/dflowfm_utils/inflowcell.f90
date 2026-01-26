@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -85,7 +85,7 @@ contains
          dxx = xp - xz(kb)
          dyy = yp - yz(kb)
          r = sqrt(dxx * dxx + dyy * dyy)
-         if (r < 0.3d0 * dx(L)) then
+         if (r < 0.3_dp * dx(L)) then
             k = kb
             return
          end if
