@@ -29,7 +29,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f002_c100_longculvert" ref="dflowfm_default">
-      <path version="2026-01-26T12:23:55.877000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
+      <path version="2026-01-26T14:18:46.355000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
