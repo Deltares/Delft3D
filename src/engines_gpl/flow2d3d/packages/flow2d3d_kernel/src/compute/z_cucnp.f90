@@ -14,7 +14,8 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                  & tp        ,rlabda    ,dfu       ,deltau    ,fxw       , &
                  & ubrlsu    ,pship     ,diapl     ,rnpl      ,cfurou    , &
                  & qxk       ,qyk       ,umean     ,dps       ,s0        , &
-                 & ustokes   ,gdp       )
+                 & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+                 & z0urou    ,ustokes   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -106,6 +107,8 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp), dimension(:,:,:)   , pointer :: nf_src_momu
     real(fp), dimension(:,:,:)   , pointer :: nf_src_momv
     real(fp)                     , pointer :: momrelax
+    logical                      , pointer :: ice
+    real(fp)                     , pointer :: vonkar
 !
 ! Global variables
 !
@@ -204,6 +207,12 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp), dimension(nsrc)                         , intent(in)  :: disch   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(nsrc)                         , intent(in)  :: umdis   !  Description and declaration in esm_alloc_real.f90
     character(1), dimension(nsrc)                     , intent(in)  :: dismmt  !  Description and declaration in esm_alloc_char.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: a_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: u_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: ut_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: v_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: z0urou  !  Description and declaration in esm_alloc_real.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfsice  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -275,6 +284,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: gksid
     real(fp)           :: gksiu
     real(fp)           :: gsqi
+    real(fp)           :: h0half
     real(fp)           :: hl
     real(fp)           :: hr
     real(fp)           :: h0fac
@@ -286,6 +296,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: thvert     ! theta coefficient for vertical advection terms
     real(fp)           :: timest
     real(fp)           :: trelaxi
+    real(fp)           :: ustar
     real(fp)           :: uuu
     real(fp)           :: uweir
     real(fp)           :: vih
@@ -297,6 +308,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: wsumax
     real(fp)           :: www
     real(fp)           :: wavg0
+    real(fp)           :: z00
 !
 !! executable statements -------------------------------------------------------
 !
@@ -317,6 +329,8 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     xbeach         => gdp%gdprocs%xbeach
     hdt            => gdp%gdnumeco%hdt
     dzmin          => gdp%gdzmodel%dzmin
+    ice            => gdp%gdprocs%ice
+    vonkar         => gdp%gdphysco%vonkar
     no_dis         => gdp%gdnfl%no_dis
     nf_src_mom     => gdp%gdnfl%nf_src_mom
     nf_src_momu    => gdp%gdnfl%nf_src_momu
@@ -587,9 +601,21 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 enddo
              endif
           endif
-       endif
+          !
+          ! ICE-WATER STRESS
+          !
+          if (ice .and. kfsice(nm)==1) then
+             ut_ice(nm) = 0.0_fp
+             h0half = 0.5_fp * max(dzu0(nm, kkmax),drytrsh)
+             z00    = max(1e-6,z0urou(nm))
+             ustar  = max(1e-6,windsu(nm) / rhow)
+             ut_ice(nm) = sqrt((u_ice(nm)-u0(nm,1))**2+(v_ice(nm)-v1(nm,1))**2) &
+                             & * ustar * vonkar / (log (h0half/z00))
+             ut_ice(nm) = a_ice(nm) * ut_ice(nm) / max(dzu0(nm, kkmax),drytrsh)
+             ddk(nm,1) = ddk(nm, 1) - ut_ice(nm) /rhow
+          endif
+        endif
     enddo
-    call timer_stop(timer_cucnp_stress, gdp)
     !
     ! In case of 3D waves:
     ! Added shear stress in wave boundary layer due to streaming

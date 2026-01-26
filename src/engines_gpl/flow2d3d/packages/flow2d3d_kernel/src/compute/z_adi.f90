@@ -30,7 +30,9 @@ subroutine z_adi(stage     ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                & p0        ,crbc      ,hu0       ,hv0       ,wrkb11    , &
                & wrkb12    ,wrkb13    ,wrkb14    ,pship     ,diapl     , &
                & rnpl      ,sbkol     ,cfurou    ,cfvrou    ,r0        , &
-               & lstsci    ,precip    ,gdp       )
+               & lstsci    ,precip    , &
+               & u_ice     ,v_ice     ,a_ice     ,ut_ice   ,vt_ice     , &
+               & kfsice    ,z0urou    ,z0vrou    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -257,6 +259,14 @@ subroutine z_adi(stage     ,j         ,nmmaxj    ,nmmax     ,kmax      , &
     real(fp), dimension(nsrc)                             :: vmdis   !  Description and declaration in esm_alloc_real.f90
     character(1), dimension(nsrc)                         :: dismmt  !  Description and declaration in esm_alloc_char.f90
     character(8)                            , intent(in)  :: stage   !!  First or Second half time step
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: u_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: v_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: a_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)               :: ut_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)               :: vt_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: z0urou  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: z0vrou  !  Description and declaration in esm_alloc_real.f90
+    integer , dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in)  :: kfsice  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -318,6 +328,7 @@ subroutine z_adi(stage     ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & ubrlsv    ,pship     ,diapl     ,rnpl      ,cfvrou      , &
                 & v1        ,s0        ,dpv       ,qyk       ,qxk         , &
                 & nocol     ,norow     ,irocol(1, norow + 1) ,nst         ,vmean       , &
+                & v_ice     ,u_ice     ,a_ice     ,vt_ice    ,kfsice      ,z0vrou      , &
                 & crbc(1,norow + 1)    ,vstokes   ,gdp       )
        call timer_stop(timer_1stuzd, gdp)
        call timer_stop(timer_uzd, gdp)
@@ -375,7 +386,8 @@ subroutine z_adi(stage     ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & patm      ,fcorio    ,tgfsep    ,drhodx    ,zk        , &
                 & p0        ,crbc(1, 1),idry      ,porosu    ,ubrlsu    , &
                 & pship     ,diapl     ,rnpl      ,cfurou    ,precip    , &
-                & ustokes   ,gdp       )
+                & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+                & z0urou    ,ustokes   ,gdp       )
        call timer_stop(timer_1stsud, gdp)
        call timer_stop(timer_sud, gdp)
        !
@@ -511,6 +523,7 @@ subroutine z_adi(stage     ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & ubrlsu    ,pship     ,diapl     ,rnpl      ,cfurou      , &
                 & u1        ,s0        ,dpu       ,qxk       ,qyk         , &
                 & norow     ,nocol     ,irocol(1, 1)         ,nst         ,umean       , &
+                & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice      ,z0urou      , &
                 & crbc(1,1) ,ustokes   ,gdp         )
        call timer_stop(timer_2nduzd, gdp)
        call timer_stop(timer_uzd, gdp)
@@ -561,7 +574,8 @@ subroutine z_adi(stage     ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & patm      ,fcorio    ,tgfsep    ,drhody    ,zk        , &
                 & p0        ,crbc(1, norow + 1)   ,idry      ,porosv    ,ubrlsv       , &
                 & pship     ,diapl     ,rnpl      ,cfvrou    ,precip    , &
-                & vstokes   ,gdp       )
+                & v_ice     ,u_ice     ,a_ice     ,vt_ice    ,kfsice    , &
+                & z0vrou    ,vstokes   ,gdp       )
        call timer_stop(timer_2ndsud, gdp)
        call timer_stop(timer_sud, gdp)
        !

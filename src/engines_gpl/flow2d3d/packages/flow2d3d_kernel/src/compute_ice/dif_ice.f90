@@ -284,7 +284,7 @@ real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: r1
              !
              ! Check whether ice growth is sufficient to changing status arrays
              !
-             if (kfsice(nm) .eq. 0 .and. h_ice(nm)*a_ice(nm) .gt. treshold_ice_snow) then
+             if (kfsice(nm) .eq. 0 .and. h_ice(nm) .gt. treshold_ice_snow) then
                  kfsice(nm) = 1
                  if (a_ice(nm) .lt. 1e-6_fp .or. ice_growth .gt. 1e-6_fp) then
                     a_ice(nm) = 1.0_fp !! only in case of new (vertical) ice

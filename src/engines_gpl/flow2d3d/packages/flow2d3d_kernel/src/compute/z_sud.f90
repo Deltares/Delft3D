@@ -20,7 +20,8 @@ subroutine z_sud(j         ,nmmaxj    ,nmmax     ,kmax      ,mmax      , &
                & patm      ,fcorio    ,tgfsep    ,drhodx    ,zk        , &
                & p0        ,crbc      ,idry      ,porosu    ,ubrlsu    , &
                & pship     ,diapl     ,rnpl      ,cfurou    ,precip    , &
-               & ustokes   ,gdp       ) 
+               & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+               & z0urou    ,ustokes   ,gdp       ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -239,6 +240,12 @@ subroutine z_sud(j         ,nmmaxj    ,nmmax     ,kmax      ,mmax      , &
     real(fp), dimension(nsrc)                                     :: umdis   !  Description and declaration in esm_alloc_real.f90
     logical                                                       :: flood   ! Flag for activating flooding part of checku subroutine 
     character(1), dimension(nsrc)                                 :: dismmt  !  Description and declaration in esm_alloc_char.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)   :: u_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)   :: v_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)   :: a_ice   !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               :: ut_ice  !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)   :: z0urou  !  Description and declaration in esm_alloc_real.f90
+    integer      , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)   :: kfsice  !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -376,7 +383,8 @@ subroutine z_sud(j         ,nmmaxj    ,nmmax     ,kmax      ,mmax      , &
                & tp        ,rlabda    ,dfu       ,deltau    ,fxw       , &
                & ubrlsu    ,pship     ,diapl     ,rnpl      ,cfurou    , &
                & qxk       ,qyk       ,umean     ,dps       ,s0        , &
-               & ustokes   ,gdp       )
+               & u_ice     ,v_ice     ,a_ice     ,ut_ice    ,kfsice    , &
+               & z0urou    ,ustokes   ,gdp       )
     call timer_stop(timer_sud_cucnp, gdp)
     !
     ! In z_cucnp, the horizontal viscosity is added to ddk (explicit).
