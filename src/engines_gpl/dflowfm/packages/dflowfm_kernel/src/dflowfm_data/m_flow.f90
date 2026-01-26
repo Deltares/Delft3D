@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,17 +31,18 @@
 !
 
 module m_flow ! flow arrays-999
-   use m_flowparameters
    use fm_external_forcings_data
+   use m_alloc
+   use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, &
+      max_iterations_pressure_density, jabarocponbnd
+   use m_flowparameters
    use m_flowoutput
-   use m_physcoef
-   use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
-   use m_turbulence
    use m_grw
    use m_heatfluxes
-   use m_alloc
-   use m_vegetation
+   use m_physcoef
    use m_ship
+   use m_turbulence
+   use m_vegetation
 
    implicit none
 
