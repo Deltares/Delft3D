@@ -2,13 +2,13 @@
 
 from unittest.mock import Mock, patch
 
+from ci_tools.dimrset_delivery.assert_preconditions import PreconditionsChecker
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
-from ci_tools.dimrset_delivery.step_0_assert_preconditions import PreconditionsChecker
 from ci_tools.example_utils.logger import LogLevel
 
 

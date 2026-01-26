@@ -104,7 +104,7 @@ contains
       use m_turbulence, only: sigdifi
       use m_transport
       use m_mass_balance_areas
-      use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flowwithoutwaves
+      use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flow_without_waves
       use m_alloc
       use m_partitioninfo
       use m_timer
@@ -196,7 +196,7 @@ contains
          end if
 
 !     compute horizontal fluxes, explicit part
-         if ((.not. stm_included) .or. flowwithoutwaves) then ! just do the normal stuff
+         if ((.not. stm_included) .or. flow_without_waves) then ! just do the normal stuff
             call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
          else
             if (jatranspvel == 0 .or. jatranspvel == 1) then ! Lagrangian approach

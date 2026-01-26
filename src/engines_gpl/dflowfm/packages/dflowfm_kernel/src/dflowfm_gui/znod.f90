@@ -230,7 +230,7 @@ contains
 
       else if (nodval == 39) then
 
-         if (flowWithoutWaves) then
+         if (flow_without_waves) then
             jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
          else
             jawaveswartdelwaq_local = jawaveswartdelwaq
@@ -313,7 +313,7 @@ contains
             znod = s1(kk) + zsp(kk)
          end if
 
-      else if (nodval == numoptwav .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      else if (nodval == numoptwav .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
             select case (waveparopt)
             case (1)

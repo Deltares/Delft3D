@@ -1564,6 +1564,13 @@ contains
          ! Read computational grid
          !
          call prop_get(tmp_ptr, '*', 'Grid', dom%curlif)
+         if (count_words(dom%curlif) > 1) then
+            write (*, '(a,i0,3a)') 'SWAN_INPUT: Grid ', domainnr, ' with name "', trim(dom%curlif) ,'" contains spaces which is not permitted.'
+            call replace_char(dom%curlif,32,95)  ! replace ' ' by '_'
+            call replace_char(dom%curlif,9,95)   ! replace tab by '_'
+            write (*, '(3a)') 'SWAN_INPUT: To resolve this, rename grid to e.g. "', trim(dom%curlif) ,'" and adjust input accordingly.'
+            call handle_errors_mdw(sr)
+         end if
          call readgriddims(dom%curlif, dom%mxc, dom%myc)
          if (dom%curlif == '') then
             write (*, *) 'SWAN_INPUT: grid not found for domain', domainnr

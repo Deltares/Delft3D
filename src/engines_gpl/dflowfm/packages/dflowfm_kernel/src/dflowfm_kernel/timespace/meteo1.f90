@@ -6707,6 +6707,7 @@ contains
 
    !> Translate FM's meteo1 'method' enum to EC's 'interpolate' enum.
    subroutine method_fm_to_ec(method, ec_method)
+      use timespace_parameters
       integer, intent(in) :: method
       integer, intent(out) :: ec_method
 
@@ -6748,6 +6749,8 @@ contains
          ec_method = interpolate_unknown ! Not yet supported: only spatial, internal diffusion
       case (10)
          ec_method = interpolate_unknown ! Not yet supported: only initial vertical profiles
+      case (NEAREST_NEIGHBOUR)
+         ec_method = interpolate_nearest_neighbour 
       case (7) ! TODO: EB: FM method 7, where does this come from? ! see hrms method 7
          ec_method = interpolate_time_extrapolation_ok
       case default

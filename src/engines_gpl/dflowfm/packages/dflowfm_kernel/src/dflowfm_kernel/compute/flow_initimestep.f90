@@ -190,7 +190,7 @@ contains
 
       ! Add wave model dependent wave force in RHS
       ! After setdt because surfbeat needs updated dts
-      if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          call compute_wave_forcing_RHS()
       end if
 
@@ -226,10 +226,6 @@ contains
          end if
       end if
       call update_icecover()
-
-      if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
-         infiltcap0 = infiltcap / mmphr_to_mps
-      end if
 
       call timstop(handle_inistep)
 

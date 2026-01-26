@@ -315,6 +315,9 @@ contains
       use m_ec_basic_interpolation
       use m_alloc
       use ieee_arithmetic, only: ieee_is_nan
+      use m_ec_triangle, only: jagetwf, indxx, wfxx
+      use m_ec_basic_interpolation, only: triinterp2
+      use m_ec_parameters, only: ec_undef_hp
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(inout)
@@ -333,14 +336,17 @@ contains
       real(dp) :: fsum
       type(tEcMask), pointer :: srcmask
       real(dp), dimension(:), pointer :: src_x, src_y
+      real(dp), dimension(6) :: transformcoef
       real(dp) :: tgt_x, tgt_y
       integer :: nsx, nsy
       real(dp), allocatable, dimension(:) :: edge_poly_x
       real(dp), allocatable, dimension(:) :: edge_poly_y
       real(dp), dimension(:, :), pointer :: sY_2D, sX_2D !< 2D representation of linearly indexed array arr1D
+      real(dp), allocatable, dimension(:) :: dummy_in, dummy_out, dummy_polygon
       real(dp) :: cx, cy, r2
-      integer :: nresult, iresult, idx, jsferic
+      integer :: nresult, iresult, idx, jsferic, jasfer3d
       integer :: iimin, iimax, jjmin, jjmax
+      integer :: jakdtree, jdla
       type(kdtree_instance) :: treeinst
       real(dp) :: x0, x1, y0, y1, rd
 
@@ -375,7 +381,8 @@ contains
       end if
       ! Check whether there is anything to be done.
       if (connection%converterPtr%interpolationType == interpolate_spacetimeSaveWeightFactors .or. &
-          connection%converterPtr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
+          connection%converterPtr%interpolationType == extrapolate_spacetimeSaveWeightFactors .or. &
+          connection%converterPtr%interpolationType == interpolate_nearest_neighbour) then
          if (associated(connection%converterPtr%indexWeight)) then
             success = .true.
             return
@@ -396,18 +403,44 @@ contains
             connection%sourceItemsPtr(i)%ptr%sourceT0fieldPtr%bbox = (/1, 1, sourceElementSet%n_cols, 1/)
             connection%sourceItemsPtr(i)%ptr%sourceT1fieldPtr%bbox = (/1, 1, sourceElementSet%n_cols, 1/)
             if (associated(weight%indices)) deallocate (weight%indices)
-            allocate (weight%indices(1, n_points))
-            connection%converterPtr%indexWeight => weight
-            weight%indices = ec_undef_int
             select case (instancePtr%coordsystem)
             case (EC_COORDS_SFERIC)
                jsferic = 1
             case (EC_COORDS_CARTESIAN)
                jsferic = 0
             end select
-            call nearest_neighbour(n_points, targetElementSet%x, targetElementSet%y, targetElementSet%mask, &
-                                   weight%indices(1, :), ec_undef_hp, &
-                                   sourceElementSet%x, sourceElementSet%y, sourceElementSet%n_cols, jsferic, 0)
+            jasfer3d = 0 ! TODO: UNST-9522: make jasfer3d a property of a EC module
+            if (connection%converterPtr%interpolationType == interpolate_spacetimeSaveWeightFactors) then
+               allocate (weight%indices(3, n_points))
+               allocate (weight%weightFactors(3, n_points))
+               weight%indices = ec_undef_int
+               jagetwf = 1
+               jakdtree = 1
+               jdla = 1
+               call realloc(indxx, [3, n_points], keepexisting=.false., fill=0)
+               call realloc(wfxx, [3, n_points], keepexisting=.false., fill=0.0_dp)
+               call realloc(dummy_in, sourceElementSet%nCoordinates, keepexisting=.false., fill=ec_undef_hp)
+               call realloc(dummy_out, targetElementSet%nCoordinates, keepexisting=.false., fill=ec_undef_hp)
+               transformcoef = 0.0_dp
+               transformcoef(6) = 1.1_dp ! TODO: UNST-8626: implement support for extrapolation
+               allocate (dummy_polygon(0))
+               call triinterp2(targetElementSet%x, targetElementSet%y, dummy_out, n_points, jdla, &
+                               sourceElementSet%x, sourceElementSet%y, dummy_in, sourceElementSet%nCoordinates, ec_undef_hp, &
+                               jsferic, 1, jasfer3d, 0, 0, 0, dummy_polygon, dummy_polygon, dummy_polygon, transformcoef)
+               weight%indices = indxx
+               weight%weightFactors = wfxx
+            else if (connection%converterPtr%interpolationType == interpolate_nearest_neighbour) then
+               allocate (weight%indices(1, n_points))
+               allocate (weight%weightFactors(1, n_points))
+               weight%indices = ec_undef_int
+               weight%weightFactors = 1.0_dp
+               call nearest_neighbour(n_points, targetElementSet%x, targetElementSet%y, targetElementSet%mask, &
+                                      weight%indices(1, :), ec_undef_hp, &
+                                      sourceElementSet%x, sourceElementSet%y, sourceElementSet%n_cols, jsferic, 0)
+            else
+               call setECMessage("ERROR: ec_converter::ecConverterUpdateWeightFactors: The supplied interpolationMethod is not supported for samples type.")
+            end if
+            connection%converterPtr%indexWeight => weight
          end do
          success = .true.
          return
@@ -2634,6 +2667,7 @@ contains
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
       integer :: i, j, k, ipt !< loop counters
+      integer :: i_weight_index
       integer :: kbot, ktop
       logical :: extrapolated !< .true.: timesteps is outside [t0,t1]
       real(dp) :: t0 !< source item t0
@@ -2646,6 +2680,7 @@ contains
       real(dp) :: a_t, b_t !< coefficients for a linear transformation of target vertical coordinates to elevation above datum
       real(dp) :: sourceValueT0 !< source value at t0
       real(dp) :: sourceValueT1 !< source value at t1
+      real(dp) :: weight_factor !< weight factors: ([1,2,3,4]:nCoordinates)
       type(tEcField), pointer :: targetField !< Converter's result goes in here
       real(dp) :: targetMissing !< Target side missing value
       type(tEcField), pointer :: sourceT0Field !< helper pointer
@@ -2794,7 +2829,7 @@ contains
       !
       ! ===== interpolation =====
       select case (connection%converterPtr%interpolationType)
-      case (interpolate_spacetimeSaveWeightFactors, extrapolate_spacetimeSaveWeightFactors)
+      case (interpolate_spacetimeSaveWeightFactors, extrapolate_spacetimeSaveWeightFactors, interpolate_nearest_neighbour)
          ! bilinear interpolation in space
          do i = 1, connection%nSourceItems
             sourceItem => connection%sourceItemsPtr(i)%ptr
@@ -2814,7 +2849,7 @@ contains
             targetElementSet => targetItem%elementSetPtr
 
             if (sourceElementSet%ofType == elmSetType_samples) then
-               ! call interpolation based on nearest neighbours
+               ! call interpolation based on nearest neighbours or triangulation
                n_points = targetElementSet%nCoordinates
                n_cols = sourceElementSet%n_cols
                n_layers = sourceElementSet%n_layers
@@ -2828,15 +2863,18 @@ contains
                          (connection%converterPtr%operandType == operand_replace_if_value)) then ! Dit hoort in de loop beneden per target gridpunt!
                         targetValues(j) = 0.0_dp
                      end if
-                     mp = indexWeight%indices(1, j)
-                     if (mp > 0 .and. mp <= n_cols) then
-                        if (comparereal(sourceT0Field%arr1d(mp), sourceMissing, .true.) == 0 .or. &
-                            comparereal(sourceT1Field%arr1d(mp), sourceMissing, .true.) == 0) then
-                           call setECMessage("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
-                           return
+                     do i_weight_index = 1, size(indexWeight%indices, 1)
+                        mp = indexWeight%indices(i_weight_index, j)
+                        if (mp > 0 .and. mp <= n_cols) then
+                           if (comparereal(sourceT0Field%arr1d(mp), sourceMissing, .true.) == 0 .or. &
+                               comparereal(sourceT1Field%arr1d(mp), sourceMissing, .true.) == 0) then
+                              call setECMessage("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
+                              return
+                           end if
+                           weight_factor = indexWeight%weightfactors(i_weight_index, j)
+                           targetValues(j) = targetValues(j) + (a0 * sourceT0Field%arr1d(mp) + a1 * sourceT1Field%arr1d(mp)) * weight_factor
                         end if
-                        targetValues(j) = targetValues(j) + a0 * sourceT0Field%arr1d(mp) + a1 * sourceT1Field%arr1d(mp)
-                     end if
+                     end do
                   end do
                else
                   call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Multiple layers sources not yet supported for meteo from stations.")
