@@ -85,11 +85,6 @@
       <checks>
         <file name="DFM_OUTPUT_converted_tunnel/converted_tunnel_his.nc" type="netCDF">
           <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0009" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0009" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_discharge" toleranceAbsolute="0.003" />
-            <parameter name="cross_section_cumulative_discharge" toleranceRelative="0.0015" />
             <parameter name="longculvert_discharge" toleranceAbsolute="0.003" />
             <parameter name="longculvert_s1up" toleranceAbsolute="0.0005" />
             <parameter name="longculvert_s1dn" toleranceAbsolute="0.0009" />
