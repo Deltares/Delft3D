@@ -249,7 +249,7 @@ contains
 
       integer, dimension(1) :: target_index
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
-      type(tree_data), pointer :: block_ptr
+      type(tree_data), pointer :: key_value_ptr
       character(len=300) :: error_message
       character(len=1) :: oper
       logical :: is_successful
@@ -312,10 +312,10 @@ contains
 
       ! Now loop over all key-value pairs, to support reading *multiple* lines with forcingFile=...
       do j = 1, num_items_in_block
-         block_ptr => block_ptr%child_nodes(j)%node_ptr
+         key_value_ptr => block_ptr%child_nodes(j)%node_ptr
          ! todo: read multiple quantities
-         property_name = trim(tree_get_name(block_ptr))
-         call tree_get_data_string(block_ptr, property_value, is_successful)
+         property_name = trim(tree_get_name(key_value_ptr))
+         call tree_get_data_string(key_value_ptr, property_value, is_successful)
          if (is_successful) then
             if (strcmpi(property_name, 'forcingFile')) then
                forcing_file = property_value
@@ -1127,7 +1127,6 @@ contains
 
    !> Read and initialize bubblescreen object from new external forcings file.
    function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
-      use fm_external_forcings_data, only: numsrc, qstss
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
