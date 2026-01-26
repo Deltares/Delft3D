@@ -928,7 +928,6 @@ contains
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")
 
-      ! Check that cells 1, 2, 5, 6, 9 are in the result
       call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
       call f90_expect_true(cellmask(2) == 1, "Cell 2 should be crossed")
       call f90_expect_true(cellmask(3) == 1, "Cell 3 should be crossed")
