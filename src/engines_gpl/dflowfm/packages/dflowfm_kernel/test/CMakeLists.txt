@@ -129,3 +129,4 @@ copy_dflowfm_test_dependencies(test_ec_module_block)
 
 add_subdirectory(io)
 add_subdirectory(helpers)
+add_subdirectory(text_file_processor)
