@@ -1165,7 +1165,10 @@ contains
 
          ! ====================================================================================================
          ! TODO: Use the polygon data to setup the bubblescreen source/sinks
-         ! See: UNST-9561, UNST-9562
+         ! 
+         ! proposed workflow: 
+         ! 1) Snap polyline to all intersected flow nodes (method developed in UNST-9561)
+         ! 2) Create source/sink objects, either on their own or as part of a bubblescreen object (UNST-9562)
          ! ====================================================================================================
       end if
 
