@@ -165,7 +165,6 @@ contains
       IVAL_RAIN = 0
       IVAL_INFILTCAP = 0
       IVAL_INFILTACT = 0
-      IVAL_INFILTHORTONSTATE = 0
       IVAL_RHOP = 0
       IVAL_RHO = 0
       IVAL_SBCX1 = 0 ! should be done per fraction
@@ -269,7 +268,6 @@ contains
       if (jahisinfilt > 0) then
          IVAL_INFILTCAP = next_index(i)
          IVAL_INFILTACT = next_index(i)
-         IVAL_INFILTHORTONSTATE = next_index(i)
       end if
       if (numwqbots > 0) then
          IVAL_WQB1 = next_index(i)
@@ -500,7 +498,6 @@ contains
       IPNT_RAIN = ivalpoint(IVAL_RAIN, kmx, nlyrs)
       IPNT_INFILTCAP = ivalpoint(IVAL_INFILTCAP, kmx, nlyrs)
       IPNT_INFILTACT = ivalpoint(IVAL_INFILTACT, kmx, nlyrs)
-      IPNT_INFILTHORTONSTATE = ivalpoint(IVAL_INFILTHORTONSTATE, kmx, nlyrs)
       IPNT_WQB1 = ivalpoint(IVAL_WQB1, kmx, nlyrs)
       IPNT_SINK1 = ivalpoint(IVAL_SINK1, kmx, nlyrs)
       IPNT_BODSED1 = ivalpoint(IVAL_BODSED1, kmx, nlyrs)

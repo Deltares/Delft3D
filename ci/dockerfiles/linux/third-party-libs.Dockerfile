@@ -48,27 +48,6 @@ do
 done
 EOF-compression-libs
 
-FROM base AS curl-custom
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-RUN --mount=type=cache,target=/var/cache/src/,id=curl-${CACHE_ID_SUFFIX} <<"EOF-curl"
-set -eo pipefail
-source /opt/intel/oneapi/setvars.sh
-
-dnf install rpm-build -y
-dnf download --source curl
-rpm -ivh curl-*.src.rpm
-cd /root/rpmbuild/SOURCES
-tar xf curl-*.tar.xz
-rm -f curl-*.tar.xz
-cd curl-*
-./configure --without-ssl --without-libpsl --prefix=/usr/local
-make --jobs=$(nproc)
-make install
-EOF-curl
-
 FROM base AS uuid
 
 ARG DEBUG
@@ -352,7 +331,6 @@ ARG DEBUG
 ARG CACHE_ID_SUFFIX
 
 COPY --from=hdf5 --link /usr/local/ /usr/local/
-COPY --from=curl-custom --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-c-${CACHE_ID_SUFFIX} <<"EOF-netcdf-c"
 source /etc/bashrc
@@ -385,7 +363,11 @@ cmake .. \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DENABLE_PARALLEL4=ON \
     -DNETCDF_ENABLE_FILTER_SZIP=OFF \
-    -DENABLE_DAP=OFF
+    -DENABLE_DAP=OFF \
+    -DBUILD_UTILITIES=OFF \
+    -DENABLE_TESTS=OFF \
+    -DENABLE_BYTERANGE=OFF
+
 
 make --jobs=$(nproc)
 make install
@@ -435,7 +417,6 @@ ARG CACHE_ID_SUFFIX
 
 COPY --from=tiff --link /usr/local/ /usr/local/
 COPY --from=sqlite3 --link /usr/local/ /usr/local/
-COPY --from=curl-custom --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
 source /etc/bashrc
@@ -471,7 +452,8 @@ cmake .. \
     -DENABLE_TIFF=ON \
     -DENABLE_CURL=OFF \
     -DBUILD_PROJSYNC=OFF \
-    -DBUILD_TESTING=OFF
+    -DBUILD_TESTING=OFF \
+    -DBUILD_APPS=OFF
 cmake --build . --config $BUILD_TYPE --parallel $(nproc)
 cmake --build . --target install
 popd
@@ -731,4 +713,3 @@ COPY --from=esmf --link /usr/local/ /usr/local/
 COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=googletest --link /usr/local/ /usr/local/
 COPY --from=precice --link /usr/local/ /usr/local/
-COPY --from=curl-custom --link /usr/local /usr/local/

@@ -30,7 +30,7 @@ module m_horton
    use dhydrology_error
    use precision_basics
 
-   implicit none	
+   implicit none(type, external)
 
    private
    
@@ -60,14 +60,14 @@ module m_horton
       !! Typical timestep used in application is 1 minute (i.e. much smaller than 1 hour),
       !! otherwise computation of infiltration volume (in mm) should be more refined
       !! (using integral of capacity function, depending on state recovery or decrease).
-      function compute_horton_infiltration(config, n, include_rain, timestep, inf_cap, waterlevel, rainfall, inf_cap_state, infiltration_mm) result(ierr)
+      function compute_horton_infiltration(config, n, include_rain, timestep, inf_cap, waterdepth, rainfall, inf_cap_state, infiltration_mm) result(ierr)
 
          type(t_HortonInfiltrationConfig), intent(in) :: config !< Horton infiltration configuration containing min/max infiltration capacity and decrease/recovery rates
          integer, intent(in) :: n !< Number of grid cells
          integer, intent(in) :: include_rain !< Indicates whether or not (1/0) rainfall array is available
          real(kind=dp), intent(in) :: timestep !< [s] Timestep size
          real(kind=dp), dimension(:), intent(inout) :: inf_cap !< [m/s] Infiltration capacity
-         real(kind=dp), dimension(:), intent(in) :: waterlevel !< [m] Waterlevel in current timestep
+         real(kind=dp), dimension(:), intent(in) :: waterdepth !< [m] Waterdepth in current timestep
          real(kind=dp), dimension(:), intent(in) :: rainfall !< [mm/day] Rainfall in current timestep
          integer, dimension(:), intent(inout) :: inf_cap_state !< Infiltration capacity state; (one of HORTON_CAPSTAT_(NOCHANGE|RECOVERY|INCREASE))
          real(kind=dp), optional, intent(out) :: infiltration_mm(:) !< [mm] Infiltration amount
@@ -95,7 +95,7 @@ module m_horton
                ! No valid band width between min and max infiltration capacity
                inf_cap_state(i) = HORTON_CAPSTAT_NOCHANGE
 
-            else if ((include_rain == 1 .and. (rainfall_local(i) > config%min_inf_cap(i))) .or. comparereal(waterlevel(i), 0.0_dp) == 1) then
+            else if ((include_rain == 1 .and. (rainfall_local(i) > config%min_inf_cap(i))) .or. comparereal(waterdepth(i), 0.0_dp) == 1) then
                
                ! Wet situation, infiltration capacity is decreasing
                inf_cap_state(i) = HORTON_CAPSTAT_DECREASE
