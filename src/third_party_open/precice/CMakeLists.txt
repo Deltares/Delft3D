@@ -7,12 +7,18 @@ if(UNIX)
 endif(UNIX)
 
 if(WIN32)
-    add_library(precice SHARED IMPORTED)
-    set_target_properties(precice PROPERTIES
-        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/bin/libprecice.dll"
-        IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/lib/libprecice.dll.a"
+    find_package(precice CONFIG REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/precice-3_3_0_modified/lib/cmake/precice")
+    set(Boost_USE_STATIC_LIBS OFF)
+    find_package(Boost REQUIRED COMPONENTS log log_setup program_options thread PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../boost/boost_1_90_0/lib/cmake")
+    find_package(LibXml2 REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../libxml2/libxml2-v2.15.1/lib/cmake/libxml2")
+    target_link_libraries(precice_fortran PRIVATE precice::precice)
+    install(IMPORTED_RUNTIME_ARTIFACTS precice::precice RUNTIME DESTINATION lib)
+    install(IMPORTED_RUNTIME_ARTIFACTS
+            Boost::log
+            Boost::log_setup
+            Boost::program_options
+            Boost::thread
+            LibXml2::LibXml2
+            RUNTIME DESTINATION lib
     )
-    target_link_libraries(precice_fortran PRIVATE precice)
-    file(GLOB precice_dll_files "${CMAKE_CURRENT_SOURCE_DIR}/bin/*.dll")
-    install(FILES ${precice_dll_files} DESTINATION lib)
 endif(WIN32)
