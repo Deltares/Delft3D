@@ -731,8 +731,8 @@ contains
             Lf = abs(longculverts(ilongc)%flowlinks(1))
 
             if (longculverts(ilongc)%numlinks == 1) then
-               longculverts(ilongc)%flownode_up = ln(2, lf)
-               longculverts(ilongc)%flownode_dn = ln(1, lf)
+               longculverts(ilongc)%flownode_up = ln(1, Lf)
+               longculverts(ilongc)%flownode_dn = ln(2, Lf)
             else
                if (ln(1, Lf) <= ndx2d) then
                   longculverts(ilongc)%flownode_up = ln(1, Lf)
