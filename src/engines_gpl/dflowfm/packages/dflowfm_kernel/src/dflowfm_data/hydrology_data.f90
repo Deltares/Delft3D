@@ -68,7 +68,6 @@ module m_hydrology_data
 
    real(kind=dp) :: infiltcapuni !< [m s-1] Uniform infiltration capacity. Only used if infiltrationmodel == 2 (DFM_HYD_INFILT_CONST).
    real(kind=dp), allocatable, target :: infilt(:) !< [m3 s-1] Actual infiltration flux at current time {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: infiltcap0(:) !< [mm h-1] Maximum infiltration capacity on each cell at previous timestep {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: infiltcap(:) !< [m s-1] Maximum infiltration capacity on each cell {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable :: infiltcaproofs(:) !< temporary of the same
 

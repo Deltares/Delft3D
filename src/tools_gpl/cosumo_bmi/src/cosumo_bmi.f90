@@ -28,6 +28,9 @@
 !  $HeadURL$
 !-------------------------------------------------------------------------------
 !
+!> @file cosumo_bmi.f90
+!<
+!> \include{doc} c-sumo-bmi-mainpage.dox
 module m_cosumo_bmi_version
    implicit none
    !
