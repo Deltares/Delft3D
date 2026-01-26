@@ -1068,7 +1068,7 @@ contains
          yplCulv(:) = [yk(k1), yk(k2)]
 
          kn3typ = 5
-         call connectdbn(k2, k1, L)
+         call connectdbn(k1, k2, L)
          if (allocated(dxe)) then
             dxe(L) = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
          end if
