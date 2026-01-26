@@ -1287,7 +1287,7 @@ contains
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: numcoords !< number of polyline coordinates
       type(t_longculvert), intent(inout) :: longculvert !< A givin long culvert
-      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde
+      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net, L_flow
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
       integer :: ierror
@@ -1311,7 +1311,10 @@ contains
             inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
             inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
          else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
-            inode(1:2) = contact_cell_idx(1:2, contact_idx)
+            L_net = contactnetlinks(contact_idx)
+            L_flow = lne2ln(L_net)
+            inode(1) = ln(2, L_flow) !> reverse direction for 2D2D contact
+            inode(2) = ln(1, L_flow)
          end if
 
          inodeGlob(1:2) = inode(1:2)
@@ -1328,9 +1331,15 @@ contains
          else ! This long culvert is valid on the current domain
             ! check the starting node
             if (inode(1) > 0) then ! The starting node is inside the current domain
-               longculvert%flownode_up = inode(1)
-               nodenum = inode(1) ! For the later search
-               jafounds = 1
+               nodenum = inode(1)
+               do i = 1, nd(nodenum)%lnx
+                  linkabs = abs(nd(nodenum)%ln(i))
+                  if (kcu(abs(linkabs)) == 5) then
+                     longculvert%flownode_up = ln(1, linkabs) + ln(2, linkabs) - nodenum
+                     ! For the later search
+                     jafounds = 1
+                  end if
+               end do
             else
                ! Find the first known flow node in the current partition (if 2D flow node was not found outside of the loop already)
                call realloc(jnode, 1, keepExisting=.false., fill=0)
@@ -1347,8 +1356,14 @@ contains
 
             ! check the ending node
             if (inode(2) > 0) then ! The ending node is inside the current domain
-               longculvert%flownode_dn = inode(2)
-               jafounde = 1
+               do i = 1, nd(inode(2))%lnx
+                  linkabs = abs(nd(inode(2))%ln(i))
+                  if (kcu(abs(linkabs)) == 5) then
+                     longculvert%flownode_dn = ln(1, linkabs) + ln(2, linkabs) - inode(2)
+                     ! For the later search
+                     jafounde = 1
+                  end if
+               end do
             else
                ! Find the last known flow node in the current partition (if 2D flow ndoe was not found outside of the loop already)
                call realloc(jnode, 1, keepExisting=.false., fill=0)
