@@ -214,14 +214,15 @@ contains
       transformcoef(25) = tracer_decay_time
    end subroutine
 
-   function read_bubblescreen_forcing_attributes(node_ptr, base_dir, file_name, group_name, id, location_file, discharge_input) result(success)
+   !> Read bubblescreen forcing attributes from block pointer
+   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input) result(success)
       use MessageHandling, only: err_flush, msgbuf
       use properties, only: prop_get
       use tree_data_types, only: tree_data
       use unstruc_files, only: resolvePath
 
       ! Parameters
-      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the bubbleforce block
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file
       character(len=*), intent(in) :: group_name !< Name of the group in the ext file
@@ -241,7 +242,7 @@ contains
       success = .false.
 
       ! (required) Read out 'id' keyword
-      call prop_get(node_ptr, '', 'id', readout_id, is_read)
+      call prop_get(block_ptr, '', 'id', readout_id, is_read)
       if (.not. is_read .or. len_trim(readout_id) == 0) then ! Check if id is present
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
          call err_flush()
@@ -251,7 +252,7 @@ contains
       end if
 
       ! (required) Read out 'locationFile' keyword
-      call prop_get(node_ptr, '', 'locationFile', readout_location_file, have_location_file)
+      call prop_get(block_ptr, '', 'locationFile', readout_location_file, have_location_file)
       len = len_trim(readout_location_file)
       if (.not. have_location_file .or. len == 0) then ! Check if locationFile is present
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file is incomplete or missing.'
@@ -269,7 +270,7 @@ contains
       end if
 
       ! (required) Read out 'discharge' keyword
-      call prop_get(node_ptr, '', 'discharge', readout_discharge_input, is_read)
+      call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
       if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
