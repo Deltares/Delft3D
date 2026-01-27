@@ -35,7 +35,7 @@ module m_xbeach_filefunctions
 !! Merge of logging_module and filefunctions_module
    use m_xbeach_typesandkinds
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    integer, save :: logfileid

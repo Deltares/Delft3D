@@ -74,7 +74,7 @@ contains
       end do
       !$OMP END PARALLEL DO
       call cleanup_cell_geom_polylines()
-      
+
 !     BEGIN COPY from flow_geominit
       KC = 2 ! ONDERSCHEID 1d EN 2d NETNODES
 

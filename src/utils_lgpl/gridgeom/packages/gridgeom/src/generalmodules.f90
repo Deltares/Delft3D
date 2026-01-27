@@ -100,21 +100,44 @@ contains
 end module m_sferic
 
 module m_polygon
+   use precision, only: dp
 
    implicit none
 
-   double precision, allocatable :: XPL(:), YPL(:), ZPL(:), DZL(:), DZR(:), DCREST(:), DTL(:), DTR(:), DVEG(:)
-   double precision, allocatable, private :: XPH(:), YPH(:), ZPH(:)
-   integer, allocatable :: IWEIRT(:)
-   integer :: NPL, NPH, MAXPOL, MP, MPS, jakol45 = 0
-   character(len=64), allocatable :: nampli(:) ! Names of polylines, set in reapol,
+   real(kind=dp), allocatable, dimension(:) :: xpl
+   real(kind=dp), allocatable, dimension(:) :: ypl
+   real(kind=dp), allocatable, dimension(:) :: zpl
+   real(kind=dp), allocatable, dimension(:) :: dzl
+   real(kind=dp), allocatable, dimension(:) :: dzr
+   real(kind=dp), allocatable, dimension(:) :: dcrest
+   real(kind=dp), allocatable, dimension(:) :: dtl
+   real(kind=dp), allocatable, dimension(:) :: dtr
+   real(kind=dp), allocatable, dimension(:) :: dveg
+   real(kind=dp), allocatable, dimension(:), private :: xph
+   real(kind=dp), allocatable, dimension(:), private :: yph
+   real(kind=dp), allocatable, dimension(:), private :: zph
+   integer, allocatable, dimension(:) :: iweirt
+   integer :: npl
+   integer :: nph
+   integer :: maxpol
+   integer :: mp
+   integer :: mps
+   integer :: jakol45 = 0
+   character(len=64), allocatable, dimension(:) :: nampli ! Names of polylines, set in reapol,
+
    ! not shifted/updated during editpol.
-   double precision :: dxuni = 40d0 ! uniform spacing
-   integer :: MAXPOLY = 1000 ! will grow if needed
-   double precision, allocatable :: xpmin(:), ypmin(:), xpmax(:), ypmax(:), zpmin(:), zpmax(:)
+   real(kind=dp) :: dxuni = 40d0 ! uniform spacing
+   integer :: maxpoly = 1000 ! will grow if needed
+   real(kind=dp), allocatable, dimension(:) :: xpmin
+   real(kind=dp), allocatable, dimension(:) :: ypmin
+   real(kind=dp), allocatable, dimension(:) :: xpmax
+   real(kind=dp), allocatable, dimension(:) :: ypmax
+   real(kind=dp), allocatable, dimension(:) :: zpmin
+   real(kind=dp), allocatable, dimension(:) :: zpmax
    integer :: Npoly
-   integer, allocatable :: iistart(:), iiend(:)
-   integer, allocatable :: ipsection(:)
+   integer, allocatable, dimension(:) :: iistart
+   integer, allocatable, dimension(:) :: iiend
+   integer, allocatable, dimension(:) :: ipsection
 
 contains
    !> Increase size of global polyline array.
