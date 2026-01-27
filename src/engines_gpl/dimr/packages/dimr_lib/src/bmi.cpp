@@ -192,8 +192,7 @@ extern "C" {
 			}
 			else
 			{
-				bool isMaster = true;
-				thisDimr->createDistributeMPISubGroupCommunicator(thisDimr->control->subBlocks[0].unit.component, isMaster);
+				thisDimr->createDistributeMPISubGroupCommunicator(thisDimr->control->subBlocks[0].unit.component);
 
 				// Start block
 

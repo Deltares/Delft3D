@@ -1,5 +1,4 @@
 # Specify the modules to be included
-
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()

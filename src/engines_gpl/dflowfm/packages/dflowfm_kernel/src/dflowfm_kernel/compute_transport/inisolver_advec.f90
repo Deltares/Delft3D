@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -67,7 +67,7 @@ module m_inisolver_advec
 
    use m_solversettings, only: solversettings
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private
@@ -291,7 +291,9 @@ contains
 
 !     get sparsity pattern
       call amub(2 * Ndx, Lnx, 0, aC, jC, iC, aR, jR, iR, aW, jW, iW, numnonzeros, iwork, ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
 !     compute sparsity pattern of whole matrix A = I W (= I C R)
 
@@ -309,7 +311,9 @@ contains
 
 !     get sparsity pattern
       call amub(Lnx, 2 * Ndx, 0, aI, jI, iI, aW, jW, iW, solver_advec%a, solver_advec%ja, solver_advec%ia, solver_advec%numnonzeros, iwork, ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       if (jaoutput == 1) then
          call writematrix('Imat.m', Lnx, iI, jI, aI, 'I', 0)

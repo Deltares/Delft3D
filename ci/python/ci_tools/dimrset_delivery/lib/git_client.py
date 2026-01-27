@@ -1,6 +1,7 @@
 import hashlib
 import subprocess
 import sys
+from typing import List, Tuple
 
 from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
@@ -92,6 +93,52 @@ class GitClient(ConnectionServiceInterface):
         except Exception as e:
             self.__context.log(f"An error occurred while adding tag to Git: {e}.", severity=LogLevel.ERROR)
             sys.exit(1)
+
+    def run_git_command(self, cmd: List[str]) -> str:
+        """Run a git command and return its stdout as string."""
+        try:
+            if self.__context.dry_run:
+                self.__context.log(f"git command: {' '.join(cmd)}")
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=30,
+            )
+            return result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            self.__context.log(f"Git command failed: {e.stderr}", severity=LogLevel.ERROR)
+            raise
+        except Exception as e:
+            self.__context.log(f"Unexpected error running git command: {e}", severity=LogLevel.ERROR)
+            raise
+
+    def get_last_two_tags(self, dry_run: bool = False) -> Tuple[str, str]:
+        """Return the last two Git tags (most recent first)."""
+        if self.__context.dry_run:
+            return "v0.0.1", "v0.0.2"
+
+        tags = self.run_git_command(["git", "tag", "--sort=creatordate"]).splitlines()
+        if len(tags) < 2:
+            raise RuntimeError("At least two tags are required to generate the release notes.")
+        return tags[-2], tags[-1]
+
+    def get_commits(self, from_tag: str, to_tag: str, dry_run: bool = False) -> List[Tuple[str, str]]:
+        """Return list of (commit_hash, commit_message) between two tags."""
+        if self.__context.dry_run:
+            return [
+                ("deadbee", "Dummy commit 1 for dry-run"),
+                ("cafebabe", "Dummy commit 2 for dry-run"),
+            ]
+
+        log = self.run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%h%x09%s"])
+        commits: List[Tuple[str, str]] = []
+        for line in log.splitlines():
+            if "\t" in line:
+                commit_hash, message = line.split("\t", 1)
+                commits.append((commit_hash, message))
+        return commits
 
     def test_connection(self) -> bool:
         """Test the connection to the Git repository.

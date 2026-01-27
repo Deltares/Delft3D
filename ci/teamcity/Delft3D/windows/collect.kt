@@ -27,6 +27,10 @@ object WindowsCollect : BuildType({
         dimrset_version*txt => version
     """.trimIndent()
 
+    params {
+        param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+    }
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -42,6 +46,15 @@ object WindowsCollect : BuildType({
             }
             conditions {
                 equals("dep.${WindowsBuild.id}.product", "fm-suite")
+            }
+        }      
+        powerShell {
+            name = "Copy DLLs"
+            scriptMode = script {
+            content = """
+                Copy-Item "C:\Windows\System32\vcomp140.dll" -Destination "x64\lib" -Force
+                Copy-Item "C:\Windows\System32\ucrtbased.dll" -Destination "x64\lib" -Force
+            """.trimIndent()
             }
         }
         python {
@@ -65,6 +78,31 @@ object WindowsCollect : BuildType({
                 matches("dep.${WindowsBuild.id}.product", "(fm-suite|all-testbench)")
                 matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
+        }
+        powerShell {
+            name = "Prepare artifact to upload"
+            scriptMode = script {
+                content = """
+                    ${'$'}ErrorActionPreference = "Stop"
+
+                    Write-Host "Creating %file_path% ..."
+
+                    Compress-Archive -Path "x64", "dimrset_version_x64.txt" -DestinationPath %file_path% -Force
+
+                    Write-Host "ZIP created: %file_path%"
+                """.trimIndent()
+            }
+        }
+        step {
+            name = "Upload artifact to Nexus"
+            type = "RawUploadNexusWindows"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("file_path", "%file_path%")
+            param("nexus_username", "%nexus_username%")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+            param("target_path", "/07_day_retention/dimrset/%file_path%")
         }
     }
 
@@ -104,5 +142,6 @@ object WindowsCollect : BuildType({
     requirements {
         exists("env.PYTHON_PATH")
         contains("teamcity.agent.jvm.os.name", "Windows")
+        exists("VS2022")
     }
 })

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -70,7 +70,9 @@ contains
          FAC = 1.0_dp
          call dPROJECT(X, Y1, XA, Y1A, 1)
          call dPROJECT(X, Y2, XA, Y2A, 1)
-         if (Y2 - Y1 > 1e-10) FAC = (Y2 - Y1) / (Y2A - Y1A)
+         if (Y2 - Y1 > 1e-10) then
+            FAC = (Y2 - Y1) / (Y2A - Y1A)
+         end if
       end if
 
       DX = DY / ASP

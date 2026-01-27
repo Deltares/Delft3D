@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,6 @@
 
 !> Initializes all administration necessary for writing lateral discharge output to his-files.
 module m_init_lateral_his
-
 
    use precision, only: dp
    implicit none

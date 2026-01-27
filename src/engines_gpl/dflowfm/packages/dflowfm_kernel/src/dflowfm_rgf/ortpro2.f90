@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,9 @@ contains
       TV = (X3 * DX + Y3 * DY - X1 * DX - Y1 * DY) / R2
       X4 = X1 + TV * DX
       Y4 = Y1 + TV * DY
-      if (0.0_dp <= TV .and. TV <= 1.0_dp) JA = 1
+      if (0.0_dp <= TV .and. TV <= 1.0_dp) then
+         JA = 1
+      end if
       TV = TV * sqrt(R2)
       return
    end subroutine ORTPRO2

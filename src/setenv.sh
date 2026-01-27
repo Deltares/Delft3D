@@ -1,7 +1,7 @@
 #!/bin/bash
 ###############################################
 ### load your build environment for Deltares 
-#   Linux systems (H7/Teamcity)
+#   Linux systems (Alma8/Teamcity)
 #
 # Usage:
 #   source setenv.sh $COMPILER_TOOLCHAIN

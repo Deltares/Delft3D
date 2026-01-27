@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,12 +50,12 @@ contains
    !!--declarations----------------------------------------------------------------
       use precision
       use m_physcoef, only: ag, sag, vonkar, backgroundsalinity, backgroundwatertemperature, vismol
-      use m_sediment, only: stmpar, mtd, sed
+      use m_sediment, only: stmpar, mtd
       use m_flowtimes, only: time1
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
       use m_flow, only: iturbulencemodel, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
-      use m_flowparameters, only: jasal, jatem, epshs, epsz0
-      use m_transport, only: constituents, isalt, itemp
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, epshs, epsz0
+      use m_transport, only: constituents, isalt, itemp, ised1
       use m_turbulence, only: turkinws, turepsws, rhowat
       use sediment_basics_module, only: SEDTYP_CLAY
       use morphology_data_module
@@ -154,13 +154,16 @@ contains
 
       ! Calculate roughness height at cell centres
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L) ! set for all cases in setcfuhi/getustbcfuhi
          z0rou(k2) = z0rou(k2) + wcl(2, L) * z0urou(L)
       end do
 
       do k = 1, ndx
-         if (s1(k) - bl(k) < epshs) cycle
+         if (s1(k) - bl(k) <= epshs) then
+            cycle
+         end if
          !
          h0 = s1(k) - bl(k)
          chezy = sag * log(h0 / ee / max(epsz0, z0rou(k))) / vonkar ! consistency with getczz0
@@ -193,7 +196,7 @@ contains
          do kk = kb, kt - 1
             ! HK: is this better than first establish fallvelocity in a cell, next interpolate to interfaces?
 
-            if (kmx > 0) then ! 3D
+            if (kmx > 1) then ! 3D
                tka = zws(kk + 1) - zws(kk) ! thickness above
                tkb = zws(kk) - zws(kk - 1) ! thickness below
                tkt = tka + tkb
@@ -203,7 +206,7 @@ contains
                   salint = backgroundsalinity
                end if
                !                !
-               if (jatem > 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   temint = (tka * constituents(itemp, kk + 1) + tkb * constituents(itemp, kk)) / tkt
                else
                   temint = backgroundwatertemperature
@@ -238,7 +241,7 @@ contains
                   salint = backgroundsalinity
                end if
                !             !
-               if (jatem > 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   temint = constituents(itemp, k)
                else
                   temint = backgroundwatertemperature
@@ -258,8 +261,10 @@ contains
             ctot = 0.0_dp
             cclay = 0.0_dp
             do ll = 1, lsed
-               ctot = ctot + sed(ll, kk)
-               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + sed(ll, kk)
+               ctot = ctot + constituents(ised1 + ll - 1, kk)
+               if (sedtyp(ll) == SEDTYP_CLAY) then
+                  cclay = cclay + constituents(ised1 + ll - 1, kk)
+               end if
             end do
             !
             do ll = 1, lsed
@@ -283,7 +288,7 @@ contains
                dll_reals(WS_RP_SALIN) = real(salint, hp)
                dll_reals(WS_RP_TEMP) = real(temint, hp)
                dll_reals(WS_RP_RHOWT) = real(rhoint, hp)
-               dll_reals(WS_RP_CFRCB) = real(sed(ll, kk), hp)
+               dll_reals(WS_RP_CFRCB) = real(constituents(ised1 + ll - 1, kk), hp)
                dll_reals(WS_RP_CTOT) = real(ctot, hp)
                dll_reals(WS_RP_KTUR) = real(tur_k, hp)
                dll_reals(WS_RP_EPTUR) = real(tur_eps, hp)

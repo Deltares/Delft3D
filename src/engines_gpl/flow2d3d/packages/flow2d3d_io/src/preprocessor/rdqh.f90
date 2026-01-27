@@ -3,7 +3,7 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
               & ntoq      ,nambnd    ,bubble    ,kmax      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -179,7 +179,7 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
        call flhnew(lunrd     ,lundia    ,error     ,record(:lrecrd)      ,access    , &
                  & irecrd    ,nambnd(n) ,cntent    ,interp    ,idummy    , &
                  & rdummy    ,nqhrd     ,parrd     ,npara     ,nparrd    , &
-                 & bubble    ,gdp       )
+                 & bubble    ,''        ,gdp       )
        !
        if (error) then
           exit

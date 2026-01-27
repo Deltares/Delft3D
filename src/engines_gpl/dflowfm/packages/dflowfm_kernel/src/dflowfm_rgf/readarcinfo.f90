@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -67,7 +67,8 @@ contains
       call reaarc(marc, 1)
       call DOCLOSE(marc)
 
-      mc = mca; nc = nca
+      mc = mca
+      nc = nca
 
       call INCREASEGRID(MC, NC)
 
@@ -85,7 +86,9 @@ contains
       end do
 
       if (allocated(d)) then
-         deallocate (d); mca = 0; nca = 0
+         deallocate (d)
+         mca = 0
+         nca = 0
       end if
 
 !     disable grid outside selecting polygon

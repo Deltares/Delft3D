@@ -8,39 +8,33 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "httpx>=0.28.1",
+    "httpx~=0.28.1",
     "minio==7.2.15",
-    "s3-path-wrangler~=0.5.0",
-    "requests>=2.32.0",
-    "paramiko>=4.0.0",
-    "scp>=0.15.0",
-    "python-certifi-win32>=1.6.1",
-    "pyparsing>=3.2.3",
+    "s3-path-wrangler~=0.5.0"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "mypy==1.15.0",
-    "pyfakefs>=5.7.4",
-    "pytest>=8.4.0",
-    "pytest-cov>=6.2.0",
-    "pytest-mock>=3.14.1",
-    "ruff>=0.9.10",
-    "types-paramiko>=4.0.0",
-    "types-requests>=2.32.4",
+    "mypy~=1.15.0",
+    "pyfakefs~=5.7.4",
+    "pytest~=8.4.0",
+    "pytest-cov~=6.2.0",
+    "pytest-mock~=3.14.1",
+    "ruff~=0.9.10",
+    "types-paramiko~=4.0.0",
+    "types-requests~=2.32.4",
 ]
 verschilanalyse = [
-    "openpyxl>=3.1.5",
-    "types-openpyxl>=3.1.5",
-    "junit-xml>=1.9",
+    "openpyxl~=3.1.5",
+    "types-openpyxl~=3.1.5",
+    "junit-xml~=1.9",
 ]
 dimrset_delivery = [
-    "requests>=2.32.4",
-    "paramiko>=4.0.0", 
-    "scp>=0.15.0",
-    "python-certifi-win32>=1.6.1",
-    "pyparsing>=3.2.3",
-    "openpyxl>=3.1.5",
+    "requests~=2.32.4",
+    "paramiko~=4.0.0", 
+    "scp~=0.15.0",
+    "python-certifi-win32~=1.6.1 ; platform_system == 'Windows'",
+    "openpyxl~=3.1.5",
 ]
 all = ["ci-tools[verschilanalyse,dimrset_delivery,dev]"]
 

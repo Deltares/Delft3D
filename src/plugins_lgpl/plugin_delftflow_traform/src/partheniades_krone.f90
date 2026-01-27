@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -98,7 +98,6 @@ real(hp)           :: ws
 real(hp)           :: zumod
 character(len=256) :: runid
 character(len=256) :: filenm
-character(len=256) :: error_message
 
 !
 ! Local variables

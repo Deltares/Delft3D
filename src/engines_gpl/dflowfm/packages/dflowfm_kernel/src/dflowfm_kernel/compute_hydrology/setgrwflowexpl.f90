@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,15 @@
 
 module m_setgrwflowexpl
 
+   use precision, only: dp
+   use m_flowgeom, only: ndx, ndx2d, bl, ba, lnx1d, lnxi, ln, wu, dxi, bai, lnx
+   use m_flow, only: qingrw, qoutgrw, volgrw, infiltrationmodel, dfm_hyd_infilt_horton, horton_infiltration_config, &
+                     infiltcap, hs, horton_state, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, &
+                     infilt, sgrw0, h_transfer, s1, pgrw, bgrw, conductivity, porosgrw, dfm_hyd_infilt_darcy, h_capillair, unsatfac, hu
+   use m_flowtimes, only: dts
+   use m_horton, only: compute_horton_infiltration
+   use m_wind, only: jarain, rain
+
    implicit none
 
    private
@@ -42,26 +51,17 @@ contains
 
 !> groundwater flow explicit
    subroutine setgrwflowexpl()
-      use precision, only: dp
-      use m_flowgeom, only: ndx, ndx2d, bl, ba, lnx1d, lnxi, ln, wu, dxi, bai, lnx
-      use m_flow, only: qingrw, qoutgrw, volgrw, infiltrationmodel, dfm_hyd_infilt_horton, hortonmininfcap, hortonmaxinfcap, hortondecreaserate, hortonrecoveryrate, infiltcap0, infiltcap, hs, hortonstate, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, infilt, sgrw0, h_transfer, s1, pgrw, bgrw, conductivity, porosgrw, dfm_hyd_infilt_darcy, h_capillair, unsatfac, hu
-      use m_flowtimes, only: dts
-      use horton, only: infiltration_horton_formula
-      use m_wind, only: jarain, rain
-
-      real(kind=dp), parameter :: mmphr_to_mps = 1.0e-3_dp / 3600.0_dp
-
       integer :: k1, k2, L, k
       integer :: ierr
       real(kind=dp) :: z1, z2, h1, h2, dh, dQ, hunsat, hunsat1, hunsat2, fac, qgrw, h2Q
       real(kind=dp) :: fc, conduct, h_upw, Qmx
 
-      qingrw = 0.0_dp; qoutgrw = 0.0_dp; Volgrw = 0.0_dp
+      qingrw = 0.0_dp
+      qoutgrw = 0.0_dp
+      Volgrw = 0.0_dp
 
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then ! Horton's infiltration equation
-         ierr = infiltration_horton_formula(ndx, HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, infiltcap0, infiltcap, &
-                                            dts, hs, rain, jarain, HortonState)
-         infiltcap = infiltcap * mmphr_to_mps
+         ierr = compute_horton_infiltration(horton_infiltration_config, ndx, jarain, dts, infiltcap, hs, rain, horton_state)
       end if
 
       if (infiltrationmodel == 1) then ! orig. interceptionmodel: no horizontal groundwater flow, and infiltration is instantaneous as long as it fits in unsat zone (called 'interception' here, but naming to be discussed)
@@ -101,7 +101,8 @@ contains
             !   if ( prof1D(1,L) > 0 .and. prof1D(3,L) == 1) cycle           ! pipe profile
             !endif
 
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             hunsat1 = bl(k1) - sgrw0(k1)
             fac = min(1.0_dp, max(0.0_dp, hunsat1 / h_transfer)) ! 0 at bed, 1 at sgrw
             z1 = sgrw1(k1) * fac + s1(k1) * (1.0_dp - fac)
@@ -157,5 +158,4 @@ contains
       end if
 
    end subroutine setgrwflowexpl
-
 end module m_setgrwflowexpl

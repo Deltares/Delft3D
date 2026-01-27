@@ -17,7 +17,7 @@ set -eo pipefail
 
 function print_usage_info {
     echo "Usage: sbatch [SLURM OPTIONS]... ${0##*/} [OPTION]..."
-    echo "Run a dimr model on H7."
+    echo "Run a dimr model on Alma8."
     echo
     echo "Options:"
     echo "-d, --debug <D>"

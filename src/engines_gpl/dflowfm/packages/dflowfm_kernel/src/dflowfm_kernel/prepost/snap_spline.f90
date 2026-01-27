@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -128,14 +128,14 @@ contains
       do i = 1, Numnew
          iL = max(i - 1, 1)
          iR = min(i + 1, Numnew)
-         w(i) = 1.0_dp / sqrt(dbdistance(xf(iL), yf(iL), xf(ir), yf(iR), jsferic, jasfer3D, dmiss) / dble(iR - iL))
+         w(i) = 1.0_dp / sqrt(dbdistance(xf(iL), yf(iL), xf(ir), yf(iR), jsferic, jasfer3D, dmiss) / real(iR - iL, kind=dp))
       end do
 
 !  compute normal vectors at contrained spline nodes
       call spline(xsp(ispline, 1:num), num, xspp)
       call spline(ysp(ispline, 1:num), num, yspp)
       call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, 0.0_dp, curv, dn1x, dn1y, dsx, dsy)
-      call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, dble(num - 1), curv, dn2x, dn2y, dsx, dsy)
+      call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, real(num - 1, kind=dp), curv, dn2x, dn2y, dsx, dsy)
 
 ! DEBUG
 !   w = 1d0
@@ -159,8 +159,12 @@ contains
 !  make the contraints
       B = 0.0_dp
       C = 0.0_dp
-      B(1, 1) = dn1y; C(1, 1) = -dn1x; d(1) = dn1y * xx1 - dn1x * yy1
-      B(2, num) = dn2y; C(2, num) = -dn2x; d(2) = dn2y * xx2 - dn2x * yy2
+      B(1, 1) = dn1y
+      C(1, 1) = -dn1x
+      d(1) = dn1y * xx1 - dn1x * yy1
+      B(2, num) = dn2y
+      C(2, num) = -dn2x
+      d(2) = dn2y * xx2 - dn2x * yy2
 !  compute Schur complement
       E = matmul(B, matmul(AtWAi, transpose(B))) + matmul(C, matmul(AtWAi, transpose(C)))
       lambda = 0.0_dp
@@ -215,7 +219,9 @@ contains
 
          ja = 1
          call confrm('Continue?', ja)
-         if (ja /= 1) exit
+         if (ja /= 1) then
+            exit
+         end if
 
 !     compute sample points
          xf = matmul(A, xsp(ispline, 1:num))

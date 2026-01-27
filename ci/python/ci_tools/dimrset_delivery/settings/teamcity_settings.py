@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Dict, cast
+from typing import Any, Dict, List, cast
 
 
 def pascal_case_to_snake_case(name: str) -> str:
@@ -37,7 +37,6 @@ def assign_attributes_from_settings(instance: object, settings: Dict[str, Any], 
     """
     for attr_name in attribute_names:
         if attr_name in settings:
-            print(f"Set '{attr_name}' in {instance.__class__.__name__}")
             setattr(instance, attr_name, settings.get(attr_name, ""))
         else:
             print(f"Setting '{attr_name}' not found in configuration. Using default empty string.")
@@ -94,10 +93,12 @@ class Settings:
         """
         settings = self.__load_settings(json_settings_path)
         self.teamcity_ids = TeamcityIds(settings.get(pascal_case_to_snake_case(TeamcityIds.__name__), {}))
+        self.teamcity_project_keys: List[str] = settings.get("teamcity_project_keys", [])
 
         self.path_to_windows_version_artifact = INIT_VALUE
         self.path_to_linux_version_artifact = INIT_VALUE
         self.path_to_release_test_results_artifact = INIT_VALUE
+        self.path_to_release_changelog_artifact = INIT_VALUE
         self.name_of_dimr_release_signed_linux_artifact = INIT_VALUE
         self.name_of_dimr_release_signed_windows_artifact = INIT_VALUE
         self.dimr_space_id = INIT_VALUE
@@ -111,6 +112,7 @@ class Settings:
         self.linux_address = INIT_VALUE
         self.relative_path_to_wiki_template = INIT_VALUE
         self.delft3d_git_repo = INIT_VALUE
+        self.issuetracker_url = INIT_VALUE
         self.relative_path_to_email_template = INIT_VALUE
         self.lower_bound_percentage_successful_tests = INIT_VALUE
         self.versions_excel_filename = INIT_VALUE

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,7 +31,6 @@
 !
 
 module m_copynetlinkstosam
-
 
    use precision, only: dp
    implicit none
@@ -80,7 +79,9 @@ contains
       do l = 1, numl
          if (LC(l) == 1) then
             k = k + 1
-            xs(k) = xe(l); ys(k) = ye(l); zs(k) = rlin(l)
+            xs(k) = xe(l)
+            ys(k) = ye(l)
+            zs(k) = rlin(l)
          end if
       end do
       ns = k

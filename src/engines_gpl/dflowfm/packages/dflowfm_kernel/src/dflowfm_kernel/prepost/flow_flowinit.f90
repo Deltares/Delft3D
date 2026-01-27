@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,7 +52,7 @@ module m_flow_flowinit
    use m_coriolistilt, only: coriolistilt
    use m_wave_uorbrlabda, only: wave_uorbrlabda
    use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
-   use m_tauwavehk, only: tauwavehk
+   use m_wave_shear_velocity, only: compute_wave_shear_velocity
    use m_tauwave, only: tauwave
    use m_setwavmubnd, only: setwavmubnd
    use m_setwavfu, only: setwavfu
@@ -107,7 +107,7 @@ contains
       use m_1d_structures, only: initialize_structures_actual_params
       use m_oned_functions, only: set_max_volume_for_1d_nodes
       use m_structures
-      use m_longculverts
+      use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
       use fm_external_forcings
@@ -252,7 +252,9 @@ contains
          call qnerror('Error occurs when reading the restart file.', ' ', ' ')
          return
       end if
-      if (jawelrestart) jarestart = ON ! in the module
+      if (jawelrestart) then
+         jarestart = ON ! in the module
+      end if
 
       call flow_setstarttime() ! the flow time0 and time1 are managed by flow
       ! this is the only function that a user can use to influence the flow times
@@ -314,7 +316,9 @@ contains
 
       nonlin = max(nonlin1D, nonlin2D)
       if (nonlin >= 2) then
-         if (allocated(s1m)) deallocate (s1m, a1m)
+         if (allocated(s1m)) then
+            deallocate (s1m, a1m)
+         end if
          allocate (s1m(ndx), a1m(ndx), STAT=ierror)
          call aerr('s1m(ndx), a1m(ndx)', ierror, ndx)
          s1m(:) = s1(:)
@@ -383,12 +387,9 @@ contains
          end if
       end if
 
-      if (kmx < 2) then ! in 2D, use 1
-         if (ja_timestep_auto /= -123) then
-            ja_timestep_auto = ON
-         else
-            ja_timestep_auto = OFF
-         end if
+      ! In 2D set AUTO_TIMESTEP_2D_OUT as default
+      if ((kmx < 2) .and. (autotimestep /= AUTO_TIMESTEP_2D_OUT)) then
+         autotimestep = AUTO_TIMESTEP_2D_OUT
       end if
 
       if (jaimplicit == ON) then
@@ -508,12 +509,12 @@ contains
 
 !> initialize_temperature_with_uniform_value
    subroutine initialize_temperature_with_uniform_value()
-      use m_flowparameters, only: jatem, temini
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_NONE, temini
       use m_flow, only: tem1
 
       implicit none
 
-      if (jatem > OFF) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          tem1(:) = temini
       end if
 
@@ -1275,7 +1276,7 @@ contains
 !> set wave modelling
    subroutine set_wave_modelling()
       use precision, only: dp
-      use m_flowparameters, only: jawave, flowWithoutWaves, waveforcing, jawavestokes
+      use m_flowparameters, only: jawave, flow_without_waves, waveforcing, jawavestokes
       use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
       use m_waves !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
@@ -1303,7 +1304,7 @@ contains
       real(kind=dp) :: ustt
       real(kind=dp) :: hh
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. .not. flow_without_waves) then
          ! Normal situation: use wave info in FLOW
          hs = max(hs, 0.0_dp)
          if (jawave >= SWAN_NETCDF) then
@@ -1334,7 +1335,7 @@ contains
          call setwavmubnd()
       end if
 
-      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flowWithoutWaves) then
+      if ((jawave == SWAN .or. jawave >= SWAN_NETCDF) .and. flow_without_waves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
@@ -1348,7 +1349,7 @@ contains
          call wave_uorbrlabda() ! hwav gets depth-limited here
       end if
 
-      if (jawave == CONST .and. .not. flowWithoutWaves) then
+      if (jawave == CONST .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
@@ -1362,7 +1363,7 @@ contains
                   tw = 0.5_dp * (twav(left_node) + twav(right_node))
                   csw = 0.5 * (cosd(phiwav(left_node)) + cosd(phiwav(right_node)))
                   snw = 0.5 * (sind(phiwav(left_node)) + sind(phiwav(right_node)))
-                  call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
+                  call compute_wave_shear_velocity(hw, tw, hh, uorbi, rkw, ustt)
                   ustokes(link) = ustt * (csu(link) * csw + snu(link) * snw)
                   vstokes(link) = ustt * (-snu(link) * csw + csu(link) * snw)
                end do
@@ -1408,7 +1409,7 @@ contains
                   if (top_cell == bottom_cell) then
                      rr = 1.0_dp
                   else
-                     rr = dble(cell3D - bottom_cell) / dble(top_cell - bottom_cell)
+                     rr = real(cell3D - bottom_cell, kind=dp) / real(top_cell - bottom_cell, kind=dp)
                   end if
                   sa1(cell3D) = (1.0_dp - rr) * sa1(bottom_cell) + rr * satop(cell)
                end do
@@ -1513,7 +1514,7 @@ contains
 !> Initialize salinity and temperature on boundaries
    subroutine initialize_salinity_temperature_on_boundary()
       use m_flowtimes, only: keepstbndonoutflow
-      use m_flowparameters, only: jasal, jatem
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE
       use m_flowgeom, only: ln
       use m_flow, only: sa1, q1, tem1, kbnds, kbndtm, kmxd, nbnds, nbndtm, zbnds, zbndtm
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -1548,7 +1549,7 @@ contains
          end do
       end if ! jasal
 
-      if (jatem /= OFF) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          do i_boundary = 1, nbndtm
             link = kbndtm(3, i_boundary)
             call getLbotLtop(link, bottom_link, top_link)
@@ -1566,7 +1567,7 @@ contains
                end if
             end do
          end do
-      end if ! jatem
+      end if
 
    end subroutine initialize_salinity_temperature_on_boundary
 
@@ -1772,7 +1773,7 @@ contains
          dmu = 0.0_dp
          do k = 1, numk
             dis = dbdistance(xk(k), yk(k), xx1, yy1, jsferic, jasfer3D, dmiss)
-            if (dis < 5d3) then
+            if (dis < 5.0e3_dp) then
                xx = dis / 1000.0_dp
                yy = 5.0_dp * 1.0_dp * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2.0_dp * var))
                zk(k) = zk(k) + yy
@@ -1798,7 +1799,7 @@ contains
 
             do k = 1, numk
                dis = dbdistance(xk(k), yk(k), xx1, yy1, jsferic, jasfer3D, dmiss)
-               if (dis < 5d3) then
+               if (dis < 5.0e3_dp) then
                   xx = dis / 1000.0_dp
                   yy = 11.0_dp * 1.0_dp * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2.0_dp * var))
                   zk(k) = zk(k) + yy
@@ -1916,24 +1917,24 @@ contains
                else
                   if (xz(k) > 0.5_dp * (xzmin + xzmax) .and. (kk - kb + 1) <= locsaltlev * kmx) then
                      sa1(kk) = locsaltmax
-                     if (jatem > 0) then
+                     if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                         tem1(kk) = 5.0_dp
                      end if
                   else
                      sa1(kk) = locsaltmin
-                     if (jatem > 0) then
+                     if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                         tem1(kk) = 10.0_dp
                      end if
                   end if
                end if
                sa1(k) = sa1(k) + vol1(kk) * sa1(kk)
 
-               if (jatem > 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   tem1(k) = tem1(k) + vol1(kk) * tem1(kk)
                end if
             end do
             sa1(k) = sa1(k) / vol1(k)
-            if (jatem > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                tem1(k) = tem1(k) / vol1(k)
             end if
          end do
@@ -2022,8 +2023,12 @@ contains
          call dminmax(xk, numk, xkmin, xkmax, numk)
 
          n = 2
-         if (index(md_ident, '4') > 0) n = 4
-         if (index(md_ident, '8') > 0) n = 8
+         if (index(md_ident, '4') > 0) then
+            n = 4
+         end if
+         if (index(md_ident, '8') > 0) then
+            n = 8
+         end if
 
          xli = 1.0_dp / (xkmax - xkmin)
          amp = .01_dp
@@ -2047,7 +2052,9 @@ contains
             yy = yz(k) * xli
             s1(k) = dep + amp * amp * (cos(2 * pin * xx) + cos(2 * pin * yy)) / (8 * ag * pin * pin)
             if (jasal > 0) then
-               if (yy > 0.20 .and. yy < 0.30) sa1(k) = 30.
+               if (yy > 0.20 .and. yy < 0.30) then
+                  sa1(k) = 30.
+               end if
             end if
          end do
 
@@ -2077,13 +2084,13 @@ contains
                      foutk = foutk + sq(ln(2, La))
                   end if
                end do
-               s0(k) = s0(k) - foutk * 1d-1
+               s0(k) = s0(k) - foutk * 1.0e-1_dp
             end do
 
          end do
 
          chkadvd = 0.0_dp
-         s1(ndx / 2) = s1(ndx / 2) + 1d-5
+         s1(ndx / 2) = s1(ndx / 2) + 1.0e-5_dp
 
       else if (index(md_netfile, 'kelvin') > 0) then
 
@@ -2144,7 +2151,9 @@ contains
       else if (md_netfile == 'rec10x10.net') then
 
          do n = 1, ndx
-            if (xz(n) < 1) s1(n) = s1(n) + 1.0_dp
+            if (xz(n) < 1) then
+               s1(n) = s1(n) + 1.0_dp
+            end if
          end do
 
       else if (md_netfile == 'g04.net') then
@@ -2340,12 +2349,12 @@ contains
             hu(LL) = 5.0_dp
             frcu(LL) = frcuni
             call getczz0(hu(LL), frcu(LL), ifrcutp(LL), cz, z00)
-            ustb(LL) = sqrt(ag * 5.0_dp * 5d-5)
+            ustb(LL) = sqrt(ag * 5.0_dp * 5.0e-5_dp)
             cs = csu(LL)
             Lb = Lbot(LL)
             Lt = Ltop(LL)
             do L = Lb, Lt
-               zz = 5.0_dp * dble(L - Lb + 1 - 0.5_dp) / dble(Lt - Lb + 1)
+               zz = 5.0_dp * real(L - Lb + 1 - 0.5_dp, kind=dp) / real(Lt - Lb + 1, kind=dp)
                u1(L) = cs * ustb(LL) * log(c9of1 + zz / z00) / vonkar
             end do
          end do

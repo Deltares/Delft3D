@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,6 @@
 !! The code uses similair ways to distribute discharges over layers as the calling subroutine setsorsin. Changes in the
 !! calling subroutine should also be taken over in this routine!
 module m_update_waq_sink_source_fluxes
-
 
    use precision, only: dp
    implicit none

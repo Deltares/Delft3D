@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -212,7 +212,8 @@ contains
             do ikey = 1, Nkeys
                call str_lower(Skeys(ikey))
                if (trim(Skeys(ikey)) == 'hmin') then
-                  read (Svals(ikey), *) hmin; Dx_mincour = hmin
+                  read (Svals(ikey), *) hmin
+                  Dx_mincour = hmin
                else if (trim(Skeys(ikey)) == 'dtmax') then
                   read (Svals(ikey), *) Dt_maxcour
                else if (trim(Skeys(ikey)) == 'maxlevel') then
@@ -444,11 +445,7 @@ contains
             call mess(LEVEL_INFO, 'Using bloom species definition file: '//trim(md_blmfile))
 
          case ('convertlongculverts')
-            md_convertlongculverts = 1
-            k = k + 1
-            call get_command_argument(k, inarg)
-            md_culvertprefix = inarg
-            call mess(LEVEL_INFO, 'Generating culvert files with prefix: '//trim(md_culvertprefix))
+            call mess(LEVEL_ERROR, '--convertlongculverts has been made obsolete, work in progress!')
 
          case default
             inquire (FILE=trim(inarg), EXIST=JAWEL)

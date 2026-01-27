@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,6 @@
 
 !> initialize transport, set the enumerators
 module m_ini_transport
-
 
    use precision, only: dp
    implicit none
@@ -82,7 +81,7 @@ contains
          ISALT = NUMCONST
       end if
 
-      if (jatem /= 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          NUMCONST = NUMCONST + 1
          ITEMP = NUMCONST
       end if
@@ -184,8 +183,6 @@ contains
             do i = ISED1, ISEDN
                ised = i - ISED1 + 1
                const_names(i) = trim(stmpar%sedpar%NAMSED(sedtot2sedsus(ised))) ! JRE - netcdf output somehow does not tolerate spaces in varnames?
-               !call remove_all_spaces(const_names(i))                             ! see whether this fix works
-               !const_names(i) = trim(const_names(i))
             end do
             !
             !   Map sfnames to const_names

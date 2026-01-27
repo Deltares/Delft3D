@@ -1,0 +1,6 @@
+#ifndef DSLE_CONFIG_H
+#define DSLE_CONFIG_H
+
+#define DSLE_GIT_DESCRIBE "${git_describe}"
+
+#endif

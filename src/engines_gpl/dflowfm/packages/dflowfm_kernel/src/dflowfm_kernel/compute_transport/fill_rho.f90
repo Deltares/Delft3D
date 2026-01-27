@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("fill_rho", ithndl)
+      if (timon) then
+         call timstrt("fill_rho", ithndl)
+      end if
 
       do k = 1, Ndkx
          sa1(k) = constituents(1, k)
@@ -72,7 +74,9 @@ contains
          end do
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine fill_rho
 

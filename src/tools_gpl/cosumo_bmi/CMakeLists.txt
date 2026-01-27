@@ -19,6 +19,7 @@ if (WIN32)
                                 io_netcdf
                                 io_netcdf_data
                                 netcdff
+                                csumo_nfio
                                 )
 
     target_link_libraries(${library_name} ${library_dependencies})
@@ -38,6 +39,7 @@ if(UNIX)
                                 kdtree2
                                 io_netcdf
                                 io_netcdf_data
+                                csumo_nfio
                                 )
 
     target_link_libraries(${library_name} ${library_dependencies})

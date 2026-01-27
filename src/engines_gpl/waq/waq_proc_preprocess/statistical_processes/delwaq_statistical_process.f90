@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2025.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,6 +27,8 @@ module m_delwaq_statistical_process
    use m_setprc
    use m_setgeo
    use m_setdsc
+   use m_setmea
+   use m_setdev
    use m_setdpt
    use m_setday
    use m_rdstat
@@ -132,6 +134,16 @@ contains
                nsproc = nsproc + nperiod
                goto 10
             end if
+            key = 'STAMEA'
+            if (string_equals(key, keyval(ikey))) then
+               nsproc = nsproc + nperiod
+               goto 10
+            end if
+            key = 'STADEV'
+            if (string_equals(key, keyval(ikey))) then
+               nsproc = nsproc + nperiod
+               goto 10
+            end if
             key = 'STAGEO'
             if (string_equals(key, keyval(ikey))) then
                nsproc = nsproc + nperiod
@@ -217,6 +229,28 @@ contains
                   write (lunrep, '(3a)') 'For period [', pernam(iperiod), ']:'
                   isproc = isproc + 1
                   call setdsc(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), pernam(iperiod), persfx(iperiod), &
+                              pstart(iperiod), pstop(iperiod), isproc, aprocesprop, allitems, status)
+                  iret = procespropcolladd(statprocesdef, aprocesprop)
+               end do
+               goto 100
+            end if
+            key = 'STAMEA'
+            if (string_equals(key, keyval(ikey))) then
+               do iperiod = 1, nperiod
+                  write (lunrep, '(3a)') 'For period [', pernam(iperiod), ']:'
+                  isproc = isproc + 1
+                  call setmea(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), pernam(iperiod), persfx(iperiod), &
+                              pstart(iperiod), pstop(iperiod), isproc, aprocesprop, allitems, status)
+                  iret = procespropcolladd(statprocesdef, aprocesprop)
+               end do
+               goto 100
+            end if
+            key = 'STADEV'
+            if (string_equals(key, keyval(ikey))) then
+               do iperiod = 1, nperiod
+                  write (lunrep, '(3a)') 'For period [', pernam(iperiod), ']:'
+                  isproc = isproc + 1
+                  call setdev(lunrep, nokey(istat), keynam2(ikstat), keyval2(ikstat), pernam(iperiod), persfx(iperiod), &
                               pstart(iperiod), pstop(iperiod), isproc, aprocesprop, allitems, status)
                   iret = procespropcolladd(statprocesdef, aprocesprop)
                end do

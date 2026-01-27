@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -73,7 +73,9 @@ contains
       dhmax = 0.0_dp
       do i = 1, mc
          do j = 1, nc - 1
-            if (xc(i, j) == DMISS .or. xc(i, j + 1) == DMISS) cycle
+            if (xc(i, j) == DMISS .or. xc(i, j + 1) == DMISS) then
+               cycle
+            end if
             dhmax = max(dhmax, dbdistance(xc(i, j), yc(i, j), xc(i, j), yc(i, j + 1), jsferic, jasfer3D, dmiss))
          end do
       end do
@@ -88,7 +90,7 @@ contains
 
 !           regularise grid on right hand side of this node (asymmetric)
                do ih = i + 1, iR - 1
-                  xi = dble(ih - i) / dble(iR - i) * FAC
+                  xi = real(ih - i, kind=dp) / real(iR - i, kind=dp) * FAC
                   xc(ih, j) = (1.0_dp - xi) * xc(i, j) + xi * xc(iR, j)
                   yc(ih, j) = (1.0_dp - xi) * yc(i, j) + xi * yc(iR, j)
                end do

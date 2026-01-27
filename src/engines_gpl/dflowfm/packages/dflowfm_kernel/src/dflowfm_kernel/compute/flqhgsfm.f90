@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -164,7 +164,8 @@ contains
       tr = 1.0e-4_dp
       if (hs1 < tr .or. wstr < tr .or. dg < tr .or. min(cgf, cgd, cwf, cwd) <= 0.) then !  & dg<.0001) then !hk: or gate closed
 
-         formno = 0; return
+         formno = 0
+         return
 
       else
          !

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,9 @@ contains
          rmax = -1.0e30_dp
 
          do k = 1, ns
-            if (zs(k) == DMISS) cycle
+            if (zs(k) == DMISS) then
+               cycle
+            end if
             if (inview(xs(k), ys(k))) then
                if (zs(k) < rmin) then
                   rmin = zs(k)
@@ -104,7 +106,7 @@ contains
 
                x = x0 + dxa * (m - 1)
                y = y0 + dya * (n - 1)
-               z = dble(d(m, n))
+               z = real(d(m, n), kind=dp)
                if (inview(x, y) .and. z /= dmiss) then
                   if (z < rmin) then
                      rmin = z

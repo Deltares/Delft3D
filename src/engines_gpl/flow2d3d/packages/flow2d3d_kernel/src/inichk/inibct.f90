@@ -4,7 +4,7 @@ subroutine inibct(lundia    ,error     ,runid     , &
                 & hydrbc    ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -220,7 +220,7 @@ subroutine inibct(lundia    ,error     ,runid     , &
           call flhnew(lunbct    ,lundia    ,error     ,record(:lrec - 1)    ,access    , &
                     & irecrd    ,nambnd(ito)          ,cntent    ,dumchr    ,itdate    , &
                     & timscl    ,ntimrd    ,parnam    ,npara     ,nparrd    , &
-                    & bubble    ,gdp       )
+                    & bubble    ,''        ,gdp       )
           if (error) then
              exit
           endif

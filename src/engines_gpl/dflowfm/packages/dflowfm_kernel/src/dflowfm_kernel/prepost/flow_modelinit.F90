@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -126,9 +126,9 @@ contains
       use m_set_frcu_mor
       use m_flow_obsinit
       use m_set_model_boundingbox, only: set_model_boundingbox
-      use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
+      use m_fill_constituents, only: fill_constituents
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -183,10 +183,6 @@ contains
 
       call timstop(handle_extra(1)) ! End basic steps
 
-      if (jagui == 1) then
-         call timini() ! this seems to work, initimer and timini pretty near to each other
-      end if
-
 ! JRE
       if (jawave == WAVE_SURFBEAT) then
          call timstrt('Surfbeat input init', handle_extra(2)) ! Wave input
@@ -225,11 +221,15 @@ contains
 
          if (Ndx > 0) then
             call mess(LEVEL_INFO, 'Start partitioning model...')
-            if (jatimer == 1) call starttimer(IPARTINIT)
+            if (jatimer == 1) then
+               call starttimer(IPARTINIT)
+            end if
 
             call partition_init_1D2D(md_ident, iresult) ! 1D & 2D (hence the name, thanks to Herman for pointing this out)
 
-            if (jatimer == 1) call stoptimer(IPARTINIT)
+            if (jatimer == 1) then
+               call stoptimer(IPARTINIT)
+            end if
             call mess(LEVEL_INFO, 'Done partitioning model.')
 
             if (iresult == 0) then
@@ -273,7 +273,7 @@ contains
 
       if (my_rank == fetch_proc_rank .and. (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG)) then
          ! All helpers need no further model initialization.
-         call tauwavefetch(0d0)
+         call tauwavefetch(0.0_dp)
          iresult = DFM_USERINTERRUPT
          return
       end if
@@ -325,9 +325,13 @@ contains
          call update_vertadmin()
 
          !3D: partition_init needs kmxn and kmxL arrays for 3D send- and ghostlists
-         if (jatimer == 1) call starttimer(IPARTINIT)
+         if (jatimer == 1) then
+            call starttimer(IPARTINIT)
+         end if
          call partition_init_3D(iresult)
-         if (jatimer == 1) call stoptimer(IPARTINIT)
+         if (jatimer == 1) then
+            call stoptimer(IPARTINIT)
+         end if
 
          if (iresult /= DFM_NOERR) then
             call mess(LEVEL_WARN, 'Error in 3D partitioning initialization.')
@@ -336,10 +340,6 @@ contains
 
       end if
       call timstop(handle_extra(12)) ! vertical administration
-
-#ifdef _OPENMP
-      ierr = init_openmp(md_numthreads, jampi)
-#endif
 
       call timstrt('Net link tree 0     ', handle_extra(13)) ! netlink tree 0
       if ((jatrt == 1) .or. (jacali == 1)) then
@@ -421,11 +421,11 @@ contains
 
       ! initialize waq and add to tracer administration
       call timstrt('WAQ processes init  ', handle_extra(18)) ! waq processes init
-      if (ti_waqproc /= 0d0) then
+      if (ti_waqproc /= 0.0_dp) then
          if (jawaqproc == 1) then
             call fm_wq_processes_ini_proc()
             jawaqproc = 2
-            if (ti_waqproc > 0d0) then
+            if (ti_waqproc > 0.0_dp) then
                call fm_wq_processes_step(ti_waqproc, tstart_user)
             else
                call fm_wq_processes_step(dt_init, tstart_user)
@@ -436,6 +436,7 @@ contains
 
       call timstrt('MBA init            ', handle_extra(24)) ! MBA init
       if (ti_mba > 0) then
+         call fill_constituents(1) ! mba_init assumes that the concentrations are in the constituents array ...
          call mba_init()
       end if
       call timstop(handle_extra(24)) ! end MBA init
@@ -509,7 +510,7 @@ contains
          use_u1 = .false.
          ucxq_save = ucxq
          ucyq_save = ucyq
-         if (Corioadamsbashfordfac > 0d0) then
+         if (Corioadamsbashfordfac > 0.0_dp) then
             fvcoro_save = fvcoro
          end if
       end if !restart
@@ -526,9 +527,10 @@ contains
 
       !See UNST-7754
       if (stm_included .and. jased > 0) then
-         taub = 0d0
+         taub = 0.0_dp
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             taub(k1) = taub(k1) + wcl(1, L) * taubxu(L)
             taub(k2) = taub(k2) + wcl(2, L) * taubxu(L)
          end do

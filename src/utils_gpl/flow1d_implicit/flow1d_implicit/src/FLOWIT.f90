@@ -22,7 +22,9 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
 &lambda ,relstr ,dhstru ,omcfl  ,dhtyp  ,ker    ,omboun ,&
 &omqlat ,ibuf   ,lfrou  ,qtyp   ,indx   ,bicg   ,solbuf ,&
 &stdbq  ,nstdb                                          ,&
-&debug_wr)
+&debug_wr                                               ,&
+&fm1dimp                                                 &
+&)
 
 !=======================================================================
 !            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -271,6 +273,9 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
 !
 !
 !***********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !
 !     Include constants for array dimensions
 !
@@ -389,7 +394,9 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
    &x       ,nexres  ,exres   ,lsalt  ,izwft   ,juer   ,&
    &prslot  ,psltvr  ,waoft   ,cpa    ,rpa     ,alfab  ,&
    &tauwi   ,ksi     ,a1m     ,ker    ,dt1     ,theta2 ,&
-   &exrstp  ,omalfa  ,omc     ,omr    ,omw    )
+   &exrstp  ,omalfa  ,omc     ,omr    ,omw             ,&
+   &fm1dimp                                            ,&
+   &)
 !
 !     Debug variables FM1DIMP2DO: remove
    if (debug_wr>0) then
