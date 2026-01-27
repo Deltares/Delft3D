@@ -1,0 +1,122 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "fm-suite-debug",
+            "displayName": "FM Suite Debug",
+            "binaryDir": "${sourceDir}/../../build_fm-suite_debug",
+            "generator": "Visual Studio 17 2022",
+            "toolset": "fortran=ifx",
+            "architecture": "x64",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "fm-suite",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_fm-suite_debug/install"
+            }
+        },
+        {
+            "name": "fm-suite-release",
+            "displayName": "FM Suite Release",
+            "binaryDir": "${sourceDir}/../../build_fm-suite_release",
+            "generator": "Visual Studio 17 2022",
+            "toolset": "fortran=ifx",
+            "architecture": "x64",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "fm-suite",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_fm-suite_release/install"
+            }
+        },
+        {
+            "name": "tc-branch-release",
+            "displayName": "TC Branch Release",
+            "binaryDir": "${sourceDir}/../../build_tc-branch_release",
+            "generator": "Visual Studio 17 2022",
+            "toolset": "fortran=ifx",
+            "architecture": "x64",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "tc-testbench",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_tc-branch_release/install"
+            }
+        },
+        {
+            "name": "dflowfm-debug",
+            "displayName": "DFlowFM Debug",
+            "binaryDir": "${sourceDir}/../../build_dflowfm_debug",
+            "generator": "Visual Studio 17 2022",
+            "toolset": "fortran=ifx",
+            "architecture": "x64",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "dflowfm",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_dflowfm_debug/install"
+            }
+        },
+        {
+            "name": "dflowfm-release",
+            "displayName": "DFlowFM Release",
+            "binaryDir": "${sourceDir}/../../build_dflowfm_release",
+            "generator": "Visual Studio 17 2022",
+            "toolset": "fortran=ifx",
+            "architecture": "x64",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "dflowfm",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_dflowfm_release/install"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "fm-suite-debug-build",
+            "displayName": "Debug Build",
+            "configurePreset": "fm-suite-debug",
+            "configuration": "Debug",
+            "jobs": 24
+        },
+        {
+            "name": "fm-suite-release-build",
+            "displayName": "Release Build",
+            "configurePreset": "fm-suite-release",
+            "configuration": "Release",
+            "jobs": 24
+        },
+        {
+            "name": "dflowfm-debug-build",
+            "displayName": "Debug Build",
+            "configurePreset": "dflowfm-debug",
+            "configuration": "Debug",
+            "jobs": 24
+        },
+        {
+            "name": "dflowfm-release-build",
+            "displayName": "Release Build",
+            "configurePreset": "dflowfm-release",
+            "configuration": "Release",
+            "jobs": 24
+        }
+    ],
+    "testPresets": [
+        {
+            "configurePreset": "fm-suite-debug",
+            "name": "fm-suite-debug-test",
+            "displayName": "Debug Test",
+            "configuration": "Debug"
+        },
+        {
+            "configurePreset": "fm-suite-release",
+            "name": "fm-suite-release-test",
+            "displayName": "Release Test",
+            "configuration": "Release"
+        },
+        {
+            "configurePreset": "dflowfm-debug",
+            "name": "dflowfm-debug-test",
+            "displayName": "Debug Test",
+            "configuration": "Debug"
+        },
+        {
+            "configurePreset": "dflowfm-release",
+            "name": "dflowfm-release-test",
+            "displayName": "Release Test",
+            "configuration": "Release"
+        }
+    ]
+}
+ 

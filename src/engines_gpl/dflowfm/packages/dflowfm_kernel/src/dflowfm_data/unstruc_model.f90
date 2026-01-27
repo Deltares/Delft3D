@@ -2930,7 +2930,7 @@ contains
             call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform', jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')
          end if
 
-         call prop_set(prop_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor, 'z-layer thickness growth factor starting from the bottom of bed')
+         call prop_set(prop_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor, 'z-layer thickness growth factor from DzTopUniAboveZ downwards')
          if (writeall .or. dztop /= dmiss) then
             call prop_set(prop_ptr, 'geometry', 'Dztop', Dztop, 'Z-layer thickness of layers above level Dztopuniabovez')
          end if
