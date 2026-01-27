@@ -1753,12 +1753,12 @@ contains
                         kbeginL = maxlay_src * (kL - 1) + 1 ! refers to source left column
                         kendL = maxlay_src * kL
                         ! TK_Temp, not needed!
-                        sigmaL =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginL:kendL)
+                        ! sigmaL =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginL:kendL)
 
                         kbeginR = maxlay_src * (kR - 1) + 1 ! refers to source right column
                         kendR = maxlay_src * kR
                         ! TK_Temp, not needed!
-                        sigmaR =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginR:kendR)
+                        ! sigmaR =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginR:kendR)
 
                         ! Convert Z-coordinate to absolute z wrt datum
                         ! For the time being, let's assume that both support points have the same
