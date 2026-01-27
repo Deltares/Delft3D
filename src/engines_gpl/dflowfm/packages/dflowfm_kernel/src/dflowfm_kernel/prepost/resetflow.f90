@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -111,8 +111,6 @@ contains
       call reset_save_ugrid_state()
 
       call reset_sedtra()
-
-      call reset_hydrology_data()
 
       call reset_nearfieldData()
 

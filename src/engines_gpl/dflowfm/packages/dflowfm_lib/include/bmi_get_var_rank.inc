@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2025.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -78,19 +78,9 @@
      rank = 1
   case("infilt")
      rank = 1
-  case("infiltcap0")
-     rank = 1
   case("infiltcap")
      rank = 1
-  case("HortonMinInfCap")
-     rank = 1
-  case("HortonMaxInfCap")
-     rank = 1
-  case("HortonDecreaseRate")
-     rank = 1
-  case("HortonRecoveryRate")
-     rank = 1
-  case("HortonState")
+  case("horton_state")
      rank = 1
   case("shx")
      rank = 1

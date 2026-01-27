@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,7 +48,7 @@ contains
    subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside, update_blcell)
       use precision, only: dp
       use m_cutcell_list, only: cutcell_list
-      use m_samples_to_cellmask2
+      use m_samples_to_cellmask
       use m_confrm
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_sferic, only: jsferic
@@ -163,7 +163,7 @@ contains
                   call oldfil(minp, dryptsfile)
                   call savesam()
                   call reasam(minp, 0)
-                  call samples_to_cellmask2()
+                  call samples_to_cellmask()
                   call delsam(0)
 
                   ierror = 0

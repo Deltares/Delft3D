@@ -10,7 +10,7 @@
 
 set -eo pipefail
 
-if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX ; then
+if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -20,9 +20,9 @@ rm -rf "$VERSCHILLENTOOL_DIR"
 mkdir "$VERSCHILLENTOOL_DIR"
 
 docker login \
-    --username="robot\$verschillentool+h7"  \
+    --username="robot\$verschillentool+h7" \
     --password-stdin \
-    containers.deltares.nl < "${HOME}/.harbor/verschillentool"
+    containers.deltares.nl <"${HOME}/.harbor/verschillentool"
 
 # Run verschillentool (all configs).
 find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \

@@ -5,7 +5,7 @@ from os.path import abspath, dirname, isfile, join
 
 import pytest
 
-from src.suite.test_bench_settings import TestBenchSettings
+from src.suite.command_line_settings import CommandLineSettings
 from src.utils.comparers.d_series_benchmark_comparer import DSeriesBenchmarkComparer
 from src.utils.comparers.end_result import EndResult
 from src.utils.logging.console_logger import ConsoleLogger
@@ -32,11 +32,11 @@ class TestDSeriesBenchmarkComparer:
         # This is done to point to a specific file
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
-        settings = TestBenchSettings()
+        settings = CommandLineSettings()
         settings.config_file = join(self.testdata, "Unit_test.xml")
         settings.credentials.name = "commandline"
-        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
-        file = settings.configs_to_run
+        xml_config = xmlcp.load(settings, logger)
+        file = xml_config.testcase_configs
 
         # The first file that is going to be checked passed as attribute
         self.file_check = file[0].checks[0]
@@ -476,11 +476,11 @@ class TestDSeriesBenchmarkComparer:
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
-        settings = TestBenchSettings()
+        settings = CommandLineSettings()
         settings.config_file = join(self.testdata, "Unit_test_empty_file.xml")
         settings.credentials.name = "commandline"
-        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
-        file = settings.configs_to_run
+        xml_config = xmlcp.load(settings, logger)
+        file = xml_config.testcase_configs
         # The file to be checked
         file_check = file[0]._TestCaseConfig__checks[0]
 

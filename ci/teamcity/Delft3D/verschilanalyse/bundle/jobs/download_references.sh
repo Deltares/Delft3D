@@ -10,7 +10,7 @@
 
 set -eo pipefail
 
-if ! util.check_vars_are_set BUCKET REFERENCE_PREFIX VAHOME ; then
+if ! util.check_vars_are_set BUCKET REFERENCE_PREFIX VAHOME; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -36,5 +36,5 @@ docker run --rm \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
     s3 sync --delete --no-progress "${BUCKET}/${REFERENCE_PREFIX}/output" /data
 
-find "$ARCHIVE_DIR" -iname '*.zip' -print0 \
-    | xargs -0 -I'{}' -P8 bash -c 'unzip_references "{}"'
+find "$ARCHIVE_DIR" -iname '*.zip' -print0 |
+    xargs -0 -I'{}' -P8 bash -c 'unzip_references "{}"'
