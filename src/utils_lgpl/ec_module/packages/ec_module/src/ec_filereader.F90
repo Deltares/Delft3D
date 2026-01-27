@@ -232,7 +232,8 @@ module m_ec_filereader
                                                             fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arr1dPtr)
                      if (success) then
                         ! TK_Temp: set z-value (mis)use ELEMENTSETPTR%Z to detrmine z-coordinate needed or not 
-                        if (associated(fileReaderPtr%items(1)%ptr%ELEMENTSETPTR%Z)) then
+                        if (associated(fileReaderPtr%items(1)%ptr%ELEMENTSETPTR%Z) .and. &
+                           strcmpi(fileReaderPtr%items(1)%ptr%ELEMENTSETPTR%origin,'nchis')) then
                            fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arrzPtr = fileReaderPtr%BC%VP
                         end if
  

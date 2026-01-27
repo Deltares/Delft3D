@@ -1523,16 +1523,15 @@ contains
          if (.not. ecArcinfoAndT3dReadBlock(fileReaderPtr, fileReaderPtr%fileHandle, 1, numlay * vectormax, 1, valueptr)) return
       case (provFile_bc)
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT0FieldPtr%arr1dPtr, valueptr%sourceT0FieldPtr%timesteps)) return
-         ! TK_Temp: fill arrz values for T0 (initialize?)
-         valueptr%sourceT0FieldPtr%arrzPtr = filereaderPTR%bc%vp
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
-         ! TK_Temp: fill arrz values for T1 (initialize?)
-         valueptr%sourceT1FieldPtr%arrzPtr = filereaderPTR%bc%vp
-         !TK_Temp: If History file set origin to nchis!
+
+         !TK_temp: Set origin of (vertical) porisions to 'nchis' if origin is netcdf file; fill arrz
          if (index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0) then 
-             valueptr%elementsetptr%origin = 'nchis'
-      end if
-      
+             valueptr%elementsetptr%origin     = 'nchis'
+             valueptr%sourceT0FieldPtr%arrzPtr = filereaderPTR%bc%vp
+             valueptr%sourceT1FieldPtr%arrzPtr = filereaderPTR%bc%vp
+         end if
+              
          case default
          call setECMessage("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
          return
