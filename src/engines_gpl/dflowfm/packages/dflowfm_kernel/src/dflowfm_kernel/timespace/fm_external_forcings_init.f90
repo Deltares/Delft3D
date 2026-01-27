@@ -1132,6 +1132,9 @@ contains
       use m_reapol, only: reapol
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
+      use network_data
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1142,9 +1145,17 @@ contains
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
+      integer, allocatable :: crossed_cells(:) !> Indices of crossed cells in network_data::netcells
+      character, dimension(:), allocatable :: error
+
       ! Local variables
       integer :: file_pointer
       logical :: is_successful
+      real(kind=dp), allocatable :: xpl_tmp(:), ypl_tmp(:), zpl_tmp(:) !< Temporary arrays to store polygon coordinates
+      integer :: npl_tmp !< Temporary variable to store number of polygon points
+
+      type(tface) :: tmcell
+      integer :: cidx
 
       is_successful = .false.
 
@@ -1155,7 +1166,24 @@ contains
       call oldfil(file_pointer, location_file)
       call reapol(file_pointer, 0)
 
-      ! ====================================================================================================
+      ! Copy polygon data to temporary arrays
+      npl_tmp = npl
+      allocate(xpl_tmp(npl_tmp))
+      allocate(ypl_tmp(npl_tmp))
+      allocate(zpl_tmp(npl_tmp))
+      xpl_tmp = xpl(1:npl_tmp)
+      ypl_tmp = ypl(1:npl_tmp)
+      zpl_tmp = zpl(1:npl_tmp)
+
+      call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
+
+      if (.NOT. ALLOCATED(error)) then
+         do cidx = 1, SIZE(crossed_cells)
+            ! For each crossed cell, create a bubblescreen source/sink object
+            tmcell = netcell(crossed_cells(cidx))
+            print *, 'Crossed cell:', xk(tmcell%nod(1)), yk(tmcell%nod(1))
+         end do
+      end if
       ! TODO: Use the polygon data to create the bubblescreen source/sinks objects
       ! 
       ! proposed workflow: 
