@@ -1,4 +1,4 @@
-import std;
+#include <print>
 
 int main() {
     std::println("Hello, world from C-SUMO!");
