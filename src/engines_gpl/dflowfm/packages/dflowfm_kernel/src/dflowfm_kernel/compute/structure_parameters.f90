@@ -647,15 +647,15 @@ contains
       if (allocated(vallongculvert)) then
          do n = 1, nlongculverts
             vallongculvert(1:NUMVALS_LONGCULVERT, n) = 0.0_dp
-            if (longculverts(n)%numlinks > 0) then ! This long culvert is valid on the current domain/subdomain
-               ! fill in for the representative flow ilnk
+            if (longculverts(n)%numlinks > 0) then ! True even if on other domain
                La = abs(longculverts(n)%flowlinks(1))
-               if (longculverts(n)%flownode_up == ln(1, La)) then
-                  dir = 1.0_dp
-               else
-                  dir = -1.0_dp
-               end if
                if (La > 0) then
+                  ! fill in for the representative flow ilnk
+                  if (longculverts(n)%flownode_up == ln(1, La)) then
+                     dir = 1.0_dp
+                  else
+                     dir = -1.0_dp
+                  end if
                   if (jampi > 0) then
                      call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
                      if (jaghost == 1) then

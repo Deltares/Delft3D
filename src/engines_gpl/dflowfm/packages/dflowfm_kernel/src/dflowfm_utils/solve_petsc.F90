@@ -110,17 +110,21 @@ contains
    module subroutine stoppetsc()
 #ifdef HAVE_PETSC
       use mpi, only: mpi_comm_free
-      use m_petsc, only: PETSC_OK, petscfinalize, petsc_comm_world
+      use m_petsc, only: PETSC_OK, petscfinalize, petsc_comm_world, petscinitialized
       use m_flowparameters, only: Icgsolver
       use m_partitioninfo, only: jampi
 
       PetscErrorCode :: ierr = PETSC_OK
+      PetscBool :: isInitialized
 
       if (Icgsolver == 6) then
-         call killSolverPETSC()
-         call PetscFinalize(ierr)
-         if (jampi > 0) then
-            call mpi_comm_free(PETSC_COMM_WORLD, ierr)
+         call PetscInitialized(isInitialized, ierr)
+         if (isInitialized) then
+            call killSolverPETSC()
+            call PetscFinalize(ierr)
+            if (jampi > 0) then
+               call mpi_comm_free(PETSC_COMM_WORLD, ierr)
+            end if
          end if
       end if
 #endif
