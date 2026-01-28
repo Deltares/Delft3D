@@ -173,7 +173,7 @@ contains
                end if
 
                do itu1 = 1, 4 ! furu_loop
-                  if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! Delft3D-Wave Stokes-drift correction
+                  if (jawave > NO_WAVES .and. .not. flow_without_waves) then ! Delft3D-Wave Stokes-drift correction
 
                      if (modind < 9) then
                         frL = cfwavhi(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
@@ -374,7 +374,7 @@ contains
 
       call furusobekstructures()
 
-      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flow_without_waves) then
          if (kmx == 0) then
             !   add wave-induced mass fluxes on boundaries to convert euler input to GLM
             do L = Lnxi + 1, Lnx
