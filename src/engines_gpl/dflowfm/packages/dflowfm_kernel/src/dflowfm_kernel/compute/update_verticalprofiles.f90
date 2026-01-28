@@ -1272,7 +1272,7 @@ contains
 
       end if
 
-      if (iturbulencemodel < 5) then
+      if (iturbulencemodel < 5) then 
          call links_to_centers(vicwws, vicwwu)
          if (jarichardsononoutput > 0) then
             call links_to_centers(richs, rich)
