@@ -1651,6 +1651,13 @@ contains
          if (dom%vegetation > 0) then
             sr%output_veg = 1
          end if
+         select case (dom%vegetation)
+         case (1)
+            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Suzuki'
+         case (2)
+            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Jacobsen'
+         case default
+         end select
          !
          ! Read directional space
          !
