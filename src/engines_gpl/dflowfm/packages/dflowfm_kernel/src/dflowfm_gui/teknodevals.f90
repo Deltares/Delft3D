@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -106,7 +106,9 @@ contains
                   return
                end if
             end if
-            if (.not. INVNOD(K1)) cycle
+            if (.not. INVNOD(K1)) then
+               cycle
+            end if
             VV = RNOD(K1)
             XX1 = XK(K1)
             YY1 = YK(K1)

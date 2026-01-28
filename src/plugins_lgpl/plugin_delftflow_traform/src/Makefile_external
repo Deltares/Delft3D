@@ -5,7 +5,7 @@
 #   Frank.Platzek@deltares.nl
 #   15 nov 2010
 #
-#   Copyright (C)  Stichting Deltares, 2011-2013.
+#   Copyright (C)  Stichting Deltares, 2011-2026.
 #-------------------------------------------------------------------------------
 
 all: engelund_hansen.o general_engelund_hansen.o partheniades_krone.o settling_velocity.o shld.o vrijn84_riv_77.o vrijn84_hxbs.o

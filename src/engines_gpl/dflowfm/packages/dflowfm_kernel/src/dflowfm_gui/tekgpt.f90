@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,7 +56,9 @@ contains
       real(kind=dp) :: XP, YP
       integer :: MPU, MPD, NPU, NPD, ncolcir
       XP = X(MP, NP)
-      if (XP == XYMIS) return
+      if (XP == XYMIS) then
+         return
+      end if
       YP = Y(MP, NP)
       call MOVABS(XP, YP)
       call SETCOL(NCOL)

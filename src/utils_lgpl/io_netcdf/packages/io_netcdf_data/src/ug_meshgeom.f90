@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -76,7 +76,6 @@ module m_ug_meshgeom
       integer,                           pointer :: nodeidx_inverse(:)=> null()           !< node indices in main netnodes array corresponding to branchid/nodeoffset array
       double precision,                  pointer :: nodeoffsets(:)    => null()           !< The branch offset of each 1d mesh point
       integer,                           pointer :: edgebranchidx(:)  => null()           !< The branch index of each 1d mesh edge ! TODO: UNST-2716: also incorporate these two new fields in _c interface and C# wrappers.
-      integer,                           pointer :: linkedge(:)       => null()           !< mesh edge nr belonging to netlink number
       double precision,                  pointer :: edgeoffsets(:)    => null()           !< The branch offset of each 1d mesh edge
       character(len=ug_idsLen),          pointer :: nodeids(:)        => null()
       character(len=ug_idsLongNamesLen), pointer :: nodelongnames(:)  => null()

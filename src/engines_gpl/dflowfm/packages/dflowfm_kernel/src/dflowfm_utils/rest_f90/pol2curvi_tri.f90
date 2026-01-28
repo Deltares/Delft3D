@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -74,7 +74,9 @@ contains
 
       ierror = 1
 
-      if (NPL <= 4) goto 1234
+      if (NPL <= 4) then
+         goto 1234
+      end if
 
 !  get start and end pointers in polygon
       call get_polstartend(NPL, XPL, YPL, i1, istart, iend)
@@ -90,15 +92,27 @@ contains
       i3 = i3_
 
 !  get grid size and orientation
-      Na = i2 - i1; if (Na < 1) Na = Na + numsubpol
-      Nb = i3 - i2; if (Nb < 1) Nb = Nb + numsubpol
+      Na = i2 - i1
+      if (Na < 1) then
+         Na = Na + numsubpol
+      end if
+      Nb = i3 - i2
+      if (Nb < 1) then
+         Nb = Nb + numsubpol
+      end if
       Ncc = numsubpol - (Na + Nb)
 
       if (Ncc < 1) then
          i2 = i3_
          i3 = i2_
-         Na = i2 - i1; if (Na < 1) Na = Na + numsubpol
-         Nb = i3 - i2; if (Nb < 1) Nb = Nb + numsubpol
+         Na = i2 - i1
+         if (Na < 1) then
+            Na = Na + numsubpol
+         end if
+         Nb = i3 - i2
+         if (Nb < 1) then
+            Nb = Nb + numsubpol
+         end if
          Ncc = numsubpol - (Na + Nb)
       end if
 
@@ -114,9 +128,18 @@ contains
       end if
 
 !  compute midpoint
-      ia = i1 + N1; if (ia > iend) ia = ia - numsubpol
-      ib = i2 + N3; if (ib > iend) ib = ib - numsubpol
-      ic = i3 + N2; if (ic > iend) ic = ic - numsubpol
+      ia = i1 + N1
+      if (ia > iend) then
+         ia = ia - numsubpol
+      end if
+      ib = i2 + N3
+      if (ib > iend) then
+         ib = ib - numsubpol
+      end if
+      ic = i3 + N2
+      if (ic > iend) then
+         ic = ic - numsubpol
+      end if
 
 !  set dimensions of blocks
       M = [N1, N3, N2]
@@ -138,9 +161,9 @@ contains
 !   xib = dbdistance(XPL(i2),YPL(i2),XPL(ib),YPL(ib)) / dbdistance(XPL(i2),YPL(i2),XPL(i3),YPL(i3))
 !   xic = dbdistance(XPL(i3),YPL(i3),XPL(ic),YPL(ic)) / dbdistance(XPL(i3),YPL(i3),XPL(i1),YPL(i1))
 
-      xia = dble(N1) / dble(Na)
-      xib = dble(N3) / dble(Nb)
-      xic = dble(N2) / dble(Ncc)
+      xia = real(N1, kind=dp) / real(Na, kind=dp)
+      xib = real(N3, kind=dp) / real(Nb, kind=dp)
+      xic = real(N2, kind=dp) / real(Ncc, kind=dp)
 
       xm = (((1.0_dp - xia) * XPL(i1) + xia * XPL(i2)) * xic + (1.0_dp - xic) * XPL(i3) + &
             ((1.0_dp - xib) * XPL(i2) + xib * XPL(i3)) * xia + (1.0_dp - xia) * XPL(i1) + &
@@ -175,8 +198,12 @@ contains
             xh(i, 1) = XPL(ipoint)
             yh(i, 1) = YPL(ipoint)
             ipoint = ipoint - idir
-            if (ipoint < istart) ipoint = ipoint + numsubpol
-            if (ipoint > iend) ipoint = ipoint - numsubpol
+            if (ipoint < istart) then
+               ipoint = ipoint + numsubpol
+            end if
+            if (ipoint > iend) then
+               ipoint = ipoint - numsubpol
+            end if
          end do
 
          ipoint = i0(itri)
@@ -184,18 +211,22 @@ contains
             xh(i, 3) = XPL(ipoint)
             yh(i, 3) = YPL(ipoint)
             ipoint = ipoint + idir
-            if (ipoint < istart) ipoint = ipoint + numsubpol
-            if (ipoint > iend) ipoint = ipoint - numsubpol
+            if (ipoint < istart) then
+               ipoint = ipoint + numsubpol
+            end if
+            if (ipoint > iend) then
+               ipoint = ipoint - numsubpol
+            end if
          end do
 
          do i = 1, M(itri) + 1
-            xia = dble(i - 1) / dble(M(itri))
+            xia = real(i - 1, kind=dp) / real(M(itri), kind=dp)
             xh(i, 4) = (1.0_dp - xia) * XPL(ileft(itri)) + xia * xm
             yh(i, 4) = (1.0_dp - xia) * YPL(ileft(itri)) + xia * ym
          end do
 
          do i = 1, N(itri) + 1
-            xia = dble(i - 1) / dble(N(itri))
+            xia = real(i - 1, kind=dp) / real(N(itri), kind=dp)
             xh(i, 2) = (1.0_dp - xia) * XPL(iright(itri)) + xia * xm
             yh(i, 2) = (1.0_dp - xia) * YPL(iright(itri)) + xia * ym
          end do

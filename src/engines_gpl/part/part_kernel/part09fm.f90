@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2025.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -262,7 +262,7 @@ contains
                 endif
 
                 !    for one layer models (2dh), the release will be in the user-defined location
-                if (modtyp == model_oil .and. laypart(i) == 1) then
+            if ( (modtyp == model_oil .or. leeway) .and. laypart(i) == 1 ) then
                     hpart(i) = 0.0_dp
                 elseif (num_layers == 1) then
                     hpart(i) = (ipart - 0.5) / nplay(1)

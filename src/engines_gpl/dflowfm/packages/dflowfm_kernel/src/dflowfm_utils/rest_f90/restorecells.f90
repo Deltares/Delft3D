@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,8 +56,12 @@ contains
 
       if (allocated(netcell)) then
          do k = 1, ubound(netcell0, 1)
-            if (allocated(netcell(k)%nod)) deallocate (netcell(k)%nod)
-            if (allocated(netcell(k)%lin)) deallocate (netcell(k)%lin)
+            if (allocated(netcell(k)%nod)) then
+               deallocate (netcell(k)%nod)
+            end if
+            if (allocated(netcell(k)%lin)) then
+               deallocate (netcell(k)%lin)
+            end if
          end do
          deallocate (netcell)
       end if

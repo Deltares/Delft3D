@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -88,8 +88,12 @@ contains
 
       else if (JSFERTEK == 2) then ! MERCATOR
          if (MODE == 1) then
-            if (Y >= 89.0_dp) Y = 89.0_dp
-            if (Y <= -89.0_dp) Y = -89.0_dp
+            if (Y >= 89.0_dp) then
+               Y = 89.0_dp
+            end if
+            if (Y <= -89.0_dp) then
+               Y = -89.0_dp
+            end if
             YY = DG2RD * Y
             YY = log(1.0_dp + sin(YY)) / cos(YY)
             XX = DG2RD * X

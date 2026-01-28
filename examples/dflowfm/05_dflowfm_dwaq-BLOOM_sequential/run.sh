@@ -15,6 +15,7 @@ else
     dimrdir=$1
 fi
 
+
 # select queue; one of : normal-e3-c7 , normal-e5-c7
 queue=normal-e3-c7
 

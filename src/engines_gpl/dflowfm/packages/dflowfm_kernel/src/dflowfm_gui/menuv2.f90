@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -95,7 +95,9 @@ contains
          return
       else if (KEY >= 24 .and. KEY <= 26) then
          call FKEYS(KEY)
-         if (KEY == 3) return
+         if (KEY == 3) then
+            return
+         end if
       end if
       goto 10
 !
