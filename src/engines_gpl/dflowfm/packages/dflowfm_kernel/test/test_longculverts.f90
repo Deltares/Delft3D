@@ -201,6 +201,7 @@ contains
         npl = COORD_COUNT
 
         allocate(longculverts(1))
+        allocate(longculverts(1)%netlinks(3))
         ! Act
         call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT)
 
@@ -254,8 +255,11 @@ contains
         ypl = y_coords
         zpl = z_coords
         npl = COORD_COUNT
-
+        if (allocated(longculverts)) then
+            deallocate(longculverts)
+        end if
         allocate(longculverts(1))
+        allocate(longculverts(1)%netlinks(1))
         ! Act
         call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT)
 
@@ -317,7 +321,13 @@ contains
         meshgeom1d%numnode = -1 
         meshgeom1d%nnodes = -1
 
-        allocate(longculverts(1))
+        if (allocated(longculverts)) then
+            deallocate(longculverts)
+        end if
+        allocate(longculverts(2))
+        allocate(longculverts(1)%netlinks(3))
+        allocate(longculverts(2)%netlinks(1))
+
         ! Act
         call convert1D2DLongCulverts(x_coords, y_coords, z_coords, ARRAY_SIZE)
 
