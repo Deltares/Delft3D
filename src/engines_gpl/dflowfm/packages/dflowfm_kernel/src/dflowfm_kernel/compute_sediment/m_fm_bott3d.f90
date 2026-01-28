@@ -2195,7 +2195,8 @@ contains
       do L = 1, lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
-         ac1 = acl(L); ac2 = 1_fp - ac1
+         ac1 = acl(L)
+         ac2 = 1_fp - ac1
          cumes(L) = cumes(L) + ac1 * (blchg(k1)) + ac2 * (blchg(k2))
       end do
 
