@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -88,9 +88,12 @@ contains
 
       if (kmx == 0) then
          do L = 1, lnx
-            if (hu(L) <= epshu) cycle
+            if (hu(L) <= epshu) then
+               cycle
+            end if
             if (L > lnx1D) then
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                ac1 = acl(L)
                ac2 = 1.0_dp - ac1
 
@@ -131,11 +134,17 @@ contains
          end do
       else ! kmx>0
          do LL = 1, lnx
-            if (hu(LL) <= epshu) cycle
+            if (hu(LL) <= epshu) then
+               cycle
+            end if
             call getLbotLtop(LL, Lb, Lt)
-            if (Lt < Lb) cycle
-            k1 = ln(1, LL); k2 = ln(2, LL)
-            ac1 = acL(LL); ac2 = 1.0_dp - ac1
+            if (Lt < Lb) then
+               cycle
+            end if
+            k1 = ln(1, LL)
+            k2 = ln(2, LL)
+            ac1 = acL(LL)
+            ac2 = 1.0_dp - ac1
             !
             twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1_dp)
             fmax = facmax * hu(LL)**1.5 / twavL

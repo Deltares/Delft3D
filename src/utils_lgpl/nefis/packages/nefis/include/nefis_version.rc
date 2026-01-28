@@ -49,7 +49,7 @@ BEGIN
             VALUE "FileDescription", "Neutral FIile System for data storage and retrieval\0"
             VALUE "FileVersion", "VN_MAJOR.VN_MINOR.VN_REVISION.VN_BUILD_NUMBER\0"
             VALUE "InternalName", "NEFIS\0"
-            VALUE "LegalCopyright", "Copyright © 2011-2025\0"
+            VALUE "LegalCopyright", "Copyright © 2011-2026\0"
             VALUE "LegalTrademarks", "Copyright © Stichting Deltares\0"
             VALUE "OriginalFilename", "nefis.dll\0"
             VALUE "PrivateBuild", "-\0"

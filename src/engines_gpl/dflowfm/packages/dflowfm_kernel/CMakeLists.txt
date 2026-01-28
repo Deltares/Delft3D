@@ -173,7 +173,18 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    if(NOT WITH_INTERACTER)
+   if(WITH_INTERACTER)
+        # Find and link the actual Interacter library
+        find_library(lib_interacter intmwi64.lib
+                  HINTS ENV INTERACTER_DIR
+                      PATHS "${checkout_src_root}/third_party/interacter/bin/win32/x64")
+
+        if(NOT lib_interacter)
+           message(SEND_ERROR "Required Interacter library (intmwi64.lib) is missing for dflowfm_kernel.")
+        else()
+           target_link_libraries(${library_name} PRIVATE ${lib_interacter})
+        endif()
+    else()
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
@@ -216,6 +227,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_path}/filter.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_surfbeat_path}/xbeach_filefunctions.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/find1dcells.f90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/pol_to_cellmask.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/flow_modelinit.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/inidat.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/print_help_commandline.F90

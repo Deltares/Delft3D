@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -182,7 +182,8 @@ contains
          hulp = sqrt(hulp)
          hulp1 = -q + hulp
          if (abs(hulp1) < 1e-6) then
-            u = 0; v = 0
+            u = 0
+            v = 0
          else ! hk: ook fix for Erwin, ARS 15132
             u = abs(hulp1)**c13 * sign(1.0_dp, hulp1)
             hulp1 = -q - hulp

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -62,7 +62,9 @@ subroutine copycellstosam()
    do c = 1, nump
       if (LC(c) == 1) then
          k = k + 1
-         xs(k) = xzw(c); ys(k) = yzw(c); zs(k) = znetcell(k)
+         xs(k) = xzw(c)
+         ys(k) = yzw(c)
+         zs(k) = znetcell(k)
       end if
    end do
    ns = k

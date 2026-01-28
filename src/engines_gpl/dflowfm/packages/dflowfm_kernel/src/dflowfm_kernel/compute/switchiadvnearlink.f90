@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,7 +46,8 @@ contains
       implicit none
       integer :: L, k1, k2, kk, LL, iadv1, iadv2
 
-      k1 = ln(1, L); k2 = ln(2, L)
+      k1 = ln(1, L)
+      k2 = ln(2, L)
 
       if (iadvec == 0) then
          iadv1 = 0

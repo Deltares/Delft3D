@@ -1,6 +1,6 @@
 ! MIT License
 ! 
-! Copyright (c) 2025 Stichting Deltares
+! Copyright (c) 2026 Stichting Deltares
 ! Copyright (c) 1995 DLO Winand Staring Centre for Integrated Land, Soil and Water Research (SC-DLO)
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining a copy

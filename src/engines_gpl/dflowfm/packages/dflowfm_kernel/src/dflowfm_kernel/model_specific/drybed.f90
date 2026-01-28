@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -77,7 +77,9 @@ contains
             sa = 0.0
             ua = 0.0
          end if
-         s(m) = sa; u(m) = ua; xx(m) = xm
+         s(m) = sa
+         u(m) = ua
+         xx(m) = xm
          if (m == 2) then
             call movabs(xm, sa)
          else

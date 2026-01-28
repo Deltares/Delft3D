@@ -8,7 +8,7 @@ from ci_tools.dimrset_delivery.lib.ssh_client import Direction, SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
-from ci_tools.dimrset_delivery.step_4_update_excel_sheet import ExcelHelper
+from ci_tools.dimrset_delivery.update_excel_sheet import ExcelHelper
 from ci_tools.example_utils.logger import LogLevel
 
 
@@ -33,7 +33,7 @@ class TestUpdateExcelSheet:
         self.mock_context.kernel_versions = {"build.vcs.number": "12345"}
         self.mock_context.dimr_version = "v1.2.3"
 
-    @patch("ci_tools.dimrset_delivery.step_4_update_excel_sheet.get_testbank_result_parser")
+    @patch("ci_tools.dimrset_delivery.update_excel_sheet.get_testbank_result_parser")
     def test_update_excel_sheet_successful_execution(self, mock_get_parser: Mock) -> None:
         """Test successful execution of update_excel_sheet function."""
         # Arrange
@@ -88,7 +88,7 @@ class TestUpdateExcelSheet:
             or self.mock_context.ssh_client.secure_copy.call_count == 0
         )
 
-    @patch("ci_tools.dimrset_delivery.step_4_update_excel_sheet.get_testbank_result_parser")
+    @patch("ci_tools.dimrset_delivery.update_excel_sheet.get_testbank_result_parser")
     def test_update_excel_sheet_raises_error_when_ssh_client_missing(self, mock_get_parser: Mock) -> None:
         """Test that update_excel_sheet raises ValueError when SSH client is missing."""
         # Arrange
@@ -105,7 +105,7 @@ class TestUpdateExcelSheet:
         assert result is False
         self.mock_context.log.assert_any_call("SSH client is required but not initialized", severity=LogLevel.ERROR)
 
-    @patch("ci_tools.dimrset_delivery.step_4_update_excel_sheet.get_testbank_result_parser")
+    @patch("ci_tools.dimrset_delivery.update_excel_sheet.get_testbank_result_parser")
     def test_update_excel_sheet_raises_error_when_teamcity_missing(self, mock_get_parser: Mock) -> None:
         """Test that update_excel_sheet raises ValueError when TeamCity client is missing."""
         # Arrange

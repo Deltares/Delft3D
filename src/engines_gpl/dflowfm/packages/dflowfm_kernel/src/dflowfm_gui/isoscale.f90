@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -73,15 +73,21 @@ contains
       character(LEN=17) :: MINTEX, MAXTEX
       real INFOGRAPHICS
 
-      if (NDRAW(12) == 2 .or. NDRAW(12) == 4) return
+      if (NDRAW(12) == 2 .or. NDRAW(12) == 4) then
+         return
+      end if
 
-      if (NDRAW(8) <= 1 .and. NDRAW(28) <= 1 .and. ndrawpol <= 2) return
+      if (NDRAW(8) <= 1 .and. NDRAW(28) <= 1 .and. ndrawpol <= 2) then
+         return
+      end if
 
-      if (max(ndx, nump, npl, numk) == 0) return
+      if (max(ndx, nump, npl, numk) == 0) then
+         return
+      end if
 
       call IGRCHARSIZE(real(SCALESIZE), real(SCALESIZE))
-      WIC = dble(INFOGRAPHICS(3))
-      HIC = dble(INFOGRAPHICS(4))
+      WIC = real(INFOGRAPHICS(3), kind=dp)
+      HIC = real(INFOGRAPHICS(4), kind=dp)
 
       INC = NV / 30 + 1 ! Max 30 color boxes, otherwise increment > 1
 

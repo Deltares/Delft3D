@@ -50,3 +50,8 @@ src/**/FortranCInterface.h
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
 unit-test-report-windows.xml
+
+# dvc: ignore data but allow .dvc files
+test/deltares_testbench/data/cases/*
+!test/deltares_testbench/data/cases/**/*.dvc
+

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,7 +50,9 @@ contains
       integer :: i, ip, iL, Lf
       real(kind=dp) :: alpha, zc
 
-      if (nfxw == 0) return
+      if (nfxw == 0) then
+         return
+      end if
 
       do i = 1, nfxw
          do iL = 1, fxw(i)%lnx
@@ -58,7 +60,8 @@ contains
             ip = fxw(i)%indexp(iL)
             alpha = fxw(i)%wfp(iL)
             zc = alpha * fxw(i)%zp(ip) + (1.0_dp - alpha) * fxw(i)%zp(ip + 1)
-            bob(1, Lf) = max(zc, bob(1, Lf)); bob(2, Lf) = max(zc, bob(2, Lf))
+            bob(1, Lf) = max(zc, bob(1, Lf))
+            bob(2, Lf) = max(zc, bob(2, Lf))
          end do
       end do
    end subroutine setbobs_fixedweirs
