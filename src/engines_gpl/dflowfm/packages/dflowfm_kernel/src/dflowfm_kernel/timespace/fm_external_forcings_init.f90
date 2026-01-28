@@ -1070,7 +1070,7 @@ contains
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
       is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
-                                                     1, qstss)
+                                                    1, qstss)
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
@@ -1138,6 +1138,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
+      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
 
 
       ! Parameters
@@ -1163,6 +1164,7 @@ contains
       integer :: cidx, i, j, ierr
       real(kind=dp) :: tmsx, tmsy, tmsz
       real(kind=dp) :: kstart, kend
+      integer :: bubble_source_count = 0
 
       is_successful = .false.
 
@@ -1204,8 +1206,17 @@ contains
             do i = kstart, kstart + kmx - 1
                if (zws(i) >= tmsz) then
                   print *, '  Level:', i, 'Z:', zws(i)
-                  write(srcid, '(A,A,I0,A,I0)') trim(id), '_cell', crossed_cells(cidx), '_level', i
-                  ! call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
+                  write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
+                  print *, 'Adding source/sink: ', trim(srcid)
+                  call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
+
+                  ! quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
+                  !call resolvePath(filename, basedir) ! TODO!
+                  ! is_successful = .true.
+                  is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(srcid), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
+                                                                  1, qstss)
+
+                  bubble_source_count = bubble_source_count + 1
                end if
             end do
 
