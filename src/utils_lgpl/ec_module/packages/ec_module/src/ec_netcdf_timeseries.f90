@@ -403,8 +403,8 @@ contains
 
       success = .false.
       vectormax = size(q_id)
-!     TK_Temp: use func in stead of number of layers      
-!      if (ncptr%nLayer < 0)  then ! no 3rd dimension, get single data value, maybe should be <=0
+      ! TK_Temp: use func in stead of number of layers      
+      ! if (ncptr%nLayer < 0)  then ! no 3rd dimension, get single data value, maybe should be <=0
       if (func == BC_FUNC_TSERIES) then
          do iv = 1, vectormax
             ierr = nf90_get_var(ncptr%ncid, q_id(iv), ncvalue(iv:iv), (/l_id, timelevel/), (/1, 1/))

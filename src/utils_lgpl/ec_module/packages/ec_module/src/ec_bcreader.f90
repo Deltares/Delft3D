@@ -905,7 +905,7 @@ contains
        endif
        
        !TK_Temp Use FUNC to determine whether normal or TIM3D series
-       !        First, get the vertical coordinates and store in BCPTR.VP (only for history files)
+       !        First, get the vertical coordinates and store in BCPTR.VP (only for nc history files)
        if (BCPtr.ncptr.ncType == 2 .and. BCPtr.FUNC == BC_FUNC_TIM3D) then
           nrTmp(1) = BCPtr%ncptr%layervarid
           if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,nrTmp,BCPtr%nclocndx,BCPtr%dimvector, &
