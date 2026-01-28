@@ -388,6 +388,7 @@ module fm_external_forcings_data
       integer :: start_index !< start index for bubble sources/sinks
       integer :: num_flow_cells !< nr of grid cells in bubble screen
    end type BubblescreenData
+   ! TODO: add support for multiple bubble screens
    type (BubblescreenData) :: bubblescreen !< bubble screen data
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents

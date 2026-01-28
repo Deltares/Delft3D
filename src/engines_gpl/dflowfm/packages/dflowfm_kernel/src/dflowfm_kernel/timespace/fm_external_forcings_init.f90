@@ -1130,7 +1130,7 @@ contains
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, msgbuf, msg_flush
       use tree_data_types, only: tree_data
       use m_polygon, only: xpl, ypl, zpl, npl
       use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
@@ -1189,9 +1189,8 @@ contains
 
       call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
 
-      print *, 'Zsize', size(zws)
-
       if (.NOT. ALLOCATED(error)) then
+         bubblescreen%start_index = numsrc + 1
          
          do cidx = 1, SIZE(crossed_cells)
             ! For each crossed cell, create a bubblescreen source/sink object
@@ -1201,20 +1200,18 @@ contains
 
             kstart = kbot(crossed_cells(cidx))
             kend = ktop(crossed_cells(cidx))
-            bubblescreen%start_index = numsrc + 1
-            print *, 'Crossed cell:', xk(tmcell%nod(1)), yk(tmcell%nod(1))
             do i = kstart, kstart + kmx - 1
                if (zws(i) >= tmsz) then
-                  print *, '  Level:', i, 'Z:', zws(i)
                   write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
-                  print *, 'Adding source/sink: ', trim(srcid)
                   call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
 
-                  ! quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
-                  !call resolvePath(filename, basedir) ! TODO!
-                  ! is_successful = .true.
+                  ! TODO: each source/sink has a differerent id but we have only one specification in the discharge_input file. 
+                  ! Check how this can be coupled correctly.
                   is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(srcid), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
                                                                   1, qstss)
+                                  
+                  write (msgbuf, '(A, A, L)') 'Bubblescreen: ', trim(srcid) , is_successful
+                  call msg_flush()
 
                   bubble_source_count = bubble_source_count + 1
                end if
@@ -1222,27 +1219,13 @@ contains
 
          end do
       end if
-      ! TODO: Use the polygon data to create the bubblescreen source/sinks objects
-      !
-      ! proposed workflow:
-      ! 1) Use find_cells_crossed_by_polyline subroutine to find all crossed flowed nodes based on polyline (UNST-9561)
-      ! 2) Create source/sink objects, either on their own or as part of a bubblescreen object to keep track of discharge etc. (UNST-9562)
-      ! ====================================================================================================
-
-      ! ====================================================================================================
-      ! TODO: Readout the .bc file containing the bubblescreen discharge timeseries and connect to EC module
-      ! See: UNST-9562, UNST-9564
-      !
-      ! Maybe start with something like this (copy-paste from init_sourcesink_forcings):
-      ! is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'bubble screen', trim(id), 'discharge', &
-      !                                                trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, 1, qstss)
+      
       ! if (.not. is_successful) then
       !    write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
       !       //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
       !    call err_flush()
       !    return
       ! end if
-      ! ====================================================================================================
 
       is_successful = .true.
 
