@@ -32,15 +32,14 @@ module m_cellmask_from_polygon_set
    use precision, only: dp
    use m_polygon, only: xpl, ypl, zpl, npl, maxpol, restorepol, savepol
 
-   implicit none
+   implicit none(external)
 
    private
 
    public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
-   public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
-   public :: find_cells_crossed_by_polyline
    public :: point_find_netcell, cleanup_cell_geom_polylines
    public :: cellmask_initialized
+   public :: find_cells_for_segment, line_segments_intersect, point_to_line_distance
 
    integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
    real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
@@ -284,49 +283,9 @@ contains
 
    end function point_find_netcell
 
-!> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
-   subroutine find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
-      use m_alloc, only: realloc
-      use network_data, only: cellmask, nump
-      use m_missing, only: dmiss
-
-      implicit none
-
-      real(kind=dp), intent(in) :: xpoly(:) !< Polyline x-coordinates
-      real(kind=dp), intent(in) :: ypoly(:) !< Polyline y-coordinates
-      integer, allocatable, intent(out) :: crossed_cells(:) !> Indices of crossed cells in network_data::netcells
-      character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
-
-      integer :: npoly, i
-
-      error = ''
-
-      npoly = size(xpoly)
-      if (any(xpoly == dmiss) .or. any(ypoly == dmiss) .or. npoly < 2) then
-         error = 'Invalid polyline input'
-         return
-      end if
-
-      if (.not. cellmask_initialized) then
-         call init_cell_geom_as_polylines()
-      end if
-
-      call realloc(cellmask, nump, keepexisting=.false., fill=0)
-
-      ! Process each segment and put the result in cellmask
-      do i = 1, npoly - 1
-         call find_cells_for_segment(xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
-      end do
-
-      crossed_cells = pack([(i, i=1, nump)], mask=(cellmask == 1))
-
-   end subroutine find_cells_crossed_by_polyline
-
 !> Find all cells that a segment crosses and mark them in cellmask
    subroutine find_cells_for_segment(xa, ya, xb, yb, cellmask)
       use m_polygon, only: xpl, ypl
-
-      implicit none
 
       real(kind=dp), intent(in) :: xa, ya, xb, yb !< Segment endpoints
       integer, intent(inout) :: cellmask(:) !< Cell mask array: 1=crossed, 0=not crossed

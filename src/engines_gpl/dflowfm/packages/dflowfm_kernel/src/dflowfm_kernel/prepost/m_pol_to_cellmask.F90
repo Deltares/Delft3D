@@ -36,7 +36,8 @@ module m_pol_to_cellmask
 
    private
 
-   public :: pol_to_cellmask, init_cell_geom_as_polylines
+   public :: pol_to_cellmask, init_cell_geom_as_polylines, find_cells_crossed_by_polyline
+
 
 contains
 
@@ -117,5 +118,42 @@ contains
       call cellmask_from_polygon_set_init(npl, xpl, ypl, zpl)
 
    end subroutine init_cell_geom_as_polylines
+
+!> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
+   subroutine find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+      use m_alloc, only: realloc
+      use network_data, only: cellmask, nump
+      use m_missing, only: dmiss
+      use m_cellmask_from_polygon_set, only: cellmask_initialized, find_cells_for_segment
+
+      real(kind=dp), intent(in) :: xpoly(:) !< Polyline x-coordinates
+      real(kind=dp), intent(in) :: ypoly(:) !< Polyline y-coordinates
+      integer, allocatable, intent(out) :: crossed_cells(:) !> Indices of crossed cells in network_data::netcells
+      character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
+
+      integer :: npoly, i
+
+      error = ''
+
+      npoly = size(xpoly)
+      if (any(xpoly == dmiss) .or. any(ypoly == dmiss) .or. npoly < 2) then
+         error = 'Invalid polyline input'
+         return
+      end if
+
+      if (.not. cellmask_initialized) then
+         call init_cell_geom_as_polylines()
+      end if
+
+      call realloc(cellmask, nump, keepexisting=.false., fill=0)
+
+      ! Process each segment and put the result in cellmask
+      do i = 1, npoly - 1
+         call find_cells_for_segment(xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
+      end do
+
+      crossed_cells = pack([(i, i=1, nump)], mask=(cellmask == 1))
+
+   end subroutine find_cells_crossed_by_polyline
 
 end module m_pol_to_cellmask
