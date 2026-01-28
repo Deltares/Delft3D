@@ -10,7 +10,7 @@ import shutil
 class svnclient:
     """ SVN client (in the absence of pysvn, just using the executable in the path """
 
-    svnauthargs = "--username dscbuildserver --password Bu1lds3rv3r"
+    svnauthargs = "--username removed --password removed"
 
     def __init__(self):
         pass      # placeholder for custom constructor  
