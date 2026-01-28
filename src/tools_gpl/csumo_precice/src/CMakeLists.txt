@@ -7,3 +7,7 @@ target_include_directories(csumo_precice PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (csumo_precice PROPERTIES FOLDER tools_gpl/csumo_precice)
+
+install(TARGETS csumo_precice
+    RUNTIME DESTINATION bin
+)
