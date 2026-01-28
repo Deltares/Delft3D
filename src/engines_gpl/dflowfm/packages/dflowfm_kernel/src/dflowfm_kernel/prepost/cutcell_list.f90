@@ -93,7 +93,7 @@ contains
          NUMFIL = NUMFIL + 1
          goto 777
 888      allocate (FILIST(NUMFIL))
-filist = ' '
+         filist = ' '
          rewind (MLIST)
          do N = 1, NUMFIL
             read (MLIST, '(A)') FILIST(N)

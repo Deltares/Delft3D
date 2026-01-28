@@ -199,6 +199,8 @@ contains
         ! deflection angle for coriolis effect.(3d oil module only)
         if (oil3d) then
             defang = const(noconsp)
+        else
+            defang = 0.0
         end if
         !3d
         !3d.. modtyp = model_two_layer_temp is still a 2 layer option, it assumes 2 layers

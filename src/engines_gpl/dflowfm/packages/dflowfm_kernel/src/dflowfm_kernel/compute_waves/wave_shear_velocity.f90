@@ -48,7 +48,7 @@ contains
 
       implicit none
       real(kind=dp) :: Hrms, Tsig, Depth, uorbi, hrm, ust
-      real(kind=dp) :: shs,omeg
+      real(kind=dp) :: shs, omeg
       real(kind=dp) :: rk, rlabd, arms
       real(kind=dp), external :: tanhsafe, sinhsafe, sinhsafei
 
