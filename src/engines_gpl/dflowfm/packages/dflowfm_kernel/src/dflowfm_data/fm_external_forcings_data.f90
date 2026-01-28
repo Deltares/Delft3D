@@ -384,6 +384,11 @@ module fm_external_forcings_data
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
    integer :: numsrc !< nr of point sources/sinks
+   type BubblescreenData
+      integer :: start_index !< start index for bubble sources/sinks
+      integer :: num_flow_cells !< nr of grid cells in bubble screen
+   end type BubblescreenData
+   type (BubblescreenData) :: bubblescreen !< bubble screen data
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
