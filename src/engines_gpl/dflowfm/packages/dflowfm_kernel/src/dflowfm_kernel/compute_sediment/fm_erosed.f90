@@ -1,34 +1,34 @@
-!----- AGPL --------------------------------------------------------------------
-!
-!  Copyright (C)  Stichting Deltares, 2017-2026.
-!
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).
-!
-!  Delft3D is free software: you can redistribute it and/or modify
-!  it under the terms of the GNU Affero General Public License as
-!  published by the Free Software Foundation version 3.
-!
-!  Delft3D  is distributed in the hope that it will be useful,
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!  GNU Affero General Public License for more details.
-!
-!  You should have received a copy of the GNU Affero General Public License
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-!
-!  contact: delft3d.support@deltares.nl
-!  Stichting Deltares
-!  P.O. Box 177
-!  2600 MH Delft, The Netherlands
-!
-!  All indications and logos of, and references to, "Delft3D",
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!
-!-------------------------------------------------------------------------------
+   !----- AGPL --------------------------------------------------------------------
+   !
+   !  Copyright (C)  Stichting Deltares, 2017-2026.
+   !
+   !  This file is part of Delft3D (D-Flow Flexible Mesh component).
+   !
+   !  Delft3D is free software: you can redistribute it and/or modify
+   !  it under the terms of the GNU Affero General Public License as
+   !  published by the Free Software Foundation version 3.
+   !
+   !  Delft3D  is distributed in the hope that it will be useful,
+   !  but WITHOUT ANY WARRANTY; without even the implied warranty of
+   !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   !  GNU Affero General Public License for more details.
+   !
+   !  You should have received a copy of the GNU Affero General Public License
+   !  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+   !
+   !  contact: delft3d.support@deltares.nl
+   !  Stichting Deltares
+   !  P.O. Box 177
+   !  2600 MH Delft, The Netherlands
+   !
+   !  All indications and logos of, and references to, "Delft3D",
+   !  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
+   !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
+   !
+   !-------------------------------------------------------------------------------
 
-!
-!
+   !
+   !
 
 module m_fm_erosed_sub
    use m_xbeachwaves, only: rollerturbulence
@@ -106,7 +106,7 @@ contains
       use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
       use m_fm_erosed, only: i10, i15, i50, i90
       use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, &
-                             factsd, pmcrit, uau
+                             factsd, pmcrit, uau, bedloadupwindorder
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -534,7 +534,7 @@ contains
       dtmor = dts * morfac
       !
       call getfixfac(stmpar%morlyr, 1, ndx, lsedtot, & ! Update underlayer bookkeeping system for erosion/sedimentation
-                   & ndx, fixfac, ffthresh)
+         & ndx, fixfac, ffthresh)
       !
       ! Set fixfac to 1.0 for tracer sediments and adjust frac
       !
@@ -600,8 +600,8 @@ contains
          ! compute sand fraction
          !
          call compsandfrac(frac, sedd50, ndx, lsedtot, sedtyp, &
-                         & max_mud_sedtyp, sandfrac, sedd50fld, &
-                         & 1, ndx)
+            & max_mud_sedtyp, sandfrac, sedd50fld, &
+            & 1, ndx)
       end if
       !
       ! compute normal component of bed slopes at edges    (e_xxx refers to edges)
@@ -771,12 +771,12 @@ contains
             !
             if (wave) then
                call compbsskin(umean, vmean, h1, wave, uorb(nm), twav(nm), &
-                                & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
-                                & rhowat(kbed), vismol, stmpar%sedpar, afluff)
+                  & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
+                  & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             else
                call compbsskin(umean, vmean, h1, wave, 0.0_dp, 0.0_dp, &
-                                & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
-                                & rhowat(kbed), vismol, stmpar%sedpar, afluff)
+                  & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
+                  & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             end if
          end if
          !
@@ -977,13 +977,13 @@ contains
                thick1 = max(thicklc(kmaxsd) * h1, epshs)
                !
                call erosilt(thicklc, kmaxlc, wslc, mdia, &
-                          & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation
-                          & frac(nm, l), oldmudfrac, flmd2l, iform(l), &
-                          & npar, localpar, max_integers, max_reals, &
-                          & max_strings, dll_function(l), dll_handle(l), dll_integers, &
-                          & dll_reals, dll_strings, iflufflyr, mfltot, &
-                          & fracf, maxslope, wetslope, &
-                          & error, wstau, sinktot, sourse(nm, l), sourfluff)
+                  & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation
+                  & frac(nm, l), oldmudfrac, flmd2l, iform(l), &
+                  & npar, localpar, max_integers, max_reals, &
+                  & max_strings, dll_function(l), dll_handle(l), dll_integers, &
+                  & dll_reals, dll_strings, iflufflyr, mfltot, &
+                  & fracf, maxslope, wetslope, &
+                  & error, wstau, sinktot, sourse(nm, l), sourfluff)
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::erosilt returned an error. Check your inputs.'
                   call mess(LEVEL_FATAL, errmsg)
@@ -1143,19 +1143,19 @@ contains
                end if
                !
                call eqtran(siglc, thicklc, kmaxlc, wslc, ltur, &
-                         & frac(nm, l), tsigmol, dcwwlc, mdia, taucr(l), &
-                         & bfmpar%rksr(nm), 3, jasecflow, spirintnm, suspfrac, &
-                         & tetacr(l), concin3d, &
-                         & dzdx(nm), dzdy(nm), ubot, tauadd, sus, &
-                         & bed, susw, bedw, espir, wave, &
-                         & scour, ubot_from_com, camax, eps, &
-                         & iform(l), npar, localpar, max_integers, max_reals, &
-                         & max_strings, dll_function(l), dll_handle(l), dll_integers, dll_reals, &
-                         & dll_strings, &
-                         & taks, caks, taurat(nm, l), sddflc, rsdqlc, &
-                         & kmaxsd, conc2d, sbcx(nm, l), sbcy(nm, l), sbwx(nm, l), &
-                         & sbwy(nm, l), sswx(nm, l), sswy(nm, l), tdss, caks_ss3d, &
-                         & aks_ss3d, ust2(nm), tsd, error)
+                  & frac(nm, l), tsigmol, dcwwlc, mdia, taucr(l), &
+                  & bfmpar%rksr(nm), 3, jasecflow, spirintnm, suspfrac, &
+                  & tetacr(l), concin3d, &
+                  & dzdx(nm), dzdy(nm), ubot, tauadd, sus, &
+                  & bed, susw, bedw, espir, wave, &
+                  & scour, ubot_from_com, camax, eps, &
+                  & iform(l), npar, localpar, max_integers, max_reals, &
+                  & max_strings, dll_function(l), dll_handle(l), dll_integers, dll_reals, &
+                  & dll_strings, &
+                  & taks, caks, taurat(nm, l), sddflc, rsdqlc, &
+                  & kmaxsd, conc2d, sbcx(nm, l), sbcy(nm, l), sbwx(nm, l), &
+                  & sbwy(nm, l), sswx(nm, l), sswy(nm, l), tdss, caks_ss3d, &
+                  & aks_ss3d, ust2(nm), tsd, error)
                !
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::eqtran in 3D returned an error. Check your inputs.'
@@ -1189,11 +1189,11 @@ contains
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation
-                                 &  siglc(kmaxsd), thicklc(kmaxsd), constituents(ll, kmxsed(nm, l)), &
-                                 &  vismol, tsigmol, seddif(l, kmxsed(nm, l) - 1),        &
-                                 &  rhosol(l), caks_ss3d, ws(kmxsed(nm, l), l),         &
-                                 &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
-                                 &  sinkse(nm, l))
+                     &  siglc(kmaxsd), thicklc(kmaxsd), constituents(ll, kmxsed(nm, l)), &
+                     &  vismol, tsigmol, seddif(l, kmxsed(nm, l) - 1),        &
+                     &  rhosol(l), caks_ss3d, ws(kmxsed(nm, l), l),         &
+                     &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
+                     &  sinkse(nm, l))
                   !
                   ! Impose relatively large vertical diffusion
                   ! coefficients for sediment in layer interfaces from
@@ -1234,19 +1234,19 @@ contains
                ltur = 0
                !
                call eqtran(sig2d, thck2d, kmax2d, ws2d, ltur, &
-                         & frac(nm, l), tsigmol, dcww2d, mdia, taucr(l), &
-                         & bfmpar%rksr(nm), 2, jasecflow, spirintnm, suspfrac, &
-                         & tetacr(l), concin2d, &
-                         & dzdx(nm), dzdy(nm), ubot, tauadd, sus, &
-                         & bed, susw, bedw, espir, wave, &
-                         & scour, ubot_from_com, camax, eps, &
-                         & iform(l), npar, localpar, max_integers, max_reals, &
-                         & max_strings, dll_function(l), dll_handle(l), dll_integers, dll_reals, &
-                         & dll_strings, &
-                         & taks, caks, taurat(nm, l), sddf2d, rsdq2d, &
-                         & kmaxsd, trsedeq, sbcx(nm, l), sbcy(nm, l), sbwx(nm, l), &
-                         & sbwy(nm, l), sswx(nm, l), sswy(nm, l), tdss, caks_ss3d, &
-                         & aks_ss3d, ust2(nm), tsd, error)
+                  & frac(nm, l), tsigmol, dcww2d, mdia, taucr(l), &
+                  & bfmpar%rksr(nm), 2, jasecflow, spirintnm, suspfrac, &
+                  & tetacr(l), concin2d, &
+                  & dzdx(nm), dzdy(nm), ubot, tauadd, sus, &
+                  & bed, susw, bedw, espir, wave, &
+                  & scour, ubot_from_com, camax, eps, &
+                  & iform(l), npar, localpar, max_integers, max_reals, &
+                  & max_strings, dll_function(l), dll_handle(l), dll_integers, dll_reals, &
+                  & dll_strings, &
+                  & taks, caks, taurat(nm, l), sddf2d, rsdq2d, &
+                  & kmaxsd, trsedeq, sbcx(nm, l), sbcy(nm, l), sbwx(nm, l), &
+                  & sbwy(nm, l), sswx(nm, l), sswy(nm, l), tdss, caks_ss3d, &
+                  & aks_ss3d, ust2(nm), tsd, error)
 
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::eqtran in 2D returned an error. Check your inputs.'
@@ -1269,8 +1269,8 @@ contains
                   ! Galappatti time scale and source and sink terms
                   !
                   call soursin_2d(umod(nm), ustarc, h0, h1, &
-                                & ws(kb, l), tsd, trsedeq, factsd,    &
-                                & sourse(nm, l), sour_im(nm, l), sinkse(nm, l))
+                     & ws(kb, l), tsd, trsedeq, factsd,    &
+                     & sourse(nm, l), sour_im(nm, l), sinkse(nm, l))
                end if ! suspfrac
             end if ! kmaxlc = 1
             if (suspfrac) then
@@ -1325,25 +1325,27 @@ contains
       ! Upwind scheme for bed load and wave driven transport
       ! Convert sand bed load transport to velocity points using upwind scheme
       !
-      if (bed > 0.0_fp) then
+      if (bedloadupwindorder==1) then
+         if (bed > 0.0_fp) then
+            !
+            ! Upwind bed load transport
+            !
+            call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
+         end if
          !
-         ! Upwind bed load transport
+         if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
+            !
+            ! Upwind wave-related bed load load transports
+            !
+            call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
+         end if
          !
-         call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
-      end if
-      !
-      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
-         !
-         ! Upwind wave-related bed load load transports
-         !
-         call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
-      end if
-      !
-      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
-         !
-         ! Upwind wave-related suspended load transports
-         !
-         call fm_upwbed(lsedtot, sswx, sswy, sxtot, sytot, e_sswn, e_sswt)
+         if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
+            !
+            ! Upwind wave-related suspended load transports
+            !
+            call fm_upwbed(lsedtot, sswx, sswy, sxtot, sytot, e_sswn, e_sswt)
+         end if
       end if
       !
       ! Update sourse fluxes due to sand-mud interaction

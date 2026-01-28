@@ -163,6 +163,7 @@ module m_fm_erosed
    real(fp), pointer :: bermslopegamma !< bermslope nudging applied for region where Hrms/h>bermslopegamma
    real(fp), pointer :: bermslopedepth !< minimum depth to apply nudging
    real(fp), pointer :: ti_sedtrans !< sediment transport computation start time in TUnits
+   logical, pointer  :: bedloadupwindorder
 
    ! trapar
    integer, dimension(:), pointer :: iform
