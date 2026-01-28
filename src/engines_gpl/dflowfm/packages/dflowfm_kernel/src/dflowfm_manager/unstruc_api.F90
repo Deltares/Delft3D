@@ -50,7 +50,7 @@ module unstruc_api
    use unstruc_files, only: mdia
    use, intrinsic :: iso_c_binding, only: c_char, c_int, c_double
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    real(kind=dp) :: cpuall0

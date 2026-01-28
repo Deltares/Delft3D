@@ -34,7 +34,7 @@ module m_flow ! flow arrays-999
    use fm_external_forcings_data
    use m_alloc
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, &
-      max_iterations_pressure_density, jabarocponbnd
+                                   max_iterations_pressure_density, jabarocponbnd
    use m_flowparameters
    use m_flowoutput
    use m_grw
@@ -66,7 +66,7 @@ module m_flow ! flow arrays-999
 
    real(kind=dp) :: Tsigma = 100 !< relaxation period; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
 
-   integer :: layertype !< Vertical layertype, use one of LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA parameters 
+   integer :: layertype !< Vertical layertype, use one of LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA parameters
    integer, parameter :: LAYTP_SIGMA = 1 !< Sigma-layers
    integer, parameter :: LAYTP_Z = 2 !< Fixed z- or z-sigma-layers
    integer, parameter :: LAYTP_POLYGON_MIXED = 3 !< Mixed layering in polygon regions (layer count + layertype in each polygon's z-values)

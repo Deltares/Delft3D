@@ -40,7 +40,7 @@ module m_ndisplay
    use m_setwy
    use m_waveconst
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
 contains

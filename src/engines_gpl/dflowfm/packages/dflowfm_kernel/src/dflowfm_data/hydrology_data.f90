@@ -33,7 +33,7 @@ module m_hydrology_data
    use precision, only: dp
 
    implicit none
-   
+
    ! Constants
    integer, parameter :: DFM_HYD_NOINFILT = 0 !< No infiltration active.
    ! NOTE: UNST-3763:        infiltrationmodel = 1 !< will soon be refactored, is actually interception.

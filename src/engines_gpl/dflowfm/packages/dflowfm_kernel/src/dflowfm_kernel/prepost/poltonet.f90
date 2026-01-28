@@ -77,7 +77,7 @@ contains
 
       real(kind=dp) :: XR, YR, XN, YN, XR1, YR1, XR2, YR2, AR1, DIS
       real(kind=dp), allocatable :: XTMP(:), YTMP(:)
-      
+
       if (NPL > 0) then
          call realloc(XTMP, maxpol, keepExisting=.false.)
          call realloc(XTMP, maxpol, keepExisting=.false.)

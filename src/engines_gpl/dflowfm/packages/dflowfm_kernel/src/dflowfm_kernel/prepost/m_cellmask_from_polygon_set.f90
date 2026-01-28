@@ -1,4 +1,4 @@
-!----- AGPL --------------------------------------------------------------------
+﻿ !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2026.
 !
@@ -38,6 +38,7 @@ module m_cellmask_from_polygon_set
 
    public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
    public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+   public :: find_cells_crossed_by_polyline
 
    integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
    real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
@@ -314,7 +315,7 @@ contains
       ! Loop over all netcell polygons with fast bounding box checks
       do i_poly = 1, polygons
 
-         ! Quick bbox rejection (most cells rejected here)
+         ! Quick bbox rejection
          if (x < x_poly_min(i_poly) .or. x > x_poly_max(i_poly) .or. &
              y < y_poly_min(i_poly) .or. y > y_poly_max(i_poly)) then
             cycle
@@ -331,5 +332,171 @@ contains
       end do
 
    end function point_find_netcell
+
+!> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
+   subroutine find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+      use m_alloc, only: realloc
+      use network_data, only: cellmask, nump
+      use m_missing, only: dmiss
+
+      implicit none
+
+      real(kind=dp), intent(in) :: xpoly(:) !< Polyline x-coordinates
+      real(kind=dp), intent(in) :: ypoly(:) !< Polyline y-coordinates
+      integer, allocatable, intent(out) :: crossed_cells(:) !> Indices of crossed cells in network_data::netcells
+      character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
+
+      integer :: npoly, i
+
+      error = ''
+
+      npoly = size(xpoly)
+      if (any(xpoly == dmiss) .or. any(ypoly == dmiss) .or. npoly < 2) then
+         error = 'Invalid polyline input'
+         return
+      end if
+
+      if (.not. cellmask_initialized) then
+         call init_cell_geom_as_polylines()
+      end if
+
+      call realloc(cellmask, nump, keepexisting=.false., fill=0)
+
+      ! Process each segment and put the result in cellmask
+      do i = 1, npoly - 1
+         call find_cells_for_segment(xpoly(i), ypoly(i), xpoly(i + 1), ypoly(i + 1), cellmask)
+      end do
+
+      crossed_cells = pack([(i, i=1, nump)], mask=(cellmask == 1))
+
+   end subroutine find_cells_crossed_by_polyline
+
+!> Find all cells that a segment crosses and mark them in cellmask
+   subroutine find_cells_for_segment(xa, ya, xb, yb, cellmask)
+      use m_polygon, only: xpl, ypl
+
+      implicit none
+
+      real(kind=dp), intent(in) :: xa, ya, xb, yb !< Segment endpoints
+      integer, intent(inout) :: cellmask(:) !< Cell mask array: 1=crossed, 0=not crossed
+
+      real(kind=dp) :: seg_xmin, seg_xmax, seg_ymin, seg_ymax
+      integer :: i_poly, i_point, i_start, i_end, n_points
+      integer :: i, ip1
+      real(kind=dp) :: x1, y1, x2, y2
+      logical :: intersects
+
+      ! Segment bounding box
+      seg_xmin = min(xa, xb)
+      seg_xmax = max(xa, xb)
+      seg_ymin = min(ya, yb)
+      seg_ymax = max(ya, yb)
+
+      !$OMP PARALLEL DO SCHEDULE(GUIDED)
+      do i_poly = 1, polygons
+         ! Skip if already marked
+         if (cellmask(i_poly) == 1) then
+            cycle
+         end if
+
+         ! Quick bbox rejection
+         if (seg_xmax < x_poly_min(i_poly) .or. seg_xmin > x_poly_max(i_poly) .or. &
+             seg_ymax < y_poly_min(i_poly) .or. seg_ymin > y_poly_max(i_poly)) then
+            cycle
+         end if
+
+         ! Get cached polygon geometry
+         i_start = i_poly_start(i_poly)
+         i_end = i_poly_end(i_poly)
+         n_points = i_end - i_start + 1
+
+         ! Check if segment crosses ANY edge of this cached polygon
+         do i = 0, n_points - 1
+            i_point = i_start + i
+            ip1 = i_point + 1
+            if (ip1 > i_end) ip1 = i_start ! Wrap around
+
+            x1 = xpl(i_point)
+            y1 = ypl(i_point)
+            x2 = xpl(ip1)
+            y2 = ypl(ip1)
+
+            intersects = line_segments_intersect(xa, ya, xb, yb, x1, y1, x2, y2)
+
+            if (intersects) then
+               cellmask(i_poly) = 1
+               exit ! No need to check other edges
+            end if
+         end do
+      end do
+      !$OMP END PARALLEL DO
+
+   end subroutine find_cells_for_segment
+
+!> Check if two line segments intersect
+   elemental function line_segments_intersect(x1a, y1a, x1b, y1b, x2a, y2a, x2b, y2b) result(intersects)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: x1a, y1a, x1b, y1b !< First line segment endpoints
+      real(kind=dp), intent(in) :: x2a, y2a, x2b, y2b !< Second line segment endpoints
+      logical :: intersects !< True if segments intersect
+
+      real(kind=dp) :: dx1, dy1, dx2, dy2
+      real(kind=dp) :: denom, t1, t2
+      real(kind=dp), parameter :: EPS = 1.0e-10_dp
+
+      intersects = .false.
+      t1 = -1.0_dp
+
+      dx1 = x1b - x1a
+      dy1 = y1b - y1a
+      dx2 = x2b - x2a
+      dy2 = y2b - y2a
+
+      denom = dx1 * dy2 - dy1 * dx2
+      if (abs(denom) < EPS) then !> parallel or collinear, no intersection
+         if (point_to_line_distance(x1a, y1a, x2a, y2a, x2b, y2b) < EPS) then
+            intersects = .true. !> include collinear as intersecting
+         end if
+         return
+      end if
+
+      t1 = ((x2a - x1a) * dy2 - (y2a - y1a) * dx2) / denom
+      t2 = ((x2a - x1a) * dy1 - (y2a - y1a) * dx1) / denom
+
+      !> small epsilon margin to be inclusive of endpoints
+      if (t1 > -EPS .and. t1 <= 1.0_dp + EPS .and. &
+          t2 > -EPS .and. t2 <= 1.0_dp + EPS) then
+         intersects = .true.
+      end if
+
+   end function line_segments_intersect
+
+!> Compute distance from a point to the infinite extension of a line (not clamped to segment)
+   elemental function point_to_line_distance(px, py, x1, y1, x2, y2) result(dist)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: px, py !< Point coordinates x and y
+      real(kind=dp), intent(in) :: x1, y1, x2, y2 !< line start and end coordinates
+      real(kind=dp) :: dist
+
+      real(kind=dp) :: dx, dy, line_length, cross_product
+
+      dx = x2 - x1
+      dy = y2 - y1
+      line_length = sqrt(dx * dx + dy * dy)
+
+      if (line_length < 1.0e-20_dp) then
+         ! Degenerate line - return distance to point
+         dist = sqrt((px - x1)**2 + (py - y1)**2)
+         return
+      end if
+
+      ! Distance from point to line = |cross product| / |line vector|
+      ! Cross product in 2D: (p - p1) × (p2 - p1)
+      cross_product = abs((px - x1) * dy - (py - y1) * dx)
+      dist = cross_product / line_length
+
+   end function point_to_line_distance
 
 end module m_cellmask_from_polygon_set
