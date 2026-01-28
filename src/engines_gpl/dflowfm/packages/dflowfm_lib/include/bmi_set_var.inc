@@ -58,27 +58,12 @@
   case("infilt")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(infilt))
      infilt(:) = x_1d_double_ptr
-  case("infiltcap0")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(infiltcap0))
-     infiltcap0(:) = x_1d_double_ptr
   case("infiltcap")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(infiltcap))
      infiltcap(:) = x_1d_double_ptr
-  case("HortonMinInfCap")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(HortonMinInfCap))
-     HortonMinInfCap(:) = x_1d_double_ptr
-  case("HortonMaxInfCap")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(HortonMaxInfCap))
-     HortonMaxInfCap(:) = x_1d_double_ptr
-  case("HortonDecreaseRate")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(HortonDecreaseRate))
-     HortonDecreaseRate(:) = x_1d_double_ptr
-  case("HortonRecoveryRate")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(HortonRecoveryRate))
-     HortonRecoveryRate(:) = x_1d_double_ptr
-  case("HortonState")
-     call c_f_pointer(xptr, x_1d_int_ptr, shape(HortonState))
-     HortonState(:) = x_1d_int_ptr
+  case("horton_state")
+     call c_f_pointer(xptr, x_1d_int_ptr, shape(horton_state))
+     horton_state(:) = x_1d_int_ptr
   case("shx")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(shx))
      shx(:) = x_1d_double_ptr

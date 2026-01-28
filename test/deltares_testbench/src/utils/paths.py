@@ -99,6 +99,11 @@ class Paths:
 
         # Make sure that the handlers can accept URIs that contain spaces.
         if "://" in left:
+            # XML pretty-printing can introduce newlines/indentation in text nodes.
+            # Strip control whitespace so URL segments don't turn into '%20%20%20...' or contain newlines.
+            left = left.replace("\r", "").replace("\n", "").replace("\t", "").strip()
+            right = right.replace("\r", "").replace("\n", "").replace("\t", "").strip()
+
             left = left.replace(" ", "%20")
             right = right.replace(" ", "%20")
 

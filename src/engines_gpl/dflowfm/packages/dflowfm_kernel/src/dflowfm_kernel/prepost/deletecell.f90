@@ -244,8 +244,8 @@ contains
                   i = 1
                   do while (netcell(kcell1)%nod(i) /= kn(1, L) .and. netcell(kcell1)%nod(i) /= kn(2, L) .and. &
                             i < netcell(kcell1)%N .and. netcell(kcell1)%nod(i) /= netcell(k)%nod(1))
-                            i = i + 1
-                            end do
+                     i = i + 1
+                  end do
                   if (kk <= netcell(kcell1)%N) then
                      netcell(kcell1)%nod(i:Ndum) = netcell(kcell1)%nod(i + 1:Ndum + 1)
                   else
@@ -436,7 +436,7 @@ contains
 !        find link position in nod%lin array
             j = 1
             do while (nod(k)%lin(j) /= L .and. j < N)
-            j = j + 1
+               j = j + 1
             end do
             if (nod(k)%lin(j) /= L) then
                call qnerror('cleanup_nod: link not found', ' ', ' ')
