@@ -81,7 +81,7 @@ contains
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, jahistaucurrent, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
-         TEMPERATURE_MODEL_COMPOSITE, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
+                                  TEMPERATURE_MODEL_COMPOSITE, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
       use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots

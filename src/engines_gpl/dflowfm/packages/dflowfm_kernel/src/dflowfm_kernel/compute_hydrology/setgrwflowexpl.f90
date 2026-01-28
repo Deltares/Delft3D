@@ -35,8 +35,8 @@ module m_setgrwflowexpl
    use precision, only: dp
    use m_flowgeom, only: ndx, ndx2d, bl, ba, lnx1d, lnxi, ln, wu, dxi, bai, lnx
    use m_flow, only: qingrw, qoutgrw, volgrw, infiltrationmodel, dfm_hyd_infilt_horton, horton_infiltration_config, &
-      infiltcap, hs, horton_state, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, &
-      infilt, sgrw0, h_transfer, s1, pgrw, bgrw, conductivity, porosgrw, dfm_hyd_infilt_darcy, h_capillair, unsatfac, hu
+                     infiltcap, hs, horton_state, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, &
+                     infilt, sgrw0, h_transfer, s1, pgrw, bgrw, conductivity, porosgrw, dfm_hyd_infilt_darcy, h_capillair, unsatfac, hu
    use m_flowtimes, only: dts
    use m_horton, only: compute_horton_infiltration
    use m_wind, only: jarain, rain
