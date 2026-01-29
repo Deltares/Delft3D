@@ -1177,13 +1177,14 @@ contains
       call reapol(file_pointer, 0)
 
       ! Copy polygon data to temporary arrays
+      npl_tmp = npl
       bubblescreen%num_flow_cells = npl
-      allocate (xpl_tmp(bubblescreen%num_flow_cells))
-      allocate (ypl_tmp(bubblescreen%num_flow_cells))
-      allocate (zpl_tmp(bubblescreen%num_flow_cells))
-      xpl_tmp = xpl(1:bubblescreen%num_flow_cells)
-      ypl_tmp = ypl(1:bubblescreen%num_flow_cells)
-      zpl_tmp = zpl(1:bubblescreen%num_flow_cells)
+      allocate (xpl_tmp(npl_tmp))
+      allocate (ypl_tmp(npl_tmp))
+      allocate (zpl_tmp(npl_tmp))
+      xpl_tmp = xpl(1:npl_tmp)
+      ypl_tmp = ypl(1:npl_tmp)
+      zpl_tmp = zpl(1:npl_tmp)
 
       tmsz = zpl_tmp(1) ! Assume all polygon points have the same z-coordinate
 
@@ -1195,14 +1196,18 @@ contains
          do cidx = 1, SIZE(crossed_cells)
             ! For each crossed cell, create a bubblescreen source/sink object
             tmcell = netcell(crossed_cells(cidx))
-            tmsx = xk(tmcell%nod(1))
-            tmsy = yk(tmcell%nod(1))
+            ! tmsx = xk(tmcell%nod(1))
+            ! tmsy = yk(tmcell%nod(1))
+            tmsx = xzw(tmcell%nod(1))
+            tmsy = yzw(tmcell%nod(1))
 
             kstart = kbot(crossed_cells(cidx))
             kend = ktop(crossed_cells(cidx))
             do i = kstart, kstart + kmx - 1
                if (zws(i) >= tmsz) then
                   write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
+
+                  
                   call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
 
                   ! TODO: each source/sink has a differerent id but we have only one specification in the discharge_input file. 
@@ -1210,7 +1215,7 @@ contains
                   is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(srcid), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
                                                                   1, qstss)
                                   
-                  write (msgbuf, '(A, A, L)') 'Bubblescreen: ', trim(srcid) , is_successful
+                  write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, zws(i)
                   call msg_flush()
 
                   bubble_source_count = bubble_source_count + 1
@@ -1218,6 +1223,7 @@ contains
             end do
 
          end do
+         bubblescreen%num_source_sinks = bubble_source_count
       end if
       
       ! if (.not. is_successful) then
