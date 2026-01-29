@@ -135,9 +135,6 @@ contains
             if (calcConv == 1) then
                u1L = u1(LL)
                q1L = q1(LL)
-               k1 = ln(1, LL)
-               k2 = ln(2, LL)
-               s1L = acl(L) * s1(k1) + (1.0_dp - acl(L)) * s1(k2)
                dpt = hu(L)
                cz = 0.0_dp
                if (network%rgs%timeseries_defined) then
@@ -146,6 +143,9 @@ contains
                   factor = 1.0_dp
                end if
                if (abs(kcu(ll)) == 1) then
+                  k1 = ln(1, LL)
+                  k2 = ln(2, LL)
+                  s1L = acl(L) * s1(k1) + (1.0_dp - acl(L)) * s1(k2)
                   call getconveyance(network, dpt, u1L, q1L, s1L, LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
                else ! 1D2Dlink
                   frcn = network%crs%cross(network%adm%line2cross(LL, 2)%c1)%frictionvaluepos(1) !>
