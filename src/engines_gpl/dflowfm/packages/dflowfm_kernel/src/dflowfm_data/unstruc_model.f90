@@ -1548,33 +1548,36 @@ contains
       call prop_get(md_ptr, 'sediment', 'Seddenscoupling', jaseddenscoupling)
       call prop_get(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
 
-      call allocgrains()
-      if (mxgr > 0) then
+      if (jased * mxgr > 0 .and. .not. stm_included) then
+
+         call allocgrains()
+
          call prop_get(md_ptr, 'sediment', 'D50', D50, Mxgr)
          call prop_get(md_ptr, 'sediment', 'Rhosed', rhosed, Mxgr)
+         call setgrainsizes()
+
+         if (mxgrKrone > 0) then
+            call prop_get(md_ptr, 'sediment', 'Ws', Ws, MxgrKrone)
+            call prop_get(md_ptr, 'sediment', 'Erosionpar', erosionpar, MxgrKrone)
+            call prop_get(md_ptr, 'sediment', 'Taucre', Ustcre2, MxgrKrone)
+            Ustcre2 = Ustcre2 / rhomean ! ust2 = tau/rho
+         end if
+
          call prop_get(md_ptr, 'sediment', 'InitialSedimentConcentration', sedini, mxgr)
          call prop_get(md_ptr, 'sediment', 'Uniformerodablethickness', Uniformerodablethickness, Mxgr)
-      end if
-      call setgrainsizes()
+         call prop_get(md_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein)
+         call prop_get(md_ptr, 'sediment', 'Jaceneqtr', Jaceneqtr)
+         call prop_get(md_ptr, 'sediment', 'Morfac', Dmorfac)
+         if (jased == 0) then
+            dmorfac = 0.0_dp
+         end if
 
-      if (mxgrKrone > 0) then
-         call prop_get(md_ptr, 'sediment', 'Ws', Ws, MxgrKrone)
-         call prop_get(md_ptr, 'sediment', 'Erosionpar', erosionpar, MxgrKrone)
-         call prop_get(md_ptr, 'sediment', 'Taucre', Ustcre2, MxgrKrone)
-         Ustcre2 = Ustcre2 / rhomean ! ust2 = tau/rho
-      end if
+         call prop_get(md_ptr, 'sediment', 'TMorfspinup', tmorfspinup)
+         call prop_get(md_ptr, 'sediment', 'Alfabed', alfabed)
+         call prop_get(md_ptr, 'sediment', 'Alfasus', alfasus)
+         call prop_get(md_ptr, 'sediment', 'Crefcav', crefcav)
 
-      call prop_get(md_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein)
-      call prop_get(md_ptr, 'sediment', 'Jaceneqtr', Jaceneqtr)
-      call prop_get(md_ptr, 'sediment', 'Morfac', Dmorfac)
-      if (jased == 0) then
-         dmorfac = 0.0_dp
-      end if
-
-      call prop_get(md_ptr, 'sediment', 'TMorfspinup', tmorfspinup)
-      call prop_get(md_ptr, 'sediment', 'Alfabed', alfabed)
-      call prop_get(md_ptr, 'sediment', 'Alfasus', alfasus)
-      call prop_get(md_ptr, 'sediment', 'Crefcav', crefcav)
+      end if ! jased
 
       call prop_get(md_ptr, 'bedform', 'BedformFile', md_bedformfile, success)
       bfm_included = len_trim(md_bedformfile) /= 0
