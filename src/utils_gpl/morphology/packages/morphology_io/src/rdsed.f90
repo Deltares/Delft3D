@@ -808,15 +808,15 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           !
           ! Rheology: default: not set (rheo=-1)
           !
-          string = 'dummy'
-          call prop_get(slu_ptr, 'Slurry', 'rheology', string)
-          call str_lower(string)
-          if (string /= 'dummy') then
-             if (string == 'winterwerp_kranenburg') then
+          rec = 'dummy'
+          call prop_get(slu_ptr, 'Slurry', 'rheology', rec)
+          call str_lower(rec)
+          if (rec /= 'dummy') then
+             if (rec == 'winterwerp_kranenburg') then
                 rheo = RHEOLOGY_WINTERWERP_KRANENBURG
-             elseif (string == 'jacobs_vankesteren') then
+             elseif (rec == 'jacobs_vankesteren') then
                 rheo = RHEOLOGY_JACOBS_VANKESTEREN
-             elseif (string == 'thomas') then
+             elseif (rec == 'thomas') then
                 rheo = RHEOLOGY_THOMAS
              else
                 errmsg = 'Value of keyword "rheology" must be equal to "Winterwerp_Kranenburg", "Jacobs_vanKesteren" or "Thomas"'
