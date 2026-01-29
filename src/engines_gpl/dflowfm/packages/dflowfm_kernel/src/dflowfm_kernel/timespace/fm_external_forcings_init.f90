@@ -1074,7 +1074,7 @@ contains
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-       //'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
          call err_flush()
          return
       end if
@@ -1151,7 +1151,7 @@ contains
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
-      integer, allocatable :: crossed_cells(:) !> Indices of crossed cells in network_data::netcells
+      integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
       character, dimension(:), allocatable :: error
 
       ! Local variables
@@ -1166,7 +1166,7 @@ contains
       real(kind=dp) :: kstart, kend
       integer :: bubble_source_count = 0
 
-      type(BubblescreenData) :: bubblescreen
+      type(t_BubblescreenData) :: bubblescreen
 
       is_successful = .false.
 
@@ -1192,11 +1192,11 @@ contains
 
       call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
 
-      if (.NOT. ALLOCATED(error)) then
+      if (.not. allocated(error)) then
          bubblescreen%id = id
          bubblescreen%start_index = numsrc + 1
          
-         do cidx = 1, SIZE(crossed_cells)
+         do cidx = 1, size(crossed_cells)
             ! For each crossed cell, create a bubblescreen source/sink object
             tmcell = netcell(crossed_cells(cidx))
             ! tmsx = xk(tmcell%nod(1))
