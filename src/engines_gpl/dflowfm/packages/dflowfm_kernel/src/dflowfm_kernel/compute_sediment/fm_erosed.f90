@@ -808,8 +808,6 @@ contains
             temperature = backgroundwatertemperature
          end if
          !
-         taks0 = 0.0_dp
-         !
          ! Calculate Van Rijn's reference height
          !
          if (iopkcw == 1) then !  iopkcw: options to calculate curr related roughness height
