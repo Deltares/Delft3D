@@ -266,7 +266,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! It influences the allocate statements
     !
     sedpar%stressStrainRelation = .false.
-    call prop_get_logical(slu_ptr, 'Slurry', 'stressStrainRelation', sedpar%stressStrainRelation)
+    call prop_get(slu_ptr, 'Slurry', 'stressStrainRelation', sedpar%stressStrainRelation)
     !
     if (.not. associated(sedpar%sedd50)) then
        !
@@ -483,7 +483,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Check version number of slu input file
     !
     versionstring = ' '
-    call prop_get_string(slu_ptr, 'SlurryFileInformation', 'FileVersion', versionstring)
+    call prop_get(slu_ptr, 'SlurryFileInformation', 'FileVersion', versionstring)
     if (versionstring /= '01.00') then
        errmsg = 'Unexpected version number of Slurry file. Expecting "01.00"'
        call write_error(errmsg, unit=lundia)
@@ -695,7 +695,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        ! Get Fall velocity winterwerp parameters
        !
-       call prop_get_logical(sed_ptr, 'SedimentOverall', 'FalFlc', sedpar%falflc)
+       call prop_get(sed_ptr, 'SedimentOverall', 'FalFlc', sedpar%falflc)
        if (sedpar%falflc) then
           call prop_get(sed_ptr, 'SedimentOverall', 'FlcNf_floc'   , sedpar%flcnf_floc )
           call prop_get(sed_ptr, 'SedimentOverall', 'FlcK2'        , sedpar%flck2 )
@@ -708,7 +708,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        ! Schelde Erosion formulation parameters
        !
-       call prop_get_logical(sed_ptr, 'SedimentOverall', 'EroSchel', sedpar%eroschel)
+       call prop_get(sed_ptr, 'SedimentOverall', 'EroSchel', sedpar%eroschel)
        if (sedpar%eroschel) then
           call prop_get(sed_ptr, 'SedimentOverall', 'EroSk1'    , sedpar%erosk1 )
           call prop_get(sed_ptr, 'SedimentOverall', 'EroSk2'    , sedpar%erosk2 )
@@ -722,7 +722,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        ! Schelde consolidation parameters
        !
-       call prop_get_logical(sed_ptr, 'SedimentOverall', 'cons_mud', sedpar%cons_mud)
+       call prop_get(sed_ptr, 'SedimentOverall', 'cons_mud', sedpar%cons_mud)
        if (sedpar%cons_mud) then
           call prop_get(sed_ptr, 'SedimentOverall', 'cons_kk   '  , sedpar%cons_kk  )
           call prop_get(sed_ptr, 'SedimentOverall', 'cons_ksig '  , sedpar%cons_ksig)
@@ -747,7 +747,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        ! Erosion of interface?
        !
-       call prop_get_logical(sed_ptr, 'SedimentOverall', 'ero_intfc', sedpar%ero_intfc)
+       call prop_get(sed_ptr, 'SedimentOverall', 'ero_intfc', sedpar%ero_intfc)
        if (sedpar%ero_intfc) then
           call prop_get(sed_ptr, 'SedimentOverall', 'nstress_intfc'   , sedpar%nstress_intfc  )
           call prop_get(sed_ptr, 'SedimentOverall', 'erosk1_int'      , sedpar%erosk1_int     )
@@ -775,9 +775,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           !
           ! Slurry
           !
-          call prop_get_logical(slu_ptr, 'Slurry', 'shearSettling', sedpar%shearsettling)
-          call prop_get        (slu_ptr, 'Slurry', 'vicThresh'    , sedpar%vicThresh)
-          call prop_get_logical(slu_ptr, 'Slurry', 'vmudToVicuv'  , sedpar%vmudToVicuv)
+          call prop_get(slu_ptr, 'Slurry', 'shearSettling', sedpar%shearsettling)
+          call prop_get(slu_ptr, 'Slurry', 'vicThresh'    , sedpar%vicThresh)
+          call prop_get(slu_ptr, 'Slurry', 'vmudToVicuv'  , sedpar%vmudToVicuv)
           !
           ! Rheology (Jill Hanssen's work)
           !
