@@ -925,6 +925,10 @@ contains
 
       call prop_get(md_ptr, 'geometry', 'Sillheightmin', sillheightmin)
       call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
+      if (Layertype /= LAYTP_SIGMA) then
+         mxlayz = kmx
+      end if
+
       call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig, success)
       if (success .and. numtopsig > 0 .and. layertype /= LAYTP_Z) then
          write (msgbuf, '(a,i0,a)'), 'The model definition file sets numtopsig to ', numtopsig, &
@@ -937,6 +941,10 @@ contains
       call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
       call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
       call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
+      if (Dztop > 0.0_dp) then ! hk claims back original functionality
+         iStrchType = -1
+      end if
+
       call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
       call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
       call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
@@ -961,15 +969,6 @@ contains
       kmx = 0
       call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
       if (kmx > 0) then
-         
-         if (Layertype /= LAYTP_SIGMA) then
-            mxlayz = kmx
-         end if
-
-         if (Dztop > 0.0_dp) then ! hk claims back original functionality
-            iStrchType = -1
-         end if
-
          if (iStrchType == STRCH_USER) then
             call realloc(laycof, kmx)
             call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, kmx)
@@ -1096,6 +1095,10 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport)
 
+      call prop_get(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
+      call prop_get(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
+      call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
+
       call prop_get(md_ptr, 'numerics', 'verticalAdvectionType', vertical_advection_type, success)
       if (success) then
          call str_lower(vertical_advection_type)
@@ -1114,10 +1117,6 @@ contains
             write (msgbuf, '(a)') 'Supported values are: centralImplicit and higherOrderUpwindExplicit'
             call mess(-LEVEL_ERROR, trim(msgbuf))
          end select
-      else
-         call prop_get(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
-         call prop_get(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
-         call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
       end if
 
       call prop_get(md_ptr, 'numerics', 'Vertadvtypmom', javau)
@@ -1514,10 +1513,11 @@ contains
       call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
 
+      call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
+      MxgrKrone = -1
+      call prop_get(md_ptr, 'sediment', 'MxgrKrone', MxgrKrone)
+
       if (jased > 0 .and. .not. stm_included) then
-         call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
-         MxgrKrone = -1
-         call prop_get(md_ptr, 'sediment', 'MxgrKrone', MxgrKrone)
          if (Mxgr <= 0) then
             call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of sediment fractions (Nr_of_sedfractions) should be larger than 0.')
          elseif (MxgrKrone < 0) then
@@ -1535,55 +1535,52 @@ contains
       call prop_get(md_ptr, 'sediment', 'Seddenscoupling', jaseddenscoupling)
       call prop_get(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
 
-      if (jased * mxgr > 0 .and. .not. stm_included) then
-
-         call allocgrains()
-
+      call allocgrains()
+      if (mxgr > 0) then
          call prop_get(md_ptr, 'sediment', 'D50', D50, Mxgr)
          call prop_get(md_ptr, 'sediment', 'Rhosed', rhosed, Mxgr)
-         call setgrainsizes()
-
-         if (mxgrKrone > 0) then
-            call prop_get(md_ptr, 'sediment', 'Ws', Ws, MxgrKrone)
-            call prop_get(md_ptr, 'sediment', 'Erosionpar', erosionpar, MxgrKrone)
-            call prop_get(md_ptr, 'sediment', 'Taucre', Ustcre2, MxgrKrone)
-            Ustcre2 = Ustcre2 / rhomean ! ust2 = tau/rho
-         end if
-
          call prop_get(md_ptr, 'sediment', 'InitialSedimentConcentration', sedini, mxgr)
          call prop_get(md_ptr, 'sediment', 'Uniformerodablethickness', Uniformerodablethickness, Mxgr)
-         call prop_get(md_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein)
-         call prop_get(md_ptr, 'sediment', 'Jaceneqtr', Jaceneqtr)
-         call prop_get(md_ptr, 'sediment', 'Morfac', Dmorfac)
-         if (jased == 0) then
-            dmorfac = 0.0_dp
-         end if
+      end if
+      call setgrainsizes()
 
-         call prop_get(md_ptr, 'sediment', 'TMorfspinup', tmorfspinup)
-         call prop_get(md_ptr, 'sediment', 'Alfabed', alfabed)
-         call prop_get(md_ptr, 'sediment', 'Alfasus', alfasus)
-         call prop_get(md_ptr, 'sediment', 'Crefcav', crefcav)
+      if (mxgrKrone > 0) then
+         call prop_get(md_ptr, 'sediment', 'Ws', Ws, MxgrKrone)
+         call prop_get(md_ptr, 'sediment', 'Erosionpar', erosionpar, MxgrKrone)
+         call prop_get(md_ptr, 'sediment', 'Taucre', Ustcre2, MxgrKrone)
+         Ustcre2 = Ustcre2 / rhomean ! ust2 = tau/rho
+      end if
 
-      end if ! jased
+      call prop_get(md_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein)
+      call prop_get(md_ptr, 'sediment', 'Jaceneqtr', Jaceneqtr)
+      call prop_get(md_ptr, 'sediment', 'Morfac', Dmorfac)
+      if (jased == 0) then
+         dmorfac = 0.0_dp
+      end if
+
+      call prop_get(md_ptr, 'sediment', 'TMorfspinup', tmorfspinup)
+      call prop_get(md_ptr, 'sediment', 'Alfabed', alfabed)
+      call prop_get(md_ptr, 'sediment', 'Alfasus', alfasus)
+      call prop_get(md_ptr, 'sediment', 'Crefcav', crefcav)
 
       call prop_get(md_ptr, 'bedform', 'BedformFile', md_bedformfile, success)
       bfm_included = len_trim(md_bedformfile) /= 0
 
       call prop_get(md_ptr, 'sedtrails', 'SedtrailsGrid', md_sedtrailsfile, success)
+      call prop_get(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
+      ti_st_array = 0.0_dp
+      call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
+      call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
       if (md_sedtrailsfile /= '') then
          inquire (file=md_sedtrailsfile, exist=ex)
          if (ex) then
             jasedtrails = 1
             call mess(LEVEL_INFO, 'SedTrails enabled.')
-            call prop_get(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
-
-            ti_st_array = 0.0_dp
-            call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
+            
             if (ti_st_array(1) > 0.0_dp) then
                ti_st_array(1) = max(ti_st_array(1), dt_user)
             end if
             call getOutputTimeArrays(ti_st_array, ti_sts, ti_st, ti_ste, success)
-            call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
 
             call str_lower(sedtrails_analysis)
             if (.not. (trim(sedtrails_analysis) == 'all' .or. &
@@ -1934,19 +1931,19 @@ contains
       call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
       call check_time_interval(ti_maps, ti_map, ti_mape, dt_user, 'MapInterval', tstart_user)
 
+      ti_com_array = 0.0_hp
+      call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
+      call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
+
       if (jawave == WAVE_SWAN_ONLINE) then
-         ti_com_array = 0.0_hp
          ti_com = dt_user !< defaults to backward compatible behaviour
-         call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
          call getOutputTimeArrays(ti_com_array, ti_coms, ti_com, ti_come, success)
          call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
-         !
-         call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
+   
          if (success) then
             ti_com = huge(0.0_hp)
          end if
          call set_output_time_vector(md_ctvfile, ti_ctv, ti_ctv_rel)
-
       end if
 
       call prop_get(md_ptr, 'output', 'MapFormat', md_mapformat, success)
@@ -2331,12 +2328,21 @@ contains
             jaeulervel = WAVE_EULER_VELOCITIES_OUTPUT_OFF
          end if
       end if
-      !
+      
+      call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
+      call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
+      ti_wav_array = 0.0_dp
+      call prop_get(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
+
+      if (jaavgwavquant == 1) then
+         jaavgwriteall = 1 ! write all by default, unless explicitly switched off
+      end if
+
+      call prop_get(md_ptr, 'output', 'MomentumBalance', jamombal, success)
+      call prop_get(md_ptr, 'output', 'AvgWaveWriteAll', jaavgwriteall, success)
+
       if (jawave == WAVE_SURFBEAT) then ! not for Delta Shell
-         call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
-         call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
-         ti_wav_array = 0.0_dp
-         call prop_get(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
+         
          if (ti_wav_array(2) < 0.0_dp) then
             ti_wav_array(2) = 0.0_dp
             ti_wav_array(3) = 0.0_dp
@@ -2350,12 +2356,6 @@ contains
             call warn_flush()
          end if
 
-         if (jaavgwavquant == 1) then
-            jaavgwriteall = 1 ! write all by default, unless explicitly switched off
-         end if
-
-         call prop_get(md_ptr, 'output', 'MomentumBalance', jamombal, success)
-         call prop_get(md_ptr, 'output', 'AvgWaveWriteAll', jaavgwriteall, success)
          if (success .and. jaavgwriteall == 0) then ! else don't bother, everything written anyway
             call prop_get(md_ptr, 'output', 'AvgWaveWriteH', jaavgwriteH, success) ! height
             call prop_get(md_ptr, 'output', 'AvgWaveWriteE', jaavgwriteE, success) ! energy
@@ -2391,19 +2391,18 @@ contains
       call getOutputTimeArrays(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, success)
       call check_time_interval(ti_classmaps, ti_classmap, ti_classmape, dt_user, 'ClassMapInterval', tstart_user)
 
-      if (ti_classmap > 0.0_dp) then
-         call prop_get(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
+      call prop_get(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
+      call prop_get(md_ptr, 'output', 'VelocityDirectionClassesInterval', map_classes_ucdirstep, success)
+      if (success) then
+         call createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
+      else
+         allocate (map_classes_ucdir(0))
+      end if
 
+      if (ti_classmap > 0.0_dp) then
          call readClasses('WaterlevelClasses', map_classes_s1)
          call readClasses('WaterdepthClasses', map_classes_hs)
-
          call readClasses('VelocityMagnitudeClasses', map_classes_ucmag)
-         call prop_get(md_ptr, 'output', 'VelocityDirectionClassesInterval', map_classes_ucdirstep, success)
-         if (success) then
-            call createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
-         else
-            allocate (map_classes_ucdir(0))
-         end if
 
          if (size(map_classes_s1) == 0 .and. size(map_classes_hs) == 0 .and. size(map_classes_ucmag) == 0 .and. map_classes_ucdirstep < 0.0_dp) then
             call mess(LEVEL_ERROR, 'ClassMapInterval given, but none of WaterlevelClasses, WaterdepthClasses, VelocityMagnitudeClasses, VelocityDirectionClassesInterval is defined.')
