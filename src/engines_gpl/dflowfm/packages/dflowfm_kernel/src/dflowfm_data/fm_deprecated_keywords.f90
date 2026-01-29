@@ -25,12 +25,17 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'AutoStart', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'OrgFloorlevtoplaydef', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenter', DEPRECATED, 'Use circumcenterMethod instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaorgsethu', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'qhrelax', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'effectspiral', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'flow', DEPRECATED, 'Use [Lateral] discharge instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Wind', 'gapres', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Waves', 'WaveNikuradse', DEPRECATED)
 
       ! Adding OBSOLETE MDU keywords
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bathymetryFile', OBSOLETE)

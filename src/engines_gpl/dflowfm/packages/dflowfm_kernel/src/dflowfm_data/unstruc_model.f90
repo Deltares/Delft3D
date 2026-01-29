@@ -748,6 +748,10 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
 
+      ! Dummy readout variables to read out deprecated/obsolete keywords for messages to appear
+      integer :: dummy_int
+      real(kind=dp) :: dummy_real
+
       istat = 0 ! Success
 
       ! Put .mdu file into a property tree
@@ -1044,6 +1048,11 @@ contains
       call prop_get(md_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile)
 
       ! Numerics
+      
+      ! Dummy reads to catch deprecated/obsolete keywords
+      call prop_get(md_ptr, 'numerics', 'qhrelax', dummy_real)
+      call prop_get(md_ptr, 'numerics', 'jaorgsethu', dummy_int)
+
       call prop_get(md_ptr, 'numerics', 'CFLMax', cflmx)
       call prop_get(md_ptr, 'numerics', 'EpsMaxlev', epsmaxlev)
       call prop_get(md_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm)
@@ -1340,6 +1349,10 @@ contains
       call prop_get(md_ptr, 'implicit1d', 'exrstp', f1dimppar%exrstp)
 
       ! Physics
+
+      ! Dummy reads to catch deprecated/obsolete keywords
+      call prop_get(md_ptr, 'physics', 'effectspiral', dummy_real)
+
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef', frcuni)
       call prop_get(md_ptr, 'physics', 'UnifFrictType', ifrctypuni)
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D) ! TODO: LUMBRICUS: HK: ook UnifFrictType1D? EN/OF prof1d type --> frcutp(LF) zetten?
@@ -1596,6 +1609,9 @@ contains
          end if
       end if
 
+      ! Dummy reads to catch deprecated/obsolete keywords
+      call prop_get(md_ptr, 'wind', 'gapres', dummy_real)
+
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 1)
@@ -1628,6 +1644,9 @@ contains
       call prop_get(md_ptr, 'wind', 'Wind_eachstep', update_wind_stress_each_time_step)
       call prop_get(md_ptr, 'wind', 'computedAirdensity', ja_computed_airdensity)
       call prop_get(md_ptr, 'Wind', 'rhoWaterInWindStress', rho_water_in_wind_stress)
+
+      ! Dummy reads to catch deprecated/obsolete keywords
+      call prop_get(md_ptr, 'waves', 'wavenikuradse', dummy_real)
 
       call prop_get(md_ptr, 'waves', 'Wavemodelnr', jawave)
       call prop_get(md_ptr, 'waves', 'Waveforcing', waveforcing)
