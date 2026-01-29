@@ -150,7 +150,7 @@ object LinuxRuntimeContainers : BuildType({
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64LinuxAlma8")) {
             cleanDestination = true
-            buildRule = build("904")
+            buildRule = lastSuccessful()
             artifactRules = "build.zip!/lib/*=>wanda/lib"
         }
     }
