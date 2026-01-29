@@ -1166,6 +1166,8 @@ contains
       real(kind=dp) :: kstart, kend
       integer :: bubble_source_count = 0
 
+      type(BubblescreenData) :: bubblescreen
+
       is_successful = .false.
 
       ! Read bubblescreen attributes from the tree node
@@ -1225,6 +1227,14 @@ contains
 
          end do
          bubblescreen%num_source_sinks = bubble_source_count
+      end if
+
+      ! Append the initialized bubblescreen to the global array 
+      ! (not really caring about performance here, as number of bubblescreens is expected to be low)
+      if (.not. allocated(bubblescreens)) then 
+         bubblescreens = [bubblescreen]
+      else
+         bubblescreens = [bubblescreens, bubblescreen]
       end if
       
       ! if (.not. is_successful) then

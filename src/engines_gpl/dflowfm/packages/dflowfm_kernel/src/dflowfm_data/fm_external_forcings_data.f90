@@ -391,7 +391,7 @@ module fm_external_forcings_data
       integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
    end type BubblescreenData
    ! TODO: add support for multiple bubble screens
-   type (BubblescreenData) :: bubblescreen !< bubble screen data
+   type (BubblescreenData), allocatable :: bubblescreens(:) !< bubble screen data
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
