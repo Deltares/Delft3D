@@ -95,6 +95,12 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     real(fp)             , dimension(:)    , pointer :: taucr
     real(fp)             , dimension(:)    , pointer :: tetacr
     real(fp)             , dimension(:)    , pointer :: xx
+    real(fp)             , dimension(:)    , pointer :: dg_he
+    real(fp)             , dimension(:)    , pointer :: dgsd_he
+    real(fp)             , dimension(:)    , pointer :: dm_he
+    real(fp)             , dimension(:,:)  , pointer :: dxx_he
+    real(fp)             , dimension(:,:)  , pointer :: frache
+    real(fp)             , dimension(:)    , pointer :: mudfrache
     !
     integer                                          :: ll
     real(fp)                                         :: drho
@@ -108,6 +114,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     !
     asklhe    => morpar%asklhe
     frac      => sedtra%frac
+    frache    => sedtra%frache
     mudfrac   => sedtra%mudfrac
     sandfrac  => sedtra%sandfrac
     anymud    => sedpar%anymud
@@ -130,6 +137,12 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     hidexp    => sedtra%hidexp
     taucr     => sedpar%taucr
     tetacr    => sedpar%tetacr
+    
+    mudfrache   => sedtra%mudfrache
+    dg_he        => sedtra%dg_he
+    dgsd_he      => sedtra%dgsd_he
+    dm_he        => sedtra%dm_he
+    dxx_he       => sedtra%dxx_he
     !
     ! Calculation of dimensionless grain size and critical shear stress
     ! Only for uniform sedd50
