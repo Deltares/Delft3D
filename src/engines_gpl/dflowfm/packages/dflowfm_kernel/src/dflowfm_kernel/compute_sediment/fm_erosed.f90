@@ -1133,6 +1133,7 @@ contains
                      klc = klc + 1
                   end do
                end if
+               taks = taks0
                !
                ! Solve equilibrium concentration vertical and
                ! integrate over vertical
