@@ -469,7 +469,7 @@ contains
       !
       if (kmx > 0) then ! 3D
          deltas = 0.05_dp
-         maxdepfrac = 0.05
+         maxdepfrac = 0.05_dp
          if (jawave > NO_WAVES .and. v2dwbl > 0) then
             deltas = 0.0_dp
             do L = 1, lnx
@@ -1186,7 +1186,6 @@ contains
                   rsedeq(nm, l) = rsdqlc(kmaxsd)
                   !
                   thick0 = max(thicklc(kmaxsd) * h0, epshu)
-                  !thick1 = max(thicklc(kmaxsd) * h1, epshu)
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation

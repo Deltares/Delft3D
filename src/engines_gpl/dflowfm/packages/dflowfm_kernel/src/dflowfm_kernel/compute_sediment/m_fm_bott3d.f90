@@ -371,7 +371,7 @@ contains
                         cycle
                      end if
                      ac1 = acL(Lx)
-                     ac2 = 1_dp - ac1
+                     ac2 = 1.0_dp - ac1
                      k1 = ln(1, Lx)
                      k2 = ln(2, Lx)
                      call getLbotLtop(Lx, Lb, Lt)
@@ -493,7 +493,7 @@ contains
                               ! cavg*dz = | c(z) dz = c_a/(-R+1)*(z/a)^(-R+1)*a | = c_a/(-R+1)*a^R*z^(-R+1) |
                               !          /a                                     a                           a
                               !
-                              cavg1 = (ceavg / (apower + 1.0_dp)) * (1_dp / aksu)**apower
+                              cavg1 = (ceavg / (apower + 1.0_dp)) * (1.0_dp / aksu)**apower
                               cavg2 = zktop**(apower + 1.0_dp) - aksu**(apower + 1.0_dp)
                               cavg = cavg1 * cavg2 ! kg/m3/m
                               !
@@ -611,9 +611,9 @@ contains
          allocate (branInIDLn(network%nds%Count), stat=istat)
       end if
 
-      qb_out(:) = 0_dp
-      width_out(:) = 0_dp
-      sb_in(:, :) = 0_dp
+      qb_out(:) = 0.0_dp
+      width_out(:) = 0.0_dp
+      sb_in(:, :) = 0.0_dp
       sb_dir(:, :, :) = 1
       BranInIDLn(:) = 0
 
@@ -634,7 +634,7 @@ contains
                !
                wb1d = wu_mor(L)
                !
-               if (u1(L) * Ldir < 0_dp) then
+               if (u1(L) * Ldir < 0.0_dp) then
                   ! Outgoing discharge
                   qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
                   width_out(inod) = width_out(inod) + wb1d
@@ -774,7 +774,7 @@ contains
 
                      else
                         e_sbcn(L, ised) = 0.0_fp
-                        e_sbct(L, ised) = 0.0
+                        e_sbct(L, ised) = 0.0_fp
                      end if
 
                   end if
@@ -915,7 +915,7 @@ contains
             !
             ! Prepare loop over boundary points
             !
-            tausum2(1) = 0_dp
+            tausum2(1) = 0.0_dp
             do ib = 1, morbnd(jb)%npnt
                lm = morbnd(jb)%lm(ib)
                k2 = morbnd(jb)%nxmx(ib)
@@ -934,7 +934,7 @@ contains
             ! in combination with non-uniform cells.
             li = 0
             do l = 1, lsedtot
-               sbsum = 0_dp
+               sbsum = 0.0_dp
                !
                ! bed load transport only for fractions with bedload component
                !
@@ -1000,7 +1000,7 @@ contains
                   !
                   if (morbnd(jb)%ibcmt(3) == lsedbed) then
                      call get_tau(ln(2, lm), taucurc, czc, jawaveswartdelwaq_local)
-                     if (tausum2(1) > 0_dp .and. wu_mor(lm) > 0_dp) then ! fix cutcell
+                     if (tausum2(1) > 0.0_dp .and. wu_mor(lm) > 0.0_dp) then ! fix cutcell
                         rate = bc_sed_distribution(li) * taucurc**2 / wu_mor(lm) / tausum2(1)
                      else
                         rate = bc_mor_array(li)
@@ -1097,7 +1097,7 @@ contains
       !
       ! Update quantity of bottom sediment
       !
-      dbodsd(:, :) = 0_dp
+      dbodsd(:, :) = 0.0_dp
       !
       ! compute change in bodsed (dbodsd)
       !
@@ -1109,22 +1109,22 @@ contains
          ! loop over internal (ndxi) nodes - don't update the boundary nodes
          !
          do nm = 1, Ndxi_mor
-            trndiv = 0_dp
-            sedflx = 0_dp
-            eroflx = 0_dp
+            trndiv = 0.0_dp
+            sedflx = 0.0_dp
+            eroflx = 0.0_dp
             !FM1DIMP2DO: I do not like this, but I cannot think of a better way.
             !The added flownodes at junctions are after the boundary ghost nodes.
             !We have to skip the boundaries but loop over the added flownodes.
             if ((nm > ndxi) .and. (nm < ndx + 1)) then
                cycle
             end if
-            if (sus /= 0_dp .and. .not. bedload) then
+            if (sus /= 0.0_dp .and. .not. bedload) then
                if (neglectentrainment) then
                   !
                   ! mass balance based on transport fluxes only: entrainment and deposition
                   ! do not lead to erosion/sedimentation.
                   !
-                  sumflux = 0_dp
+                  sumflux = 0.0_dp
                   if (kmx > 0) then
                      do ii = 1, nd(nm)%lnx
                         LL = nd(nm)%ln(ii)
@@ -1133,7 +1133,7 @@ contains
                         if (Lt < Lb) then
                            cycle
                         end if
-                        flux = 0_dp
+                        flux = 0.0_dp
                         do iL = Lb, Lt
                            flux = flux + fluxhortot(j, iL)
                         end do
@@ -1197,12 +1197,12 @@ contains
                         end if
                      end if
                   end if
-                  ssccum(l, nm) = 0_dp
+                  ssccum(l, nm) = 0.0_dp
                   eroflx = sourse(nm, l) * thick1 ! mass conservation, different from D3D
                   !
                   ! add suspended transport correction vector
                   !
-                  sumflux = 0_dp
+                  sumflux = 0.0_dp
                   do ii = 1, nd(nm)%lnx
                      LL = nd(nm)%ln(ii)
                      Lf = abs(LL)
@@ -1213,7 +1213,7 @@ contains
                end if
             end if
             if (bed /= 0.0_dp) then
-               sumflux = 0_dp
+               sumflux = 0.0_dp
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
                   Lf = abs(LL)
@@ -1224,7 +1224,7 @@ contains
             end if
             !
             if (duneavalan) then ! take fluxes out of timestep restriction
-               sumflux = 0_dp ! drawback: avalanching fluxes not included in total transports
+               sumflux = 0.0_dp ! drawback: avalanching fluxes not included in total transports
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
                   Lf = abs(LL)
@@ -1321,7 +1321,7 @@ contains
             cycle ! check whether sufficient as condition
          end if
          !
-         totdbodsd = 0_dp
+         totdbodsd = 0.0_dp
          do l = 1, lsedtot
             totdbodsd = totdbodsd + real(dbodsd(l, nm), hp)
          end do
@@ -1329,7 +1329,7 @@ contains
          ! If this is a cell where erosion is occuring (accretion is not
          ! distributed to dry points) then...
          !
-         if (totdbodsd < 0_dp) then
+         if (totdbodsd < 0.0_dp) then
             !
             ! Note: contrary to the previous implementation, this new
             ! implementation erodes the sediment from nm and
@@ -1342,7 +1342,7 @@ contains
             ! individual fractions.
             !
             bamin = ba(nm)
-            totfixfrac = 0_dp
+            totfixfrac = 0.0_dp
             !
             do L = 1, nd(nm)%lnx
                k1 = ln(1, abs(nd(nm)%ln(L)))
@@ -1393,7 +1393,7 @@ contains
                      k2 = ln(2, abs(nd(nm)%ln(L)))
                      Lf = abs(nd(nm)%ln(L))
                      ! cutcells
-                     if (wu_mor(Lf) == 0_dp) then
+                     if (wu_mor(Lf) == 0.0_dp) then
                         cycle
                      end if
                      !
@@ -1406,7 +1406,7 @@ contains
                         dv = thet * fixfac(knb, ll) * frac(knb, ll)
                         dbodsd(ll, knb) = dbodsd(ll, knb) - dv * bai_mor(knb)
                         dbodsd(ll, nm) = dbodsd(ll, nm) + dv * bai_mor(nm)
-                        e_sbn(Lf, ll) = e_sbn(Lf, ll) + dv / (dtmor * wu_mor(Lf)) * sign(1_dp, nd(nm)%ln(L) + 0_dp)
+                        e_sbn(Lf, ll) = e_sbn(Lf, ll) + dv / (dtmor * wu_mor(Lf)) * sign(1.0_dp, nd(nm)%ln(L) + 0.0_dp)
                      end if
                   end do ! L
                end do ! ll
@@ -1454,13 +1454,13 @@ contains
          jamerge = .false.
          if (jamormergedtuser > 0) then
             mergebodsed = mergebodsed + dbodsd
-            dbodsd(:, :) = 0_dp
+            dbodsd(:, :) = 0.0_dp
             if (comparereal(time1, time_user, eps10) >= 0) then
                jamerge = .true.
             end if
          else
             mergebodsed = dbodsd
-            dbodsd(:, :) = 0_dp
+            dbodsd(:, :) = 0.0_dp
             jamerge = .true.
          end if
          if (jamerge) then
@@ -1481,7 +1481,7 @@ contains
                   dbodsd(ll, nm) = real(stmpar%morpar%mergebuf(ii), fp)
                end do
             end do
-            mergebodsed(:, :) = 0_dp
+            mergebodsed(:, :) = 0.0_dp
          end if
       end if
 
@@ -1581,7 +1581,7 @@ contains
             ! will be equal to 1.
             !
             icond = morbnd(jb)%icond
-            if (u1(lm) < 0_dp) then
+            if (u1(lm) < 0.0_dp) then
                icond = 0 ! to do: 3d
             end if
             !
@@ -1779,8 +1779,8 @@ contains
       do ll = 1, lsed
          j = lstart + ll ! constituent index
          do L = 1, lnx
-            e_ssn(L, ll) = 0_dp
-            if (wu_mor(L) == 0_dp) then
+            e_ssn(L, ll) = 0.0_dp
+            if (wu_mor(L) == 0.0_dp) then
                cycle
             end if
             call getLbotLtop(L, Lb, Lt)
@@ -1815,8 +1815,8 @@ contains
    !! Execute
    !!
 
-      e_sbn(:, :) = 0_dp
-      e_sbt(:, :) = 0_dp
+      e_sbn(:, :) = 0.0_dp
+      e_sbt(:, :) = 0.0_dp
       do l = 1, lsedtot
          if (has_bedload(tratyp(l))) then
             do nm = 1, lnx
@@ -1893,7 +1893,7 @@ contains
    !!
 
       if (.not. cmpupd) then
-         blchg(:) = 0_dp
+         blchg(:) = 0.0_dp
          do ll = 1, lsedtot
             do nm = 1, ndx
                blchg(nm) = blchg(nm) + dbodsd(ll, nm) / cdryb(ll)
@@ -2095,12 +2095,12 @@ contains
    !! Execute
    !!
 
-      if (dtmor > 0_dp) then
+      if (dtmor > 0.0_dp) then
          do nm = 1, ndx
             dzbdt(nm) = blchg(nm) / dtmor
          end do
       else
-         dzbdt(:) = 0_dp
+         dzbdt(:) = 0.0_dp
       end if
 
    end subroutine fm_erosion_velocity
@@ -2196,7 +2196,7 @@ contains
          k1 = ln(1, L)
          k2 = ln(2, L)
          ac1 = acl(L)
-         ac2 = 1_fp - ac1
+         ac2 = 1.0_dp - ac1
          cumes(L) = cumes(L) + ac1 * (blchg(k1)) + ac2 * (blchg(k2))
       end do
 

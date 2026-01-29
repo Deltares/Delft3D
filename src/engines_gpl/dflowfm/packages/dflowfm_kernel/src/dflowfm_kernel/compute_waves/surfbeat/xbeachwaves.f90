@@ -1713,7 +1713,7 @@ contains
 
       integer :: kb, ki, Lb, nw
       integer :: LL1, LL2, n
-      integer, save :: lunfil
+      integer, save :: lunfil ! used for trim(instat) == 'stat_table'
 
       ierror = 1
       if (.not. allocated(dist)) then
@@ -6143,8 +6143,8 @@ contains
       if (jawavestokes == NO_STOKES_DRIFT) then
          ustokes = 0.0_dp
          vstokes = 0.0_dp
-         ustx_cc(k) = 0.0_dp
-         usty_cc(k) = 0.0_dp ! output
+         ustx_cc = 0.0_dp
+         usty_cc = 0.0_dp
          return
       end if
 
