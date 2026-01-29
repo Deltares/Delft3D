@@ -1191,6 +1191,7 @@ contains
       call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
 
       if (.NOT. ALLOCATED(error)) then
+         bubblescreen%id = id
          bubblescreen%start_index = numsrc + 1
          
          do cidx = 1, SIZE(crossed_cells)
