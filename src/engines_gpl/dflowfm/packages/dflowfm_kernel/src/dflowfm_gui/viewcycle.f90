@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,23 +30,22 @@
 !
 !
 
-  subroutine VIEWCYCLE(KEY)
-     implicit none
-     double precision :: deltx
-     double precision :: delty
-     double precision :: deltz
-     double precision :: dscr
-     integer :: jav
-     integer :: jview
-     double precision :: wpqr
-     double precision :: xyz
-     double precision :: zfac
-     double precision :: zupw
-     integer :: KEY
-     common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
-     common / PERSPX / WPQR, DELTX, DELTY, DELTZ, ZFAC, DSCR, ZUPW
-     JVIEW = JVIEW + 1
-     if (JVIEW > JAV) JVIEW = 1
-     KEY = 3
-     return
-  end subroutine VIEWCYCLE
+module m_viewcycle
+   implicit none
+   private
+   public :: viewcycle
+
+contains
+
+   subroutine viewcycle(key)
+      use m_howtoview, only: jview, jav
+      implicit none
+      integer, intent(out) :: key
+
+      jview = jview + 1
+      if (jview > jav) then
+         jview = 1
+      end if
+      key = 3
+   end subroutine viewcycle
+end module m_viewcycle

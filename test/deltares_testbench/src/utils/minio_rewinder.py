@@ -7,7 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Iterator, List, Mapping, Optional, Tuple
+from typing import Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 from minio import Minio
 from minio.commonconfig import Tags
@@ -132,12 +132,10 @@ class Rewinder:
             Get past versions of the objects in MinIO. Rewind time to this timestamp.
         """
         rewind_timestamp = rewind_timestamp or datetime.now(timezone.utc)
-
-        def rewind(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
-            return next((obj for obj in versions if timestamp >= obj.last_modified), None)
-
         object_map = self.__object_versions_grouped_by_key(S3Path.from_bucket(bucket) / source_path)
-        rewinded_versions = (rewind(versions, rewind_timestamp) for versions in object_map.values())
+        rewinded_versions = (
+            self.__get_rewinded_version(versions, rewind_timestamp) for versions in object_map.values()
+        )
         downloads = [v for v in rewinded_versions if v and not v.is_delete_marker]
         if not downloads:
             self._logger.error(f"No downloads found in bucket {bucket} at {source_path}")
@@ -204,6 +202,8 @@ class Rewinder:
         tags: Optional[Tags] = None,
         allow_create_and_delete: bool = False,
         part_size: Optional[int] = None,
+        include_patterns: Optional[list[str]] = None,
+        exclude_patterns: Optional[list[str]] = None,
     ) -> Plan:
         """Build plan to synchronize a set of objects in MinIO with the contents of a local directory.
 
@@ -235,7 +235,10 @@ class Rewinder:
 
         # Get sorted `(key, etag)` pairs from local directory and MinIO prefix.
         minio_sorted = sorted(self.__minio_path_hash_pairs(dst_prefix), reverse=True)
-        local_sorted = sorted(self.__local_path_hash_pairs(src_dir, part_size), reverse=True)
+        local_sorted = sorted(
+            self.__local_path_hash_pairs(src_dir, part_size, include_patterns, exclude_patterns),
+            reverse=True,
+        )
 
         while minio_sorted and local_sorted:
             local_key, local_hash = local_sorted.pop()
@@ -287,8 +290,26 @@ class Rewinder:
 
         return ((postfix(obj.object_name, dst_prefix.key), obj.etag) for obj in objects)
 
-    def __local_path_hash_pairs(self, src_dir: Path, part_size: Optional[int] = None) -> Iterator[Tuple[str, str]]:
-        for path in src_dir.rglob("*"):
+    def __local_path_hash_pairs(
+        self,
+        src_dir: Path,
+        part_size: Optional[int] = None,
+        include_patterns: Optional[list[str]] = None,
+        exclude_patterns: Optional[list[str]] = None,
+    ) -> Iterator[Tuple[str, str]]:
+        matched_files: Iterable[Path] = src_dir.rglob("*")
+        if include_patterns:
+            matched_files = filter(
+                lambda file: any(file.match(pat) for pat in include_patterns),
+                matched_files,
+            )
+        if exclude_patterns:
+            matched_files = filter(
+                lambda file: not any(file.match(pat) for pat in exclude_patterns),
+                matched_files,
+            )
+
+        for path in matched_files:
             if not path.is_dir():  # `path` is a file.
                 etag = self.__etag(path, part_size)
                 yield (str(path.relative_to(src_dir).as_posix()), etag)  # Make sure to use unix path separators.
@@ -359,16 +380,12 @@ class Rewinder:
         List[VersionPair]
             Return list of conficts between `timestamp` and now.
         """
-
-        def get_rewinded_version(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
-            return next((obj for obj in versions if timestamp >= obj.last_modified), None)
-
         object_map = self.__object_versions_grouped_by_key(prefix)
         version_pairs = [
             pair
             for pair in (
                 VersionPair(
-                    rewinded_version=get_rewinded_version(versions, timestamp),
+                    rewinded_version=self.__get_rewinded_version(versions, timestamp),
                     latest_version=versions[0],
                 )
                 for versions in object_map.values()
@@ -381,6 +398,80 @@ class Rewinder:
                 pair.latest_version = self.__add_object_tags(pair.latest_version)
 
         return version_pairs
+
+    def list_objects(
+        self,
+        prefix: S3Path,
+        timestamp: Optional[datetime] = None,
+        include_delete_markers: bool = False,
+        add_tags: bool = False,
+    ) -> Iterable[MinioObject]:
+        """List objects in Minio at given timestamp.
+
+        If the `timestamp` is not provided, get the latest versions of the objects.
+
+        Parameters
+        ----------
+        prefix : S3Path
+            S3 Prefix of a set of objects in MinIO.
+        timestamp : Optional[datetime], optional
+            List the MinIO objects at this point in time. Or list the latest objects
+            if `timestamp` is `None`.
+        add_tags : bool, optional
+            Request and attach the object tags to the latest minio object. Default: `False`.
+        include_delete_markers : bool, optional
+            If `False`, filter out delete markers. Default: `False`
+
+        Returns
+        -------
+        Iterable[MinioObject]
+        """
+        if timestamp is None:
+            timestamp = datetime.max.replace(tzinfo=timezone.utc)
+
+        object_map = self.__object_versions_grouped_by_key(prefix)
+        objects: Iterable[MinioObject] = (
+            rewinded_version
+            for versions in object_map.values()
+            if (rewinded_version := self.__get_rewinded_version(versions, timestamp)) is not None
+        )
+
+        if not include_delete_markers:
+            # Filter out delete markers.
+            objects = (obj for obj in objects if not obj.is_delete_marker)
+
+        if add_tags:
+            return (self.__add_object_tags(obj) for obj in objects)
+        return objects
+
+    def autocomplete_prefix(self, prefix: S3Path) -> Sequence[S3Path]:
+        """List all objects in MinIO with a given prefix up to the next separator.
+
+        Parameters
+        ----------
+        prefix : S3Path
+            S3 Prefix of a set of objects in MinIO.
+
+        Returns
+        -------
+        Iterable[S3Path]
+            An iterable of `S3Path` objects representing possible completions of the prefix.
+        """
+        return [
+            S3Path.from_bucket(obj.bucket_name) / obj.object_name
+            for obj in self._client.list_objects(
+                bucket_name=prefix.bucket,
+                prefix=prefix.key,
+            )
+        ]
+
+    @staticmethod
+    def __get_rewinded_version(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
+        """Get rewinded version of object.
+
+        Note: Make sure `versions` is sorted in *descending* order.
+        """
+        return next((obj for obj in versions if obj.last_modified <= timestamp), None)  # type: ignore
 
     def __object_versions_grouped_by_key(self, prefix: S3Path) -> Mapping[str, List[MinioObject]]:
         """List object versions in MinIO by `prefix` and group them by object key.

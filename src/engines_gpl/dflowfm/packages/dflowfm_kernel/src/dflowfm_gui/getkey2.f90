@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,20 +29,26 @@
 
 !
 !
+module m_getkey2
+   implicit none
+   private
+   public :: getkey2
+contains
+   subroutine getkey2(key)
+      use m_nkeys, only: numkeys, nkey, numc
 
-      subroutine GETKEY2(KEY)
-         implicit none
-         integer :: i
-         integer :: key
-         integer :: keynum
-         integer :: nkey
-         integer :: numc
-         integer :: numkeys
-         common / NKEYS / NUMKEYS, NKEY(20), NUMC(20)
-         KEYNUM = -999
-         do I = 1, NUMKEYS
-            if (KEY == NKEY(I)) KEYNUM = I
-         end do
-         if (KEYNUM /= -999) KEY = NUMC(KEYNUM)
-         return
-      end
+      integer, intent(inout) :: key
+      integer :: keynum
+      integer :: i
+
+      keynum = -999
+      do i = 1, numkeys
+         if (key == nkey(i)) then
+            keynum = i
+         end if
+      end do
+      if (keynum /= -999) then
+         key = numc(keynum)
+      end if
+   end subroutine
+end module m_getkey2

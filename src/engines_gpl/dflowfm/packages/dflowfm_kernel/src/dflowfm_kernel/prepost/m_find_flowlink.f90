@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,6 +44,7 @@ contains
       use m_GlobalParameters, only: INDTP_ALL
       use m_partitioninfo, only: jampi
       use mpi
+      use m_inflowcell, only: inflowcell
 
       real(dp), dimension(:), intent(in) :: xx !< x-coordinate of input points
       real(dp), dimension(:), intent(in) :: yy !< y-coordinate of input points
@@ -51,13 +52,14 @@ contains
 
       integer :: ii, k, jaoutside
       character(len=255) :: str
-      real(dp), dimension(size(xx)) :: distances
+      real(dp), dimension(:), allocatable :: distances
       integer :: ierror
 
       if (size(xx) /= size(yy) .or. size(xx) /= size(link_nrs_nearest)) then
          call mess(LEVEL_ERROR, 'find_flowlinks: unmatched input array size')
       end if
 
+      allocate (distances(size(xx)))
       ! Return warnings for points that lie outside the grid
       do ii = 1, size(xx)
          k = 0
@@ -86,11 +88,9 @@ contains
    !> Find for each input point the flow link with the shortest perpendicular distance to it, given a set of points [xx, yy].
    !! Uses the k-d tree routines
    subroutine find_nearest_flowlinks_kdtree(xx, yy, link_nrs_nearest, distances, ierror)
-      use MessageHandling, only: mess, LEVEL_ERROR
+
       use m_flowgeom, only: lnx, ln, xz, yz
-      use m_alloc, only: realloc
       use kdtree2Factory, only: kdtree_instance, find_nearest_sample_kdtree
-      use geometry_module, only: dlinedis
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
 
@@ -100,11 +100,11 @@ contains
       real(dp), dimension(:), intent(out) :: distances !< Perpendicular distances between those flowlinks to the points
       integer, intent(out) :: ierror !< Error code (0 if no error)
 
-      real(dp), dimension(lnx) :: flowlink_midpoints_x
-      real(dp), dimension(lnx) :: flowlink_midpoints_y
+      real(dp), dimension(:), allocatable :: flowlink_midpoints_x
+      real(dp), dimension(:), allocatable :: flowlink_midpoints_y
       integer :: link_id, ka, kb
       integer :: number_of_points, i_point
-      real(dp), dimension(lnx) :: zs_dummy
+      real(dp), dimension(:), allocatable :: zs_dummy
       type(kdtree_instance) :: treeinst
       integer, parameter :: n_nearest_kdtree = 100
       integer :: n_nearest_kdtree_
@@ -117,6 +117,7 @@ contains
       ierror = 0
 
       ! Calculate the x,y-coordinates of the midpoints of all the flowlinks
+      allocate (flowlink_midpoints_x(lnx), flowlink_midpoints_y(lnx), zs_dummy(lnx))
       do link_id = 1, lnx
          ka = ln(1, link_id)
          kb = ln(2, link_id)

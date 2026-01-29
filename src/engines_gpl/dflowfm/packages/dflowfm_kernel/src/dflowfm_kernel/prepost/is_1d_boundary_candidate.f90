@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,17 +33,27 @@
 !< Returns true when a 1d node can be used as a boundary. By default
 !< the connecting edge should not lead to a bifurcation, unless
 !< the flag jaAllowBndAtBifurcation is true
-pure logical function is_1d_boundary_candidate(L, i)
-   use network_data
-   use m_flowgeom
+module m_is_1d_boundary_candidate
 
    implicit none
 
-   integer, intent(in) :: L !<  net link to check for boundary candidate
-   integer, intent(in) :: i !<  node to check, equals 1 or 2
+   private
 
-   is_1d_boundary_candidate = nmk(kn(i, L)) == 1 .and. lne(i, L) < 0 .and. &
-                              (nmk(kn(3 - i, L)) == 2 .or. jaAllowBndAtBifurcation == 1)
+   public :: is_1d_boundary_candidate
 
-   return
-end function is_1d_boundary_candidate
+contains
+
+   pure logical function is_1d_boundary_candidate(L, i)
+      use network_data, only: nmk, kn, lne
+      use m_flowgeom, only: jaallowbndatbifurcation
+
+      integer, intent(in) :: L !<  net link to check for boundary candidate
+      integer, intent(in) :: i !<  node to check, equals 1 or 2
+
+      is_1d_boundary_candidate = nmk(kn(i, L)) == 1 .and. lne(i, L) < 0 .and. &
+                                 (nmk(kn(3 - i, L)) == 2 .or. jaAllowBndAtBifurcation == 1)
+
+      return
+   end function is_1d_boundary_candidate
+
+end module m_is_1d_boundary_candidate

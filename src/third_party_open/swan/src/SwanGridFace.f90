@@ -11,22 +11,20 @@ subroutine SwanGridFace ( nfaces, ncells, nverts, xcugrd, ycugrd, kvertf )
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
@@ -49,7 +47,6 @@ subroutine SwanGridFace ( nfaces, ncells, nverts, xcugrd, ycugrd, kvertf )
 !
     use ocpcomm4
     use SwanGridobjects
-!ADC    USE SIZES, ONLY: MYPROC
 !
     implicit none
 !
@@ -188,7 +185,6 @@ subroutine SwanGridFace ( nfaces, ncells, nverts, xcugrd, ycugrd, kvertf )
        !
        k = cntv1(v1) +1
        if ( k > 10 ) then
-!ADC          PRINT *, "SWAN does not like local vertex ",v1," on core ",MYPROC
           call msgerr ( 4, 'SwanGridFace: more than 10 faces around vertex ' )
           return
        endif
@@ -197,7 +193,6 @@ subroutine SwanGridFace ( nfaces, ncells, nverts, xcugrd, ycugrd, kvertf )
        !
        k = cntv2(v2) +1
        if ( k > 10 ) then
-!ADC          PRINT *, "SWAN does not like local vertex ",v2," on core ",MYPROC
           call msgerr ( 4, 'SwanGridFace: more than 10 faces around vertex ' )
           return
        endif
@@ -269,7 +264,6 @@ subroutine SwanGridFace ( nfaces, ncells, nverts, xcugrd, ycugrd, kvertf )
              if ( face(iface)%atti(FACEC1) == 0 ) then
                 face(iface)%atti(FACEC1) = icell
              else
-!ADC                PRINT *, "SWAN does not like local element ",icell," on core ",MYPROC
                 call msgerr ( 4, 'SwanGridFace: not all cells have counterclockwise order of vertices ' )
                 return
              endif
@@ -277,7 +271,6 @@ subroutine SwanGridFace ( nfaces, ncells, nverts, xcugrd, ycugrd, kvertf )
              if ( face(iface)%atti(FACEC2) == 0 ) then
                 face(iface)%atti(FACEC2) = icell
              else
-!ADC                PRINT *, "SWAN does not like local element ",icell," on core ",MYPROC
                 call msgerr ( 4, 'SwanGridFace: not all cells have counterclockwise order of vertices ' )
                 return
              endif
@@ -359,8 +352,10 @@ subroutine SwanGridFace ( nfaces, ncells, nverts, xcugrd, ycugrd, kvertf )
           !
           if ( dxb /= 0. ) then
              face(iface)%attr(FACEDISTC) = 1. / dxb
+             face(iface)%attr(FACEDISTG) = 1. / abs(dxb)
           else
              face(iface)%attr(FACEDISTC) = 0.
+             face(iface)%attr(FACEDISTG) = 0.
           endif
           !
        else
@@ -396,6 +391,29 @@ subroutine SwanGridFace ( nfaces, ncells, nverts, xcugrd, ycugrd, kvertf )
           else
              face(iface)%attr(FACEDISTC) = 0.
              face(iface)%attr(FACELINPF) = 1.
+          endif
+          !
+          ! get coordinates of centroid of left cell
+          !
+          xcl = cell(icelll)%attr(CELLCX)
+          ycl = cell(icelll)%attr(CELLCY)
+          !
+          ! get coordinates of centroid of right cell
+          !
+          xcr = cell(icellr)%attr(CELLCX)
+          ycr = cell(icellr)%attr(CELLCY)
+          !
+          ! compute the distance between the face center and the centroid
+          ! and subsequently, compute the distance between the centroids
+          !
+          dxl = sqrt( (xcf-xcl)*(xcf-xcl) + (ycf-ycl)*(ycf-ycl) )
+          dxr = sqrt( (xcf-xcr)*(xcf-xcr) + (ycf-ycr)*(ycf-ycr) )
+          dxf = dxl + dxr
+          !
+          if ( dxf /= 0. ) then
+             face(iface)%attr(FACEDISTG) =  1. / dxf
+          else
+             face(iface)%attr(FACEDISTG) = 0.
           endif
           !
        endif

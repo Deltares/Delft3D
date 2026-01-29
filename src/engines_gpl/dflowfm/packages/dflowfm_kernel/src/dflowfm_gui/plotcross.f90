@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,15 +30,26 @@
 !
 !
 
-      subroutine plotCross(x, y)
-         use m_wearelt
-         implicit none
-         double precision :: x
-         double precision :: y
+module m_plotcross
 
-         call MOVABS(X - .5 * RCIR, Y - .5 * RCIR)
-         call LNABS(X + .5 * RCIR, Y + .5 * RCIR)
-         call MOVABS(X - .5 * RCIR, Y + .5 * RCIR)
-         call LNABS(X + .5 * RCIR, Y - .5 * RCIR)
-         return
-      end
+   implicit none
+
+contains
+
+   subroutine plotCross(x, y)
+      use precision, only: dp
+      use m_wearelt, only: rcir
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+
+      call MOVABS(X - .5 * RCIR, Y - .5 * RCIR)
+      call LNABS(X + .5 * RCIR, Y + .5 * RCIR)
+      call MOVABS(X - .5 * RCIR, Y + .5 * RCIR)
+      call LNABS(X + .5 * RCIR, Y - .5 * RCIR)
+      return
+   end
+
+end module m_plotcross

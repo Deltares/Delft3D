@@ -1,0 +1,8 @@
+# comment
+# ;;;;
+# meta-data here ;;;;
+time;   label  ;dummy;value
+202403260100;value one;=;123.5;
+202403260200;value two;=;42.02;; ; ignored;
+202403260400;have some pi;=;3.1415979
+202403260600;no value;=;

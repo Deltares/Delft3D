@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,56 +30,82 @@
 !
 !
 
+module m_changenumericalparameters3
+
+   use precision, only: dp
+   implicit none
+
+contains
+
    subroutine CHANGENUMERICALPARAMETERS3()
-      use m_netw
-      use M_FLOW
-      use m_flowgeom
-      use m_sferic
-      use m_wind
-      use m_sediment
-      use unstruc_display
-      use m_reduce
+      use m_flow, only: clveg, cdveg, rhoveg, cbveg, stemheightstd, modind, slotw1d, slotw2d, epsmaxlev, epsmaxlevm, jawavestreaming, jawavestokes, maxitverticalforestersal, maxitverticalforestertem, noderivedtypes
+      use m_sediment, only: hwavuni, twavuni, phiwavuni, jaseddenscoupling, hwav, twav, phiwav
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
+      use m_flowgeom, only: ndx
+      use m_reduce, only: maxdge
       use dflowfm_version_module, only: company, product_name
-      use unstruc_messages
-      use m_fixedweirs
-      use m_waves
-      implicit none
+      use m_wind, only: jaqin, jaevap, evap
 
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=22, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-      integer :: nlevel
-      common / HELPNOW / WRDKEY, NLEVEL
+      character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
       integer :: nbut, imp, inp
 
       NLEVEL = 4
-      OPTION(1) = 'Clveg                                ( )'; it(2 * 1) = 6
-      OPTION(2) = 'Cdveg                                ( )'; it(2 * 2) = 6
-      OPTION(3) = 'Rhoveg                           (kg/m3)'; it(2 * 3) = 6
-      OPTION(4) = 'Cbveg                         (kg.m2/s2)'; it(2 * 4) = 6
-      OPTION(5) = 'Stemheightstd                        ( )'; it(2 * 5) = 6
-      OPTION(6) = 'Hwavuni                              (m)'; it(2 * 6) = 6
-      OPTION(7) = 'Twavuni                              (s)'; it(2 * 7) = 6
-      OPTION(8) = 'Phiwavuni                            ( )'; it(2 * 8) = 6
-      OPTION(9) = 'Wave model nr modind                 ( )'; it(2 * 9) = 2
-      OPTION(10) = 'Slotw1D                              (m)'; it(2 * 10) = 6
-      OPTION(11) = 'Slotw2D                              (m)'; it(2 * 11) = 6
-      OPTION(12) = 'Epsmaxlev                            (m)'; it(2 * 12) = 6
-      OPTION(13) = 'Epsmaxlevm                           (m)'; it(2 * 13) = 6
-      OPTION(14) = 'jawavestreaming terms in D3Dwavemodel( )'; it(2 * 14) = 2
-      OPTION(15) = 'jawaveStokes 0,1,2,3                 ( )'; it(2 * 15) = 2
-      OPTION(16) = 'jawavelogprof                        ( )'; it(2 * 16) = 2
-      OPTION(17) = 'Maxitforestersal                     ( )'; it(2 * 17) = 2
-      OPTION(18) = 'Maxitforestertem                     ( )'; it(2 * 18) = 2
-      OPTION(19) = 'Noderivedtypes (Noderivedtypes in mdu)     ( )'; it(2 * 19) = 2
-      OPTION(20) = 'Maxdegree                            ( )'; it(2 * 20) = 2
-      OPTION(21) = 'Jaevap                               ( )'; it(2 * 21) = 2
-      OPTION(22) = 'Jaseddenscoupling                    ( )'; it(2 * 22) = 2
+      OPTION(1) = 'Clveg                                ( )'
+      it(2 * 1) = 6
+      OPTION(2) = 'Cdveg                                ( )'
+      it(2 * 2) = 6
+      OPTION(3) = 'Rhoveg                           (kg/m3)'
+      it(2 * 3) = 6
+      OPTION(4) = 'Cbveg                         (kg.m2/s2)'
+      it(2 * 4) = 6
+      OPTION(5) = 'Stemheightstd                        ( )'
+      it(2 * 5) = 6
+      OPTION(6) = 'Hwavuni                              (m)'
+      it(2 * 6) = 6
+      OPTION(7) = 'Twavuni                              (s)'
+      it(2 * 7) = 6
+      OPTION(8) = 'Phiwavuni                            ( )'
+      it(2 * 8) = 6
+      OPTION(9) = 'Wave model nr modind                 ( )'
+      it(2 * 9) = 2
+      OPTION(10) = 'Slotw1D                              (m)'
+      it(2 * 10) = 6
+      OPTION(11) = 'Slotw2D                              (m)'
+      it(2 * 11) = 6
+      OPTION(12) = 'Epsmaxlev                            (m)'
+      it(2 * 12) = 6
+      OPTION(13) = 'Epsmaxlevm                           (m)'
+      it(2 * 13) = 6
+      OPTION(14) = 'jawavestreaming terms in D3Dwavemodel( )'
+      it(2 * 14) = 2
+      OPTION(15) = 'jawaveStokes 0,1,2,3                 ( )'
+      it(2 * 15) = 2
+      OPTION(16) = 'jawavelogprof                        ( )'
+      it(2 * 16) = 2
+      OPTION(17) = 'Maxitforestersal                     ( )'
+      it(2 * 17) = 2
+      OPTION(18) = 'Maxitforestertem                     ( )'
+      it(2 * 18) = 2
+      OPTION(19) = 'Noderivedtypes (Noderivedtypes in mdu)     ( )'
+      it(2 * 19) = 2
+      OPTION(20) = 'Maxdegree                            ( )'
+      it(2 * 20) = 2
+      OPTION(21) = 'Jaevap                               ( )'
+      it(2 * 21) = 2
+      OPTION(22) = 'Jaseddenscoupling                    ( )'
+      it(2 * 22) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -237,9 +263,18 @@
             call IFORMGETdouble(2 * 3, Rhoveg)
             call IFORMGETdouble(2 * 4, Cbveg)
             call IFORMGETdouble(2 * 5, stemheightstd)
-            call IFORMGETdouble(2 * 6, hwavuni); if (hwavuni > 0d0) hwav = hwavuni
-            call IFORMGETdouble(2 * 7, twavuni); if (twavuni > 0d0) twav = twavuni
-            call IFORMGETdouble(2 * 8, phiwavuni); if (phiwavuni > 0d0) phiwav = phiwavuni
+            call IFORMGETdouble(2 * 6, hwavuni)
+            if (hwavuni > 0.0_dp) then
+               hwav = hwavuni
+            end if
+            call IFORMGETdouble(2 * 7, twavuni)
+            if (twavuni > 0.0_dp) then
+               twav = twavuni
+            end if
+            call IFORMGETdouble(2 * 8, phiwavuni)
+            if (phiwavuni > 0.0_dp) then
+               phiwav = phiwavuni
+            end if
             call IFORMGETinteger(2 * 9, modind)
             call IFORMGETdouble(2 * 10, Slotw1D)
             call IFORMGETdouble(2 * 11, Slotw2D)
@@ -274,3 +309,5 @@
       goto 30
 
    end subroutine CHANGENUMERICALPARAMETERS3
+
+end module m_changenumericalparameters3

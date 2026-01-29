@@ -1,0 +1,713 @@
+				<!--
+				testCases
+				
+				Optional attributes:
+					maxRunTime: OverruleRefMaxRunTime="true" default: false
+									if false: maxRunTime in this config.xml file is     overruled by the maxRunTime of the reference run
+									if true : maxRunTime in this config.xml file is NOT overruled by the maxRunTime of the reference run
+				
+				Special replacements:
+				[output(progname)]		: Will be replaced by the output of (the last run of) program "progname"
+										  Used by esm_create (Linux)
+				[programpath(progname)] : Will be replaced by the path to the program named "progname"
+										  Used by WAQ1 to refer to the proc_def file
+				
+				Checks:
+					<file name="dat-file" type="NEFIS">
+						<parameters name="groupname">
+							<parameter name="quantity" toleranceAbsolute="real_value">
+					<file name="nc-file" type="netCDF">
+						<parameters>                                        (name not needed)
+							<parameter name="quantity" toleranceAbsolute="real_value">
+					<file name="filnam" type="ASCII"/>      (parameters/parameter not needed)
+					Optional attribute:
+						ignore="true" Don't bother when this file is in the reference dir but absent in the check dir
+				
+				-->
+	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+		<testCase name="e01_f01_c12-breukelermeer" ref="flow2d3d_default">
+			<path version="2024-02-22T14:50:00">e01_d3dflow/f01_general/c12-breukelermeer</path>
+			<maxRunTime>11.625</maxRunTime>
+			<checks>
+				<file name="trih-a3m.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-a3m.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f01_c14-g52" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f01_general/c14-g52</path>
+			<maxRunTime>3.59400010109</maxRunTime>
+			<checks>
+				<file name="trih-g52.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-g52.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f03_c06-india_droogval" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f03_original/c06-india_droogval</path>
+			<maxRunTime>5.90600013733</maxRunTime>
+			<checks>
+				<file name="trih-rec.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-rec.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f03_c12-secchi_variable_03.10" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f03_original/c12-secchi_variable_03.10</path>
+			<maxRunTime>244.243999958</maxRunTime>
+			<checks>
+				<file name="trih-16b.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-16b.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="AIRHUM" toleranceAbsolute="0.0001"/>
+						<parameter name="AIRTEM" toleranceAbsolute="0.0001"/>
+						<parameter name="CLOUDS" toleranceAbsolute="0.0001"/>
+						<parameter name="WINDU" toleranceAbsolute="0.0001"/>
+						<parameter name="WINDV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f03_c14-katrina_windcd3" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f03_original/c14-katrina_windcd3</path>
+			<maxRunTime>7.65599989891</maxRunTime>
+			<checks>
+				<file name="trih-windcd.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-windcd.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="PATM" toleranceAbsolute="0.0001"/>
+						<parameter name="WINDU" toleranceAbsolute="0.0001"/>
+						<parameter name="WINDV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f04_c09-scs" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f04_coarsewind/c09-scs</path>
+			<maxRunTime>65.0920000076</maxRunTime>
+			<checks>
+				<file name="trih-scs.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-scs.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f04_c10-mark_grid_svwp" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f04_coarsewind/c10-mark_grid_svwp</path>
+			<maxRunTime>47.2490000725</maxRunTime>
+			<checks>
+				<file name="trih-mar.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-mar.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f04_c11-mark_grid_arc" ref="flow2d3d_default">
+			<path version="2024-02-22T14:50:00">e01_d3dflow/f04_coarsewind/c11-mark_grid_arc</path>
+			<maxRunTime>42.6860001087</maxRunTime>
+			<checks>
+				<file name="trih-mar.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-mar.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f06_c06-hump" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f06_ols/c06-hump</path>
+			<maxRunTime>289.882999897</maxRunTime>
+			<checks>
+				<file name="trih-hmp.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-hmp.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f06_c08-trench" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f06_ols/c08-trench</path>
+			<maxRunTime>93.2790000439</maxRunTime>
+			<checks>
+				<file name="trih-t01.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-t01.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f12_c01-c31" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f12_restart/c01-c31</path>
+			<maxRunTime>20.4060001373</maxRunTime>
+			<checks>
+				<file name="trih-c31.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-c31.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f12_c02-c32" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f12_restart/c02-c32</path>
+			<maxRunTime>4.66100001335</maxRunTime>
+			<checks>
+				<file name="trih-c32.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-c32.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f12_c03-c33" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f12_restart/c03-c33</path>
+			<maxRunTime>1.46099996567</maxRunTime>
+			<checks>
+				<file name="trih-c33.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-c33.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f12_c04-c34" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f12_restart/c04-c34</path>
+			<maxRunTime>1.36199998856</maxRunTime>
+			<checks>
+				<file name="trih-c34.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-c34.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f17_c01-insidedump" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f17_dred_dump/c01-insidedump</path>
+			<maxRunTime>101.195999861</maxRunTime>
+			<checks>
+				<file name="trih-t01.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+					<parameters name="his-dad-const">
+						<parameter name="LINK_DEF" toleranceAbsolute="0.0001"/>
+						<parameter name="LINK_PERCENTAGES" toleranceAbsolute="0.0001"/>
+					</parameters>
+					<parameters name="his-dad-series">
+						<parameter name="DATE_TIME" toleranceAbsolute="0.0001"/>
+						<parameter name="LINK_SUM" toleranceAbsolute="0.01"/>
+						<parameter name="DREDGE_VOLUME" toleranceAbsolute="0.01"/>
+						<parameter name="DUMP_VOLUME" toleranceAbsolute="0.01"/>
+					</parameters>
+				</file>
+				<file name="trim-t01.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.01"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f25_c01-chezygoot_equid" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f25_bottfric_2D_3D/c01-chezygoot_equid</path>
+			<maxRunTime>1.35899996758</maxRunTime>
+			<checks>
+				<file name="trih-ke3.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-ke3.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f25_c06-noordzee_equid" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f25_bottfric_2D_3D/c06-noordzee_equid</path>
+			<maxRunTime>496.221999884</maxRunTime>
+			<checks>
+				<file name="trih-aaa.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-aaa.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f25_c07-noordzee_log" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f25_bottfric_2D_3D/c07-noordzee_log</path>
+			<maxRunTime>490.894000053</maxRunTime>
+			<checks>
+				<file name="trih-bbb.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-bbb.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f29_c05-tsunami-banda-aceh_original_model" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f29_subsidence/c05-tsunami-banda-aceh_original_model</path>
+			<checks>
+				<file name="trih-tsu5d.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-tsu5d.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="tri-diag.tsu5d" ignore="true"/>
+				<file name="tsu5d.url" ignore="true"/>
+			</checks>
+		</testCase>
+		<testCase name="e01_f29_c06-tsunami-banda-aceh_instant_uplift" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f29_subsidence/c06-tsunami-banda-aceh_instant_uplift</path>
+			<checks>
+				<file name="trih-tsu5d.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-tsu5d.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="tri-diag.tsu5d" ignore="true"/>
+				<file name="tsu5d.url" ignore="true"/>
+			</checks>
+		</testCase>
+		<testCase name="e01_f29_c07-tsunami-banda-aceh_instant_4areas" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f29_subsidence/c07-tsunami-banda-aceh_instant_4areas</path>
+			<checks>
+				<file name="trih-tsu5d.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-tsu5d.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="tri-diag.tsu5d" ignore="true"/>
+				<file name="tsu5d.url" ignore="true"/>
+			</checks>
+		</testCase>
+		<testCase name="e01_f29_c08-tsunami-banda-aceh_slow_4areas" ref="flow2d3d_default">
+			<path version="2024-01-08T09:50:00">e01_d3dflow/f29_subsidence/c08-tsunami-banda-aceh_slow_4areas</path>
+			<checks>
+				<file name="trih-tsu5d.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-tsu5d.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="tri-diag.tsu5d" ignore="true"/>
+				<file name="tsu5d.url" ignore="true"/>
+			</checks>
+		</testCase>
+		<testCase name="e01_f88_c01.07-chezy" ref="flow2d3d_default">
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f88_sensitive/c01.07-chezy</path>
+			<maxRunTime>2.35899996758</maxRunTime>
+			<checks>
+				<file name="trih-ch5.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-ch5.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trih-ch5.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="FLTR" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f99_c54-estuarium" ref="flow2d3d_default">
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f99_longruns/c54-estuarium</path>
+			<maxRunTime>14117.901</maxRunTime>
+			<checks>
+				<file name="trih-000.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-000.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e23_f01_c04-botnow_curnow" ref="flow2d3d_default">
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f01_general/c04-botnow_curnow</path>
+			<programs>
+				<program ref="FLOW2D3D_WAVE">
+					<arguments>
+						<argument>3</argument>
+						<argument>config_d_hydro.xml</argument>
+						<argument>-w</argument>
+						<argument>r17.mdw</argument>
+					</arguments>
+				</program>
+			</programs>
+			<maxRunTime>765.578999996</maxRunTime>
+			<checks>
+				<file name="trih-r17.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-r17.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="wavm-r17.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e23_f01_c06-wavecon" ref="flow2d3d_default">
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f01_general/c06-wavecon</path>
+			<programs>
+				<program ref="FLOW2D3D_WAVE">
+					<arguments>
+						<argument>3</argument>
+						<argument>config_d_hydro.xml</argument>
+						<argument>-w</argument>
+						<argument>obw.mdw</argument>
+					</arguments>
+				</program>
+			</programs>
+			<maxRunTime>10800.0</maxRunTime>
+			<checks>
+				<file name="trim-obw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="wavm-obw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e23_f01_c07-wavewatch_file" ref="flow2d3d_default">
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f01_general/c07-wavewatch_file</path>
+			<programs>
+				<program ref="FLOW2D3D_WAVE">
+					<arguments>
+						<argument>3</argument>
+						<argument>config_d_hydro.xml</argument>
+						<argument>-w</argument>
+						<argument>cca.mdw</argument>
+					</arguments>
+				</program>
+			</programs>
+			<maxRunTime>143.71600008</maxRunTime>
+			<checks>
+				<file name="trih-cca.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-cca.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="wavm-cca.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e23_f01_c08-f34" ref="flow2d3d_default">
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f01_general/c08-f34</path>
+			<programs>
+				<program ref="FLOW2D3D_WAVE">
+					<arguments>
+						<argument>3</argument>
+						<argument>config_d_hydro.xml</argument>
+						<argument>-w</argument>
+						<argument>f34.mdw</argument>
+					</arguments>
+				</program>
+			</programs>
+			<maxRunTime>36.7230000496</maxRunTime>
+			<checks>
+				<file name="trih-f34.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-f34.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="wavm-f34.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e23_f27_c12-wave_ripcurrent" ref="flow2d3d_default">
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c12-wave_ripcurrent</path>
+			<programs>
+				<program ref="FLOW2D3D_WAVE">
+					<arguments>
+						<argument>3</argument>
+						<argument>config_d_hydro.xml</argument>
+						<argument>-w</argument>
+						<argument>rip.mdw</argument>
+					</arguments>
+				</program>
+			</programs>
+			<maxRunTime>10800.0</maxRunTime>
+			<checks>
+				<file name="trih-rip.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-rip.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="wavm-rip.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+	</testCases>

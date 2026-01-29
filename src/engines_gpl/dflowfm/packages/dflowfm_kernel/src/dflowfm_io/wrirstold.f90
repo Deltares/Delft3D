@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,16 @@
 !
 !
 
+module m_wrirstold
+
+   implicit none
+
+   private
+
+   public :: WRIRSTold
+
+contains
+
    subroutine WRIRSTold(MOUT)
       use M_FLOWTIMES
       use M_FLOW
@@ -38,7 +48,9 @@
       use m_sediment, only: jaceneqtr
       use unstruc_netcdf, only: unc_write_net
       use m_transport
-      implicit none
+      use m_get_kbot_ktop
+      use m_filez, only: doclose, newfil
+
       integer :: MOUT, k, kk, kb, kt
 
       ! WRITE(MOUT,'(a,2x,F25.14,2i10,a)') REFDAT, TIME1,  NDX, LNX, ' (refdat, timsec, ndx, lnx)'
@@ -88,3 +100,5 @@
       end if
 
    end subroutine WRIRSTold
+
+end module m_wrirstold

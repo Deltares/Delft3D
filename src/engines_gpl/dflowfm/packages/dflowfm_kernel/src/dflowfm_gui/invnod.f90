@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,12 +30,19 @@
 !
 !
 
-      logical function INVNOD(K)
-         use m_netw
-         use unstruc_display
-         implicit none
-         integer :: k
-         logical inview
-         INVNOD = INVIEW(XK(K), YK(K))
-         return
-      end
+module m_invnod
+
+   implicit none
+
+contains
+
+   logical function INVNOD(K)
+      use m_netw, only: xk, yk
+      use m_inview
+
+      integer :: k
+      INVNOD = INVIEW(XK(K), YK(K))
+      return
+   end
+
+end module m_invnod

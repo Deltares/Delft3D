@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -30,7 +30,7 @@
 !!!
 !!! Dio-DS-PLT-RW: Param./Loc./Time datasets
 !!!
-!!! (c) Deltares, dec 2000
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!
@@ -3045,13 +3045,9 @@ subroutine DioPltCheckJumpBack(plt, julianTime, integerHisTime)
 
     ! locals
    
-    integer         :: lun          ! lun to read from
     integer         :: headerSize,& ! size of HIS header 
                        blockSize ,& ! size of HIS time step block
                        jumpSize     ! total jump size
-    integer         :: dummy        ! dummy for HIS step
-    real, dimension(:,:), &
-          allocatable :: reals      ! temp storage for values
     integer         :: tIndex       ! time index to write to
     integer         :: fseekResult  ! result of fseek call
 

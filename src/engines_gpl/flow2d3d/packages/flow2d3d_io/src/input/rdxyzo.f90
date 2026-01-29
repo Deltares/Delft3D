@@ -5,7 +5,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                 & nmax      ,xcor      ,ycor      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -117,6 +117,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     real(fp)                         :: rdef     ! Help var. containing default value(s) for real variable
     real(fp)                         :: rmissval
     real(fp)     , dimension(kmax)   :: rval     ! Help array (real) where the data, recently read from the MD-file, are stored temporarily
+    real(fp)     , dimension(2)      :: dxdy     ! Help array for reading dx and dy
     character(1)                     :: cdef     ! Default value for chulp
     character(11)                    :: fmtdef   ! Default file format (usually=blank)
     character(11)                    :: fmttmp   ! Character string defining the format of the curvi-linear grid file, file will be read formatted
@@ -153,7 +154,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     enddo
     !
     filrgf = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filcco', filrgf)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filcco', filrgf)
     if (filrgf /= fildef) then
        !
        ! Grid specified in a file
@@ -208,15 +209,15 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! locate and read 'DxDy' record for DX and DY
        ! default value not allowed => nodef
        !
-       rval = rmissval
-       call prop_get(gdp%mdfile_ptr, '*', 'DxDy', rval, 2)
-       if (comparereal(rval(1),rmissval) == 0 .or. &
-         & comparereal(rval(2),rmissval) == 0       ) then
+       dxdy = rmissval
+       call prop_get(gdp%mdfile_ptr, '*', 'DxDy', dxdy, 2)
+       if (comparereal(dxdy(1),rmissval) == 0 .or. &
+         & comparereal(dxdy(2),rmissval) == 0       ) then
           error = .true.
           call prterr(lundia, 'P004', 'No grid file defined')
        else
           cdef = ' '
-          call prop_get_string(gdp%mdfile_ptr,'*','Sphere',cdef)
+          call prop_get(gdp%mdfile_ptr,'*','Sphere',cdef)
           if (cdef /= 'y' .and. cdef /= 'Y') then
              if (parll) then
                 call prterr(lundia, 'P004', 'The combination of constant dx and dy and parallel is not available')
@@ -225,8 +226,8 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
              else
                 call prterr(lundia, 'Z013', 'The use of constant dx and dy is deprecated')
                 write (lundia,*) '           Use a grid file instead'
-                dx = rval(1)
-                dy = rval(2)
+                dx = dxdy(1)
+                dy = dxdy(2)
              endif
           else
              call prterr(lundia, 'P004', 'The use of constant dx and dy for ' // &
@@ -254,7 +255,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Z definition
     !
     cval = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'laydis', cval)
+    call prop_get(gdp%mdfile_ptr, '*', 'laydis', cval)
     if (cval == ' ') then
        !
        ! locate and read 'Thick' record

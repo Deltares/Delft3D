@@ -1,11 +1,11 @@
 #! /bin/bash
  
-# This is a script for submitting single or multi-node simulations to the Slurm cluster at Deltares (H7).
+# This is a script for submitting single or multi-node simulations to the Slurm cluster at Deltares.
 # Note: Apptainer is the replacement for Singularity.
 
 # Usage:
 #   - Modify this script where needed (e.g. number of nodes, number of tasks per node, Apptainer version).
-#   - Execute this script from the command line of H7 using:
+#   - Execute this script from the command line using:
 #     sbatch ./submit_singularity_h7.sh
 #
 
@@ -27,24 +27,23 @@
 #--- Load modules (for use within Deltares) ------------------------------------------------------------------
 module purge
 module load apptainer/1.2.5     # Load the Apptainer container system software.
-module load intelmpi/2021.9.0   # Load the  message-passing library for parallel simulations.
+module load intelmpi/2021.11.0   # Load the  message-passing library for parallel simulations.
  
  
 #--- Setup the container ------------------------------------------------------------------------------------
-# For use within Deltares, Delft3D FM Apptainer containers are available here: P:\d-hydro\delft3dfm_containers\
 # Specify the folder that contains the required version of the Apptainer container
-containerFolder=/p/d-hydro/delft3dfm_containers/delft3dfm_2024.03/
- 
+containerFolder=/path/to/folder/containing/the/sif
+
  
 #--- Setup the model ----------------------------------------------------------------------------------------
 # Specify the ROOT folder of your model, i.e. the folder that contains ALL of the input files and sub-folders, e.g:
-modelFolder=/p/myFolder/apptainer/delft3dfm/test
+modelFolder=/path/to/folder/containing/the/model
 
 # Specify the folder containing your model's MDU file.
-mdufileFolder=$modelFolder/dflowfm
+mdufileFolder=/path/to/folder/containing/the/mdu/file
  
 # Specify the folder containing your DIMR configuration file.
-dimrconfigFolder=$modelFolder
+dimrconfigFolder=/path/to/folder/containing/the/dimr/configuration/file
  
 # The name of the DIMR configuration file. The default name is dimr_config.xml. This file must already exist!
 dimrFile=dimr_config.xml

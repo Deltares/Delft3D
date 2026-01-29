@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,18 +31,27 @@
 !
 
 !> compute the number of grid layers for a given grow factor, first grid layer height and total grid height
-integer function comp_nfac(h_h0, dgrow)
+module m_comp_nfac
+
    implicit none
 
-   double precision, intent(in) :: h_h0 !< ratio of first grid layer height w.r.t. total grid height, i.e. h/h0
-   double precision, intent(in) :: dgrow !< grow factor
+contains
 
-   if (abs(dgrow - 1d0) > 1d-8) then
+   integer function comp_nfac(h_h0, dgrow)
+      use precision, only: dp
+      implicit none
+
+      real(kind=dp), intent(in) :: h_h0 !< ratio of first grid layer height w.r.t. total grid height, i.e. h/h0
+      real(kind=dp), intent(in) :: dgrow !< grow factor
+
+      if (abs(dgrow - 1.0_dp) > 1.0e-8_dp) then
 !      comp_nfac = floor(0.999d0+ log( (dgrow-1d0)*h_h0 + 1d0 ) / log(dgrow) )
-      comp_nfac = floor(log((dgrow - 1d0) * h_h0 + 1d0) / log(dgrow))
-   else
-      comp_nfac = floor(0.999d0 + h_h0)
-   end if
+         comp_nfac = floor(log((dgrow - 1.0_dp) * h_h0 + 1.0_dp) / log(dgrow))
+      else
+         comp_nfac = floor(0.999_dp + h_h0)
+      end if
 
-   return
-end function comp_nfac
+      return
+   end function comp_nfac
+
+end module m_comp_nfac

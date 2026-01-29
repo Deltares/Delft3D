@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,11 +39,13 @@ contains
 
 !> Find for each input point the nearest flow node, given a set of points [xx, yy].
    subroutine find_nearest_flownodes(n, xx, yy, names, node_nrs_nearest, jakdtree, jaoutside, iLocTp)
-      use unstruc_messages
-      use m_partitioninfo
-      use m_flowgeom
-      use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
-      use kdtree2Factory
+      use precision, only: dp
+      use messagehandling, only: msgbuf, msg_flush, idlen
+      use m_partitioninfo, only: jampi, reduce_int_max, reduce_kobs
+      use m_flowgeom, only: nd, xz, yz
+      use m_GlobalParameters, only: INDTP_1D, INDTP_ALL
+      use kdtree2Factory, only: treeglob
+      use m_inflowcell, only: inflowcell
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
@@ -51,9 +53,9 @@ contains
       implicit none
 
       integer, intent(in) :: n !< number of points
-      double precision, dimension(n), intent(in) :: xx !< x-coordinate of input points
-      double precision, dimension(n), intent(in) :: yy !< y-coordinate of input points
-      character(len=IdLen), dimension(n), intent(in) :: names !< names of points
+      real(kind=dp), dimension(n), intent(in) :: xx !< x-coordinate of input points
+      real(kind=dp), dimension(n), intent(in) :: yy !< y-coordinate of input points
+      character(len=idlen), dimension(n), intent(in) :: names !< names of points
       integer, dimension(n), intent(inout) :: node_nrs_nearest !< associated flow node numbers, if any found.
       integer, intent(inout) :: jakdtree !< use kdtree (1) or not (other)
       integer, intent(in) :: jaoutside !< allow outside cells (for 1D) (1) or not (0)
@@ -61,7 +63,7 @@ contains
       integer :: ierror !< error (1) or not (0)
       integer :: i, k, k1b
       integer, dimension(1) :: idum
-      double precision :: d1, d2
+      real(kind=dp) :: d1, d2
 
       ierror = 1
 
@@ -136,21 +138,23 @@ contains
 !> Find for each input point the nearest flow node, given a set of points [xx, yy].
 !! Uses the k-d tree routines
    subroutine find_nearest_flownodes_kdtree(treeinst, Ns, xs, ys, node_nr_nearest, jaoutside, iLocTp, ierror)
+      use precision, only: dp
 
       use m_missing
       use m_flowgeom
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       use kdtree2Factory
       use m_sferic
-      use unstruc_messages
+      use messagehandling, only: LEVEL_INFO, mess
       use gridoperations
       use geometry_module, only: dbdistance, pinpok
+      use m_wall_clock_time
 
       implicit none
 
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: Ns !< number of samples
-      double precision, dimension(Ns), intent(in) :: xs, ys !< observation coordinates
+      real(kind=dp), dimension(Ns), intent(in) :: xs, ys !< observation coordinates
       integer, dimension(Ns), intent(out) :: node_nr_nearest !< node number of nearest flow node
       integer, intent(in) :: jaoutside !< allow outside cells (for 1D) (1) or not (0)
       integer, intent(in) :: iLocTp !< (0) not for obs, or obs with locationtype==0, (1) for obs with locationtype==1, (2) for obs with locationtype==2
@@ -160,21 +164,21 @@ contains
 
       integer, parameter :: Msize = 10
 
-      double precision, dimension(Msize) :: xloc, yloc
+      real(kind=dp), dimension(Msize) :: xloc, yloc
       integer, dimension(Msize) :: Lorg
       integer, dimension(Msize) :: LnnL
 
-      double precision :: dmaxsize, R2search, t0, t1, zz
+      real(kind=dp) :: dmaxsize, R2search, t0, t1, zz
 
       integer :: i, ip1, isam, in, k, N, NN
       integer :: nstart, nend
-      double precision :: dist_old, dist_new
+      real(kind=dp) :: dist_old, dist_new
 
       ierror = 1
 
       node_nr_nearest = 0
 
-      call klok(t0)
+      call wall_clock_time(t0)
 
       ! build kdtree
       call build_kdtree(treeinst, Ns, xs, ys, ierror, jsferic, dmiss)
@@ -206,7 +210,7 @@ contains
          call make_queryvector_kdtree(treeinst, xz(k), yz(k), jsferic)
 
          ! compute maximum flowcell dimension
-         dmaxsize = 0d0
+         dmaxsize = 0.0_dp
          N = size(nd(k)%x)
          do i = 1, N
             ip1 = i + 1
@@ -217,10 +221,10 @@ contains
          end do
 
          ! determine square search radius
-         R2search = 1.1d0 * dmaxsize**2 ! 1.1d0: safety
+         R2search = 1.1_dp * dmaxsize**2 ! 1.1d0: safety
 
          ! get the cell polygon that is safe for periodic, spherical coordinates, inluding poles
-         call get_cellpolygon(k, Msize, N, 1d0, xloc, yloc, LnnL, Lorg, zz)
+         call get_cellpolygon(k, Msize, N, 1.0_dp, xloc, yloc, LnnL, Lorg, zz)
 
          if (N < 1) then
             if (k <= Ndxi) then
@@ -232,7 +236,9 @@ contains
          ! count number of points in search area
          NN = kdtree2_r_count(treeinst%tree, treeinst%qv, R2search)
 
-         if (NN == 0) cycle ! no links found
+         if (NN == 0) then
+            cycle ! no links found
+         end if
 
          ! reallocate if necessary
          call realloc_results_kdtree(treeinst, NN)
@@ -270,7 +276,7 @@ contains
          end do
       end do
 
-      call klok(t1)
+      call wall_clock_time(t1)
 
       write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
@@ -279,7 +285,9 @@ contains
 1234  continue
 
       ! deallocate
-      if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
+      if (treeinst%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeinst)
+      end if
 
    end subroutine find_nearest_flownodes_kdtree
 

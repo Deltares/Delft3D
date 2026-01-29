@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,9 +31,10 @@
 !
 
 module M_XYTEXTS
+   use precision, only: dp
    implicit none
    integer, parameter :: maxtxt = 2000
-   double precision :: xtxt(maxtxt), ytxt(maxtxt), heitxt(maxtxt)
+   real(kind=dp) :: xtxt(maxtxt), ytxt(maxtxt), heitxt(maxtxt)
    integer :: symtxt(maxtxt), coltxt(maxtxt)
    integer :: ntxt
    character(len=120) :: xytexts(maxtxt)

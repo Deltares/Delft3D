@@ -21,8 +21,8 @@ public  ::  arglogical
         integer         :: iargc
         integer         :: jarg
         integer         :: default
-        character*(*)   :: prefix
-        character*50    :: sarg
+        character(len=*) :: prefix
+        character(len=50) :: sarg
 
         i =default
         iargc = command_argument_count()
@@ -42,8 +42,8 @@ public  ::  arglogical
         integer         :: iargc
         integer         :: jarg
         real            :: default
-        character*(*)   :: prefix
-        character*50    :: sarg
+        character(len=*) :: prefix
+        character(len=50) :: sarg
 
         r = default
         iargc = command_argument_count()
@@ -63,8 +63,8 @@ public  ::  arglogical
         logical         :: l
         integer         :: iargc
         integer         :: jarg
-        character*(*)   :: prefix
-        character*50    :: sarg
+        character(len=*) :: prefix
+        character(len=50) :: sarg
 
         l = .False.
         iargc = command_argument_count()
@@ -80,10 +80,10 @@ public  ::  arglogical
         logical         :: success
         integer         :: iargc
         integer         :: jarg
-        character*(*)   :: default
-        character*(*)   :: s            !MAX 20 characters!
-        character*(*)   :: prefix
-        character*50    :: sarg
+        character(len=*) :: default
+        character(len=*) :: s            !MAX 20 characters!
+        character(len=*) :: prefix
+        character(len=50) :: sarg
 
         s = default
         success = .False.

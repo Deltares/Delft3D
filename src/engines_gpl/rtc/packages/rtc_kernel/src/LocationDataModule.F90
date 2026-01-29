@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -179,7 +179,7 @@
 ! *** WNDVEL= wind velocity array
 ! *** WindInterpVel= true means linear interpolation velocity ; false means block data (default=block data)
 ! *** WindInterpDir= true means linear interpolation direction; false means block data (default=block data)
-! *** WindTable  = WindTable Nr in case of use of the NewTablesModule
+! *** WindTable  = WindTable Nr in case of use of the NewTables_rtc
 ! ***                 (iwind,1) velocity table
 ! ***                 (iwind,2) direction table
 
@@ -266,7 +266,7 @@
 !-----------------------------------------------------------------------
 !   Calling routines:              RDBAR
 !-----------------------------------------------------------------------
-!   Called  routines:              ERRMSG
+!   Called  routines:              write_error_message_rtc
 !-----------------------------------------------------------------------
 !  Formal parameters:
 !  ------------------
@@ -362,7 +362,7 @@
 !     allocate (barval(nsluv, maxtab), STAT=allerr)
 !     was originally not initialized
       if (.not. success) then
-        call ERRMSG (946, 0, 'ALLOC3DBAR', 'Allocation error 3DBarrier arrays', outuni)
+        call write_error_message_rtc (946, 0, 'ALLOC3DBAR', 'Allocation error 3DBarrier arrays', outuni)
         RetVal = 946
       endif
 
@@ -389,7 +389,7 @@
       success = success .and. DH_AllocInit(ND3B, NPar3, Res3B, 0D0)
       success = success .and. DH_AllocInit(ND3B, NPar3, Ntims, AlRs3B,0D0)
       If (.not. success) then
-         Call ErrMsg (929, 1, ' AllocLocationArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocLocationArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -406,7 +406,7 @@
       success = success .and. DH_AllocInit(NSBK, NParS, ResSbk, 0D0)
       success = success .and. DH_AllocInit(NSBK, NParS, Ntims, AlRSBK,0D0)
       If (.not. success) then
-         Call ErrMsg (929, 2, ' AllocLocationArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 2, ' AllocLocationArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -429,7 +429,7 @@
       success = success .and. DH_AllocInit(NPRE, NParP, ResPre, 0D0)
       success = success .and. DH_AllocInit(NPRE, NParP, Ntims, AlRSPR,0D0)
       If (.not. success) then
-         Call ErrMsg (929, 3, ' AllocLocationArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 3, ' AllocLocationArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -450,7 +450,7 @@
       success = success .and. DH_AllocInit(NEXTH, 3, HisDataSetNParLocTimes,0)
       success = success .and. DH_AllocInit(NEXTH, NTimHis, HisDataSetTimes,0D0)
       If (.not. success)  then
-         Call ErrMsg (929, 4, ' AllocLocationArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 4, ' AllocLocationArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -472,7 +472,7 @@
       success = success .and. DH_AllocInit(NExt, WindLoc2Stat, 0)
       success = success .and. DH_AllocInit(NWind, WindNameStat, ' ')
       If (.not. success)  then
-         Call ErrMsg (929, 5, ' AllocLocationArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 5, ' AllocLocationArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -486,7 +486,7 @@
       success = success .and. DH_AllocInit(NSWQ, NParQ, ResWq, 0D0)
       success = success .and. DH_AllocInit(NSWQ, NParQ, NTims, AlRSWQ,0D0)
       If (.not. success)  then
-         Call ErrMsg (929, 6, ' AllocLocationArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 6, ' AllocLocationArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -500,7 +500,7 @@
       success = success .and. DH_AllocInit(N3D, NPar3D, ResD3D, 0D0)
       success = success .and. DH_AllocInit(N3D, NPar3D, Ntims, AlRs3D,0D0)
       If (.not. success) then
-         Call ErrMsg (929, 1, ' AllocLocationArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 1, ' AllocLocationArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -532,7 +532,7 @@
 !     Allocate ( SearchToIndex  (NWIND,2), STAT=Allocation_Error )
 
       If (.not. success)  then
-         Call ErrMsg (929, 5, ' AllocLocationArrays', ' ', IOUT1)
+         call write_error_message_rtc (929, 5, ' AllocLocationArrays', ' ', IOUT1)
          RetVal = 929
          Return
       Endif
@@ -564,9 +564,9 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       Integer RetVal
 
@@ -582,7 +582,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IOUT1, IN, ISBK, IECODE
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, success
@@ -592,9 +592,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
 
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
@@ -629,13 +629,13 @@
         IF (IDEBUG .GT. 0) WRITE(IDEBUG,*)  STRING(1:len_trim(String))
 ! skip regel als hij niet begint met juist keyword
         IF (STRING(1:4) .EQ. 'SBKO') Then
-!         Read data using ParseToken
+!         Read data using ParseToken_rtc
           BackSpace(IN)
           SearchString = 'SBKO'
           ReadError = .false.
           Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
           If (Endfil .or. .not. success) then
-             Call ErrMsg (974, 0, 'Rdl_Sb', ' Unexpected end of Sobek locations file ',IOUT1)
+             call write_error_message_rtc (974, 0, 'Rdl_Sb', ' Unexpected end of Sobek locations file ',IOUT1)
              RetVal = 974
              Return
           Endif
@@ -651,7 +651,7 @@
 ! check dimensies
           ISbk = ISbk + 1
           IF (ISBK .GT. NSBK) then
-             CALL ERRMSG (913, 0, 'Rdl_sb',' NSBK Sobek lokaties',IOUT1)
+             call write_error_message_rtc (913, 0, 'Rdl_sb',' NSBK Sobek lokaties',IOUT1)
              RetVal = 913
              Return
           Endif
@@ -704,7 +704,7 @@
           Else
               ReadError = .true.
 !             No branch, node, reachseg or struct found
-              CALL ERRMSG (912, 0, ' bi in ir is ml hl bd',' Read Sobek lokaties',IOUT1)
+              call write_error_message_rtc (912, 0, ' bi in ir is ml hl bd',' Read Sobek lokaties',IOUT1)
               RetVal = 912
               Return
           Endif
@@ -720,7 +720,7 @@
           ReadError = .true.
   992     Continue
           IF (ReadError) then
-             Call ErrMsg (974,0,'Rdl_Sb',' Read error during reading SBKO location record',IOUT1)
+             call write_error_message_rtc (974,0,'Rdl_Sb',' Read error during reading SBKO location record',IOUT1)
              RetVal = 974
              Return
           Endif
@@ -743,7 +743,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rdl_sb', ' Sobek_id file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdl_sb', ' Sobek_id file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************
@@ -780,9 +780,9 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       Integer RetVal
 
@@ -799,7 +799,7 @@
       CHARACTER(len=CharIdLength) :: IDNODE, Name  !, CDUM(NHLP)
       CHARACTER*999               :: STRING
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success
@@ -809,9 +809,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
     1 FORMAT (' RDL_3B')
@@ -836,13 +836,13 @@
          READ(IN,'(A)',END=21,ERR=150,IOSTAT=IECODE)  STRING
 ! skip regel als hij niet begint met juist keyword
          IF (STRING(1:3) .EQ. '3BO') THEN
-!          Read data using ParseToken
+!          Read data using ParseToken_rtc
            BackSpace(IN)
            SearchString = '3BO'
            ReadError = .false.
            Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-             Call ErrMsg (974, 0, 'Rdl_3B', ' Unexpected end of RR locations file ',IOUT1)
+             call write_error_message_rtc (974, 0, 'Rdl_3B', ' Unexpected end of RR locations file ',IOUT1)
              RetVal = 974
              Return
            Endif
@@ -854,7 +854,7 @@
            ID3B = ID3B + 1
 ! check dimensies
            IF (ID3B .GT. ND3B) then
-             Call ERRMSG (913, 0, 'Rdl_3b',' ND3B 3B-lokaties',IOUT1)
+             call write_error_message_rtc (913, 0, 'Rdl_3b',' ND3B 3B-lokaties',IOUT1)
              RetVal = 913
              Return
            Endif
@@ -871,7 +871,7 @@
                Name = RecordData%Token(ReturnIndx+1)
            endif
            IF (ReadError) then
-             Call ErrMsg (974,0,'Rdl_3B',' Read error during reading 3BO location record',IOUT1)
+             call write_error_message_rtc (974,0,'Rdl_3B',' Read error during reading 3BO location record',IOUT1)
              RetVal = 974
              Return
            Endif
@@ -895,7 +895,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rdl_3B', ' Delft3B_id file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdl_3B', ' Delft3B_id file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************
@@ -906,7 +906,6 @@
 
       RETURN
       END Function Rdl_3B
-
 
 
       Function RDL_3D (IDEBUG, IN, IOUT1) result(RetVal)
@@ -931,8 +930,8 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
+      Use NewTables_rtc
+      Use ParseToken_rtc
 
       Integer RetVal
 
@@ -944,7 +943,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IOUT1, IN, ID3D, IECODE
 !
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, success
@@ -954,9 +953,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 
 
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
@@ -980,13 +979,13 @@
         IF (IDEBUG .GT. 0) WRITE(IDEBUG,*)  STRING(1:len_trim(String))
 ! skip regel als hij niet begint met juist keyword
         IF (STRING(1:4) .EQ. 'D3DO') Then
-!         Read data using ParseToken
+!         Read data using ParseToken_rtc
           BackSpace(IN)
           SearchString = 'D3DO'
           ReadError = .false.
           Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
           If (Endfil .or. .not. success) then
-             Call ErrMsg (974, 0, 'Rdl_3D', ' Unexpected end of Sobek locations file ',IOUT1)
+             call write_error_message_rtc (974, 0, 'Rdl_3D', ' Unexpected end of Sobek locations file ',IOUT1)
              RetVal = 974
              Return
           Endif
@@ -998,7 +997,7 @@
 ! check dimensies
           ID3D = ID3D + 1
           IF (ID3D .GT. N3D) then
-             CALL ERRMSG (913, 0, 'Rdl_3D',' N3D D3DFlow locations',IOUT1)
+             call write_error_message_rtc (913, 0, 'Rdl_3D',' N3D D3DFlow locations',IOUT1)
              RetVal = 913
              Return
           Endif
@@ -1024,7 +1023,7 @@
           ReadError = .true.
   992     Continue
           IF (ReadError) then
-             Call ErrMsg (974,0,'Rdl_3D',' Read error during reading D3DO location record',IOUT1)
+             call write_error_message_rtc (974,0,'Rdl_3D',' Read error during reading D3DO location record',IOUT1)
              RetVal = 974
              Return
           Endif
@@ -1047,7 +1046,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rdl_3D', ' D3DFlow_id file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdl_3D', ' D3DFlow_id file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************
@@ -1084,9 +1083,9 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
-      Use ReadLib
+      Use NewTables_rtc
+      Use ParseToken_rtc
+      Use ReadLib_rtc
 
       Integer RetVal
 
@@ -1102,7 +1101,7 @@
       CHARACTER*999               :: STRING
       INTEGER                     :: IDEBUG, IN, IOUT1, IPRECP, IPRE, IECODE
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success
@@ -1112,9 +1111,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 !
       IF (IDEBUG .GT. 0) WRITE (IDEBUG,1)
     1 FORMAT (' RDL_PR')
@@ -1126,7 +1125,7 @@
 !
       CALL SKPCOM (IN, ENDFIL,'RTC')
 !     ARS 12430: Precipitation file is allowed to be empty, no check on premature end-of-file
-!     IF (ENDFIL) CALL ERRMSG (911, 0, 'Rdl_PR', ' Precipitation id file', IOUT1)
+!     IF (ENDFIL) call write_error_message_rtc (911, 0, 'Rdl_PR', ' Precipitation id file', IOUT1)
 !
 ! *********************************************************************
 ! *** read data
@@ -1141,13 +1140,13 @@
          READ(IN,'(A)',END=21,ERR=150,IOSTAT=IECODE)  STRING
 ! skip regel als hij niet begint met juist keyword
          IF (STRING(1:4) .EQ. 'PREC') Then
-!          Read data using ParseToken
+!          Read data using ParseToken_rtc
            BackSpace(IN)
            SearchString = 'PREC'
            ReadError = .false.
            Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-             Call ErrMsg (974, 0, 'Rdl_Pre', ' Unexpected end of Precipitations locations file ',IOUT1)
+             call write_error_message_rtc (974, 0, 'Rdl_Pre', ' Unexpected end of Precipitations locations file ',IOUT1)
              RetVal = 974
              Return
            Endif
@@ -1159,7 +1158,7 @@
            IPrecP = IPrecP + 1
 ! check dimensies
            IF (IPRECP .GT. NPRE) then
-             CALL ERRMSG (913, 0,'Rdl_pr',' NPRE neerslaglokaties',IOUT1)
+             call write_error_message_rtc (913, 0,'Rdl_pr',' NPRE neerslaglokaties',IOUT1)
              RetVal = 913
              Return
            Endif
@@ -1196,7 +1195,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rdl_pr', ' neerslag_id file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdl_pr', ' neerslag_id file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************
@@ -1231,10 +1230,10 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 
-      Use NewTables
-      Use ParseToken
+      Use NewTables_rtc
+      Use ParseToken_rtc
       Use FileModule
-      Use ReadLib
+      Use ReadLib_rtc
       use Dio_Plt_Rw
 
       Integer :: RetVal
@@ -1251,7 +1250,7 @@
       CHARACTER(len=CharIdLength) :: IDNODE, Name, HisFile, HisParameter, HisLocation   ! CDUM(NHLP)
       CHARACTER*999               :: STRING
 
-! Additional variables for NewTables and ParseToken
+! Additional variables for NewTables_rtc and ParseToken_rtc
       Character*4    SearchString
       Integer        ScanToTk, IStart, ReturnIndx, NumberOfTokens
       Logical        ParseTokenReadCaseSensitive, ParseTokenSearchCaseSensitive, ReadError, Success
@@ -1263,9 +1262,9 @@
 
       IStart   = 1     ! Scan from token 1
       ScanToTk = 999   ! Scan up to Token 999
-      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken fills array in original case
+      ParseTokenReadCaseSensitive = .true.      ! no conversion to upper case; ParseToken_rtc fills array in original case
       ParseTokenSearchCaseSensitive = .false.   ! find keywords case-insensitive
-! end of additional variables ParseToken
+! end of additional variables ParseToken_rtc
 !
       CaseSensitive = .false.
 
@@ -1279,7 +1278,7 @@
 !
       CALL SKPCOM (IN, ENDFIL,'RTC')
 !     ARS 12430: External file is allowed to be empty, no check on premature end-of-file
-!     IF (ENDFIL) CALL ERRMSG (911, 0, 'Rdl_Ex', ' External id file', IOUT1)
+!     IF (ENDFIL) call write_error_message_rtc (911, 0, 'Rdl_Ex', ' External id file', IOUT1)
 !
 ! *********************************************************************
 ! *** read data   EXT records (wind prediction)
@@ -1294,13 +1293,13 @@
          READ(IN,'(A)',END=21,ERR=150,IOSTAT=IECODE)  STRING
 ! skip regel als hij niet begint met juist keyword
          IF (STRING(1:3) .EQ. 'EXT') Then
-!          Read data using ParseToken
+!          Read data using ParseToken_rtc
            BackSpace(IN)
            SearchString = 'EXT'
            ReadError = .false.
            Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-             Call ErrMsg (974, 0, 'Rdl_Ext', ' Unexpected end of External locations file ',IOUT1)
+             call write_error_message_rtc (974, 0, 'Rdl_Ext', ' Unexpected end of External locations file ',IOUT1)
              RetVal = 974
              Return
            Endif
@@ -1312,7 +1311,7 @@
            IExt = IExt + 1
 ! check dimensies
            IF (IEXT .GT. NEXT) then
-              CALL ERRMSG (913, 0,'Rdl_ex',' NEXT externe lokaties',IOUT1)
+              call write_error_message_rtc (913, 0,'Rdl_ex',' NEXT externe lokaties',IOUT1)
               RetVal = 913
               Return
            Endif
@@ -1359,13 +1358,13 @@
          READ(IN,'(A)',END=221,ERR=150,IOSTAT=IECODE)  STRING
 ! skip regel als hij niet begint met juist keyword
          IF (STRING(1:4) .EQ. 'HEXT') Then
-!          Read data using ParseToken
+!          Read data using ParseToken_rtc
            BackSpace(IN)
            SearchString = 'HEXT'
            ReadError = .false.
            Success = GetRecord (In, SearchString, Endfil, Idebug, Iout1)
            If (Endfil .or. .not. success) then
-              Call ErrMsg (974, 0, 'Rdl_Ext', ' Unexpected end of External locations file ',IOUT1)
+              call write_error_message_rtc (974, 0, 'Rdl_Ext', ' Unexpected end of External locations file ',IOUT1)
               RetVal = 974
               Return
            Endif
@@ -1377,7 +1376,7 @@
            IExt = IExt + 1
 ! check dimensies
            IF (IEXT .GT. NEXTH) then
-              CALL ERRMSG (913, 0,'Rdl_ex',' NEXTH externe lokaties His file',IOUT1)
+              call write_error_message_rtc (913, 0,'Rdl_ex',' NEXTH externe lokaties His file',IOUT1)
               RetVal = 913
               Return
            Endif
@@ -1456,7 +1455,6 @@
                                         HisParExt(IEXT) (1:Len_trim(HisParExt(Iext))), &
                                         HisLocExt(IEXT) (1:Len_trim(HisLocExt(Iext))), &
                                         HisDataSet(iext,1), HisDataSetFile(HisDataSet(iext,1))
-&
         ENDDO
       ENDIF
 
@@ -1467,7 +1465,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rdl_ex', ' external_id file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdl_ex', ' external_id file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************
@@ -1503,7 +1501,7 @@
 ! ***  IOUT1  = file unit number of output file with messages
 ! *********************************************************************
 !
-      Use ReadLib
+      Use ReadLib_rtc
 
       Integer :: RetVal
 
@@ -1538,7 +1536,7 @@
 ! check dimensies
            ISobWq = ISobWq + 1
            IF (ISobWQ .GT. NSWQ)  then
-              CALL ERRMSG (913, 0, 'Rdl_wq',' NSWQ Sobek-WQ lokaties',IOUT1)
+              call write_error_message_rtc (913, 0, 'Rdl_wq',' NSWQ Sobek-WQ lokaties',IOUT1)
               RetVal = 913
               Return
            Endif
@@ -1562,7 +1560,7 @@
 ! *********************************************************************
 !
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'Rdl_wq', ' Sobek_wq id file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'Rdl_wq', ' Sobek_wq id file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************
@@ -1578,7 +1576,7 @@
 
       Function CheckIdsMatlab_oldversion (IdString, Iout1, fullstring)  result(RetVal)
 
-      use ReadLib
+      use ReadLib_rtc
 
       Integer :: RetVal
 
@@ -1603,7 +1601,7 @@
 !      write(Idebug,*) ' Entry of CheckIdsMatlab', IdString(1:)
 
          if (CntStr('=',IdString) .ge. 2) then
-            Call ErrMsg (999, 1, ' CheckIdsMatlab', ' =sign in ids will not work when using Matlab', IOUT1)
+            call write_error_message_rtc (999, 1, ' CheckIdsMatlab', ' =sign in ids will not work when using Matlab', IOUT1)
             RetVal = 999
 !           stop ' = sign in ids will not work when using Matlab'
          endif
@@ -1648,7 +1646,7 @@
 !    Additionally: also , is allowed (string separator in Matlab, used in getting multiple strings from Matlab)
 
 
-      use ReadLib
+      use ReadLib_rtc
 
       Integer :: RetVal
 

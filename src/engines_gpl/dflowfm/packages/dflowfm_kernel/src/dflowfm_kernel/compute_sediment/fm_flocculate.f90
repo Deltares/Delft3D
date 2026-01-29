@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,16 @@
 ! $Id$
 ! $HeadURL$
 
+module m_fm_flocculate
+
+   implicit none
+
+   private
+
+   public :: fm_flocculate
+
+contains
+
    subroutine fm_flocculate()
       !--description-----------------------------------------------------------------
       !
@@ -39,7 +49,8 @@
       !--pseudo code and references--------------------------------------------------
       ! NONE
       !--declarations----------------------------------------------------------------
-      use precision
+      use precision, only: fp
+      use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use flocculation, only: FLOC_NONE, flocculate
       use m_flowgeom, only: ndx, bl
@@ -67,7 +78,9 @@
       !
       ! if no flocculation is active, skip this routine
       !
-      if (flocmod == FLOC_NONE) return
+      if (flocmod == FLOC_NONE) then
+         return
+      end if
       !
       ! flocculation happens in the water column and hence it evolves at the flow time scale (no morfac)
       !
@@ -77,7 +90,9 @@
       allocate (cfloc(nflocpop, nflocsizes), stat=istat)
 
       do k = 1, ndx
-         if (s1(k) - bl(k) < epshs) cycle
+         if (s1(k) - bl(k) < epshs) then
+            cycle
+         end if
          !
          ! loop over the layers in the vertical
          !
@@ -118,3 +133,5 @@
       deallocate (cfloc, stat=istat)
 
    end subroutine fm_flocculate
+
+end module m_fm_flocculate

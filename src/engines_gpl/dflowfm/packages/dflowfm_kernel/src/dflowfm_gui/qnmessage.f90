@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,31 +30,40 @@
 !
 !
 
-      subroutine QNMESSAGE(TEX)
-         use unstruc_display
-         use unstruc_messages
-         implicit none
-         integer :: ih
-         integer :: iw
-         integer :: ixp
-         integer :: iyp
-         character TEX * (*)
+module m_qnmessage
 
-         IW = NPOS(3)
-         IXP = NPOS(1) + (IWS - IW) / 2
-         IYP = NPOS(2)
-         IH = IHS - 9
+   implicit none
 
-         write (msgbuf, '(A)') TEX
-         call msg_flush()
+contains
 
-         call ITEXTCOLOURN(HLPFOR, HLPBCK)
-         call IWinAction('FPC')
-         call IWinOpen(IXP, IHS - 1, IW, 2)
-         call IWINOUTCENTRE(1, TEX)
-         call IWINOUTCENTRE(2, 'press F2 to read this message')
-         call IOSWAIT(200)
-         call IWinClose(1)
+   subroutine QNMESSAGE(TEX)
+      use unstruc_display_data, only: npos
+      use unstruc_colors, only: iws, ihs, hlpfor, hlpbck
+      use messagehandling, only: msgbuf, msg_flush
 
-         return
-      end
+      integer :: ih
+      integer :: iw
+      integer :: ixp
+      integer :: iyp
+      character TEX * (*)
+
+      IW = NPOS(3)
+      IXP = NPOS(1) + (IWS - IW) / 2
+      IYP = NPOS(2)
+      IH = IHS - 9
+
+      write (msgbuf, '(A)') TEX
+      call msg_flush()
+
+      call ITEXTCOLOURN(HLPFOR, HLPBCK)
+      call IWinAction('FPC')
+      call IWinOpen(IXP, IHS - 1, IW, 2)
+      call IWINOUTCENTRE(1, TEX)
+      call IWINOUTCENTRE(2, 'press F2 to read this message')
+      call IOSWAIT(200)
+      call IWinClose(1)
+
+      return
+   end
+
+end module m_qnmessage

@@ -2,6 +2,8 @@ import enum
 from datetime import datetime, timedelta, timezone
 from typing import Iterator, List
 
+from s3_path_wrangler.paths import S3Path
+
 
 class Color(enum.Enum):
     """Use to map color to ANSI terminal color code."""
@@ -112,3 +114,9 @@ def resolve_relative(path: str) -> str:
         else:
             result.append(part)
     return "/".join(result)
+
+
+def remove_prefix(path: S3Path, prefix: S3Path) -> S3Path:
+    if not all(p1 == p2 for p1, p2 in zip(path.parts, prefix.parts, strict=False)):
+        raise ValueError(f"{prefix} is not a prefix of {path}")
+    return S3Path.from_parts(path.parts[len(prefix.parts) :])

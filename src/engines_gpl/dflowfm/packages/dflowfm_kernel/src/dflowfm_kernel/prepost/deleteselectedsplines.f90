@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,12 +30,22 @@
 !
 !
 
+module m_deleteselectedsplines
+
+   implicit none
+
+   private
+
+   public :: deleteselectedsplines
+
+contains
+
    subroutine deleteSelectedSplines()
-      use M_SPLINES
-      use M_POLYGON
-      use M_MISSING
+      use m_confrm, only: confrm
+      use M_SPLINES, only: delsplines, mcs, lensp, xsp, ysp, delspline
+      use M_POLYGON, only: npl, xpl, ypl
+      use M_MISSING, only: jins, dmiss
       use geometry_module, only: pinpok
-      implicit none
 
       integer :: i, j
       integer :: inhul
@@ -55,7 +65,9 @@
 
       I = 1
       do
-         if (I > mcs) exit
+         if (I > mcs) then
+            exit
+         end if
          jaAllPoints = .true.
          do j = 1, lensp(I)
             call PINPOK(xsp(i, j), ysp(i, j), Npl, Xpl, Ypl, INHUL, jins, dmiss)
@@ -72,3 +84,5 @@
       return
 
    end subroutine deleteSelectedSplines
+
+end module m_deleteselectedsplines

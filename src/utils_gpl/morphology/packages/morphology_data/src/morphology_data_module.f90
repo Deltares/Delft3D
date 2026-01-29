@@ -1,7 +1,7 @@
 module morphology_data_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -248,6 +248,9 @@ type moroutputtype
     integer :: transptype      ! 0 = mass
                                ! 1 = volume including pores
                                ! 2 = volume excluding pores
+    character(len=30) :: unit_sediment_amount
+    character(len=30) :: unit_transport_rate
+    character(len=30) :: unit_transport_per_crs
     !
     character(len=30), dimension(4) :: statqnt = (/"H1  ","UV  ","SBUV","SSUV"/)
     character(len=30), dimension(4) :: statnam = (/"water depth              ", &
@@ -305,6 +308,15 @@ type moroutputtype
     logical :: blave
     logical :: bamor
     logical :: wumor
+    logical :: aldiff
+    logical :: bodsed
+    logical :: dpsed
+    logical :: thlyr
+    logical :: preload
+    logical :: sedconc
+    logical :: morfac
+    logical :: sxytot
+    logical :: sxyavg
 end type moroutputtype
 
 !
@@ -498,6 +510,7 @@ type morpar_type
                            !  3: 
     integer :: telform     !  switch for thickness of exchange layer
                            !  1: fixed (user-spec.) thickness
+    
     !
     ! pointers
     !
@@ -542,7 +555,8 @@ type morpar_type
     character(256) :: mmsyncfilnam !  name of output file for synchronisation of mormerge run
     character(256) :: telfil       !  name of file containing exchange layer thickness
     character(256) :: ttlfil       !  name of file containing transport layer thickness
-    character(256) :: flsthetsd    !  name of file containing dry cell erosion factor
+    character(256) :: aldifffil    !  name of file containing active-layer diffusion
+    character(:), allocatable :: flsthetsd    !  name of file containing dry cell erosion factor
     !
 end type morpar_type
 
@@ -1624,7 +1638,7 @@ subroutine nullmorpar(morpar)
     character(256)                       , pointer :: mmsyncfilnam
     character(256)                       , pointer :: ttlfil
     character(256)                       , pointer :: telfil
-    character(256)                       , pointer :: flsthetsd
+    character(256)                       , pointer :: aldifffil
     type (bedbndtype)     , dimension(:) , pointer :: morbnd
     type (cmpbndtype)     , dimension(:) , pointer :: cmpbnd
     !
@@ -1724,7 +1738,7 @@ subroutine nullmorpar(morpar)
     mmsyncfilnam        => morpar%mmsyncfilnam
     ttlfil              => morpar%ttlfil
     telfil              => morpar%telfil
-    flsthetsd           => morpar%flsthetsd
+    aldifffil           => morpar%aldifffil
     !
     istat = 0
     allocate (morpar%moroutput  , STAT = istat)
@@ -1760,7 +1774,8 @@ subroutine nullmorpar(morpar)
     mmsyncfilnam       = ' '
     ttlfil             = ' '
     telfil             = ' '
-    flsthetsd          = ' '
+    aldifffil          = ' '
+    morpar%flsthetsd = ' '
     !
     morfac             = 1.0_fp
     thresh             = 0.1_fp
@@ -1874,6 +1889,9 @@ subroutine initmoroutput(moroutput, def)
     endif
     !
     moroutput%transptype  = 2
+    moroutput%unit_sediment_amount = 'm3'
+    moroutput%unit_transport_rate  = 'm3 s-1 m-1'
+    moroutput%unit_transport_per_crs   = 'm3 s-1'
     !
     moroutput%statflg(:,:) = 0
     moroutput%nstatqnt     = 0
@@ -1882,6 +1900,7 @@ subroutine initmoroutput(moroutput, def)
     moroutput%morstats     = .false.
     !
     moroutput%aks           = no
+    moroutput%sxyavg        = yes
     moroutput%cumavg        = no
     moroutput%dg            = no
     moroutput%dgsd          = no
@@ -1894,14 +1913,19 @@ subroutine initmoroutput(moroutput, def)
     moroutput%frac          = no
     moroutput%lyrfrac       = yes
     moroutput%msed          = yes
+    moroutput%bodsed        = yes
+    moroutput%dpsed         = yes
+    moroutput%thlyr         = yes
     moroutput%mudfrac       = no
     moroutput%percentiles   = no
     moroutput%poros         = yes
     moroutput%rca           = yes
     moroutput%rsedeq        = yes
+    moroutput%sedconc       = yes
     moroutput%sandfrac      = no
     moroutput%sedpar        = no
     moroutput%seddif        = no
+    moroutput%sxytot        = yes
     moroutput%sbuuvv        = yes
     moroutput%sbcuv         = no
     moroutput%sscuv         = no
@@ -1924,6 +1948,9 @@ subroutine initmoroutput(moroutput, def)
     moroutput%blave         = no
     moroutput%bamor         = no
     moroutput%wumor         = no
+    moroutput%aldiff        = no
+    moroutput%preload       = yes
+    moroutput%morfac        = yes
 end subroutine initmoroutput
 
 
@@ -2194,7 +2221,6 @@ subroutine get_one_transport_parameter(val, trapar, l, i, timhr, nm)
     integer     , optional, intent(in)    :: nm         !< spatial index for which value is requested
     
     integer                     :: j           !< sediment parameter source file index
-    real(fp)                    :: par         !< scalar to store the value
     real(fp)                    :: parvec(1)   !< array to receive the value
     character(256)              :: message     !< error message
     type(parfile_type), pointer :: parfile     !< temporary to one trapar%parfile field

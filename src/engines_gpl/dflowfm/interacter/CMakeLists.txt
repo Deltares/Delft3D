@@ -1,0 +1,6 @@
+install(FILES 
+${CMAKE_CURRENT_SOURCE_DIR}/unstruc.ini
+${CMAKE_CURRENT_SOURCE_DIR}/interact.ini
+${CMAKE_CURRENT_SOURCE_DIR}/ISOCOLOUR.hls
+${CMAKE_CURRENT_SOURCE_DIR}/unstruc.hlp
+DESTINATION share/interacter)

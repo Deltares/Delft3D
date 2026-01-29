@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,14 +30,29 @@
 !
 !
 module unstruc_api
+
+   use m_updatevaluesonsourcesinks, only: updatevaluesonsourcesinks
+   use m_updatebalance, only: updatebalance
+   use m_flow_usertimestep, only: flow_usertimestep
+   use m_flow_externaloutput, only: flow_externaloutput
+   use m_updatevaluesonrunupgauges_mpi, only: updatevaluesonrunupgauges_mpi
+   use m_updatevaluesonrunupgauges, only: updatevaluesonrunupgauges
+   use m_updatevaluesonlaterals, only: updatevaluesonlaterals
+   use m_resetfullflowmodel, only: resetfullflowmodel
+   use m_inidat, only: inidat, loadfile, savefile
+   use m_write_some_final_output, only: write_some_final_output
+   use m_writecdcoeffs, only: writeCdcoeffs
+   use m_plotnu
+   use m_choices
    use m_flowtimes
    use m_timer
    use m_flowgeom
    use unstruc_files, only: mdia
 
+   use precision, only: dp
    implicit none
 
-   double precision :: cpuall0
+   real(kind=dp) :: cpuall0
 contains
 
 !> Initializes global program/core data, not specific to a particular model.
@@ -51,6 +66,7 @@ contains
       use dflowfm_version_module, only: base_name
       use gridoperations
       use m_samples
+      use m_increase_grid
 
 !if (.not. allocated(xk)) then
       !   allocate( xk (1), yk (1), zk (1) , NOD (1) , KC (1) , NMK (1) , RNOD(1)   )
@@ -101,11 +117,15 @@ contains
       use m_flowgeom
       use m_monitoring_crosssections
       use unstruc_model
+      use m_qn_read_error
+      use m_filez, only: oldfil, doclose, newfil
+      use m_upotukinueaa, only: upotukinueaa
+
       implicit none
       integer :: ierr, minp, mout, L1, istat, i
       integer :: MODE, NUM, NWHAT, KEY
-      double precision :: QQQ, upot, ukin, ueaa
-      character*(*) :: batfile
+      real(kind=dp) :: QQQ, upot, ukin, ueaa
+      character(len=*) :: batfile
       character(len=256) :: rec, filnam, basemdu, tex
 
       call resetFullFlowModel()
@@ -137,7 +157,8 @@ contains
       if (index(rec, 'CHOICES') > 0) then ! first check your choices
          L1 = index(rec, '=') + 1
          read (rec(L1:), *, err=888) NUM, NWHAT
-         MODE = 1; KEY = 3
+         MODE = 1
+         KEY = 3
          call CHOICES(NUM, NWHAT, KEY)
       end if
 
@@ -158,14 +179,22 @@ contains
 
          if (ncrs > 0) then
 
-            QQQ = crs(1)%sumvalcur(1); i = 1
-            write (tex(i:), '(i2.0)') kmx; i = i + 5
-            write (tex(i:), '(i2.0)') numtopsig; i = i + 5
-            write (tex(i:), '(i2.0)') janumtopsiguniform; i = i + 5
-            write (tex(i:), '(i2.0)') keepzlayeringatbed; i = i + 5
-            write (tex(i:), '(i2.0)') ihuz; i = i + 5
-            write (tex(i:), '(i2.0)') ihuzcsig; i = i + 5
-            write (tex(i:), '(F5.2)') (time1 - tstart_user) / max(1d0, dnt); i = i + 5
+            QQQ = crs(1)%sumvalcur(1)
+            i = 1
+            write (tex(i:), '(i2.0)') kmx
+            i = i + 5
+            write (tex(i:), '(i2.0)') numtopsig
+            i = i + 5
+            write (tex(i:), '(i2.0)') janumtopsiguniform
+            i = i + 5
+            write (tex(i:), '(i2.0)') keepzlayeringatbed
+            i = i + 5
+            write (tex(i:), '(i2.0)') ihuz
+            i = i + 5
+            write (tex(i:), '(i2.0)') ihuzcsig
+            i = i + 5
+            write (tex(i:), '(F5.2)') (time1 - tstart_user) / max(1.0_dp, dnt)
+            i = i + 5
 
             call upotukinueaa(upot, ukin, ueaa)
             write (mout, '(A30,A, 5F14.3)') filnam(1:30), ' :    '//trim(tex)//' : ', QQQ, ueaa, upot, ukin, upot + ukin
@@ -188,7 +217,7 @@ contains
    integer function flow() result(iresult)
       use dfm_error
       use unstruc_display
-      use unstruc_messages
+      use messagehandling, only: warn_flush
       use unstruc_display
       use unstruc_model
       integer :: jastop
@@ -206,7 +235,7 @@ contains
          call warn_flush()
       end if
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jagui > 0) then
          call plotnu(md_ident)
@@ -247,7 +276,9 @@ contains
       use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_statistical_output, only: update_source_input, update_statistical_output
-      integer, external :: flow_modelinit
+      use m_wall_clock_time
+      use m_flow_modelinit, only: flow_modelinit
+
       integer :: timerHandle, inner_timerhandle
 
       !call inidia('api')
@@ -275,7 +306,7 @@ contains
          return ! No valid flow network was initialized
       end if
 
-      call klok(cpuall0)
+      call wall_clock_time(cpuall0)
 
       inner_timerhandle = 0
       call timstrt('Update various', inner_timerhandle)
@@ -322,20 +353,22 @@ contains
    end function flowinit
 
    subroutine flowstep(jastop, iresult)
-      use unstruc_display, only: ntek, plottofile, jaGUI
+      use unstruc_display, only: ntek, plottofile
+      use m_gui
       use dfm_error
+      use m_drawthis
+      use m_draw_nu
+
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-      integer :: ndraw
-
-      common / DRAWTHIS / ndraw(50)
-
       integer :: key
 
       jastop = 0
       iresult = DFM_GENERICERROR
 
-      if (jatimer == 1) call starttimer(ITOTAL)
+      if (jatimer == 1) then
+         call starttimer(ITOTAL)
+      end if
 
       if (ndx == 0) then ! No valid flow network was initialized
          jastop = 1

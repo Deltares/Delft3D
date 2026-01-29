@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -68,7 +68,7 @@ module m_ec_bccollect
     character(:), allocatable ::  rec
     integer             ::  reclen 
     integer             ::  commentpos
-    character*(1000)    ::  keyvaluestr                                    ! all key-value pairs in one header 
+    character(len=1000) ::  keyvaluestr                                    ! all key-value pairs in one header 
     integer             ::  posfs
     integer             ::  nfld
     integer             ::  nq
@@ -180,7 +180,7 @@ module m_ec_bccollect
     integer (kind=8)    ::  fhandle
     character(:), allocatable :: rec
     integer             ::  reclen 
-    character*(1000)    ::  keyvaluestr                                    ! all key-value pairs in one header 
+    character(len=1000) ::  keyvaluestr                                    ! all key-value pairs in one header 
     integer             ::  posfs
     integer             ::  nfld
     integer             ::  nq

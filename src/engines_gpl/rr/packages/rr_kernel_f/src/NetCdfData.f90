@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
  module NetCdfData
@@ -80,10 +80,10 @@
     character(len=*), intent(in) :: ncfile   !< name of the new netcdf-file to be created
     integer                      :: ncid     !< Netcdf ID given to this file
 
-    Character (len=999) :: ncfile_lowercase, modelversion
-    character*8  :: cdate
-    character*10 :: ctime
-    character*5  :: czone
+    Character(len=999) :: ncfile_lowercase, modelversion
+    character(len=8)  :: cdate
+    character(len=10) :: ctime
+    character(len=5)  :: czone
     integer :: ierr
     integer :: oldfillmode
     ierr = nf90_noerr
@@ -144,7 +144,7 @@ subroutine nc_prepare(ncid, numitem, item_prefix, dimid_item, dimid_time, refdat
 
     integer :: ierr, idLen
     integer :: dimid_chars
-    integer :: varid_id, varid_x, varid_y, varid_x2, varid_y2, varid_type
+    integer :: varid_id, varid_x, varid_y, varid_x2, varid_y2
 
     integer          :: imiss
     double precision :: dmiss
@@ -372,6 +372,7 @@ end Module NetCdfData
 
    use netcdf
    use netcdfdata, only : MeteoNetCdfInput
+   use Messages
    implicit none
 
    private
@@ -390,7 +391,7 @@ contains
       if (ierr==NF90_NOERR) then
          fail = .False.
       else
-         write(*,*) 'NC-ERROR: '//nf90_strerror(ierr)
+         call ErrMsgStandard (999, 2, ' NetCdf error', nf90_strerror(ierr) )
          fail = .True.
       end if
    end function try
@@ -407,7 +408,8 @@ contains
         success = .not. try(nf90_open(MeteoFile, NF90_NOWRITE, MeteoNcid))
         if (.not. success) then
            MeteoNcid = -1
-           Write(*,*) ' Error in opening Meteo Netcdf file'
+!           Write(*,*) ' Error in opening Meteo Netcdf file'
+            call ErrMsgStandard (999, 2, ' NetCdf error opening Meteo Netcdf file', MeteoFile )
         endif
 
    end function OpenNetCdf
@@ -458,7 +460,7 @@ contains
       integer,                intent(out) :: NrSecs
       real (kind=8),          intent(out) :: TStart, Tend
       integer                             :: ierr, nTim, unit
-      integer                             :: varid, tim_dimid
+      integer                             :: tim_dimid
       real                                :: RTimestepSize
       real(kind=8)                        :: ref_date, tzone
 
@@ -594,7 +596,8 @@ contains
 ! in case no CF_role attributes found, fall back:
       if (Series_varid < 0) serienr = varid
       if (time_varid < 0) then
-         write(*,*) ' WARNING: NetCdf file not CF-compliant; will search using variable names time and station_id'
+!         write(*,*) ' WARNING: NetCdf file not CF-compliant; will search using variable names time and station_id'
+          call ErrMsgStandard (999, 2, ' WARNING: NetCdf file not CF-compliant; will search using variable names time and station_id', '' )
          success = .false.
       endif
 !     if (time_varid < 0) timenr = tim_dimid
@@ -862,7 +865,7 @@ contains
       integer,                intent(in)  :: ndx1
       real(kind=8),   dimension(:), intent(out) :: time_arr
       real(kind=8),   dimension(:), intent(out) :: data_arr
-      integer :: ierr, nVar, nDim, nTim, nLoc, iVar, iDim, iTim, iLoc
+      integer :: ierr, nVar, nDim, nTim, nLoc, iVar, iLoc
       integer :: varid, series_varid, tim_dimid, time_varid  !loc_dimid
       integer :: tslen, nn
       character(len=:), allocatable   :: attstr, tsname

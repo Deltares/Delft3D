@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,10 +30,21 @@
 !
 !
 
-      subroutine cLNABS(X, Y, ncol)
-         implicit none
-         double precision :: x, y
-         integer :: ncol
-         call setcol(ncol)
-         call LNABS(X, Y)
-      end
+module m_clnabs
+
+   implicit none
+
+contains
+
+   subroutine cLNABS(X, Y, ncol)
+      use precision, only: dp
+      use m_set_col, only: setcol
+      use m_lnabs, only: lnabs
+      implicit none
+      real(kind=dp) :: x, y
+      integer :: ncol
+      call setcol(ncol)
+      call LNABS(X, Y)
+   end
+
+end module m_clnabs

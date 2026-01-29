@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,15 +29,17 @@
 
 !
 !
-
-      subroutine KTEXT(TEXNU, NX, NY, NCOL)
-         implicit none
-         integer :: ncol
-         integer :: nx
-         integer :: ny
+module m_ktext
+   implicit none
+contains
+   subroutine KTEXT(TEXNU, NX, NY, NCOL)
+      integer :: ncol
+      integer :: nx
+      integer :: ny
 !     tekst op normale text posities met standaard blauwe achtergrond
-         character * (*) TEXNU
-         call ITEXTCOLOURN(NCOL, 5)
-         call IOUTSTRINGXY(NX, NY, trim(TEXNU))
-         return
-      end
+      character(len=*) TEXNU
+      call ITEXTCOLOURN(NCOL, 5)
+      call IOUTSTRINGXY(NX, NY, trim(TEXNU))
+      return
+   end
+end module m_ktext

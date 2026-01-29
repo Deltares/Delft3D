@@ -1,0 +1,30 @@
+From 393cf77bc08633ad44a6049611019df368b520e5 Mon Sep 17 00:00:00 2001
+From: Harmen Wierenga <harmen.wierenga@deltares.nl>
+Date: Mon, 27 Jan 2025 10:22:08 +0000
+Subject: [PATCH 1/2] Comment out cmake check that does not work: empty strings
+ for SIZEOF_SIZE_T and SIZEOF_LONG_LONG make check fail
+
+---
+ .../IO/PIO/ParallelIO/src/clib/CMakeLists.txt               | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/Infrastructure/IO/PIO/ParallelIO/src/clib/CMakeLists.txt b/src/Infrastructure/IO/PIO/ParallelIO/src/clib/CMakeLists.txt
+index 609de6f..b30c5b0 100644
+--- a/src/Infrastructure/IO/PIO/ParallelIO/src/clib/CMakeLists.txt
++++ b/src/Infrastructure/IO/PIO/ParallelIO/src/clib/CMakeLists.txt
+@@ -176,9 +176,9 @@ endif ()
+ include(CheckTypeSize)
+ check_type_size("size_t" SIZEOF_SIZE_T)
+ CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
+-if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
+-  message (FATAL_ERROR "size_t and long long must be the same size!")
+-endif ()
++#if (NOT ${SIZEOF_SIZE_T} EQUAL ${SIZEOF_LONG_LONG})
++#  message (FATAL_ERROR "size_t and long long must be the same size!")
++#endif ()
+ 
+ set(CFLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE}}" PARENT_SCOPE)
+ get_target_property(cppdefs pioc COMPILE_DEFINITIONS)
+-- 
+2.47.1.windows.2
+

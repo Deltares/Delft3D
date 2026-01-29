@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -68,7 +68,7 @@
                write(IOUT1,'(2A)') 'MATLAB> ',trim(errorline)
             enddo
             close(unit)
-            call ErrMsg (954, 0, ' DataFromMatlab ', '[DUMMY]', IOUT1) ! writes "Error getting data from Matlab" to IOUT1
+            call write_error_message_rtc (954, 0, ' DataFromMatlab ', '[DUMMY]', IOUT1) ! writes "Error getting data from Matlab" to IOUT1
             RetVal = 954
          endif
 

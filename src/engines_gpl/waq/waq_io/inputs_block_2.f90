@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -252,7 +252,7 @@ contains
 
                 if (gettoken(cdummy, ierr2) > 0) goto 30          ! get the input file name for particles
                 file_name_list(45) = cdummy
-                call rdfnam (lunitp, cdummy, fnamep, nfilesp, 2, 1, .false.)
+                call rdfnam (lunitp, cdummy, fnamep, nfilesp, 2, 1, .false., hyd)
                 call report_date_time  (lunitp(2))
                 call rdlgri (nfilesp, lunitp, fnamep)
                 call rdccol (nmaxp, mmaxp, lunitp(5), fnamep(5), &
@@ -505,6 +505,7 @@ contains
 
 
         !       Read timings
+        ierr2 = 0
 
         if ((intsrt <  6 .or. intsrt > 9) .and. &
                 (intsrt < 17 .or. intsrt > 18)) then
@@ -516,15 +517,13 @@ contains
 
             call timer  (is_date_format, ihstrt, ihstop, ihstep, 3, is_yyddhh_format, ierr2)
             if (ierr2 > 0) goto 30
+
+            call validate_time_settings(file_unit, status, &
+                    itstrt, itstop, idt, &
+                    imstrt, imstop, imstep, &
+                    idstrt, idstop, idstep, &
+                    ihstrt, ihstop, ihstep)
         endif
-        ierr2 = 0
-
-        call validate_time_settings(file_unit, status, &
-                itstrt, itstop, idt, &
-                imstrt, imstop, imstep, &
-                idstrt, idstop, idstep, &
-                ihstrt, ihstop, ihstep)
-
 
         !        Check number of data in inputfile
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,30 +30,42 @@
 !
 !
 
-      subroutine CLOSPT(X, Y, mmax, nmax, MC, NC, &
-                        XL, YL, MV, NV)
-         use m_missing
-         implicit none
+module m_clospt
 
-         integer :: mmax, nmax, mc, nc, mv, nv
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
-         double precision :: xl, yl
+   implicit none
 
-         double precision :: rmin, r
-         integer :: i, j
-         RMIN = 1d+20
+   private
 
-         do I = 1, MC
-            do J = 1, NC
-               if (X(I, J) /= XYMIS) then
-                  R = abs(XL - X(I, J)) + abs(YL - Y(I, J))
-                  if (R < RMIN) then
-                     RMIN = R
-                     MV = I
-                     NV = J
-                  end if
+   public :: clospt
+
+contains
+
+   subroutine CLOSPT(X, Y, mmax, nmax, MC, NC, &
+                     XL, YL, MV, NV)
+      use precision, only: dp
+      use m_missing, only: xymis
+
+      integer :: mmax, nmax, mc, nc, mv, nv
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
+      real(kind=dp) :: xl, yl
+
+      real(kind=dp) :: rmin, r
+      integer :: i, j
+      RMIN = 1.0e+20_dp
+
+      do I = 1, MC
+         do J = 1, NC
+            if (X(I, J) /= XYMIS) then
+               R = abs(XL - X(I, J)) + abs(YL - Y(I, J))
+               if (R < RMIN) then
+                  RMIN = R
+                  MV = I
+                  NV = J
                end if
-            end do
+            end if
          end do
-         return
-      end subroutine clospt
+      end do
+      return
+   end subroutine clospt
+
+end module m_clospt

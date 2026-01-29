@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,32 +30,48 @@
 !
 !
 
+module m_dslimvec
+
+   implicit none
+
+   private
+
+   public :: dslimvec
+
+contains
+
    !> limited higher-order correction of vector data
    subroutine dslimvec(ds1x, ds1y, ds2x, ds2y, csu, snu, limtyp, dsx, dsy)
-      use m_flowparameters
+      use precision, only: dp
+      use m_flowparameters, only: eps10
+      use m_dslim, only: dslim
+      use m_sferic, only: jasfer3d
+
       implicit none
 
-      double precision, intent(in) :: ds1x, ds1y !< "voorslope" components
-      double precision, intent(in) :: ds2x, ds2y !< "naslope" components
-      double precision, intent(in) :: csu, snu !< orientation vector components
+      real(kind=dp), intent(in) :: ds1x !< "voorslope" x-component
+      real(kind=dp), intent(in) :: ds1y !< "voorslope" y-component
+      real(kind=dp), intent(in) :: ds2x !< "naslope" x-component
+      real(kind=dp), intent(in) :: ds2y !< "naslope" y-component
+      real(kind=dp), intent(in) :: csu !< orientation vector x-component
+      real(kind=dp), intent(in) :: snu !< orientation vector y-component
       integer, intent(in) :: limtyp !< limiter type
-      double precision, intent(out) :: dsx, dsy !< correction components
+      real(kind=dp), intent(out) :: dsx !< correction x-component
+      real(kind=dp), intent(out) :: dsy !< correction y-component
 
-      double precision :: ds1n, ds1t !< normal and tangential component, respectively
-      double precision :: ds2n, ds2t !< normal and tangential component, respectively
-      double precision :: dsn, dst
+      real(kind=dp) :: ds1n, ds1t !< normal and tangential component, respectively
+      real(kind=dp) :: ds2n, ds2t !< normal and tangential component, respectively
+      real(kind=dp) :: dsn, dst
 
-      double precision, external :: dslim
-
-      if (jalimnor == 1) then
+      if (jasfer3d == 1) then
          ds1n = csu * ds1x + snu * ds1y
          ds1t = -snu * ds1x + csu * ds1y
 
          ds2n = csu * ds2x + snu * ds2y
          ds2t = -snu * ds2x + csu * ds2y
 
-         dsn = 0d0
-         dst = 0d0
+         dsn = 0.0_dp
+         dst = 0.0_dp
 
          if (abs(ds2n) > eps10 .and. abs(ds1n) > eps10) then
             dsn = dslim(ds1n, ds2n, limtyp)
@@ -75,3 +91,5 @@
 
       return
    end subroutine dslimvec
+
+end module m_dslimvec

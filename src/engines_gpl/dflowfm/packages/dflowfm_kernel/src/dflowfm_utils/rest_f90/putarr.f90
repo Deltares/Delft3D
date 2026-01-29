@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,20 +30,33 @@
 !
 !
 
-      subroutine PUTARR(XR, X, MMAX, NMAX)
-         implicit none
-         integer :: i
-         integer :: j
-         integer :: mmax
-         integer :: nmax
-         double precision :: x
-         double precision :: xr
+module m_putarr
+
+   implicit none
+
+   private
+
+   public :: putarr
+
+contains
+
+   subroutine PUTARR(XR, X, MMAX, NMAX)
+      use precision, only: dp
+
+      integer :: i
+      integer :: j
+      integer, intent(in) :: mmax
+      integer, intent(in) :: nmax
+      real(kind=dp) :: x
+      real(kind=dp) :: xr
 !     DE EERSTE IN DE TWEEDE
-         dimension XR(MMAX, NMAX), X(MMAX, NMAX)
+      dimension XR(MMAX, NMAX), X(MMAX, NMAX)
+      do J = 1, NMAX
          do I = 1, MMAX
-            do J = 1, NMAX
-               X(I, J) = XR(I, J)
-            end do
+            X(I, J) = XR(I, J)
          end do
-         return
-      end
+      end do
+      return
+   end
+
+end module m_putarr

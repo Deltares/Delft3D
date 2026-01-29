@@ -1,6 +1,6 @@
 """Parser for handling supplied arguments.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import getpass
@@ -11,7 +11,7 @@ from typing import Any, List, Optional
 from src.config.credentials import Credentials
 from src.config.types.mode_type import ModeType
 from src.config.types.path_type import PathType
-from src.suite.test_bench_settings import TestBenchSettings
+from src.suite.command_line_settings import CommandLineSettings
 from src.utils.common import get_log_level
 from src.utils.handlers.credential_handler import CredentialHandler
 from src.utils.logging.log_level import LogLevel
@@ -21,19 +21,19 @@ class TestBenchParameterParser:
     """Handles the parsing of the testbench parameters."""
 
     @classmethod
-    def parse_arguments_to_settings(cls) -> TestBenchSettings:
-        """Parse args (namespace) to a TestBenchSettings object.
+    def parse_arguments_to_settings(cls) -> CommandLineSettings:
+        """Parse args (namespace) to a CommandLineSettings object.
 
         Returns
         -------
-            TestBenchSettings: Parsed settings
+            CommandLineSettings: Parsed settings
         """
         parser = cls.__create_argument_parser()
         args: Namespace = parser.parse_args()
 
-        settings = TestBenchSettings()
+        settings = CommandLineSettings()
 
-        # Store path of Testbench.py into os environment
+        # Store path of TestBench.py into os environment
         script_path, script_name = os.path.split(os.path.abspath(__file__))
 
         settings.test_bench_root = script_path
@@ -68,6 +68,8 @@ class TestBenchParameterParser:
         settings.run_mode = cls.__get_argument_value("run_mode", args) or ModeType.LIST
         settings.config_file = cls.__get_argument_value("config", args) or "config.xml"
         settings.credentials = cls.__get_credentials(args, settings.teamcity, settings.log_level)
+
+        settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
 
         return settings
 
@@ -242,6 +244,12 @@ class TestBenchParameterParser:
             action="store_true",
             help="Must be True to enable username/password via keyboard.",
             dest="interactive",
+        )
+        parser.add_argument(
+            "--skip-post-processing",
+            action="store_true",
+            help="Skips the postprocessing for either compare or reference.",
+            dest="skip_post_processing",
         )
 
         return parser

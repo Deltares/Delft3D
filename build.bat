@@ -1,14 +1,16 @@
 @ echo off
 
 setlocal enabledelayedexpansion
-rem Default arguments
-set config=all
+rem Default arguments.
+rem No default value means that the option is a flag that is either on or off.
+rem A variable that can have arguments requires a default value (can be "")
+set config=fm-suite
 set build=
-set vs=
+set vs=0
 set coverage=
 set build_type=Debug
 set keep_build=
-set compiler=ifort
+set compiler=ifx
 
 rem Non-argument variables
 set generator=
@@ -111,13 +113,6 @@ rem =================================
         goto :usage
     )
 
-    set configs="all delft3d4 delft3dfm dflowfm dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tests tools tools_gpl"
-    set "modified=!configs:%-config%=!"
-    if !modified!==!configs! (
-        echo ERROR: Configuration !-config! not recognized
-        goto :argument_error
-    )
-
     set config=!-config!
 
     set compilers="ifort ifx"
@@ -195,6 +190,10 @@ rem =================================
         set oneapi=24
         echo Found: Intel Fortran 2024
     )
+    if NOT "%IFORT_COMPILER25%" == "" (
+        set oneapi=25
+        echo Found: Intel Fortran 2025
+    )
 
     if "!oneapi!" == "" (
         echo Warning: Could not find Intel OneAPI version in environment.
@@ -242,14 +241,14 @@ rem =================================
         echo Found: VisualStudio 17 2022
     )
 
-    if "!vs!" == "" (
+    if "!vs!" == "0" (
         echo Warning: Could not find Visual Studio version in environment.
     )
 
-    if NOT "!-vs!" == "" (
+    if NOT "!-vs!" == "0" (
         echo Overriding automatically found VS version !vs! with argument !-vs!
         set vs=!-vs!
-    ) else if "!vs!" == "" (
+    ) else if "!vs!" == "0" (
         echo Warning: Visual Studio not found nor provided by -vs. Please ensure that Visual Studio is installed and run build.bat from a prompt with the right environment set.
         echo Continuing without specifying the generator, using the CMake default.
     )
@@ -420,18 +419,18 @@ rem =======================
     echo [OPTIONS]: space separated list of options, sometimes followed by a value, in any order
     echo.
     echo -config ^<CONFIG^>:
-    echo   all     (default) : D-Flow FM   , D-WAQ, D-Waves, DIMR
-    echo   delft3d4          : Delft3D-FLOW, D-WAQ, D-Waves
-    echo   delft3dfm         : D-Flow FM   , D-WAQ, D-Waves, DIMR
-    echo   dflowfm           : D-Flow FM
-    echo   dflowfm_interacter: D-Flow FM with Interacter
-    echo   dimr              : DIMR
-    echo   drr               : D-RR
-    echo   dwaq              : D-WAQ
-    echo   dwaves            : D-Waves
-    echo   flow2d3d          : Delft3D-FLOW
-    echo   swan              : SWAN
-    echo   tests
+    echo   all                : All products that are in fm-suite and d3d4-suite combined
+    echo   fm-suite (default) : D-Flow FM, D-WAQ, D-Waves, DIMR
+    echo   d3d4-suite         : Delft3D-FLOW, Delft3D-WAQ, Delft3D-PART, Delft3D-WAVE
+    echo   dflowfm_interacter : D-Flow FM with Interacter
+    echo   dflowfm            : D-Flow FM without Interacter
+    echo   dimr               : DIMR
+    echo   drr                : D-RR
+    echo   dwaq               : D-WAQ
+    echo   dwaves             : D-Waves
+    echo   flow2d3d           : Delft3D-FLOW
+    echo   swan               : SWAN
+    echo   fbc                : FBC-tools
     echo   tools
     echo   tools_gpl
     echo.
@@ -445,7 +444,7 @@ rem extra four spaces required for aligning Example, compensating for ^ characte
     echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
     echo.
     echo More info  : https://oss.deltares.nl/web/delft3d/source-code
-    echo About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/doc/README
+    echo About CMake: https://github.com/Deltares/Delft3D/tree/main/src/cmake/doc/README
     echo.
     set ERRORLEVEL=1
     goto :end

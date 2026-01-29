@@ -1,0 +1,12 @@
+# file      : examples/cxx/parser/multiroot/protocol.map
+# author    : Boris Kolpackov <boris@codesynthesis.com>
+# copyright : not copyrighted - public domain
+
+namespace http://www.codesynthesis.com/protocol ::protocol
+{
+  include "protocol.hxx";
+
+  request request*;
+  balance balance*;
+  withdraw withdraw*;
+}

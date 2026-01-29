@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/custom/calendar/calendar.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<cal:events xmlns:cal="http://www.codesynthesis.com/calendar"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.codesynthesis.com/calendar calendar.xsd">
+
+  <event title="Bike ride" date="2006-09-04">
+  Don't forget to change the tire.
+  </event>
+
+  <event title="Mountain hike" date="2006-09-05">
+  Can be cancelled if it is too cold.
+  </event>
+
+</cal:events>

@@ -1,6 +1,0 @@
-if(NOT TARGET test_delwaq_dimr)
-    message(STATUS tests_delwaq)
-    add_subdirectory(${delwaq_tests_module} tests_delwaq)
-    message(STATUS tests_utils_lgpl)
-    add_subdirectory(${utils_lgpl_tests_module} tests_utils_lgpl)
-endif()

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,9 +33,11 @@ contains
 
         ! Close all open file_unit_list files
         do i = 1, num_files
-            inquire (unit = file_unit_list(i), opened = unitop)
-            if (unitop) then
-                close (unit = file_unit_list(i))
+            if (file_unit_list(i) /= -1) then
+                inquire (unit = file_unit_list(i), opened = unitop)
+                if (unitop) then
+                    close (unit = file_unit_list(i))
+                end if
             end if
         end do
 

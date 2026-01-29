@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -53,8 +53,8 @@ contains
 
         real(kind = real_wp) :: RESULT(NTOTAL)
         integer(kind = int_wp) :: input_file, LUNOUT, ITIME, NTOTAL, ISFLAG, IFFLAG
-        CHARACTER*10  MSGTXT(3)
-        CHARACTER*(*) LUNTXT
+        CHARACTER(len=10) MSGTXT(3)
+        CHARACTER(len=*) LUNTXT
         LOGICAL       ONLINE
         DATA          MSGTXT /' REWIND   ', ' CONSTANT ', ' ERROR    '/
         logical        stream_access                     ! help variable to detect the type of file access

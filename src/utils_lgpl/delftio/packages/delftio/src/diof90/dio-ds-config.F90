@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -30,7 +30,7 @@
 !!!
 !!! Dio-setting: Dio Config
 !!!
-!!! (c) Deltares, dec 2000
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!
@@ -619,9 +619,6 @@ subroutine DioGetIdent(retVal)
 
     ! arguments
     character(Len=*) :: retval
-
-    ! locals
-    integer       :: identLen ! len of id.string minus null-char
 
     ! body
     retVal = ' '

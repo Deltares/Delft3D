@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,47 +30,60 @@
 !
 !
 
- subroutine pixcount(xs, ys, zs, jatel)
+module m_pixcount
 
-    use M_FLOWGEOM
-    use m_missing, only: jins, dmiss
-    use geometry_module, only: pinpok
+   implicit none
 
-    implicit none
+contains
 
-    double precision :: xs, ys, zs
-    integer :: jatel
+   subroutine pixcount(xs, ys, zs, jatel)
+      use precision, only: dp
 
-    double precision :: xmn, xmx, ymn, ymx
-    integer :: nn, k, in
-    integer, allocatable, save :: itel(:)
-    double precision, allocatable, save :: ztel(:)
+      use m_flowgeom, only: ndx, nd, bl
+      use m_missing, only: jins, dmiss
+      use geometry_module, only: pinpok
 
-    if (jatel == 1) then
-       if (.not. allocated(itel)) then
-          allocate (itel(ndx), ztel(ndx)); itel = 0; ztel = 0
-       end if
+      real(kind=dp) :: xs, ys, zs
+      integer :: jatel
 
-       do k = 1, ndx
-          xmn = minval(nd(k)%x); xmx = maxval(nd(k)%x)
-          ymn = minval(nd(k)%y); ymx = maxval(nd(k)%y)
-          if (xs <= xmx .and. xs >= xmn .and. ys <= ymx .and. ys >= ymn) then
-             nn = size(nd(k)%x)
-             call PINPOK(Xs, Ys, Nn, nd(k)%x, nd(k)%y, IN, jins, dmiss)
-             if (IN == 1) then
-                itel(k) = itel(k) + 1
-                ztel(k) = ztel(k) + zs
-                return
-             end if
-          end if
-       end do
-    else
-       do k = 1, ndx
-          if (itel(k) /= 0) then
-             bl(k) = ztel(k) / dble(itel(k))
-          end if
-       end do
-       if (allocated(itel)) deallocate (itel, ztel)
-    end if
+      real(kind=dp) :: xmn, xmx, ymn, ymx
+      integer :: nn, k, in
+      integer, allocatable, save :: itel(:)
+      real(kind=dp), allocatable, save :: ztel(:)
 
- end subroutine pixcount
+      if (jatel == 1) then
+         if (.not. allocated(itel)) then
+            allocate (itel(ndx), ztel(ndx))
+            itel = 0
+            ztel = 0
+         end if
+
+         do k = 1, ndx
+            xmn = minval(nd(k)%x)
+            xmx = maxval(nd(k)%x)
+            ymn = minval(nd(k)%y)
+            ymx = maxval(nd(k)%y)
+            if (xs <= xmx .and. xs >= xmn .and. ys <= ymx .and. ys >= ymn) then
+               nn = size(nd(k)%x)
+               call PINPOK(Xs, Ys, Nn, nd(k)%x, nd(k)%y, IN, jins, dmiss)
+               if (IN == 1) then
+                  itel(k) = itel(k) + 1
+                  ztel(k) = ztel(k) + zs
+                  return
+               end if
+            end if
+         end do
+      else
+         do k = 1, ndx
+            if (itel(k) /= 0) then
+               bl(k) = ztel(k) / real(itel(k), kind=dp)
+            end if
+         end do
+         if (allocated(itel)) then
+            deallocate (itel, ztel)
+         end if
+      end if
+
+   end subroutine pixcount
+
+end module m_pixcount

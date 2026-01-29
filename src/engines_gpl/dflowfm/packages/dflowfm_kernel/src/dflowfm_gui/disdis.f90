@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,37 +29,30 @@
 
 !
 !
+module m_disdis
+   implicit none
+contains
+   subroutine DISDIS()
+      use precision, only: dp
 
-      subroutine DISDIS()
+      use m_devices, only: iws
+      use m_locatora, only: xa, ya, xlc, ylc
+      use m_ktext, only: ktext
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
 
-         use m_devices
-         use geometry_module, only: dbdistance
-         use m_missing, only: dmiss
-         use m_sferic, only: jsferic, jasfer3D
-
-         implicit none
-
-         double precision :: dis
-         integer :: jashow
-         integer :: jmouse
-         double precision :: xa
-         double precision :: xlc
-         double precision :: ya
-         double precision :: ylc
+      real(kind=dp) :: dis
 !     -------------------------------
 !     write distance
 !     -------------------------------
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         common / dispfor / xyform, zform, disform
-         character * 7 xyform, zform, disform
-         character DISTAN * 25
+      character DISTAN * 25
 
-         DISTAN = 'DIS:'
-         DIS = dbdistance(xa, ya, xlc, ylc, jsferic, jasfer3D, dmiss)
-         write (DISTAN(6:), '(F17.5)') min(DIS, 1d9)
-         call KTEXT(DISTAN, IWS - 24, 3, 15)
+      DISTAN = 'DIS:'
+      DIS = dbdistance(xa, ya, xlc, ylc, jsferic, jasfer3D, dmiss)
+      write (DISTAN(6:), '(F17.5)') min(DIS, 1.0e9_dp)
+      call KTEXT(DISTAN, IWS - 24, 3, 15)
 
-         !   checkdislin()
-
-         return
-      end
+      return
+   end
+end module m_disdis

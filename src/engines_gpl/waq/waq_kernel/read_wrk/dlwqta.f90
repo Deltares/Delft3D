@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -75,7 +75,7 @@ contains
         integer(kind = int_wp), allocatable :: ipntloc(:)
         integer(kind = int_wp) :: ia_dummy(1)
         logical :: ldummy, ldumm2
-        real(kind = real_wp), allocatable :: ra_dummy(:)
+        real(kind = real_wp) :: ra_dummy(1)
         integer(kind = int_wp) :: ithandl = 0
 
         if (timon) call timstrt ("dlwqta", ithandl)

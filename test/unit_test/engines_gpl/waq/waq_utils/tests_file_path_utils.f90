@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -37,7 +37,7 @@ program tests_file_path_utils
 
     implicit none
     character(len=200) :: cmd_arg
-    integer :: iargc, getarg
+    integer :: iargc
     real(kind=real_wp), parameter :: tolerance = 0.0001
 
     ! Determine the number of command line arguments

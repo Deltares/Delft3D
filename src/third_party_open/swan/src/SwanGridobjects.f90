@@ -11,22 +11,20 @@ module SwanGridobjects
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
@@ -61,7 +59,7 @@ module SwanGridobjects
     integer, parameter :: MINVERTCELL = 4   ! mininum number of cells around a vertex
     integer, parameter :: MAXVERTCELL = 10  ! maximum number of cells around a vertex
     !
-    integer, parameter :: MAXVERTATTI = 7   ! maximum number of attributes of type integer
+    integer, parameter :: MAXVERTATTI = 6   ! maximum number of attributes of type integer
                                             ! in data structure of vertices
     integer, parameter :: VERTID  = 1       ! identification number
     integer, parameter :: VMARKER = 2       ! boundary marker for vertices
@@ -72,8 +70,7 @@ module SwanGridobjects
                                             ! vert(j)%atti(VBC) = 0 is a vertex where no b.c. is given
     integer, parameter :: VERTF1  = 4       ! first face connecting to present vertex
     integer, parameter :: VERTF2  = 5       ! second face connecting to present vertex
-    integer, parameter :: BINDX   = 6       ! indices for boundary points in ascending order
-    integer, parameter :: BPOL    = 7       ! sequence number of boundary polygons
+    integer, parameter :: BPOL    = 6       ! sequence number of boundary polygons
     !
     integer, parameter :: MAXVERTATTR = 2   ! maximum number of attributes of type real
                                             ! in data structure of vertices
@@ -130,7 +127,7 @@ module SwanGridobjects
                                             !   always pointing from left to right
     integer, parameter :: FBTYPE  = 9       ! boundary type given at boundary face
     !
-    integer, parameter :: MAXFACEATTR = 7   ! maximum number of attributes of type real
+    integer, parameter :: MAXFACEATTR = 8   ! maximum number of attributes of type real
                                             ! in data structure of faces
     integer, parameter :: FACELEN   = 1     ! length of face
     integer, parameter :: FACENORMX = 2     ! x-component of normal to present face
@@ -139,7 +136,9 @@ module SwanGridobjects
     integer, parameter :: FACEMY    = 5     ! y-component of midpoint of present face
     integer, parameter :: FACEDISTC = 6     ! the distance between two circumcenters that lie on either
                                             ! side of face
-    integer, parameter :: FACELINPF = 7     ! the interpolation factor when interpolating two quantities
+    integer, parameter :: FACEDISTG = 7     ! the distance between two centroids that lie on either
+                                            ! side of face
+    integer, parameter :: FACELINPF = 8     ! the interpolation factor when interpolating two quantities
                                             ! in cell circumcenters adjacent to face j according to
                                             ! q_face = q_r + face(j)%attr(FACELINPF) (q_l - q_r),
                                             ! where l = face(j)%atti(FACECL) and r = face(j)%atti(FACECR)

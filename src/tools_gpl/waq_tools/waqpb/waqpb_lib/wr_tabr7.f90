@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -66,8 +66,8 @@
       INTEGER       NO_VSTO     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*10  R7_VID      (NO_VSTO)
-      CHARACTER*10  R7_SID      (NO_VSTO)
+      CHARACTER(len=10)  R7_VID      (NO_VSTO)
+      CHARACTER(len=10)  R7_SID      (NO_VSTO)
       REAL          R7_SCAL(NO_VSTO)
 !     
 !          Local variables
@@ -85,9 +85,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS), ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

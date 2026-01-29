@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,13 +29,18 @@
 
 !
 !
+module m_splinxy
+   implicit none
+contains
 
-      subroutine SPLINXY(X, Y, X2, Y2, N)
-!      USE DIMENS
-         implicit none
-         integer :: n
-         double precision :: X(N), Y(N), X2(N), Y2(N)
-         call SPLINE(X, N, X2)
-         call SPLINE(Y, N, Y2)
-         return
-      end
+   subroutine SPLINXY(X, Y, X2, Y2, N)
+      use precision, only: dp
+      use m_spline, only: spline
+
+      integer :: n
+      real(kind=dp) :: X(N), Y(N), X2(N), Y2(N)
+      call SPLINE(X, N, X2)
+      call SPLINE(Y, N, Y2)
+      return
+   end
+end module m_splinxy

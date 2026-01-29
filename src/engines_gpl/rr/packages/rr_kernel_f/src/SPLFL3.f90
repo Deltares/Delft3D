@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -63,7 +63,7 @@
 !
       INTEGER        Ivnt, In, IeCode, year, month, day, iDefltl, iDefltOld
       Integer        CheckYear
-      CHARACTER*(*)  STRING
+      CHARACTER(len=*) STRING
       Integer        iDebug, Iout1, IExit, iCount, i
       Logical        YearNul
 

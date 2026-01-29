@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,22 +29,28 @@
 
 !
 !
+module m_fkeys
+   use m_histor, only: histor
 
-      subroutine FKEYS(KEY)
-         implicit none
-         integer :: key
-         integer :: nlevel
-         character WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
-         if (KEY == 24) then
+   implicit none
+contains
+   subroutine FKEYS(KEY)
+      use m_helpnow, only: wrdkey, nlevel
+      use m_osc, only: histor, osc
+      use m_help, only: help
+
+      integer :: key
+
+      if (KEY == 24) then
 !        F1
-            call HELP(WRDKEY, NLEVEL)
-         else if (KEY == 25) then
+         call HELP(WRDKEY, NLEVEL)
+      else if (KEY == 25) then
 !        F2
-            call HISTOR()
-         else if (KEY == 26) then
+         call HISTOR()
+      else if (KEY == 26) then
 !        F3
-            call OSC(KEY)
-         end if
-         return
-      end
+         call OSC(KEY)
+      end if
+      return
+   end
+end module m_fkeys

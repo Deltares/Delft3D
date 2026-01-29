@@ -1,7 +1,7 @@
 module open_mi_dio
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -33,7 +33,7 @@ module open_mi_dio
 !!!
 !!! open_mi_dio.F90: OD - module (*O*penMI exchange by means of *D*elftIO)
 !!!
-!!! (c) Deltares, feb. 2005
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!
@@ -308,8 +308,6 @@ function OD_ExchItemCreate_WithSizes(quantID, elmsetID, num_columns, num_rows, r
     double precision             , intent(in) :: startTime  ! Start time for Dio PLT
     !
     ! locals
-    type(t_od_exchange), pointer              :: od_exchange ! pointer to exchanged item
-    character(Len=DioMaxParLen), dimension(1) :: arrQuant    ! Array representation of qant.
     character(Len=DioMaxLocLen), &
        allocatable, dimension(:)              :: locIds      ! Row/Col loc ids
     integer                                   :: m, n, mn    ! loop counters

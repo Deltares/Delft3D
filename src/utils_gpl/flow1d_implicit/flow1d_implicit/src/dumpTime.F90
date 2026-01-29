@@ -3,7 +3,7 @@
 subroutine dumpTimeInit(fileName)
 
     ! arguments
-    character*(*) :: fileName
+    character(len=*) :: fileName
 
     ! shared between routines
     integer(4) :: curTimeStep
@@ -51,7 +51,7 @@ end subroutine dumpTimeIncrement
 subroutine dumpTimeStep(text)
 
     ! arguments
-    character*(*) :: text
+    character(len=*) :: text
 
     ! shared between routines
     integer(4):: curTimeStep

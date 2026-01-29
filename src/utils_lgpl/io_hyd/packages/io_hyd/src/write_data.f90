@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -69,21 +69,21 @@
       integer               itime , notim , num_exchanges_u_dir  , num_exchanges_v_dir  , &
                     num_exchanges_z_dir  , noval , nosca , flagsf, funtyp
       real          ardata(*)
-      character*20  valnam(*)
+      character(len=20) valnam(*)
 !
 !     local declarations
 !
       integer       ioerr , lun   , num_local_vars , nodata, filtyp, &
                     plform, i     , il    , itime2, &
                     irlen
-      character*256 filnam
+      character(len=256) filnam
 
       plform = which_operating_system()
 !
 !     initialise file
 !
       num_local_vars  = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
-      call afile%open()
+      call afile%open(replace = .true.)
       lun    = afile%unit
       filtyp = afile%type
       filnam = afile%name

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,17 +29,19 @@
 
 !
 !
-
-      subroutine HALT2(JA)
-         implicit none
-         integer :: ja
-         integer :: numkey
+module m_halt2
+   implicit none
+contains
+   subroutine HALT2(JA)
+      integer :: ja
+      integer :: numkey
 !     kappen met muis
-         JA = 0
-         call INKEYEVENTIMM(NUMKEY)
-         if (NUMKEY >= 251 .and. NUMKEY <= 253) then
-            JA = 1
+      JA = 0
+      call INKEYEVENTIMM(NUMKEY)
+      if (NUMKEY >= 251 .and. NUMKEY <= 253) then
+         JA = 1
 !         call inflush()
-         end if
-         return
-      end
+      end if
+      return
+   end
+end module m_halt2

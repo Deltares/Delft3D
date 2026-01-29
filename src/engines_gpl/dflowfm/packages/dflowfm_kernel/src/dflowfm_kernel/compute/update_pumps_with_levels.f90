@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,48 +30,65 @@
 !
 !
 
-subroutine update_pumps_with_levels()
+module m_update_pumps_with_levels
 
-   use m_flowgeom
-   use m_flow
-   use m_missing
-   use m_structures
-   use unstruc_channel_flow
-   use m_pump
-   use m_partitioninfo
+   use precision, only: dp
+   implicit none
 
-   integer :: ierr, n
+   private
 
-   !Pump with levels, SOBEK style, outside OpenMP region
-   ! TODO: merge water level calculations with dambreak
-   if (nPumpsWithLevels > 0) then
+   public :: update_pumps_with_levels
 
-      ! Initialize
-      pumpAveraging = 0.0d0
-      waterLevelsPumpLeft = 0.0d0
-      waterLevelsPumpRight = 0.0d0
+contains
 
-      ! Compute sumQuantitiesByWeight and sumWeights for the suction side
-      !LC: TODO, do the average only over open links
-      ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(1, :), pumpAveraging, 0)
-      if (ierr /= 0) success = .false.
+   subroutine update_pumps_with_levels()
 
-      do n = 1, npumpsg
-         if (pumpAveraging(2, n) > 0.0d0) then
-            waterLevelsPumpLeft(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
+      use m_flowgeom
+      use m_flow
+      use m_missing
+      use m_structures
+      use unstruc_channel_flow
+      use m_pump
+      use m_partitioninfo
+
+      integer :: ierr, n
+
+      !Pump with levels, SOBEK style, outside OpenMP region
+      ! TODO: merge water level calculations with dambreak
+      if (nPumpsWithLevels > 0) then
+
+         ! Initialize
+         pumpAveraging = 0.0_dp
+         waterLevelsPumpLeft = 0.0_dp
+         waterLevelsPumpRight = 0.0_dp
+
+         ! Compute sumQuantitiesByWeight and sumWeights for the suction side
+         !LC: TODO, do the average only over open links
+         ierr = get_average_quantity_from_links(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(1, :), pumpAveraging, 0)
+         if (ierr /= 0) then
+            success = .false.
          end if
-      end do
 
-      ! Compute sumQuantitiesByWeight and sumWeights for the delivery side
-      ierr = getAverageQuantityFromLinks(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(2, :), pumpAveraging, 0)
-      if (ierr /= 0) success = .false.
+         do n = 1, npumpsg
+            if (pumpAveraging(2, n) > 0.0_dp) then
+               waterLevelsPumpLeft(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
+            end if
+         end do
 
-      do n = 1, npumpsg
-         if (pumpAveraging(2, n) > 0.0d0) then
-            waterLevelsPumpRight(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
+         ! Compute sumQuantitiesByWeight and sumWeights for the delivery side
+         ierr = get_average_quantity_from_links(L1pumpsg, L2pumpsg, wu, kpump(3, :), s1, kpump(2, :), pumpAveraging, 0)
+         if (ierr /= 0) then
+            success = .false.
          end if
-      end do
 
-   end if
+         do n = 1, npumpsg
+            if (pumpAveraging(2, n) > 0.0_dp) then
+               waterLevelsPumpRight(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
+            end if
+         end do
 
-end subroutine update_pumps_with_levels
+      end if
+
+   end subroutine update_pumps_with_levels
+
+end module m_update_pumps_with_levels

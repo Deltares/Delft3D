@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -3400,7 +3400,7 @@ subroutine beta_cdf_inv ( cdf, a, b, x )
 
   real ( kind = 8 ) a
   real ( kind = 8 ) b
-  real ( kind = 8 ) bcoeff
+  real ( kind = 8 ) b_coeff
   real ( kind = 8 ) cdf
   real ( kind = 8 ) cdf_x
   real ( kind = 8 ) d(2:maxk,0:maxk-2)
@@ -3468,11 +3468,11 @@ subroutine beta_cdf_inv ( cdf, a, b, x )
 !
       do i = 3, k-1
         sum2 = d(2,0) * d(i-1,k-i)
-        bcoeff = 1.0D+00
+        b_coeff = 1.0D+00
         do j = 1, k-i
-          bcoeff = ( bcoeff * real ( k - i - j + 1, kind = 8 ) ) &
+          b_coeff = ( b_coeff * real ( k - i - j + 1, kind = 8 ) ) &
             / real ( j, kind = 8 )
-          sum2 = sum2 + bcoeff * d(2,j) * d(i-1,k-i-j)
+          sum2 = sum2 + b_coeff * d(2,j) * d(i-1,k-i-j)
         end do
         d(i,k-i) = sum2 + d(i-1,k-i+1) / real ( i - 1, kind = 8 )
       end do
@@ -6570,7 +6570,6 @@ subroutine cauchy_cdf ( x, a, b, cdf )
   real ( kind = 8 ) cdf
   real ( kind = 8 ), parameter :: pi = 3.141592653589793D+00
   real ( kind = 8 ) x
-  real ( kind = 8 ) y
 
   cdf = 0.5D+00 + atan2 ( x - a, b ) / PI
 
@@ -9398,7 +9397,6 @@ subroutine coupon_mean ( j, type_num, mean )
 
   integer ( kind = 4 ) i
   integer ( kind = 4 ) j
-  integer ( kind = 4 ) n
   real ( kind = 8 ) mean
   integer ( kind = 4 ) type_num
 
@@ -20877,7 +20875,6 @@ function i4_huge ( )
   
   implicit none
 
-  integer ( kind = 4 ) i4
   integer ( kind = 4 ) i4_huge
 
   i4_huge = 2147483647
@@ -24941,7 +24938,6 @@ subroutine multinomial_coef1 ( nfactor, factor, ncomb )
   integer ( kind = 4 ) factor(nfactor)
   real ( kind = 8 ) factorial_log
   integer ( kind = 4 ) i
-  integer ( kind = 4 ) i4_huge
   logical              multicoef_check
   integer ( kind = 4 ) n
   integer ( kind = 4 ) ncomb
@@ -25018,7 +25014,6 @@ subroutine multinomial_coef2 ( nfactor, factor, ncomb )
   logical              check
   integer ( kind = 4 ) factor(nfactor)
   integer ( kind = 4 ) i
-  integer ( kind = 4 ) i4_huge
   integer ( kind = 4 ) j
   integer ( kind = 4 ) k
   logical              multicoef_check
@@ -30592,7 +30587,6 @@ function r8_is_int ( r )
   
   implicit none
 
-  integer ( kind = 4 ) i
   integer ( kind = 4 ) i4_huge
   real ( kind = 8 ) r
   logical r8_is_int

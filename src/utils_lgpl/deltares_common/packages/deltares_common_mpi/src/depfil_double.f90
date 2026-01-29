@@ -2,7 +2,7 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
                        & nfld      ,ifld      ,dims      )
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -67,7 +67,6 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
 ! Local variables 
 ! 
     integer                               :: iocond ! Help variable for iostat condition  
-    integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
     real(hp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing values of entire domain 

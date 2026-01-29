@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -45,11 +45,11 @@
 !
       logical                  first          !! first invokation for this stream ?
 !
-      character*(*)            DataSetName    !! input dataset name
-      character*(dioMaxLocLen) locs(1)
-      character*(*)            StreamName     !! input streamname
-      character*(dioMaxTimLen) tims(1)
-      character*(dioMaxParLen) vars(1)
+      character(len=*)            DataSetName    !! input dataset name
+      character(len=dioMaxLocLen) locs(1)
+      character(len=*)            StreamName     !! input streamname
+      character(len=dioMaxTimLen) tims(1)
+      character(len=dioMaxParLen) vars(1)
       real                     values(1,1)
 !
       if ( first ) then
@@ -87,14 +87,14 @@
 !     use dio_plt_rw
       include 'dio-plt.inc'
 !
-      character*(*) StreamName    !! input streamname
-      character*(*) DataSetName   !! input dataset name
+      character(len=*) StreamName    !! input streamname
+      character(len=*) DataSetName   !! input dataset name
       logical       first         !! first invokation for this stream ?
       integer       dioInSet      !! input number stream
 !
-      character*(dioMaxParLen) vars(1)
-      character*(dioMaxLocLen) locs(1)
-      character*(dioMaxTimLen) tims(1)
+      character(len=dioMaxParLen) vars(1)
+      character(len=dioMaxLocLen) locs(1)
+      character(len=dioMaxTimLen) tims(1)
       real                     values(1,1)
       integer                  dioInStream
       integer                  Nr_Variables

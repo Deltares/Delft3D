@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -399,8 +399,8 @@ subroutine debgrz(process_space_real , fl , ipoint , increm , num_cells , noflux
                             iv%tn, iv%tp, dres, dnres, dpres)
 
         call calculate_mortality(&
-                            iv%rmor_ref, iv%cmor, iv%conv_j_gc, iv%conv_cm3_gc, iv%rhrv_ref, iv%chrv, &
-                            iv%tn, iv%tp, ov%length, ov%v, ov%e, ov%r, rmor, rhrv, dmor, dnmor, dpmor, kT, pv)
+                            iv%rmor_ref, iv%vtot, iv%ddmfk, iv%cmor, iv%conv_j_gc, iv%conv_cm3_gc, iv%rhrv_ref, iv%chrv, &
+                            iv%tn, iv%tp, ov%length, ov%v, ov%e, ov%r, rmor, ov%ddmf, rhrv, dmor, dnmor, dpmor, kT, pv)
 
         call assign_fluxes(&
                             fl, iflux, av, iv%depth, dens_m2, iv%frdetbot, &
@@ -534,8 +534,12 @@ subroutine debgrz(process_space_real , fl , ipoint , increm , num_cells , noflux
         fl (25 + iflux  ) = min(1.,(rmor + rhrv))*dens               !mortality (Dens [#/m3/d])
         ! shell fluxes (if taken into account) remain part of the structural volume
         ! hence, their (explicit) presence does thus not change any other fluxes
-        fl (26 + iflux  ) =  ((pomm-pca)/egsmo)*cso_cm3_gc * dens   ! change in organic shell matrix [gC/m3/d])
-        fl (27 + iflux  ) =  (pca/egsmi) * csi_cm3_gc * dens       ! calcification of shell matrix [gC/m3/d])
+        ! the size of the Pca flux is based on Pomm, but its carbon/energy is not coming from Pomm.
+        ! It is coming from dissipation fluxes instead and is thus subtracted from dRes.
+        ! Also: guard against division by zero.
+
+        fl (26 + iflux  ) =  pomm/(tiny(egsmo)+egsmo)* cso_cm3_gc * dens   ! change in organic shell matrix [gC/m3/d])
+        fl (27 + iflux  ) =  pca/(tiny(egsmi)+egsmi) * csi_cm3_gc * dens       ! calcification of shell matrix [gC/m3/d])
 
         fl (28 + iflux  ) = (0.+ gem)*av%dfil(1) * dens                 !uptake    [gC/m3/d]
         fl (29 + iflux  ) = (1.- gem)*av%dfil(1) * dens

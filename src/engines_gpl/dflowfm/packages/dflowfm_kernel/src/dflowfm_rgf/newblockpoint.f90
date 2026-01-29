@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,22 +30,35 @@
 !
 !
 
-      subroutine NEWBLOCKPOINT(MP, NP, JA, IPT)
-         implicit none
-         integer :: mp, np, ja, ipt
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
+module m_newblockpoint
+
+   implicit none
+
+   private
+
+   public :: newblockpoint
+
+contains
+
+   subroutine NEWBLOCKPOINT(MP, NP, JA, IPT)
+      use m_grid_block, only: npt, mb, nb
+
+      integer :: mp, np, ja, ipt
 !     NIEUW PUNT = 1, OUD PUNT = 0, NIEW PUNT MAAR REEDS VIER PUNTEN = -1
-         integer :: i
-         JA = 1
-         do I = 1, NPT
-            if (MP == MB(I) .and. NP == NB(I)) then
-               JA = 0
-               IPT = I
-               return
-            end if
-         end do
-         IPT = NPT + 1
-         if (NPT == 4) JA = -1
-         return
-      end subroutine newblockpoint
+      integer :: i
+      JA = 1
+      do I = 1, NPT
+         if (MP == MB(I) .and. NP == NB(I)) then
+            JA = 0
+            IPT = I
+            return
+         end if
+      end do
+      IPT = NPT + 1
+      if (NPT == 4) then
+         JA = -1
+      end if
+      return
+   end subroutine newblockpoint
+
+end module m_newblockpoint

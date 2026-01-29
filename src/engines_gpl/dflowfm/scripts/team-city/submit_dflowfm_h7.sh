@@ -79,6 +79,5 @@ LIB_DIR=${D3D_HOME}/lib
 ulimit -s unlimited
 export PATH=$BIN_DIR:$PATH
 export LD_LIBRARY_PATH=$LIB_DIR:$LD_LIBRARY_PATH
-export PROC_DEF_DIR=${D3D_HOME}/share/delft3d
 
 $BIN_DIR/dflowfm --nodisplay --autostartstop $DFM_OPTS

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,16 +29,20 @@
 
 !
 !
+module m_splintxy
+   implicit none
+contains
+   subroutine SPLINTXY(X, Y, X2, Y2, N, T, XT, YT)
+      use precision, only: dp
+      use m_splint, only: splint
 
-      subroutine SPLINTXY(X, Y, X2, Y2, N, T, XT, YT)
-         implicit none
-         !USE DIMENS
-         integer :: n
-         double precision :: T
-         double precision :: X(N), Y(N), X2(N), Y2(N)
-         double precision :: xt, yt
+      integer :: n
+      real(kind=dp) :: T
+      real(kind=dp) :: X(N), Y(N), X2(N), Y2(N)
+      real(kind=dp) :: xt, yt
 
-         call SPLINT(X, X2, N, T, XT)
-         call SPLINT(Y, Y2, N, T, YT)
-         return
-      end
+      call SPLINT(X, X2, N, T, XT)
+      call SPLINT(Y, Y2, N, T, YT)
+      return
+   end
+end module m_splintxy

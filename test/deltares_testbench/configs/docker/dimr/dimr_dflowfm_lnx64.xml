@@ -59,6 +59,12 @@
             </location>
             <path>create_and_execute_run_docker.sh</path>
         </program>
+        <program name="dflowfm" logOutputToFile="true">
+            <location ref="tools" type="check">
+                <from>.</from>
+            </location>
+            <path>create_and_execute_run_dflowfm_inside_docker.sh</path>
+        </program>
     </programs>
     <!--
     default testCases
@@ -81,6 +87,27 @@
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="dflowfm_restart">
+            <programs>
+                <program ref="dimr" seq="1">
+                    <arguments>
+                        <argument>dimr.xml</argument>
+                    </arguments>
+                </program>
+                <program ref="dimr" seq="2">
+                    <arguments>
+                        <argument>dimr_restart.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="dflowfm_restart_platform">
             <programs>
                 <program ref="dimr" seq="1">
                     <arguments>

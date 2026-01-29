@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,21 +30,29 @@
 !
 !
 
- subroutine isosmoothflownode(k) ! smooth isolines in flow cells
-    use m_flowgeom
-    use m_flow
-    use m_netw
-    implicit none
-    integer :: k
+module m_isosmoothflownode
 
-    integer :: nn4, n
-    double precision :: zz(10)
+   implicit none
 
-    nn4 = size(nd(k)%nod)
-    do n = 1, nn4
-       zz(n) = rnod(nd(k)%nod(n))
-    end do
-    nn4 = min(nn4, size(nd(k)%x))
-    call isofil(nd(k)%x, nd(k)%y, zz, nn4, 0)
-    !call isocel(nd(k)%x, nd(k)%y, zz, nn4, 0)
- end subroutine isosmoothflownode
+contains
+
+   subroutine isosmoothflownode(k) ! smooth isolines in flow cells
+      use precision, only: dp
+      use m_isofil
+      use m_flowgeom
+      use m_netw, only: rnod
+
+      integer :: k
+
+      integer :: nn4, n
+      real(kind=dp) :: zz(10)
+
+      nn4 = size(nd(k)%nod)
+      do n = 1, nn4
+         zz(n) = rnod(nd(k)%nod(n))
+      end do
+      nn4 = min(nn4, size(nd(k)%x))
+      call isofil(nd(k)%x, nd(k)%y, zz, nn4, 0)
+   end subroutine isosmoothflownode
+
+end module m_isosmoothflownode

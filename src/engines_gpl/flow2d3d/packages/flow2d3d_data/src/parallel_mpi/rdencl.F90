@@ -1,8 +1,8 @@
-subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
+subroutine rdencl( lunmd     ,lundia    ,error     , runid , &
                 &  mmax      ,nmaxus    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -72,7 +72,6 @@ subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
     integer               :: lkw    ! Actual length of KEYW
     integer               :: lrid   ! Length of character string runid
     integer               :: lungrd ! Unit number of local scratch file for grid enclosure points
-    integer               :: newlun
     integer               :: nlook  ! Help var.: nr. of data to look for in the MD-file
     integer               :: nrrec  !  Pointer to the record number in the MD-file
     integer               :: ntrec  ! Help. var to keep track of NRREC
@@ -115,8 +114,8 @@ subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
     ! define length of runid and put in fixed size array
     ! size is tested in iniid
     !
-    call remove_leading_spaces(runid     ,lrid      )
-    fixid(1:lrid) = runid(1:lrid)
+    fixid = runid
+    call remove_leading_spaces(fixid     ,lrid      )
     !=======================================================================
     ! open semi-scratch file
     !
@@ -126,7 +125,7 @@ subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
     ! 'Filgrd': grid enclosure file
     !
     filgrd = fildef
-    call prop_get_string(gdp%mdfile_ptr,'*','Filgrd',filgrd)
+    call prop_get(gdp%mdfile_ptr,'*','Filgrd',filgrd)
     if (filgrd /= fildef) then
        !
        ! Grid enclosure in file

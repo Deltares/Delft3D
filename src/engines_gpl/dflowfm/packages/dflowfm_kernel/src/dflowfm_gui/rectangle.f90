@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,24 +30,33 @@
 !
 !
 
-      subroutine RECTANGLE(x1, y1, x2, y2)
-         use unstruc_opengl
-         implicit none
-         real x1, y1, x2, y2
-         real x(4), y(4)
+module m_rectangle
 
-         if (InOpenGLRendering) then
-            x(1) = x1
-            x(2) = x2
-            x(3) = x2
-            x(4) = x1
-            y(1) = y1
-            y(2) = y1
-            y(3) = y2
-            y(4) = y2
-            call PFILLERCORE(x, y, 4)
-         else
-            call IGRRECTANGLE(x1, y1, x2, y2)
-         end if
+   implicit none
 
-      end subroutine
+contains
+
+   subroutine RECTANGLE(x1, y1, x2, y2)
+      use unstruc_opengl, only: inopenglrendering
+      use m_pfiller_core, only: pfillercore
+      implicit none
+      real x1, y1, x2, y2
+      real x(4), y(4)
+
+      if (InOpenGLRendering) then
+         x(1) = x1
+         x(2) = x2
+         x(3) = x2
+         x(4) = x1
+         y(1) = y1
+         y(2) = y1
+         y(3) = y2
+         y(4) = y2
+         call PFILLERCORE(x, y, 4)
+      else
+         call IGRRECTANGLE(x1, y1, x2, y2)
+      end if
+
+   end subroutine
+
+end module m_rectangle

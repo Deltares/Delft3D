@@ -1,7 +1,7 @@
 subroutine initbcdat(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -50,6 +50,8 @@ gdp%gdbcdat%mmskf    = -999
 gdp%gdbcdat%mmskl    = -999
 gdp%gdbcdat%ncomp    = -999
 gdp%gdbcdat%nsplit   = -999
+gdp%gdbcdat%global_num_qtot_bnd = -999
+gdp%gdbcdat%global_num_qh_bnd   = -999
 gdp%gdbcdat%gntoftoq = -999
 nullify(gdp%gdbcdat%pindex)
 nullify(gdp%gdbcdat%bct_order)

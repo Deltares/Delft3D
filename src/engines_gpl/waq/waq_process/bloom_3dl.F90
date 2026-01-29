@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -155,7 +155,7 @@ contains
             phi_d = exttot * dep - log(surf)
             call ebcalc(phi_d, fun_d, der_d, igroup)
             effi = (fun_d - fun_s) / exttot / dep
-            effi = max(effi, 0.0)
+            effi = max(effi, 0.0_dp)
         else
             effi = 0.0
         endif

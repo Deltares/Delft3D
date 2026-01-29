@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,23 +30,33 @@
 !
 !
 
+module m_isflownode1d2d
+
+   implicit none
+
+   private
+
+   public :: isflownode1d2d
+
+contains
+
    subroutine isflownode1D2D(xp, yp, kk)
+      use precision, only: dp
       use m_flowgeom
       use unstruc_display
       use m_missing, only: dmiss, jins
       use geometry_module, only: pinpok, dbdistance
       use m_sferic, only: jsferic, jasfer3D
 
-      implicit none
-
-      double precision :: xp, yp, dis
+      real(kind=dp) :: xp, yp, dis
       integer :: inn, k, kk, nn
 
       kk = 0
       do K = ndx2D + 1, ndx
          dis = dbdistance(xz(k), yz(k), xp, yp, jsferic, jasfer3D, dmiss)
          if (dis < rcir) then
-            kk = k; return
+            kk = k
+            return
          end if
       end do
 
@@ -55,12 +65,17 @@
       end if
 
       do K = 1, ndx2D
-         if (.not. allocated(nd(K)%x)) cycle
+         if (.not. allocated(nd(K)%x)) then
+            cycle
+         end if
          NN = size(nd(K)%x)
          call PINPOK(xp, yp, NN, nd(K)%x, nd(K)%y, inn, jins, dmiss)
          if (inn == 1) then
-            KK = K; return
+            KK = K
+            return
          end if
       end do
 
    end subroutine isflownode1D2D
+
+end module m_isflownode1d2d

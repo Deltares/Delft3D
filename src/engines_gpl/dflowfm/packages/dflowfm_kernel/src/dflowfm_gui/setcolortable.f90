@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,26 +30,28 @@
 !
 !
 
-      subroutine SETCOLORTABLE()
-         implicit none
-         double precision :: VMAX, VMIN, DV, VAL
-         integer :: NCOLS, NV, NIS, NIE, JAAUTO
+module m_setcolortable
 
-         double precision :: VMAX2, VMIN2, DV2, VAL2
-         integer :: NCOLS2, NV2, NIS2, NIE2, JAAUTO2
+   implicit none
 
-         integer :: i
+contains
 
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-         common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
+   subroutine SETCOLORTABLE()
+      use m_depmax, only: nis, ncols
+      use m_depmax2, only: nis2, ncols2
+      implicit none
 
-         NIS = 72
-         do I = 1, 256
-            NCOLS(I) = min(255, NIS + I - 1)
-         end do
+      integer :: i
 
-         NIS2 = 136
-         do I = 1, 256
-            NCOLS2(I) = min(255, NIS2 + I - 1)
-         end do
-      end subroutine SETCOLORTABLE
+      NIS = 72
+      do I = 1, 256
+         NCOLS(I) = min(255, NIS + I - 1)
+      end do
+
+      NIS2 = 136
+      do I = 1, 256
+         NCOLS2(I) = min(255, NIS2 + I - 1)
+      end do
+   end subroutine SETCOLORTABLE
+
+end module m_setcolortable

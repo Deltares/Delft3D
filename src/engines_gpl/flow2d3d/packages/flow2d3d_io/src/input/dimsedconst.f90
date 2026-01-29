@@ -2,7 +2,7 @@ subroutine dimsedconst(lundia    ,error     ,sedim     ,const     , &
                      & lsed      ,lsedtot   ,lconst    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -100,7 +100,7 @@ subroutine dimsedconst(lundia    ,error     ,sedim     ,const     , &
              write (keyword(5:6), '(i2)') i
           endif
           namc = ' '
-          call prop_get_string(gdp%mdfile_ptr, '*', keyword, namc)
+          call prop_get(gdp%mdfile_ptr, '*', keyword, namc)
           if (namc == ' ') then
              exit
           else
@@ -121,14 +121,14 @@ subroutine dimsedconst(lundia    ,error     ,sedim     ,const     , &
        else
           write (keyword(5:6), '(i2)') i
        endif
-       call prop_get_string(gdp%mdfile_ptr, '*', keyword, namconst(i))
+       call prop_get(gdp%mdfile_ptr, '*', keyword, namconst(i))
        call small(namconst(i) ,999 )
     enddo
     !
     ! locate 'Filsed' record; file containing sediment parameters
     !
     filsed = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filsed', filsed)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filsed', filsed)
     if (filsed /= ' ') then
        sedim = .true.
     else

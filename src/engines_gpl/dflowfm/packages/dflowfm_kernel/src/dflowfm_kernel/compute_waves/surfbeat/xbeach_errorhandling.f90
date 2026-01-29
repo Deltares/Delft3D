@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,6 @@ module m_xbeach_errorhandling
 
 contains
    subroutine xbeach_errorhandler()
-      use unstruc_messages
       use unstruc_files
       use unstruc_netcdf, only: unc_closeall
       implicit none

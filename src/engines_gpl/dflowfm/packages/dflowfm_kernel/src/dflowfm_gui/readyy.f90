@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,46 +29,53 @@
 
 !
 !
+module m_readyy
+contains
 
 !>    plot a statusbar in the GUI
-      subroutine READYY(TEXT, AF)
-         use m_devices
-         use unstruc_display, only: jaGUI
-         implicit none
+   subroutine READYY(TEXT, AF)
+      use precision, only: dp
+      use m_devices, only: iws
+      use m_gui, only: jagui
+      use m_fillup, only: fillup
+      implicit none
 
-         character TEXT * (*), BALK * 400
-         double precision :: af
+      character TEXT * (*), BALK * 400
+      real(kind=dp) :: af
 
-         integer, save :: ih
-         integer, save :: ini = 0
-         integer, save :: iw
-         integer, save :: ixp
-         integer, save :: iyp
-         integer :: naf
+      integer, save :: ih
+      integer, save :: ini = 0
+      integer, save :: iw
+      integer, save :: ixp
+      integer, save :: iyp
+      integer :: naf
 
-         if (jaGUI /= 1) return
-
-         if (INI == 0) then
-            INI = 1
-            IXP = 10
-            IYP = 10
-            IW = IWS - 10 - 10
-            IH = 2
-            call ITEXTCOLOUR('BWHITE', 'BLUE')
-            call IWinAction('FCP')
-            call IWinOpenTitle(IXP, IYP, IW, IH, TEXT)
-            call FILLUP(BALK, ' ', IW)
-            call ITEXTCOLOUR('BLACK', 'BWHITE')
-            call IWinOutStringXY(2, 2, BALK(1:IW))
-         else
-            NAF = max(AF * IW, 1d0)
-            call FILLUP(BALK, 'X', NAF)
-            call IWinOutStringXY(1, 2, BALK(1:NAF))
-         end if
-         if (AF == -1) then
-            call IWinClose(1)
-            INI = 0
-            return
-         end if
+      if (jaGUI /= 1) then
          return
-      end subroutine READYY
+      end if
+
+      if (INI == 0) then
+         INI = 1
+         IXP = 10
+         IYP = 10
+         IW = IWS - 10 - 10
+         IH = 2
+         call ITEXTCOLOUR('BWHITE', 'BLUE')
+         call IWinAction('FCP')
+         call IWinOpenTitle(IXP, IYP, IW, IH, TEXT)
+         call FILLUP(BALK, ' ', IW)
+         call ITEXTCOLOUR('BLACK', 'BWHITE')
+         call IWinOutStringXY(2, 2, BALK(1:IW))
+      else
+         NAF = max(AF * IW, 1.0_dp)
+         call FILLUP(BALK, 'X', NAF)
+         call IWinOutStringXY(1, 2, BALK(1:NAF))
+      end if
+      if (AF == -1) then
+         call IWinClose(1)
+         INI = 0
+         return
+      end if
+      return
+   end subroutine READYY
+end module m_readyy

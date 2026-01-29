@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -73,7 +73,7 @@
     complex (kind=8) dcbuf      ! double complex
     complex (kind=4) cbuf
     logical          lbuf
-    character*1      chbuf
+    character(len=1) chbuf
 
     integer    &
        ityp,   &

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,18 +32,31 @@
 
 !> Copy the original polygons that define the current cross sections
 !! to the active polygons in xpl,...
-subroutine copyCrossSectionsToPol()
-   use m_monitoring_crosssections
-   use m_polygon
-   use m_alloc
+module m_copycrosssectionstopol
+
    implicit none
-   integer :: i
 
-   npl = 0
-   call realloc(nampli, ncrs, fill=' ')
-   do i = 1, ncrs
-      nampli(i) = crs(i)%name
-      call appendCRSPathToPol(crs(i)%path)
-   end do
+   private
 
-end subroutine copyCrossSectionsToPol
+   public :: copycrosssectionstopol
+
+contains
+
+   subroutine copyCrossSectionsToPol()
+      use m_monitoring_crosssections, only: ncrs, crs
+      use m_polygon, only: npl, nampli
+      use m_alloc, only: realloc
+      use m_append_crspath_to_pol, only: appendcrspathtopol
+
+      integer :: i
+
+      npl = 0
+      call realloc(nampli, ncrs, fill=' ')
+      do i = 1, ncrs
+         nampli(i) = crs(i)%name
+         call appendCRSPathToPol(crs(i)%path)
+      end do
+
+   end subroutine copyCrossSectionsToPol
+
+end module m_copycrosssectionstopol

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,14 +30,25 @@
 !
 !
 
+module m_disable_higherorder_at_sorsin
+
+   implicit none
+
+   private
+
+   public :: disable_higherorder_at_sorsin
+
+contains
+
    subroutine disable_higherorder_at_sorsin()
+      use precision, only: dp
       use m_flowgeom
       use fm_external_forcings_data, only: numsrc, ksrc
       use m_partitioninfo
       use m_alloc
       implicit none
 
-      double precision, dimension(:, :), allocatable :: dum
+      real(kind=dp), dimension(:, :), allocatable :: dum
 
       integer, dimension(:), allocatable :: imask
 
@@ -54,7 +65,9 @@
             do i = 1, 4, 3 ! 1 and 4
 !              get 2D flow nodes
                kk = ksrc(i, n)
-               if (kk <= 0) cycle ! 0: not in whole domain, -1: not in own subdomain, but can be in ghostregion
+               if (kk <= 0) then
+                  cycle ! 0: not in whole domain, -1: not in own subdomain, but can be in ghostregion
+               end if
 
 !              loop over all attached flow links
                do iL = 1, nd(kk)%lnx
@@ -88,12 +101,14 @@
          end do
 
 !        deallocate
-         if (allocated(imask)) deallocate (imask)
+         if (allocated(imask)) then
+            deallocate (imask)
+         end if
       end if
 
       if (jampi == 1) then
 !        source/sink could have been in ghost region
-         allocate (dum(6, Lnx)); 
+         allocate (dum(6, Lnx))
          do LL = 1, Lnx
             do i = 1, 6
                dum(i, LL) = klnup(i, LL)
@@ -106,7 +121,7 @@
 !           check if higher-order reconstruction of this link has been disabled
             Ldisabled = .true.
             do i = 1, 6
-               if (dum(i, LL) /= 0d0) then
+               if (dum(i, LL) /= 0.0_dp) then
                   Ldisabled = .false.
                   exit
                end if
@@ -127,3 +142,5 @@
 
       return
    end subroutine disable_higherorder_at_sorsin
+
+end module m_disable_higherorder_at_sorsin

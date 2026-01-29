@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,15 +32,28 @@
 
 !> Copy the original polygons that define the current thin dams
 !! to the active polygons in xpl,...
-subroutine copyThinDamsToPol()
-   use m_thindams
-   use m_polygon
+module m_copythindamstopol
+
    implicit none
-   integer :: i
 
-   npl = 0
-   do i = 1, nthd
-      call appendCRSPathToPol(thd(i))
-   end do
+   private
 
-end subroutine copyThinDamsToPol
+   public :: copythindamstopol
+
+contains
+
+   subroutine copyThinDamsToPol()
+      use m_thindams, only: nthd, thd
+      use m_append_crspath_to_pol, only: appendcrspathtopol
+      use m_polygon, only: npl
+
+      integer :: i
+
+      npl = 0
+      do i = 1, nthd
+         call appendCRSPathToPol(thd(i))
+      end do
+
+   end subroutine copyThinDamsToPol
+
+end module m_copythindamstopol

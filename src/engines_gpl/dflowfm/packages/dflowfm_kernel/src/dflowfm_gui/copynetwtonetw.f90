@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,69 +30,83 @@
 !
 !
 
- subroutine copynetwtonetw()
-    use M_MAPPROPARAMETERS
-    use m_netw
-    use m_missing
-    use m_polygon, only: NPL, xpl, ypl, zpl
-    use geometry_module, only: dbpinpol
-    use gridoperations
+module m_copynetwtonetw
 
-    implicit none
-    integer :: in, n, L, k0, L0, numkn, numLn, ja
+   implicit none
 
-    call savenet()
+contains
 
-    call converparameters(ja)
+   subroutine copynetwtonetw()
+      use m_converparameters
+      use m_mapproparameters, only: deltx, delty
+      use m_netw, only: kc, kn, numk, numl, xk, yk, zk
+      use m_missing, only: dmiss, jins
+      use m_polygon, only: NPL, xpl, ypl, zpl
+      use geometry_module, only: dbpinpol
+      use gridoperations
 
-    KC = 0; in = -1
-    numkn = 0; numLn = 0
-    do n = 1, numk
-       call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
-       if (IN == 1) then
-          numkn = numkn + 1
-          KC(n) = numkn
-       end if
-    end do
+      implicit none
+      integer :: in, n, L, k0, L0, numkn, numLn, ja
 
-    do L = 1, numl
-       if (kc(kn(1, L)) > 0 .and. kc(kn(2, L)) > 0) then
-          numLn = numLn + 1
-       end if
-    end do
+      call savenet()
 
-    K0 = numk; L0 = numL
-    call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
+      call converparameters(ja)
 
-    KC = 0; in = -1 ! redo kc after increasenetw
-    numkn = 0; numLn = 0
-    do n = 1, numk
-       call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
-       if (IN == 1) then
-          numkn = numkn + 1
-          KC(n) = numkn
-       end if
-    end do
+      KC = 0
+      in = -1
+      numkn = 0
+      numLn = 0
+      do n = 1, numk
+         call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
+         if (IN == 1) then
+            numkn = numkn + 1
+            KC(n) = numkn
+         end if
+      end do
 
-    numLn = 0
-    do L = 1, numl
-       if (kc(kn(1, L)) > 0 .and. kc(kn(2, L)) > 0) then
-          numLn = numLn + 1
-          kn(1, numLn + L0) = kc(kn(1, L)) + numk
-          kn(2, numLn + L0) = kc(kn(2, L)) + numk
-          kn(3, numLn + L0) = kn(3, L)
-       end if
-    end do
+      do L = 1, numl
+         if (kc(kn(1, L)) > 0 .and. kc(kn(2, L)) > 0) then
+            numLn = numLn + 1
+         end if
+      end do
 
-    do n = 1, numk
-       if (kc(n) > 0) then
-          xk(kc(n) + numk) = xk(n) + deltx
-          yk(kc(n) + numk) = yk(n) + delty
-          zk(kc(n) + numk) = zk(n)
-       end if
-    end do
+      K0 = numk
+      L0 = numL
+      call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
 
-    numL = L0 + numLn
-    numk = K0 + NUMKN
+      KC = 0
+      in = -1 ! redo kc after increasenetw
+      numkn = 0
+      numLn = 0
+      do n = 1, numk
+         call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
+         if (IN == 1) then
+            numkn = numkn + 1
+            KC(n) = numkn
+         end if
+      end do
 
- end subroutine copynetwtonetw
+      numLn = 0
+      do L = 1, numl
+         if (kc(kn(1, L)) > 0 .and. kc(kn(2, L)) > 0) then
+            numLn = numLn + 1
+            kn(1, numLn + L0) = kc(kn(1, L)) + numk
+            kn(2, numLn + L0) = kc(kn(2, L)) + numk
+            kn(3, numLn + L0) = kn(3, L)
+         end if
+      end do
+
+      do n = 1, numk
+         if (kc(n) > 0) then
+            xk(kc(n) + numk) = xk(n) + deltx
+            yk(kc(n) + numk) = yk(n) + delty
+            zk(kc(n) + numk) = zk(n)
+         end if
+      end do
+
+      numL = L0 + numLn
+      numk = K0 + NUMKN
+
+   end subroutine copynetwtonetw
+
+end module m_copynetwtonetw

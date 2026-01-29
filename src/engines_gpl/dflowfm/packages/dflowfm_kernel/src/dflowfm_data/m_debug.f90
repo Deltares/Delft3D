@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,21 +30,22 @@
 module m_debug
    !
    ! Module with arrays to write debug quantities to nc map files
+   use precision, only: dp
    ! Enable use by setting enableDebugArrays to 1 in the mdu [output] block.
    ! Code has to be uncommented and adapted to your needs in flow_modelinit
    ! and unc_write_map_filepointer_ugrid.
    !
    public
    integer :: jawritedebug
-   double precision, allocatable, dimension(:) :: debugarr1d
-   double precision, allocatable, dimension(:, :) :: debugarr2d
-   double precision, allocatable, dimension(:, :, :) :: debugarr3d
+   real(kind=dp), allocatable, dimension(:) :: debugarr1d
+   real(kind=dp), allocatable, dimension(:, :) :: debugarr2d
+   real(kind=dp), allocatable, dimension(:, :, :) :: debugarr3d
 
 contains
 
    subroutine init_debugarr(dim1, dim2, dim3)
-      use m_alloc
-      use m_missing
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
 
       implicit none
 
@@ -80,10 +81,10 @@ contains
 
       call realloc(debugarr1d, dim1, keepExisting=.false., fill=dmiss)
       if (dim2_ > 0) then
-         call realloc(debugarr2d, (/dim1, dim2_/), keepExisting=.false., fill=dmiss)
+         call realloc(debugarr2d, [dim1, dim2_], keepExisting=.false., fill=dmiss)
       end if
       if (dim2_ > 0 .and. dim3_ > 0) then
-         call realloc(debugarr3d, (/dim1, dim2_, dim3_/), keepExisting=.false., fill=dmiss)
+         call realloc(debugarr3d, [dim1, dim2_, dim3_], keepExisting=.false., fill=dmiss)
       end if
    end subroutine init_debugarr
 

@@ -10,7 +10,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
                 & message   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -141,7 +141,6 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     real(fp) :: epsmax
     real(fp) :: epsmxc
     real(fp) :: fact1
-    real(fp) :: gambr
     real(fp) :: hs
     real(fp) :: lci
     real(fp) :: muc

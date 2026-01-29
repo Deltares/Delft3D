@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,16 @@
 !
 !
 
+module m_init_1dinfo
+
+   implicit none
+
+   private
+
+   public :: init_1dinfo
+
+contains
+
    subroutine init_1dinfo()
       use m_flowgeom, only: lnx1D, ln, ndx, lnx1Db
       use m_sediment, only: stmpar
@@ -39,8 +49,12 @@
       integer :: k2
       integer :: L
 
-      if (.not. stmpar%morpar%mornum%pure1d) return
-      if (link1_initialized) return
+      if (.not. stmpar%morpar%mornum%pure1d) then
+         return
+      end if
+      if (link1_initialized) then
+         return
+      end if
 
       ! if (isassociated(link1)) deallocate(link1, link1sign) ! if link1 were associated then link1_initailized is true and this statement isn't reached
       allocate (link1(ndx), link1sign(ndx)) !V: I do not understand why the size is <ndx> and then the loop is on <lnx1D>. Also, there should be values for the boundary links?
@@ -64,3 +78,5 @@
 
       link1_initialized = .true.
    end subroutine init_1dinfo
+
+end module m_init_1dinfo

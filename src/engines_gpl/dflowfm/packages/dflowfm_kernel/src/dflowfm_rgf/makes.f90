@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,23 +29,29 @@
 
 !
 !
+module m_makes
+   implicit none
+contains
+!>     maak X,Y splines + afstandsarray en splines S op basis
+!!     van NT snijpunten
+   subroutine MAKES(X, Y, X2, Y2, T, S, S2, imax, N, NT, H)
+      use precision, only: dp
+      use m_splinxy, only: splinxy
+      use m_spline, only: spline
+      use m_getdis, only: getdis
 
-      subroutine MAKES(X, Y, X2, Y2, T, S, S2, imax, N, NT, H)
-!     maak X,Y splines + afstandsarray en splines S op basis
-!     van NT snijpunten
-         !USE DIMENS
-         implicit none
-         integer :: imax, n, nt
-         double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), S2(IMAX)
-         double precision, intent(in) :: H !< for curvature adapted meshing
+      integer :: imax, n, nt
+      real(kind=dp) :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), S2(IMAX)
+      real(kind=dp), intent(in) :: H !< for curvature adapted meshing
 
-         integer :: i
+      integer :: i
 
-         call SPLINXY(X, Y, X2, Y2, N)
+      call SPLINXY(X, Y, X2, Y2, N)
 
-         do I = 1, NT
-            call GETDIS(X, Y, X2, Y2, N, T(I), S(I), H)
-         end do
-         call SPLINE(S, NT, S2)
-         return
-      end subroutine makes
+      do I = 1, NT
+         call GETDIS(X, Y, X2, Y2, N, T(I), S(I), H)
+      end do
+      call SPLINE(S, NT, S2)
+      return
+   end subroutine makes
+end module m_makes

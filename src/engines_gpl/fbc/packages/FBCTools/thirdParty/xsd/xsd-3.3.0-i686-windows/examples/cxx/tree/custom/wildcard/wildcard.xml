@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/custom/wildcard/wildcard.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<wc:data xmlns:wc="http://www.codesynthesis.com/wildcard"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://www.codesynthesis.com/wildcard wildcard.xsd"
+         id="1"
+         scope="global">abc123</wc:data>

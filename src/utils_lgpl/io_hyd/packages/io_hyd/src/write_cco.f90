@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@
       integer       lun
       integer       filtyp
       integer       plform
-      character*6   binary
+      character(len=6) binary
       binary = 'BINARY'
       plform = PL_DOS
 
@@ -68,7 +68,7 @@
       npart = 0
       rdum  = 0.0
 
-      call file_cco%open()
+      call file_cco%open(replace = .true.)
       lun    = file_cco%unit
       filtyp = file_cco%type
 

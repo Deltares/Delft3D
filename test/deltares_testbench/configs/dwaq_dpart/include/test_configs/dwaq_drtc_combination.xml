@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <!-- Combination of D-Water Quality and D-RTC: 1D cases -->
     <testCase name="e601_f01_c01_waq_rtc_oxy" ref="dwaq_default">
-        <path version="2024-03-22T19:30:00">e601_waq-rtc/f01_wasteload/c01_waq_rtc_oxy</path>
+        <path version="2025-01-27T13:25:53.335000">e601_waq-rtc/f01_wasteload/c01_waq_rtc_oxy</path>
         <programs>
             <program ref="dimr" seq="1">
                <arguments>
@@ -44,7 +44,7 @@
         </checks>
    </testCase>
     <testCase name="e601_f01_c02_monitor" ref="dwaq_default">
-        <path version="2024-03-22T19:30:00">e601_waq-rtc/f01_wasteload/c02_monitor</path>
+        <path version="2025-01-27T13:25:58.405000">e601_waq-rtc/f01_wasteload/c02_monitor</path>
         <programs>
             <program ref="dimr" seq="1">
                <arguments>
@@ -70,7 +70,7 @@
         </checks>
    </testCase>
     <testCase name="e601_f02_c01_filter_wasteload" ref="dwaq_default">
-        <path version="2024-03-22T19:30:00">e601_waq-rtc/f02_filtering/c01_filter_wasteload</path>
+        <path version="2025-01-27T13:26:06.812000">e601_waq-rtc/f02_filtering/c01_filter_wasteload</path>
         <programs>
             <program ref="dimr" seq="1">
                <arguments>

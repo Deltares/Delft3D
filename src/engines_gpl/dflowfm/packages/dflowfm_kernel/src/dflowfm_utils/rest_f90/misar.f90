@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,15 +30,28 @@
 !
 !
 
-      subroutine MISAR(H, MMAX)
-         use M_MISSING
-         implicit none
-         integer :: i
-         integer :: mmax
-         double precision :: H(MMAX)
+module m_misar
 
-         do I = 1, MMAX
-            H(I) = dmiss
-         end do
-         return
-      end
+   implicit none
+
+   private
+
+   public :: misar
+
+contains
+
+   subroutine MISAR(H, MMAX)
+      use precision, only: dp
+      use M_MISSING, only: dmiss
+
+      integer :: i
+      integer, intent(in) :: mmax
+      real(kind=dp) :: H(MMAX)
+
+      do I = 1, MMAX
+         H(I) = dmiss
+      end do
+      return
+   end
+
+end module m_misar

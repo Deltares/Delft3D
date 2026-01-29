@@ -2,7 +2,7 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
                 & version_short ,filmd     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -81,7 +81,6 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     integer                    :: lridmx       ! Help var. for lunprt: LRID < 47
     integer                    :: lunhlp       ! Help var.
     integer                    :: n
-    integer         , external :: newlun
     logical                    :: ex           ! Help flag = TRUE when file is found
     character(10)              :: date        ! Date to be filled in the header
     character(message_len)     :: txthlp       ! Help var.
@@ -212,7 +211,7 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     write (lundia, '(2a)')  '***           built from : ', trim(txthlp)
     write (lundia, '(a)')   '***'
     write (lundia, '(2a)')  '***           runid      : ', trim(runid)
-    if (.not.gdp%gdnfl%skipuniqueid) then
+    if (gdp%gdnfl%add_uniqueid) then
         write (lundia, '(2a)')  '***           uniqueid   : ', trim(gdp%uniqueid)
     endif
     write (lundia, '(4a)')  '***           date,time  : ', date, ',', rundat(11:19)

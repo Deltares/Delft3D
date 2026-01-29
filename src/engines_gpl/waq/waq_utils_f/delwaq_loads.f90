@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -31,9 +31,9 @@ module delwaq_loads
     integer, parameter :: NAMELEN = 40             !! length NAME strings
 
     type identifier
-        character(len = IDLEN) :: id              !! identification string
-        character(len = NAMELEN) :: name          !! descriptive name
-        character(len = IDLEN) :: type            !! type identification
+        character(len=IDLEN) :: id              !! identification string
+        character(len=NAMELEN) :: name          !! descriptive name
+        character(len=IDLEN) :: type            !! type identification
     end type identifier
 
     type location
@@ -48,6 +48,6 @@ module delwaq_loads
         real, pointer :: loads(:)          ! the actual value of the load for the substances
     end type wasteload
 
-    type(wasteload), allocatable, save :: wasteloads(:)
+    type(wasteload), allocatable, save, target :: wasteloads(:)
 
 end module delwaq_loads

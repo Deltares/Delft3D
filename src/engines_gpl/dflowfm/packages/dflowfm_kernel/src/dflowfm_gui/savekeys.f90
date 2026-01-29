@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,17 +29,18 @@
 
 !
 !
+module m_save_keys
+   implicit none
+contains
+   subroutine SAVEKEYS()
+      use m_keycodes, only: maxkey, keycod
 
-      subroutine SAVEKEYS()
-         implicit none
-         integer :: i
-         integer :: infoinput
-         integer :: keycod
-         integer :: maxkey
-         parameter(MAXKEY=50)
-         common / KEYCODES / KEYCOD(MAXKEY)
-         do I = 1, MAXKEY
-            KEYCOD(I) = INFOINPUT(I)
-         end do
-         return
-      end
+      integer :: i
+      integer :: infoinput
+
+      do I = 1, MAXKEY
+         KEYCOD(I) = INFOINPUT(I)
+      end do
+      return
+   end
+end module m_save_keys

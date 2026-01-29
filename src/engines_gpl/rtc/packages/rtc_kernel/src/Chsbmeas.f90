@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -51,7 +51,7 @@
       Use LocationDataModule
       Use DecisionModule
       Use MeasureModule
-      Use Readlib
+      Use Readlib_rtc
 !
       implicit none
 
@@ -95,7 +95,7 @@
                   ELSEIF (MEASCH(IMEAS) .EQ. '>') THEN
                      CHKTRUE = (RVAL .GT. MEASCV(IMEAS))
                   ELSE
-                     CALL ERRMSG (920,0, MEASCH(IMEAS), ' Sobek-measure file', IOUT1)
+                     call write_error_message_rtc (920,0, MEASCH(IMEAS), ' Sobek-measure file', IOUT1)
                      RetVal = 920
                      Return
                   ENDIF
@@ -141,7 +141,7 @@
                    ELSEIF (MEASNCH(IV,IMEAS) .EQ. '>') THEN
                       CHKTRUE = (RVAL .GT. MEASNCV(IV,IMEAS))
                    ELSE
-                      CALL ERRMSG (920,0, MEASNCH(IV,IMEAS), ' Sobek-measure file', IOUT1)
+                      call write_error_message_rtc (920,0, MEASNCH(IV,IMEAS), ' Sobek-measure file', IOUT1)
                       RetVal = 920
                       Return
                    ENDIF

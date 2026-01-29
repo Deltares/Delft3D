@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,43 +30,54 @@
 !
 !
 
-subroutine copynetcellstonetnodes() ! for smooth plotting only
-   use m_flowgeom
-   use m_flow
-   use m_netw
+module m_copynetcellstonetnodes
+
    implicit none
-   integer :: k, kk, kkk, n, nn4, ierr, ja
-   real, allocatable, save :: rn(:)
-   double precision :: znn
 
-   ja = 0
-   if (.not. allocated(rn)) then
-      ja = 1
-   else if (size(rn) < numk) then
-      deallocate (rn); ja = 1
-   end if
-   if (ja == 1) then
-      allocate (rn(numk), stat=ierr)
-      call aerr('rn(numk)', ierr, numk)
-   end if
+contains
 
-   rnod = 0d0; rn = 0d0
-   do n = 1, ndx2d
-      nn4 = netcell(n)%n
+   subroutine copynetcellstonetnodes() ! for smooth plotting only
+      use precision, only: dp
+      use m_flowgeom, only: ndx2d, ba
+      use m_netw, only: numk, rnod, netcell, rlin
+      use m_alloc, only: aerr
 
-      znn = rlin(n)
+      integer :: k, kk, kkk, n, nn4, ierr, ja
+      real, allocatable, save :: rn(:)
+      real(kind=dp) :: znn
 
-      do kk = 1, nn4
-         kkk = netcell(n)%nod(kk)
-         rnod(kkk) = rnod(kkk) + znn * ba(n)
-         rn(kkk) = rn(kkk) + ba(n)
-      end do
-   end do
-
-   do k = 1, numk
-      if (rn(k) > 0) then
-         rnod(k) = rnod(k) / rn(k)
+      ja = 0
+      if (.not. allocated(rn)) then
+         ja = 1
+      else if (size(rn) < numk) then
+         deallocate (rn)
+         ja = 1
       end if
-   end do
+      if (ja == 1) then
+         allocate (rn(numk), stat=ierr)
+         call aerr('rn(numk)', ierr, numk)
+      end if
 
-end subroutine copynetcellstonetnodes !in afwachting van isosmoothflownodes
+      rnod = 0.0_dp
+      rn = 0.0_dp
+      do n = 1, ndx2d
+         nn4 = netcell(n)%n
+
+         znn = rlin(n)
+
+         do kk = 1, nn4
+            kkk = netcell(n)%nod(kk)
+            rnod(kkk) = rnod(kkk) + znn * ba(n)
+            rn(kkk) = rn(kkk) + ba(n)
+         end do
+      end do
+
+      do k = 1, numk
+         if (rn(k) > 0) then
+            rnod(k) = rnod(k) / rn(k)
+         end if
+      end do
+
+   end subroutine copynetcellstonetnodes !in afwachting van isosmoothflownodes
+
+end module m_copynetcellstonetnodes

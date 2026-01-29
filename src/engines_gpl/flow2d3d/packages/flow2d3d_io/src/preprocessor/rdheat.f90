@@ -3,7 +3,7 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
                 & itstrt    ,itfinish  ,ivapop    ,solrad_read ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -91,7 +91,6 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
     integer                      :: lrid     ! Length of character string runid 
     integer                      :: lunout   ! Unit number for unformatted FLOW help file between TDATOM and TRISIM  
     integer                      :: n        ! Help var. 
-    integer                      :: newlun
     integer                      :: nlook    ! Help var.: nr. of data to look for in the MD-file 
     integer                      :: nrval    ! Number of values to read from file 
     integer                      :: ntrec    ! Help. var to keep track of NRREC 
@@ -127,7 +126,7 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
     ! Keyword does not have to exist, temperature might be specified space-varying via the meteo-module
     !
     filtem = fildef
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filtmp', filtem)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filtmp', filtem)
     !
     ! Time varying heat module data in file?
     !
@@ -196,17 +195,17 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
        !
        filtem = fildef
        ex     = .false.
-                     call prop_get_string(gdp%mdfile_ptr, '*', 'Fwndgr', filtem)
+                     call prop_get(gdp%mdfile_ptr, '*', 'Fwndgr', filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Fwndgt', filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Fwndgt', filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Fwndgc', filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Fwndgc', filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Filwr' , filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Filwr' , filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Filwt' , filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Filwt' , filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Filwc' , filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Filwc' , filtem)
        if (ex) then
           !
           ! Reading/checking heat data is done by the meteo module,

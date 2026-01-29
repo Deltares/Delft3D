@@ -1,7 +1,7 @@
-subroutine tricom_init(olv_handle, gdp)
+subroutine tricom_init(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -51,12 +51,9 @@ subroutine tricom_init(olv_handle, gdp)
     use sync_flowcouple
     use sync_flowwave
     use flow2d3d_timers
-    use D3DOnline
-    use D3DPublish
     use D3D_Sobek 
     use globaldata
     use dfparall
-    use d3d_olv_class
     !
     implicit none
     !
@@ -398,10 +395,6 @@ subroutine tricom_init(olv_handle, gdp)
     integer                             , pointer :: iti_sedtrans  ! Sediment transport start time step
     
 !
-! Global variables
-!
-    type(olvhandle) :: olv_handle
-!
 ! Local variables
 !
     integer                                       :: icx
@@ -412,7 +405,6 @@ subroutine tricom_init(olv_handle, gdp)
     integer                                       :: mmaxddb
     integer                            , external :: modlen
     integer                                       :: mp
-    integer                            , external :: newlun
     integer                                       :: nhystp
     integer                                       :: nmaxddb
     integer                                       :: nst           ! Current time step counter 
@@ -1531,16 +1523,6 @@ subroutine tricom_init(olv_handle, gdp)
     if (tstprt) then
        call nm_to_diag(gdp)
     endif
-    !
-    ! Make D3D data available to online applications
-    !
-    call new_olv(olv_handle)
-    call publishGDP(olv_handle, gdp, runid, zmodel)
-    !
-    ! Not multi threaded
-    !
-    call publishUtils(olv_handle)
-    call setEndTimeStep(olv_handle, itstop)
     !
     ! Synchronisation point 2
     ! =======================

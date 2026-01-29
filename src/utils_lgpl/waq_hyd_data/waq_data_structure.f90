@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -869,19 +869,26 @@ contains
             ab)
 
         !! make function value in case of missing values
-        type(t_data_block), intent(in) :: dlwqdata             ! data block to be used
+        type(t_data_block), intent(in) :: dlwqdata  ! data block to be used
         integer, intent(in) :: ipar                 ! index parameter to get
         integer, intent(in) :: iloc                 ! index location to get
         integer, intent(in) :: ibrk                 ! index current breakpoint
-        real, intent(in) :: amiss                ! missing value
+        real, intent(in) :: amiss                   ! missing value
         integer, intent(in) :: itimf                ! time offset
-        integer, intent(out) :: it1c                 ! first time interpolation factor
-        integer, intent(out) :: it2c                 ! second time interpolation factor
-        integer, intent(out) :: idtc                 ! dt in interpolation
-        real, intent(out) :: aa                   ! first value in interpolation
-        real, intent(out) :: ab                   ! second value in interpolation
+        integer, intent(out) :: it1c                ! first time interpolation factor
+        integer, intent(out) :: it2c                ! second time interpolation factor
+        integer, intent(out) :: idtc                ! dt in interpolation
+        real, intent(inout) :: aa                   ! first value in interpolation
+        real, intent(inout) :: ab                   ! second value in interpolation
 
         integer :: jj, kk
+
+        if ( dlwqdata%num_breakpoints <= 1 ) then
+            it1c = 1
+            it2c = 1
+            idtc = 1
+            return
+        endif
 
         ! search backward for the first valid point
         do jj = ibrk, 1, -1

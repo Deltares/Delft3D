@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,25 +30,37 @@
 !
 !
 
-subroutine setfixedweirscheme3onlink(L)
-   use m_flowgeom
-   use m_flow
+module m_setfixedweirscheme3onlink
+
+   use precision, only: dp
    implicit none
-   integer :: L, nn, n12, kk, LL
 
-   teta(L) = 1d0
+   private
 
-   if (iadv(L) /= 24 .and. iadv(L) /= 25) then ! no change in advection for Tabellenboek and Villemonte
-      do nn = 1, 2
-         n12 = ln(nn, L)
-         do kk = 1, nd(n12)%lnx ! and flag non-21 links to perot incoming only
-            LL = abs(nd(n12)%ln(kk))
-            if (iadv(LL) < 21 .or. iadv(LL) > 25) then
-               iadv(LL) = 4
-            end if
-            teta(LL) = 1d0
+   public :: setfixedweirscheme3onlink
+
+contains
+
+   subroutine setfixedweirscheme3onlink(L)
+      use m_flowgeom, only: teta, iadv, iadv_tabellenboek_weir, iadv_villemonte_weir, ln, nd, iadv_subgrid_weir
+
+      integer :: L, nn, n12, kk, LL
+
+      teta(L) = 1.0_dp
+
+      if (iadv(L) /= IADV_TABELLENBOEK_WEIR .and. iadv(L) /= IADV_VILLEMONTE_WEIR) then ! no change in advection for Tabellenboek and Villemonte
+         do nn = 1, 2
+            n12 = ln(nn, L)
+            do kk = 1, nd(n12)%lnx ! and flag non-21 links to perot incoming only
+               LL = abs(nd(n12)%ln(kk))
+               if (iadv(LL) < IADV_SUBGRID_WEIR .or. iadv(LL) > IADV_VILLEMONTE_WEIR) then
+                  iadv(LL) = 4
+               end if
+               teta(LL) = 1.0_dp
+            end do
          end do
-      end do
-   end if
+      end if
 
-end subroutine setfixedweirscheme3onlink
+   end subroutine setfixedweirscheme3onlink
+
+end module m_setfixedweirscheme3onlink

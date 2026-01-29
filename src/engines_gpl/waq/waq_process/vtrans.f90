@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -232,7 +232,7 @@ contains
                 ip4 = ip4 + in4
             enddo
             !
-            !        do a transport step in the vertical, dispersion only, double sweep see also DLWQD1
+            !        do a transport step in the vertical, dispersion only, double sweep see also double_sweep_solver
             !
             in9 = increm(9)
             in10 = increm(10)

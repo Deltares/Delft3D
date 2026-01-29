@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,20 +29,23 @@
 
 !
 !
-
-      subroutine viewport(xs1, ys1, xs2, ys2)
-         use unstruc_opengl
+module m_view_port
+   implicit none
+contains
+   subroutine viewport(xs1, ys1, xs2, ys2)
+      use unstruc_opengl, only: inopenglrendering
 #ifdef HAVE_OPENGL
-         use IFOPNGL, only: fglViewPort
+      use unstruc_opengl, only: currentWidth, currentHeight
+      use IFOPNGL, only: fglViewPort
 #endif
-         implicit none
-         real xs1, ys1, xs2, ys2
-         if (InOpenGLRendering) then
+      real xs1, ys1, xs2, ys2
+      if (InOpenGLRendering) then
 #ifdef HAVE_OPENGL
-            ! screen coordinates extend
-            call fglViewPort(int(xs1 * currentWidth), int(ys1 * currentHeight), int((xs2 - xs1) * currentWidth), int((ys2 - ys1) * currentHeight))
+         ! screen coordinates extend
+         call fglViewPort(int(xs1 * currentWidth), int(ys1 * currentHeight), int((xs2 - xs1) * currentWidth), int((ys2 - ys1) * currentHeight))
 #endif
-         else
-            call igrarea(xs1, ys1, xs2, ys2)
-         end if
-      end
+      else
+         call igrarea(xs1, ys1, xs2, ys2)
+      end if
+   end
+end module m_view_port

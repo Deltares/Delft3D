@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,13 +30,23 @@
 !
 !
 
-      subroutine HALT(JA)
-         implicit none
-         integer, intent(out) :: ja
-         integer :: numkey
+module m_halt
+
+   implicit none
+
+contains
+
+   subroutine HALT(JA)
+      implicit none
+      integer, intent(out) :: ja
+      integer :: numkey
 !     kappen met ALLES
-         JA = 0
-         call INKEYEVENTIMM(NUMKEY)
-         if (NUMKEY /= -999 .and. NUMKEY /= 257 .and. NUMKEY /= 254) JA = 1
-         return
-      end
+      JA = 0
+      call INKEYEVENTIMM(NUMKEY)
+      if (NUMKEY /= -999 .and. NUMKEY /= 257 .and. NUMKEY /= 254) then
+         JA = 1
+      end if
+      return
+   end
+
+end module m_halt

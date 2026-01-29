@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,8 +34,11 @@
 !! Used for network-node renumbering to improve cache efficiency
 !! of the unstructured flow solver.
 !<
-
-function adj_bandwidth(node_num, adj_num, adj_row, adj)
+module m_rcm
+   use precision, only: dp
+   implicit none
+contains
+   function adj_bandwidth(node_num, adj_num, adj_row, adj)
 
 !*****************************************************************************80
 !
@@ -79,38 +82,36 @@ function adj_bandwidth(node_num, adj_num, adj_row, adj)
 !    Output, integer   ADJ_BANDWIDTH, the bandwidth of the adjacency
 !    matrix.
 !
-   implicit none
+      integer, intent(in) :: adj_num
+      integer, intent(in) :: node_num
 
-   integer adj_num
-   integer node_num
+      integer, intent(in) :: adj(adj_num)
+      integer adj_bandwidth
+      integer, intent(in) :: adj_row(node_num + 1)
+      integer band_hi
+      integer band_lo
+      integer col
+      integer i
+      integer j
 
-   integer adj(adj_num)
-   integer adj_bandwidth
-   integer adj_row(node_num + 1)
-   integer band_hi
-   integer band_lo
-   integer col
-   integer i
-   integer j
+      band_lo = 0
+      band_hi = 0
 
-   band_lo = 0
-   band_hi = 0
+      do i = 1, node_num
 
-   do i = 1, node_num
+         do j = adj_row(i), adj_row(i + 1) - 1
+            col = adj(j)
+            band_lo = max(band_lo, i - col)
+            band_hi = max(band_hi, col - i)
+         end do
 
-      do j = adj_row(i), adj_row(i + 1) - 1
-         col = adj(j)
-         band_lo = max(band_lo, i - col)
-         band_hi = max(band_hi, col - i)
       end do
 
-   end do
+      adj_bandwidth = band_lo + 1 + band_hi
 
-   adj_bandwidth = band_lo + 1 + band_hi
-
-   return
-end
-function adj_contains_ij(node_num, adj_num, adj_row, adj, i, j)
+      return
+   end
+   function adj_contains_ij(node_num, adj_num, adj_row, adj, i, j)
 
 !*****************************************************************************80
 !
@@ -145,63 +146,63 @@ function adj_contains_ij(node_num, adj_num, adj_row, adj, i, j)
 !    Output, logical ADJ_CONTAINS_IJ, is TRUE if I = J, or the adjacency
 !    structure contains the information that I is adjacent to J.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   logical adj_contains_ij
-   integer adj_row(node_num + 1)
-   integer i
-   integer j
-   integer k
-   integer khi
-   integer klo
+      integer adj(adj_num)
+      logical adj_contains_ij
+      integer adj_row(node_num + 1)
+      integer i
+      integer j
+      integer k
+      integer khi
+      integer klo
 !
 !  Symmetric entries are not stored.
 !
-   if (i == j) then
-      adj_contains_ij = .true.
-      return
-   end if
+      if (i == j) then
+         adj_contains_ij = .true.
+         return
+      end if
 !
 !  Illegal I, J entries.
 !
-   if (node_num < i) then
-      adj_contains_ij = .false.
-      return
-   else if (i < 1) then
-      adj_contains_ij = .false.
-      return
-   else if (node_num < j) then
-      adj_contains_ij = .false.
-      return
-   else if (j < 1) then
-      adj_contains_ij = .false.
-      return
-   end if
+      if (node_num < i) then
+         adj_contains_ij = .false.
+         return
+      else if (i < 1) then
+         adj_contains_ij = .false.
+         return
+      else if (node_num < j) then
+         adj_contains_ij = .false.
+         return
+      else if (j < 1) then
+         adj_contains_ij = .false.
+         return
+      end if
 !
 !  Search the adjacency entries already stored for row I,
 !  to see if J has already been stored.
 !
-   klo = adj_row(i)
-   khi = adj_row(i + 1) - 1
+      klo = adj_row(i)
+      khi = adj_row(i + 1) - 1
 
-   do k = klo, khi
+      do k = klo, khi
 
-      if (adj(k) == j) then
-         adj_contains_ij = .true.
-         return
-      end if
+         if (adj(k) == j) then
+            adj_contains_ij = .true.
+            return
+         end if
 
-   end do
+      end do
 
-   adj_contains_ij = .false.
+      adj_contains_ij = .false.
 
-   return
-end
-subroutine adj_insert_ij(node_num, adj_max, adj_num, adj_row, adj, i, j)
+      return
+   end
+   subroutine adj_insert_ij(node_num, adj_max, adj_num, adj_row, adj, i, j)
 
 !*****************************************************************************80
 !
@@ -236,64 +237,64 @@ subroutine adj_insert_ij(node_num, adj_max, adj_num, adj_row, adj, i, j)
 !
 !    Input, integer   I, J, the two nodes which are adjacent.
 !
-   implicit none
+      implicit none
 
-   integer adj_max
-   integer node_num
+      integer adj_max
+      integer node_num
 
-   integer adj(adj_max)
-   integer adj_num
-   integer adj_row(node_num + 1)
-   integer i
-   integer j
-   integer j_spot
-   integer k
-   integer :: ii, jj
+      integer adj(adj_max)
+      integer adj_num
+      integer adj_row(node_num + 1)
+      integer i
+      integer j
+      integer j_spot
+      integer k
+      integer :: ii, jj
 !
 !  A new adjacency entry must be made.
 !  Check that we're not exceeding the storage allocation for ADJ.
 !
-   if (adj_max < adj_num + 1) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'ADJ_INSERT_IJ - Fatal error!'
-      write (*, '(a)') '  All available storage has been used.'
-      write (*, '(a)') '  No more information can be stored!'
-      write (*, '(a)') '  This error occurred for '
-      write (*, '(a,i8)') '  Row I =    ', i
-      write (*, '(a,i8)') '  Column J = ', j
-      stop
-   end if
+      if (adj_max < adj_num + 1) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'ADJ_INSERT_IJ - Fatal error!'
+         write (*, '(a)') '  All available storage has been used.'
+         write (*, '(a)') '  No more information can be stored!'
+         write (*, '(a)') '  This error occurred for '
+         write (*, '(a,i8)') '  Row I =    ', i
+         write (*, '(a,i8)') '  Column J = ', j
+         stop
+      end if
 !
 !  The action is going to occur between ADJ_ROW(I) and ADJ_ROW(I+1)-1:
 !
-   j_spot = adj_row(i)
+      j_spot = adj_row(i)
 
-   do k = adj_row(i), adj_row(i + 1) - 1
+      do k = adj_row(i), adj_row(i + 1) - 1
 
-      if (adj(k) == j) then
-         return
-      else if (adj(k) < j) then
-         j_spot = k + 1
-      else
-         exit
-      end if
+         if (adj(k) == j) then
+            return
+         else if (adj(k) < j) then
+            j_spot = k + 1
+         else
+            exit
+         end if
 
-   end do
+      end do
 
-   do jj = adj_num, j_spot, -1
-      adj(jj + 1) = adj(jj)
-   end do
-   adj(j_spot) = j
+      do jj = adj_num, j_spot, -1
+         adj(jj + 1) = adj(jj)
+      end do
+      adj(j_spot) = j
 
-   do ii = i + 1, node_num + 1
-      adj_row(ii) = adj_row(ii) + 1
-   end do
-   adj_num = adj_num + 1
+      do ii = i + 1, node_num + 1
+         adj_row(ii) = adj_row(ii) + 1
+      end do
+      adj_num = adj_num + 1
 
-   return
-end
+      return
+   end
 
-function adj_perm_bandwidth(node_num, adj_num, adj_row, adj, perm, perm_inv)
+   function adj_perm_bandwidth(node_num, adj_num, adj_row, adj, perm, perm_inv)
 
 !*****************************************************************************80
 !
@@ -341,40 +342,40 @@ function adj_perm_bandwidth(node_num, adj_num, adj_row, adj, perm, perm_inv)
 !    Output, integer   ADJ_PERM_BANDWIDTH, the bandwidth of the
 !    permuted adjacency matrix.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer, intent(in) :: adj_num
+      integer, intent(in) :: node_num
 
-   integer adj(adj_num)
-   integer adj_perm_bandwidth
-   integer adj_row(node_num + 1)
-   integer band_hi
-   integer band_lo
-   integer col
-   integer i
-   integer j
-   integer perm(node_num)
-   integer perm_inv(node_num)
+      integer, intent(in) :: adj(adj_num)
+      integer adj_perm_bandwidth
+      integer, intent(in) :: adj_row(node_num + 1)
+      integer band_hi
+      integer band_lo
+      integer col
+      integer i
+      integer j
+      integer, intent(in) :: perm(node_num)
+      integer, intent(in) :: perm_inv(node_num)
 
-   band_lo = 0
-   band_hi = 0
+      band_lo = 0
+      band_hi = 0
 
-   do i = 1, node_num
+      do i = 1, node_num
 
-      do j = adj_row(perm(i)), adj_row(perm(i) + 1) - 1
-         col = perm_inv(adj(j))
-         band_lo = max(band_lo, i - col)
-         band_hi = max(band_hi, col - i)
+         do j = adj_row(perm(i)), adj_row(perm(i) + 1) - 1
+            col = perm_inv(adj(j))
+            band_lo = max(band_lo, i - col)
+            band_hi = max(band_hi, col - i)
+         end do
+
       end do
 
-   end do
+      adj_perm_bandwidth = band_lo + 1 + band_hi
 
-   adj_perm_bandwidth = band_lo + 1 + band_hi
-
-   return
-end
-subroutine adj_perm_show(node_num, adj_num, adj_row, adj, perm, perm_inv)
+      return
+   end
+   subroutine adj_perm_show(node_num, adj_num, adj_row, adj, perm, perm_inv)
 
 !*****************************************************************************80
 !
@@ -422,77 +423,77 @@ subroutine adj_perm_show(node_num, adj_num, adj_row, adj, perm, perm_inv)
 !    Input, integer   PERM(NODE_NUM), PERM_INV(NODE_NUM), the
 !    permutation and inverse permutation.
 !
-   implicit none
+      implicit none
 
-   integer, parameter :: n_max = 100
+      integer, parameter :: n_max = 100
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   character band(n_max)
-   integer band_lo
-   integer col
-   integer i
-   integer j
-   integer k
-   integer nonzero_num
-   integer perm(node_num)
-   integer perm_inv(node_num)
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      character band(n_max)
+      integer band_lo
+      integer col
+      integer i
+      integer j
+      integer k
+      integer nonzero_num
+      integer perm(node_num)
+      integer perm_inv(node_num)
 
-   band_lo = 0
-   nonzero_num = 0
+      band_lo = 0
+      nonzero_num = 0
 
-   if (n_max < node_num) then
+      if (n_max < node_num) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'ADJ_PERM_SHOW - Fatal error!'
+         write (*, '(a)') '  NODE_NUM is too large!'
+         write (*, '(a,i8)') '  Maximum legal value is ', n_max
+         write (*, '(a,i8)') '  Your input value was   ', node_num
+         stop
+      end if
+
       write (*, '(a)') ' '
-      write (*, '(a)') 'ADJ_PERM_SHOW - Fatal error!'
-      write (*, '(a)') '  NODE_NUM is too large!'
-      write (*, '(a,i8)') '  Maximum legal value is ', n_max
-      write (*, '(a,i8)') '  Your input value was   ', node_num
-      stop
-   end if
+      write (*, '(a)') '  Nonzero structure of matrix:'
+      write (*, '(a)') ' '
 
-   write (*, '(a)') ' '
-   write (*, '(a)') '  Nonzero structure of matrix:'
-   write (*, '(a)') ' '
+      do i = 1, node_num
 
-   do i = 1, node_num
+         do k = 1, node_num
+            band(k) = '.'
+         end do
 
-      do k = 1, node_num
-         band(k) = '.'
-      end do
+         band(i) = 'D'
 
-      band(i) = 'D'
+         do j = adj_row(perm(i)), adj_row(perm(i) + 1) - 1
 
-      do j = adj_row(perm(i)), adj_row(perm(i) + 1) - 1
+            col = perm_inv(adj(j))
 
-         col = perm_inv(adj(j))
+            if (col < i) then
+               nonzero_num = nonzero_num + 1
+            end if
 
-         if (col < i) then
-            nonzero_num = nonzero_num + 1
-         end if
+            band_lo = max(band_lo, i - col)
 
-         band_lo = max(band_lo, i - col)
+            if (col /= i) then
+               band(col) = 'X'
+            end if
 
-         if (col /= i) then
-            band(col) = 'X'
-         end if
+         end do
+
+         write (*, '(2x,i8,1x,100a1)') i, band(1:node_num)
 
       end do
 
-      write (*, '(2x,i8,1x,100a1)') i, band(1:node_num)
+      write (*, '(a)') ' '
+      write (*, '(a,i8)') '  Lower bandwidth = ', band_lo
+      write (*, '(a,i8,a)') '  Lower envelope contains ', &
+         nonzero_num, ' nonzeros.'
 
-   end do
-
-   write (*, '(a)') ' '
-   write (*, '(a,i8)') '  Lower bandwidth = ', band_lo
-   write (*, '(a,i8,a)') '  Lower envelope contains ', &
-      nonzero_num, ' nonzeros.'
-
-   return
-end
-subroutine adj_print(node_num, adj_num, adj_row, adj, title)
+      return
+   end
+   subroutine adj_print(node_num, adj_num, adj_row, adj, title)
 
 !*****************************************************************************80
 !
@@ -536,21 +537,21 @@ subroutine adj_print(node_num, adj_num, adj_row, adj, title)
 !
 !    Input, character ( len = * ) TITLE, a title to be printed.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   character(len=*) title
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      character(len=*) title
 
-   call adj_print_some(node_num, 1, node_num, adj_num, adj_row, adj, title)
+      call adj_print_some(node_num, 1, node_num, adj_num, adj_row, adj, title)
 
-   return
-end
-subroutine adj_print_some(node_num, node_lo, node_hi, adj_num, adj_row, &
-                          adj, title)
+      return
+   end
+   subroutine adj_print_some(node_num, node_lo, node_hi, adj_num, adj_row, &
+                             adj, title)
 
 !*****************************************************************************80
 !
@@ -597,66 +598,66 @@ subroutine adj_print_some(node_num, node_lo, node_hi, adj_num, adj_row, &
 !
 !    Input, character ( len = * ) TITLE, a title to be printed.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   integer i
-   integer jhi
-   integer jlo
-   integer jmax
-   integer jmin
-   integer node_hi
-   integer node_lo
-   character(len=*) title
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      integer i
+      integer jhi
+      integer jlo
+      integer jmax
+      integer jmin
+      integer node_hi
+      integer node_lo
+      character(len=*) title
 
-   if (0 < len_trim(title)) then
-      write (*, '(a)') ' '
-      write (*, '(a)') trim(title)
-   end if
-
-   write (*, '(a)') ' '
-   write (*, '(a)') '  Sparse adjacency structure:'
-   write (*, '(a)') ' '
-   write (*, '(a,i8)') '  Number of nodes       = ', node_num
-   write (*, '(a,i8)') '  Number of adjacencies = ', adj_num
-   write (*, '(a)') ' '
-   write (*, '(a)') '  Node Min Max      Nonzeros '
-   write (*, '(a)') ' '
-
-   do i = node_lo, node_hi
-
-      jmin = adj_row(i)
-      jmax = adj_row(i + 1) - 1
-
-      if (jmax < jmin) then
-
-         write (*, '(2x,3i4)') i, jmin, jmax
-
-      else
-
-         do jlo = jmin, jmax, 5
-
-            jhi = min(jlo + 4, jmax)
-
-            if (jlo == jmin) then
-               write (*, '(2x,3i4,3x,5i8)') i, jmin, jmax, adj(jlo:jhi)
-            else
-               write (*, '(2x,12x,3x,5i8)') adj(jlo:jhi)
-            end if
-
-         end do
-
+      if (0 < len_trim(title)) then
+         write (*, '(a)') ' '
+         write (*, '(a)') trim(title)
       end if
 
-   end do
+      write (*, '(a)') ' '
+      write (*, '(a)') '  Sparse adjacency structure:'
+      write (*, '(a)') ' '
+      write (*, '(a,i8)') '  Number of nodes       = ', node_num
+      write (*, '(a,i8)') '  Number of adjacencies = ', adj_num
+      write (*, '(a)') ' '
+      write (*, '(a)') '  Node Min Max      Nonzeros '
+      write (*, '(a)') ' '
 
-   return
-end
-subroutine adj_set(node_num, adj_max, adj_num, adj_row, adj, irow, jcol)
+      do i = node_lo, node_hi
+
+         jmin = adj_row(i)
+         jmax = adj_row(i + 1) - 1
+
+         if (jmax < jmin) then
+
+            write (*, '(2x,3i4)') i, jmin, jmax
+
+         else
+
+            do jlo = jmin, jmax, 5
+
+               jhi = min(jlo + 4, jmax)
+
+               if (jlo == jmin) then
+                  write (*, '(2x,3i4,3x,5i8)') i, jmin, jmax, adj(jlo:jhi)
+               else
+                  write (*, '(2x,12x,3x,5i8)') adj(jlo:jhi)
+               end if
+
+            end do
+
+         end if
+
+      end do
+
+      return
+   end
+   subroutine adj_set(node_num, adj_max, adj_num, adj_row, adj, irow, jcol)
 
 !*****************************************************************************80
 !
@@ -712,83 +713,82 @@ subroutine adj_set(node_num, adj_max, adj_num, adj_row, adj, irow, jcol)
 !    Input, integer   IROW, JCOL, the row and column indices of a
 !    nonzero entry of the matrix.
 !
-   implicit none
+      implicit none
 
-   integer adj_max
-   integer node_num
+      integer adj_max
+      integer node_num
 
-   integer adj(adj_max)
-   logical adj_contains_ij
-   integer adj_num
-   integer adj_row(node_num + 1)
-   integer irow
-   integer jcol
+      integer adj(adj_max)
+      integer adj_num
+      integer adj_row(node_num + 1)
+      integer irow
+      integer jcol
 !
 !  Negative IROW or JCOL indicates the data structure should be initialized.
 !
-   if (irow < 0 .or. jcol < 0) then
+      if (irow < 0 .or. jcol < 0) then
 
-      write (*, '(a)') ' '
-      write (*, '(a)') 'ADJ_SET - Note:'
-      write (*, '(a)') '  Initializing adjacency information.'
-      write (*, '(a,i8)') '  Number of nodes NODE_NUM =  ', node_num
-      write (*, '(a,i8)') '  Maximum adjacency ADJ_MAX = ', adj_max
+         write (*, '(a)') ' '
+         write (*, '(a)') 'ADJ_SET - Note:'
+         write (*, '(a)') '  Initializing adjacency information.'
+         write (*, '(a,i8)') '  Number of nodes NODE_NUM =  ', node_num
+         write (*, '(a,i8)') '  Maximum adjacency ADJ_MAX = ', adj_max
 
-      adj_num = 0
-      adj_row(1:node_num + 1) = 1
-      adj(1:adj_max) = 0
+         adj_num = 0
+         adj_row(1:node_num + 1) = 1
+         adj(1:adj_max) = 0
 
-      return
+         return
 
-   end if
+      end if
 !
 !  Diagonal entries are not stored.
 !
-   if (irow == jcol) then
+      if (irow == jcol) then
+         return
+      end if
+
+      if (node_num < irow) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'ADJ_SET - Fatal error!'
+         write (*, '(a)') '  NODE_NUM < IROW.'
+         write (*, '(a,i8)') '  IROW =     ', irow
+         write (*, '(a,i8)') '  NODE_NUM = ', node_num
+         stop
+      else if (irow < 1) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'ADJ_SET - Fatal error!'
+         write (*, '(a)') '  IROW < 1.'
+         write (*, '(a,i8)') '  IROW = ', irow
+         stop
+      else if (node_num < jcol) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'ADJ_SET - Fatal error!'
+         write (*, '(a)') '  NODE_NUM < JCOL.'
+         write (*, '(a,i8)') '  JCOL =     ', jcol
+         write (*, '(a,i8)') '  NODE_NUM = ', node_num
+         stop
+      else if (jcol < 1) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'ADJ_SET - Fatal error!'
+         write (*, '(a)') '  JCOL < 1.'
+         write (*, '(a,i8)') '  JCOL = ', jcol
+         stop
+      end if
+
+      if (.not. &
+          adj_contains_ij(node_num, adj_num, adj_row, adj, irow, jcol)) then
+         call adj_insert_ij(node_num, adj_max, adj_num, adj_row, adj, irow, jcol)
+      end if
+
+      if (.not. &
+          adj_contains_ij(node_num, adj_num, adj_row, adj, jcol, irow)) then
+         call adj_insert_ij(node_num, adj_max, adj_num, adj_row, adj, jcol, irow)
+      end if
+
       return
-   end if
-
-   if (node_num < irow) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'ADJ_SET - Fatal error!'
-      write (*, '(a)') '  NODE_NUM < IROW.'
-      write (*, '(a,i8)') '  IROW =     ', irow
-      write (*, '(a,i8)') '  NODE_NUM = ', node_num
-      stop
-   else if (irow < 1) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'ADJ_SET - Fatal error!'
-      write (*, '(a)') '  IROW < 1.'
-      write (*, '(a,i8)') '  IROW = ', irow
-      stop
-   else if (node_num < jcol) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'ADJ_SET - Fatal error!'
-      write (*, '(a)') '  NODE_NUM < JCOL.'
-      write (*, '(a,i8)') '  JCOL =     ', jcol
-      write (*, '(a,i8)') '  NODE_NUM = ', node_num
-      stop
-   else if (jcol < 1) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'ADJ_SET - Fatal error!'
-      write (*, '(a)') '  JCOL < 1.'
-      write (*, '(a,i8)') '  JCOL = ', jcol
-      stop
-   end if
-
-   if (.not. &
-       adj_contains_ij(node_num, adj_num, adj_row, adj, irow, jcol)) then
-      call adj_insert_ij(node_num, adj_max, adj_num, adj_row, adj, irow, jcol)
-   end if
-
-   if (.not. &
-       adj_contains_ij(node_num, adj_num, adj_row, adj, jcol, irow)) then
-      call adj_insert_ij(node_num, adj_max, adj_num, adj_row, adj, jcol, irow)
-   end if
-
-   return
-end
-subroutine adj_show(node_num, adj_num, adj_row, adj)
+   end
+   subroutine adj_show(node_num, adj_num, adj_row, adj)
 
 !*****************************************************************************80
 !
@@ -830,73 +830,73 @@ subroutine adj_show(node_num, adj_num, adj_row, adj)
 !    Input, integer   ADJ(ADJ_NUM), the adjacency structure.
 !    For each row, it contains the column indices of the nonzero entries.
 !
-   implicit none
+      implicit none
 
-   integer, parameter :: n_max = 100
+      integer, parameter :: n_max = 100
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   character band(n_max)
-   integer band_lo
-   integer col
-   integer i
-   integer j
-   integer k
-   integer nonzero_num
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      character band(n_max)
+      integer band_lo
+      integer col
+      integer i
+      integer j
+      integer k
+      integer nonzero_num
 
-   band_lo = 0
-   nonzero_num = 0
+      band_lo = 0
+      nonzero_num = 0
 
-   if (n_max < node_num) then
+      if (n_max < node_num) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'ADJ_SHOW - Fatal error!'
+         write (*, '(a)') '  NODE_NUM is too large!'
+         write (*, '(a,i8)') '  Maximum legal value is ', n_max
+         write (*, '(a,i8)') '  Your input value was   ', node_num
+         stop
+      end if
+
       write (*, '(a)') ' '
-      write (*, '(a)') 'ADJ_SHOW - Fatal error!'
-      write (*, '(a)') '  NODE_NUM is too large!'
-      write (*, '(a,i8)') '  Maximum legal value is ', n_max
-      write (*, '(a,i8)') '  Your input value was   ', node_num
-      stop
-   end if
+      write (*, '(a)') '  Nonzero structure of matrix:'
+      write (*, '(a)') ' '
 
-   write (*, '(a)') ' '
-   write (*, '(a)') '  Nonzero structure of matrix:'
-   write (*, '(a)') ' '
+      do i = 1, node_num
 
-   do i = 1, node_num
+         do k = 1, node_num
+            band(k) = '.'
+         end do
 
-      do k = 1, node_num
-         band(k) = '.'
-      end do
+         band(i) = 'D'
 
-      band(i) = 'D'
+         do j = adj_row(i), adj_row(i + 1) - 1
 
-      do j = adj_row(i), adj_row(i + 1) - 1
+            col = adj(j)
 
-         col = adj(j)
+            if (col < i) then
+               nonzero_num = nonzero_num + 1
+            end if
 
-         if (col < i) then
-            nonzero_num = nonzero_num + 1
-         end if
+            band_lo = max(band_lo, i - col)
+            band(col) = 'X'
 
-         band_lo = max(band_lo, i - col)
-         band(col) = 'X'
+         end do
+
+         write (*, '(2x,i8,1x,100a1)') i, band(1:node_num)
 
       end do
 
-      write (*, '(2x,i8,1x,100a1)') i, band(1:node_num)
+      write (*, '(a)') ' '
+      write (*, '(a,i8)') '  Lower bandwidth = ', band_lo
+      write (*, '(a,i8,a)') '  Lower envelope contains ', &
+         nonzero_num, ' nonzeros.'
 
-   end do
-
-   write (*, '(a)') ' '
-   write (*, '(a,i8)') '  Lower bandwidth = ', band_lo
-   write (*, '(a,i8,a)') '  Lower envelope contains ', &
-      nonzero_num, ' nonzeros.'
-
-   return
-end
-subroutine degree(root, adj_num, adj_row, adj, mask, deg, iccsze, ls, &
-                  node_num)
+      return
+   end
+   subroutine degree(root, adj_num, adj_row, adj, mask, deg, iccsze, ls, &
+                     node_num)
 
 !*****************************************************************************80
 !
@@ -954,98 +954,98 @@ subroutine degree(root, adj_num, adj_row, adj, mask, deg, iccsze, ls, &
 !
 !    Input, integer   NODE_NUM, the number of nodes.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   integer deg(node_num)
-   integer i
-   integer iccsze
-   integer ideg
-   integer j
-   integer jstop
-   integer jstrt
-   integer lbegin
-   integer ls(node_num)
-   integer lvlend
-   integer lvsize
-   integer mask(node_num)
-   integer nbr
-   integer node
-   integer root
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      integer deg(node_num)
+      integer i
+      integer iccsze
+      integer ideg
+      integer j
+      integer jstop
+      integer jstrt
+      integer lbegin
+      integer ls(node_num)
+      integer lvlend
+      integer lvsize
+      integer mask(node_num)
+      integer nbr
+      integer node
+      integer root
 !
 !  The sign of ADJ_ROW(I) is used to indicate if node I has been considered.
 !
-   ls(1) = root
-   adj_row(root) = -adj_row(root)
-   lvlend = 0
-   iccsze = 1
+      ls(1) = root
+      adj_row(root) = -adj_row(root)
+      lvlend = 0
+      iccsze = 1
 !
 !  LBEGIN is the pointer to the beginning of the current level, and
 !  LVLEND points to the end of this level.
 !
-   do
+      do
 
-      lbegin = lvlend + 1
-      lvlend = iccsze
+         lbegin = lvlend + 1
+         lvlend = iccsze
 !
 !  Find the degrees of nodes in the current level,
 !  and at the same time, generate the next level.
 !
-      do i = lbegin, lvlend
+         do i = lbegin, lvlend
 
-         node = ls(i)
-         jstrt = -adj_row(node)
-         jstop = abs(adj_row(node + 1)) - 1
-         ideg = 0
+            node = ls(i)
+            jstrt = -adj_row(node)
+            jstop = abs(adj_row(node + 1)) - 1
+            ideg = 0
 
-         do j = jstrt, jstop
+            do j = jstrt, jstop
 
-            nbr = adj(j)
+               nbr = adj(j)
 
-            if (mask(nbr) /= 0) then
+               if (mask(nbr) /= 0) then
 
-               ideg = ideg + 1
+                  ideg = ideg + 1
 
-               if (0 <= adj_row(nbr)) then
-                  adj_row(nbr) = -adj_row(nbr)
-                  iccsze = iccsze + 1
-                  ls(iccsze) = nbr
+                  if (0 <= adj_row(nbr)) then
+                     adj_row(nbr) = -adj_row(nbr)
+                     iccsze = iccsze + 1
+                     ls(iccsze) = nbr
+                  end if
+
                end if
 
-            end if
+            end do
+
+            deg(node) = ideg
 
          end do
-
-         deg(node) = ideg
-
-      end do
 !
 !  Compute the current level width.
 !
-      lvsize = iccsze - lvlend
+         lvsize = iccsze - lvlend
 !
 !  If the current level width is nonzero, generate another level.
 !
-      if (lvsize == 0) then
-         exit
-      end if
+         if (lvsize == 0) then
+            exit
+         end if
 
-   end do
+      end do
 !
 !  Reset ADJ_ROW to its correct sign and return.
 !
-   do i = 1, iccsze
-      node = ls(i)
-      adj_row(node) = -adj_row(node)
-   end do
+      do i = 1, iccsze
+         node = ls(i)
+         adj_row(node) = -adj_row(node)
+      end do
 
-   return
-end
-subroutine genrcm(node_num, adj_num, adj_row, adj, perm)
+      return
+   end
+   subroutine genrcm(node_num, adj_num, adj_row, adj, perm)
 
 !*****************************************************************************80
 !
@@ -1097,64 +1097,64 @@ subroutine genrcm(node_num, adj_num, adj_row, adj, perm)
 !
 !    Local, integer MASK(NODE_NUM), marks variables that have been numbered.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   integer i
-   integer iccsze
-   integer, allocatable :: mask(:)
-   integer level_num
-   integer, allocatable :: level_row(:)
-   integer num
-   integer perm(node_num)
-   integer root
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      integer i
+      integer iccsze
+      integer, allocatable :: mask(:)
+      integer level_num
+      integer, allocatable :: level_row(:)
+      integer num
+      integer perm(node_num)
+      integer root
 
-   allocate (mask(node_num))
-   allocate (level_row(node_num + 1))
-   mask(1:node_num) = 1
+      allocate (mask(node_num))
+      allocate (level_row(node_num + 1))
+      mask(1:node_num) = 1
 
-   num = 1
+      num = 1
 
-   do i = 1, node_num
+      do i = 1, node_num
 !
 !  For each masked connected component...
 !
-      if (mask(i) /= 0) then
+         if (mask(i) /= 0) then
 
-         root = i
+            root = i
 !
 !  Find a pseudo-peripheral node ROOT.  The level structure found by
 !  ROOT_FIND is stored starting at PERM(NUM).
 !
-         call root_find(root, adj_num, adj_row, adj, mask, level_num, &
-                        level_row, perm(num), node_num)
+            call root_find(root, adj_num, adj_row, adj, mask, level_num, &
+                           level_row, perm(num), node_num)
 !
 !  RCM orders the component using ROOT as the starting node.
 !
-         call rcm(root, adj_num, adj_row, adj, mask, perm(num), iccsze, &
-                  node_num)
+            call rcm(root, adj_num, adj_row, adj, mask, perm(num), iccsze, &
+                     node_num)
 
-         num = num + iccsze
+            num = num + iccsze
 !
 !  We can stop once every node is in one of the connected components.
 !
-         if (node_num < num) then
-            return
+            if (node_num < num) then
+               return
+            end if
+
          end if
 
-      end if
+      end do
 
-   end do
-
-   deallocate (mask)
-   deallocate (level_row)
-   return
-end
-subroutine graph_01_adj(node_num, adj_num, adj_row, adj)
+      deallocate (mask)
+      deallocate (level_row)
+      return
+   end
+   subroutine graph_01_adj(node_num, adj_num, adj_row, adj)
 
 !*****************************************************************************80
 !
@@ -1188,31 +1188,31 @@ subroutine graph_01_adj(node_num, adj_num, adj_row, adj)
 !
 !    Output, integer   ADJ(ADJ_NUM), the adjacency information.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
 
-   adj(1:adj_num) = (/ &
-                    4, 6, &
-                    3, 5, 7, 10, &
-                    2, 4, 5, &
-                    1, 3, 6, 9, &
-                    2, 3, 7, &
-                    1, 4, 7, 8, &
-                    2, 5, 6, 8, &
-                    6, 7, &
-                    4, &
-                    2/)
+      adj(1:adj_num) = [ &
+                       4, 6, &
+                       3, 5, 7, 10, &
+                       2, 4, 5, &
+                       1, 3, 6, 9, &
+                       2, 3, 7, &
+                       1, 4, 7, 8, &
+                       2, 5, 6, 8, &
+                       6, 7, &
+                       4, &
+                       2]
 
-   adj_row(1:node_num + 1) = (/1, 3, 7, 10, 14, 17, 21, 25, 27, 28, 29/)
+      adj_row(1:node_num + 1) = [1, 3, 7, 10, 14, 17, 21, 25, 27, 28, 29]
 
-   return
-end
-subroutine graph_01_size(node_num, adj_num)
+      return
+   end
+   subroutine graph_01_size(node_num, adj_num)
 
 !*****************************************************************************80
 !
@@ -1243,17 +1243,17 @@ subroutine graph_01_size(node_num, adj_num)
 !
 !    Output, integer   ADJ_NUM, the number of adjacencies.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer, intent(inout) :: adj_num
+      integer, intent(inout) :: node_num
 
-   node_num = 10
-   adj_num = 28
+      node_num = 10
+      adj_num = 28
 
-   return
-end
-subroutine i4_swap(i, j)
+      return
+   end
+   subroutine i4_swap(i, j)
 
 !*****************************************************************************80
 !
@@ -1276,19 +1276,19 @@ subroutine i4_swap(i, j)
 !    Input/output, integer   I, J.  On output, the values of I and
 !    J have been interchanged.
 !
-   implicit none
+      implicit none
 
-   integer i
-   integer j
-   integer k
+      integer, intent(inout) :: i
+      integer, intent(inout) :: j
+      integer k
 
-   k = i
-   i = j
-   j = k
+      k = i
+      i = j
+      j = k
 
-   return
-end
-function i4_uniform(a, b, seed)
+      return
+   end
+   function i4_uniform(a, b, seed)
 
 !*****************************************************************************80
 !
@@ -1347,50 +1347,50 @@ function i4_uniform(a, b, seed)
 !    Output, integer   I4_UNIFORM, a number between
 !    A and B.
 !
-   implicit none
+      implicit none
 
-   integer a
-   integer b
-   integer i4_uniform
-   integer k
-   real r
-   integer seed
-   integer value
+      integer a
+      integer b
+      integer i4_uniform
+      integer k
+      real r
+      integer seed
+      integer value
 
-   if (seed == 0) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'I4_UNIFORM - Fatal error!'
-      write (*, '(a)') '  Input value of SEED = 0.'
-      stop
-   end if
+      if (seed == 0) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'I4_UNIFORM - Fatal error!'
+         write (*, '(a)') '  Input value of SEED = 0.'
+         stop
+      end if
 
-   k = seed / 127773
+      k = seed / 127773
 
-   seed = 16807 * (seed - k * 127773) - k * 2836
+      seed = 16807 * (seed - k * 127773) - k * 2836
 
-   if (seed < 0) then
-      seed = seed + 2147483647
-   end if
+      if (seed < 0) then
+         seed = seed + 2147483647
+      end if
 
-   r = real(seed) * 4.656612875e-10
+      r = real(seed) * 4.656612875e-10
 !
 !  Scale R to lie between A-0.5 and B+0.5.
 !
-   r = (1.0e+00 - r) * (real(min(a, b)) - 0.5e+00) &
-       + r * (real(max(a, b)) + 0.5e+00)
+      r = (1.0e+00 - r) * (real(min(a, b)) - 0.5e+00) &
+          + r * (real(max(a, b)) + 0.5e+00)
 !
 !  Use rounding to convert R to an integer between A and B.
 !
-   value = nint(r)
+      value = nint(r)
 
-   value = max(value, min(a, b))
-   value = min(value, max(a, b))
+      value = max(value, min(a, b))
+      value = min(value, max(a, b))
 
-   i4_uniform = value
+      i4_uniform = value
 
-   return
-end
-subroutine i4col_compare(m, n, a, i, j, isgn)
+      return
+   end
+   subroutine i4col_compare(m, n, a, i, j, isgn)
 
 !*****************************************************************************80
 !
@@ -1438,58 +1438,58 @@ subroutine i4col_compare(m, n, a, i, j, isgn)
 !     0, column I = column J,
 !    +1, column J < column I.
 !
-   implicit none
+      implicit none
 
-   integer m
-   integer n
+      integer m
+      integer n
 
-   integer a(m, n)
-   integer i
-   integer isgn
-   integer j
-   integer k
+      integer a(m, n)
+      integer i
+      integer isgn
+      integer j
+      integer k
 !
 !  Check.
 !
-   if (i < 1 .or. n < i) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'I4COL_COMPARE - Fatal error!'
-      write (*, '(a)') '  Column index I is out of bounds.'
-      stop
-   end if
+      if (i < 1 .or. n < i) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'I4COL_COMPARE - Fatal error!'
+         write (*, '(a)') '  Column index I is out of bounds.'
+         stop
+      end if
 
-   if (j < 1 .or. n < j) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'I4COL_COMPARE - Fatal error!'
-      write (*, '(a)') '  Column index J is out of bounds.'
-      stop
-   end if
+      if (j < 1 .or. n < j) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'I4COL_COMPARE - Fatal error!'
+         write (*, '(a)') '  Column index J is out of bounds.'
+         stop
+      end if
 
-   isgn = 0
+      isgn = 0
 
-   if (i == j) then
-      return
-   end if
-
-   k = 1
-
-   do while (k <= m)
-
-      if (a(k, i) < a(k, j)) then
-         isgn = -1
-         return
-      else if (a(k, j) < a(k, i)) then
-         isgn = +1
+      if (i == j) then
          return
       end if
 
-      k = k + 1
+      k = 1
 
-   end do
+      do while (k <= m)
 
-   return
-end
-subroutine i4col_sort_a(m, n, a)
+         if (a(k, i) < a(k, j)) then
+            isgn = -1
+            return
+         else if (a(k, j) < a(k, i)) then
+            isgn = +1
+            return
+         end if
+
+         k = k + 1
+
+      end do
+
+      return
+   end
+   subroutine i4col_sort_a(m, n, a)
 
 !*****************************************************************************80
 !
@@ -1531,61 +1531,61 @@ subroutine i4col_sort_a(m, n, a)
 !    On output, the columns of A have been sorted in ascending
 !    lexicographic order.
 !
-   implicit none
+      implicit none
 
-   integer m
-   integer n
+      integer m
+      integer n
 
-   integer a(m, n)
-   integer i
-   integer indx
-   integer isgn
-   integer j
+      integer a(m, n)
+      integer i
+      integer indx
+      integer isgn
+      integer j
 
-   if (m <= 0) then
-      return
-   end if
+      if (m <= 0) then
+         return
+      end if
 
-   if (n <= 1) then
-      return
-   end if
+      if (n <= 1) then
+         return
+      end if
 !
 !  Initialize.
 !
-   i = 0
-   indx = 0
-   isgn = 0
-   j = 0
+      i = 0
+      indx = 0
+      isgn = 0
+      j = 0
 !
 !  Call the external heap sorter.
 !
-   do
+      do
 
-      call sort_heap_external(n, indx, i, j, isgn)
+         call sort_heap_external(n, indx, i, j, isgn)
 !
 !  Interchange the I and J objects.
 !
-      if (0 < indx) then
+         if (0 < indx) then
 
-         call i4col_swap(m, n, a, i, j)
+            call i4col_swap(m, n, a, i, j)
 !
 !  Compare the I and J objects.
 !
-      else if (indx < 0) then
+         else if (indx < 0) then
 
-         call i4col_compare(m, n, a, i, j, isgn)
+            call i4col_compare(m, n, a, i, j, isgn)
 
-      else if (indx == 0) then
+         else if (indx == 0) then
 
-         exit
+            exit
 
-      end if
+         end if
 
-   end do
+      end do
 
-   return
-end
-subroutine i4col_swap(m, n, a, i, j)
+      return
+   end
+   subroutine i4col_swap(m, n, a, i, j)
 
 !*****************************************************************************80
 !
@@ -1631,39 +1631,39 @@ subroutine i4col_swap(m, n, a, i, j)
 !
 !    Input, integer   I, J, the columns to be swapped.
 !
-   implicit none
+      implicit none
 
-   integer m
-   integer n
+      integer m
+      integer n
 
-   integer a(m, n)
-   integer col(m)
-   integer i
-   integer j
+      integer a(m, n)
+      integer col(m)
+      integer i
+      integer j
 
-   if (i < 1 .or. n < i .or. j < 1 .or. n < j) then
+      if (i < 1 .or. n < i .or. j < 1 .or. n < j) then
 
-      write (*, '(a)') ' '
-      write (*, '(a)') 'I4COL_SWAP - Fatal error!'
-      write (*, '(a)') '  I or J is out of bounds.'
-      write (*, '(a,i8)') '  I =    ', i
-      write (*, '(a,i8)') '  J =    ', j
-      write (*, '(a,i8)') '  N =    ', n
-      stop
+         write (*, '(a)') ' '
+         write (*, '(a)') 'I4COL_SWAP - Fatal error!'
+         write (*, '(a)') '  I or J is out of bounds.'
+         write (*, '(a,i8)') '  I =    ', i
+         write (*, '(a,i8)') '  J =    ', j
+         write (*, '(a,i8)') '  N =    ', n
+         stop
 
-   end if
+      end if
 
-   if (i == j) then
+      if (i == j) then
+         return
+      end if
+
+      col(1:m) = a(1:m, i)
+      a(1:m, i) = a(1:m, j)
+      a(1:m, j) = col(1:m)
+
       return
-   end if
-
-   col(1:m) = a(1:m, i)
-   a(1:m, i) = a(1:m, j)
-   a(1:m, j) = col(1:m)
-
-   return
-end
-subroutine i4mat_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
+   end
+   subroutine i4mat_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 
 !*****************************************************************************80
 !
@@ -1693,76 +1693,76 @@ subroutine i4mat_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 !
 !    Input, character ( len = * ) TITLE, an optional title.
 !
-   implicit none
+      implicit none
 
-   integer, parameter :: incx = 10
-   integer m
-   integer n
+      integer, parameter :: incx = 10
+      integer m
+      integer n
 
-   integer a(m, n)
-   character(len=7) ctemp(incx)
-   integer i
-   integer i2hi
-   integer i2lo
-   integer ihi
-   integer ilo
-   integer inc
-   integer j
-   integer j2
-   integer j2hi
-   integer j2lo
-   integer jhi
-   integer jlo
-   character(len=*) title
+      integer a(m, n)
+      character(len=7) ctemp(incx)
+      integer i
+      integer i2hi
+      integer i2lo
+      integer ihi
+      integer ilo
+      integer inc
+      integer j
+      integer j2
+      integer j2hi
+      integer j2lo
+      integer jhi
+      integer jlo
+      character(len=*) title
 
-   if (0 < len_trim(title)) then
-      write (*, '(a)') ' '
-      write (*, '(a)') trim(title)
-   end if
+      if (0 < len_trim(title)) then
+         write (*, '(a)') ' '
+         write (*, '(a)') trim(title)
+      end if
 
-   do j2lo = max(jlo, 1), min(jhi, n), incx
+      do j2lo = max(jlo, 1), min(jhi, n), incx
 
-      j2hi = j2lo + incx - 1
-      j2hi = min(j2hi, n)
-      j2hi = min(j2hi, jhi)
+         j2hi = j2lo + incx - 1
+         j2hi = min(j2hi, n)
+         j2hi = min(j2hi, jhi)
 
-      inc = j2hi + 1 - j2lo
+         inc = j2hi + 1 - j2lo
 
-      write (*, '(a)') ' '
+         write (*, '(a)') ' '
 
-      do j = j2lo, j2hi
-         j2 = j + 1 - j2lo
-         write (ctemp(j2), '(i7)') j
-      end do
+         do j = j2lo, j2hi
+            j2 = j + 1 - j2lo
+            write (ctemp(j2), '(i7)') j
+         end do
 
-      write (*, '(''  Col '',10a7)') ctemp(1:inc)
-      write (*, '(a)') '  Row'
-      write (*, '(a)') ' '
+         write (*, '(''  Col '',10a7)') ctemp(1:inc)
+         write (*, '(a)') '  Row'
+         write (*, '(a)') ' '
 
-      i2lo = max(ilo, 1)
-      i2hi = min(ihi, m)
+         i2lo = max(ilo, 1)
+         i2hi = min(ihi, m)
 
-      do i = i2lo, i2hi
+         do i = i2lo, i2hi
 
-         do j2 = 1, inc
+            do j2 = 1, inc
 
-            j = j2lo - 1 + j2
+               j = j2lo - 1 + j2
 
-            write (ctemp(j2), '(i7)') a(i, j)
+               write (ctemp(j2), '(i7)') a(i, j)
+
+            end do
+
+            write (*, '(i5,1x,10a7)') i, (ctemp(j), j=1, inc)
 
          end do
 
-         write (*, '(i5,1x,10a7)') i, (ctemp(j), j=1, inc)
-
       end do
 
-   end do
+      write (*, '(a)') ' '
 
-   write (*, '(a)') ' '
-
-   return
-end
-subroutine i4mat_transpose_print(m, n, a, title)
+      return
+   end
+   subroutine i4mat_transpose_print(m, n, a, title)
 
 !*****************************************************************************80
 !
@@ -1788,19 +1788,19 @@ subroutine i4mat_transpose_print(m, n, a, title)
 !
 !    Input, character ( len = * ) TITLE, an optional title.
 !
-   implicit none
+      implicit none
 
-   integer m
-   integer n
+      integer m
+      integer n
 
-   integer a(m, n)
-   character(len=*) title
+      integer a(m, n)
+      character(len=*) title
 
-   call i4mat_transpose_print_some(m, n, a, 1, 1, m, n, title)
+      call i4mat_transpose_print_some(m, n, a, 1, 1, m, n, title)
 
-   return
-end
-subroutine i4mat_transpose_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
+      return
+   end
+   subroutine i4mat_transpose_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 
 !*****************************************************************************80
 !
@@ -1830,76 +1830,76 @@ subroutine i4mat_transpose_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 !
 !    Input, character ( len = * ) TITLE, an optional title.
 !
-   implicit none
+      implicit none
 
-   integer, parameter :: incx = 10
-   integer m
-   integer n
+      integer, parameter :: incx = 10
+      integer m
+      integer n
 
-   integer a(m, n)
-   character(len=7) ctemp(incx)
-   integer i
-   integer i2
-   integer i2hi
-   integer i2lo
-   integer ihi
-   integer ilo
-   integer inc
-   integer j
-   integer j2hi
-   integer j2lo
-   integer jhi
-   integer jlo
-   character(len=*) title
+      integer a(m, n)
+      character(len=7) ctemp(incx)
+      integer i
+      integer i2
+      integer i2hi
+      integer i2lo
+      integer ihi
+      integer ilo
+      integer inc
+      integer j
+      integer j2hi
+      integer j2lo
+      integer jhi
+      integer jlo
+      character(len=*) title
 
-   if (0 < len_trim(title)) then
-      write (*, '(a)') ' '
-      write (*, '(a)') trim(title)
-   end if
+      if (0 < len_trim(title)) then
+         write (*, '(a)') ' '
+         write (*, '(a)') trim(title)
+      end if
 
-   do i2lo = max(ilo, 1), min(ihi, m), incx
+      do i2lo = max(ilo, 1), min(ihi, m), incx
 
-      i2hi = i2lo + incx - 1
-      i2hi = min(i2hi, m)
-      i2hi = min(i2hi, ihi)
+         i2hi = i2lo + incx - 1
+         i2hi = min(i2hi, m)
+         i2hi = min(i2hi, ihi)
 
-      inc = i2hi + 1 - i2lo
+         inc = i2hi + 1 - i2lo
 
-      write (*, '(a)') ' '
+         write (*, '(a)') ' '
 
-      do i = i2lo, i2hi
-         i2 = i + 1 - i2lo
-         write (ctemp(i2), '(i7)') i
-      end do
+         do i = i2lo, i2hi
+            i2 = i + 1 - i2lo
+            write (ctemp(i2), '(i7)') i
+         end do
 
-      write (*, '(''  Row '',10a7)') ctemp(1:inc)
-      write (*, '(a)') '  Col'
-      write (*, '(a)') ' '
+         write (*, '(''  Row '',10a7)') ctemp(1:inc)
+         write (*, '(a)') '  Col'
+         write (*, '(a)') ' '
 
-      j2lo = max(jlo, 1)
-      j2hi = min(jhi, n)
+         j2lo = max(jlo, 1)
+         j2hi = min(jhi, n)
 
-      do j = j2lo, j2hi
+         do j = j2lo, j2hi
 
-         do i2 = 1, inc
+            do i2 = 1, inc
 
-            i = i2lo - 1 + i2
+               i = i2lo - 1 + i2
 
-            write (ctemp(i2), '(i7)') a(i, j)
+               write (ctemp(i2), '(i7)') a(i, j)
+
+            end do
+
+            write (*, '(i5,1x,10a7)') j, (ctemp(i), i=1, inc)
 
          end do
 
-         write (*, '(i5,1x,10a7)') j, (ctemp(i), i=1, inc)
-
       end do
 
-   end do
+      write (*, '(a)') ' '
 
-   write (*, '(a)') ' '
-
-   return
-end
-subroutine i4vec_heap_d(n, a)
+      return
+   end
+   subroutine i4vec_heap_d(n, a)
 
 !*****************************************************************************80
 !
@@ -1948,74 +1948,74 @@ subroutine i4vec_heap_d(n, a)
 !    On input, an unsorted array.
 !    On output, the array has been reordered into a heap.
 !
-   implicit none
+      implicit none
 
-   integer n
+      integer n
 
-   integer a(n)
-   integer i
-   integer ifree
-   integer key
-   integer m
+      integer a(n)
+      integer i
+      integer ifree
+      integer key
+      integer m
 !
 !  Only nodes N/2 down to 1 can be "parent" nodes.
 !
-   do i = n / 2, 1, -1
+      do i = n / 2, 1, -1
 !
 !  Copy the value out of the parent node.
 !  Position IFREE is now "open".
 !
-      key = a(i)
-      ifree = i
+         key = a(i)
+         ifree = i
 
-      do
+         do
 !
 !  Positions 2*IFREE and 2*IFREE + 1 are the descendants of position
 !  IFREE.  (One or both may not exist because they exceed N.)
 !
-         m = 2 * ifree
+            m = 2 * ifree
 !
 !  Does the first position exist?
 !
-         if (n < m) then
-            exit
-         end if
+            if (n < m) then
+               exit
+            end if
 !
 !  Does the second position exist?
 !
-         if (m + 1 <= n) then
+            if (m + 1 <= n) then
 !
 !  If both positions exist, take the larger of the two values,
 !  and update M if necessary.
 !
-            if (a(m) < a(m + 1)) then
-               m = m + 1
-            end if
+               if (a(m) < a(m + 1)) then
+                  m = m + 1
+               end if
 
-         end if
+            end if
 !
 !  If the large descendant is larger than KEY, move it up,
 !  and update IFREE, the location of the free position, and
 !  consider the descendants of THIS position.
 !
-         if (a(m) <= key) then
-            exit
-         end if
+            if (a(m) <= key) then
+               exit
+            end if
 
-         a(ifree) = a(m)
-         ifree = m
+            a(ifree) = a(m)
+            ifree = m
 
-      end do
+         end do
 !
 !  Once there is no more shifting to do, KEY moves into the free spot IFREE.
 !
-      a(ifree) = key
+         a(ifree) = key
 
-   end do
+      end do
 
-   return
-end
-subroutine i4vec_indicator(n, a)
+      return
+   end
+   subroutine i4vec_indicator(n, a)
 
 !*****************************************************************************80
 !
@@ -2039,20 +2039,20 @@ subroutine i4vec_indicator(n, a)
 !
 !    Output, integer   A(N), the array to be initialized.
 !
-   implicit none
+      implicit none
 
-   integer n
+      integer, intent(in) :: n
 
-   integer a(n)
-   integer i
+      integer, intent(inout) :: a(n)
+      integer i
 
-   do i = 1, n
-      a(i) = i
-   end do
+      do i = 1, n
+         a(i) = i
+      end do
 
-   return
-end
-subroutine i4vec_print(n, a, title)
+      return
+   end
+   subroutine i4vec_print(n, a, title)
 
 !*****************************************************************************80
 !
@@ -2079,40 +2079,40 @@ subroutine i4vec_print(n, a, title)
 !    Input, character ( len = * ) TITLE, a title to be printed first.
 !    TITLE may be blank.
 !
-   implicit none
+      implicit none
 
-   integer n
+      integer n
 
-   integer a(n)
-   integer big
-   integer i
-   character(len=*) title
+      integer a(n)
+      integer big
+      integer i
+      character(len=*) title
 
-   if (0 < len_trim(title)) then
+      if (0 < len_trim(title)) then
+         write (*, '(a)') ' '
+         write (*, '(a)') trim(title)
+      end if
+
+      big = maxval(abs(a(1:n)))
+
       write (*, '(a)') ' '
-      write (*, '(a)') trim(title)
-   end if
+      if (big < 1000) then
+         do i = 1, n
+            write (*, '(2x,i8,2x,i4)') i, a(i)
+         end do
+      else if (big < 1000000) then
+         do i = 1, n
+            write (*, '(2x,i8,2x,i7)') i, a(i)
+         end do
+      else
+         do i = 1, n
+            write (*, '(2x,i8,2x,i12)') i, a(i)
+         end do
+      end if
 
-   big = maxval(abs(a(1:n)))
-
-   write (*, '(a)') ' '
-   if (big < 1000) then
-      do i = 1, n
-         write (*, '(2x,i8,2x,i4)') i, a(i)
-      end do
-   else if (big < 1000000) then
-      do i = 1, n
-         write (*, '(2x,i8,2x,i7)') i, a(i)
-      end do
-   else
-      do i = 1, n
-         write (*, '(2x,i8,2x,i12)') i, a(i)
-      end do
-   end if
-
-   return
-end
-subroutine i4vec_reverse(n, a)
+      return
+   end
+   subroutine i4vec_reverse(n, a)
 
 !*****************************************************************************80
 !
@@ -2147,20 +2147,20 @@ subroutine i4vec_reverse(n, a)
 !
 !    Input/output, integer   A(N), the array to be reversed.
 !
-   implicit none
+      implicit none
 
-   integer n
+      integer n
 
-   integer a(n)
-   integer i
+      integer a(n)
+      integer i
 
-   do i = 1, n / 2
-      call i4_swap(a(i), a(n + 1 - i))
-   end do
+      do i = 1, n / 2
+         call i4_swap(a(i), a(n + 1 - i))
+      end do
 
-   return
-end
-subroutine i4vec_sort_heap_a(n, a)
+      return
+   end
+   subroutine i4vec_sort_heap_a(n, a)
 
 !*****************************************************************************80
 !
@@ -2197,46 +2197,46 @@ subroutine i4vec_sort_heap_a(n, a)
 !    On input, the array to be sorted;
 !    On output, the array has been sorted.
 !
-   implicit none
+      implicit none
 
-   integer n
+      integer n
 
-   integer a(n)
-   integer n1
+      integer a(n)
+      integer n1
 
-   if (n <= 1) then
-      return
-   end if
+      if (n <= 1) then
+         return
+      end if
 !
 !  1: Put A into descending heap form.
 !
-   call i4vec_heap_d(n, a)
+      call i4vec_heap_d(n, a)
 !
 !  2: Sort A.
 !
 !  The largest object in the heap is in A(1).
 !  Move it to position A(N).
 !
-   call i4_swap(a(1), a(n))
+      call i4_swap(a(1), a(n))
 !
 !  Consider the diminished heap of size N1.
 !
-   do n1 = n - 1, 2, -1
+      do n1 = n - 1, 2, -1
 !
 !  Restore the heap structure of A(1) through A(N1).
 !
-      call i4vec_heap_d(n1, a)
+         call i4vec_heap_d(n1, a)
 !
 !  Take the largest object from A(1) and move it to A(N1).
 !
-      call i4_swap(a(1), a(n1))
+         call i4_swap(a(1), a(n1))
 
-   end do
+      end do
 
-   return
-end
-subroutine level_set(root, adj_num, adj_row, adj, mask, level_num, &
-                     level_row, level, node_num)
+      return
+   end
+   subroutine level_set(root, adj_num, adj_row, adj, mask, level_num, &
+                        level_row, level, node_num)
 
 !*****************************************************************************80
 !
@@ -2297,89 +2297,89 @@ subroutine level_set(root, adj_num, adj_row, adj, mask, level_num, &
 !
 !    Input, integer   NODE_NUM, the number of nodes.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   integer i
-   integer iccsze
-   integer j
-   integer jstop
-   integer jstrt
-   integer lbegin
-   integer level_num
-   integer level_row(node_num + 1)
-   integer level(node_num)
-   integer lvlend
-   integer lvsize
-   integer mask(node_num)
-   integer nbr
-   integer node
-   integer root
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      integer i
+      integer iccsze
+      integer j
+      integer jstop
+      integer jstrt
+      integer lbegin
+      integer level_num
+      integer level_row(node_num + 1)
+      integer level(node_num)
+      integer lvlend
+      integer lvsize
+      integer mask(node_num)
+      integer nbr
+      integer node
+      integer root
 
-   mask(root) = 0
-   level(1) = root
-   level_num = 0
-   lvlend = 0
-   iccsze = 1
+      mask(root) = 0
+      level(1) = root
+      level_num = 0
+      lvlend = 0
+      iccsze = 1
 !
 !  LBEGIN is the pointer to the beginning of the current level, and
 !  LVLEND points to the end of this level.
 !
-   do
+      do
 
-      lbegin = lvlend + 1
-      lvlend = iccsze
-      level_num = level_num + 1
-      level_row(level_num) = lbegin
+         lbegin = lvlend + 1
+         lvlend = iccsze
+         level_num = level_num + 1
+         level_row(level_num) = lbegin
 !
 !  Generate the next level by finding all the masked neighbors of nodes
 !  in the current level.
 !
-      do i = lbegin, lvlend
+         do i = lbegin, lvlend
 
-         node = level(i)
-         jstrt = adj_row(node)
-         jstop = adj_row(node + 1) - 1
+            node = level(i)
+            jstrt = adj_row(node)
+            jstop = adj_row(node + 1) - 1
 
-         do j = jstrt, jstop
+            do j = jstrt, jstop
 
-            nbr = adj(j)
+               nbr = adj(j)
 
-            if (mask(nbr) /= 0) then
-               iccsze = iccsze + 1
-               level(iccsze) = nbr
-               mask(nbr) = 0
-            end if
+               if (mask(nbr) /= 0) then
+                  iccsze = iccsze + 1
+                  level(iccsze) = nbr
+                  mask(nbr) = 0
+               end if
+
+            end do
 
          end do
-
-      end do
 !
 !  Compute the current level width (the number of nodes encountered.)
 !  If it is positive, generate the next level.
 !
-      lvsize = iccsze - lvlend
+         lvsize = iccsze - lvlend
 
-      if (lvsize <= 0) then
-         exit
-      end if
+         if (lvsize <= 0) then
+            exit
+         end if
 
-   end do
+      end do
 
-   level_row(level_num + 1) = lvlend + 1
+      level_row(level_num + 1) = lvlend + 1
 !
 !  Reset MASK to 1 for the nodes in the level structure.
 !
-   do i = 1, iccsze
-      mask(level(i)) = 1
-   end do
-   return
-end
-subroutine level_set_print(node_num, level_num, level_row, level)
+      do i = 1, iccsze
+         mask(level(i)) = 1
+      end do
+      return
+   end
+   subroutine level_set_print(node_num, level_num, level_row, level)
 
 !*****************************************************************************80
 !
@@ -2410,58 +2410,58 @@ subroutine level_set_print(node_num, level_num, level_row, level)
 !    Input, integer   LEVEL(NODE_NUM), is simply a list of the
 !    nodes in an order induced by the levels.
 !
-   implicit none
+      implicit none
 
-   integer level_num
-   integer node_num
+      integer level_num
+      integer node_num
 
-   integer level(node_num)
-   integer level_row(level_num + 1)
-   integer i
-   integer jhi
-   integer jlo
-   integer jmax
-   integer jmin
+      integer level(node_num)
+      integer level_row(level_num + 1)
+      integer i
+      integer jhi
+      integer jlo
+      integer jmax
+      integer jmin
 
-   write (*, '(a)') ' '
-   write (*, '(a)') 'LEVEL_SET_PRINT'
-   write (*, '(a)') '  Show the level set structure of a rooted graph.'
-   write (*, '(a,i8)') '  The number of nodes is  ', node_num
-   write (*, '(a,i8)') '  The number of levels is ', level_num
-   write (*, '(a)') ' '
-   write (*, '(a)') '  Level Min Max      Nonzeros '
-   write (*, '(a)') ' '
+      write (*, '(a)') ' '
+      write (*, '(a)') 'LEVEL_SET_PRINT'
+      write (*, '(a)') '  Show the level set structure of a rooted graph.'
+      write (*, '(a,i8)') '  The number of nodes is  ', node_num
+      write (*, '(a,i8)') '  The number of levels is ', level_num
+      write (*, '(a)') ' '
+      write (*, '(a)') '  Level Min Max      Nonzeros '
+      write (*, '(a)') ' '
 
-   do i = 1, level_num
+      do i = 1, level_num
 
-      jmin = level_row(i)
-      jmax = level_row(i + 1) - 1
+         jmin = level_row(i)
+         jmax = level_row(i + 1) - 1
 
-      if (jmax < jmin) then
+         if (jmax < jmin) then
 
-         write (*, '(2x,3i4,6x,10i8)') i, jmin, jmax
+            write (*, '(2x,3i4,6x,10i8)') i, jmin, jmax
 
-      else
+         else
 
-         do jlo = jmin, jmax, 5
+            do jlo = jmin, jmax, 5
 
-            jhi = min(jlo + 4, jmax)
+               jhi = min(jlo + 4, jmax)
 
-            if (jlo == jmin) then
-               write (*, '(2x,3i4,3x,5i8)') i, jmin, jmax, level(jlo:jhi)
-            else
-               write (*, '(2x,12x,3x,5i8)') level(jlo:jhi)
-            end if
+               if (jlo == jmin) then
+                  write (*, '(2x,3i4,3x,5i8)') i, jmin, jmax, level(jlo:jhi)
+               else
+                  write (*, '(2x,12x,3x,5i8)') level(jlo:jhi)
+               end if
 
-         end do
+            end do
 
-      end if
+         end if
 
-   end do
+      end do
 
-   return
-end
-subroutine perm_check(n, p, ierror)
+      return
+   end
+   subroutine perm_check(n, p, ierror)
 
 !*****************************************************************************80
 !
@@ -2495,37 +2495,37 @@ subroutine perm_check(n, p, ierror)
 !    nonzero, the array does not represent a permutation.  The smallest
 !    missing value is equal to IERROR.
 !
-   implicit none
+      implicit none
 
-   integer n
+      integer n
 
-   integer ierror
-   integer ifind
-   integer iseek
-   integer p(n)
+      integer ierror
+      integer ifind
+      integer iseek
+      integer p(n)
 
-   ierror = 0
+      ierror = 0
 
-   do iseek = 1, n
+      do iseek = 1, n
 
-      ierror = iseek
+         ierror = iseek
 
-      do ifind = 1, n
-         if (p(ifind) == iseek) then
-            ierror = 0
-            exit
+         do ifind = 1, n
+            if (p(ifind) == iseek) then
+               ierror = 0
+               exit
+            end if
+         end do
+
+         if (ierror /= 0) then
+            return
          end if
+
       end do
 
-      if (ierror /= 0) then
-         return
-      end if
-
-   end do
-
-   return
-end
-subroutine perm_inverse3(n, perm, perm_inv)
+      return
+   end
+   subroutine perm_inverse3(n, perm, perm_inv)
 
 !*****************************************************************************80
 !
@@ -2551,21 +2551,21 @@ subroutine perm_inverse3(n, perm, perm_inv)
 !
 !    Output, integer   PERM_INV(N), the inverse permutation.
 !
-   implicit none
+      implicit none
 
-   integer n
+      integer, intent(in) :: n
 
-   integer i
-   integer perm(n)
-   integer perm_inv(n)
+      integer i
+      integer, intent(in) :: perm(n)
+      integer, intent(inout) :: perm_inv(n)
 
-   do i = 1, n
-      perm_inv(perm(i)) = i
-   end do
+      do i = 1, n
+         perm_inv(perm(i)) = i
+      end do
 
-   return
-end
-subroutine perm_uniform(n, seed, p)
+      return
+   end
+   subroutine perm_uniform(n, seed, p)
 
 !*****************************************************************************80
 !
@@ -2605,26 +2605,25 @@ subroutine perm_uniform(n, seed, p)
 !    Output, integer   P(N), a permutation of ( 1, 2, ..., N ),
 !    in standard index form.
 !
-   implicit none
+      implicit none
 
-   integer n
+      integer n
 
-   integer i
-   integer i4_uniform
-   integer j
-   integer p(n)
-   integer seed
+      integer i
+      integer j
+      integer p(n)
+      integer seed
 
-   call i4vec_indicator(n, p)
+      call i4vec_indicator(n, p)
 
-   do i = 1, n
-      j = i4_uniform(i, n, seed)
-      call i4_swap(p(i), p(j))
-   end do
+      do i = 1, n
+         j = i4_uniform(i, n, seed)
+         call i4_swap(p(i), p(j))
+      end do
 
-   return
-end
-subroutine r82vec_permute(n, a, p)
+      return
+   end
+   subroutine r82vec_permute(n, a, p)
 
 !*****************************************************************************80
 !
@@ -2669,7 +2668,7 @@ subroutine r82vec_permute(n, a, p)
 !
 !    Input, integer   N, the number of objects.
 !
-!    Input/output, DOUBLE PRECISION ::   A(2,N), the array to be permuted.
+!    Input/output, real(kind=dp) ::   A(2,N), the array to be permuted.
 !
 !    Input, integer   P(N), the permutation.  P(I) = J means
 !    that the I-th element of the output array should be the J-th
@@ -2677,85 +2676,85 @@ subroutine r82vec_permute(n, a, p)
 !    of the integers from 1 to N, otherwise the algorithm will
 !    fail catastrophically.
 !
-   implicit none
+      implicit none
 
-   integer n
-   integer, parameter :: ndim = 2
+      integer n
+      integer, parameter :: ndim = 2
 
-   double precision :: a(ndim, n)
-   double precision :: a_temp(ndim)
-   integer ierror
-   integer iget
-   integer iput
-   integer istart
-   integer p(n)
+      real(kind=dp) :: a(ndim, n)
+      real(kind=dp) :: a_temp(ndim)
+      integer ierror
+      integer iget
+      integer iput
+      integer istart
+      integer p(n)
 
-   call perm_check(n, p, ierror)
+      call perm_check(n, p, ierror)
 
-   if (ierror /= 0) then
-      write (*, '(a)') ' '
-      write (*, '(a)') 'R82VEC_PERMUTE - Fatal error!'
-      write (*, '(a)') '  The input array does not represent'
-      write (*, '(a)') '  a proper permutation.  In particular, the'
-      write (*, '(a,i8)') '  array is missing the value ', ierror
-      stop
-   end if
+      if (ierror /= 0) then
+         write (*, '(a)') ' '
+         write (*, '(a)') 'R82VEC_PERMUTE - Fatal error!'
+         write (*, '(a)') '  The input array does not represent'
+         write (*, '(a)') '  a proper permutation.  In particular, the'
+         write (*, '(a,i8)') '  array is missing the value ', ierror
+         stop
+      end if
 !
 !  Search for the next element of the permutation that has not been used.
 !
-   do istart = 1, n
+      do istart = 1, n
 
-      if (p(istart) < 0) then
+         if (p(istart) < 0) then
 
-         cycle
+            cycle
 
-      else if (p(istart) == istart) then
+         else if (p(istart) == istart) then
 
-         p(istart) = -p(istart)
-         cycle
+            p(istart) = -p(istart)
+            cycle
 
-      else
+         else
 
-         a_temp(1:ndim) = a(1:ndim, istart)
-         iget = istart
+            a_temp(1:ndim) = a(1:ndim, istart)
+            iget = istart
 !
 !  Copy the new value into the vacated entry.
 !
-         do
+            do
 
-            iput = iget
-            iget = p(iget)
+               iput = iget
+               iget = p(iget)
 
-            p(iput) = -p(iput)
+               p(iput) = -p(iput)
 
-            if (iget < 1 .or. n < iget) then
-               write (*, '(a)') ' '
-               write (*, '(a)') 'R82VEC_PERMUTE - Fatal error!'
-               write (*, '(a)') '  A permutation index is out of range.'
-               write (*, '(a,i8,a,i8)') '  P(', iput, ') = ', iget
-               stop
-            end if
+               if (iget < 1 .or. n < iget) then
+                  write (*, '(a)') ' '
+                  write (*, '(a)') 'R82VEC_PERMUTE - Fatal error!'
+                  write (*, '(a)') '  A permutation index is out of range.'
+                  write (*, '(a,i8,a,i8)') '  P(', iput, ') = ', iget
+                  stop
+               end if
 
-            if (iget == istart) then
-               a(1:ndim, iput) = a_temp(1:ndim)
-               exit
-            end if
+               if (iget == istart) then
+                  a(1:ndim, iput) = a_temp(1:ndim)
+                  exit
+               end if
 
-            a(1:ndim, iput) = a(1:ndim, iget)
+               a(1:ndim, iput) = a(1:ndim, iget)
 
-         end do
+            end do
 
-      end if
+         end if
 
-   end do
+      end do
 !
 !  Restore the signs of the entries.
 !
-   p(1:n) = -p(1:n)
+      p(1:n) = -p(1:n)
 
-   return
-end
-subroutine r8mat_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
+      return
+   end
+   subroutine r8mat_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 
 !*****************************************************************************80
 !
@@ -2777,7 +2776,7 @@ subroutine r8mat_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 !
 !    Input, integer   M, N, the number of rows and columns.
 !
-!    Input, DOUBLE PRECISION ::   A(M,N), an M by N matrix to be printed.
+!    Input, real(kind=dp) ::   A(M,N), an M by N matrix to be printed.
 !
 !    Input, integer   ILO, JLO, the first row and column to print.
 !
@@ -2785,76 +2784,76 @@ subroutine r8mat_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 !
 !    Input, character ( len = * ) TITLE, an optional title.
 !
-   implicit none
+      implicit none
 
-   integer, parameter :: incx = 5
-   integer m
-   integer n
+      integer, parameter :: incx = 5
+      integer m
+      integer n
 
-   double precision :: a(m, n)
-   character(len=14) ctemp(incx)
-   integer i
-   integer i2hi
-   integer i2lo
-   integer ihi
-   integer ilo
-   integer inc
-   integer j
-   integer j2
-   integer j2hi
-   integer j2lo
-   integer jhi
-   integer jlo
-   character(len=*) title
+      real(kind=dp) :: a(m, n)
+      character(len=14) ctemp(incx)
+      integer i
+      integer i2hi
+      integer i2lo
+      integer ihi
+      integer ilo
+      integer inc
+      integer j
+      integer j2
+      integer j2hi
+      integer j2lo
+      integer jhi
+      integer jlo
+      character(len=*) title
 
-   if (0 < len_trim(title)) then
-      write (*, '(a)') ' '
-      write (*, '(a)') trim(title)
-   end if
+      if (0 < len_trim(title)) then
+         write (*, '(a)') ' '
+         write (*, '(a)') trim(title)
+      end if
 
-   do j2lo = max(jlo, 1), min(jhi, n), incx
+      do j2lo = max(jlo, 1), min(jhi, n), incx
 
-      j2hi = j2lo + incx - 1
-      j2hi = min(j2hi, n)
-      j2hi = min(j2hi, jhi)
+         j2hi = j2lo + incx - 1
+         j2hi = min(j2hi, n)
+         j2hi = min(j2hi, jhi)
 
-      inc = j2hi + 1 - j2lo
+         inc = j2hi + 1 - j2lo
 
-      write (*, '(a)') ' '
+         write (*, '(a)') ' '
 
-      do j = j2lo, j2hi
-         j2 = j + 1 - j2lo
-         write (ctemp(j2), '(i7,7x)') j
-      end do
+         do j = j2lo, j2hi
+            j2 = j + 1 - j2lo
+            write (ctemp(j2), '(i7,7x)') j
+         end do
 
-      write (*, '(''  Col   '',5a14)') ctemp(1:inc)
-      write (*, '(a)') '  Row'
-      write (*, '(a)') ' '
+         write (*, '(''  Col   '',5a14)') ctemp(1:inc)
+         write (*, '(a)') '  Row'
+         write (*, '(a)') ' '
 
-      i2lo = max(ilo, 1)
-      i2hi = min(ihi, m)
+         i2lo = max(ilo, 1)
+         i2hi = min(ihi, m)
 
-      do i = i2lo, i2hi
+         do i = i2lo, i2hi
 
-         do j2 = 1, inc
+            do j2 = 1, inc
 
-            j = j2lo - 1 + j2
+               j = j2lo - 1 + j2
 
-            write (ctemp(j2), '(g14.6)') a(i, j)
+               write (ctemp(j2), '(g14.6)') a(i, j)
+
+            end do
+
+            write (*, '(i5,1x,5a14)') i, (ctemp(j), j=1, inc)
 
          end do
 
-         write (*, '(i5,1x,5a14)') i, (ctemp(j), j=1, inc)
-
       end do
 
-   end do
+      write (*, '(a)') ' '
 
-   write (*, '(a)') ' '
-
-   return
-end
-subroutine r8mat_transpose_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
+      return
+   end
+   subroutine r8mat_transpose_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 
 !*****************************************************************************80
 !
@@ -2876,7 +2875,7 @@ subroutine r8mat_transpose_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 !
 !    Input, integer   M, N, the number of rows and columns.
 !
-!    Input, DOUBLE PRECISION ::   A(M,N), an M by N matrix to be printed.
+!    Input, real(kind=dp) ::   A(M,N), an M by N matrix to be printed.
 !
 !    Input, integer   ILO, JLO, the first row and column to print.
 !
@@ -2884,73 +2883,73 @@ subroutine r8mat_transpose_print_some(m, n, a, ilo, jlo, ihi, jhi, title)
 !
 !    Input, character ( len = * ) TITLE, an optional title.
 !
-   implicit none
+      implicit none
 
-   integer, parameter :: incx = 5
-   integer m
-   integer n
+      integer, parameter :: incx = 5
+      integer m
+      integer n
 
-   double precision :: a(m, n)
-   character(len=14) ctemp(incx)
-   integer i
-   integer i2
-   integer i2hi
-   integer i2lo
-   integer ihi
-   integer ilo
-   integer inc
-   integer j
-   integer j2hi
-   integer j2lo
-   integer jhi
-   integer jlo
-   character(len=*) title
+      real(kind=dp) :: a(m, n)
+      character(len=14) ctemp(incx)
+      integer i
+      integer i2
+      integer i2hi
+      integer i2lo
+      integer ihi
+      integer ilo
+      integer inc
+      integer j
+      integer j2hi
+      integer j2lo
+      integer jhi
+      integer jlo
+      character(len=*) title
 
-   if (0 < len_trim(title)) then
-      write (*, '(a)') ' '
-      write (*, '(a)') trim(title)
-   end if
+      if (0 < len_trim(title)) then
+         write (*, '(a)') ' '
+         write (*, '(a)') trim(title)
+      end if
 
-   do i2lo = max(ilo, 1), min(ihi, m), incx
+      do i2lo = max(ilo, 1), min(ihi, m), incx
 
-      i2hi = i2lo + incx - 1
-      i2hi = min(i2hi, m)
-      i2hi = min(i2hi, ihi)
+         i2hi = i2lo + incx - 1
+         i2hi = min(i2hi, m)
+         i2hi = min(i2hi, ihi)
 
-      inc = i2hi + 1 - i2lo
+         inc = i2hi + 1 - i2lo
 
-      write (*, '(a)') ' '
+         write (*, '(a)') ' '
 
-      do i = i2lo, i2hi
-         i2 = i + 1 - i2lo
-         write (ctemp(i2), '(i7,7x)') i
-      end do
-
-      write (*, '(''  Row   '',5a14)') ctemp(1:inc)
-      write (*, '(a)') '  Col'
-      write (*, '(a)') ' '
-
-      j2lo = max(jlo, 1)
-      j2hi = min(jhi, n)
-
-      do j = j2lo, j2hi
-
-         do i2 = 1, inc
-            i = i2lo - 1 + i2
-            write (ctemp(i2), '(g14.6)') a(i, j)
+         do i = i2lo, i2hi
+            i2 = i + 1 - i2lo
+            write (ctemp(i2), '(i7,7x)') i
          end do
 
-         write (*, '(i5,1x,5a14)') j, (ctemp(i), i=1, inc)
+         write (*, '(''  Row   '',5a14)') ctemp(1:inc)
+         write (*, '(a)') '  Col'
+         write (*, '(a)') ' '
+
+         j2lo = max(jlo, 1)
+         j2hi = min(jhi, n)
+
+         do j = j2lo, j2hi
+
+            do i2 = 1, inc
+               i = i2lo - 1 + i2
+               write (ctemp(i2), '(g14.6)') a(i, j)
+            end do
+
+            write (*, '(i5,1x,5a14)') j, (ctemp(i), i=1, inc)
+
+         end do
 
       end do
 
-   end do
+      write (*, '(a)') ' '
 
-   write (*, '(a)') ' '
-
-   return
-end
-subroutine rcm(root, adj_num, adj_row, adj, mask, perm, iccsze, node_num)
+      return
+   end
+   subroutine rcm(root, adj_num, adj_row, adj, mask, perm, iccsze, node_num)
 
 !*****************************************************************************80
 !
@@ -3020,129 +3019,129 @@ subroutine rcm(root, adj_num, adj_row, adj, mask, perm, iccsze, node_num)
 !    Workspace, integer DEG(NODE_NUM), a temporary vector used to hold
 !    the degree of the nodes in the section graph specified by mask and root.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   integer, allocatable :: deg(:)
-   integer fnbr
-   integer i
-   integer iccsze
-   integer j
-   integer jstop
-   integer jstrt
-   integer k
-   integer l
-   integer lbegin
-   integer lnbr
-   integer lperm
-   integer lvlend
-   integer mask(node_num)
-   integer nbr
-   integer node
-   integer perm(node_num)
-   integer root
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      integer, allocatable :: deg(:)
+      integer fnbr
+      integer i
+      integer iccsze
+      integer j
+      integer jstop
+      integer jstrt
+      integer k
+      integer l
+      integer lbegin
+      integer lnbr
+      integer lperm
+      integer lvlend
+      integer mask(node_num)
+      integer nbr
+      integer node
+      integer perm(node_num)
+      integer root
 
-   allocate (deg(node_num))
+      allocate (deg(node_num))
 !
 !  Find the degrees of the nodes in the component specified by MASK and ROOT.
 !
-   call degree(root, adj_num, adj_row, adj, mask, deg, iccsze, perm, node_num)
+      call degree(root, adj_num, adj_row, adj, mask, deg, iccsze, perm, node_num)
 
-   mask(root) = 0
+      mask(root) = 0
 
-   if (iccsze <= 1) then
-      return
-   end if
+      if (iccsze <= 1) then
+         return
+      end if
 
-   lvlend = 0
-   lnbr = 1
+      lvlend = 0
+      lnbr = 1
 !
 !  LBEGIN and LVLEND point to the beginning and
 !  the end of the current level respectively.
 !
-   do while (lvlend < lnbr)
+      do while (lvlend < lnbr)
 
-      lbegin = lvlend + 1
-      lvlend = lnbr
+         lbegin = lvlend + 1
+         lvlend = lnbr
 
-      do i = lbegin, lvlend
+         do i = lbegin, lvlend
 !
 !  For each node in the current level...
 !
-         node = perm(i)
-         jstrt = adj_row(node)
-         jstop = adj_row(node + 1) - 1
+            node = perm(i)
+            jstrt = adj_row(node)
+            jstop = adj_row(node + 1) - 1
 !
 !  Find the unnumbered neighbors of NODE.
 !
 !  FNBR and LNBR point to the first and last neighbors
 !  of the current node in PERM.
 !
-         fnbr = lnbr + 1
+            fnbr = lnbr + 1
 
-         do j = jstrt, jstop
+            do j = jstrt, jstop
 
-            nbr = adj(j)
+               nbr = adj(j)
 
-            if (mask(nbr) /= 0) then
-               lnbr = lnbr + 1
-               mask(nbr) = 0
-               perm(lnbr) = nbr
-            end if
+               if (mask(nbr) /= 0) then
+                  lnbr = lnbr + 1
+                  mask(nbr) = 0
+                  perm(lnbr) = nbr
+               end if
 
-         end do
+            end do
 !
 !  If no neighbors, skip to next node in this level.
 !
-         if (lnbr <= fnbr) then
-            cycle
-         end if
+            if (lnbr <= fnbr) then
+               cycle
+            end if
 !
 !  Sort the neighbors of NODE in increasing order by degree.
 !  Linear insertion is used.
 !
-         k = fnbr
+            k = fnbr
 
-         do while (k < lnbr)
+            do while (k < lnbr)
 
-            l = k
-            k = k + 1
-            nbr = perm(k)
+               l = k
+               k = k + 1
+               nbr = perm(k)
 
-            do while (fnbr < l)
+               do while (fnbr < l)
 
-               lperm = perm(l)
+                  lperm = perm(l)
 
-               if (deg(lperm) <= deg(nbr)) then
-                  exit
-               end if
+                  if (deg(lperm) <= deg(nbr)) then
+                     exit
+                  end if
 
-               perm(l + 1) = lperm
-               l = l - 1
+                  perm(l + 1) = lperm
+                  l = l - 1
+
+               end do
+
+               perm(l + 1) = nbr
 
             end do
-
-            perm(l + 1) = nbr
 
          end do
 
       end do
-
-   end do
 !
 !  We now have the Cuthill-McKee ordering.  Reverse it.
 !
-   call i4vec_reverse(iccsze, perm)
+      call i4vec_reverse(iccsze, perm)
 
-   deallocate (deg)
-   return
-end
-subroutine root_find(root, adj_num, adj_row, adj, mask, level_num, &
-                     level_row, level, node_num)
+      deallocate (deg)
+      return
+   end
+   subroutine root_find(root, adj_num, adj_row, adj, mask, level_num, &
+                        level_row, level, node_num)
 
 !*****************************************************************************80
 !
@@ -3229,115 +3228,115 @@ subroutine root_find(root, adj_num, adj_row, adj, mask, level_num, &
 !
 !    Input, integer   NODE_NUM, the number of nodes.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
+      integer adj_num
+      integer node_num
 
-   integer adj(adj_num)
-   integer adj_row(node_num + 1)
-   integer iccsze
-   integer j
-   integer jstrt
-   integer k
-   integer kstop
-   integer kstrt
-   integer level(node_num)
-   integer level_num
-   integer level_num2
-   integer level_row(node_num + 1)
-   integer mask(node_num)
-   integer mindeg
-   integer nabor
-   integer ndeg
-   integer node
-   integer root
+      integer adj(adj_num)
+      integer adj_row(node_num + 1)
+      integer iccsze
+      integer j
+      integer jstrt
+      integer k
+      integer kstop
+      integer kstrt
+      integer level(node_num)
+      integer level_num
+      integer level_num2
+      integer level_row(node_num + 1)
+      integer mask(node_num)
+      integer mindeg
+      integer nabor
+      integer ndeg
+      integer node
+      integer root
 !
 !  Determine the level structure rooted at ROOT.
 !
-   call level_set(root, adj_num, adj_row, adj, mask, level_num, &
-                  level_row, level, node_num)
+      call level_set(root, adj_num, adj_row, adj, mask, level_num, &
+                     level_row, level, node_num)
 !
 !  Count the number of nodes in this level structure.
 !
-   iccsze = level_row(level_num + 1) - 1
+      iccsze = level_row(level_num + 1) - 1
 !
 !  Extreme case:
 !    A complete graph has a level set of only a single level.
 !    Every node is equally good (or bad).
 !
-   if (level_num == 1) then
-      return
-   end if
+      if (level_num == 1) then
+         return
+      end if
 !
 !  Extreme case:
 !    A "line graph" 0--0--0--0--0 has every node in its only level.
 !    By chance, we've stumbled on the ideal root.
 !
-   if (level_num == iccsze) then
-      return
-   end if
+      if (level_num == iccsze) then
+         return
+      end if
 !
 !  Pick any node from the last level that has minimum degree
 !  as the starting point to generate a new level set.
 !
-   do
+      do
 
-      mindeg = iccsze
+         mindeg = iccsze
 
-      jstrt = level_row(level_num)
-      root = level(jstrt)
+         jstrt = level_row(level_num)
+         root = level(jstrt)
 
-      if (jstrt < iccsze) then
+         if (jstrt < iccsze) then
 
-         do j = jstrt, iccsze
+            do j = jstrt, iccsze
 
-            node = level(j)
-            ndeg = 0
-            kstrt = adj_row(node)
-            kstop = adj_row(node + 1) - 1
+               node = level(j)
+               ndeg = 0
+               kstrt = adj_row(node)
+               kstop = adj_row(node + 1) - 1
 
-            do k = kstrt, kstop
-               nabor = adj(k)
-               if (0 < mask(nabor)) then
-                  ndeg = ndeg + 1
+               do k = kstrt, kstop
+                  nabor = adj(k)
+                  if (0 < mask(nabor)) then
+                     ndeg = ndeg + 1
+                  end if
+               end do
+
+               if (ndeg < mindeg) then
+                  root = node
+                  mindeg = ndeg
                end if
+
             end do
 
-            if (ndeg < mindeg) then
-               root = node
-               mindeg = ndeg
-            end if
-
-         end do
-
-      end if
+         end if
 !
 !  Generate the rooted level structure associated with this node.
 !
-      call level_set(root, adj_num, adj_row, adj, mask, level_num2, &
-                     level_row, level, node_num)
+         call level_set(root, adj_num, adj_row, adj, mask, level_num2, &
+                        level_row, level, node_num)
 !
 !  If the number of levels did not increase, accept the new ROOT.
 !
-      if (level_num2 <= level_num) then
-         exit
-      end if
+         if (level_num2 <= level_num) then
+            exit
+         end if
 
-      level_num = level_num2
+         level_num = level_num2
 !
 !  In the unlikely case that ROOT is one endpoint of a line graph,
 !  we can exit now.
 !
-      if (iccsze <= level_num) then
-         exit
-      end if
+         if (iccsze <= level_num) then
+            exit
+         end if
 
-   end do
+      end do
 
-   return
-end
-subroutine sort_heap_external(n, indx, i, j, isgn)
+      return
+   end
+   subroutine sort_heap_external(n, indx, i, j, isgn)
 
 !*****************************************************************************80
 !
@@ -3404,131 +3403,131 @@ subroutine sort_heap_external(n, indx, i, j, isgn)
 !    ISGN <= 0 means I is less than or equal to J;
 !    0 <= ISGN means I is greater than or equal to J.
 !
-   implicit none
+      implicit none
 
-   integer i
-   integer, save :: i_save = 0
-   integer indx
-   integer isgn
-   integer j
-   integer, save :: j_save = 0
-   integer, save :: k = 0
-   integer, save :: k1 = 0
-   integer n
-   integer, save :: n1 = 0
+      integer i
+      integer, save :: i_save = 0
+      integer indx
+      integer isgn
+      integer j
+      integer, save :: j_save = 0
+      integer, save :: k = 0
+      integer, save :: k1 = 0
+      integer n
+      integer, save :: n1 = 0
 !
 !  INDX = 0: This is the first call.
 !
-   if (indx == 0) then
+      if (indx == 0) then
 
-      i_save = 0
-      j_save = 0
-      k = n / 2
-      k1 = k
-      n1 = n
+         i_save = 0
+         j_save = 0
+         k = n / 2
+         k1 = k
+         n1 = n
 !
 !  INDX < 0: The user is returning the results of a comparison.
 !
-   else if (indx < 0) then
+      else if (indx < 0) then
 
-      if (indx == -2) then
+         if (indx == -2) then
 
-         if (isgn < 0) then
-            i_save = i_save + 1
+            if (isgn < 0) then
+               i_save = i_save + 1
+            end if
+
+            j_save = k1
+            k1 = i_save
+            indx = -1
+            i = i_save
+            j = j_save
+            return
+
          end if
 
-         j_save = k1
-         k1 = i_save
-         indx = -1
-         i = i_save
-         j = j_save
-         return
-
-      end if
-
-      if (0 < isgn) then
-         indx = 2
-         i = i_save
-         j = j_save
-         return
-      end if
-
-      if (k <= 1) then
-
-         if (n1 == 1) then
-            i_save = 0
-            j_save = 0
-            indx = 0
-         else
-            i_save = n1
-            n1 = n1 - 1
-            j_save = 1
-            indx = 1
+         if (0 < isgn) then
+            indx = 2
+            i = i_save
+            j = j_save
+            return
          end if
 
-         i = i_save
-         j = j_save
-         return
+         if (k <= 1) then
 
-      end if
+            if (n1 == 1) then
+               i_save = 0
+               j_save = 0
+               indx = 0
+            else
+               i_save = n1
+               n1 = n1 - 1
+               j_save = 1
+               indx = 1
+            end if
 
-      k = k - 1
-      k1 = k
+            i = i_save
+            j = j_save
+            return
+
+         end if
+
+         k = k - 1
+         k1 = k
 !
 !  0 < INDX, the user was asked to make an interchange.
 !
-   else if (indx == 1) then
+      else if (indx == 1) then
 
-      k1 = k
+         k1 = k
 
-   end if
-
-   do
-
-      i_save = 2 * k1
-
-      if (i_save == n1) then
-         j_save = k1
-         k1 = i_save
-         indx = -1
-         i = i_save
-         j = j_save
-         return
-      else if (i_save <= n1) then
-         j_save = i_save + 1
-         indx = -2
-         i = i_save
-         j = j_save
-         return
       end if
 
-      if (k <= 1) then
-         exit
+      do
+
+         i_save = 2 * k1
+
+         if (i_save == n1) then
+            j_save = k1
+            k1 = i_save
+            indx = -1
+            i = i_save
+            j = j_save
+            return
+         else if (i_save <= n1) then
+            j_save = i_save + 1
+            indx = -2
+            i = i_save
+            j = j_save
+            return
+         end if
+
+         if (k <= 1) then
+            exit
+         end if
+
+         k = k - 1
+         k1 = k
+
+      end do
+
+      if (n1 == 1) then
+         i_save = 0
+         j_save = 0
+         indx = 0
+         i = i_save
+         j = j_save
+      else
+         i_save = n1
+         n1 = n1 - 1
+         j_save = 1
+         indx = 1
+         i = i_save
+         j = j_save
       end if
 
-      k = k - 1
-      k1 = k
-
-   end do
-
-   if (n1 == 1) then
-      i_save = 0
-      j_save = 0
-      indx = 0
-      i = i_save
-      j = j_save
-   else
-      i_save = n1
-      n1 = n1 - 1
-      j_save = 1
-      indx = 1
-      i = i_save
-      j = j_save
-   end if
-
-   return
-end
-subroutine timestamp()
+      return
+   end
+   subroutine timestamp()
 
 !*****************************************************************************80
 !
@@ -3554,60 +3553,60 @@ subroutine timestamp()
 !
 !    None
 !
-   implicit none
+      implicit none
 
-   character(len=8) ampm
-   integer d
-   integer h
-   integer m
-   integer mm
-   character(len=9), parameter, dimension(12) :: month = (/ &
-                                                 'January  ', 'February ', 'March    ', 'April    ', &
-                                                 'May      ', 'June     ', 'July     ', 'August   ', &
-                                                 'September', 'October  ', 'November ', 'December '/)
-   integer n
-   integer s
-   integer values(8)
-   integer y
+      character(len=8) ampm
+      integer d
+      integer h
+      integer m
+      integer mm
+      character(len=9), parameter, dimension(12) :: month = [ &
+                                                    'January  ', 'February ', 'March    ', 'April    ', &
+                                                    'May      ', 'June     ', 'July     ', 'August   ', &
+                                                    'September', 'October  ', 'November ', 'December ']
+      integer n
+      integer s
+      integer values(8)
+      integer y
 
-   call date_and_time(values=values)
+      call date_and_time(values=values)
 
-   y = values(1)
-   m = values(2)
-   d = values(3)
-   h = values(5)
-   n = values(6)
-   s = values(7)
-   mm = values(8)
+      y = values(1)
+      m = values(2)
+      d = values(3)
+      h = values(5)
+      n = values(6)
+      s = values(7)
+      mm = values(8)
 
-   if (h < 12) then
-      ampm = 'AM'
-   else if (h == 12) then
-      if (n == 0 .and. s == 0) then
-         ampm = 'Noon'
-      else
-         ampm = 'PM'
-      end if
-   else
-      h = h - 12
       if (h < 12) then
-         ampm = 'PM'
+         ampm = 'AM'
       else if (h == 12) then
          if (n == 0 .and. s == 0) then
-            ampm = 'Midnight'
+            ampm = 'Noon'
          else
-            ampm = 'AM'
+            ampm = 'PM'
+         end if
+      else
+         h = h - 12
+         if (h < 12) then
+            ampm = 'PM'
+         else if (h == 12) then
+            if (n == 0 .and. s == 0) then
+               ampm = 'Midnight'
+            else
+               ampm = 'AM'
+            end if
          end if
       end if
-   end if
 
-   write (*, '(i2,1x,a,1x,i4,2x,i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)') &
-      d, trim(month(m)), y, h, ':', n, ':', s, '.', mm, trim(ampm)
+      write (*, '(i2,1x,a,1x,i4,2x,i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)') &
+         d, trim(month(m)), y, h, ':', n, ':', s, '.', mm, trim(ampm)
 
-   return
-end
-subroutine triangulation_neighbor_triangles(triangle_order, triangle_num, &
-                                            triangle_node, triangle_neighbor)
+      return
+   end
+   subroutine triangulation_neighbor_triangles(triangle_order, triangle_num, &
+                                               triangle_node, triangle_neighbor)
 
 !*****************************************************************************80
 !
@@ -3714,23 +3713,23 @@ subroutine triangulation_neighbor_triangles(triangle_order, triangle_num, &
 !    if there is no neighbor on that side.  In this case, that side of the
 !    triangle lies on the boundary of the triangulation.
 !
-   implicit none
+      implicit none
 
-   integer triangle_num
-   integer triangle_order
+      integer triangle_num
+      integer triangle_order
 
-   integer col(4, 3 * triangle_num)
-   integer i
-   integer icol
-   integer j
-   integer k
-   integer side1
-   integer side2
-   integer triangle_neighbor(3, triangle_num)
-   integer tri
-   integer triangle_node(triangle_order, triangle_num)
-   integer tri1
-   integer tri2
+      integer col(4, 3 * triangle_num)
+      integer i
+      integer icol
+      integer j
+      integer k
+      integer side1
+      integer side2
+      integer triangle_neighbor(3, triangle_num)
+      integer tri
+      integer triangle_node(triangle_order, triangle_num)
+      integer tri1
+      integer tri2
 !
 !  Step 1.
 !  From the list of nodes for triangle T, of the form: (I,J,K)
@@ -3742,31 +3741,31 @@ subroutine triangulation_neighbor_triangles(triangle_order, triangle_num, &
 !
 !  where we choose (I,J,1,T) if I < J, or else (J,I,1,T)
 !
-   do tri = 1, triangle_num
+      do tri = 1, triangle_num
 
-      i = triangle_node(1, tri)
-      j = triangle_node(2, tri)
-      k = triangle_node(3, tri)
+         i = triangle_node(1, tri)
+         j = triangle_node(2, tri)
+         k = triangle_node(3, tri)
 
-      if (i < j) then
-         col(1:4, 3 * (tri - 1) + 1) = (/i, j, 3, tri/)
-      else
-         col(1:4, 3 * (tri - 1) + 1) = (/j, i, 3, tri/)
-      end if
+         if (i < j) then
+            col(1:4, 3 * (tri - 1) + 1) = [i, j, 3, tri]
+         else
+            col(1:4, 3 * (tri - 1) + 1) = [j, i, 3, tri]
+         end if
 
-      if (j < k) then
-         col(1:4, 3 * (tri - 1) + 2) = (/j, k, 1, tri/)
-      else
-         col(1:4, 3 * (tri - 1) + 2) = (/k, j, 1, tri/)
-      end if
+         if (j < k) then
+            col(1:4, 3 * (tri - 1) + 2) = [j, k, 1, tri]
+         else
+            col(1:4, 3 * (tri - 1) + 2) = [k, j, 1, tri]
+         end if
 
-      if (k < i) then
-         col(1:4, 3 * (tri - 1) + 3) = (/k, i, 2, tri/)
-      else
-         col(1:4, 3 * (tri - 1) + 3) = (/i, k, 2, tri/)
-      end if
+         if (k < i) then
+            col(1:4, 3 * (tri - 1) + 3) = [k, i, 2, tri]
+         else
+            col(1:4, 3 * (tri - 1) + 3) = [i, k, 2, tri]
+         end if
 
-   end do
+      end do
 !
 !  Step 2. Perform an ascending dictionary sort on the neighbor relations.
 !  We only intend to sort on rows 1 and 2; the routine we call here
@@ -3778,43 +3777,43 @@ subroutine triangulation_neighbor_triangles(triangle_order, triangle_num, &
 !  we make sure that these two columns occur consecutively.  That will
 !  make it easy to notice that the triangles are neighbors.
 !
-   call i4col_sort_a(4, 3 * triangle_num, col)
+      call i4col_sort_a(4, 3 * triangle_num, col)
 !
 !  Step 3. Neighboring triangles show up as consecutive columns with
 !  identical first two entries.  Whenever you spot this happening,
 !  make the appropriate entries in TRIANGLE_NEIGHBOR.
 !
-   triangle_neighbor(1:3, 1:triangle_num) = -1
+      triangle_neighbor(1:3, 1:triangle_num) = -1
 
-   icol = 1
+      icol = 1
 
-   do
+      do
 
-      if (3 * triangle_num <= icol) then
-         exit
-      end if
+         if (3 * triangle_num <= icol) then
+            exit
+         end if
 
-      if (col(1, icol) /= col(1, icol + 1) .or. col(2, icol) /= col(2, icol + 1)) then
-         icol = icol + 1
-         cycle
-      end if
+         if (col(1, icol) /= col(1, icol + 1) .or. col(2, icol) /= col(2, icol + 1)) then
+            icol = icol + 1
+            cycle
+         end if
 
-      side1 = col(3, icol)
-      tri1 = col(4, icol)
-      side2 = col(3, icol + 1)
-      tri2 = col(4, icol + 1)
+         side1 = col(3, icol)
+         tri1 = col(4, icol)
+         side2 = col(3, icol + 1)
+         tri2 = col(4, icol + 1)
 
-      triangle_neighbor(side1, tri1) = tri2
-      triangle_neighbor(side2, tri2) = tri1
+         triangle_neighbor(side1, tri1) = tri2
+         triangle_neighbor(side2, tri2) = tri1
 
-      icol = icol + 2
+         icol = icol + 2
 
-   end do
+      end do
 
-   return
-end
-subroutine triangulation_order3_adj_count(node_num, triangle_num, &
-                                          triangle_node, triangle_neighbor, adj_num, adj_col)
+      return
+   end
+   subroutine triangulation_order3_adj_count(node_num, triangle_num, &
+                                             triangle_node, triangle_neighbor, adj_num, adj_col)
 
 !*****************************************************************************80
 !
@@ -3935,85 +3934,85 @@ subroutine triangulation_order3_adj_count(node_num, triangle_num, &
 !    Output, integer   ADJ_COL(NODE_NUM+1).  Information about
 !    column J is stored in entries ADJ_COL(J) through ADJ_COL(J+1)-1 of ADJ.
 !
-   implicit none
+      implicit none
 
-   integer node_num
-   integer triangle_num
-   integer, parameter :: triangle_order = 3
+      integer node_num
+      integer triangle_num
+      integer, parameter :: triangle_order = 3
 
-   integer adj_num
-   integer adj_col(node_num + 1)
-   integer i
-   integer n1
-   integer n2
-   integer n3
-   integer triangle
-   integer triangle2
-   integer triangle_neighbor(3, triangle_num)
-   integer triangle_node(triangle_order, triangle_num)
+      integer adj_num
+      integer adj_col(node_num + 1)
+      integer i
+      integer n1
+      integer n2
+      integer n3
+      integer triangle
+      integer triangle2
+      integer triangle_neighbor(3, triangle_num)
+      integer triangle_node(triangle_order, triangle_num)
 
-   adj_num = 0
+      adj_num = 0
 !
 !  Set every node to be adjacent to itself.
 !
-   adj_col(1:node_num) = 1
+      adj_col(1:node_num) = 1
 !
 !  Examine each triangle.
 !
-   do triangle = 1, triangle_num
+      do triangle = 1, triangle_num
 
-      n1 = triangle_node(1, triangle)
-      n2 = triangle_node(2, triangle)
-      n3 = triangle_node(3, triangle)
+         n1 = triangle_node(1, triangle)
+         n2 = triangle_node(2, triangle)
+         n3 = triangle_node(3, triangle)
 !
 !  Add edge (1,2) if this is the first occurrence,
 !  that is, if the edge (1,2) is on a boundary (TRIANGLE2 <= 0)
 !  or if this triangle is the first of the pair in which the edge
 !  occurs (TRIANGLE < TRIANGLE2).
 !
-      triangle2 = triangle_neighbor(1, triangle)
+         triangle2 = triangle_neighbor(1, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj_col(n1) = adj_col(n1) + 1
-         adj_col(n2) = adj_col(n2) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj_col(n1) = adj_col(n1) + 1
+            adj_col(n2) = adj_col(n2) + 1
+         end if
 !
 !  Add edge (2,3).
 !
-      triangle2 = triangle_neighbor(2, triangle)
+         triangle2 = triangle_neighbor(2, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj_col(n2) = adj_col(n2) + 1
-         adj_col(n3) = adj_col(n3) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj_col(n2) = adj_col(n2) + 1
+            adj_col(n3) = adj_col(n3) + 1
+         end if
 !
 !  Add edge (3,1).
 !
-      triangle2 = triangle_neighbor(3, triangle)
+         triangle2 = triangle_neighbor(3, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj_col(n1) = adj_col(n1) + 1
-         adj_col(n3) = adj_col(n3) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj_col(n1) = adj_col(n1) + 1
+            adj_col(n3) = adj_col(n3) + 1
+         end if
 
-   end do
+      end do
 !
 !  We used ADJ_COL to count the number of entries in each column.
 !  Convert it to pointers into the ADJ array.
 !
-   adj_col(2:node_num + 1) = adj_col(1:node_num)
+      adj_col(2:node_num + 1) = adj_col(1:node_num)
 
-   adj_col(1) = 1
-   do i = 2, node_num + 1
-      adj_col(i) = adj_col(i - 1) + adj_col(i)
-   end do
+      adj_col(1) = 1
+      do i = 2, node_num + 1
+         adj_col(i) = adj_col(i - 1) + adj_col(i)
+      end do
 
-   adj_num = adj_col(node_num + 1) - 1
+      adj_num = adj_col(node_num + 1) - 1
 
-   return
-end
-subroutine triangulation_order3_adj_set(node_num, triangle_num, &
-                                        triangle_node, triangle_neighbor, adj_num, adj_col, adj)
+      return
+   end
+   subroutine triangulation_order3_adj_set(node_num, triangle_num, &
+                                           triangle_node, triangle_neighbor, adj_num, adj_col, adj)
 
 !*****************************************************************************80
 !
@@ -4140,95 +4139,95 @@ subroutine triangulation_order3_adj_set(node_num, triangle_num, &
 !
 !    Output, integer   ADJ(ADJ_NUM), the adjacency information.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
-   integer triangle_num
-   integer, parameter :: triangle_order = 3
+      integer adj_num
+      integer node_num
+      integer triangle_num
+      integer, parameter :: triangle_order = 3
 
-   integer adj(adj_num)
-   integer adj_copy(node_num)
-   integer adj_col(node_num + 1)
-   integer k1
-   integer k2
-   integer n1
-   integer n2
-   integer n3
-   integer node
-   integer triangle
-   integer triangle2
-   integer triangle_neighbor(3, triangle_num)
-   integer triangle_node(triangle_order, triangle_num)
+      integer adj(adj_num)
+      integer adj_copy(node_num)
+      integer adj_col(node_num + 1)
+      integer k1
+      integer k2
+      integer n1
+      integer n2
+      integer n3
+      integer node
+      integer triangle
+      integer triangle2
+      integer triangle_neighbor(3, triangle_num)
+      integer triangle_node(triangle_order, triangle_num)
 
-   adj(1:adj_num) = -1
-   adj_copy(1:node_num) = adj_col(1:node_num)
+      adj(1:adj_num) = -1
+      adj_copy(1:node_num) = adj_col(1:node_num)
 !
 !  Set every node to be adjacent to itself.
 !
-   do node = 1, node_num
-      adj(adj_copy(node)) = node
-      adj_copy(node) = adj_copy(node) + 1
-   end do
+      do node = 1, node_num
+         adj(adj_copy(node)) = node
+         adj_copy(node) = adj_copy(node) + 1
+      end do
 !
 !  Examine each triangle.
 !
-   do triangle = 1, triangle_num
+      do triangle = 1, triangle_num
 
-      n1 = triangle_node(1, triangle)
-      n2 = triangle_node(2, triangle)
-      n3 = triangle_node(3, triangle)
+         n1 = triangle_node(1, triangle)
+         n2 = triangle_node(2, triangle)
+         n3 = triangle_node(3, triangle)
 !
 !  Add edge (1,2) if this is the first occurrence,
 !  that is, if the edge (1,2) is on a boundary (TRIANGLE2 <= 0)
 !  or if this triangle is the first of the pair in which the edge
 !  occurs (TRIANGLE < TRIANGLE2).
 !
-      triangle2 = triangle_neighbor(1, triangle)
+         triangle2 = triangle_neighbor(1, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj(adj_copy(n1)) = n2
-         adj_copy(n1) = adj_copy(n1) + 1
-         adj(adj_copy(n2)) = n1
-         adj_copy(n2) = adj_copy(n2) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj(adj_copy(n1)) = n2
+            adj_copy(n1) = adj_copy(n1) + 1
+            adj(adj_copy(n2)) = n1
+            adj_copy(n2) = adj_copy(n2) + 1
+         end if
 !
 !  Add edge (2,3).
 !
-      triangle2 = triangle_neighbor(2, triangle)
+         triangle2 = triangle_neighbor(2, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj(adj_copy(n2)) = n3
-         adj_copy(n2) = adj_copy(n2) + 1
-         adj(adj_copy(n3)) = n2
-         adj_copy(n3) = adj_copy(n3) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj(adj_copy(n2)) = n3
+            adj_copy(n2) = adj_copy(n2) + 1
+            adj(adj_copy(n3)) = n2
+            adj_copy(n3) = adj_copy(n3) + 1
+         end if
 !
 !  Add edge (3,1).
 !
-      triangle2 = triangle_neighbor(3, triangle)
+         triangle2 = triangle_neighbor(3, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj(adj_copy(n1)) = n3
-         adj_copy(n1) = adj_copy(n1) + 1
-         adj(adj_copy(n3)) = n1
-         adj_copy(n3) = adj_copy(n3) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj(adj_copy(n1)) = n3
+            adj_copy(n1) = adj_copy(n1) + 1
+            adj(adj_copy(n3)) = n1
+            adj_copy(n3) = adj_copy(n3) + 1
+         end if
 
-   end do
+      end do
 !
 !  Ascending sort the entries for each node.
 !
-   do node = 1, node_num
-      k1 = adj_col(node)
-      k2 = adj_col(node + 1) - 1
-      call i4vec_sort_heap_a(k2 + 1 - k1, adj(k1:k2))
-   end do
+      do node = 1, node_num
+         k1 = adj_col(node)
+         k2 = adj_col(node + 1) - 1
+         call i4vec_sort_heap_a(k2 + 1 - k1, adj(k1:k2))
+      end do
 
-   return
-end
-subroutine triangulation_order3_example2(node_num, triangle_num, node_xy, &
-                                         triangle_node, triangle_neighbor)
+      return
+   end
+   subroutine triangulation_order3_example2(node_num, triangle_num, node_xy, &
+                                            triangle_node, triangle_neighbor)
 
 !*****************************************************************************80
 !
@@ -4275,7 +4274,7 @@ subroutine triangulation_order3_example2(node_num, triangle_num, node_xy, &
 !
 !    Input, integer   TRIANGLE_NUM, the number of triangles.
 !
-!    Output, DOUBLE PRECISION ::   NODE_XY(2,NODE_NUM), the coordinates of the
+!    Output, real(kind=dp) ::   NODE_XY(2,NODE_NUM), the coordinates of the
 !    nodes.
 !
 !    Output, integer   TRIANGLE_NODE(3,TRIANGLE_NUM), lists the
@@ -4285,117 +4284,117 @@ subroutine triangulation_order3_example2(node_num, triangle_num, node_xy, &
 !    side of a triangle, lists the neighboring triangle, or -1 if there is
 !    no neighbor.
 !
-   implicit none
+      implicit none
 
-   integer, parameter :: dim_num = 2
-   integer node_num
-   integer triangle_num
-   integer, parameter :: triangle_order = 3
+      integer, parameter :: dim_num = 2
+      integer node_num
+      integer triangle_num
+      integer, parameter :: triangle_order = 3
 
-   double precision :: node_xy(dim_num, node_num)
-   integer triangle_neighbor(3, triangle_num)
-   integer triangle_node(triangle_order, triangle_num)
+      real(kind=dp) :: node_xy(dim_num, node_num)
+      integer triangle_neighbor(3, triangle_num)
+      integer triangle_node(triangle_order, triangle_num)
 
-   node_xy = reshape((/ &
-                     0.0d+00, 0.0d+00, &
-                     1.0d+00, 0.0d+00, &
-                     2.0d+00, 0.0d+00, &
-                     3.0d+00, 0.0d+00, &
-                     4.0d+00, 0.0d+00, &
-                     0.0d+00, 1.0d+00, &
-                     1.0d+00, 1.0d+00, &
-                     2.0d+00, 1.0d+00, &
-                     3.0d+00, 1.0d+00, &
-                     4.0d+00, 1.0d+00, &
-                     0.0d+00, 2.0d+00, &
-                     1.0d+00, 2.0d+00, &
-                     2.0d+00, 2.0d+00, &
-                     3.0d+00, 2.0d+00, &
-                     4.0d+00, 2.0d+00, &
-                     0.0d+00, 3.0d+00, &
-                     1.0d+00, 3.0d+00, &
-                     2.0d+00, 3.0d+00, &
-                     3.0d+00, 3.0d+00, &
-                     4.0d+00, 3.0d+00, &
-                     0.0d+00, 4.0d+00, &
-                     1.0d+00, 4.0d+00, &
-                     2.0d+00, 4.0d+00, &
-                     3.0d+00, 4.0d+00, &
-                     4.0d+00, 4.0d+00 &
-                     /), (/dim_num, node_num/))
+      node_xy = reshape([ &
+                        0.0e+00_dp, 0.0e+00_dp, &
+                        1.0e+00_dp, 0.0e+00_dp, &
+                        2.0e+00_dp, 0.0e+00_dp, &
+                        3.0e+00_dp, 0.0e+00_dp, &
+                        4.0e+00_dp, 0.0e+00_dp, &
+                        0.0e+00_dp, 1.0e+00_dp, &
+                        1.0e+00_dp, 1.0e+00_dp, &
+                        2.0e+00_dp, 1.0e+00_dp, &
+                        3.0e+00_dp, 1.0e+00_dp, &
+                        4.0e+00_dp, 1.0e+00_dp, &
+                        0.0e+00_dp, 2.0e+00_dp, &
+                        1.0e+00_dp, 2.0e+00_dp, &
+                        2.0e+00_dp, 2.0e+00_dp, &
+                        3.0e+00_dp, 2.0e+00_dp, &
+                        4.0e+00_dp, 2.0e+00_dp, &
+                        0.0e+00_dp, 3.0e+00_dp, &
+                        1.0e+00_dp, 3.0e+00_dp, &
+                        2.0e+00_dp, 3.0e+00_dp, &
+                        3.0e+00_dp, 3.0e+00_dp, &
+                        4.0e+00_dp, 3.0e+00_dp, &
+                        0.0e+00_dp, 4.0e+00_dp, &
+                        1.0e+00_dp, 4.0e+00_dp, &
+                        2.0e+00_dp, 4.0e+00_dp, &
+                        3.0e+00_dp, 4.0e+00_dp, &
+                        4.0e+00_dp, 4.0e+00_dp &
+                        ], [dim_num, node_num])
 
-   triangle_node(1:triangle_order, 1:triangle_num) = reshape((/ &
-                                                             1, 2, 6, &
-                                                             7, 6, 2, &
-                                                             2, 3, 7, &
-                                                             8, 7, 3, &
-                                                             3, 4, 8, &
-                                                             9, 8, 4, &
-                                                             4, 5, 9, &
-                                                             10, 9, 5, &
-                                                             6, 7, 11, &
-                                                             12, 11, 7, &
-                                                             7, 8, 12, &
-                                                             13, 12, 8, &
-                                                             8, 9, 13, &
-                                                             14, 13, 9, &
-                                                             9, 10, 14, &
-                                                             15, 14, 10, &
-                                                             11, 12, 16, &
-                                                             17, 16, 12, &
-                                                             12, 13, 17, &
-                                                             18, 17, 13, &
-                                                             13, 14, 18, &
-                                                             19, 18, 14, &
-                                                             14, 15, 19, &
-                                                             20, 19, 15, &
-                                                             16, 17, 21, &
-                                                             22, 21, 17, &
-                                                             17, 18, 22, &
-                                                             23, 22, 18, &
-                                                             18, 19, 23, &
-                                                             24, 23, 19, &
-                                                             19, 20, 24, &
-                                                             25, 24, 20/), (/triangle_order, triangle_num/))
+      triangle_node(1:triangle_order, 1:triangle_num) = reshape([ &
+                                                                1, 2, 6, &
+                                                                7, 6, 2, &
+                                                                2, 3, 7, &
+                                                                8, 7, 3, &
+                                                                3, 4, 8, &
+                                                                9, 8, 4, &
+                                                                4, 5, 9, &
+                                                                10, 9, 5, &
+                                                                6, 7, 11, &
+                                                                12, 11, 7, &
+                                                                7, 8, 12, &
+                                                                13, 12, 8, &
+                                                                8, 9, 13, &
+                                                                14, 13, 9, &
+                                                                9, 10, 14, &
+                                                                15, 14, 10, &
+                                                                11, 12, 16, &
+                                                                17, 16, 12, &
+                                                                12, 13, 17, &
+                                                                18, 17, 13, &
+                                                                13, 14, 18, &
+                                                                19, 18, 14, &
+                                                                14, 15, 19, &
+                                                                20, 19, 15, &
+                                                                16, 17, 21, &
+                                                                22, 21, 17, &
+                                                                17, 18, 22, &
+                                                                23, 22, 18, &
+                                                                18, 19, 23, &
+                                                                24, 23, 19, &
+                                                                19, 20, 24, &
+                                                                25, 24, 20], [triangle_order, triangle_num])
 
-   triangle_neighbor(1:3, 1:triangle_num) = reshape((/ &
-                                                    -1, 2, -1, &
-                                                    9, 1, 3, &
-                                                    -1, 4, 2, &
-                                                    11, 3, 5, &
-                                                    -1, 6, 4, &
-                                                    13, 5, 7, &
-                                                    -1, 8, 6, &
-                                                    15, 7, -1, &
-                                                    2, 10, -1, &
-                                                    17, 9, 11, &
-                                                    4, 12, 10, &
-                                                    19, 11, 13, &
-                                                    6, 14, 12, &
-                                                    21, 13, 15, &
-                                                    8, 16, 14, &
-                                                    23, 15, -1, &
-                                                    10, 18, -1, &
-                                                    25, 17, 19, &
-                                                    12, 20, 18, &
-                                                    27, 19, 21, &
-                                                    14, 22, 20, &
-                                                    29, 21, 23, &
-                                                    16, 24, 22, &
-                                                    31, 23, -1, &
-                                                    18, 26, -1, &
-                                                    -1, 25, 27, &
-                                                    20, 28, 26, &
-                                                    -1, 27, 29, &
-                                                    22, 30, 28, &
-                                                    -1, 29, 31, &
-                                                    24, 32, 30, &
-                                                    -1, 31, -1/), (/3, triangle_num/))
+      triangle_neighbor(1:3, 1:triangle_num) = reshape([ &
+                                                       -1, 2, -1, &
+                                                       9, 1, 3, &
+                                                       -1, 4, 2, &
+                                                       11, 3, 5, &
+                                                       -1, 6, 4, &
+                                                       13, 5, 7, &
+                                                       -1, 8, 6, &
+                                                       15, 7, -1, &
+                                                       2, 10, -1, &
+                                                       17, 9, 11, &
+                                                       4, 12, 10, &
+                                                       19, 11, 13, &
+                                                       6, 14, 12, &
+                                                       21, 13, 15, &
+                                                       8, 16, 14, &
+                                                       23, 15, -1, &
+                                                       10, 18, -1, &
+                                                       25, 17, 19, &
+                                                       12, 20, 18, &
+                                                       27, 19, 21, &
+                                                       14, 22, 20, &
+                                                       29, 21, 23, &
+                                                       16, 24, 22, &
+                                                       31, 23, -1, &
+                                                       18, 26, -1, &
+                                                       -1, 25, 27, &
+                                                       20, 28, 26, &
+                                                       -1, 27, 29, &
+                                                       22, 30, 28, &
+                                                       -1, 29, 31, &
+                                                       24, 32, 30, &
+                                                       -1, 31, -1], [3, triangle_num])
 
-   return
-end
-subroutine triangulation_order3_example2_size(node_num, triangle_num, &
-                                              hole_num)
+      return
+   end
+   subroutine triangulation_order3_example2_size(node_num, triangle_num, &
+                                                 hole_num)
 
 !*****************************************************************************80
 !
@@ -4437,20 +4436,20 @@ subroutine triangulation_order3_example2_size(node_num, triangle_num, &
 !
 !    Output, integer   HOLE_NUM, the number of holes.
 !
-   implicit none
+      implicit none
 
-   integer hole_num
-   integer node_num
-   integer triangle_num
+      integer, intent(inout) :: hole_num
+      integer, intent(inout) :: node_num
+      integer, intent(inout) :: triangle_num
 
-   node_num = 25
-   triangle_num = 32
-   hole_num = 0
+      node_num = 25
+      triangle_num = 32
+      hole_num = 0
 
-   return
-end
-subroutine triangulation_order6_adj_count(node_num, triangle_num, &
-                                          triangle_node, triangle_neighbor, adj_num, adj_col)
+      return
+   end
+   subroutine triangulation_order6_adj_count(node_num, triangle_num, &
+                                             triangle_node, triangle_neighbor, adj_num, adj_col)
 
 !*****************************************************************************80
 !
@@ -4603,42 +4602,42 @@ subroutine triangulation_order6_adj_count(node_num, triangle_num, &
 !    Output, integer   ADJ_COL(NODE_NUM+1).  Information about
 !    column J is stored in entries ADJ_COL(J) through ADJ_COL(J+1)-1 of ADJ.
 !
-   implicit none
+      implicit none
 
-   integer node_num
-   integer triangle_num
-   integer, parameter :: triangle_order = 6
+      integer node_num
+      integer triangle_num
+      integer, parameter :: triangle_order = 6
 
-   integer adj_num
-   integer adj_col(node_num + 1)
-   integer i
-   integer n1
-   integer n2
-   integer n3
-   integer n4
-   integer n5
-   integer n6
-   integer triangle
-   integer triangle2
-   integer triangle_neighbor(3, triangle_num)
-   integer triangle_node(triangle_order, triangle_num)
+      integer adj_num
+      integer adj_col(node_num + 1)
+      integer i
+      integer n1
+      integer n2
+      integer n3
+      integer n4
+      integer n5
+      integer n6
+      integer triangle
+      integer triangle2
+      integer triangle_neighbor(3, triangle_num)
+      integer triangle_node(triangle_order, triangle_num)
 
-   adj_num = 0
+      adj_num = 0
 !
 !  Set every node to be adjacent to itself.
 !
-   adj_col(1:node_num) = 1
+      adj_col(1:node_num) = 1
 !
 !  Examine each triangle.
 !
-   do triangle = 1, triangle_num
+      do triangle = 1, triangle_num
 
-      n1 = triangle_node(1, triangle)
-      n2 = triangle_node(2, triangle)
-      n3 = triangle_node(3, triangle)
-      n4 = triangle_node(4, triangle)
-      n5 = triangle_node(5, triangle)
-      n6 = triangle_node(6, triangle)
+         n1 = triangle_node(1, triangle)
+         n2 = triangle_node(2, triangle)
+         n3 = triangle_node(3, triangle)
+         n4 = triangle_node(4, triangle)
+         n5 = triangle_node(5, triangle)
+         n6 = triangle_node(6, triangle)
 !
 !  For sure, we add the adjacencies:
 !    43 / (34)
@@ -4648,18 +4647,18 @@ subroutine triangulation_order6_adj_count(node_num, triangle_num, &
 !    64 / (46)
 !    65 / (56)
 !
-      adj_col(n3) = adj_col(n3) + 1
-      adj_col(n4) = adj_col(n4) + 1
-      adj_col(n1) = adj_col(n1) + 1
-      adj_col(n5) = adj_col(n5) + 1
-      adj_col(n4) = adj_col(n4) + 1
-      adj_col(n5) = adj_col(n5) + 1
-      adj_col(n2) = adj_col(n2) + 1
-      adj_col(n6) = adj_col(n6) + 1
-      adj_col(n4) = adj_col(n4) + 1
-      adj_col(n6) = adj_col(n6) + 1
-      adj_col(n5) = adj_col(n5) + 1
-      adj_col(n6) = adj_col(n6) + 1
+         adj_col(n3) = adj_col(n3) + 1
+         adj_col(n4) = adj_col(n4) + 1
+         adj_col(n1) = adj_col(n1) + 1
+         adj_col(n5) = adj_col(n5) + 1
+         adj_col(n4) = adj_col(n4) + 1
+         adj_col(n5) = adj_col(n5) + 1
+         adj_col(n2) = adj_col(n2) + 1
+         adj_col(n6) = adj_col(n6) + 1
+         adj_col(n4) = adj_col(n4) + 1
+         adj_col(n6) = adj_col(n6) + 1
+         adj_col(n5) = adj_col(n5) + 1
+         adj_col(n6) = adj_col(n6) + 1
 !
 !  Add edges (1,2), (1,4), (2,4) if this is the first occurrence,
 !  that is, if the edge (1,4,2) is on a boundary (TRIANGLE2 <= 0)
@@ -4671,67 +4670,67 @@ subroutine triangulation_order6_adj_count(node_num, triangle_num, &
 !    41 / 14
 !    42 / 24
 !
-      triangle2 = triangle_neighbor(1, triangle)
+         triangle2 = triangle_neighbor(1, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj_col(n1) = adj_col(n1) + 1
-         adj_col(n2) = adj_col(n2) + 1
-         adj_col(n1) = adj_col(n1) + 1
-         adj_col(n4) = adj_col(n4) + 1
-         adj_col(n2) = adj_col(n2) + 1
-         adj_col(n4) = adj_col(n4) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj_col(n1) = adj_col(n1) + 1
+            adj_col(n2) = adj_col(n2) + 1
+            adj_col(n1) = adj_col(n1) + 1
+            adj_col(n4) = adj_col(n4) + 1
+            adj_col(n2) = adj_col(n2) + 1
+            adj_col(n4) = adj_col(n4) + 1
+         end if
 !
 !  Maybe add
 !    32 / 23
 !    52 / 25
 !    53 / 35
 !
-      triangle2 = triangle_neighbor(2, triangle)
+         triangle2 = triangle_neighbor(2, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj_col(n2) = adj_col(n2) + 1
-         adj_col(n3) = adj_col(n3) + 1
-         adj_col(n2) = adj_col(n2) + 1
-         adj_col(n5) = adj_col(n5) + 1
-         adj_col(n3) = adj_col(n3) + 1
-         adj_col(n5) = adj_col(n5) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj_col(n2) = adj_col(n2) + 1
+            adj_col(n3) = adj_col(n3) + 1
+            adj_col(n2) = adj_col(n2) + 1
+            adj_col(n5) = adj_col(n5) + 1
+            adj_col(n3) = adj_col(n3) + 1
+            adj_col(n5) = adj_col(n5) + 1
+         end if
 !
 !  Maybe add
 !    31 / 13
 !    61 / 16
 !    63 / 36
 !
-      triangle2 = triangle_neighbor(3, triangle)
+         triangle2 = triangle_neighbor(3, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj_col(n1) = adj_col(n1) + 1
-         adj_col(n3) = adj_col(n3) + 1
-         adj_col(n1) = adj_col(n1) + 1
-         adj_col(n6) = adj_col(n6) + 1
-         adj_col(n3) = adj_col(n3) + 1
-         adj_col(n6) = adj_col(n6) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj_col(n1) = adj_col(n1) + 1
+            adj_col(n3) = adj_col(n3) + 1
+            adj_col(n1) = adj_col(n1) + 1
+            adj_col(n6) = adj_col(n6) + 1
+            adj_col(n3) = adj_col(n3) + 1
+            adj_col(n6) = adj_col(n6) + 1
+         end if
 
-   end do
+      end do
 !
 !  We used ADJ_COL to count the number of entries in each column.
 !  Convert it to pointers into the ADJ array.
 !
-   adj_col(2:node_num + 1) = adj_col(1:node_num)
+      adj_col(2:node_num + 1) = adj_col(1:node_num)
 
-   adj_col(1) = 1
-   do i = 2, node_num + 1
-      adj_col(i) = adj_col(i - 1) + adj_col(i)
-   end do
+      adj_col(1) = 1
+      do i = 2, node_num + 1
+         adj_col(i) = adj_col(i - 1) + adj_col(i)
+      end do
 
-   adj_num = adj_col(node_num + 1) - 1
+      adj_num = adj_col(node_num + 1) - 1
 
-   return
-end
-subroutine triangulation_order6_adj_set(node_num, triangle_num, &
-                                        triangle_node, triangle_neighbor, adj_num, adj_col, adj)
+      return
+   end
+   subroutine triangulation_order6_adj_set(node_num, triangle_num, &
+                                           triangle_node, triangle_neighbor, adj_num, adj_col, adj)
 
 !*****************************************************************************80
 !
@@ -4890,50 +4889,50 @@ subroutine triangulation_order6_adj_set(node_num, triangle_num, &
 !
 !    Output, integer   ADJ(ADJ_NUM), the adjacency information.
 !
-   implicit none
+      implicit none
 
-   integer adj_num
-   integer node_num
-   integer triangle_num
-   integer, parameter :: triangle_order = 6
+      integer adj_num
+      integer node_num
+      integer triangle_num
+      integer, parameter :: triangle_order = 6
 
-   integer adj(adj_num)
-   integer adj_copy(node_num)
-   integer adj_col(node_num + 1)
-   integer k1
-   integer k2
-   integer n1
-   integer n2
-   integer n3
-   integer n4
-   integer n5
-   integer n6
-   integer node
-   integer triangle
-   integer triangle2
-   integer triangle_neighbor(3, triangle_num)
-   integer triangle_node(triangle_order, triangle_num)
+      integer adj(adj_num)
+      integer adj_copy(node_num)
+      integer adj_col(node_num + 1)
+      integer k1
+      integer k2
+      integer n1
+      integer n2
+      integer n3
+      integer n4
+      integer n5
+      integer n6
+      integer node
+      integer triangle
+      integer triangle2
+      integer triangle_neighbor(3, triangle_num)
+      integer triangle_node(triangle_order, triangle_num)
 
-   adj(1:adj_num) = -1
-   adj_copy(1:node_num) = adj_col(1:node_num)
+      adj(1:adj_num) = -1
+      adj_copy(1:node_num) = adj_col(1:node_num)
 !
 !  Set every node to be adjacent to itself.
 !
-   do node = 1, node_num
-      adj(adj_copy(node)) = node
-      adj_copy(node) = adj_copy(node) + 1
-   end do
+      do node = 1, node_num
+         adj(adj_copy(node)) = node
+         adj_copy(node) = adj_copy(node) + 1
+      end do
 !
 !  Examine each triangle.
 !
-   do triangle = 1, triangle_num
+      do triangle = 1, triangle_num
 
-      n1 = triangle_node(1, triangle)
-      n2 = triangle_node(2, triangle)
-      n3 = triangle_node(3, triangle)
-      n4 = triangle_node(4, triangle)
-      n5 = triangle_node(5, triangle)
-      n6 = triangle_node(6, triangle)
+         n1 = triangle_node(1, triangle)
+         n2 = triangle_node(2, triangle)
+         n3 = triangle_node(3, triangle)
+         n4 = triangle_node(4, triangle)
+         n5 = triangle_node(5, triangle)
+         n6 = triangle_node(6, triangle)
 !
 !  For sure, we add the adjacencies:
 !    43 / (34)
@@ -4943,35 +4942,35 @@ subroutine triangulation_order6_adj_set(node_num, triangle_num, &
 !    64 / (46)
 !    65 / (56)
 !
-      adj(adj_copy(n3)) = n4
-      adj_copy(n3) = adj_copy(n3) + 1
-      adj(adj_copy(n4)) = n3
-      adj_copy(n4) = adj_copy(n4) + 1
+         adj(adj_copy(n3)) = n4
+         adj_copy(n3) = adj_copy(n3) + 1
+         adj(adj_copy(n4)) = n3
+         adj_copy(n4) = adj_copy(n4) + 1
 
-      adj(adj_copy(n1)) = n5
-      adj_copy(n1) = adj_copy(n1) + 1
-      adj(adj_copy(n5)) = n1
-      adj_copy(n5) = adj_copy(n5) + 1
+         adj(adj_copy(n1)) = n5
+         adj_copy(n1) = adj_copy(n1) + 1
+         adj(adj_copy(n5)) = n1
+         adj_copy(n5) = adj_copy(n5) + 1
 
-      adj(adj_copy(n4)) = n5
-      adj_copy(n4) = adj_copy(n4) + 1
-      adj(adj_copy(n5)) = n4
-      adj_copy(n5) = adj_copy(n5) + 1
+         adj(adj_copy(n4)) = n5
+         adj_copy(n4) = adj_copy(n4) + 1
+         adj(adj_copy(n5)) = n4
+         adj_copy(n5) = adj_copy(n5) + 1
 
-      adj(adj_copy(n2)) = n6
-      adj_copy(n2) = adj_copy(n2) + 1
-      adj(adj_copy(n6)) = n2
-      adj_copy(n6) = adj_copy(n6) + 1
+         adj(adj_copy(n2)) = n6
+         adj_copy(n2) = adj_copy(n2) + 1
+         adj(adj_copy(n6)) = n2
+         adj_copy(n6) = adj_copy(n6) + 1
 
-      adj(adj_copy(n4)) = n6
-      adj_copy(n4) = adj_copy(n4) + 1
-      adj(adj_copy(n6)) = n4
-      adj_copy(n6) = adj_copy(n6) + 1
+         adj(adj_copy(n4)) = n6
+         adj_copy(n4) = adj_copy(n4) + 1
+         adj(adj_copy(n6)) = n4
+         adj_copy(n6) = adj_copy(n6) + 1
 
-      adj(adj_copy(n5)) = n6
-      adj_copy(n5) = adj_copy(n5) + 1
-      adj(adj_copy(n6)) = n5
-      adj_copy(n6) = adj_copy(n6) + 1
+         adj(adj_copy(n5)) = n6
+         adj_copy(n5) = adj_copy(n5) + 1
+         adj(adj_copy(n6)) = n5
+         adj_copy(n6) = adj_copy(n6) + 1
 !
 !  Add edges (1,2), (1,4), (2,4) if this is the first occurrence,
 !  that is, if the edge (1,4,2) is on a boundary (TRIANGLE2 <= 0)
@@ -4983,81 +4982,81 @@ subroutine triangulation_order6_adj_set(node_num, triangle_num, &
 !    41 / 14
 !    42 / 24
 !
-      triangle2 = triangle_neighbor(1, triangle)
+         triangle2 = triangle_neighbor(1, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj(adj_copy(n1)) = n2
-         adj_copy(n1) = adj_copy(n1) + 1
-         adj(adj_copy(n2)) = n1
-         adj_copy(n2) = adj_copy(n2) + 1
-         adj(adj_copy(n1)) = n4
-         adj_copy(n1) = adj_copy(n1) + 1
-         adj(adj_copy(n4)) = n1
-         adj_copy(n4) = adj_copy(n4) + 1
-         adj(adj_copy(n2)) = n4
-         adj_copy(n2) = adj_copy(n2) + 1
-         adj(adj_copy(n4)) = n2
-         adj_copy(n4) = adj_copy(n4) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj(adj_copy(n1)) = n2
+            adj_copy(n1) = adj_copy(n1) + 1
+            adj(adj_copy(n2)) = n1
+            adj_copy(n2) = adj_copy(n2) + 1
+            adj(adj_copy(n1)) = n4
+            adj_copy(n1) = adj_copy(n1) + 1
+            adj(adj_copy(n4)) = n1
+            adj_copy(n4) = adj_copy(n4) + 1
+            adj(adj_copy(n2)) = n4
+            adj_copy(n2) = adj_copy(n2) + 1
+            adj(adj_copy(n4)) = n2
+            adj_copy(n4) = adj_copy(n4) + 1
+         end if
 !
 !  Maybe add
 !    32 / 23
 !    52 / 25
 !    53 / 35
 !
-      triangle2 = triangle_neighbor(2, triangle)
+         triangle2 = triangle_neighbor(2, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj(adj_copy(n2)) = n3
-         adj_copy(n2) = adj_copy(n2) + 1
-         adj(adj_copy(n3)) = n2
-         adj_copy(n3) = adj_copy(n3) + 1
-         adj(adj_copy(n2)) = n5
-         adj_copy(n2) = adj_copy(n2) + 1
-         adj(adj_copy(n5)) = n2
-         adj_copy(n5) = adj_copy(n5) + 1
-         adj(adj_copy(n3)) = n5
-         adj_copy(n3) = adj_copy(n3) + 1
-         adj(adj_copy(n5)) = n3
-         adj_copy(n5) = adj_copy(n5) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj(adj_copy(n2)) = n3
+            adj_copy(n2) = adj_copy(n2) + 1
+            adj(adj_copy(n3)) = n2
+            adj_copy(n3) = adj_copy(n3) + 1
+            adj(adj_copy(n2)) = n5
+            adj_copy(n2) = adj_copy(n2) + 1
+            adj(adj_copy(n5)) = n2
+            adj_copy(n5) = adj_copy(n5) + 1
+            adj(adj_copy(n3)) = n5
+            adj_copy(n3) = adj_copy(n3) + 1
+            adj(adj_copy(n5)) = n3
+            adj_copy(n5) = adj_copy(n5) + 1
+         end if
 !
 !  Maybe add
 !    31 / 13
 !    61 / 16
 !    63 / 36
 !
-      triangle2 = triangle_neighbor(3, triangle)
+         triangle2 = triangle_neighbor(3, triangle)
 
-      if (triangle2 < 0 .or. triangle < triangle2) then
-         adj(adj_copy(n1)) = n3
-         adj_copy(n1) = adj_copy(n1) + 1
-         adj(adj_copy(n3)) = n1
-         adj_copy(n3) = adj_copy(n3) + 1
-         adj(adj_copy(n1)) = n6
-         adj_copy(n1) = adj_copy(n1) + 1
-         adj(adj_copy(n6)) = n1
-         adj_copy(n6) = adj_copy(n6) + 1
-         adj(adj_copy(n3)) = n6
-         adj_copy(n3) = adj_copy(n3) + 1
-         adj(adj_copy(n6)) = n3
-         adj_copy(n6) = adj_copy(n6) + 1
-      end if
+         if (triangle2 < 0 .or. triangle < triangle2) then
+            adj(adj_copy(n1)) = n3
+            adj_copy(n1) = adj_copy(n1) + 1
+            adj(adj_copy(n3)) = n1
+            adj_copy(n3) = adj_copy(n3) + 1
+            adj(adj_copy(n1)) = n6
+            adj_copy(n1) = adj_copy(n1) + 1
+            adj(adj_copy(n6)) = n1
+            adj_copy(n6) = adj_copy(n6) + 1
+            adj(adj_copy(n3)) = n6
+            adj_copy(n3) = adj_copy(n3) + 1
+            adj(adj_copy(n6)) = n3
+            adj_copy(n6) = adj_copy(n6) + 1
+         end if
 
-   end do
+      end do
 !
 !  Ascending sort the entries for each node.
 !
-   do node = 1, node_num
-      k1 = adj_col(node)
-      k2 = adj_col(node + 1) - 1
-      call i4vec_sort_heap_a(k2 + 1 - k1, adj(k1:k2))
-   end do
+      do node = 1, node_num
+         k1 = adj_col(node)
+         k2 = adj_col(node + 1) - 1
+         call i4vec_sort_heap_a(k2 + 1 - k1, adj(k1:k2))
+      end do
 
-   return
-end
-subroutine triangulation_order6_example2(node_num, triangle_num, node_xy, &
-                                         triangle_node, triangle_neighbor)
+      return
+   end
+   subroutine triangulation_order6_example2(node_num, triangle_num, node_xy, &
+                                            triangle_node, triangle_neighbor)
 
 !*****************************************************************************80
 !
@@ -5104,7 +5103,7 @@ subroutine triangulation_order6_example2(node_num, triangle_num, node_xy, &
 !
 !    Input, integer   TRIANGLE_NUM, the number of triangles.
 !
-!    Output, DOUBLE PRECISION ::   NODE_XY(2,NODE_NUM), the coordinates of
+!    Output, real(kind=dp) ::   NODE_XY(2,NODE_NUM), the coordinates of
 !    the nodes.
 !
 !    Output, integer   TRIANGLE_NODE(6,TRIANGLE_NUM), lists the
@@ -5117,69 +5116,69 @@ subroutine triangulation_order6_example2(node_num, triangle_num, node_xy, &
 !    side of a triangle, lists the neighboring triangle, or -1 if there is
 !    no neighbor.
 !
-   implicit none
+      implicit none
 
-   integer, parameter :: dim_num = 2
-   integer node_num
-   integer triangle_num
-   integer, parameter :: triangle_order = 6
+      integer, parameter :: dim_num = 2
+      integer node_num
+      integer triangle_num
+      integer, parameter :: triangle_order = 6
 
-   double precision :: node_xy(dim_num, node_num)
-   integer triangle_neighbor(3, triangle_num)
-   integer triangle_node(triangle_order, triangle_num)
+      real(kind=dp) :: node_xy(dim_num, node_num)
+      integer triangle_neighbor(3, triangle_num)
+      integer triangle_node(triangle_order, triangle_num)
 
-   node_xy = reshape((/ &
-                     0.0d+00, 0.0d+00, &
-                     1.0d+00, 0.0d+00, &
-                     2.0d+00, 0.0d+00, &
-                     3.0d+00, 0.0d+00, &
-                     4.0d+00, 0.0d+00, &
-                     0.0d+00, 1.0d+00, &
-                     1.0d+00, 1.0d+00, &
-                     2.0d+00, 1.0d+00, &
-                     3.0d+00, 1.0d+00, &
-                     4.0d+00, 1.0d+00, &
-                     0.0d+00, 2.0d+00, &
-                     1.0d+00, 2.0d+00, &
-                     2.0d+00, 2.0d+00, &
-                     3.0d+00, 2.0d+00, &
-                     4.0d+00, 2.0d+00, &
-                     0.0d+00, 3.0d+00, &
-                     1.0d+00, 3.0d+00, &
-                     2.0d+00, 3.0d+00, &
-                     3.0d+00, 3.0d+00, &
-                     4.0d+00, 3.0d+00, &
-                     0.0d+00, 4.0d+00, &
-                     1.0d+00, 4.0d+00, &
-                     2.0d+00, 4.0d+00, &
-                     3.0d+00, 4.0d+00, &
-                     4.0d+00, 4.0d+00 &
-                     /), (/dim_num, node_num/))
+      node_xy = reshape([ &
+                        0.0e+00_dp, 0.0e+00_dp, &
+                        1.0e+00_dp, 0.0e+00_dp, &
+                        2.0e+00_dp, 0.0e+00_dp, &
+                        3.0e+00_dp, 0.0e+00_dp, &
+                        4.0e+00_dp, 0.0e+00_dp, &
+                        0.0e+00_dp, 1.0e+00_dp, &
+                        1.0e+00_dp, 1.0e+00_dp, &
+                        2.0e+00_dp, 1.0e+00_dp, &
+                        3.0e+00_dp, 1.0e+00_dp, &
+                        4.0e+00_dp, 1.0e+00_dp, &
+                        0.0e+00_dp, 2.0e+00_dp, &
+                        1.0e+00_dp, 2.0e+00_dp, &
+                        2.0e+00_dp, 2.0e+00_dp, &
+                        3.0e+00_dp, 2.0e+00_dp, &
+                        4.0e+00_dp, 2.0e+00_dp, &
+                        0.0e+00_dp, 3.0e+00_dp, &
+                        1.0e+00_dp, 3.0e+00_dp, &
+                        2.0e+00_dp, 3.0e+00_dp, &
+                        3.0e+00_dp, 3.0e+00_dp, &
+                        4.0e+00_dp, 3.0e+00_dp, &
+                        0.0e+00_dp, 4.0e+00_dp, &
+                        1.0e+00_dp, 4.0e+00_dp, &
+                        2.0e+00_dp, 4.0e+00_dp, &
+                        3.0e+00_dp, 4.0e+00_dp, &
+                        4.0e+00_dp, 4.0e+00_dp &
+                        ], [dim_num, node_num])
 
-   triangle_node(1:triangle_order, 1:triangle_num) = reshape((/ &
-                                                             1, 3, 11, 2, 7, 6, &
-                                                             13, 11, 3, 12, 7, 8, &
-                                                             3, 5, 13, 4, 9, 8, &
-                                                             15, 13, 5, 14, 9, 10, &
-                                                             11, 13, 21, 12, 17, 16, &
-                                                             23, 21, 13, 22, 17, 18, &
-                                                             13, 15, 23, 14, 19, 18, &
-                                                             25, 23, 15, 24, 19, 20/), (/triangle_order, triangle_num/))
+      triangle_node(1:triangle_order, 1:triangle_num) = reshape([ &
+                                                                1, 3, 11, 2, 7, 6, &
+                                                                13, 11, 3, 12, 7, 8, &
+                                                                3, 5, 13, 4, 9, 8, &
+                                                                15, 13, 5, 14, 9, 10, &
+                                                                11, 13, 21, 12, 17, 16, &
+                                                                23, 21, 13, 22, 17, 18, &
+                                                                13, 15, 23, 14, 19, 18, &
+                                                                25, 23, 15, 24, 19, 20], [triangle_order, triangle_num])
 
-   triangle_neighbor(1:3, 1:triangle_num) = reshape((/ &
-                                                    -1, 2, -1, &
-                                                    5, 1, 3, &
-                                                    -1, 4, 2, &
-                                                    7, 3, -1, &
-                                                    2, 6, -1, &
-                                                    -1, 5, 7, &
-                                                    4, 8, 6, &
-                                                    -1, 7, -1/), (/3, triangle_num/))
+      triangle_neighbor(1:3, 1:triangle_num) = reshape([ &
+                                                       -1, 2, -1, &
+                                                       5, 1, 3, &
+                                                       -1, 4, 2, &
+                                                       7, 3, -1, &
+                                                       2, 6, -1, &
+                                                       -1, 5, 7, &
+                                                       4, 8, 6, &
+                                                       -1, 7, -1], [3, triangle_num])
 
-   return
-end
-subroutine triangulation_order6_example2_size(node_num, triangle_num, &
-                                              hole_num)
+      return
+   end
+   subroutine triangulation_order6_example2_size(node_num, triangle_num, &
+                                                 hole_num)
 
 !*****************************************************************************80
 !
@@ -5221,20 +5220,22 @@ subroutine triangulation_order6_example2_size(node_num, triangle_num, &
 !
 !    Output, integer   HOLE_NUM, the number of holes.
 !
-   implicit none
+      implicit none
 
-   integer hole_num
-   integer node_num
-   integer triangle_num
+      integer, intent(inout) :: hole_num
+      integer, intent(inout) :: node_num
+      integer, intent(inout) :: triangle_num
 
-   node_num = 25
-   triangle_num = 8
-   hole_num = 0
+      node_num = 25
+      triangle_num = 8
+      hole_num = 0
 
-   return
-end
+      return
+   end
+end module m_rcm
 
 module Solve_Real_Poly
+   use precision, only: dp
 ! CACM Algorithm 493 by Jenkins & Traub
 
 ! Compliments of netlib   Sat Jul 26 11:57:43 EDT 1986
@@ -5243,29 +5244,29 @@ module Solve_Real_Poly
 ! Date: 2003-06-02  Time: 10:42:22
 
    implicit none
-   integer, parameter :: dp = selected_real_kind(14, 60)
+   integer, parameter :: dp_14_60 = selected_real_kind(14, 60)
 
 ! COMMON /global/ p, qp, k, qk, svk, sr, si, u, v, a, b, c, d, a1,  &
 !    a2, a3, a6, a7, e, f, g, h, szr, szi, lzr, lzi, eta, are, mre, n, nn
 
-   double precision, allocatable, save :: p(:), qp(:), k(:), qk(:), svk(:)
-   double precision, save :: sr, si, u, v, a, b, c, d, a1, a2, a3, a6, &
-      a7, e, f, g, h, szr, szi, lzr, lzi
+   real(kind=dp), allocatable, save :: p(:), qp(:), k(:), qk(:), svk(:)
+   real(kind=dp), save :: sr, si, u, v, a, b, c, d, a1, a2, a3, a6, &
+                          a7, e, f, g, h, szr, szi, lzr, lzi
    real, save :: eta, are, mre
    integer, save :: n, nn
 
    private
-   public :: dp, rpoly
+   public :: dp_14_60, rpoly
 
 contains
 
    subroutine rpoly(op, degree, zeror, zeroi, fail)
 
 ! Finds the zeros of a real polynomial
-! op  - double precision vector of coefficients in order of
+! op  - real(kind=dp) vector of coefficients in order of
 !       decreasing powers.
 ! degree   - integer degree of polynomial.
-! zeror, zeroi - output double precision vectors of real and imaginary parts
+! zeror, zeroi - output real(kind=dp) vectors of real and imaginary parts
 !                of the zeros.
 ! fail  - output logical parameter, true only if leading coefficient is zero
 !         or if rpoly has found fewer than degree zeros.
@@ -5275,17 +5276,17 @@ contains
 ! of the arrays in the common area and in the following declarations.
 ! The subroutine uses single precision calculations for scaling, bounds and
 ! error calculations.  All calculations for the iterations are done in
-! double precision.
+! real(kind=dp).
 
-      double precision, intent(IN) :: op(:)
+      real(kind=dp), intent(IN) :: op(:)
       integer, intent(IN OUT) :: degree
-      double precision, intent(OUT) :: zeror(:), zeroi(:)
+      real(kind=dp), intent(OUT) :: zeror(:), zeroi(:)
       logical, intent(OUT) :: fail
 
-      double precision, allocatable :: temp(:)
+      real(kind=dp), allocatable :: temp(:)
       real, allocatable :: pt(:)
 
-      double precision :: t, aa, bb, cc, factor
+      real(kind=dp) :: t, aa, bb, cc, factor
       real :: lo, MAX, MIN, xx, yy, cosr, sinr, xxx, x, sc, bnd, &
               xm, ff, df, dx, infin, smalno, base
       integer :: cnt, nz, i, j, jj, l, nm1
@@ -5298,7 +5299,7 @@ contains
 !         1.d0+eta is greater than 1.
 ! infiny  the largest floating-point number.
 ! smalno  the smallest positive floating-point number if the exponent range
-!         differs in single and double precision then smalno and infin should
+!         differs in single and real(kind=dp) then smalno and infin should
 !         indicate the smaller range.
 ! base    the base of the floating-point number system used.
 
@@ -5323,17 +5324,17 @@ contains
       nn = n + 1
 
 ! Algorithm fails if the leading coefficient is zero.
-      if (op(1) == 0.d0) then
+      if (op(1) == 0.0_dp) then
          fail = .true.
          degree = 0
          return
       end if
 
 ! Remove the zeros at the origin if any
-10    if (op(nn) == 0.0d0) then
+10    if (op(nn) == 0.0_dp) then
          j = degree - n + 1
-         zeror(j) = 0.d0
-         zeroi(j) = 0.d0
+         zeror(j) = 0.0_dp
+         zeroi(j) = 0.0_dp
          nn = nn - 1
          n = n - 1
          GO TO 10
@@ -5341,7 +5342,9 @@ contains
 
 ! Allocate various arrays
 
-      if (allocated(p)) deallocate (p, qp, k, qk, svk)
+      if (allocated(p)) then
+         deallocate (p, qp, k, qk, svk)
+      end if
       allocate (p(nn), qp(nn), k(nn), qk(nn), svk(nn), temp(nn), pt(nn))
 
 ! Make a copy of the coefficients
@@ -5349,12 +5352,14 @@ contains
 
 ! Start the algorithm for one zero
 30    if (n <= 2) then
-         if (n < 1) return
+         if (n < 1) then
+            return
+         end if
 
 ! calculate the final zero or pair of zeros
          if (n /= 2) then
             zeror(degree) = -p(2) / p(1)
-            zeroi(degree) = 0.0d0
+            zeroi(degree) = 0.0_dp
             return
          end if
          call quad(p(1), p(2), p(3), zeror(degree - 1), zeroi(degree - 1), &
@@ -5367,8 +5372,12 @@ contains
       MIN = infin
       do i = 1, nn
          x = abs(real(p(i)))
-         if (x > MAX) MAX = x
-         if (x /= 0. .and. x < MIN) MIN = x
+         if (x > MAX) then
+            MAX = x
+         end if
+         if (x /= 0. .and. x < MIN) then
+            MIN = x
+         end if
       end do
 
 ! Scale if there are large or very small coefficients computes a scale
@@ -5378,14 +5387,20 @@ contains
 ! The factor is a power of the base
       sc = lo / MIN
       if (sc <= 1.0) then
-         if (MAX < 10.) GO TO 60
-         if (sc == 0.) sc = smalno
+         if (MAX < 10.) then
+            GO TO 60
+         end if
+         if (sc == 0.) then
+            sc = smalno
+         end if
       else
-         if (infin / sc < MAX) GO TO 60
+         if (infin / sc < MAX) then
+            GO TO 60
+         end if
       end if
       l = log(sc) / log(base) + .5
-      factor = (base * 1.0d0)**l
-      if (factor /= 1.d0) then
+      factor = (base * 1.0_dp)**l
+      if (factor /= 1.0_dp) then
          p(1:nn) = factor * p(1:nn)
       end if
 
@@ -5398,7 +5413,9 @@ contains
       if (pt(n) /= 0.) then
 ! if newton step at the origin is better, use it.
          xm = -pt(nn) / pt(n)
-         if (xm < x) x = xm
+         if (xm < x) then
+            x = xm
+         end if
       end if
 
 ! chop the interval (0,x) until ff .le. 0
@@ -5437,7 +5454,7 @@ contains
       k(1) = p(1)
       aa = p(nn)
       bb = p(n)
-      zerok = k(n) == 0.d0
+      zerok = k(n) == 0.0_dp
       do jj = 1, 5
          cc = k(n)
          if (.not. zerok) then
@@ -5455,8 +5472,8 @@ contains
                j = nn - i
                k(j) = k(j - 1)
             end do
-            k(1) = 0.d0
-            zerok = k(n) == 0.d0
+            k(1) = 0.0_dp
+            zerok = k(n) == 0.0_dp
          end if
       end do
 
@@ -5474,7 +5491,7 @@ contains
          xx = xxx
          sr = bnd * xx
          si = bnd * yy
-         u = -2.0d0 * sr
+         u = -2.0_dp * sr
          v = bnd
 
 ! second stage calculation, fixed quadratic
@@ -5491,7 +5508,9 @@ contains
             nn = nn - nz
             n = nn - 1
             p(1:nn) = qp(1:nn)
-            if (nz == 1) GO TO 30
+            if (nz == 1) then
+               GO TO 30
+            end if
             zeror(j + 1) = lzr
             zeroi(j + 1) = lzi
             GO TO 30
@@ -5519,7 +5538,7 @@ contains
       integer, intent(IN) :: l2
       integer, intent(OUT) :: nz
 
-      double precision :: svu, svv, ui, vi, s
+      real(kind=dp) :: svu, svv, ui, vi, s
       real :: betas, betav, oss, ovv, ss, vv, ts, tv, ots, otv, tvv, tss
       integer :: type, j, iflag
       logical :: vpass, spass, vtry, stry
@@ -5542,19 +5561,29 @@ contains
 
 ! Estimate s
          ss = 0.
-         if (k(n) /= 0.d0) ss = -p(nn) / k(n)
+         if (k(n) /= 0.0_dp) then
+            ss = -p(nn) / k(n)
+         end if
          tv = 1.
          ts = 1.
          if (j /= 1 .and. type /= 3) then
 ! Compute relative measures of convergence of s and v sequences
-            if (vv /= 0.) tv = abs((vv - ovv) / vv)
-            if (ss /= 0.) ts = abs((ss - oss) / ss)
+            if (vv /= 0.) then
+               tv = abs((vv - ovv) / vv)
+            end if
+            if (ss /= 0.) then
+               ts = abs((ss - oss) / ss)
+            end if
 
 ! If decreasing, multiply two most recent convergence measures
             tvv = 1.
-            if (tv < otv) tvv = tv * otv
+            if (tv < otv) then
+               tvv = tv * otv
+            end if
             tss = 1.
-            if (ts < ots) tss = ts * ots
+            if (ts < ots) then
+               tss = ts * ots
+            end if
 
 ! Compare with convergence criteria
             vpass = tvv < betav
@@ -5571,9 +5600,13 @@ contains
 ! Choose iteration according to the fastest converging sequence
                vtry = .false.
                stry = .false.
-               if (spass .and. ((.not. vpass) .or. tss < tvv)) GO TO 40
+               if (spass .and. ((.not. vpass) .or. tss < tvv)) then
+                  GO TO 40
+               end if
 20             call quadit(ui, vi, nz)
-               if (nz > 0) return
+               if (nz > 0) then
+                  return
+               end if
 
 ! Quadratic iteration has failed. flag that it has
 ! been tried and decrease the convergence criterion.
@@ -5582,10 +5615,14 @@ contains
 
 ! Try linear iteration if it has not been tried and
 ! the s sequence is converging
-               if (stry .or. (.not. spass)) GO TO 50
+               if (stry .or. (.not. spass)) then
+                  GO TO 50
+               end if
                k(1:n) = svk(1:n)
 40             call realit(s, nz, iflag)
-               if (nz > 0) return
+               if (nz > 0) then
+                  return
+               end if
 
 ! Linear iteration has failed.  Flag that it has been
 ! tried and decrease the convergence criterion
@@ -5607,7 +5644,9 @@ contains
 
 ! Try quadratic iteration if it has not been tried
 ! and the v sequence is converging
-               if (vpass .and. (.not. vtry)) GO TO 20
+               if (vpass .and. (.not. vtry)) then
+                  GO TO 20
+               end if
 
 ! Recompute qp and scalar values to continue the second stage
                call quadsd(nn, u, v, p, qp, a, b)
@@ -5629,11 +5668,11 @@ contains
 ! uu,vv - coefficients of starting quadratic
 ! nz - number of zero found
 
-      double precision, intent(IN) :: uu
-      double precision, intent(IN) :: vv
+      real(kind=dp), intent(IN) :: uu
+      real(kind=dp), intent(IN) :: vv
       integer, intent(OUT) :: nz
 
-      double precision :: ui, vi
+      real(kind=dp) :: ui, vi
       real :: mp, omp, ee, relstp, t, zm
       integer :: type, i, j
       logical :: tried
@@ -5645,11 +5684,13 @@ contains
       j = 0
 
 ! Main loop
-10    call quad(1.d0, u, v, szr, szi, lzr, lzi)
+10    call quad(1.0_dp, u, v, szr, szi, lzr, lzi)
 
 ! Return if roots of the quadratic are real and not
 ! close to multiple or nearly equal and  of opposite sign.
-      if (abs(abs(szr) - abs(lzr)) > .01d0 * abs(lzr)) return
+      if (abs(abs(szr) - abs(lzr)) > 0.01_dp * abs(lzr)) then
+         return
+      end if
 
 ! Evaluate polynomial by quadratic synthetic division
       call quadsd(nn, u, v, p, qp, a, b)
@@ -5668,20 +5709,24 @@ contains
 
 ! Iteration has converged sufficiently if the
 ! polynomial value is less than 20 times this bound
-      if (mp <= 20.d0 * ee) then
+      if (mp <= 20.0_dp * ee) then
          nz = 2
          return
       end if
       j = j + 1
 
 ! Stop iteration after 20 steps
-      if (j > 20) return
+      if (j > 20) then
+         return
+      end if
       if (j >= 2) then
          if (.not. (relstp > .01 .or. mp < omp .or. tried)) then
 
 ! A cluster appears to be stalling the convergence.
 ! five fixed shift steps are taken with a u,v close to the cluster
-            if (relstp < eta) relstp = eta
+            if (relstp < eta) then
+               relstp = eta
+            end if
             relstp = sqrt(relstp)
             u = u - u * relstp
             v = v + v * relstp
@@ -5703,7 +5748,9 @@ contains
       call newest(type, ui, vi)
 
 ! If vi is zero the iteration is not converging
-      if (vi == 0.d0) return
+      if (vi == 0.0_dp) then
+         return
+      end if
       relstp = abs((vi - v) / vi)
       u = ui
       v = vi
@@ -5718,10 +5765,10 @@ contains
 ! nz    - number of zero found
 ! iflag - flag to indicate a pair of zeros near real axis.
 
-      double precision, intent(IN OUT) :: sss
+      real(kind=dp), intent(IN OUT) :: sss
       integer, intent(OUT) :: nz, iflag
 
-      double precision :: pv, kv, t, s
+      real(kind=dp) :: pv, kv, t, s
       real :: ms, mp, omp, ee
       integer :: i, j
 
@@ -5750,18 +5797,20 @@ contains
 
 ! Iteration has converged sufficiently if the
 ! polynomial value is less than 20 times this bound
-      if (mp <= 20.d0 * ((are + mre) * ee - mre * mp)) then
+      if (mp <= 20.0_dp * ((are + mre) * ee - mre * mp)) then
          nz = 1
          szr = s
-         szi = 0.d0
+         szi = 0.0_dp
          return
       end if
       j = j + 1
 
 ! Stop iteration after 10 steps
-      if (j > 10) return
+      if (j > 10) then
+         return
+      end if
       if (j >= 2) then
-         if (abs(t) <= .001d0 * abs(s - t) .and. mp > omp) then
+         if (abs(t) <= 0.001_dp * abs(s - t) .and. mp > omp) then
 ! A cluster of zeros near the real axis has been encountered,
 ! return with iflag set to initiate a quadratic iteration
             iflag = 1
@@ -5789,7 +5838,7 @@ contains
          end do
       else
 ! Use unscaled form
-         k(1) = 0.0d0
+         k(1) = 0.0_dp
          do i = 2, n
             k(i) = qk(i - 1)
          end do
@@ -5798,8 +5847,10 @@ contains
       do i = 2, n
          kv = kv * s + k(i)
       end do
-      t = 0.d0
-      if (abs(kv) > abs(k(n)) * 10.*eta) t = -pv / kv
+      t = 0.0_dp
+      if (abs(kv) > abs(k(n)) * 10.*eta) then
+         t = -pv / kv
+      end if
       s = s + t
       GO TO 10
    end subroutine realit
@@ -5854,15 +5905,17 @@ contains
 
       integer, intent(IN) :: type
 
-      double precision :: temp
+      real(kind=dp) :: temp
       integer :: i
 
       if (type /= 3) then
          temp = a
-         if (type == 1) temp = b
+         if (type == 1) then
+            temp = b
+         end if
          if (abs(a1) <= abs(temp) * eta * 10.) then
 ! If a1 is nearly zero then use a special form of the recurrence
-            k(1) = 0.d0
+            k(1) = 0.0_dp
             k(2) = -a7 * qp(1)
             do i = 3, n
                k(i) = a3 * qk(i - 2) - a7 * qp(i - 1)
@@ -5882,8 +5935,8 @@ contains
       end if
 
 ! Use unscaled form of the recurrence if type is 3
-      k(1) = 0.d0
-      k(2) = 0.d0
+      k(1) = 0.0_dp
+      k(2) = 0.0_dp
       do i = 3, n
          k(i) = qk(i - 2)
       end do
@@ -5896,10 +5949,10 @@ contains
 ! using the scalars computed in calcsc.
 
       integer, intent(IN) :: type
-      double precision, intent(OUT) :: uu
-      double precision, intent(OUT) :: vv
+      real(kind=dp), intent(OUT) :: uu
+      real(kind=dp), intent(OUT) :: vv
 
-      double precision :: a4, a5, b1, b2, c1, c2, c3, c4, temp
+      real(kind=dp) :: a4, a5, b1, b2, c1, c2, c3, c4, temp
 
 ! Use formulas appropriate to setting of type.
       if (type /= 3) then
@@ -5919,7 +5972,7 @@ contains
          c3 = b1 * b1 * a3
          c4 = c1 - c2 - c3
          temp = a5 + b1 * a4 - c4
-         if (temp /= 0.d0) then
+         if (temp /= 0.0_dp) then
             uu = u - (u * (c3 + c2) + v * (b1 * a1 + b2 * a7)) / temp
             vv = v * (1.+c4 / temp)
             return
@@ -5927,8 +5980,8 @@ contains
       end if
 
 ! If type=3 the quadratic is zeroed
-      uu = 0.d0
-      vv = 0.d0
+      uu = 0.0_dp
+      vv = 0.0_dp
       return
    end subroutine newest
 
@@ -5938,10 +5991,10 @@ contains
 ! quotient in q and the remainder in a,b.
 
       integer, intent(IN) :: nn
-      double precision, intent(IN) :: u, v, p(nn)
-      double precision, intent(OUT) :: q(nn), a, b
+      real(kind=dp), intent(IN) :: u, v, p(nn)
+      real(kind=dp), intent(OUT) :: q(nn), a, b
 
-      double precision :: c
+      real(kind=dp) :: c
       integer :: i
 
       b = p(1)
@@ -5964,43 +6017,53 @@ contains
 ! larger zero if the zeros are real and both zeros are complex.
 ! The smaller real zero is found directly from the product of the zeros c/a.
 
-      double precision, intent(IN) :: a, b1, c
-      double precision, intent(OUT) :: sr, si, lr, li
+      real(kind=dp), intent(IN) :: a, b1, c
+      real(kind=dp), intent(OUT) :: sr, si, lr, li
 
-      double precision :: b, d, e
+      real(kind=dp) :: b, d, e
 
-      if (a /= 0.d0) GO TO 20
-      sr = 0.d0
-      if (b1 /= 0.d0) sr = -c / b1
-      lr = 0.d0
-10    si = 0.d0
-      li = 0.d0
+      if (a /= 0.0_dp) then
+         GO TO 20
+      end if
+      sr = 0.0_dp
+      if (b1 /= 0.0_dp) then
+         sr = -c / b1
+      end if
+      lr = 0.0_dp
+10    si = 0.0_dp
+      li = 0.0_dp
       return
 
-20    if (c == 0.d0) then
-         sr = 0.d0
+20    if (c == 0.0_dp) then
+         sr = 0.0_dp
          lr = -b1 / a
          GO TO 10
       end if
 
 ! Compute discriminant avoiding overflow
-      b = b1 / 2.d0
+      b = b1 / 2.0_dp
       if (abs(b) >= abs(c)) then
-         e = 1.d0 - (a / b) * (c / b)
+         e = 1.0_dp - (a / b) * (c / b)
          d = sqrt(abs(e)) * abs(b)
       else
          e = a
-         if (c < 0.d0) e = -a
+         if (c < 0.0_dp) then
+            e = -a
+         end if
          e = b * (b / abs(c)) - e
          d = sqrt(abs(e)) * sqrt(abs(c))
       end if
-      if (e >= 0.d0) then
+      if (e >= 0.0_dp) then
 
 ! Real zeros
-         if (b >= 0.d0) d = -d
+         if (b >= 0.0_dp) then
+            d = -d
+         end if
          lr = (-b + d) / a
-         sr = 0.d0
-         if (lr /= 0.d0) sr = (c / lr) / a
+         sr = 0.0_dp
+         if (lr /= 0.0_dp) then
+            sr = (c / lr) / a
+         end if
          GO TO 10
       end if
 ! complex conjugate zeros

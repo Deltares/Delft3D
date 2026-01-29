@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,9 +30,18 @@
 !
 !
 
+module m_getstring
+
+   implicit none
+
+contains
+
    !> Get a string
    subroutine getstring(text, string)
-      use m_devices
+      use m_devices, only: iws, ihs
+      use m_helpnow, only: nlevel, wrdkey
+      use m_timlin, only: timlin
+      use m_fkeys, only: fkeys
       implicit none
       character(len=*), intent(in) :: text
       character(len=*), intent(out) :: string
@@ -44,11 +53,8 @@
       integer :: key
       integer :: nbckgr
       integer :: nforgr
-      integer :: nlevel
       integer :: lstring
       character string_tmp * 40
-      character wrdkey * 40
-      common / helpnow / wrdkey, nlevel
 
       ixp = iws / 2
       iyp = ihs / 2
@@ -82,3 +88,5 @@
       call itextcolourn(nforgr, nbckgr)
       return
    end subroutine getstring
+
+end module m_getstring

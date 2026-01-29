@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,38 +30,61 @@
 !
 !
 
-subroutine getfetch(k, U10, FetchL, FetchD) !and windspeed
-   use m_flow, only: Hs, Wx, Wy
-   use m_waves, only: fetch, nwf, fetdp
-   use m_sferic
+module m_getfetch
+
    implicit none
 
-   integer :: k
-   double precision :: U10, FetchL, FetchD
+   private
 
-   integer :: L, nw1, nw2
-   double precision :: alfa1, alfa2, dir
+   public :: getfetch
 
-   FetchL = 0d0; FetchD = 0d0
+contains
 
-   if (Hs(k) > 0d0) then
-      call getlink1(k, L) ! het is maar voor wind
-      U10 = sqrt(WX(L) * WX(L) + WY(L) * WY(L))
-      if (U10 < 1d0) return
+   subroutine getfetch(k, U10, FetchL, FetchD) !and windspeed
+      use precision, only: dp
+      use m_flow, only: Hs
+      use m_waves, only: fetch, nwf, fetdp
+      use m_sferic, only: twopi
+      use m_get_link1, only: getlink1
+      use m_wind, only: wx, wy
 
-      DIR = atan2(WY(L), WX(L))
-      if (DIR < 0d0) DIR = DIR + TWOPI
+      implicit none
 
-      dir = dir / twopi
-      if (dir >= 1d0) dir = 0d0
-      NW1 = DIR * (nwf - 1) + 1
-      NW2 = NW1 + 1
+      integer :: k
+      real(kind=dp) :: U10, FetchL, FetchD
 
-      if (fetch(nw1, k) > 0d0 .or. fetch(nw2, k) > 0d0) then
-         alfa2 = (nwf - 1) * (dir - dble(nw1 - 1) / dble(nwf - 1))
-         alfa1 = 1d0 - alfa2
-         fetchL = alfa1 * fetch(nw1, k) + alfa2 * fetch(nw2, k)
-         fetchD = alfa1 * fetdp(nw1, k) + alfa2 * fetdp(nw2, k)
+      integer :: L, nw1, nw2
+      real(kind=dp) :: alfa1, alfa2, dir
+
+      FetchL = 0.0_dp
+      FetchD = 0.0_dp
+
+      if (Hs(k) > 0.0_dp) then
+         call getlink1(k, L) ! het is maar voor wind
+         U10 = sqrt(WX(L) * WX(L) + WY(L) * WY(L))
+         if (U10 < 1.0_dp) then
+            return
+         end if
+
+         DIR = atan2(WY(L), WX(L))
+         if (DIR < 0.0_dp) then
+            DIR = DIR + TWOPI
+         end if
+
+         dir = dir / twopi
+         if (dir >= 1.0_dp) then
+            dir = 0.0_dp
+         end if
+         NW1 = DIR * (nwf - 1) + 1
+         NW2 = NW1 + 1
+
+         if (fetch(nw1, k) > 0.0_dp .or. fetch(nw2, k) > 0.0_dp) then
+            alfa2 = (nwf - 1) * (dir - real(nw1 - 1, kind=dp) / real(nwf - 1, kind=dp))
+            alfa1 = 1.0_dp - alfa2
+            fetchL = alfa1 * fetch(nw1, k) + alfa2 * fetch(nw2, k)
+            fetchD = alfa1 * fetdp(nw1, k) + alfa2 * fetdp(nw2, k)
+         end if
       end if
-   end if
-end subroutine getfetch
+   end subroutine getfetch
+
+end module m_getfetch

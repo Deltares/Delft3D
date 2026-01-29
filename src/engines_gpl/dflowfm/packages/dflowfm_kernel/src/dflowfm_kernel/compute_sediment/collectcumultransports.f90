@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,15 +30,24 @@
 !
 !
 
-   subroutine collectcumultransports()
-      use m_flowtimes, only: dts
-      use m_flowgeom
-      use m_fm_erosed
+module m_collectcumultransports
 
-      implicit none
+   implicit none
+
+   private
+
+   public :: collectcumultransports
+
+contains
+
+   subroutine collectcumultransports()
+      use precision, only: dp
+      use m_flowtimes, only: dts
+      use m_flowgeom, only: ndx
+      use m_fm_erosed, only: morfac, lsedtot, sbxcum, sbcx, sbwx, sbycum, sbcy, sbwy, ssxcum, sscx, sswx, ssycum, sscy, sswy
 
       integer :: k, l
-      double precision :: dtmor_
+      real(kind=dp) :: dtmor_
 
       ! cumulative transports
       dtmor_ = dts * morfac
@@ -52,3 +61,5 @@
       end do
 
    end subroutine
+
+end module m_collectcumultransports

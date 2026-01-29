@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -30,7 +30,7 @@
 !!!
 !!! Dio-const-rw: Datasets for one const
 !!!
-!!! (c) Deltares, nov 2002
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!
@@ -297,7 +297,7 @@ function DioConstCreate(name, varType) result(const)
     type(DioConstType)       :: const  ! dataset
 
     ! arguments
-    character*(*), intent(in) :: name    ! dataset name
+    character(len=*), intent(in) :: name    ! dataset name
     integer                   :: varType ! type of variabe
 
     ! create the ds and the header
@@ -469,7 +469,7 @@ function DioConstDefine(stream, name, varType) result(const)
 
     ! arguments
     type(DioStreamType), target, intent(in) :: stream         ! stream
-    character*(*)              , intent(in) :: name           ! const name
+    character(len=*)              , intent(in) :: name           ! const name
     integer                    , intent(in) :: varType        ! type of var to be stored
 
     ! body
@@ -539,7 +539,7 @@ function DioConstGetDataset(stream, name) result(const)
 
     ! arguments
     type(DioStreamType), target, intent(in) :: stream  ! stream
-    character*(*)              , intent(in) :: name    ! dataset name
+    character(len=*)           , intent(in) :: name    ! dataset name
     logical                                 :: retVal ! result of read call
 
     ! body

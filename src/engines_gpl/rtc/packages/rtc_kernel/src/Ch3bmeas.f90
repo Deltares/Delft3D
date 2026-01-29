@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -81,7 +81,7 @@
          ELSEIF (ONCH3B(IMEAS) .EQ. '>') THEN
             CHKTRUE = (RVAL .GT. MSON3B(IMEAS))
          ELSE
-            CALL ERRMSG (920,0, ONCH3B(IMEAS),' 3B-measure file', IOUT1)
+            call write_error_message_rtc (920,0, ONCH3B(IMEAS),' 3B-measure file', IOUT1)
             RetVal = 920
             Return
          ENDIF
@@ -99,7 +99,7 @@
          ELSEIF (OFCH3B(IMEAS) .EQ. '>') THEN
             CHKTRUE = (RVAL .GT. MSOFF3B(IMEAS))
          ELSE
-            CALL ERRMSG (920,0, OFCH3B(IMEAS), ' 3B-measure file', IOUT1)
+            call write_error_message_rtc (920,0, OFCH3B(IMEAS), ' 3B-measure file', IOUT1)
             RetVal = 920
             Return
          ENDIF

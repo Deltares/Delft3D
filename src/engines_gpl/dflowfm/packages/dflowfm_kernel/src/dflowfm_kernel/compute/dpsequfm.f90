@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -26,13 +26,16 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-
-function dpsequfm(dvar1, dvar2, eps) ! equal within eps?
+module m_dpsequfm
    implicit none
-   logical :: dpsequfm
-   double precision, intent(in) :: dvar1, dvar2, eps
-   dpsequfm = abs(dvar1 - dvar2) < eps
-end function dpsequfm
+contains
+!
+!
+
+   function dpsequfm(dvar1, dvar2, eps) ! equal within eps?
+      use precision, only: dp
+      logical :: dpsequfm
+      real(kind=dp), intent(in) :: dvar1, dvar2, eps
+      dpsequfm = abs(dvar1 - dvar2) < eps
+   end function dpsequfm
+end module m_dpsequfm

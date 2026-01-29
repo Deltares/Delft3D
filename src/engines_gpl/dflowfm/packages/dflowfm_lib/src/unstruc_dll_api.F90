@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@
 module dll_api
    use iso_c_binding
    use unstruc_api
-   use unstruc_display, only: jaGUI ! this should be removed when jaGUI = 0 by default
+   use m_gui ! this should be removed when jaGUI = 0 by default
 
    implicit none
 

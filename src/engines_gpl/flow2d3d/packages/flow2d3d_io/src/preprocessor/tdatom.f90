@@ -1,7 +1,7 @@
-subroutine tdatom(runid, filmrs, nuerr, gdp) 
+subroutine tdatom(runid_in, filmrs, nuerr, gdp) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -141,8 +141,8 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     integer        , intent(out) :: nuerr  !! Exit code: 0 := ok, < 0 then error
     character(12)  , intent(in)  :: filmrs !! File name for DELFT3D_MOR FLOW 
                                            !! input file (MD-flow.xxx) 
-    character(*)   , intent(in)  :: runid  !! Run identification code for the current simulation
-                                           !! (used to determine the names of the in/output files used by the system)
+    character(*)   , intent(in)  :: runid_in !! Run identification code for the current simulation
+                                             !! (used to determine the names of the in/output files used by the system)
 ! 
 ! Local variables 
 ! 
@@ -188,7 +188,6 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
                                                                        !    K = 1,.....,NOPEN  
     integer, dimension(:,:), pointer                    :: mnksrc      ! MNK-coord. for discharges  
     integer, dimension(:), pointer                      :: nhsub       ! integer array to store sequence numbers of harmonic boundary condition in own subdomain 
-    integer, external                                   :: newlun 
     logical                                             :: found       ! If FOUND = TRUE then recnam in the MD-file was found  
     logical                                             :: error       ! Flag=TRUE if an error is encountered  
     logical                                             :: solrad_read ! Flag=TRUE means Nett Solar Radiation is to be read from .tem file 
@@ -272,6 +271,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     character(6)                                        :: prgnm       ! Help var. determining the prog. name currently active  
     character(9)                                        :: keyw        ! Name of record to look for in the MD-file 
     character(5)                                        :: versio 
+    character(:), allocatable                           :: runid       ! Run identification code for the current simulation
 ! 
 !! executable statements ------------------------------------------------------- 
 ! 
@@ -413,6 +413,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     ! 
     ! Initializing tdatom part of FLOW simulation program 
     ! 
+    runid = runid_in
     call sysini(error     ,runid     ,filmrs    ,prgnm     , & 
               & versio    ,filmd     ,gdp       ) 
     ! 

@@ -365,22 +365,14 @@ namespace Deltares.UGrid.Api
             Array.Copy(geometry.BranchGeometryX.CreateValueArray<double>(numberOfGeometryPoints), disposableNetworkGeometry.BranchGeometryX, disposableNetworkGeometry.BranchGeometryX.Length);
             Array.Copy(geometry.BranchGeometryY.CreateValueArray<double>(numberOfGeometryPoints), disposableNetworkGeometry.BranchGeometryY, disposableNetworkGeometry.BranchGeometryY.Length);
 
-            DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_get_1d_network_branchorder_dll),
-                () => IoNetCfdImports.ionc_get_1d_network_branchorder_dll(ref dataSetId, ref networkId, ref geometry.BranchOrder, ref numberOfBranches));
-
-            Array.Copy(geometry.BranchOrder.CreateValueArray<int>(numberOfBranches), disposableNetworkGeometry.BranchOrder, disposableNetworkGeometry.BranchOrder.Length);
-
-            try
+            if (TryIoNetCfdCall(nameof(IoNetCfdImports.ionc_get_1d_network_branchorder_dll), () => IoNetCfdImports.ionc_get_1d_network_branchorder_dll(ref dataSetId, ref networkId, ref geometry.BranchOrder, ref numberOfBranches)))
             {
-                DoIoNetCfdCall(nameof(IoNetCfdImports.ionc_get_1d_network_branchtype_dll),
-                    () => IoNetCfdImports.ionc_get_1d_network_branchtype_dll(ref dataSetId, ref networkId,
-                        ref geometry.BranchTypes, ref numberOfBranches));
-
-                Array.Copy(geometry.BranchTypes.CreateValueArray<int>(numberOfBranches), disposableNetworkGeometry.BranchTypes, disposableNetworkGeometry.BranchTypes.Length);
+                Array.Copy(geometry.BranchOrder.CreateValueArray<int>(numberOfBranches), disposableNetworkGeometry.BranchOrder, disposableNetworkGeometry.BranchOrder.Length);
             }
-            catch (IoNetCdfNativeError netCdfNativeError) when(netCdfNativeError.ErrorCode == IoNetCfdImports.VariableNotFoundErrorCode)
+
+            if (TryIoNetCfdCall(nameof(IoNetCfdImports.ionc_get_1d_network_branchtype_dll), () => IoNetCfdImports.ionc_get_1d_network_branchtype_dll(ref dataSetId, ref networkId, ref geometry.BranchTypes, ref numberOfBranches)))
             {
-                // Optional branch type variable could not be found
+                Array.Copy(geometry.BranchTypes.CreateValueArray<int>(numberOfBranches), disposableNetworkGeometry.BranchTypes, disposableNetworkGeometry.BranchTypes.Length);
             }
 
             return disposableNetworkGeometry;
@@ -760,6 +752,20 @@ namespace Deltares.UGrid.Api
             {
                 // Variable could not be found
                 return -1;
+            }
+        }
+
+        private static bool TryIoNetCfdCall(string ioNetCdfFunctionName, Func<int> ioNetCdfCall, [CallerMemberName] string cSharpFunctionName = null)
+        {
+            try
+            {
+                DoIoNetCfdCall(ioNetCdfFunctionName, ioNetCdfCall, cSharpFunctionName);
+                return true;
+            }
+            catch (IoNetCdfNativeError netCdfNativeError) when (netCdfNativeError.ErrorCode == IoNetCfdImports.VariableNotFoundErrorCode)
+            {
+                // The optional variable could not be found
+                return false;
             }
         }
 

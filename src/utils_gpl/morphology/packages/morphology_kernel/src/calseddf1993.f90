@@ -4,7 +4,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
                       & epsmax    ,epsmxc    ,seddif    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -71,7 +71,6 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
     real(fp)                    :: betaef
     real(fp)                    :: epscur
     real(fp)                    :: epswav
-    real(fp)                    :: hs
     real(fp)                    :: zi
 !
 !! executable statements -------------------------------------------------------

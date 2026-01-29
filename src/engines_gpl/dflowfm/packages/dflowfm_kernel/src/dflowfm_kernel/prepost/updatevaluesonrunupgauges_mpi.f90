@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,63 +31,82 @@
 !
 
 !< Reduce runup values over domains
-subroutine updateValuesOnRunupGauges_mpi()
-   use m_monitoring_runupgauges
-   use m_partitioninfo
-   use m_timer
-   use mpi
+module m_updatevaluesonrunupgauges_mpi
 
    implicit none
 
-   integer :: irug, ierror
-   double precision, allocatable, dimension(:, :) :: ruh
-   double precision, allocatable, dimension(:, :) :: xy, xy_red
+   private
 
-   if (.not. (allocated(ruh))) then
-      allocate (ruh(2, num_rugs))
-      allocate (xy(2, num_rugs))
-      allocate (xy_red(2, num_rugs))
-   end if
+   public :: updatevaluesonrunupgauges_mpi
 
-   ruh = 0d0 ! safety
-   xy = 0d0
-   xy_red = 0d0
+contains
 
-   do irug = 1, num_rugs
-      ruh(1, irug) = rug(irug)%max_rug_height
-   end do
-   ruh(2, :) = my_rank
+   subroutine updateValuesOnRunupGauges_mpi()
+      use precision, only: dp
+      use m_monitoring_runupgauges, only: num_rugs, rug
+      use m_partitioninfo, only: my_rank, reduce_rug, dfm_comm_dfmworld
+      use m_timer, only: jatimer, starttimer, ioutputmpi, stoptimer
+      use mpi
 
-   ! Obtain value of maximum runup across domains, and domainnr of max value
-   if (jatimer == 1) call starttimer(IOUTPUTMPI)
-   call reduce_rug(ruh, num_rugs)
-   if (jatimer == 1) call stoptimer(IOUTPUTMPI)
+      integer :: irug, ierror
+      real(kind=dp), allocatable, dimension(:, :) :: ruh
+      real(kind=dp), allocatable, dimension(:, :) :: xy, xy_red
 
-   ! Reduce ruh and retrieve coordinates of maximum ruh
-   do irug = 1, num_rugs
-      rug(irug)%max_rug_height = ruh(1, irug)
-      if (int(ruh(2, irug)) == my_rank) then
-         xy(1, irug) = rug(irug)%max_x
-         xy(2, irug) = rug(irug)%max_y
+      if (.not. (allocated(ruh))) then
+         allocate (ruh(2, num_rugs))
+         allocate (xy(2, num_rugs))
+         allocate (xy_red(2, num_rugs))
       end if
-   end do
 
-   ! Reduction of the sum of the coordinates, Could be mpi_reduce(rank=0)
-   if (jatimer == 1) call starttimer(IOUTPUTMPI)
-   call mpi_allreduce(xy, xy_red, 2 * num_rugs, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-   if (jatimer == 1) call stoptimer(IOUTPUTMPI)
-   if (ierror /= 0) then
-      goto 1234
-   end if
+      ruh = 0.0_dp ! safety
+      xy = 0.0_dp
+      xy_red = 0.0_dp
 
-   do irug = 1, num_rugs
-      rug(irug)%max_x = xy_red(1, irug)
-      rug(irug)%max_y = xy_red(2, irug)
-   end do
+      do irug = 1, num_rugs
+         ruh(1, irug) = rug(irug)%max_rug_height
+      end do
+      ruh(2, :) = my_rank
 
-1234 continue
-   deallocate (xy_red)
-   deallocate (xy)
-   deallocate (ruh)
+      ! Obtain value of maximum runup across domains, and domainnr of max value
+      if (jatimer == 1) then
+         call starttimer(IOUTPUTMPI)
+      end if
+      call reduce_rug(ruh, num_rugs)
+      if (jatimer == 1) then
+         call stoptimer(IOUTPUTMPI)
+      end if
 
-end subroutine updateValuesOnRunupGauges_mpi
+      ! Reduce ruh and retrieve coordinates of maximum ruh
+      do irug = 1, num_rugs
+         rug(irug)%max_rug_height = ruh(1, irug)
+         if (int(ruh(2, irug)) == my_rank) then
+            xy(1, irug) = rug(irug)%max_x
+            xy(2, irug) = rug(irug)%max_y
+         end if
+      end do
+
+      ! Reduction of the sum of the coordinates, Could be mpi_reduce(rank=0)
+      if (jatimer == 1) then
+         call starttimer(IOUTPUTMPI)
+      end if
+      call mpi_allreduce(xy, xy_red, 2 * num_rugs, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+      if (jatimer == 1) then
+         call stoptimer(IOUTPUTMPI)
+      end if
+      if (ierror /= 0) then
+         goto 1234
+      end if
+
+      do irug = 1, num_rugs
+         rug(irug)%max_x = xy_red(1, irug)
+         rug(irug)%max_y = xy_red(2, irug)
+      end do
+
+1234  continue
+      deallocate (xy_red)
+      deallocate (xy)
+      deallocate (ruh)
+
+   end subroutine updateValuesOnRunupGauges_mpi
+
+end module m_updatevaluesonrunupgauges_mpi

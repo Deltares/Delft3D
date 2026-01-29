@@ -49,31 +49,21 @@ set(oss_dependencies_general
                              
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     set(oss_dependencies ${oss_dependencies_general})
 
     target_link_libraries(${executable_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+    )
          
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
                         netcdff)
-
-    target_link_libraries(${executable_name} ${oss_dependencies})
 endif(WIN32)
-oss_include_libraries(${executable_name} oss_dependencies)
+
+target_link_libraries(${executable_name} ${oss_dependencies})
 
 
 # Define how the files should be structured within Visual Studio

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  Delft FEWS Published Interface (Copyright 2003 WL | Delft Hydraulics) -->
+<schema xmlns:fews="http://www.wldelft.nl/fews/PI" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.wldelft.nl/fews/PI" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="pi_sharedtypes.xsd"/>
+	<element name="TimeSeries" type="fews:TimeSeriesCollectionComplexType">
+		<annotation>
+			<documentation>Time series data represent data collected over a given period of time at a specific location</documentation>
+		</annotation>
+	</element>
+	<complexType name="TimeSeriesCollectionComplexType">
+		<annotation>
+			<documentation>Time series data represent data collected over a given period of time at a specific location</documentation>
+		</annotation>
+		<sequence>
+			<element name="timeZone" type="fews:TimeZoneSimpleType" default="0.0" minOccurs="0"/>
+			<element name="series" type="fews:TimeSeriesComplexType" maxOccurs="unbounded">
+				<annotation>
+					<documentation>Time series data represent data collected over a given
+                        period of time at a specific location</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="version" type="fews:versionString" use="optional" default="1.2">
+			<annotation>
+				<documentation>The version of the published interface schemas</documentation>
+			</annotation>
+		</attribute>
+	</complexType>
+	<complexType name="TimeSeriesComplexType">
+		<annotation>
+			<documentation>Time series data represent data collected over a given
+                period of time at a specific location</documentation>
+		</annotation>
+		<sequence>
+			<element name="header" type="fews:HeaderComplexType">
+				<annotation>
+					<documentation>
+                        The header is used to specify the link to the location
+                        and the contents</documentation>
+				</annotation>
+			</element>
+			<sequence minOccurs="0" maxOccurs="unbounded">
+				<element name="properties" type="fews:PropertiesComplexType" minOccurs="0">
+				<annotation>
+					<documentation>
+						Properties that are applicable to the events following
+                    </documentation>
+				</annotation>
+				</element>
+				<element name="event" type="fews:EventComplexType" minOccurs="0" maxOccurs="unbounded">
+				<annotation>
+					<documentation>unlimited number of events with a constant timeStep.
+                        The date, time and value attributes are required, the
+                        quality flag is optional. When no events exists the event values are stored in a bin file.
+                        The binary file has the same name as the xml file only the extension is "bin" instead of "xml".
+                        The bin file contains only IEEE 32 bit reals. The length of the bin file is 4 times the number of events for all time series in the file.
+                        The byte order in the bin file is always Intel x86. The bin file is only allowed for equidistant time steps.
+                    </documentation>
+				</annotation>
+			</element>
+
+			</sequence>
+			<element name="comment" type="fews:commentString" minOccurs="0">
+				<annotation>
+					<documentation>use this field as a notebook to add comments, suggestions
+                        description of data entered etc.</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="HeaderComplexType">
+		<annotation>
+			<documentation>The header is used to specify the link to the location
+                and the contents</documentation>
+		</annotation>
+		<sequence>
+			<element name="type" type="fews:timeSeriesType">
+				<annotation>
+					<documentation>
+                        Type of data, either accumulative or instantaneous.
+                        For accumulative data the time/date of the event is
+                        the moment at which the data was gathered.
+                    </documentation>
+				</annotation>
+			</element>
+			<element name="locationId" type="fews:LocationIdSimpleType"/>
+			<element name="parameterId" type="fews:ParameterSimpleType"/>
+			<element name="qualifierId" type="fews:idString" minOccurs="0" maxOccurs="unbounded">
+				<annotation>
+					<documentation>
+						Since version 1.4
+						Further clarification of the time series, when the parameter, location and time step are not enough to
+						identify a time series.
+						Multiple qualifiers are allowed, the order of the qualifiers is insignificant.
+						A different order of the qualifier ids should not map to the an other time series.
+					</documentation>
+				</annotation>
+			</element>
+			<sequence minOccurs="0">
+				<element name="ensembleId" type="fews:idString" minOccurs="0">
+					<annotation>
+						<documentation>
+							Since version 1.4
+							An ensemble forecast consists of a number of simulations made by making small changes to the
+							estimate of the current state used to initialize the simulation. These small changes are
+							designed to reflect the uncertainty in the estimate. Every simulation has it's own ensembleMemberIndex
+							When specified the ensembleMemberIndex is required
+						</documentation>
+					</annotation>
+				</element>
+				<choice>
+					<element name="ensembleMemberIndex" type="nonNegativeInteger">
+						<annotation>
+							<documentation>
+								Since version 1.4 An ensemble forecast consists of a number of simulations made by making small changes to the estimate of the current state used to initialize the simulation. These small changes are designed to reflect the uncertainty in the estimate. Every simulation has it's own ensembleMemberIndex. Ensemble id is not required when the ensembleMemberIndex is specified
+							</documentation>
+						</annotation>
+					</element>
+					<element name="ensembleMemberId" type="fews:idString">
+						<annotation>
+							<documentation>
+								Since version 1.10 An ensemble forecast consists of a number of simulations made by making small changes to the estimate of the current state used to initialize the simulation. These small changes are designed to reflect the uncertainty in the estimate. Every simulation has it's own ensembleMemberId. Ensemble id is not required when the ensembleMemberId is specified
+							</documentation>
+						</annotation>
+					</element>
+				</choice>
+			</sequence>
+			<element name="timeStep" type="fews:TimeStepComplexType">
+				<annotation>
+					<documentation>The timeStep element provides three choices</documentation>
+				</annotation>
+			</element>
+			<element name="startDate" type="fews:DateTimeComplexType">
+				<annotation>
+					<documentation>date/time of the first event</documentation>
+				</annotation>
+			</element>
+			<element name="endDate" type="fews:DateTimeComplexType">
+				<annotation>
+					<documentation>date/time of the last event</documentation>
+				</annotation>
+			</element>
+			<element name="forecastDate" type="fews:DateTimeComplexType" minOccurs="0">
+				<annotation>
+					<documentation>
+						Since version 1.5
+						date/time of the forecast. By default the forecastDate equals the start time</documentation>
+				</annotation>
+			</element>
+			<element name="missVal" type="double" default="NaN">
+				<annotation>
+					<documentation>Missing value definition for this TimeSeries. Defaults to NaN if left empty</documentation>
+				</annotation>
+			</element>
+			<element name="longName" type="string" minOccurs="0">
+				<annotation>
+					<documentation>Optional long (descriptive) name</documentation>
+				</annotation>
+			</element>
+			<element name="stationName" type="fews:nameString" minOccurs="0">
+				<annotation>
+					<documentation>Station name</documentation>
+				</annotation>
+			</element>
+				<element name="lat" type="double" minOccurs="0">
+				<annotation>
+					<documentation>Latitude of station</documentation>
+				</annotation>
+			</element>
+			<element name="lon" type="double" minOccurs="0">
+				<annotation>
+					<documentation>Longitude of station</documentation>
+				</annotation>
+			</element>
+			<element name="x" type="double" minOccurs="0">
+				<annotation>
+					<documentation>X coordinate of station</documentation>
+				</annotation>
+			</element>
+			<element name="y" type="double" minOccurs="0">
+				<annotation>
+					<documentation>Y coordinate of station</documentation>
+				</annotation>
+			</element>
+			<element name="z" type="double" minOccurs="0">
+				<annotation>
+					<documentation>Z coordinate of station</documentation>
+				</annotation>
+			</element>
+			<element name="units" type="string" minOccurs="0">
+				<annotation>
+					<documentation>Optional string that identifies the units used</documentation>
+				</annotation>
+			</element>
+			<element name="sourceOrganisation" type="string" minOccurs="0"/>
+			<element name="sourceSystem" type="string" minOccurs="0"/>
+			<element name="fileDescription" type="string" minOccurs="0">
+				<annotation>
+					<documentation>Description of (the content of)
+                        this file</documentation>
+				</annotation>
+			</element>
+			<element name="creationDate" type="date" minOccurs="0">
+				<annotation>
+					<documentation>Date on which this TimeSeries was
+                        created</documentation>
+				</annotation>
+			</element>
+			<element name="creationTime" type="time" minOccurs="0">
+				<annotation>
+					<documentation>Time on which this TimeSeries was
+                        created</documentation>
+				</annotation>
+			</element>
+			<element name="region" type="string" minOccurs="0">
+				<annotation>
+					<documentation>code/description of the region. Needed if the id's
+                        can be the same in different regions.</documentation>
+				</annotation>
+			</element>
+			<element name="thresholds" type="fews:ThresholdComplexType" minOccurs="0"/>
+		</sequence>
+	</complexType>
+	<complexType name="ThresholdComplexType">
+		<sequence>
+			<element name="highLevelThreshold" type="fews:HighLevelThresholdsComplexType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="HighLevelThresholdsComplexType">
+		<attribute name="id" type="string" use="required"/>
+		<attribute name="name" type="string" use="optional"/>
+		<attribute name="value" type="float" use="required"/>
+	</complexType>
+	<complexType name="EventComplexType">
+		<annotation>
+			<documentation>unlimited number of events with a constant timeStep.
+                Each TimeSeries should contain at least one element (records).
+                The date, time and value attributes are required, the
+                quality flag is optional. </documentation>
+		</annotation>
+		<attribute name="date" type="fews:dateType" use="required">
+			<annotation>
+				<documentation>ISO 8601 (yyyy-mm-dd)</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="time" type="fews:timeType" use="required">
+			<annotation>
+				<documentation>ISO 8601 (hh:mm:ss.dsec  e.g. 16:30:0.001)</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="value" type="double" use="required"/>
+		<attribute name="flag" type="int" use="optional"/>
+		<attribute name="flagSource" type="string" use="optional">
+			<annotation>
+				<documentation>Since version 1.11, validation rule, default codes are MAN (manual), MOD (modifier), SN (soft min), HN (hard min), SX (soft max), HX (hard max), ROR (rate of rise), ROF (rate of fall), SR (same reading), TS (time shift), SVS (secondary validation series), SVF (secondary validation flags)</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="comment" type="string" use="optional">
+			<annotation>
+				<documentation>Since version 1.3</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="user" type="string" use="optional">
+			<annotation>
+				<documentation>Since version 1.10</documentation>
+			</annotation>
+		</attribute>
+	</complexType>
+</schema>

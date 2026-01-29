@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,64 +30,73 @@
 !
 !
 
- !> divide segment 1-3 (between latitudes y1 and y3) by y2,
- !> such that aspect ratios of the segments 1-2 and 2-3 are equal:
- !>   |y2-y1| / cos((y1+y2)/2) = |y3-y2| / cos((y2+y3)/2)
- subroutine comp_middle_latitude(y1_, y3_, y2, ierr)
-    use m_sferic
-    implicit none
+module m_comp_middle_latitude
 
-    double precision, intent(in) :: y1_
-    double precision, intent(in) :: y3_
-    double precision, intent(out) :: y2
-    integer, intent(out) :: ierr
+   implicit none
 
-    double precision :: y1, y3
-    double precision :: y2min, y2max
-    double precision :: A, dAdy2
+contains
 
-    integer :: iter
+   !> divide segment 1-3 (between latitudes y1 and y3) by y2,
+   !> such that aspect ratios of the segments 1-2 and 2-3 are equal:
+   !>   |y2-y1| / cos((y1+y2)/2) = |y3-y2| / cos((y2+y3)/2)
+   subroutine comp_middle_latitude(y1_, y3_, y2, ierr)
+      use precision, only: dp
+      use m_sferic, only: jsferic, jamidlat, dg2rd, pi
+      implicit none
 
-    double precision, parameter :: dtol = 1d-8
-    double precision, parameter :: deps = 1d-16
-    integer, parameter :: MAXITER = 1000
+      real(kind=dp), intent(in) :: y1_
+      real(kind=dp), intent(in) :: y3_
+      real(kind=dp), intent(out) :: y2
+      integer, intent(out) :: ierr
 
-    y2 = 0.5d0 * (y1_ + y3_)
+      real(kind=dp) :: y1, y3
+      real(kind=dp) :: y2min, y2max
+      real(kind=dp) :: A, dAdy2
 
-    if (jsferic == 0 .or. y1_ == y3_ .or. jamidlat == 0) then
-       ierr = 0
-       return
-    end if
+      integer :: iter
 
-    y1 = dg2rd * y1_
-    y3 = dg2rd * y3_
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp), parameter :: deps = 1.0e-16_dp
+      integer, parameter :: MAXITER = 1000
 
-    y2max = 0.5d0 * pi - deps
-    y2min = -y2max
+      y2 = 0.5_dp * (y1_ + y3_)
 
-    ierr = 1
+      if (jsferic == 0 .or. y1_ == y3_ .or. jamidlat == 0) then
+         ierr = 0
+         return
+      end if
 
-    y2 = 0.5d0 * (y1 + y3)
-    do iter = 1, MAXITER
-       A = abs(y3 - y2) * cos(0.5d0 * (y1 + y2)) - abs(y2 - y1) * cos(0.5d0 * (y2 + y3))
+      y1 = dg2rd * y1_
+      y3 = dg2rd * y3_
 
-       if (abs(A) < dtol) then
-          ierr = 0
-          exit
-       end if
+      y2max = 0.5_dp * pi - deps
+      y2min = -y2max
 
-       dAdy2 = -sign(1d0, y3 - y2) * cos(0.5d0 * (y1 + y2)) - 0.5d0 * abs(y3 - y2) * sin(0.5d0 * (y1 + y2)) - &
-               sign(1d0, y3 - y2) * cos(0.5d0 * (y2 + y3)) + 0.5d0 * abs(y2 - y1) * sin(0.5d0 * (y2 + y3))
-       y2 = y2 - A / dAdy2
-       y2 = min(max(y2, y2min), y2max)
-    end do
+      ierr = 1
 
-    if (ierr /= 0) then
+      y2 = 0.5_dp * (y1 + y3)
+      do iter = 1, MAXITER
+         A = abs(y3 - y2) * cos(0.5_dp * (y1 + y2)) - abs(y2 - y1) * cos(0.5_dp * (y2 + y3))
+
+         if (abs(A) < dtol) then
+            ierr = 0
+            exit
+         end if
+
+         dAdy2 = -sign(1.0_dp, y3 - y2) * cos(0.5_dp * (y1 + y2)) - 0.5_dp * abs(y3 - y2) * sin(0.5_dp * (y1 + y2)) - &
+                 sign(1.0_dp, y3 - y2) * cos(0.5_dp * (y2 + y3)) + 0.5_dp * abs(y2 - y1) * sin(0.5_dp * (y2 + y3))
+         y2 = y2 - A / dAdy2
+         y2 = min(max(y2, y2min), y2max)
+      end do
+
+      if (ierr /= 0) then
 !      error
-       y2 = 0.5d0 * (y1_ + y3_)
-    else
-       y2 = y2 / dg2rd
-    end if
+         y2 = 0.5_dp * (y1_ + y3_)
+      else
+         y2 = y2 / dg2rd
+      end if
 
-    return
- end subroutine comp_middle_latitude
+      return
+   end subroutine comp_middle_latitude
+
+end module m_comp_middle_latitude

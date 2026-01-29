@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,55 +30,49 @@
 !
 !
 
-      subroutine XYDISFORMAT()
-         use m_sferic
-         use m_wearelt
-         implicit none
+module m_xydisformat
 
-         double precision :: dv
-         integer :: ix
-         integer :: ixmax
-         integer :: ixmin
-         integer :: ixy
-         integer :: iy
-         integer :: iymax
-         integer :: iymin
-         integer :: izmax
-         integer :: izmin
-         integer :: jaauto, JMOUSE, JASHOW
-         integer :: ncols
-         integer :: ndec
-         integer :: nie
-         integer :: nis
-         integer :: nv
-         integer :: nxy
-         integer :: nz
-         double precision :: val
-         double precision :: vmax, XLC, YLC, XA, YA
-         double precision :: vmin
+   use precision, only: dp
+   implicit none
 
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
+contains
 
-         common / DISPFOR / XYFORM, ZFORM, DISFORM
-         character * 7 XYFORM, ZFORM, DISFORM
+   subroutine XYDISFORMAT()
+      use m_wearelt, only: x1, x2, y1, y2
+      use m_depmax, only: vmin, vmax
+      use m_locatora, only: xlc, ylc
+      use m_disfor, only: zform, xyform, disform
 
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
+      implicit none
 
-         ZFORM = '(F7.1)'
+      integer :: ix
+      integer :: ixmax
+      integer :: ixmin
+      integer :: ixy
+      integer :: iy
+      integer :: iymax
+      integer :: iymin
+      integer :: izmax
+      integer :: izmin
+      integer :: ndec
+      integer :: nxy
+      integer :: nz
 
-         xlc = max(x1, min(x2, xlc))
-         ylc = max(y1, min(y2, ylc))
+      ZFORM = '(F7.1)'
 
-         IXMIN = int(log10(max(1d-6, abs(X1))))
-         IXMAX = int(log10(max(1d-6, abs(X2))))
-         IYMIN = int(log10(max(1d-6, abs(Y1))))
-         IYMAX = int(log10(max(1d-6, abs(Y2))))
-         IZMIN = int(log10(max(1d0, abs(VMIN))))
-         IZMAX = int(log10(max(1d0, abs(VMAX))))
+      xlc = max(x1, min(x2, xlc))
+      ylc = max(y1, min(y2, ylc))
 
-         IX = max(IXMIN, IXMAX)
-         IY = max(IYMIN, IYMAX)
-         IXY = max(IX, IY)
+      IXMIN = int(log10(max(1.0e-6_dp, abs(X1))))
+      IXMAX = int(log10(max(1.0e-6_dp, abs(X2))))
+      IYMIN = int(log10(max(1.0e-6_dp, abs(Y1))))
+      IYMAX = int(log10(max(1.0e-6_dp, abs(Y2))))
+      IZMIN = int(log10(max(1.0_dp, abs(VMIN))))
+      IZMAX = int(log10(max(1.0_dp, abs(VMAX))))
+
+      IX = max(IXMIN, IXMAX)
+      IY = max(IYMIN, IYMAX)
+      IXY = max(IX, IY)
 
 !     -------------------
 !     1 VOOR +-
@@ -86,19 +80,21 @@
 !     1 VOOR LOG(100) = 2
 !     -------------------
 
-         NXY = IXY + 4
-         NDEC = 10 - NXY
-         if (NDEC >= 0) then
-            XYFORM = '(F10.1)'
-            write (XYFORM(6:6), '(I1)') NDEC
-         else
-            XYFORM = '(E10.3)'
-         end if
+      NXY = IXY + 4
+      NDEC = 10 - NXY
+      if (NDEC >= 0) then
+         XYFORM = '(F10.1)'
+         write (XYFORM(6:6), '(I1)') NDEC
+      else
+         XYFORM = '(E10.3)'
+      end if
 
-         DISFORM = 'F17.5'
+      DISFORM = 'F17.5'
 
-         NZ = IZMAX + 3
-         write (ZFORM(5:5), '(I1)') max(0, 9 - NZ)
+      NZ = IZMAX + 3
+      write (ZFORM(5:5), '(I1)') max(0, 9 - NZ)
 
-         return
-      end
+      return
+   end
+
+end module m_xydisformat

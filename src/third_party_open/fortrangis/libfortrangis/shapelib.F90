@@ -534,8 +534,6 @@ TYPE(shpfileobject),INTENT(inout) :: hshp !< shapefile object to read from
 INTEGER :: ishape !< number of shape to be read
 TYPE(shpobject),TARGET :: shpreadobject
 
-TYPE(shpobject) :: lshpobject
-
 INTEGER :: ier
 
 IF (.NOT.shpfileisnull(hshp)) THEN
@@ -588,8 +586,6 @@ REAL(kind=c_double) :: padfy(nvertices) !< y coordinates
 REAL(kind=c_double),OPTIONAL :: padfz(nvertices) !< z coordinates, it can be skipped
 TYPE(shpobject),TARGET :: shpcreatesimpleobject
 
-TYPE(shpobject) :: lshpobject
-
 IF (shpcreatesimpleobject_int(nshptype, nvertices, padfx, padfy, padfz, &
  C_LOC(shpcreatesimpleobject)) /= 0) THEN
   shpcreatesimpleobject = shpobject_null
@@ -616,8 +612,6 @@ REAL(kind=c_double) :: padfy(nvertices) !< y coordinates
 REAL(kind=c_double),OPTIONAL :: padfz(nvertices) !< z coordinates, it can be skipped
 REAL(kind=c_double),OPTIONAL :: padfm(nvertices) !< measure, it can be skipped
 TYPE(shpobject),TARGET :: shpcreateobject
-
-TYPE(shpobject) :: lshpobject
 
 IF (shpcreateobject_int(nshptype, ishape, nparts, panpartstart, panparttype, &
  nvertices, padfx, padfy, padfz, padfm, C_LOC(shpcreateobject)) /= 0) THEN

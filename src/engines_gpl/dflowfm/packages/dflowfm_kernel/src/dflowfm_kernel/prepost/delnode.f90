@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,39 +30,42 @@
 !
 !
 
-  subroutine DELNODE(KP)
-     use m_netw
-     use m_missing
-     implicit none
-     integer :: KP
+module m_delnode
 
-     double precision :: ag
-     double precision :: cfl
-     double precision :: e0
-     double precision :: eps
-     integer :: k1
-     integer :: k2
-     integer :: l1
-     integer :: lnu
-     integer :: nm1
-     double precision :: pi
-     double precision :: rho
-     double precision :: rhow
+   implicit none
 
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
+   private
 
-     do NM1 = NMK(KP), 1, -1
-        L1 = NOD(KP)%LIN(NM1)
-        K1 = KN(1, L1)
-        K2 = KN(2, L1)
-        call DELELEM(K1, K2, LNU)
-     end do
-     NMK(KP) = 0
-     KC(KP) = 0
-     XK(KP) = dmiss
-     YK(KP) = dmiss
-     ZK(KP) = dmiss
-     ! RM(KP)  = 0
+   public :: delnode
 
-     return
-  end subroutine DELNODE
+contains
+
+   subroutine DELNODE(KP)
+      use m_netw
+      use m_missing, only: dmiss
+      use m_del_elem
+      implicit none
+      integer :: KP
+      integer :: k1
+      integer :: k2
+      integer :: l1
+      integer :: lnu
+      integer :: nm1
+
+      do NM1 = NMK(KP), 1, -1
+         L1 = NOD(KP)%LIN(NM1)
+         K1 = KN(1, L1)
+         K2 = KN(2, L1)
+         call DELELEM(K1, K2, LNU)
+      end do
+      NMK(KP) = 0
+      KC(KP) = 0
+      XK(KP) = dmiss
+      YK(KP) = dmiss
+      ZK(KP) = dmiss
+      ! RM(KP)  = 0
+
+      return
+   end subroutine DELNODE
+
+end module m_delnode

@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -76,7 +76,7 @@ function sgeom_def_geometry_variables(ncid, geom_var_name, geom_feature_name, ge
    integer,          intent(  out), optional :: id_node_lat !< Variable ID of node latitude variable
    integer                         :: ierr                  !< Result status, sgeom_noerr if successful
    
-   integer :: id_var, i, id_node_dim, n
+   integer :: id_var, id_node_dim, n
    character(len=256) :: string
    character(len=len_trim(geom_var_name)) :: prefix
    logical :: add_latlon_

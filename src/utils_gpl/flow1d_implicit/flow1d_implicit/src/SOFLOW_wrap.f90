@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -71,11 +71,9 @@ double precision, intent(in) :: time1
 !pointer
 !
 
-logical                                  , pointer :: lconv                   
 logical                                  , pointer :: steady    
                                          
 integer                                  , pointer :: flitmx                 
-integer                                  , pointer :: iterbc                 
 integer                                  , pointer :: ngrid   
 integer                                  , pointer :: ngridm   
 integer                                  , pointer :: nbran   
@@ -87,9 +85,12 @@ integer                                  , pointer :: maxtab
 integer                                  , pointer :: ntabm
 integer                                  , pointer :: nbrnod
 integer                                  , pointer :: juer
+integer                                  , pointer :: nstru
+integer                                  , pointer :: dmstrpar
 
 integer, dimension(:)                    , pointer :: nlev
 integer, dimension(:)                    , pointer :: numnod
+integer, dimension(:)                    , pointer :: grid
 
 integer, dimension(:,:)                  , pointer :: branch
 integer, dimension(:,:)                  , pointer :: bfrict
@@ -98,6 +99,7 @@ integer, dimension(:,:)                  , pointer :: qbdpar
 integer, dimension(:,:)                  , pointer :: ntab
 integer, dimension(:,:)                  , pointer :: node
 integer, dimension(:,:)                  , pointer :: nodnod
+integer, dimension(:,:)                  , pointer :: strtyp
 
 real                                     , pointer :: g
 real                                     , pointer :: psi                    
@@ -120,12 +122,15 @@ real, dimension(:)                       , pointer :: table
 real, dimension(:)                       , pointer :: x
 
 real, dimension(:,:)                     , pointer :: bfricp
+real, dimension(:,:)                     , pointer :: sectc
+real, dimension(:,:)                     , pointer :: sectv
 real, dimension(:,:)                     , pointer :: wft
 real, dimension(:,:)                     , pointer :: aft
 real, dimension(:,:)                     , pointer :: wtt
 real, dimension(:,:)                     , pointer :: att
 real, dimension(:,:)                     , pointer :: of
 real, dimension(:,:)                     , pointer :: waoft
+real, dimension(:,:)                     , pointer :: strpar
 
 
 double precision                         , pointer :: time
@@ -139,11 +144,6 @@ double precision, dimension(:,:)         , pointer :: hlev
 !debug
 integer                                  , pointer :: fm1dimp_debug_k1
 integer                                  , pointer :: debug_wr
-
-!local
-!integer                              :: N
-integer                              :: swaoft
-
 
 !
 !f1dimp variables
@@ -198,6 +198,8 @@ maxtab => f1dimppar%maxtab
 ntabm  => f1dimppar%ntabm
 nbrnod => f1dimppar%nbrnod
 nlev   => f1dimppar%nlev
+nstru  => f1dimppar%nstru
+dmstrpar => f1dimppar%dmstrpar
 
 !dependent on branch
 branch => f1dimppar%branch
@@ -209,6 +211,9 @@ hpack  => f1dimppar%hpack
 qpack  => f1dimppar%qpack
 x      => f1dimppar%x
 waoft  => f1dimppar%waoft 
+grid   => f1dimppar%grid
+sectc  => f1dimppar%sectc
+sectv  => f1dimppar%sectv
 
 !cross-sectional shape
 wft  => f1dimppar%wft 
@@ -230,6 +235,10 @@ ntab   => f1dimppar%ntab
 node   => f1dimppar%node
 numnod => f1dimppar%numnod
 nodnod => f1dimppar%nodnod
+
+!dependent on structures
+strpar => f1dimppar%strpar
+strtyp => f1dimppar%strtyp
 
 !debug
 debug_wr         => f1dimppar%debug_wr
@@ -269,11 +278,12 @@ call SOFLOW( &
 !dimensions 
         &   ngrid  , ngridm , nbran  , maxlev , nnode  , &
         &   nhstat , nqstat , maxtab , ntabm  , nbrnod , &
-        &   nlev                                       , &
+        &   nlev   , nstru                             , &
 !dependent on branch
         &   branch , bfrict                            , &
 !dependent on gridpoints 
         &   bfricp , hpack  , qpack  ,x       , waoft  , & 
+        &   grid   , sectc  , sectv                    , &
 !cross-sectional shape
         &   wft    , aft    ,wtt     ,att     , of     , & 
         &   hlev                                       , &
@@ -283,10 +293,14 @@ call SOFLOW( &
         &   table  , ntab                              , &
 !dependent on node
         &   node   , numnod ,nodnod                    , &
+!dependent on structures
+        &   strpar , strtyp                            , &
 !debug 
         &   debug_wr                                   , &
 !units  
         &   juer                                       , &
+!derived type with all info
+        &   f1dimppar                                 , &
 !close
         &)
     
@@ -309,3 +323,4 @@ write(42,*) waoft(:,3)
 endif
 
 end subroutine SOFLOW_wrap
+    

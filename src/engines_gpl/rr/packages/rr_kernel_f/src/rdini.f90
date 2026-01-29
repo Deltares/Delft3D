@@ -1,28 +1,28 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
        SUBROUTINE RR_RDINI (IN, IDEBUG, RRCaseSens, DefaultT0OutputValue, &
@@ -107,9 +107,9 @@
       Logical      VullingsgraadMaximum100Percent
       Logical      FixARS13964OW, ReduceRROpenWaterInfiltrationAtNegativeVolume
 
-      CHARACTER*100 STRING, TempString
-      CHARACTER*80  RestartPrefix
-      CHARACTER*4   RRVersion
+      CHARACTER(len=100) STRING, TempString
+      CHARACTER(len=80)  RestartPrefix
+      CHARACTER(len=4)   RRVersion
       Logical       SmallOutput
 ! Nov 2001 NewFormatCropFactorfile
       Logical       IniNewFormatCropFactors
@@ -153,6 +153,8 @@
 ! *********************************************************************
 ! *** Initialisatie
 ! ********************************************************************
+
+      CleanRRFiles=.false.
 
       RRVersion='2.04'
       SmallOutput=.false.
@@ -421,6 +423,10 @@
             if (useWalrus) READ(STRING(POS1+1:),*) Walrus_max_pStep
          ELSEIF (STRING(1:POS1-1) .EQ. 'WALRUS_MAX_SUBSTEPS')  THEN
             if (useWalrus) READ(STRING(POS1+1:),*) Walrus_max_substeps
+         ELSEIF (STRING(1:POS1-1) .EQ. 'CLEANRRFILES')  THEN
+            READ(STRING(POS1+1:),*) IDUM
+            IDUM = ABS (IDUM)
+            IF (IDUM .ne. 0) CleanRRFiles = .true.
          ELSEIF (STRING(1:POS1-1) .EQ. 'INITGWLOPTION')  THEN
             READ(STRING(POS1+1:),*) InitGWLOption
             InitGWLOption = ABS (InitGWLOption)
@@ -443,7 +449,7 @@
             READ(STRING(POS1+1:),*) NetCdfTimestep
             Call UpperC (NetCdfTimestep(1:1))
             Call LowerC (NetCdfTimestep(2:))
-            GenerateNetCdfOutput = (idum .eq. 1) .or. (idum .eq. -1)
+! March2025 switched-off   GenerateNetCdfOutput = (idum .eq. 1) .or. (idum .eq. -1)
          ELSEIF (STRING(1:POS1-1) .EQ. 'GENERATENETCDFOUTPUT')  THEN
             READ(STRING(POS1+1:),*) Idum     ! 0 = false, 1 or -1 = true
             GenerateNetCdfOutput = (idum .eq. 1) .or. (idum .eq. -1)
@@ -709,8 +715,8 @@
             READ(STRING(POS1+1:),*) UserCoefKSat
          ELSEIF (STRING(1:POS1-1) .EQ. 'USERFACTVRZ')  THEN
             READ(STRING(POS1+1:),*) UserFactVRZ
-            UserFactVRZ = min (UserFactVRZ, 1.0)
-            UserFactVRZ = max (UserFactVRZ, 0.0)
+            UserFactVRZ = min (UserFactVRZ, 1.0d0)
+            UserFactVRZ = max (UserFactVRZ, 0.0d0)
          ELSEIF (STRING(1:POS1-1) .EQ. 'CAPSIMPLUSFLAG')  THEN
             READ(STRING(POS1+1:),*) CapsimPlusFlag    ! 1 = initial, 2 = initial and final
          ELSEIF (STRING(1:POS1-1) .EQ. 'EVAPORATIONYEAR')  THEN
@@ -934,8 +940,8 @@
       Integer      NDim
       Logical      OutputDesird(Ndim)
 
-      CHARACTER*100 STRING
-      CHARACTER*4   RRVersion
+      CHARACTER(len=100) STRING
+      CHARACTER(len=4)   RRVersion
       Logical       SmallOutput
 
       IF (STRING(1:POS1-1) .EQ. 'OUTPUTRRPAVED') THEN

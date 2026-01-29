@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,13 +29,18 @@
 
 !
 !
-
-      !> Draw a highlighted circle at current position.
+module m_hlcir
+   implicit none
+contains
+   !> Draw a highlighted circle at current position.
       !! Highlighted means: blank center, coloured outline.
-      subroutine HLCIR(R, icol)
-         implicit none
-         double precision, intent(in) :: R !< Radius in world coords.
-         integer, intent(in) :: icol !< Colour number
+   subroutine HLCIR(R, icol)
+      use precision, only: dp
+      use m_hlcir2, only: hlcir2
 
-         call HLCIR2(R, 0, icol)
-      end subroutine HLCIR
+      real(kind=dp), intent(in) :: R !< Radius in world coords.
+      integer, intent(in) :: icol !< Colour number
+
+      call HLCIR2(R, 0, icol)
+   end subroutine HLCIR
+end module m_hlcir

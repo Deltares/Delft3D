@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/streaming/position.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<op:object xmlns:op="http://www.codesynthesis.com/op"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.codesynthesis.com/op position.xsd"
+           id="123">
+
+  <header>
+    <name>Lion's Head</name>
+    <type>rock</type>
+  </header>
+
+  <position lat="-33.8569" lon="18.5083"/>
+  <position lat="-33.8568" lon="18.5083"/>
+  <position lat="-33.8568" lon="18.5082"/>
+  <position lat="-33.8570" lon="18.5083"/>
+  <position lat="-33.8569" lon="18.5084"/>
+  <position lat="-33.8570" lon="18.5084"/>
+  <position lat="-33.8570" lon="18.5082"/>
+  <position lat="-33.8569" lon="18.5082"/>
+
+</op:object>

@@ -6,7 +6,7 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
 !
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2012-2024.
+!  Copyright (C)  Stichting Deltares, 2012-2026.
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -57,7 +57,6 @@ subroutine sand_mud(nfrac, E, frac, mudfrac, sedtyp, max_mud_sedtyp, pmcrit)
 !
 ! Local variables
 !
-    integer                         :: istat        ! error flag
     integer                         :: l            ! sediment counter
     real(fp)                        :: Es_avg       ! average erosion velocity for sand fractions [m/s]
     real(fp)                        :: Em_avg       ! average erosion velocity for mud fractions [m/s]

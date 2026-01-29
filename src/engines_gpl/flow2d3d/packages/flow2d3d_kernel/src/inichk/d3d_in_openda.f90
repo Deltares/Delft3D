@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -66,16 +66,6 @@ integer, parameter :: oper_multiply = 3
 
 
 end module m_openda_quantities
-
-!-----------------------------------
-
-module m_openda_olv
-
-use d3d_olv_class
-
-type(OLVHandle), save :: openda_olv_handle
-
-end module m_openda_olv
 
 !-----------------------------------
 

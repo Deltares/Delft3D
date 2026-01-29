@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,41 +29,44 @@
 
 !
 !
+module m_dispform_scale
+   implicit none
+contains
+   subroutine DISPFORMscale(value, fmt, NDEC)
+      use precision, only: dp
+      integer :: n1
+      integer :: n2
+      integer :: n3 ! nr of digits behind decimal dot
+      integer :: ndec
+      real(kind=dp) :: value
+      character fmt * (*)
 
-  subroutine DISPFORMscale(value, fmt, NDEC)
-     implicit none
-     integer :: n1
-     integer :: n2
-     integer :: n3 ! nr of digits behind decimal dot
-     integer :: ndec
-     double precision :: value
-     character fmt * (*)
+      fmt = '(f10.3)'
 
-     fmt = '(f10.3)'
+      if (value == 0.0_dp) then
+         fmt = '(f3.1)'
+         return
+      end if
 
-     if (value == 0d0) then
-        fmt = '(f3.1)'
-        return
-     end if
+      n1 = int(log10(abs(value)))
 
-     n1 = int(log10(abs(value)))
+      if (n1 < 6 .and. n1 > 0) then
+         n2 = min(9, n1 + 3)
+         n3 = 9 - n2
+      else if (n1 >= -5 .and. n1 < 0) then
+         n3 = 6
+      else if (n1 == 0) then
+         n3 = 6
+      else
+         fmt = '(e10.3)'
+         return
+      end if
 
-     if (n1 < 6 .and. n1 > 0) then
-        n2 = min(9, n1 + 3)
-        n3 = 9 - n2
-     else if (n1 >= -5 .and. n1 < 0) then
-        n3 = 6
-     else if (n1 == 0) then
-        n3 = 6
-     else
-        fmt = '(e10.3)'
-        return
-     end if
+      if (NDEC > 0) then
+         n3 = min(n3, NDEC) ! try ndec, but only if it fits
+      end if
 
-     if (NDEC > 0) then
-        n3 = min(n3, NDEC) ! try ndec, but only if it fits
-     end if
-
-     write (fmt(6:6), '(i1)') n3
-     return
-  end
+      write (fmt(6:6), '(i1)') n3
+      return
+   end
+end module m_dispform_scale

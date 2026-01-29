@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,7 +34,7 @@ module unstruc_ini
 !! Some basic routines for reading an INI file.
 !! Most work is done in startup and model modules.
 
-   use unstruc_messages
+   use messagehandling, only: err
    use properties
 
    implicit none
@@ -67,7 +67,7 @@ contains
 
       logical :: success
 
-      call prop_get_string(prop_ptr, chapter, key, value, success)
+      call prop_get(prop_ptr, chapter, key, value, success)
       call unstruc_ini_error_handler(chapter, key, success)
 
    end subroutine get_req_string
@@ -82,7 +82,7 @@ contains
 
       logical :: success
 
-      call prop_get_integer(prop_ptr, chapter, key, value, success)
+      call prop_get(prop_ptr, chapter, key, value, success)
       call unstruc_ini_error_handler(chapter, key, success)
 
    end subroutine get_req_integer
@@ -93,27 +93,28 @@ contains
       type(tree_data), pointer, intent(in) :: prop_ptr
       character(*), intent(in) :: chapter
       character(*), intent(in) :: key
-      integer, dimension(*), intent(out) :: value
+      integer, dimension(:), intent(out) :: value
       integer, intent(in) :: valuelength
 
       logical :: success
 
-      call prop_get_integers(prop_ptr, chapter, key, value, valuelength, success)
+      call prop_get(prop_ptr, chapter, key, value, valuelength, success)
       call unstruc_ini_error_handler(chapter, key, success)
 
    end subroutine get_req_integers
 
-!> Reads the value for a double precision variable from a propery tree.
+!> Reads the value for a real(kind=dp) variable from a propery tree.
 !! When not found, and error is logged and program stops.
    subroutine get_req_double(prop_ptr, chapter, key, value)
+      use precision, only: dp
       type(tree_data), pointer, intent(in) :: prop_ptr
       character(*), intent(in) :: chapter
       character(*), intent(in) :: key
-      double precision, intent(out) :: value
+      real(kind=dp), intent(out) :: value
 
       logical :: success
 
-      call prop_get_double(prop_ptr, chapter, key, value, success)
+      call prop_get(prop_ptr, chapter, key, value, success)
       call unstruc_ini_error_handler(chapter, key, success)
 
    end subroutine get_req_double

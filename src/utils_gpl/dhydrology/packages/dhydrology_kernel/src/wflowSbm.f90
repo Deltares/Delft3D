@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -41,7 +41,6 @@ function interceptionSbm(timeStep, n, Precipitation, PotEvap, CanopyStorage, Can
    double precision, intent(in)    :: Precipitation(n), PotEvap(n), CanopyGapFraction(n), Cmax(n)
    double precision, intent(inout) :: CanopyStorage(n)
    double precision, intent(out)   :: NetInterception(n), ThroughFall(n), StemFlow(n),LeftOver(n), Intercep(n)
-   double precision                :: pt(n), Pfrac(n), DD(n), dC(n), D(n)
    integer                         :: ierr              !< Result status, DHYD_NOERR if successful.
 
    ierr = DHYD_NOERR

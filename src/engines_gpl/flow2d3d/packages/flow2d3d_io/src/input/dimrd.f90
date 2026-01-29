@@ -8,7 +8,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
                & nfl       ,nflmod    ,lfsdu     ,lfsdus1   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -160,7 +160,6 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     integer                                  :: nrrec  ! Record counter keeping the track of the last record read 
     integer                                  :: ntrec  ! Current record counter. It's value is changed to detect if all records in the MD-file have been read 
     integer        , dimension(3)            :: iarray ! Help array 
-    integer                       , external :: newlun
     logical                                  :: defaul ! Flag to detrmine if a default value is allowed when no value is read 
     logical                                  :: found  ! Flag is true if KEYWRD is found 
     logical                                  :: lexist ! Flag is true if bch-file exists
@@ -333,7 +332,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     ! defined NMAX
     !
     iarray = 0
-    call prop_get_integers(gdp%mdfile_ptr, '*', 'MNKmax', iarray, 3)
+    call prop_get(gdp%mdfile_ptr, '*', 'MNKmax', iarray, 3)
     if (iarray(1) == 0 .or. iarray(2) == 0 .or. iarray(3) == 0) then
        error = .true.
        call prterr(lundia, 'P004', ' on reading grid dimensions')
@@ -660,7 +659,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     !             nonhyd = full
     !
     stringval = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Nonhyd', stringval)
+    call prop_get(gdp%mdfile_ptr, '*', 'Nonhyd', stringval)
     if (stringval /= ' ') then
        call small(stringval,999)
        if (stringval == 'weak') then
@@ -670,7 +669,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
           nonhyd   = .true.
           nh_level = nh_full
        else
-          call prop_get_logical(gdp%mdfile_ptr, '*', 'Nonhyd', nonhyd)
+          call prop_get(gdp%mdfile_ptr, '*', 'Nonhyd', nonhyd)
           if (nonhyd) then
              nh_level = nh_weak
              write(lundia,'(3a)') 'Keyword "Nonhyd" found in mdf-file with value ', trim(stringval), '. Interpreted as "ON: Weak formulation (Bijvelds)"'

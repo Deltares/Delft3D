@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2024.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -68,34 +68,14 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      infilt(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("infiltcap0")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     infiltcap0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("infiltcap")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      infiltcap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonMinInfCap")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     HortonMinInfCap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonMaxInfCap")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     HortonMaxInfCap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonDecreaseRate")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     HortonDecreaseRate(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonRecoveryRate")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     HortonRecoveryRate(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonState")
+  case("horton_state")
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
-     HortonState(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
+     horton_state(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
   case("shx")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -217,7 +197,7 @@
   case("qqlat")
 
      call c_f_pointer(xptr, x_3d_double_ptr, (/c_count(1), c_count(2), c_count(3)/))
-     qqlat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2)),c_start(3)+1:(c_start(3)+c_count(3))) = x_3d_double_ptr
+     qqlat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
   case("balat")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))

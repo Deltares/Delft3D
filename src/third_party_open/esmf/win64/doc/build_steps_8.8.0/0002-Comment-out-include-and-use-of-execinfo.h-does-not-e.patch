@@ -1,0 +1,136 @@
+From 24b5f5ed26f5140e17544dad5b0a462082f0a463 Mon Sep 17 00:00:00 2001
+From: Harmen Wierenga <harmen.wierenga@deltares.nl>
+Date: Mon, 27 Jan 2025 13:08:43 +0000
+Subject: [PATCH 2/2] Comment out include and use of execinfo.h, does not exist
+ in cygwin
+
+---
+ .../IO/PIO/ParallelIO/src/clib/pioc_support.c | 98 +++++++++----------
+ 1 file changed, 49 insertions(+), 49 deletions(-)
+
+diff --git a/src/Infrastructure/IO/PIO/ParallelIO/src/clib/pioc_support.c b/src/Infrastructure/IO/PIO/ParallelIO/src/clib/pioc_support.c
+index 9d44d1e..35ade37 100644
+--- a/src/Infrastructure/IO/PIO/ParallelIO/src/clib/pioc_support.c
++++ b/src/Infrastructure/IO/PIO/ParallelIO/src/clib/pioc_support.c
+@@ -9,7 +9,7 @@
+ #include <pio.h>
+ #include <pio_internal.h>
+ 
+-#include <execinfo.h>
++//#include <execinfo.h>
+ 
+ /** This is used with text decomposition files. */
+ #define VERSNO 2001
+@@ -522,24 +522,24 @@ pio_log(int severity, const char *fmt, ...)
+ void
+ print_trace(FILE *fp)
+ {
+-    void *array[10];
+-    size_t size;
+-    char **strings;
+-    size_t i;
+-
+-    /* Note that this won't actually work. */
+-    if (fp == NULL)
+-        fp = stderr;
+-
+-    size = backtrace(array, 10);
+-    strings = backtrace_symbols(array, size);
+-
+-    fprintf(fp,"Obtained %zd stack frames.\n", size);
+-
+-    for (i = 0; i < size; i++)
+-        fprintf(fp,"%s\n", strings[i]);
+-
+-    free(strings);
++//    void *array[10];
++//    size_t size;
++//    char **strings;
++//    size_t i;
++//
++//    /* Note that this won't actually work. */
++//    if (fp == NULL)
++//        fp = stderr;
++//
++//    size = backtrace(array, 10);
++//    strings = backtrace_symbols(array, size);
++//
++//    fprintf(fp,"Obtained %zd stack frames.\n", size);
++//
++//    for (i = 0; i < size; i++)
++//        fprintf(fp,"%s\n", strings[i]);
++//
++//    free(strings);
+ }
+ 
+ /**
+@@ -1532,36 +1532,36 @@ pioc_write_nc_decomp_int(iosystem_desc_t *ios, const char *filename, int cmode,
+                                  strlen(my_order_str) + 1, my_order_str)))
+         return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+ 
+-    /* Write an attribute with the stack trace. This can be helpful
+-     * for debugging. */
+-    void *bt[MAX_BACKTRACE];
+-    size_t bt_size;
+-    char **bt_strings;
+-    bt_size = backtrace(bt, MAX_BACKTRACE);
+-    bt_strings = backtrace_symbols(bt, bt_size);
+-
+-    /* Find the max size. */
+-    int max_bt_size = 0;
+-    for (int b = 0; b < bt_size; b++)
+-        if (strlen(bt_strings[b]) > max_bt_size)
+-            max_bt_size = strlen(bt_strings[b]);
+-    if (max_bt_size > PIO_MAX_NAME)
+-        max_bt_size = PIO_MAX_NAME;
+-
+-    /* Copy the backtrace into one long string. */
+-    char full_bt[max_bt_size * bt_size + bt_size + 1];
+-    full_bt[0] = '\0';
+-    for (int b = 0; b < bt_size; b++)
+-    {
+-        strncat(full_bt, bt_strings[b], max_bt_size);
+-        strcat(full_bt, "\n");
+-    }
+-    free(bt_strings);
+-
+-    /* Write the stack trace as an attribute. */
+-    if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_BACKTRACE_ATT_NAME,
+-                                 strlen(full_bt) + 1, full_bt)))
+-        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
++//    /* Write an attribute with the stack trace. This can be helpful
++//     * for debugging. */
++//    void *bt[MAX_BACKTRACE];
++//    size_t bt_size;
++//    char **bt_strings;
++//    bt_size = backtrace(bt, MAX_BACKTRACE);
++//    bt_strings = backtrace_symbols(bt, bt_size);
++//
++//    /* Find the max size. */
++//    int max_bt_size = 0;
++//    for (int b = 0; b < bt_size; b++)
++//        if (strlen(bt_strings[b]) > max_bt_size)
++//            max_bt_size = strlen(bt_strings[b]);
++//    if (max_bt_size > PIO_MAX_NAME)
++//        max_bt_size = PIO_MAX_NAME;
++//
++//    /* Copy the backtrace into one long string. */
++//    char full_bt[max_bt_size * bt_size + bt_size + 1];
++//    full_bt[0] = '\0';
++//    for (int b = 0; b < bt_size; b++)
++//    {
++//        strncat(full_bt, bt_strings[b], max_bt_size);
++//        strcat(full_bt, "\n");
++//    }
++//    free(bt_strings);
++//
++//    /* Write the stack trace as an attribute. */
++//    if ((ret = PIOc_put_att_text(ncid, NC_GLOBAL, DECOMP_BACKTRACE_ATT_NAME,
++//                                 strlen(full_bt) + 1, full_bt)))
++//        return pio_err(ios, NULL, ret, __FILE__, __LINE__);
+ 
+     /* We need a dimension for the dimensions in the data. (Example:
+      * for 4D data we will need to store 4 dimension IDs.) */
+-- 
+2.47.1.windows.2
+

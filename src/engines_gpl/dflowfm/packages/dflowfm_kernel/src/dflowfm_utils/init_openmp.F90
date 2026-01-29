@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,33 +33,52 @@
 !> Initializes OpenMP settings, when necessary.
 !! Call this once initially, or after changing the max number of OpenMP threads setting.
 !! When running in MPI-mode, OpenMP is switched off, unless (i.e., 1 OpenMP thread max).
-integer function init_openmp(maxnumthreads, mpion) result(iresult)
-#ifdef _OPENMP
-   use omp_lib
-#endif
-   use dfm_error
+module m_init_openmp
+
    implicit none
-   integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
-   integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
-   iresult = DFM_NOERR
+   private
 
-   if (mpion == 1) then
+   public :: init_openmp
+
+contains
+
+   integer function init_openmp(maxnumthreads, mpion) result(iresult)
 #ifdef _OPENMP
-      ! If MPI is on for this model, *and* no user-define numthreads was set, then disable OpenMP.
-      if (maxnumthreads == 0) then
-         call omp_set_num_threads(1)
+      use omp_lib
+      use messagehandling, only: mess, LEVEL_INFO
+#endif
+      use dfm_error, only: dfm_noerr
+
+      integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
+      integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
+
+      integer :: openmp_threads
+      iresult = DFM_NOERR
+#ifndef _OPENMP
+      associate (maxnumthreads => maxnumthreads) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
+      end associate
+#endif
+
+#ifdef _OPENMP
+      if (mpion == 1 .and. maxnumthreads == 0) then
+         ! If MPI is on for this model, *and* no user-define numthreads was set, then disable OpenMP.
+         openmp_threads = 1
          ! TODO: AvD: else, reset to maximum? Especially in library mode when multiple models can be run after one another?
+      else ! user defined OpenMP threads
+         openmp_threads = maxnumthreads
+      end if
+      if (openmp_threads > 0) then
+         call omp_set_num_threads(openmp_threads)
+      end if
+      openmp_threads = omp_get_max_threads() !check number of threads set by environment before reporting
+      if (openmp_threads > 1) then
+         call mess(LEVEL_INFO, 'OpenMP enabled, number of threads = ', openmp_threads)
       else
-         call omp_set_num_threads(maxnumthreads)
+         call mess(LEVEL_INFO, 'OpenMP disabled.')
       end if
 #endif
-   else ! No MPI, but handle OpenMP settings:
-#ifdef _OPENMP
-      if (maxnumthreads > 0) then
-         call omp_set_num_threads(maxnumthreads)
-      end if
-#endif
-   end if
 
-end function init_openmp
+   end function init_openmp
+
+end module m_init_openmp

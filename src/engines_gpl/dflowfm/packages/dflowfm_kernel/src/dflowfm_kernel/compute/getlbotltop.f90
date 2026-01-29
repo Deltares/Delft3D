@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,20 +29,25 @@
 
 !
 !
+module m_get_Lbot_Ltop
+   implicit none
+contains
+   subroutine getLbotLtop(LL, Lb, Lt)
+      use m_flow, only: kmx, hu, ltop, lbot
+      integer, intent(in) :: LL
+      integer, intent(out) :: Lb
+      integer, intent(out) :: Lt
 
- subroutine getLbotLtop(LL, Lb, Lt)
-    use m_flow
-    use m_flowgeom
-    implicit none
-    integer :: LL, Lb, Lt
-    if (kmx == 0) then
-       Lb = LL
-       if (hu(LL) > 0) then
-          Lt = LL
-       else
-          Lt = 0
-       end if
-    else
-       Lb = Lbot(LL); Lt = Ltop(LL)
-    end if
- end subroutine getLbotLtop
+      if (kmx == 0) then
+         Lb = LL
+         if (hu(LL) > 0) then
+            Lt = LL
+         else
+            Lt = 0
+         end if
+      else
+         Lb = Lbot(LL)
+         Lt = Ltop(LL)
+      end if
+   end subroutine getLbotLtop
+end module m_get_Lbot_Ltop

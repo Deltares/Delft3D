@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,7 +27,8 @@
 !
 !-------------------------------------------------------------------------------
 module m_laterals
-   use precision_basics, only: dp
+   use precision_basics, only: dp, comparereal
+   use m_flowparameters, only: eps10
    implicit none
    private
 
@@ -37,7 +38,6 @@ module m_laterals
    public dealloc_lateraldata
    public average_concentrations_for_laterals
    public add_lateral_load_and_sink
-   public get_lateral_discharge
    public get_lateral_volume_per_layer
    public reset_outgoing_lat_concentration
    public finish_outgoing_lat_concentration
@@ -57,7 +57,7 @@ module m_laterals
    !                    3) in test_laterals (unit test)
    ! so yes, 3 is necessary for now.
    real(kind=dp), allocatable, target, public :: qplat(:, :) !< [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
-   real(kind=dp), allocatable, target, public :: qqlat(:, :, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","numlatsg", "ndx"]}
+   real(kind=dp), allocatable, target, public :: qqlat(:, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face": ["num_layers","nlatnd"]}
    real(kind=dp), allocatable, target, public :: balat(:) !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
    character(len=128), allocatable, public :: lat_ids(:) !< id of laterals {"shape": ["numlatsg"]}
    real(kind=dp), allocatable, target, public :: qplatCum(:) !< [m3/s] Cumulative lateral discharge of provider {"shape": ["numlatsg"]}
@@ -86,6 +86,38 @@ module m_laterals
    real(kind=dp), allocatable, target, dimension(:, :, :), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
    real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Total water volume per layer, for each lateral (kmx,numlatsg).
 
+   type t_flow_parameter !< General class for Flow parameters that require averaging.
+      real(kind=dp), dimension(:), allocatable :: values !< Averaged values of the flow parameter.
+      logical :: is_used = .false. !< Indicates whether this flow parameter is used.
+      real(kind=dp), dimension(:), pointer :: input_variable !< Input variable to be averaged.
+      real(kind=dp), dimension(:), pointer :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+      integer :: num_elements
+      integer, dimension(:), pointer :: index_start, index_end, index_to_node !< Indexing parameters for mapping input variable to flow parameter locations.
+   contains
+      procedure :: initialize => initialize_flow_parameter !< Initialize flow_parameter, allocate arrays and set pointers
+      procedure :: update => update_flow_parameter !< Update flow_parameter, perform averaging
+   end type t_flow_parameter
+
+   interface initialize_flow_parameter
+      module subroutine initialize_flow_parameter(this, num_elements, input_variable, weighing_variable, &
+                                                  index_start, index_end, index_to_node)
+         class(t_flow_parameter), intent(inout) :: this !< Flow parameter object
+         integer, intent(in) :: num_elements !< Number of elements in the flow parameter.
+         real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable to be averaged.
+         real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+         integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing parameters for mapping input variable to flow parameter locations.
+         integer, dimension(:), pointer, intent(in) :: index_to_node !< Index mapping to flow nodes.
+      end subroutine initialize_flow_parameter
+   end interface initialize_flow_parameter
+
+   interface update_flow_parameter
+      module subroutine update_flow_parameter(this)
+         class(t_flow_parameter), intent(inout) :: this
+      end subroutine update_flow_parameter
+   end interface update_flow_parameter
+
+   type(t_flow_parameter), public, target :: average_waterlevels_per_lateral !< Flow parameter structure for laterals concentration.
+
    integer, allocatable, target, dimension(:), public :: apply_transport !< Flag to apply transport for laterals (0 means only water and no substances are transported).
    logical, public :: apply_transport_is_used
 
@@ -103,8 +135,8 @@ module m_laterals
 
    !> allocate the arrays for laterals on 3d/BMI
    interface initialize_lateraldata
-      module subroutine initialize_lateraldata(numconst)
-         integer, intent(in) :: numconst !< number of constitiuents
+      module subroutine initialize_lateraldata(num_const)
+         integer, intent(in) :: num_const !< number of constitiuents
       end subroutine initialize_lateraldata
    end interface initialize_lateraldata
 
@@ -118,8 +150,8 @@ module m_laterals
    !! In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    interface average_concentrations_for_laterals
-      module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
-         integer, intent(in) :: numconst !< Number or constituents.
+      module subroutine average_concentrations_for_laterals(num_const, kmx, kmxn, cell_volume, constituents, dt)
+         integer, intent(in) :: num_const !< Number or constituents.
          integer, intent(in) :: kmx !< Number of layers (0 means 2D computation).
          integer, dimension(:), intent(in) :: kmxn !< Maximum number of vertical cells per base node n.
          real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells.
@@ -147,24 +179,13 @@ module m_laterals
 
    !> Add lateral input contribution to the load being transported
    interface add_lateral_load_and_sink
-      module subroutine add_lateral_load_and_sink(transport_load, transport_sink, discharge_in, discharge_out, cell_volume, dtol)
+      module subroutine add_lateral_load_and_sink(transport_load, transport_sink, cell_volume, dtol)
          real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain
          real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out
-         real(kind=dp), dimension(:, :, :), intent(in) :: discharge_in !< Lateral discharge going into domain (source)
-         real(kind=dp), dimension(:, :, :), intent(in) :: discharge_out !< Lateral discharge going out (sink)
          real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
          real(kind=dp), intent(in) :: dtol !< cut off value for vol1, to prevent division by zero
       end subroutine add_lateral_load_and_sink
    end interface add_lateral_load_and_sink
-
-   !> Calculate lateral discharges at each of the active grid cells, both source (lateral_discharge_in) and sink (lateral_discharge_out).
-   interface get_lateral_discharge
-      module subroutine get_lateral_discharge(lateral_discharge_in, lateral_discharge_out, cell_volume)
-         real(kind=dp), dimension(:, :, :), intent(inout) :: lateral_discharge_in !< Lateral discharge flowing into the model (source)
-         real(kind=dp), dimension(:, :, :), intent(inout) :: lateral_discharge_out !< Lateral discharge extracted out of the model (sink)
-         real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
-      end subroutine get_lateral_discharge
-   end interface get_lateral_discharge
 
    !> Compute water volume per layer in each lateral
    interface get_lateral_volume_per_layer
@@ -178,7 +199,7 @@ module m_laterals
    interface distribute_lateral_discharge
       module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
          real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
-         real(kind=dp), dimension(:, :, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge
+         real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge
                                                                                                     !! per layer per lateral per cell
       end subroutine distribute_lateral_discharge
    end interface distribute_lateral_discharge

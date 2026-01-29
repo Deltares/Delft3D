@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -372,9 +372,6 @@ DD::SlaveProcess (
     //  Read the DD configuration file (or get it from the Flow2D3D config tree)
 
     this->ReadConfig ();
-
-    if (this->flow->flowol)
-        this->flow->flowol->numSubdomains = this->numSubdomains;
 
     //  Create the minimum barrier iterator and join it to all mappers
 

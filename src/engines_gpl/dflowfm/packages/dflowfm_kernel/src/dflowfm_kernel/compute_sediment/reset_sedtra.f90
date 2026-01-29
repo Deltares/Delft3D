@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,24 +30,35 @@
 !
 !
 
+module m_reset_sedtra
+
+   implicit none
+
+   private
+
+   public :: reset_sedtra
+
+contains
+
    subroutine reset_sedtra()
-      use m_sediment
-      use morphology_data_module
-      use m_rdstm
-      use message_module
+      use m_sediment, only: stm_included, stmpar, sedtra, mtd
+      use morphology_data_module, only: clrsedtra
+      use m_rdstm, only: clrstm
+      use message_module, only: clearstack
 
       implicit none
 
       integer :: istat
 
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
       istat = clrstm(stmpar)
       call clrsedtra(istat, sedtra)
       if (associated(mtd%dzbdt)) then
          deallocate (mtd%dzbdt)
          deallocate (mtd%uau)
          deallocate (mtd%seddif)
-         deallocate (mtd%sed)
          deallocate (mtd%ws)
          deallocate (mtd%blchg)
 
@@ -55,3 +66,5 @@
          deallocate (mtd%messages)
       end if
    end subroutine reset_sedtra
+
+end module m_reset_sedtra

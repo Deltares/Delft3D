@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,30 +29,34 @@
 
 !
 !
+module m_getxy
+   implicit none
+contains
+!>     zoek TT in X,Y, en XT,YT met dezelfde afstand geeft als SSQ
+   subroutine GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ, XT, YT, TT, H)
+      use precision, only: dp
+      use m_golddis, only: golddis
+      use m_splintxy, only: splintxy
 
-      subroutine GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ, XT, YT, TT, H)
-!     zoek TT in X,Y, en XT,YT met dezelfde afstand geeft als
-!     SSQ
-         !USE DIMENS
-         implicit none
-         integer :: imax, n, nt
-         double precision :: ssq, xt, yt
-         double precision :: X(imax), Y(imax), X2(imax), Y2(imax), T(imax)
-         double precision, intent(in) :: H !< for curvature adapted meshing
+      integer :: imax, n, nt
+      real(kind=dp) :: ssq, xt, yt
+      real(kind=dp) :: X(imax), Y(imax), X2(imax), Y2(imax), T(imax)
+      real(kind=dp), intent(in) :: H !< for curvature adapted meshing
 
-         double precision, intent(out) :: TT
+      real(kind=dp), intent(out) :: TT
 
-         double precision :: ax, bx, cx, tol, dis
+      real(kind=dp) :: ax, bx, cx, tol, dis
 
-         AX = T(1)
-         CX = T(NT)
-         BX = (AX + CX) / 2
-         TOL = 0.00001d0
+      AX = T(1)
+      CX = T(NT)
+      BX = (AX + CX) / 2
+      TOL = 0.00001_dp
 !     Dan bijhorende T zoeken
-         call GOLDDIS(AX, BX, CX, TOL, X, X2, Y, Y2, N, TT, DIS, SSQ, H)
+      call GOLDDIS(AX, BX, CX, TOL, X, X2, Y, Y2, N, TT, DIS, SSQ, H)
 
 !     EN punt invullen
-         call SPLINTXY(X, Y, X2, Y2, N, TT, XT, YT)
+      call SPLINTXY(X, Y, X2, Y2, N, TT, XT, YT)
 
-         return
-      end
+      return
+   end
+end module m_getxy

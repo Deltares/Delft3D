@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,43 +30,55 @@
 !
 !
 
- subroutine tektransport1D(tim)
-    use m_sferic
-    use m_statistics
-    use m_flowgeom
-    use m_flow
-    use m_transport
-    implicit none
-    double precision :: tim
-    double precision :: cwave, period, omeg, wlen, rk, phi, xx, yy, dif
-    integer :: k
+module m_tektransport1d
 
-    cwave = 60d0 * sqrt(10d0 * 1d-4) ! chezy
-    period = 90d0 * 60d0
-    omeg = twopi / period ! s
-    wlen = cwave * period
-    rk = twopi / wlen
-    do k = 1, 600
-       xx = -50d0 + (k - 1) * 100d0
-       phi = rk * xx - omeg * tim
-       yy = 15d0 + 10d0 * cos(phi)
-       if (k == 1) then
-          call movabs(xx, yy)
-       else
-          call lnabs(xx, yy)
-       end if
-    end do
+   implicit none
 
-    if (ndxi < 1) return
+contains
 
-    avedif = 0d0
-    do k = 1, ndxi
-       xx = xz(k)
-       phi = rk * xx - omeg * tim
-       yy = 15d0 + 10d0 * cos(phi)
-       dif = abs(constituents(isalt, k) - yy)
-       avedif = avedif + dif
-    end do
-    avedif = avedif / ndxi
+   subroutine tektransport1D(tim)
+      use precision, only: dp
+      use m_sferic, only: twopi
+      use m_statistics, only: avedif
+      use m_flowgeom, only: ndxi, xz
+      use m_transport, only: constituents, isalt
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      implicit none
+      real(kind=dp) :: tim
+      real(kind=dp) :: cwave, period, omeg, wlen, rk, phi, xx, yy, dif
+      integer :: k
 
- end subroutine tektransport1D
+      cwave = 60.0_dp * sqrt(10.0_dp * 1.0e-4_dp) ! chezy
+      period = 90.0_dp * 60.0_dp
+      omeg = twopi / period ! s
+      wlen = cwave * period
+      rk = twopi / wlen
+      do k = 1, 600
+         xx = -50.0_dp + (k - 1) * 100.0_dp
+         phi = rk * xx - omeg * tim
+         yy = 15.0_dp + 10.0_dp * cos(phi)
+         if (k == 1) then
+            call movabs(xx, yy)
+         else
+            call lnabs(xx, yy)
+         end if
+      end do
+
+      if (ndxi < 1) then
+         return
+      end if
+
+      avedif = 0.0_dp
+      do k = 1, ndxi
+         xx = xz(k)
+         phi = rk * xx - omeg * tim
+         yy = 15.0_dp + 10.0_dp * cos(phi)
+         dif = abs(constituents(isalt, k) - yy)
+         avedif = avedif + dif
+      end do
+      avedif = avedif / ndxi
+
+   end subroutine tektransport1D
+
+end module m_tektransport1d

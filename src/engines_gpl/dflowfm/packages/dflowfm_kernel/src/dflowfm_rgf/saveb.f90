@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,16 +30,27 @@
 !
 !
 
-      subroutine SAVEB(NPUT)
-         implicit none
-         integer :: nput
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
+module m_saveb
 
-         MB2 = MB
-         NB2 = NB
+   implicit none
 
-         NPT2 = NPT
-         NPUTO = NPUT
-         return
-      end subroutine saveb
+   private
+
+   public :: saveb
+
+contains
+
+   subroutine SAVEB(NPUT)
+      use m_grid_block, only: mb2, mb, nb2, nb, npt2, npt, nputo
+
+      integer :: nput
+
+      MB2 = MB
+      NB2 = NB
+
+      NPT2 = NPT
+      NPUTO = NPUT
+      return
+   end subroutine saveb
+
+end module m_saveb

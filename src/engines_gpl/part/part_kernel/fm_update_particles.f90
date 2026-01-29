@@ -6,7 +6,7 @@ contains
 
     !----- AGPL --------------------------------------------------------------------
     !
-    !  Copyright (C)  Stichting Deltares, 2017-2024.
+    !  Copyright (C)  Stichting Deltares, 2017-2026.
     !
     !  This file is part of Delft3D (D-Flow Flexible Mesh component).
     !
@@ -224,7 +224,7 @@ contains
             else
                 if (uw0low > 0.0_wp) then
                     time_up = (1.0_wp - hpart(ipart)) / uw0low
-                else
+                elseif (uw0low < 0.0_wp) then
                     time_low = -hpart(ipart) / uw0low
                 endif
             endif

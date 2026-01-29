@@ -1,5 +1,4 @@
 subroutine SwanComputeForce ( fx, fy, ac2, dep2, hs, spcsig, spcdir )
-!ADCsubroutine SwanComputeForce
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -12,22 +11,20 @@ subroutine SwanComputeForce ( fx, fy, ac2, dep2, hs, spcsig, spcdir )
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
@@ -58,9 +55,6 @@ subroutine SwanComputeForce ( fx, fy, ac2, dep2, hs, spcsig, spcdir )
     use swcomm4
     use SwanGriddata
     use SwanGridobjects
-!ADC    use Couple2Adcirc, only: compda
-!ADC    use GLOBAL,        only: rsnx2, rsny2
-!ADC    use m_genarr,      only: ac2, spcdir, spcsig
 !
     implicit none
 !
@@ -120,11 +114,6 @@ subroutine SwanComputeForce ( fx, fy, ac2, dep2, hs, spcsig, spcdir )
     real, dimension(1)                    :: n        ! ratio of group and phase velocity
     real, dimension(1)                    :: nd       ! derivative of n with respect to depth
     real, dimension(1)                    :: sig      ! relative frequency
-!ADC    !
-!ADC    real, dimension(nverts)               :: dep2     ! help array to store water depth
-!ADC    real, dimension(nverts)               :: fx       ! help array to store wave-induced force in x-direction
-!ADC    real, dimension(nverts)               :: fy       ! help array to store wave-induced force in y-direction
-!ADC    real, dimension(nverts)               :: hs       ! help array to store significant wave height
     !
     real, dimension(:), allocatable       :: sxx      ! x-component of radiation stress in x-direction
     real, dimension(:), allocatable       :: sxy      ! cross component of radiation stress in x/y-direction
@@ -157,12 +146,6 @@ subroutine SwanComputeForce ( fx, fy, ac2, dep2, hs, spcsig, spcdir )
     sxx = 0.
     sxy = 0.
     syy = 0.
-!ADC    !
-!ADC    ! move the depths and heights to their own arrays
-!ADC    do ivert = 1, nverts
-!ADC       dep2(ivert) = compda(ivert,jdp2)
-!ADC       hs  (ivert) = compda(ivert,jhs)
-!ADC    enddo
     !
     ! compute radiation stresses in vertices
     !
@@ -295,8 +278,8 @@ subroutine SwanComputeForce ( fx, fy, ac2, dep2, hs, spcsig, spcdir )
        ! if area is non-positive, give error and go to next vertex
        !
        if ( area <= 0d0 ) then
-          write (msgstr, '(a,i5)') ' Area of centroid dual is negative or zero in vertex ', ivert
-          call msgerr( 2, trim(msgstr) )
+!NADC          write (msgstr, '(a,i5)') ' Area of centroid dual is negative or zero in vertex ', ivert
+!NADC          call msgerr( 2, trim(msgstr) )
           cycle vertexloop
        endif
        !
@@ -324,12 +307,6 @@ subroutine SwanComputeForce ( fx, fy, ac2, dep2, hs, spcsig, spcdir )
        fy(ivert) = -RHO * GRAV * ( dsxydx  + dsyydy )
        !
     enddo vertexloop
-!ADC    !
-!ADC    ! pass stresses to ADCIRC
-!ADC    do ivert = 1, nverts
-!ADC       rsnx2(ivert) = fx(ivert)
-!ADC       rsny2(ivert) = fy(ivert)
-!ADC    enddo
     !
     ! deallocation of radiation stresses
     !

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,26 +30,44 @@
 !
 !
 
-      subroutine POLTOLAND(L1, L2) ! SHIFT POLYGON TO LANDBOUNDARY
-         use M_POLYGON
-         use M_MISSING
-         use M_LANDBOUNDARY
-         implicit none
-         integer :: l1
-         integer :: l2
+module m_poltoland
+   use m_toland, only: toland
 
-         integer :: in
-         integer :: l, j
-         double precision :: xp, yp, xpn, ypn, dis, rL
+   implicit none
 
-         IN = 1; if (L2 < L1) IN = -1
-         do L = L1, L2, IN
-            XP = XPL(L)
-            if (XP /= XYMIS) then
-               YP = YPL(L)
-               call TOLAND(XP, YP, 1, MXLAN, 1, xpn, ypn, dis, j, rL)
-               XPL(L) = xpn; YPL(L) = ypn
-            end if
-         end do
+   private
 
-      end subroutine POLTOLAND
+   public :: poltoland
+
+contains
+
+   subroutine POLTOLAND(L1, L2) ! SHIFT POLYGON TO LANDBOUNDARY
+      use precision, only: dp
+      use M_POLYGON, only: xpl, ypl
+      use M_MISSING, only: xymis
+      use M_LANDBOUNDARY, only: mxlan
+
+      integer :: l1
+      integer :: l2
+
+      integer :: in
+      integer :: l, j
+      real(kind=dp) :: xp, yp, xpn, ypn, dis, rL
+
+      IN = 1
+      if (L2 < L1) then
+         IN = -1
+      end if
+      do L = L1, L2, IN
+         XP = XPL(L)
+         if (XP /= XYMIS) then
+            YP = YPL(L)
+            call TOLAND(XP, YP, 1, MXLAN, 1, xpn, ypn, dis, j, rL)
+            XPL(L) = xpn
+            YPL(L) = ypn
+         end if
+      end do
+
+   end subroutine POLTOLAND
+
+end module m_poltoland

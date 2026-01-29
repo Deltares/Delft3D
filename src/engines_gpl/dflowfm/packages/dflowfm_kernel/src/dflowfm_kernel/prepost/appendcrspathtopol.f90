@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,34 +29,36 @@
 
 !
 !
-
+module m_append_crspath_to_pol
+   implicit none
+contains
 !> Appends the polyline of a cross section path to the current global
 !! polyline. Useful for converting cross sections, thin dams or thin
 !! dykes back to editable polylines.
-subroutine appendCRSPathToPol(path)
-   use m_crspath
-   use m_polygon
-   use m_alloc
-   use m_missing
-   implicit none
-   type(tcrspath), intent(in) :: path
+   subroutine appendCRSPathToPol(path)
+      use m_crspath, only: tcrspath
+      use m_polygon, only: npl, xpl, ypl, zpl, increasepol
+      use m_missing, only: dmiss
 
-   integer :: ip
+      type(tcrspath), intent(in) :: path
 
-   call increasepol(npl + 1 + path%np, 1)
+      integer :: ip
+
+      call increasepol(npl + 1 + path%np, 1)
 
 ! Insert dmiss seperator behind existing polylines, if any.
-   if (npl > 0) then
-      npl = npl + 1
-      xpl(npl) = dmiss
-      xpl(npl) = dmiss
-      zpl(npl) = dmiss
-   end if
+      if (npl > 0) then
+         npl = npl + 1
+         xpl(npl) = dmiss
+         xpl(npl) = dmiss
+         zpl(npl) = dmiss
+      end if
 
-   do ip = 1, path%np
-      npl = npl + 1
-      xpl(npl) = path%xp(ip)
-      ypl(npl) = path%yp(ip)
-      zpl(npl) = path%zp(ip)
-   end do
-end subroutine appendCRSPathToPol
+      do ip = 1, path%np
+         npl = npl + 1
+         xpl(npl) = path%xp(ip)
+         ypl(npl) = path%yp(ip)
+         zpl(npl) = path%zp(ip)
+      end do
+   end subroutine appendCRSPathToPol
+end module m_append_crspath_to_pol

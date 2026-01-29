@@ -1,0 +1,10 @@
+export ESMF_DIR=/cygdrive/c/Checkouts/esmf-8.8.0
+export ESMF_COMM=mpiuni # we do not need mpi per se
+export ESMF_OPTLEVEL=2
+export ESMF_NETCDF=split
+export ESMF_NETCDF_INCLUDE=/usr/include
+export ESMF_NETCDF_LIBPATH=/usr/lib
+export ESMF_NETCDF_LIBS="-lpioc -lnetcdff -lnetcdf" # -lpioc will be added automatically after -lnetcdf, but it uses netcdf so it should come before. This hack places it both before and after.
+export ESMF_INSTALL_PREFIX=install
+export ESMF_CXXSTD=sysdefault # some C++ libraries require gcc posix extensions, specifically the sigaction definition
+export ESMF_RANLIB=true # ranlib does not work during the install stage, use this no-op

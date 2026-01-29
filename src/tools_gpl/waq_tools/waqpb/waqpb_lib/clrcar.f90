@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,7 +30,7 @@
       subroutine clrcar (ndim, indarr, array )
       integer ndim
       integer indarr(ndim)
-      character*(*) array(ndim)
+      character(len=*) array(ndim)
 
 !          Remove all elements for which the index = 0
 !          Without actually updating the index array

@@ -53,7 +53,7 @@ BEGIN
             VALUE "CompanyName", COMPANY_NAME
             VALUE "FileDescription", "D-Flow Flexible Mesh Command Line Interface"
             VALUE "FileVersion", VERSION_FULL
-            VALUE "InternalName", COMPANY_NAME
+            VALUE "InternalName", PRODUCT_NAME
             VALUE "LegalCopyright", LEGAL_COPYRIGHT
             VALUE "LegalTrademarks", LEGAL_TRADEMARKS
             VALUE "OriginalFilename", "dflowfm-cli.exe\0"

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,21 +30,26 @@
 !
 !
 
-      subroutine ZOOM3(KEY, NPUT)
-         use m_wearelt
-         implicit none
-         integer :: jashow
-         integer :: jmouse
-         integer :: key
-         integer :: nput
-         double precision :: xa
-         double precision :: xlc
-         double precision :: ya
-         double precision :: ylc
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         XLC = (X1 + X2) / 2
-         YLC = (Y1 + Y2) / 2
-         call IMOUSECURSORXYG(real(XLC), real(YLC))
-         call ZOOMIN(KEY, NPUT)
-         return
-      end
+submodule(m_zoom3) m_zoom3_
+
+   implicit none
+
+contains
+
+   module subroutine ZOOM3(KEY, NPUT)
+      use m_wearelt
+      use m_locatora
+      use m_zoomin
+
+      implicit none
+      integer :: key
+      integer :: nput
+
+      XLC = (X1 + X2) / 2
+      YLC = (Y1 + Y2) / 2
+      call IMOUSECURSORXYG(real(XLC), real(YLC))
+      call ZOOMIN(KEY, NPUT)
+      return
+   end subroutine ZOOM3
+
+end submodule m_zoom3_

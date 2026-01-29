@@ -63,7 +63,7 @@ Compiling on Windows/Linux
 
 C code on Linux
 ===============
-Use as an example: https://git.deltares.nl/oss/delft3d/-/tree/main/src/engines_gpl/dimr/packages/dimr_lib/CMakeLists.txt:
+Use as an example: https://github.com/Deltares/Delft3D/tree/main/src/engines_gpl/dimr/packages/dimr_lib/CMakeLists.txt:
 Copy and adapt the following block into your CMakeLists.txt file:
 >>>>>>>>>>>>>>>>>>>>>>>>
 if (UNIX)

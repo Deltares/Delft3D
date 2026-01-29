@@ -1,7 +1,7 @@
 module m_readStorageNodes
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -65,7 +65,7 @@ module m_readStorageNodes
       implicit none
       
       type(t_network), intent(inout)                :: network
-      character*(*),   intent(in   )                :: storgNodesFile
+      character(len=*),   intent(in   )                :: storgNodesFile
 
       logical                                       :: success
       logical                                       :: success1, success2
@@ -117,7 +117,7 @@ module m_readStorageNodes
       ! check FileVersion
       major = 0
       minor = 0
-      call prop_get_version_number(md_ptr, major = major, minor = minor, success = success1)
+      call get_version_number(md_ptr, major = major, minor = minor, success = success1)
       if (.not. success1 .or. major < storgNodesFileMajorVersion) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of storage nodes file detected in '''//trim(storgNodesFile)//''': v', major, minor, '. Current format: v',storgNodesFileMajorVersion,storgNodesFileMinorVersion,'. Ignoring this file.'
          call warn_flush()
@@ -429,6 +429,7 @@ module m_readStorageNodes
 
          success = .true.
 
+         nullify(angle_loss)
          num_angles     = 0
          entrance_loss  = 0d0
          exit_loss      = 0d0
@@ -499,6 +500,7 @@ module m_readStorageNodes
    !> Converts storage type string to an integer.
    !! Returns nt_None when an invalid type string is given.
    subroutine storageTypeStringToInteger(sStorgType, storgType)
+      use string_module, only: str_lower
       implicit none
       character(len=*), intent(in   ) :: sStorgType        !< storage type string
       integer,          intent(  out) :: storgType         !< storage type integer

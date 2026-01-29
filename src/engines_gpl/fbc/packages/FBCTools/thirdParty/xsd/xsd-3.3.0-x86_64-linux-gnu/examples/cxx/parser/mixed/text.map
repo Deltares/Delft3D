@@ -1,0 +1,7 @@
+# file      : examples/cxx/parser/mixed/text.map
+# author    : Boris Kolpackov <boris@codesynthesis.com>
+# copyright : not copyrighted - public domain
+
+include "anchor.hxx";
+
+anchor ::anchor;

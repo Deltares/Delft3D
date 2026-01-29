@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by ICT (Stichting Deltares) -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:rtc="http://www.wldelft.nl/fews" targetNamespace="http://www.wldelft.nl/fews" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<complexType name="TimeStepComplexType">
+		<annotation>
+			<documentation>The timeunit element has three attributes, unit and devider and multiplier.
+            the unit is second, minute, hour, week, month year.
+            The divider attribute is optional (default = 1).</documentation>
+		</annotation>
+		<attribute name="unit" type="rtc:timeStepUnitEnumStringType" use="required"/>
+		<attribute name="divider" type="positiveInteger" use="optional" default="1"/>
+		<attribute name="multiplier" type="positiveInteger" use="optional" default="1"/>
+	</complexType>
+	<simpleType name="timeStepUnitEnumStringType">
+		<restriction base="string">
+			<enumeration value="second"/>
+			<enumeration value="minute"/>
+			<enumeration value="hour"/>
+			<enumeration value="day"/>
+			<enumeration value="week"/>
+			<!--<enumeration value="month"/>
+			<enumeration value="year"/>
+			<enumeration value="nonequidistant"/>-->
+		</restriction>
+	</simpleType>
+	<complexType name="DateTimeComplexType">
+		<attribute name="date" type="rtc:dateType" use="required"/>
+		<attribute name="time" type="rtc:timeType" use="required"/>
+	</complexType>
+	<simpleType name="dateType">
+		<restriction base="date">
+			<pattern value="\d\d\d\d-\d\d-\d\d"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="timeType">
+		<restriction base="time">
+			<pattern value="\d\d:\d\d:\d\d"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="VariableTypeEnumStringType">
+		<restriction base="string">
+			<enumeration value="CONTINUOUS"/>
+			<enumeration value="INTEGER"/>
+			<enumeration value="TIMEINSTANCE"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="EnsembleModeEnumStringType">
+		<restriction base="string">
+			<enumeration value="JOINT"/>
+			<enumeration value="TREE"/>
+			<enumeration value="INDEPENDENT"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="AggregationTypeEnumStringType">
+		<restriction base="string">
+			<enumeration value="BLOCK"/>
+			<enumeration value="LINEAR"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="TimeZoneSimpleType">
+		<annotation>
+			<documentation>The timeZone (in decimal hours shift from GMT)
+            e.g. -1.0 or 3.5. If not present GMT is assumed</documentation>
+		</annotation>
+		<restriction base="double"/>
+	</simpleType>
+	<simpleType name="timeSeriesType">
+		<annotation>
+			<documentation>Type of data, either accumulative or instantaneous.
+                        For accumulative data the time/date of the event is
+                        the moment at which the data was gathered.
+            </documentation>
+		</annotation>
+		<restriction base="string">
+			<enumeration value="accumulative"/>
+			<enumeration value="instantaneous"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="ExternalParameterSimpleType">
+		<union memberTypes="double">
+			<simpleType>
+				<restriction base="string">
+					<pattern value="[$#][a-zA-Z0-9.()*/+-_]+[$#]"/>
+				</restriction>
+			</simpleType>
+		</union>
+	</simpleType>
+	<simpleType name="ExternalBooleanSimpleType">
+		<union memberTypes="boolean">
+			<simpleType>
+				<restriction base="string">
+					<pattern value="[$][a-zA-Z0-9.()*/+-_]+[$]"/>
+				</restriction>
+			</simpleType>
+		</union>
+	</simpleType>
+	<simpleType name="ExternalIntegerSimpleType">
+		<union memberTypes="integer">
+			<simpleType>
+				<restriction base="string">
+					<pattern value="[$][a-zA-Z0-9.()*/+-_]+[$]"/>
+				</restriction>
+			</simpleType>
+		</union>
+	</simpleType>
+	<simpleType name="TimeSeriesSimpleType">
+		<restriction base="string">
+			<minLength value="1"/>
+		</restriction>
+	</simpleType>
+</schema>

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,48 +30,64 @@
 !
 !
 
-      subroutine TEKGRPT(X, Y, mmax, nmax, MC, NC, MP, NP, NCOL)
+module m_tekgrpt
+
+   implicit none
+
+contains
+
+   subroutine TEKGRPT(X, Y, mmax, nmax, MC, NC, MP, NP, NCOL)
+      use precision, only: dp
 !     TEKEN GRIDLIJNEN UITKOMEND OP DIT PUNT
-         use m_missing
-         implicit none
-         integer :: mmax, nmax, mc, nc, mp, np, ncol
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
+      use m_missing, only: xymis
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      implicit none
+      integer :: mmax, nmax, mc, nc, mp, np, ncol
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 
-         double precision :: xp, yp
-         integer :: mpu, mpd, npu, npd
+      real(kind=dp) :: xp, yp
+      integer :: mpu, mpd, npu, npd
 
-         call SETCOL(NCOL)
-         if (MP == 0) return
-         XP = X(MP, NP)
-         YP = Y(MP, NP)
-         if (XP == 0) return
-         MPU = MP + 1
-         MPD = MP - 1
-         NPU = NP + 1
-         NPD = NP - 1
-         if (MPU <= MC) then
-            if (X(MPU, NP) /= XYMIS) then
-               call MOVABS(X(MPU, NP), Y(MPU, NP))
-               call LNABS(XP, YP)
-            end if
-         end if
-         if (MPD >= 1) then
-            if (X(MPD, NP) /= XYMIS) then
-               call MOVABS(X(MPD, NP), Y(MPD, NP))
-               call LNABS(XP, YP)
-            end if
-         end if
-         if (NPU <= NC) then
-            if (X(MP, NPU) /= XYMIS) then
-               call MOVABS(X(MP, NPU), Y(MP, NPU))
-               call LNABS(XP, YP)
-            end if
-         end if
-         if (NPD >= 1) then
-            if (X(MP, NPD) /= XYMIS) then
-               call MOVABS(X(MP, NPD), Y(MP, NPD))
-               call LNABS(XP, YP)
-            end if
-         end if
+      call SETCOL(NCOL)
+      if (MP == 0) then
          return
-      end
+      end if
+      XP = X(MP, NP)
+      YP = Y(MP, NP)
+      if (XP == 0) then
+         return
+      end if
+      MPU = MP + 1
+      MPD = MP - 1
+      NPU = NP + 1
+      NPD = NP - 1
+      if (MPU <= MC) then
+         if (X(MPU, NP) /= XYMIS) then
+            call MOVABS(X(MPU, NP), Y(MPU, NP))
+            call LNABS(XP, YP)
+         end if
+      end if
+      if (MPD >= 1) then
+         if (X(MPD, NP) /= XYMIS) then
+            call MOVABS(X(MPD, NP), Y(MPD, NP))
+            call LNABS(XP, YP)
+         end if
+      end if
+      if (NPU <= NC) then
+         if (X(MP, NPU) /= XYMIS) then
+            call MOVABS(X(MP, NPU), Y(MP, NPU))
+            call LNABS(XP, YP)
+         end if
+      end if
+      if (NPD >= 1) then
+         if (X(MP, NPD) /= XYMIS) then
+            call MOVABS(X(MP, NPD), Y(MP, NPD))
+            call LNABS(XP, YP)
+         end if
+      end if
+      return
+   end
+
+end module m_tekgrpt

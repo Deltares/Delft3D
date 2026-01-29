@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,18 +31,30 @@
 !
 
 !> TODO: update setfixedweirs to use fxw
-subroutine fixedweirs_on_flowgeom()
-   use m_fixedweirs
+module m_fixedweirs_on_flowgeom
+
    implicit none
 
-   integer, dimension(:), allocatable :: idum
+   private
 
-   integer :: ic
+   public :: fixedweirs_on_flowgeom
 
-   allocate (idum(1))
-   idum = 0
+contains
 
-   do ic = 1, nfxw
-      call crspath_on_flowgeom(fxw(ic), 1, 0, 1, idum, 0, 1)
-   end do
-end subroutine fixedweirs_on_flowgeom
+   subroutine fixedweirs_on_flowgeom()
+      use m_fixedweirs
+      use m_crspath_on_flowgeom
+
+      integer, dimension(:), allocatable :: idum
+
+      integer :: ic
+
+      allocate (idum(1))
+      idum = 0
+
+      do ic = 1, nfxw
+         call crspath_on_flowgeom(fxw(ic), 1, 0, 1, idum, 0, 1)
+      end do
+   end subroutine fixedweirs_on_flowgeom
+
+end module m_fixedweirs_on_flowgeom

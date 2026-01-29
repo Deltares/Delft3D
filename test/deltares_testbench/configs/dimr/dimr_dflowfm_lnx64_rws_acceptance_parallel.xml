@@ -148,6 +148,6 @@
         </testCase>
     </defaultTestCases>
     <!-- testCases -->
-<xi:include href="../include/dimr_dflowfm_rws_acceptance_parallel_lnx64.xml"/>
+<xi:include href="../include/dimr_dflowfm_rws_acceptance_parallel.xml"/>
 
 </deltaresTestbench_v3>

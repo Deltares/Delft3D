@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/parser/multiroot/protocol.xsd
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:p="http://www.codesynthesis.com/protocol"
+            targetNamespace="http://www.codesynthesis.com/protocol">
+
+  <xsd:complexType name="request">
+    <xsd:sequence>
+      <xsd:element name="account" type="xsd:unsignedInt"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="balance">
+    <xsd:complexContent>
+      <xsd:extension base="p:request"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="withdraw">
+    <xsd:complexContent>
+      <xsd:extension base="p:request">
+        <xsd:sequence>
+          <xsd:element name="amount" type="xsd:unsignedInt"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="deposit">
+    <xsd:complexContent>
+      <xsd:extension base="p:request">
+        <xsd:sequence>
+          <xsd:element name="amount" type="xsd:unsignedInt"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:element name="balance" type="p:balance"/>
+  <xsd:element name="withdraw" type="p:withdraw"/>
+  <xsd:element name="deposit" type="p:deposit"/>
+
+</xsd:schema>

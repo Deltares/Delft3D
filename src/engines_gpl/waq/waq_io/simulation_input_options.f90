@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -53,7 +53,7 @@ contains
         integer(kind = int_wp), intent(in) :: iopt1           !< Input option
         integer(kind = int_wp), intent(inout) :: file_unit_list  (*)        !< DELWAQ Unit number array
         integer(kind = int_wp), intent(in) :: is              !< entry in file_unit_list for item
-        character*(*), intent(inout) :: file_name_list(*)       !< IN/OUT  Filenames
+        character(len=*), intent(inout) :: file_name_list(*)       !< IN/OUT  Filenames
         logical, intent(in) :: is_date_format         !< 'date'-format 1st time scale
         logical, intent(in) :: is_yyddhh_format         !< 'date'-format (F;ddmmhhss,T;yydddhh)
         integer(kind = int_wp), intent(in) :: nitem           !< nr of input items expected

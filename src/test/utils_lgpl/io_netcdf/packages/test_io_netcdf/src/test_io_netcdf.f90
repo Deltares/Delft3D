@@ -1,41 +1,40 @@
 program test_io_netcdf
-    use ftnunit
-    use test_coordinate_reference_system
+   use ftnunit
+   use test_coordinate_reference_system, only: tests_coordinate_reference_system
 
-    implicit none
+   implicit none
 
-    ! Setup
-    call prepareTests
-    call runtests_init
+   ! Setup
+   call prepareTests()
+   call runtests_init()
 
-    ! Run tests for modules
-    call tests_coordinate_reference_system
+   ! Run tests for modules
+   call tests_coordinate_reference_system()
 
-    ! Teardown
-    call runtests_final
-    call showResult
+   ! Teardown
+   call runtests_final()
+   call showResult()
 
 contains
 
 !> Routine to start the testing
 !! Note: This routine merely takes care that the unit tests are indeed run
-subroutine prepareTests
+   subroutine prepareTests
 
-    integer  :: lun   !< LU-number
+      integer :: lun !< LU-number
 
-    open( newunit=lun, file = 'ftnunit.run' )
-    write( lun, '(a)' ) 'ALL'
-    close( lun )
+      open (newunit=lun, file='ftnunit.run')
+      write (lun, '(a)') 'ALL'
+      close (lun)
 
-end subroutine prepareTests
+   end subroutine prepareTests
 
 !> Start the browser to show the result
 !!
-subroutine showResult
+   subroutine showResult()
 
-    call system( 'ftnunit.html' )
+      call system('ftnunit.html')
 
-end subroutine showResult
-
+   end subroutine showResult
 
 end program test_io_netcdf

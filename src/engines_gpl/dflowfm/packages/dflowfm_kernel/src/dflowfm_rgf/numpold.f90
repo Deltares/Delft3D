@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,19 +29,25 @@
 
 !
 !
-
-      subroutine NUMPold(X, mmax, nmax, MP, NUMPI)
+module m_numpold
+   implicit none
+contains
+   subroutine NUMPold(X, mmax, nmax, MP, NUMPI)
+      use precision, only: dp
 !     GEEF AANTAL PUNTEN VAN SPLINE MP
-         !USE DIMENS
-         use m_missing
-         implicit none
-         double precision :: X(MMAX, NMAX)
-         integer :: mp, numpi, mmax, nmax
+      !USE DIMENS
+      use m_missing, only: xymis
 
-         integer :: j
-         NUMPI = 0
-         do J = 1, NMAX
-            if (X(MP, J) /= XYMIS) NUMPI = J
-         end do
-         return
-      end subroutine numpold
+      integer :: mp, numpi, mmax, nmax
+      real(kind=dp) :: X(MMAX, NMAX)
+
+      integer :: j
+      NUMPI = 0
+      do J = 1, NMAX
+         if (X(MP, J) /= XYMIS) then
+            NUMPI = J
+         end if
+      end do
+      return
+   end subroutine numpold
+end module m_numpold

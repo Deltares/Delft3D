@@ -4,9 +4,13 @@ include_directories(.)
 file(GLOB metis_sources *.c)
 # Build libmetis.
 add_library(metis ${METIS_LIBRARY_TYPE} ${GKlib_sources} ${metis_sources})
-if(UNIX)
-  target_link_libraries(metis m)
-endif()
+
+target_link_libraries(metis PRIVATE no_compiler_warnings)
+
+# Deltares: Comment out, this breaks the linking of netcdf to our software
+#if(UNIX)
+#  target_link_libraries(metis PRIVATE m)
+#endif()
 
 if(METIS_INSTALL)
   install(TARGETS metis

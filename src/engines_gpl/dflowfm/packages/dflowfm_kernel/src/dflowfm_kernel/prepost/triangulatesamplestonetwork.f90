@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,7 +30,19 @@
 !
 !
 
+module m_triangulatesamplestonetwork
+
+   implicit none
+
+   private
+
+   public :: triangulatesamplestonetwork
+
+contains
+
    subroutine Triangulatesamplestonetwork(JADOORLADEN)
+      use precision, only: dp
+      use m_checktriangle, only: checktriangle
       use m_netw, only: numk, numl, kn, xk, yk, zk, nb, LMAX, KMAX
       use M_SAMPLES
       use m_ec_triangle
@@ -41,10 +53,16 @@
       use gridoperations
       use m_polygon ! , only: savepol, restorepol
       use m_mergenodes
-      implicit none
+      use m_readyy
+      use m_makenetnodescoding
+      use m_set_nod_adm
+      use m_set_col
+      use m_movabs
+      use m_lnabs
+
       integer :: jadoorladen ! ,npl
-      !double precision :: xpl(npl),ypl(npl)
-      double precision :: af
+      !real(kind=dp) :: xpl(npl),ypl(npl)
+      real(kind=dp) :: af
       integer :: in
       integer :: ja
       integer :: k
@@ -67,9 +85,9 @@
       integer :: IERR
 
       integer, allocatable :: KS(:)
-      double precision :: XP, YP, THIRD, phimin, phimax
+      real(kind=dp) :: XP, YP, THIRD, phimin, phimax
 
-      THIRD = 1d0 / 3d0
+      THIRD = 1.0_dp / 3.0_dp
 
       call FINDCELLS(0)
 
@@ -154,18 +172,18 @@
 
       NSDL = N
 
-      call READYY('TRIANGULATING', 0d0)
+      call READYY('TRIANGULATING', 0.0_dp)
 
       call DLAUN(XS, YS, NSDL, 3, ierr)
 
-      call READYY('TRIANGULATING', 0.3d0)
+      call READYY('TRIANGULATING', 0.3_dp)
 
       IN = -1
       ! Check triangles and disable some links if necessary.
       NMOD = int(NUMTRI / 40.0) + 1
       do N = 1, NUMTRI
          if (mod(N, NMOD) == 0) then
-            AF = 0.3d0 + 0.4d0 * dble(N) / dble(NUMTRI)
+            AF = 0.3_dp + 0.4_dp * real(N, kind=dp) / real(NUMTRI, kind=dp)
             call READYY('TRIANGULATING', AF)
          end if
 
@@ -176,8 +194,12 @@
             cycle
          end if
 
-         K1 = INDX(1, N); K2 = INDX(2, N); K3 = INDX(3, N)
-         K1 = KS(K1); K2 = KS(K2); K3 = KS(K3)
+         K1 = INDX(1, N)
+         K2 = INDX(2, N)
+         K3 = INDX(3, N)
+         K1 = KS(K1)
+         K2 = KS(K2)
+         K3 = KS(K3)
          XP = THIRD * (XK(K1) + XK(K2) + XK(K3))
          YP = THIRD * (YK(K1) + YK(K2) + YK(K3))
          call DBPINPOL(XP, YP, IN, dmiss, JINS, NPL, xpl, ypl, ypl)
@@ -198,7 +220,7 @@
       L = L0
       do LL = 1, NUMEDGE
          if (mod(N, NMOD) == 0) then
-            AF = 0.7d0 + 0.3d0 * dble(LL) / dble(NUMEDGE)
+            AF = 0.7_dp + 0.3_dp * real(LL, kind=dp) / real(NUMEDGE, kind=dp)
             call READYY('TRIANGULATING', AF)
          end if
          if (EDGEINDX(1, LL) > 0) then
@@ -216,13 +238,13 @@
          call lnabs(xk(kn(2, L)), yk(kn(2, L)))
 
          if (L > LMAX) then
-            write (*, *) 'INCREASENETW(KMAX, INT(1.2d0*NUML) )', NUML
-            call INCREASENETW(KMAX, int(1.2d0 * NUML))
+            write (*, *) 'INCREASENETW(KMAX, INT(1.2_dp*NUML) )', NUML
+            call INCREASENETW(KMAX, int(1.2_dp * NUML))
          end if
 
       end do
 
-      call READYY('TRIANGULATING', -1d0)
+      call READYY('TRIANGULATING', -1.0_dp)
 
       NUMK = K0 + NSIN
       NUML = L
@@ -241,3 +263,5 @@
 
       return
    end subroutine Triangulatesamplestonetwork
+
+end module m_triangulatesamplestonetwork

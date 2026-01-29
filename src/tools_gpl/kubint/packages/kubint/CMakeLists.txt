@@ -28,7 +28,6 @@ set(oss_dependencies    deltares_common
                         deltares_common_mpi
                         kubint_f
                         nefis)
-oss_include_libraries(${executable_name} oss_dependencies)
 
 if (WIN32)
     # Set linker options

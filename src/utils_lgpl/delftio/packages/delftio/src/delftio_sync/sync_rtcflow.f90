@@ -2,7 +2,7 @@
 module SyncRtcFlow
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -54,8 +54,8 @@ module SyncRtcFlow
   character(len=DioMaxLocLen), pointer, dimension(:) :: SignalRLocs
 !
   integer, dimension(1,6) :: SignalXValues
-  character*20, dimension(1) :: SignalXPars
-  character*20, dimension(6) :: SignalXLocs
+  character(len=20), dimension(1) :: SignalXPars
+  character(len=20), dimension(6) :: SignalXLocs
 !
   data SignalXPars / 'Signal' /
   data SignalXLocs / 'Status', 'Date', 'Time', 'Init1', 'Init2', 'Init3' /
@@ -78,7 +78,7 @@ module SyncRtcFlow
   Integer :: numBarriers
 !
   ! Locations for sending data
-  character*20, dimension(2) :: Locbar
+  character(len=20), dimension(2) :: Locbar
 !
   data Locbar / 'Status', 'Value' /
 !
@@ -109,13 +109,9 @@ subroutine SyncRtcFlow_Init(n2steps, error, flagFLOWtoRTC, idate, itstart, rdt)
   integer :: itstart
   double precision :: rdt  ! time step in seconds
 
-  integer :: itest
-
   ! Stream for receiving barrier names
   type(DioPltType)  :: InfoFlowToRtc
   character(len=DioMaxParLen), pointer, dimension(:) :: InfoPars
-  character(len=DioMaxLocLen), pointer, dimension(:) :: DummyLocs
-
 
   ! Initialise error
   error = .false.

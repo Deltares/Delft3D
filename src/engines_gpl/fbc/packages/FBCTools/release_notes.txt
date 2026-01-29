@@ -1,0 +1,45 @@
+Release notes
+=============================
+Bug fixes
+* Bugfix for errorneous state output of active time of Relative Time Rule, option "retain value when inactive" 
+
+RTC Tools 1.4.2 Release Notes
+=============================
+New features
+* wind forcing
+* tolerance for hydraulic model configurable
+
+Bug fixes
+* bug fix for PID constant setpoint not coming through
+* missing dlls from vc++ redistribution package added
+* revision number for executables and dlls under properties-->details 
+
+RTC Tools 1.4.1 Release Notes
+=============================
+
+This is a bug fix release.
+
+* Robust handling of folder names using boost::filesystem.
+
+* Fixed uninitialized variables in hydraulcModel, rateOfChangeObjectiveFunctionTerm.
+
+RTC Tools 1.4 Release Notes
+===========================
+
+The major new features in this release are:
+
+* Scenario trees for efficient stochastic optimization;
+
+* Chance constraints for stochastic optimization;
+
+* A set of fully SOBEK2-compatible components for classical feedback control;
+
+* Linux support;
+
+* CMake build system;
+
+* BMI interface for communication with Deltares' Next Generation Hydro Software (NGHS).
+
+For the fine details, please consult the Subversion log.
+
+Delft, September 22, 2015.

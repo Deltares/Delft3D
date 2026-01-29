@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2024.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -27,6 +27,16 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_bmi_get_var
+
+implicit none
+
+private
+
+public :: bmi_get_var
+
+contains
+
   select case(var_name)
 % for var in variables:
   case("${var["name"]}") !< ${variable['altname'] if variable['altname'] is not None else ''} [${var["unit"]}] ${var["description"]} ${var["json"]}
@@ -34,3 +44,5 @@
 % endfor
   end select
 
+
+end module m_bmi_get_var

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,42 +29,45 @@
 
 !
 !
-
-      subroutine LUBKSB(A, N, NP, INDX, B)
-         implicit none
-         double precision :: a
-         double precision :: b
-         integer :: i
-         integer :: ii
-         integer :: indx
-         integer :: j
-         integer :: ll
-         integer :: n
-         integer :: np
-         double precision :: sum
-         dimension A(NP, NP), INDX(N), B(N)
-         II = 0
-         do I = 1, N
-            LL = INDX(I)
-            SUM = B(LL)
-            B(LL) = B(I)
-            if (II /= 0) then
-               do J = II, I - 1
-                  SUM = SUM - A(I, J) * B(J)
-               end do
-            else if (SUM /= 0d0) then
-               II = I
-            end if
-            B(I) = SUM
-         end do
-         do I = N, 1, -1
-            SUM = B(I)
-            if (I < N) then
-               do J = I + 1, N
-                  SUM = SUM - A(I, J) * B(J)
-               end do
-            end if
-            B(I) = SUM / A(I, I)
-         end do
-         return
-      end
+module m_lubksb
+   implicit none
+contains
+   subroutine LUBKSB(A, N, NP, INDX, B)
+      use precision, only: dp
+      real(kind=dp) :: a
+      real(kind=dp) :: b
+      integer :: i
+      integer :: ii
+      integer, intent(in) :: indx
+      integer :: j
+      integer :: ll
+      integer, intent(in) :: n
+      integer, intent(in) :: np
+      real(kind=dp) :: sum
+      dimension A(NP, NP), INDX(N), B(N)
+      II = 0
+      do I = 1, N
+         LL = INDX(I)
+         SUM = B(LL)
+         B(LL) = B(I)
+         if (II /= 0) then
+            do J = II, I - 1
+               SUM = SUM - A(I, J) * B(J)
+            end do
+         else if (SUM /= 0.0_dp) then
+            II = I
+         end if
+         B(I) = SUM
+      end do
+      do I = N, 1, -1
+         SUM = B(I)
+         if (I < N) then
+            do J = I + 1, N
+               SUM = SUM - A(I, J) * B(J)
+            end do
+         end if
+         B(I) = SUM / A(I, I)
+      end do
+      return
+   end
+end module m_lubksb

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by ICT (Stichting Deltares) -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:rtc="http://www.wldelft.nl/fews" targetNamespace="http://www.wldelft.nl/fews" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="rtcSharedTypes.xsd"/>
+	<element name="rtcPostprocessingConfig" type="rtc:RtcPostprocessingConfigComplexType"/>
+	<complexType name="RtcPostprocessingConfigComplexType">
+		<sequence>
+			<element name="structure" type="rtc:StructureComplexType" minOccurs="0" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="StructureComplexType">
+		<choice>
+			<element name="pump" type="rtc:PostPumpComplexType"/>
+			<element name="orifice" type="rtc:PostOrificeComplexType"/>
+			<element name="weir" type="rtc:PostWeirComplexType"/>
+		</choice>
+	</complexType>
+	<complexType name="PostPumpComplexType">
+		<choice>
+			<element name="block" type="rtc:PumpBlockComplexType"/>
+			<element name="step" type="rtc:PumpStepComplexType"/>
+		</choice>
+	</complexType>
+	<complexType name="PumpBlockComplexType">
+		<sequence>
+			<element name="units" type="rtc:PumpBlockUnitsComplexType"/>
+			<element name="input" type="rtc:PumpBlockInputComplexType"/>
+			<element name="output" type="rtc:PumpBlockOutputComplexType"/>
+		</sequence>
+	</complexType>
+	<complexType name="PumpBlockUnitsComplexType">
+		<sequence>
+			<element name="unit" type="rtc:PumpBlockUnitComplexType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="PumpBlockUnitComplexType">
+		<sequence>
+			<element name="availability" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="capacity" type="double" use="required"/>
+		<attribute name="priority" type="integer" use="required"/>
+	</complexType>
+	<complexType name="PumpBlockInputComplexType">
+		<sequence>
+			<element name="HUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HDown" type="rtc:TimeSeriesSimpleType"/>
+			<element name="U" type="rtc:TimeSeriesSimpleType"/>
+			<element name="UBlock" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>
+	<complexType name="PumpBlockOutputComplexType">
+		<sequence>
+			<element name="U" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HDown" type="rtc:TimeSeriesSimpleType"/>
+			<element name="DeltaHUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="DeltaHDown" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>
+	<complexType name="PumpStepComplexType">
+		<sequence>
+			<element name="units" type="rtc:PumpStepUnitsComplexType"/>
+			<element name="input" type="rtc:PumpStepInputComplexType"/>
+			<element name="output" type="rtc:PumpStepOutputComplexType"/>
+		</sequence>
+	</complexType>
+	<complexType name="PumpStepUnitsComplexType">
+		<sequence>
+			<element name="unit" type="rtc:PumpStepUnitComplexType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="PumpStepUnitComplexType">
+		<sequence>
+			<element name="availability" type="rtc:TimeSeriesSimpleType"/>
+			<element name="onOffTime" type="rtc:OnOffTimeComplexType"/>
+		</sequence>
+		<attribute name="capacity" type="double" use="required"/>
+		<attribute name="priority" type="integer" use="required"/>
+	</complexType>
+	<complexType name="OnOffTimeComplexType">
+		<sequence>
+			<element name="minOnTime" type="double"/>
+			<element name="minOffTime" type="double"/>
+			<element name="previousStatus" type="rtc:TimeSeriesSimpleType"/>
+			<!--			<element name="output" type="rtc:PumpStepUnitOutputComplexType"/>-->
+		</sequence>
+	</complexType>
+	<!--	<complexType name="PumpStepUnitOutputComplexType">
+		<sequence>
+			<element name="onTime" type="rtc:TimeSeriesSimpleType"/>
+			<element name="offTime" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>-->
+	<complexType name="PumpStepInputComplexType">
+		<sequence>
+			<element name="HUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HDown" type="rtc:TimeSeriesSimpleType"/>
+			<element name="U" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>
+	<complexType name="PumpStepOutputComplexType">
+		<sequence>
+			<element name="U" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HDown" type="rtc:TimeSeriesSimpleType"/>
+			<element name="DeltaHUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="DeltaHDown" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>
+	<complexType name="PostOrificeComplexType">
+		<choice>
+			<element name="block" type="rtc:OrificeBlockComplexType"/>
+		</choice>
+	</complexType>
+	<complexType name="OrificeBlockComplexType">
+		<sequence>
+			<element name="unit" type="rtc:OrificeBlockUnitComplexType"/>
+			<element name="input" type="rtc:OrificeBlockInputComplexType"/>
+			<element name="output" type="rtc:OrificeBlockOutputComplexType"/>
+		</sequence>
+	</complexType>
+	<complexType name="OrificeBlockUnitComplexType">
+		<sequence>
+			<element name="stages" type="rtc:StagesComplexType"/>
+			<element name="availability" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="crestLevel" type="double" use="required"/>
+		<attribute name="crestWidth" type="double" use="required"/>
+		<attribute name="priority" type="integer" use="required"/>
+	</complexType>
+	<complexType name="StagesComplexType">
+		<sequence>
+			<element name="stage" type="double" minOccurs="2" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="OrificeBlockInputComplexType">
+		<sequence>
+			<element name="HUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HDown" type="rtc:TimeSeriesSimpleType"/>
+			<element name="D" type="rtc:TimeSeriesSimpleType"/>
+			<element name="Q" type="rtc:TimeSeriesSimpleType"/>
+			<element name="QBlock" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>
+	<complexType name="OrificeBlockOutputComplexType">
+		<sequence>
+			<element name="D" type="rtc:TimeSeriesSimpleType"/>
+			<element name="Q" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HDown" type="rtc:TimeSeriesSimpleType"/>
+			<element name="DeltaHUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="DeltaHDown" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>
+	<complexType name="PostWeirComplexType">
+		<choice>
+			<element name="block" type="rtc:WeirBlockComplexType"/>
+		</choice>
+	</complexType>
+	<complexType name="WeirBlockComplexType">
+		<sequence>
+			<element name="units" type="rtc:WeirBlockUnitsComplexType"/>
+			<element name="input" type="rtc:WeirBlockInputComplexType"/>
+			<element name="output" type="rtc:WeirBlockOutputComplexType"/>
+		</sequence>
+	</complexType>
+	<complexType name="WeirBlockUnitsComplexType">
+		<sequence>
+			<element name="unit" type="rtc:WeirBlockUnitComplexType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="WeirBlockUnitComplexType">
+		<sequence>
+			<element name="availability" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="crestWidth" type="double" use="required"/>
+		<attribute name="priority" type="integer" use="required"/>
+	</complexType>
+	<complexType name="WeirBlockInputComplexType">
+		<sequence>
+			<element name="HUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="HDown" type="rtc:TimeSeriesSimpleType"/>
+			<element name="Q" type="rtc:TimeSeriesSimpleType"/>
+			<element name="QBlock" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>
+	<complexType name="WeirBlockOutputComplexType">
+		<sequence>
+			<element name="Q" type="rtc:TimeSeriesSimpleType"/>
+			<element name="C" type="rtc:TimeSeriesSimpleType"/>
+			<element name="DeltaHUp" type="rtc:TimeSeriesSimpleType"/>
+			<element name="DeltaHDown" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+	</complexType>
+</schema>

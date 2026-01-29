@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,10 +41,11 @@ contains
 !! Results are stored in `m_observations` state arrays.
    subroutine obs_on_flowgeom(iobstype)
 
-      use m_observations, only: numobs, nummovobs, kobs, namobs
-      use unstruc_messages, only: loglevel_StdOut, LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
+      use m_observations_data, only: numobs, nummovobs, kobs, namobs
+      use unstruc_messages, only: loglevel_StdOut
+      use messagehandling, only: LEVEL_DEBUG, LEVEL_INFO, msgbuf, mess
       use m_flowgeom, only: ndx2D, ndxi
-      use unstruc_caching, only: cacheRetrieved, copyCachedObservations
+      use unstruc_caching, only: cache_retrieved, copy_cached_observations
 
       implicit none
 
@@ -70,8 +71,8 @@ contains
       ! Try to read normal (non-moving) stations from cache file
       cache_success = .false.
       if (iobstype == 0 .or. iobstype == 2) then
-         if (cacheRetrieved()) then
-            call copyCachedObservations(cache_success)
+         if (cache_retrieved()) then
+            call copy_cached_observations(cache_success)
          end if
       end if
 
@@ -104,10 +105,11 @@ contains
 !! obs that are defined in *.ini file by xy coordinate, to be snaped to only 2D flow node (Locationtype == 2), use kdtree
 !! obs that are defined in *.ini file by branchID and chainage, to be snaped to only 1D flow node (Locationtype == 3), do not use kdtree
    subroutine find_flownodes_and_links_for_all_observation_stations(nstart, nend)
+      use precision, only: dp
       use MessageHandling
       use m_network
       use m_ObservationPoints
-      use m_observations
+      use m_observations_data
       use unstruc_channel_flow
       use m_inquire_flowgeom
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
@@ -116,6 +118,7 @@ contains
       use m_flowgeom
       use m_find_flownode, only: find_nearest_flownodes
       use m_find_flowlink, only: find_nearest_flowlinks
+      use m_partitioninfo, only: jampi
 
       implicit none
 
@@ -125,8 +128,8 @@ contains
       integer, allocatable :: ixy2obs0(:), ixy2obs1(:), ixy2obs2(:)
       integer, allocatable :: kobs_tmp0(:), kobs_tmp1(:), kobs_tmp2(:)
       integer, allocatable :: lobs_tmp0(:), lobs_tmp1(:), lobs_tmp2(:)
-      double precision, allocatable :: xobs_tmp0(:), xobs_tmp1(:), xobs_tmp2(:)
-      double precision, allocatable :: yobs_tmp0(:), yobs_tmp1(:), yobs_tmp2(:)
+      real(kind=dp), allocatable :: xobs_tmp0(:), xobs_tmp1(:), xobs_tmp2(:)
+      real(kind=dp), allocatable :: yobs_tmp0(:), yobs_tmp1(:), yobs_tmp2(:)
       character(len=IdLen), allocatable :: namobs_tmp0(:), namobs_tmp1(:), namobs_tmp2(:)
       integer :: nloctype1D, nloctype2D, nloctypeAll
       type(t_ObservationPoint), pointer :: pOPnt
@@ -191,7 +194,9 @@ contains
                   if (ierr == DFM_NOERR) then
                      kobs(i) = nodenr
                   else
-                     call SetMessage(LEVEL_ERROR, 'Error when snapping Observation Point '''//trim(namobs(i))//''' to a 1D flow node.')
+                     if (jampi == 0) then !> in an MPI run reduce kobs will handle a missing obs
+                        call SetMessage(LEVEL_WARN, 'Cannot snap observation point '''//trim(namobs(i))//''' to a 1D flow node.')
+                     end if
                   end if
                end if
             end if

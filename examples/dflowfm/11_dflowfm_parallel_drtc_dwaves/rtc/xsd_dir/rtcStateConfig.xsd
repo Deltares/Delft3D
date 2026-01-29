@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2010 rel. 2 (http://www.altova.com) by ICT (Stichting Deltares) -->
+<schema xmlns:rtc="http://www.wldelft.nl/fews" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.wldelft.nl/fews" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="rtcSharedTypes.xsd"/>
+	<element name="rtcStateConfig" type="rtc:RtcStateConfigComplexType"/>
+	<complexType name="RtcStateConfigComplexType">
+		<sequence>
+			<element name="states" type="rtc:StatesComplexType"/>
+		</sequence>
+	</complexType>
+	<complexType name="StatesComplexType">
+		<sequence>
+			<element name="state" type="rtc:StateComplexType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="StateComplexType">
+		<attribute name="id" use="required">
+			<simpleType>
+				<restriction base="rtc:TimeSeriesSimpleType"/>
+			</simpleType>
+		</attribute>
+		<attribute name="value" use="required">
+			<simpleType>
+				<restriction base="double"/>
+			</simpleType>
+		</attribute>
+	</complexType>
+</schema>

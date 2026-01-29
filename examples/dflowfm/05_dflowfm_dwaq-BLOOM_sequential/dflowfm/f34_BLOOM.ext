@@ -1,0 +1,23 @@
+* mass balance areas
+
+QUANTITY=waqmassbalanceareaSouthWest
+FILENAME=para1.pol
+FILETYPE=10
+METHOD=4
+OPERAND=O
+VALUE=1
+
+QUANTITY=waqmassbalanceareaSouthEast
+FILENAME=para2.pol
+FILETYPE=10
+METHOD=4
+OPERAND=O
+VALUE=1
+
+QUANTITY=waqmassbalanceareaNorth
+FILENAME=para3.pol
+FILETYPE=10
+METHOD=4
+OPERAND=O
+VALUE=1
+

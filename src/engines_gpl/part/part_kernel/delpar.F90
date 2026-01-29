@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -115,13 +115,11 @@ contains
         alone = .true.
 
         ! read unit-numbers and file-names
-        call rdfnam (lun, ifnam, fname, nfiles, 2, 1, alone)
+        call rdfnam (lun, ifnam, fname, nfiles, 2, 1, alone, hyd)
         lunout = lun(2)
         call set_log_unit_number(lunout)
 
-        hyd%file_hyd%name = fname(18)
-        call read_hyd(hyd)
-        call read_hyd_init(hyd)
+
 
         call report_date_time (lunout)
         noth = OMP_GET_MAX_THREADS()
@@ -201,6 +199,8 @@ contains
         ! deflection angle for coriolis effect.(3d oil module only)
         if (oil3d) then
             defang = const(noconsp)
+        else
+            defang = 0.0
         end if
         !3d
         !3d.. modtyp = model_two_layer_temp is still a 2 layer option, it assumes 2 layers

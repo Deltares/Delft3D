@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,24 +30,36 @@
 !
 !
 
-subroutine calibration_update()
-   use m_calibration
-   use m_flow, only: frcu, frcu_bkp, cfclval
-   use m_flowgeom, only: lnx, ln2lne
+module m_calibration_update
 
-   integer :: LF
-   integer :: L
+   implicit none
 
-   ! Update calibration definitions for discharge and water level dependent values
-   call update_clddata()
+   private
 
-   ! Update average calibration areal definitions (background calibration value = 1)
-   call update_clldata()
+   public :: calibration_update
 
-   ! Apply calibration factor
-   do LF = 1, lnx
-      L = ln2lne(LF)
-      frcu(LF) = frcu_bkp(LF) * cfclval(L)
-   end do
+contains
 
-end subroutine calibration_update
+   subroutine calibration_update()
+      use m_calibration
+      use m_flow, only: frcu, frcu_bkp, cfclval
+      use m_flowgeom, only: lnx, ln2lne
+
+      integer :: LF
+      integer :: L
+
+      ! Update calibration definitions for discharge and water level dependent values
+      call update_clddata()
+
+      ! Update average calibration areal definitions (background calibration value = 1)
+      call update_clldata()
+
+      ! Apply calibration factor
+      do LF = 1, lnx
+         L = ln2lne(LF)
+         frcu(LF) = frcu_bkp(LF) * cfclval(L)
+      end do
+
+   end subroutine calibration_update
+
+end module m_calibration_update

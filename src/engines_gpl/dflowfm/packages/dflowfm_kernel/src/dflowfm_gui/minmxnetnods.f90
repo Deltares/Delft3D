@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,51 +30,54 @@
 !
 !
 
-  subroutine MINMXNETNODS()
-     use m_netw
-     use m_missing
-     use unstruc_display
+module m_minmxnetnods
 
-     implicit none
+   implicit none
 
-     integer :: i, k
-     double precision :: rd, rmax, rmin
+contains
 
-     double precision :: VMAX, VMIN, DV, VAL
-     integer :: NCOLS, NV, NIS, NIE, JAAUTO
-     common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-     logical inview
+   subroutine MINMXNETNODS()
+      use precision, only: dp
+      use m_netw
+      use m_missing, only: dmiss
+      use m_depmax
+      use m_inview
 
-     ! BEPAAL MINIMUM EN MAXIMUM VAN DIEPTES BINNEN VIEWING AREA
+      integer :: i, k
+      real(kind=dp) :: rd, rmax, rmin
 
-     if (JAAUTO > 0) then
-        RMIN = 1.0d30
-        NODMIN = 0
-        RMAX = -1.0d30
-        NODMAX = 0
-        do K = 1, NUMK
-           if (INVIEW(XK(K), YK(K))) then
-              RD = RNOD(K)
-              if (rd /= dmiss) then
-                 if (RD < RMIN) then
-                    RMIN = RD
-                    NODMIN = K
-                 end if
-                 if (RD > RMAX) then
-                    RMAX = RD
-                    NODMAX = K
-                 end if
-              end if
-           end if
-        end do
-        VMAX = RMAX
-        VMIN = RMIN
-     end if
+      ! BEPAAL MINIMUM EN MAXIMUM VAN DIEPTES BINNEN VIEWING AREA
 
-     DV = VMAX - VMIN
-     do I = 1, NV
-        VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
-     end do
+      if (JAAUTO > 0) then
+         RMIN = 1.0e30_dp
+         NODMIN = 0
+         RMAX = -1.0e30_dp
+         NODMAX = 0
+         do K = 1, NUMK
+            if (INVIEW(XK(K), YK(K))) then
+               RD = RNOD(K)
+               if (rd /= dmiss) then
+                  if (RD < RMIN) then
+                     RMIN = RD
+                     NODMIN = K
+                  end if
+                  if (RD > RMAX) then
+                     RMAX = RD
+                     NODMAX = K
+                  end if
+               end if
+            end if
+         end do
+         VMAX = RMAX
+         VMIN = RMIN
+      end if
 
-     return
-  end subroutine MINMXNETNODS
+      DV = VMAX - VMIN
+      do I = 1, NV
+         VAL(I) = VMIN + (I - 1) * DV / (NV - 1)
+      end do
+
+      return
+   end subroutine MINMXNETNODS
+
+end module m_minmxnetnods

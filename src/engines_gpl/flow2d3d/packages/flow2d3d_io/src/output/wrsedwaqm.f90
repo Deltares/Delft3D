@@ -3,7 +3,7 @@ subroutine wrsedwaqm( lundia , error     , trifil    , itmapc    , &
                     & dps    , gdp      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -81,7 +81,6 @@ subroutine wrsedwaqm( lundia , error     , trifil    , itmapc    , &
     integer, external       :: inqmxi
     integer, external       :: open_datdef
     integer, external       :: neferr
-    character(10)           :: transpunit
     character(16)           :: grnam4
     character(16)           :: grnam5
     character(256)          :: errmsg      ! Character var. containing the errormessage to be written to file. The message depends on the error. 

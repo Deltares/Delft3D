@@ -1,102 +1,45 @@
 @ echo off
+title run all examples
+setlocal enabledelayedexpansion
+set root=%CD%
 
-   rem Relative from INSIDE a testcase:
-set TCL_EXE=..\..\build_all\x64\share\bin\tclkitsh852.exe
+rem Call all run scripts with a path to a Dimrset-bin folder
+set dimrset_bin="%CD%\..\install_all\bin"
 
+echo ===================================
+echo === SEQUENTIAL COMPUTATIONS
+echo ===================================
+echo Search subfolders for "run.bat" scripts ...
+for /R /D %%s in (.\*) do (
+    cd %%s
+    if exist run.bat (
+        echo(
+        echo(
+        echo(
+        echo ===================================
+        echo %%s\run.bat %dimrset_bin%
+        call run.bat %dimrset_bin%
+    )
+)
 
-echo "Running testcase 01_standard ..."
-cd 01_standard
-call run.bat >screen.log 2>&1
+cd %root%
 
+echo ===================================
+echo === PARALLEL COMPUTATIONS
+echo ===================================
+echo Search subfolders for "run_parallel.bat" scripts ...
+for /R /D %%s in (.\*) do (
+    cd %%s
+    if exist run_parallel.bat (
+        echo(
+        echo(
+        echo(
+        echo ===================================
+        echo %%s\run_parallel.bat %dimrset_bin%
+        call run_parallel.bat %dimrset_bin%
+    )
+)
 
-echo "Running testcase 01_standard parallel ..."
-call run_parallel.bat >screen_parallel.log 2>&1
-cd ..
-
-
-echo "Running testcase 02_domaindecomposition ..."
-cd 02_domaindecomposition
-call run.bat >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 03_flow-wave ..."
-cd 03_flow-wave
-call run.bat >screen.log 2>&1
-
-
-echo "Running testcase 03_flow-wave parallel ..."
-call run_parallel.bat >screen_parallel.log 2>&1
-cd ..
-
-
-echo "Running testcase 04_fluidmud ..."
-cd 04_fluidmud
-call run.bat >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 05_mormerge ..."
-cd 05_mormerge\merge
-call run.bat >screen.log 2>&1
-
-echo "Running testcase 05_mormerge (alternative( ..."
-call run_mormerge_alternative.bat >screen_mormerge_alternative.log 2>&1
-cd ..\..
-
-
-echo "Running testcase 06_delwaq ..."
-cd 06_delwaq
-call run.bat >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 07_wave ..."
-cd 07_wave
-call run.bat >screen.log 2>&1
-
-echo "Running testcase 07_wave (via dimr) ..."
-call run_wave_via_dimr.bat >screen_wave_via_dimr.log 2>&1
-cd ..
-
-
-echo "Running testcase 08_part-tracer ..."
-cd 08_part-tracer
-call run.bat >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 09_part-oil ..."
-cd 09_part-oil
-call run.bat >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 10_delwaq-part-tracer ..."
-cd 10_delwaq-part-tracer
-call run.bat >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 11_standard_netcdf ..."
-cd 11_standard_netcdf
-call run.bat >screen.log 2>&1
-cd ..
-
-echo "Running testcase 12_dflowfm (test_data) e02_f14_c040_westerscheldt"
-cd 12_dflowfm\test_data\e02_f14_c040_westerscheldt
-call run.bat >screen.log 2>&1
-cd ..
-
-echo "Running testcase 12_dflowfm (test_data) e100_f02_c02-FriesianInlet_schematic_FM"
-cd e100_f02_c02-FriesianInlet_schematic_FM
-call run.bat >screen.log 2>&1
-cd ..
-
-echo "Running testcase 12_dflowfm (test_data) e100_f02_c02-FriesianInlet_schematic_FM_wave"
-cd e100_f02_c02-FriesianInlet_schematic_FM_wave
-call run.bat >screen.log 2>&1
-cd ../../..
 
 echo ...finished
 pause

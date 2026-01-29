@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,34 +30,45 @@
 !
 !
 
- subroutine tekspw(vfac)
-    use m_flowgeom
-    use m_spiderweb
-    use m_wind
-    implicit none
-    double precision :: vfac, shft
+module m_tekspw
 
-    integer :: mx, nx, i, j, L
+   implicit none
 
-    shft = 0d0
-    mx = size(spw, 2)
-    nx = size(spw, 3)
-    if (sum(xu(:)) < 0) then
-       shft = 1d0
-    end if
-    if (mx /= 0 .and. nx /= 0) then
-       do i = 1, mx - 1
-          do j = 1, nx
-             call setcol(221)
-             call arrowsxy(spw(1, i, j) - shft * 360d0, spw(2, i, j), spw(3, i, j), spw(4, i, j), 0.05 * VFAC)
-          end do
-       end do
-    end if
-    if (allocated(wx)) then
-       do L = 1, lnxi
-          call setcol(224)
-          call arrowsxy(xu(L), yu(L), wx(L), wy(L), 0.05 * VFAC)
-       end do
-    end if
+contains
 
- end subroutine tekspw
+   subroutine tekspw(vfac)
+      use precision, only: dp
+      use m_arrowsxy
+      use m_flowgeom
+      use m_spiderweb
+      use m_wind
+      use m_set_col
+      implicit none
+      real(kind=dp) :: vfac, shft
+
+      integer :: mx, nx, i, j, L
+
+      shft = 0.0_dp
+      mx = size(spw, 2)
+      nx = size(spw, 3)
+      if (sum(xu(:)) < 0) then
+         shft = 1.0_dp
+      end if
+      if (mx /= 0 .and. nx /= 0) then
+         do i = 1, mx - 1
+            do j = 1, nx
+               call setcol(221)
+               call arrowsxy(spw(1, i, j) - shft * 360.0_dp, spw(2, i, j), spw(3, i, j), spw(4, i, j), 0.05 * VFAC)
+            end do
+         end do
+      end if
+      if (allocated(wx)) then
+         do L = 1, lnxi
+            call setcol(224)
+            call arrowsxy(xu(L), yu(L), wx(L), wy(L), 0.05 * VFAC)
+         end do
+      end if
+
+   end subroutine tekspw
+
+end module m_tekspw

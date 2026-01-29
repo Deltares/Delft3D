@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,14 +29,14 @@
 
 !
 !
-
+module m_reconstruct_sed_transports
+   implicit none
+contains
    subroutine reconstructsedtransports()
       ! Reconstructs cell centre transports from link based values for output purposes
-      use m_fm_erosed
-      use m_flowgeom
-      use m_sediment
-
-      implicit none
+      use m_fm_erosed, only: sbcx, fp, sbcy, sbwx, sbwy, sscx, sscy, sswx, sswy, sxtot, sytot, lsed, e_ssn, lsedtot, has_bedload, tratyp, e_sbcn, e_sbwn, e_sswn
+      use m_flowgeom, only: ln, lnx, ndx, wcx1, wcx2, wcy1, wcy2
+      use m_sediment, only: sedtot2sedsus
 
       integer :: l, ll, k1, k2, k
 
@@ -54,7 +54,8 @@
 
       do l = 1, lsed
          do ll = 1, lnx
-            k1 = ln(1, ll); k2 = ln(2, ll)
+            k1 = ln(1, ll)
+            k2 = ln(2, ll)
             sscx(k1, sedtot2sedsus(l)) = sscx(k1, sedtot2sedsus(l)) + wcx1(ll) * e_ssn(ll, l)
             sscx(k2, sedtot2sedsus(l)) = sscx(k2, sedtot2sedsus(l)) + wcx2(ll) * e_ssn(ll, l)
             sscy(k1, sedtot2sedsus(l)) = sscy(k1, sedtot2sedsus(l)) + wcy1(ll) * e_ssn(ll, l)
@@ -65,7 +66,8 @@
       do l = 1, lsedtot
          if (has_bedload(tratyp(l))) then
             do ll = 1, lnx
-               k1 = ln(1, ll); k2 = ln(2, ll)
+               k1 = ln(1, ll)
+               k2 = ln(2, ll)
                ! bed load transports due to currents
                sbcx(k1, l) = sbcx(k1, l) + wcx1(ll) * e_sbcn(ll, l)
                sbcx(k2, l) = sbcx(k2, l) + wcx2(ll) * e_sbcn(ll, l)
@@ -92,3 +94,4 @@
       end do
 
    end subroutine reconstructsedtransports
+end module m_reconstruct_sed_transports

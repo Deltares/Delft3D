@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,19 +30,30 @@
 !
 !
 
- subroutine update_s_explicit()
-    use m_flow
-    use m_flowgeom
-    use m_flowtimes
-    use m_partitioninfo
-    use m_timer
-    use m_sobekdfm
-    implicit none
+module m_update_s_explicit
 
-    integer :: k
-    integer :: ierror
+   implicit none
 
-    double precision, parameter :: dtol = 1d-16
+   private
+
+   public :: update_s_explicit
+
+contains
+
+   subroutine update_s_explicit()
+      use precision, only: dp
+      use m_sets01zbnd, only: sets01zbnd
+      use m_flow, only: s1, s0, sq
+      use m_flowgeom, only: ndx, bai
+      use m_flowtimes, only: dts
+      use m_partitioninfo, only: jampi, update_ghosts, itype_sall
+      use m_timer, only: jatimer, starttimer, iupdsall, stoptimer
+      implicit none
+
+      integer :: k
+      integer :: ierror
+
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
 !!   check if upwinddirection has changed
 !    numchanged = 0
@@ -105,19 +116,25 @@
 !       sqwave(k2) = sqwave(k2) - min(q1(L)-qwave,0d0)
 !    end do
 
-    do k = 1, Ndx
-       s1(k) = s0(k) + sq(k) * bai(k) * dts
-    end do
-    call sets01zbnd(1, 0) ! expl
+      do k = 1, Ndx
+         s1(k) = s0(k) + sq(k) * bai(k) * dts
+      end do
+      call sets01zbnd(1, 0) ! expl
 
 !   synchronise all water-levels
-    if (jampi == 1) then
-       if (jatimer == 1) call starttimer(IUPDSALL)
-       call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
-       if (jatimer == 1) call stoptimer(IUPDSALL)
-    end if
+      if (jampi == 1) then
+         if (jatimer == 1) then
+            call starttimer(IUPDSALL)
+         end if
+         call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
+         if (jatimer == 1) then
+            call stoptimer(IUPDSALL)
+         end if
+      end if
 
 !    end do
 
-    return
- end subroutine update_s_explicit
+      return
+   end subroutine update_s_explicit
+
+end module m_update_s_explicit

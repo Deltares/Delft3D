@@ -12,7 +12,7 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
                & sbuu      ,sbvv      ,gdp       )       
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -381,6 +381,9 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
     !
     if (lfbedfrmADV .and. lfbedfrmCFL) then
        do nm = 1, nmmax
+          if (abs(kcs(nm)) /= 1) then
+             cycle
+          end if
           cflcheck = 2.0_fp*max(abs(qbedformx(nm)),abs(qbedformy(nm)))*hdtb/(gvv(nm)*guu(nm))
           if (cflcheck > 1.0_fp) then
              call prterr(lundia, 'U190', 'CALBF: Possible violation of CFL-condition [Keywords: BdfaC, BdfbC, MorFac]' )

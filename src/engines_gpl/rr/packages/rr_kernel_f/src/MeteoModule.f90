@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -1142,9 +1142,9 @@ contains
                    ISecStart, ISecDuration   !, NrsecsRai
       Real         Rdum
       LOGICAL      ENDFIL
-      CHARACTER*1   QUOTE
+      CHARACTER(len=1) QUOTE
       CHARACTER(Len=CharIdLength) DummyName
-      CHARACTER*500 STRING
+      CHARACTER(len=500) STRING
 
       QUOTE = ''''
       iDebug = ConfFil_get_iDebug()
@@ -1321,9 +1321,9 @@ contains
                    ISecStart, ISecDuration
       Real         Rdum
       LOGICAL      ENDFIL
-      CHARACTER*1   QUOTE
+      CHARACTER(len=1) QUOTE
       CHARACTER(Len=CharIdLength) DummyName
-      CHARACTER*500 STRING
+      CHARACTER(len=500) STRING
 
       QUOTE = ''''
       iDebug = ConfFil_get_iDebug()
@@ -1467,19 +1467,10 @@ contains
     ! *** ------------------------
     ! ***  IDEBUG = file unit number of debug file
     ! ***  Ievent = bui nummer
-    ! ***  BuiTmstp = tijdstap in bui
     ! *********************************************************************
 
-    INTEGER       iECode, I, iDebug, Ievent, BuiTmstp, RunoffTmstp
+    INTEGER       iECode, I, iDebug, Ievent, RunoffTmstp
     CHARACTER(Len=CharIdLength) STRING
-
-!!  ToDo: Convert BuiTmstp to RunoffTmstp based on NrSecsRai, NrSecsRunoff
-!!                                                 EventStartDate, EventStartDateRunoff
-!!
-!!  checked: this works ok if BuiTmstp size <= Runoff Timestepsize
-!!  but not ok if Runoff timestepsize is smaller than bui timestep
-!!  therefore done in same way as for rainfall, but independent
-!!  Call ConvertBuiTimestepToRunoffTimestep (Ievent, BuiTmstp, RunoffTmstp)
 
     String = ' '
     iDebug = ConfFil_get_iDebug()
@@ -1520,13 +1511,13 @@ contains
   Integer Ievent, BuiTmstp, RunoffTmstp, T0shift
 
   ! use DateTimeStartEvent, DateTimeStartEventRunoff
-   Integer           DateSubStart, DateSubEnd, DateEventStart
-   Integer           TimeSubStart, TimeSubEnd, TimeEventStart
-   Integer           DateSubStartRunoff, DateSubEndRunoff, DateEventStartRunoff
-   Integer           TimeSubStartRunoff, TimeSubEndRunoff, TimeEventStartRunoff
+   Integer           DateEventStart
+   Integer           TimeEventStart
+   Integer           DateEventStartRunoff
+   Integer           TimeEventStartRunoff
 
    Double Precision  Julian
-   Double Precision  JulianSubDateStart, JulianSubDateEnd, JulianEventStart, JulianEventStartRunoff, SubSetDuration
+   Double Precision  JulianEventStart, JulianEventStartRunoff
 
     DateEventStart = EventStartDateTime(Ievent,1)*10000 + EventStartDateTime(Ievent,2)*100 + EventStartDateTime(Ievent,3)
     TimeEventStart = EventStartDateTime(Ievent,4)*10000 + EventStartDateTime(Ievent,5)*100 + EventStartDateTime(Ievent,6)
@@ -1577,9 +1568,9 @@ contains
                    ISecStart, ISecDuration
       Real         Rdum
       LOGICAL      ENDFIL
-      CHARACTER*1   QUOTE
+      CHARACTER(len=1) QUOTE
       CHARACTER(Len=CharIdLength) DummyName
-      CHARACTER*500 STRING
+      CHARACTER(len=500) STRING
 
       QUOTE = ''''
       iDebug = ConfFil_get_iDebug()
@@ -1723,19 +1714,10 @@ contains
     ! *** ------------------------
     ! ***  IDEBUG = file unit number of debug file
     ! ***  Ievent = bui nummer
-    ! ***  BuiTmstp = tijdstap in bui
     ! *********************************************************************
 
-    INTEGER       iECode, I, iDebug, Ievent, BuiTmstp, TemperatureTmstp
+    INTEGER       iECode, I, iDebug, Ievent, TemperatureTmstp
     CHARACTER(Len=CharIdLength) STRING
-
-!!  ToDo: Convert BuiTmstp to TemperatureTmstp based on NrSecsRai, NrSecsTemperature
-!!                                                 EventStartDate, EventStartDateTemperature
-!!
-!!  checked: this works ok if BuiTmstp size <= Temperature Timestepsize
-!!  but not ok if Temperature timestepsize is smaller than bui timestep
-!!  therefore done in same way as for rainfall, but independent
-!!  Call ConvertBuiTimestepToTemperatureTimestep (Ievent, BuiTmstp, TemperatureTmstp)
 
     String = ' '
     iDebug = ConfFil_get_iDebug()
@@ -1802,7 +1784,7 @@ contains
       Double Precision  Julian
       Double Precision  JulianSubDateStart, JulianSubDateEnd, JulianEventStart, SubSetDuration
 
-      Real              DaysAfterStartEvent, DaysInEvent, DaysInSubset, Rshift, RLASTT, RTempStart
+      Real              DaysAfterStartEvent, DaysInEvent, DaysInSubset, Rshift, RLASTT, RDum
 
       iDebug = ConfFil_get_iDebug()
       if (idebug .ne. 0) WRITE (IDEBUG,1)
@@ -1938,10 +1920,16 @@ contains
 ! April 2010: subset max nr days from evap file <= nr days (eventduration(.,1) +2
            EventDuration(Ievent,5) = Min (LASTT * NRSecsRAI / NRSDAY + 2, EventDuration(ievent,1)+2,EventDuration(Ievent,5))
 ! Issue evap end of file
+           Rdum   = Float(LASTT) * Float(NRSecsRAI) / Float(NRSDAY)
+           If (EventDuration(Ievent,5) .lt. Rdum) EventDuration(Ievent,5) = EventDuration(Ievent,5) + 1
+
+           
            if (EventStartDateTime(Ievent,4) .eq. 0) then
-              if (EventDuration(Ievent,5) .gt. 1) EventDuration(Ievent,5) = EventDuration(Ievent,5)-1
+              ! do nothing 
+           elseif (Rdum - EventDuration(Ievent,5) + EventStartDateTime(Ievent,3)/24. +EventStartDateTime(Ievent,4)/60. .lt. 1.0) then 
+              if (EventDuration(Ievent,5) .gt. 1) EventDuration(Ievent,5) = EventDuration(Ievent,5) - 1
            else
-              EventDuration(Ievent,5) = Int (JulianSubDateEnd -0.5D0) - Int (JulianSubDateStart -0.5D0) + 1
+              EventDuration(Ievent,5) = Int (JulianSubDateEnd -0.5D0) - Int (JulianSubDateStart -0.5D0) -1
            endif
 !
            EventDuration(Ievent,6) = LASTT +1
@@ -2547,18 +2535,17 @@ contains
       Subroutine VerifyRainfallAndRunoffAndTemperatureData
 
       Integer Ievent
-      Integer           DateSubStart, DateSubEnd, DateEventStart
-      Integer           TimeSubStart, TimeSubEnd, TimeEventStart
-      Integer           DateSubStartRunoff, DateSubEndRunoff, DateEventStartRunoff
-      Integer           TimeSubStartRunoff, TimeSubEndRunoff, TimeEventStartRunoff, iout1
-      Integer           DateSubStartTemperature, DateSubEndTemperature, DateEventStartTemperature
-      Integer           TimeSubStartTemperature, TimeSubEndTemperature, TimeEventStartTemperature
+      Integer           DateEventStart
+      Integer           TimeEventStart
+      Integer           DateEventStartRunoff
+      Integer           TimeEventStartRunoff, iout1
+      Integer           DateEventStartTemperature
+      Integer           TimeEventStartTemperature
 
       Double Precision  Julian
-      Double Precision  JulianSubDateStart, JulianSubDateEnd, &
-                        JulianEventStart, JulianEventStartRunoff, JulianEventStartTemperature, SubSetDuration
+      Double Precision  JulianEventStart, JulianEventStartRunoff, JulianEventStartTemperature
 
-      Real              DaysAfterStartEvent, DaysInEvent, DaysInEventRunoff, DaysInEventTemperature
+      Real              DaysInEvent, DaysInEventRunoff, DaysInEventTemperature
       Logical           errorfound
       Logical           errorfoundtemp
 

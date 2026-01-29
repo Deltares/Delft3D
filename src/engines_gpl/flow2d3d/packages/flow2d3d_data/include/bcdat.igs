@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,6 +30,8 @@
 type gd_bcdat
    real(fp)                                :: timtap
    real(fp)                                :: depbnd
+   integer                                 :: global_num_qh_bnd   ! global number of QH boundaries
+   integer                                 :: global_num_qtot_bnd ! global number of total discharge boundaries
    integer                                 :: gntoftoq        ! ntof+ntoq in the original, global numbering, before boundaries are removed due to
                                                               ! parallel computation (and outside this partition)
    integer                                 :: nmskf

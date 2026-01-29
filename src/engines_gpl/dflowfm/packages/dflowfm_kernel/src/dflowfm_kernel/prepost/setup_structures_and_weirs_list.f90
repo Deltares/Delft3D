@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,14 +34,14 @@ contains
    pure function build_structures_and_weirs_list() result(links_with_structures_or_weirs)
       use m_flowgeom, only: lnx, bob, bob0
       use m_flowparameters, only: ChangeVelocityAtStructures
-      use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen, &
-                                           ndambreaklinks, ndambreaksignals, dambreaks, L1dambreaksg, L2dambreaksg, kdambreak
+      use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen
+      use m_dambreak_breach, only: indicate_links_that_contain_dambreaks
       use unstruc_channel_flow, only: network
-      use m_GlobalParameters, only: ST_PUMP
+
       use array_module, only: convert_mask_to_indices
 
       integer, allocatable, dimension(:) :: links_with_structures_or_weirs !< List of indices of the flow links that contain structures or weirs
-      integer :: L, L0, ng, istru, k, n
+      integer :: L, L0, ng, istru, n
       logical, allocatable, dimension(:) :: does_link_contain_structures
 
       if (.not. ChangeVelocityAtStructures) then
@@ -76,30 +76,14 @@ contains
       end do
 
       do istru = 1, network%sts%count
-         associate (p_structure => network%sts%struct(istru))
-            if (p_structure%type == ST_PUMP) then
-               ! skip pump structures
-               cycle
-            end if
-
-            do L0 = 1, p_structure%numlinks
-               L = abs(p_structure%linknumbers(L0))
-               does_link_contain_structures(L) = .true.
-            end do
-         end associate
+         do L0 = 1, network%sts%struct(istru)%numlinks
+            L = abs(network%sts%struct(istru)%linknumbers(L0))
+            does_link_contain_structures(L) = .true.
+         end do
       end do
 
-      if (ndambreaklinks > 0) then ! needed, because ndambreaksignals may be > 0, but ndambreaklinks==0, and then arrays are not available.
-         do n = 1, ndambreaksignals
-            istru = dambreaks(n)
-            if (istru /= 0) then
-               do k = L1dambreaksg(n), L2dambreaksg(n)
-                  L = abs(kdambreak(3, k))
-                  does_link_contain_structures(L) = .true.
-               end do
-            end if
-         end do
-      end if
+      call indicate_links_that_contain_dambreaks(does_link_contain_structures)
+
       ! Convert mask to array of indices
       links_with_structures_or_weirs = convert_mask_to_indices(does_link_contain_structures)
    end function build_structures_and_weirs_list

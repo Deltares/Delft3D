@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -25,9 +25,15 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
+!> \page BMI_Unstruc Unstruc BMI docs
+!! Below is the flow structure of the unstructured grid flow solver when called from the BMI interface
+!! \image html inc\BMI_Logical_Call_sequence.svg
+!! For command line execution check \ref Unstruc
+!!
+!! As an example of subroutine documentation \see get_var_name
+!!
+!! An example of external documentation reference provided the documentation is built is
+!! \ref Dimr::scanConfigFile
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -35,9 +41,27 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+
+   use m_cosphiunetcheck, only: cosphiunetcheck
+   use m_flow_run_usertimestep, only: flow_run_usertimestep
+   use m_flow_run_sometimesteps, only: flow_run_sometimesteps
+   use m_flow_init_usertimestep, only: flow_init_usertimestep
+   use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
+   use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
+   use m_resetfullflowmodel, only: resetfullflowmodel
+   use m_partition_write_domains, only: partition_write_domains
+   use m_land_change_callback, only: land_change_callback
+   use m_inidat, only: inidat
+   use m_getstructureindex, only: getstructureindex
+   use m_getlateralindex, only: getlateralindex
+   use m_flow_run_single_timestep, only: flow_run_single_timestep
+   use m_flow_init_single_timestep, only: flow_init_single_timestep
+   use m_flow_finalize_single_timestep, only: flow_finalize_single_timestep
+   use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
+   use m_write_some_final_output, only: write_some_final_output
    use iso_c_binding
    use unstruc_api
-   use unstruc_display, only: jaGUI ! this should be removed when jaGUI = 0 by default
+   use m_gui ! this should be removed when jaGUI = 0 by default
 
    use m_partitioninfo
    use m_flow
@@ -62,6 +86,9 @@ module bmi
    use m_longculverts
    use m_nearfield
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
+   use m_update_land_nodes
+   use m_find_name, only: find_name
+   use precision, only: dp
 
    implicit none
 
@@ -87,7 +114,6 @@ module bmi
    real(c_double), target, allocatable, save :: TcrEro(:, :)
    real(c_double), target, allocatable, save :: TcrSed(:, :)
    integer, private :: iconst
-   integer, external :: findname
 
    integer(c_int), parameter :: var_count_compound = 11 ! pumps, weirs, orifices, gates, generalstructures, culverts, sourcesinks, dambreak, observations, crosssections, laterals ! TODO: AvD: temp, as long as this is not templated
 contains
@@ -100,19 +126,58 @@ contains
 !> \defgroup modelinformation Model Information Functions
 !! \{
 
-!> Returns a string array of the model's input variable names as "long variable names" from the CSDMS Standard Names.
-!! TODO: not implemented yet.
-   subroutine get_input_var_names(names) bind(C, name="get_input_var_names")
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(:)
-      !type(c_ptr), dimension(:) :: names
-      no_warning_unused_variable(names)
-   end subroutine get_input_var_names
+!> Fills a string array with the model's input variable names as "long variable names" from the CSDMS Standard Names.
+!! NOTE: not implemented yet, will return a DFM_NOTIMPLEMENTED error.
+   function get_input_var_names(names) bind(C, name="get_input_var_names") result(c_istat)
+      type(c_ptr), dimension(:), intent(out) :: names !< Array of C-pointers, will contain pointers to C-compatible strings upon return.
+      integer(c_int) :: c_istat !< Integer status code indicating success (zero) or failure (nonzero)
+
+      integer :: i_var, var_count
+      character(kind=c_char, len=1), dimension(:, :), pointer :: cnames
+      character(len=MAXSTRLEN) :: fname
+
+      c_istat = DFM_NOTIMPLEMENTED
+      return
+
+      ! NOTE: code below is working example code for returning a BMI 2.0
+      ! compliant array of names.
+
+      var_count = 1
+
+      allocate (cnames(MAXSTRLEN, var_count))
+      do i_var = 1, var_count
+         fname = 'test_get_input_var_names' ! TODO: UNST-7403: implement this.
+         cnames(:, i_var) = string_to_char_array(trim(fname), len(trim(fname)))
+         names(i_var) = c_loc(cnames(:, i_var))
+      end do
+
+   end function get_input_var_names
 
 !> Returns a string array of the model's output variable names as "long variable names" from the CSDMS Standard Names.
-!! TODO: not implemented yet.
+!! NOTE: not implemented yet, will return a DFM_NOTIMPLEMENTED error.
    subroutine get_output_var_names(names) bind(C, name="get_output_var_names")
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(:)
-      no_warning_unused_variable(names)
+      type(c_ptr), dimension(:), intent(out) :: names !< Array of C-pointers, will contain pointers to C-compatible strings upon return.
+      integer(c_int) :: c_istat !< Integer status code indicating success (zero) or failure (nonzero)
+
+      integer :: i_var, var_count
+      character(kind=c_char, len=1), dimension(:, :), pointer :: cnames
+      character(len=MAXSTRLEN) :: fname
+
+      c_istat = DFM_NOTIMPLEMENTED
+      return
+
+      ! NOTE: code below is working example code for returning a BMI 2.0
+      ! compliant array of names.
+
+      var_count = 1
+
+      allocate (cnames(MAXSTRLEN, var_count))
+      do i_var = 1, var_count
+         fname = 'test_get_output_var_names' ! TODO: UNST-7403: implement this.
+         cnames(:, i_var) = string_to_char_array(trim(fname), len(trim(fname)))
+         names(i_var) = c_loc(cnames(:, i_var))
+      end do
+
    end subroutine get_output_var_names
 
 !> Returns a static attribute (i.e. an attribute that does not change
@@ -169,11 +234,12 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: initialize
 
       use iso_c_binding, only: c_char
-
+      use m_solve_petsc, only: startpetsc
       use unstruc_model
       use unstruc_files
       use m_partitioninfo
       use check_mpi_env
+      use m_init_openmp, only: init_openmp
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -224,6 +290,9 @@ contains
          jampi = 0
       end if
 
+#ifdef _OPENMP
+      ierr = init_openmp(md_numthreads, jampi)
+#endif
       !   make domain number string as soon as possible
       write (sdmn, '(I4.4)') my_rank
 
@@ -244,11 +313,6 @@ contains
       MXB = 10
       MAXLAN = 500
       MAXPOL = MAXLAN
-
-      !call start()
-      !call resetFullFlowModel()
-      !call loadmodel(config_file)
-      !call init_core() ! All done in inidat()
 
       call INIDAT()
       call api_loadmodel(config_file)
@@ -311,13 +375,13 @@ contains
       use MessageHandling
       real(c_double), intent(in) :: timetarget !< Target time. For now, this is assumed to be equal to upcoming next user time. If not, errorstatus returned.
       integer(c_int) :: iresult !< Result status, DFM_NOERR(=0) if successful.
-      character*(MAXSTRLEN) :: msg
+      character(len=MAXSTRLEN) :: msg
 
       iresult = DFM_NOERR
 
       if (do_check_bmi_timestep .and. timetarget - time_user /= dt_user) then ! We don't support yet a changing dt_user (may affect input/output, meteo, etc.)
          iresult = DFM_INVALIDTARGETTIME
-         write (msg, '(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (', timetarget - time_user, ') and the specified user timestep (', dt_user, ').'
+         write (msg, '(a,g16.9,a,g16.9,a)') 'Mismatch of requested step (', timetarget - time_user, ') and the specified user timestep (', dt_user, ').'
          call mess(LEVEL_WARN, msg)
 !      goto 888
       end if
@@ -361,13 +425,13 @@ contains
       real(c_double), intent(in) :: timetarget !< Target time, resulting timestep may (will generally) be smaller. For now, this is assumed to be equal to upcoming next user time. If not, errorstatus returned.
       real(c_double), intent(out) :: dtpredict !< The predicted computational timestep, based on stability criteria. Pass this value (or smaller) on to run_computational_timestep.
       integer(c_int) :: iresult !< Result status, DFM_NOERR(=0) if successful.
-      character*(MAXSTRLEN) :: msg
+      character(len=MAXSTRLEN) :: msg
 
       iresult = DFM_NOERR
 
       if (do_check_bmi_timestep .and. timetarget /= time_user) then ! We don't yet support another targettime than upcoming time_user
          iresult = DFM_INVALIDTARGETTIME
-         write (msg, '(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (', timetarget, ') and the specified user timestep (', time_user, ').'
+         write (msg, '(a,g16.9,a,g16.9,a)') 'Mismatch of requested step (', timetarget, ') and the specified user timestep (', time_user, ').'
          call mess(LEVEL_WARN, msg)
 !      goto 888
       end if
@@ -444,7 +508,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: finalize
       use m_partitioninfo
 
-      call writesomefinaloutput()
+      call write_some_final_output()
 
       if (jampi == 1) then
 !        finalize before exit
@@ -566,7 +630,7 @@ contains
       att_name = char_array_to_string(c_att_name, strlen(c_att_name))
 
       ! Look up the value of att_name
-      value = -1.0d0
+      value = -1.0_dp
    end subroutine get_double_attribute
 
    subroutine get_int_attribute(c_att_name, value) bind(C, name="get_int_attribute")
@@ -622,6 +686,16 @@ contains
       c_var_count = var_count + var_count_compound + numconst + 12
    end subroutine get_var_count
 
+   !>  \brief
+   !! This function gets the variable name from the component.
+   !! \param[in] var_index : The integer index
+   !! \param[out] c_var_name : The variable name in ISO C character format
+   !!
+   !! Var ordering:
+   !! 0:var_count-1 = autogenerated
+   !! var_count:var_count+var_count_compound-1 = compound types (pumps, weirs, orifices, gates, generalstructures, culverts, sourcesinks, dambreak, observations, crosssections, laterals)
+   !! var_count+var_count_compound:var_count+var_count_compound+numconst-1 = constituents (tracers, salt, etc.)
+   !! var_count+var_count_compound+numconst:end = remaining hand-crafted variables
    subroutine get_var_name(var_index, c_var_name) bind(C, name="get_var_name")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_name
 
@@ -703,43 +777,20 @@ contains
 
    end subroutine get_var_name
 
-   subroutine get_var_names(names) bind(C, name="get_var_names")
-      use iso_c_binding, only: c_char, c_ptr
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(:)
-
-      no_warning_unused_variable(names)
-      
-      ! I can't get this to work.....
-
-      ! http://stackoverflow.com/questions/9686532/arrays-of-strings-in-fortran-c-bridges-using-iso-c-binding
-      ! The way we do it is to use a C_PTR array to point to strings. For example:
-
-      ! CHARACTER(LEN=100), DIMENSION(numStrings), TARGET :: stringArray
-      ! TYPE(C_PTR), DIMENSION(numStrings) :: stringPtrs
-      ! then we set our strings in stringArray, remembering to null-terminate them such as:
-
-      ! DO ns = 1, numStrings
-      !    stringArray(ns) = "My String"//C_NULL_CHAR
-      !    stringPtrs(ns) = C_LOC(stringArray(ns))
-      ! END DO
-      ! and pass stringPtrs to the C function.
-
-      ! The C function has the interface:
-
-      ! void stringFunc(int *numStrings, char **stringArray) {
-      !     int i;
-      !     for(i=0;i<*numStrings;++i) {
-      !        printf("%s\n",stringArray[i]);
-      !     }
-      !  }
-   end subroutine get_var_names
-
+   !> Returns the type of a variable, i.e. its data type.
    subroutine get_var_type(c_var_name, c_type) bind(C, name="get_var_type")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_type
+
+      use string_module, only: str_split
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       character(kind=c_char), intent(out) :: c_type(MAXSTRLEN)
       character(len=MAXSTRLEN) :: type_name, var_name
+      character(len=strlen(c_var_name)) :: tmp_var_name
+      character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
+      integer :: last_token
+      character(:), dimension(:), allocatable :: words
+      integer :: i
 
       ! Use one of the following types
       ! BMI datatype        C datatype        NumPy datatype
@@ -748,10 +799,27 @@ contains
       ! BMI_LONG            long int          int32
       ! BMI_FLOAT           float             float32
       ! BMI_DOUBLE          double            float64
+
+      type_name = "" !initially the type name is empty
+
+      !We are not returning if it is found because at the end we convert to a c-type string.
+      !We cannot
+
+      !First we check if the type is captured by the automatically generated include file.
+      !Ideally we would `return` if the type is found.
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_type.inc"
 
-      select case (var_name)
+      !Second we check if it is of a special case. It can be a compound name (e.g., 'weirs/weir1/crestlevel').
+      !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type.
+
+      !Split the variable name.
+      !E.g., var_name='weirs/weir1/crestlevel' -> words(1)='weirs', words(2)='weir1', words(3)='crestlevel'; last_token=3
+      !E.g., var_name='frcu' -> words(1)='frcu', words(2)='', words(3)=''; last_token=1
+      call str_split(words, last_token, var_name, varset_name, DELIMS='/')
+
+      !Case on the last token of the variable name.
+      select case (trim(words(last_token)))
       case ("netelemnode")
          type_name = "int"
       case ("flowelemnode", "flowelemnbs", "flowelemlns")
@@ -768,14 +836,25 @@ contains
          type_name = "type(t_network)"
       end select
 
+      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double.
+      !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
+      if (last_token > 1) then
+         type_name = "double"
+      end if
+
+      !Third we check if it a constituent name (e.g., 'salt', 'tracer1', etc.)
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          type_name = "double"
       end if
 
       c_type = string_to_char_array(trim(type_name), len(trim(type_name)))
+
+      if (allocated(words)) then
+         deallocate (words)
+      end if
 
    end subroutine get_var_type
 
@@ -802,22 +881,11 @@ contains
 
    end subroutine get_var_location
 
-   subroutine get_var_role(c_var_name, role) bind(C, name="get_var_role")
-      character(kind=c_char), intent(in) :: c_var_name(:)
-      character(kind=c_char), intent(out) :: role(:)
-      no_warning_unused_variable(c_var_name)
-      no_warning_unused_variable(role)
-      ! Roles:
-      ! BMI_INPUT
-      ! BMI_OUTPUT
-      ! BMI_INPUTOUTPUT
-   end subroutine get_var_role
-
    subroutine get_var_units(c_var_name, unit) bind(C, name="get_var_units")
       character(kind=c_char), intent(in) :: c_var_name(:)
       character(kind=c_char), intent(out) :: unit(:)
       no_warning_unused_variable(c_var_name)
-      no_warning_unused_variable(unit)
+      unit = ''
    end subroutine get_var_units
 
 !> Returns the rank of a variable, i.e., its dimensionality.
@@ -828,37 +896,66 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_rank
 
       use iso_c_binding, only: c_int, c_char
+      use string_module, only: str_split
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(out) :: rank
 
       ! The fortran name of the attribute name
       character(len=strlen(c_var_name)) :: var_name
-      ! Store the name
-      var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+      character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
+      integer :: last_token
+      character(:), dimension(:), allocatable :: words
 
+      rank = 0 !initially 0
+
+      !First we check if the rank is captured by the automatically generated include file.
+      !Ideally we would `return` if the rank is found.
+      var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_rank.inc"
 
-      select case (var_name)
+      !Second we check if it is of a special case. It can be a compound name (e.g., 'weirs/weir1/crestlevel').
+      !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type.
+
+      !Split the variable name.
+      !E.g., var_name='weirs/weir1/crestlevel' -> words(1)='weirs', words(2)='weir1', words(3)='crestlevel'; last_token=3
+      !E.g., var_name='frcu' -> words(1)='frcu', words(2)='', words(3)=''; last_token=1
+      call str_split(words, last_token, var_name, varset_name, DELIMS='/')
+
+      select case (trim(words(last_token)))
       case ("netelemnode")
          rank = 2
+         return
       case ("flowelemnode", "flowelemnbs", "flowelemlns", "flowelemcontour_x", "flowelemcontour_y")
          rank = 2
+         return
       case ("pumps", "weirs", "orifices", "gates", "generalstructures", "culverts", "sourcesinks", "dambreak", "observations", "crosssections", "laterals") ! Compound vars: shape = [numobj, numfields_per_obj]
          rank = 2
+         return
       case ("TcrEro", "TcrSed")
          rank = 2
+         return
       case ("tem1Surf")
          rank = 1
+         return
       end select
 
+      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double.
+      !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
+      if (last_token > 1) then
+         rank = 1
+         return
+      end if
+
+      !Third we check if it a constituent name (e.g., 'salt', 'tracer1', etc.)
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          rank = 1
          return
       end if
+
    end subroutine get_var_rank
 
 !> Returns the shape of a variable, i.e., an array with length equal to this variables's rank.
@@ -873,23 +970,39 @@ contains
 
       use m_flowgeom
       use network_data
-      use m_observations, only: numobs, nummovobs, MAXNUMVALOBS2D, MAXNUMVALOBS3D, MAXNUMVALOBS3Dw
+      use m_observations_data, only: numobs, nummovobs, MAXNUMVALOBS2D, MAXNUMVALOBS3D, MAXNUMVALOBS3Dw
       use m_monitoring_crosssections, only: ncrs, maxnval
       use m_laterals, only: num_layers, numlatsg
       use unstruc_channel_flow, only: network
       use m_transport, only: NAMLEN, NUMCONST
       use m_laterals, only: numlatsg, nlatnd
+      use string_module, only: str_split
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(inout) :: shape(MAXDIMS)
 
       character(len=strlen(c_var_name)) :: var_name
+      character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
+      integer :: last_token
+      character(:), dimension(:), allocatable :: words
 
+      shape = [0, 0, 0, 0, 0, 0] !initialize
+
+      !First we check if the shape is captured by the automatically generated include file.
+      !Ideally we would `return` if the shape is found.
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
-      shape = (/0, 0, 0, 0, 0, 0/)
+      include "bmi_get_var_shape.inc"
+
+      !Second we check if it is of a special case. It can be a compound name (e.g., 'weirs/weir1/crestlevel').
+      !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type.
+
+      !Split the variable name.
+      !E.g., var_name='weirs/weir1/crestlevel' -> words(1)='weirs', words(2)='weir1', words(3)='crestlevel'; last_token=3
+      !E.g., var_name='frcu' -> words(1)='frcu', words(2)='', words(3)=''; last_token=1
+      call str_split(words, last_token, var_name, varset_name, DELIMS='/')
 
       ! NOTE: report the shape below in row-major order (so, C-style, not FORTRAN-style)
-      select case (var_name)
+      select case (trim(words(last_token)))
       case ("netelemnode")
          shape(1) = nump1d2d
          shape(2) = get_net_elem_max_nodes()
@@ -914,7 +1027,7 @@ contains
          shape(1) = ndx
          return
 
-! Compounds:
+         ! Compounds:
       case ("pumps")
          shape(1) = npumpsg
          shape(2) = 1
@@ -962,13 +1075,13 @@ contains
          shape(1) = 1
 
          ! Array pointers:
-      case ("geometry/xcc", "geometry/ycc", "field/water_depth", "geometry/kbot", "geometry/ktop")
+      case ("xcc", "ycc", "water_depth", "kbot", "ktop")
          shape(1) = ndx
          return
-      case ("geometry/z_level", "field/velocity_x", "field/velocity_y", "field/rho")
+      case ("z_level", "velocity_x", "velocity_y", "rho")
          shape(1) = ndkx
          return
-      case ("field/constituents")
+      case ("constituents")
          shape(1) = numconst
          shape(2) = ndkx
          return
@@ -978,14 +1091,19 @@ contains
          return
       case ("runid")
          shape(1) = 1
-         shape(2) = len(md_ident)
+         shape(2) = len_trim(md_ident)
          return
       end select
 
-      include "bmi_get_var_shape.inc"
+      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double.
+      !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
+      if (last_token > 1) then
+         shape(1) = 1
+         return
+      end if
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
          shape(1) = ndkx
@@ -1058,13 +1176,14 @@ contains
       use network_data
       use m_sobekdfm
       use m_alloc
-      use string_module
+      use string_module, only: str_token
       use m_cell_geometry ! TODO: UNST-1705: temp, replace by m_flowgeom
       use unstruc_model
       use unstruc_channel_flow, only: network
       use m_laterals, only: numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
       use m_laterals, only: qplatCumPre
       use morphology_data_module, only: get_one_transport_parameter
+      use m_get_kbot_ktop
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
       type(c_ptr), intent(inout) :: x
@@ -1294,10 +1413,10 @@ contains
       ! TODO: AvD: add returns to all auto generated cases to avoid unnecessary fall-through
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
-         call realloc(const_t, (/ndkx, numconst/), keepExisting=.true.)
+         call realloc(const_t, [ndkx, numconst], keepExisting=.true.)
          do k = 1, ndkx
             const_t(k, iconst) = constituents(iconst, k)
          end do
@@ -1311,16 +1430,17 @@ contains
       ! Return a pointer to the variable
       use unstruc_model
       use m_partitioninfo, only: jampi
-      use MessageHandling
+      use unstruc_messages, only: loglevel_file, loglevel_stdout, initMessaging
       use iso_c_binding, only: c_double, c_char, c_bool, c_loc, c_f_pointer
       use m_laterals, only: numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
       use m_laterals, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
       use morphology_data_module, only: PARSOURCE_FIELD
+      use string_module, only: str_token
+      use m_init_openmp, only: init_openmp
+      use messagehandling, only: stringtolevel
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       type(c_ptr), value, intent(in) :: xptr
-
-      integer, external :: init_openmp
 
       character(kind=c_char), dimension(:), pointer :: x_0d_char_ptr => null()
       real(c_double), pointer :: x_0d_double_ptr
@@ -1339,6 +1459,8 @@ contains
       logical(kind=c_bool), pointer :: x_1d_logical_ptr(:)
       ! The fortran name of the attribute name
       character(len=strlen(c_var_name)) :: var_name
+      character(len=strlen(c_var_name)) :: tmp_var_name
+      character(len=strlen(c_var_name)) :: varset_name, item_name, field_name !< For parsing compound variable names.
       character(kind=c_char), dimension(:), pointer :: c_value => null()
       character(len=:), allocatable :: levels
       character(len=10) :: threadsString = ' '
@@ -1484,38 +1606,38 @@ contains
          end do
          return
       case ("sourcesinks/COSUMO/nf_q_source_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          return
       case ("sourcesinks/COSUMO/nf_q_source")
-         call c_f_pointer(xptr, x_1d_double_ptr, (/nf_num_dif/))
+         call c_f_pointer(xptr, x_1d_double_ptr, [nf_num_dif])
          nf_q_source => x_1d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_q_intake_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          return
       case ("sourcesinks/COSUMO/nf_q_intake")
-         call c_f_pointer(xptr, x_1d_double_ptr, (/nf_num_dif/))
+         call c_f_pointer(xptr, x_1d_double_ptr, [nf_num_dif])
          nf_q_intake => x_1d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_const_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          nf_numconst = x_1d_int_ptr(2)
          return
       case ("sourcesinks/COSUMO/nf_const")
-         call c_f_pointer(xptr, x_2d_double_ptr, (/nf_num_dif, nf_numconst/))
+         call c_f_pointer(xptr, x_2d_double_ptr, [nf_num_dif, nf_numconst])
          nf_const => x_2d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_intake_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          nf_numintake = x_1d_int_ptr(2)
          i = x_1d_int_ptr(3)
@@ -1524,13 +1646,13 @@ contains
          end if
          return
       case ("sourcesinks/COSUMO/nf_intake")
-         call c_f_pointer(xptr, x_3d_double_ptr, (/nf_num_dif, nf_numintake, 3/))
+         call c_f_pointer(xptr, x_3d_double_ptr, [nf_num_dif, nf_numintake, 3])
          nf_intake => x_3d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_sink_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          nf_numsink = x_1d_int_ptr(2)
          i = x_1d_int_ptr(3)
@@ -1539,13 +1661,13 @@ contains
          end if
          return
       case ("sourcesinks/COSUMO/nf_sink")
-         call c_f_pointer(xptr, x_3d_double_ptr, (/nf_num_dif, nf_numsink, 6/))
+         call c_f_pointer(xptr, x_3d_double_ptr, [nf_num_dif, nf_numsink, 6])
          nf_sink => x_3d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_sour_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          nf_numsour = x_1d_int_ptr(2)
          i = x_1d_int_ptr(3)
@@ -1554,50 +1676,62 @@ contains
          end if
          return
       case ("sourcesinks/COSUMO/nf_sour")
-         call c_f_pointer(xptr, x_3d_double_ptr, (/nf_num_dif, nf_numsour, 8/))
+         call c_f_pointer(xptr, x_3d_double_ptr, [nf_num_dif, nf_numsour, 8])
          nf_sour => x_3d_double_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_const_operator_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_numconst = x_1d_int_ptr(1)
          nf_namlen = x_1d_int_ptr(2)
          allocate (character(nf_namlen) :: nf_const_operator(nf_numconst))
          return
       case ("sourcesinks/COSUMO/nf_const_operator")
-         call c_f_pointer(xptr, x_1d_char_ptr, (/nf_numconst * nf_namlen/))
+         call c_f_pointer(xptr, x_1d_char_ptr, [nf_numconst * nf_namlen])
          nf_const_operator = transfer(x_1d_char_ptr, nf_const_operator)
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_src_mom_shape")
-         call c_f_pointer(xptr, x_1d_int_ptr, (/6/))
+         call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_num_dif = x_1d_int_ptr(1)
          return
       case ("sourcesinks/COSUMO/nf_src_mom")
-         call c_f_pointer(xptr, x_1d_logical_ptr, (/nf_num_dif/))
+         call c_f_pointer(xptr, x_1d_logical_ptr, [nf_num_dif])
          nf_src_mom => x_1d_logical_ptr
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
          return
       end select
 
+      ! Try to parse variable name as slash-separated id (e.g., 'laterals/sealock_A/water_discharge')
+      tmp_var_name = var_name
+      call str_token(tmp_var_name, varset_name, DELIMS='/')
+      select case (varset_name)
+      case ('pumps', 'weirs', 'orifices', 'gates', 'generalstructures', 'culverts', 'sourcesinks', 'dambreak', 'observations', 'crosssections', 'laterals')
+         ! A valid group name, now parse the location id first...
+         call str_token(tmp_var_name, item_name, DELIMS='/')
+         if (len_trim(item_name) > 0) then
+            ! A valid item name, now parse the field name...
+            field_name = tmp_var_name(2:)
+            call set_compound_field(string_to_char_array(trim(varset_name), len(trim(varset_name))), &
+                                    string_to_char_array(trim(item_name), len(trim(item_name))), &
+                                    string_to_char_array(trim(field_name), len(trim(field_name))), &
+                                    xptr)
+         end if
+      end select
+
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
-         call c_f_pointer(xptr, x_1d_double_ptr, (/ndkx/))
+         call c_f_pointer(xptr, x_1d_double_ptr, [ndkx])
          do i = 1, ndkx
             constituents(iconst, i) = x_1d_double_ptr(i)
          end do
          return
       end if
-      !select case(var_name)
-      !case('debugLevel')
-      !        call c_f_pointer(xptr, x_1d_double_ptr, (/ 1 /))
-      !        call setMessageHandling(thresholdLevel = nint(x_1d_double_ptr(1)), prefix_logging = "dflow1d")
-      !end select
 
    end subroutine set_var
 
@@ -1643,28 +1777,13 @@ contains
       ! Store the name
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
 
-      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+      call c_f_pointer(xptr, x_1d_double_ptr, [c_count(1)])
 
       include 'bmi_set_var_slice.inc'
 
       ! custom overrides
       select case (var_name)
       case ("ucx")
-         !cell = netcell(index)
-         !
-         !do edgeIndex = 1, cell%n
-         !    ! calculate edge angle
-         !    linkX1 = XK(KN(1,edgeIndex))
-         !    linkX2 = XK(KN(2,edgeIndex))
-         !    linkY1 = YK(KN(1,edgeIndex))
-         !    linkY2 = YK(KN(2,edgeIndex))
-         !
-         !    angle = atan((linkY2 - linkY1) / (linkX2 - linkX1))
-         !
-         !    u0(cell%lin(edgeIndex)) = value * cos(angle)
-         !    u1(cell%lin(edgeIndex)) = value * cos(angle)
-         !end do
-
          ! convert it to the velocity increment on cell interfaces
 
          ! update u0 - velocity at cell edges
@@ -1677,12 +1796,6 @@ contains
          ! 1. A - angle of the link, relative to the X axis (or calculate it from the link coordinates = atan((y2-y1)/(x2-x1))
          ! 2. for Y component: V_link += Uy * sin(A)
          ! 3. for X component: V_link += Ux * cos(A)
-
-         !ucx(index + 1) = value
-         !case("ucy")
-         ! convert it to the velocity increment on cell interfaces
-
-         !ucy(index + 1) = value
       case ("unorm")
          ! u1(index + 1) = value
          u1(c_start(1) + 1:c_start(1) + c_count(1)) = x_1d_double_ptr(1:c_count(1))
@@ -1698,7 +1811,7 @@ contains
          return
 
       case ("TcrEro")
-         call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
+         call c_f_pointer(xptr, x_2d_double_ptr, [c_count(1), c_count(2)])
          k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
          if (.not. allocated(TcrEro)) then
             allocate (TcrEro(ndx, k))
@@ -1723,7 +1836,7 @@ contains
          return
 
       case ("TcrSed")
-         call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
+         call c_f_pointer(xptr, x_2d_double_ptr, [c_count(1), c_count(2)])
          k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
          if (.not. allocated(TcrSed)) then
             allocate (TcrSed(ndx, k))
@@ -1749,10 +1862,10 @@ contains
       end select
 
       if (numconst > 0) then
-         iconst = findname(numconst, const_names, var_name)
+         iconst = find_name(const_names, var_name)
       end if
       if (iconst /= 0) then
-         call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+         call c_f_pointer(xptr, x_1d_double_ptr, [c_count(1)])
          do i = 1, c_count(1)
             constituents(iconst, c_start(1) + i) = x_1d_double_ptr(i)
          end do
@@ -1788,10 +1901,10 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: dfm_add_features
       use iso_c_binding, only: c_double, c_int, c_char, c_loc, c_f_pointer
       use iso_c_utils
-      use unstruc_messages
       use m_polygon
       use dfm_error
       use kdtree2Factory
+      use m_find_crossed_links_kdtree2
 
       character(kind=c_char), intent(in) :: c_feat_name(*) !< Name/type of the features set, e.g., 'thindams'
       type(c_ptr), value, intent(in) :: xpli_ptr !< Pointer (by value) to the C-compatible x-coordinates of all features's polyline (one long array).
@@ -1806,10 +1919,10 @@ contains
       integer(c_int), pointer :: npli(:)
 
       integer :: i, npli_pts, nxln
-      double precision :: thdh
+      real(kind=dp) :: thdh
       logical :: with_z
-      double precision, dimension(:), allocatable :: dSL
-      integer, dimension(:), allocatable :: iLnx, ipol
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
+      integer, dimension(:), allocatable :: crossed_links, polygon_nodes
 
       ! The fortran name of the attribute name
       character(len=MAXSTRLEN) :: feat_name
@@ -1856,21 +1969,21 @@ contains
          ! THINDAMS
       case ("thindams")
          iresult = DFM_NOTIMPLEMENTED
-         allocate (iLnx(Lnx))
-         iLnx = 0
-         allocate (ipol(Lnx))
-         ipol = 0
-         allocate (dSL(Lnx))
-         dSL = 0
-         call find_crossed_links_kdtree2(treeglob, npl, xpl, ypl, 2, Lnx, 0, nxln, iLnx, ipol, dSL, iresult)
+         allocate (crossed_links(Lnx))
+         crossed_links = 0
+         allocate (polygon_nodes(Lnx))
+         polygon_nodes = 0
+         allocate (polygon_segment_weights(Lnx))
+         polygon_segment_weights = 0
+         call find_crossed_links_kdtree2(treeglob, npl, xpl, ypl, ITYPE_FLOWLINK, Lnx, BOUNDARY_NONE, nxln, crossed_links, polygon_nodes, polygon_segment_weights, iresult)
          if (iresult /= DFM_NOERR) then
             goto 888
          end if
          do i = 1, nxln
-            bob(1, iLnx(i)) = thdh
-            bob(2, iLnx(i)) = thdh
+            bob(1, crossed_links(i)) = thdh
+            bob(2, crossed_links(i)) = thdh
          end do
-         deallocate (iLnx, ipol, dSL)
+         deallocate (crossed_links, polygon_nodes, polygon_segment_weights)
          ! TODO: AvD: also somehow disable the existing thin dams
 
       case ("fixedweirs", "sourcesinks")
@@ -1904,16 +2017,19 @@ contains
       use iso_c_binding, only: c_double, c_char, c_loc
       use iso_c_utils
       use fm_external_forcings_data
+      use m_dambreak_breach, only: get_dambreak_depth_c_loc, get_dambreak_breach_width_c_loc, &
+                                   get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
+      use m_longculverts_data, only: longculverts
       use m_structures, only: valdambreak
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
-      use unstruc_messages
       use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
+      use string_module, only: str_tolower
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'
@@ -1930,10 +2046,10 @@ contains
       character(len=MAXSTRLEN) :: var_name
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
-      ! Store the name
-      var_name = char_array_to_string(c_var_name)
+      ! Store the name and convert var and field to lowercase to make them case-insensitive.
+      var_name = str_tolower(char_array_to_string(c_var_name))
       item_name = char_array_to_string(c_item_name)
-      field_name = char_array_to_string(c_field_name)
+      field_name = str_tolower(char_array_to_string(c_field_name))
 
       select case (var_name)
          ! PUMPS
@@ -1960,7 +2076,7 @@ contains
          end if
 
          select case (field_name)
-         case ("crest_level", "CrestLevel", "crestLevel")
+         case ("crestlevel")
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
@@ -1980,12 +2096,12 @@ contains
          end if
 
          select case (field_name)
-         case ("gateLowerEdgeLevel")
+         case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             end if
             return
-         case ("crest_level", "CrestLevel", "crestLevel")
+         case ("crestlevel")
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             end if
@@ -1999,19 +2115,31 @@ contains
             return
          end if
          select case (field_name)
-         case ("sill_level", "CrestLevel")
-            x = c_loc(zcgen((item_index - 1) * 3 + 1))
+         case ("crestlevel")
+            if (is_in_network) then
+               x = get_crest_level_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+            end if
             return
-         case ("door_height", "GateHeight")
+         case ("gateheight")
             x = c_loc(generalstruc(item_index)%gatedoorheight)
             return
-         case ("lower_edge_level", "GateLowerEdgeLevel")
-            x = c_loc(zcgen((item_index - 1) * 3 + 2))
+         case ("gateloweredgelevel")
+            if (is_in_network) then
+               x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+            end if
             return
-         case ("opening_width", "GateOpeningWidth")
-            x = c_loc(zcgen((item_index - 1) * 3 + 3))
+         case ("gateopeningwidth")
+            if (is_in_network) then
+               x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+            end if
             return
-         case ("horizontal_opening_direction", "GateOpeningHorizontalDirection")
+         case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
          end select
@@ -2024,14 +2152,14 @@ contains
          end if
 
          select case (field_name)
-         case ("CrestLevel", "crestLevel")
+         case ("crestlevel")
             if (is_in_network) then
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 1))
             end if
             return
-         case ("GateHeight", "gateHeight")
+         case ("gateheight")
             if (is_in_network) then
                x = get_gate_door_height_c_loc(network%sts%struct(item_index))
             else
@@ -2039,21 +2167,21 @@ contains
             end if
 
             return
-         case ("GateLowerEdgeLevel", "gateLowerEdgeLevel")
+         case ("gateloweredgelevel")
             if (is_in_network) then
                x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 2))
             end if
             return
-         case ("GateOpeningWidth", "gateOpeningWidth")
+         case ("gateopeningwidth")
             if (is_in_network) then
                x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
             else
                x = c_loc(zcgen((item_index - 1) * 3 + 3))
             end if
             return
-         case ("GateOpeningHorizontalDirection", "gateOpeningHorizontalDirection")
+         case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
          end select
@@ -2066,7 +2194,7 @@ contains
          end if
 
          select case (field_name)
-         case ("valveOpeningHeight")
+         case ("valveopeningheight")
             if (is_in_network) then
                x = get_valve_opening_height_c_loc(network%sts%struct(item_index))
             end if
@@ -2081,7 +2209,7 @@ contains
          end if
 
          select case (field_name)
-         case ("valveRelativeOpening")
+         case ("valverelativeopening")
             x = get_valve_relative_opening_c_loc(longculverts(item_index))
             return
          end select
@@ -2170,16 +2298,16 @@ contains
          end if
          select case (field_name)
          case ("dambreak_s1up")
-            x = c_loc(waterLevelsDambreakUpStream(item_index))
+            x = get_dambreak_upstream_level_c_loc(item_index)
             return
          case ("dambreak_s1dn")
-            x = c_loc(waterLevelsDambreakDownStream(item_index))
+            x = get_dambreak_downstream_level_c_loc(item_index)
             return
          case ("dambreak_breach_depth")
-            x = c_loc(breachDepthDambreak(item_index))
+            x = get_dambreak_depth_c_loc(item_index)
             return
          case ("dambreak_breach_width")
-            x = c_loc(breachWidthDambreak(item_index))
+            x = get_dambreak_breach_width_c_loc(item_index)
             return
          case ("dambreak_instantaneous_discharge")
             x = c_loc(valdambreak(1, item_index))
@@ -2220,7 +2348,7 @@ contains
          case default
             !       assume this is a tracer
             !       get constituent number for this tracer
-            iconst = findname(NUMCONST, const_names, field_name)
+            iconst = find_name(const_names, field_name)
 
             if (iconst == 0) then
                !          tracer not found
@@ -2312,8 +2440,8 @@ contains
 
    !> Returns the c_ptr for a variable on a lateral location
    function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
-      use m_laterals, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
-                           lateral_volume_per_layer, num_layers
+      use m_laterals, only: qplat, nnlat, n1latsg, n2latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
+                            lateral_volume_per_layer, num_layers, average_waterlevels_per_lateral, numlatsg
       use m_flow, only: s1
       use string_module, only: str_token
 
@@ -2338,10 +2466,19 @@ contains
          end if
          return
       case ("water_level")
-         ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
-         k1 = nnlat(n1latsg(item_index))
-         if (k1 > 0) then
-            c_lateral_pointer = c_loc(s1(k1))
+         if (.not. average_waterlevels_per_lateral%is_used) then
+            ! Just in time initialization, update will be called at the end of flow_run_some_timesteps.
+            call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
+                                                            input_variable=s1, &
+                                                            weighing_variable=a1, &
+                                                            index_start=n1latsg, &
+                                                            index_end=n2latsg, &
+                                                            index_to_node=nnlat)
+            call average_waterlevels_per_lateral%update()
+         end if
+
+         if (item_index > 0) then
+            c_lateral_pointer = c_loc(average_waterlevels_per_lateral%values(item_index))
          else
             c_lateral_pointer = c_null_ptr
          end if
@@ -2372,7 +2509,7 @@ contains
       case ('water_temperature')
          constituent_index = ITEMP
       case default
-         constituent_index = findname(NUMCONST, const_names, constituent_name)
+         constituent_index = find_name(const_names, constituent_name)
          if (iconst == 0) then
             !        tracer not found
             c_lateral_pointer = c_null_ptr
@@ -2403,14 +2540,14 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: set_compound_field
       use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
       use iso_c_utils
-      use unstruc_messages
       use m_strucs
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
       use m_General_Structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
-      use m_laterals, only: qplat
+      use m_laterals, only: qplat, incoming_lat_concentration, num_layers
+      use string_module, only: str_token
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2418,17 +2555,23 @@ contains
       type(c_ptr), value, intent(in) :: xptr !< Pointer (by value) to the C-compatible value data to be set.
 
       real(c_double), pointer :: x_0d_double_ptr
+      real(c_double), pointer :: x_1d_double_ptr(:)
       type(c_ptr) :: fieldptr ! c_ptr to the structure's parameter
 
       integer :: item_index
       logical :: is_in_network
 
       integer :: iostat
+      integer :: i_layer
+      integer :: constituent_index
 
       ! The fortran name of the attribute name
       character(len=MAXSTRLEN) :: var_name
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
+      character(len=MAXSTRLEN) :: constituent_name
+      character(len=MAXSTRLEN) :: direction_string
+
       ! Store the name
       var_name = char_array_to_string(c_var_name)
       item_name = char_array_to_string(c_item_name)
@@ -2630,12 +2773,39 @@ contains
          end if
          select case (field_name)
          case ("water_discharge")
-            call c_f_pointer(xptr, x_0d_double_ptr)
-            ! Using max(1,kmx) is a temporary solution for now.
-            qplat(max(1, kmx), item_index) = x_0d_double_ptr
+            ! this case statement can only be reached in case of 3D laterals,
+            ! so no check on (apply_transport(item_index) == 1) is needed here
+            call c_f_pointer(xptr, x_1d_double_ptr, [num_layers])
+            do i_layer = 1, num_layers
+               qplat(i_layer, item_index) = x_1d_double_ptr(i_layer)
+            end do
             return
          end select
 
+         constituent_name = field_name
+         call str_token(constituent_name, direction_string, DELIMS='/')
+         ! set value is only possible for incoming direction
+         if (direction_string == 'incoming') then
+            constituent_name = constituent_name(2:)
+            ! Find constituent index
+            select case (constituent_name)
+            case ('water_salinity')
+               constituent_index = ISALT
+            case ('water_temperature')
+               constituent_index = ITEMP
+            case default
+               constituent_index = find_name(const_names, constituent_name)
+               if (iconst == 0) then
+                  !        tracer not found
+                  return
+               end if
+            end select
+            call c_f_pointer(xptr, x_1d_double_ptr, [num_layers])
+            do i_layer = 1, num_layers
+               incoming_lat_concentration(i_layer, constituent_index, item_index) = x_1d_double_ptr(i_layer)
+            end do
+            return
+         end if
          ! NOTE: observations and crosssections are read-only!
       end select
    end subroutine set_compound_field
@@ -2945,8 +3115,8 @@ contains
 
       type(tface) :: cell
       integer :: edgeIndex
-      double precision :: linkX1, linkX2, linkY1, linkY2
-      double precision :: angle
+      real(kind=dp) :: linkX1, linkX2, linkY1, linkY2
+      real(kind=dp) :: angle
 
       real(c_double), target :: valuet
       type(c_ptr) :: xptr
@@ -3008,7 +3178,7 @@ contains
          size1(1) = 1
          valuet = value
          xptr = c_loc(valuet) ! To pass on this subroutine argument to set_var_slice as a C pointer
-         call set_var_slice(c_var_name, (/index/), size1, xptr)
+         call set_var_slice(c_var_name, [index], size1, xptr)
       end select
 
    end subroutine set_1d_double_at_index
@@ -3178,210 +3348,6 @@ contains
       end do
    end function get_flow_elem_max_nbs
 
-! Geometry dll functions
-
-!LC: TODO REMOVE
-!subroutine triang(cptr_sx, cptr_sy, cptr_sv, c_numS, cptr_dx, cptr_dy, c_numD, cptr_res) bind(C, name="triang")
-!    !DEC$ ATTRIBUTES DLLEXPORT :: triang
-!    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-!    use unstruc_model
-!    use m_samples
-!    use m_sferic, only: jsferic
-!    use m_missing, only: dmiss, JINS
-!    use m_polygon, only: NPL, xpl, ypl, zpl
-!    use m_ec_basic_interpolation, only: triinterp2
-!
-!    implicit none
-!
-!    ! parameters
-!    type(c_ptr), intent(in)                 :: cptr_sx      ! samples x, y, values
-!    type(c_ptr), intent(in)                 :: cptr_sy
-!    type(c_ptr), intent(in)                 :: cptr_sv
-!    integer(c_int), intent(in)              :: c_numS       ! num samples
-!    type(c_ptr), intent(in)                 :: cptr_dx      ! destinations x, y
-!    type(c_ptr), intent(in)                 :: cptr_dy
-!    integer(c_int), intent(in)              :: c_numD       ! num destination points
-!    type(c_ptr), intent(inout)              :: cptr_res     ! return values (ptr to double array)
-!
-!    ! local variables
-!    integer                                 :: numS
-!    integer                                 :: numD
-!    integer                                 :: jdla = 1
-!    real(c_double), pointer                 :: ptr(:)
-!    real(c_double), pointer                 :: dx(:)
-!    real(c_double), pointer                 :: dy(:)
-!    real(c_double), pointer                 :: dRes(:)
-!
-!    numS = c_numS
-!    numD = c_numD
-!
-!    ! (re)allocate sample arrays
-!    if (allocated(XS)) then
-!        deallocate(XS,YS,ZS)
-!    end if
-!    allocate(XS(numS), YS(numS), ZS(numS))
-!
-!    ! copy ptr's to fortran arrays
-!    call c_f_pointer(cptr_sx, ptr, (/numS/))
-!    XS(:) = ptr
-!
-!    call c_f_pointer(cptr_sy, ptr, (/numS/))
-!    YS(:) = ptr
-!
-!    call c_f_pointer(cptr_sv, ptr, (/numS/))
-!    ZS(:) = ptr
-!
-!    call c_f_pointer(cptr_dx, dx, (/numD/))
-!    call c_f_pointer(cptr_dy, dy, (/numD/))
-!    call c_f_pointer(cptr_res, dRes, (/numD/))
-!
-!    ! set max stuff
-!    NS = numS
-!    NSMAX = numS
-!
-!    ! assign 'missing value' to all elements of dRes
-!    dRes = DMISS
-!
-!    ! call triangulate
-!    call triinterp2(dx, dy, dRes, numD, jdla, XS, YS, ZS, NS, dmiss, jsferic, jins, NPL, MXSAM, MYSAM, xpl, ypl, zpl)
-!
-!end subroutine triang
-
-!LC: TODO REMOVE
-!subroutine averaging(cptr_sx, cptr_sy, cptr_sv, c_nums, cptr_cx, cptr_cy, cptr_cxx, cptr_cyy, cptr_cnp, c_numc, c_n6, cptr_res, cptr_meth, cptr_nmin, cptr_csize) bind(C, name="averaging")
-!    !DEC$ ATTRIBUTES DLLEXPORT :: averaging
-!    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-!    use unstruc_model
-!    use m_sferic, only: jsferic, jasfer3D
-!    use m_missing
-!    use m_ec_interpolationsettings
-!    use kdtree2Factory
-!    use m_polygon, only: NPL, xpl, ypl, zpl
-!    use m_ec_basic_interpolation, only: AVERAGING2
-!
-!    implicit none
-!
-!    ! parameters
-!    type(c_ptr),    intent(in)                 :: cptr_sx      ! samples x, y, values
-!    type(c_ptr),    intent(in)                 :: cptr_sy
-!    type(c_ptr),    intent(in)                 :: cptr_sv
-!    integer(c_int), intent(in)                 :: c_nums       ! number of samples
-!    type(c_ptr),    intent(in)                 :: cptr_cx      ! destination cell center x, y
-!    type(c_ptr),    intent(in)                 :: cptr_cy
-!    type(c_ptr),    intent(in)                 :: cptr_cxx     ! destination cell corner x, y
-!    type(c_ptr),    intent(in)                 :: cptr_cyy
-!    type(c_ptr),    intent(in)                 :: cptr_cnp     ! destination cell corner array lengths
-!    integer(c_int), intent(in)                 :: c_numc       ! number of destination cells
-!    integer(c_int), intent(in)                 :: c_n6         ! max. cell corner array length
-!    type(c_ptr),    intent(inout)              :: cptr_res     ! return values (ptr to double array)
-!    integer(c_int), intent(in)                 :: cptr_meth    ! averaging method
-!    integer(c_int), intent(in)                 :: cptr_nmin    ! minimum nr of samples for avaraging
-!    real(c_double), intent(in)                 :: cptr_csize   ! relative search cell size
-!
-!    ! local variables
-!    real(c_double), pointer                 :: sx(:)
-!    real(c_double), pointer                 :: sy(:)
-!    real(c_double), pointer                 :: svtmp(:)
-!    integer                                 :: nums
-!    real(c_double), pointer                 :: cx(:)
-!    real(c_double), pointer                 :: cy(:)
-!    real(c_double), pointer                 :: cxtmp(:)
-!    real(c_double), pointer                 :: cytmp(:)
-!    integer, pointer                        :: cnp(:)
-!    integer                                 :: numc
-!    integer                                 :: n6
-!    real(c_double), pointer                 :: res(:)
-!    double precision, allocatable           :: sv(:,:)
-!    integer, allocatable                    :: ipsam(:)
-!    double precision, allocatable           :: cz(:,:)
-!    double precision, allocatable           :: cxx(:,:)
-!    double precision, allocatable           :: cyy(:,:)
-!    integer                                 :: meth
-!    integer                                 :: nmin
-!    double precision                        :: csize
-!    integer                                 :: i, j, k, IAVtmp, NUMMINtmp, INTTYPEtmp, ierr
-!    double precision                        :: RCELtmp
-!
-!    ! cache interpolation settings
-!    IAVtmp = IAV
-!    NUMMINtmp = NUMMIN
-!    INTTYPEtmp = INTERPOLATIONTYPE
-!    RCELtmp = RCEL
-!
-!    ! assign ranges and settings
-!    nums = c_nums
-!    numc = c_numc
-!    n6 = c_n6
-!    meth = cptr_meth
-!    nmin = cptr_nmin
-!    csize = cptr_csize
-!
-!    !assign pointers
-!    call c_f_pointer(cptr_sx, sx, (/nums/))
-!    call c_f_pointer(cptr_sy, sy, (/nums/))
-!    call c_f_pointer(cptr_sv, svtmp, (/nums/))
-!    call c_f_pointer(cptr_cx, cx, (/numc/))
-!    call c_f_pointer(cptr_cy, cy, (/numc/))
-!    call c_f_pointer(cptr_cxx, cxtmp, (/n6*numc/))
-!    call c_f_pointer(cptr_cyy, cytmp, (/n6*numc/))
-!    call c_f_pointer(cptr_cnp, cnp, (/numc/))
-!    call c_f_pointer(cptr_res, res, (/numc/))
-!
-!    !allocate & copy to 2d arrays
-!    allocate(sv(1, nums), ipsam(nums), cz(1,numc), cxx(n6, numc), cyy(n6, numc))
-!
-!    sv(1,:) = svtmp(:)
-!    ipsam(:) = 1
-!    k = 1
-!    do i = 1, numc
-!       cz(1,i) = DMISS
-!       do j=1,n6
-!          cxx(j, i) = cxtmp(k)
-!          cyy(j, i) = cytmp(k)
-!          k = k + 1
-!       end do
-!    end do
-!
-!    if(meth > 0 .and. meth < 8) then
-!       IAV = meth
-!    else
-!       goto 1234
-!    end if
-!
-!    if(nmin > 0) then
-!       NUMMIN = nmin
-!    else
-!       goto 1234
-!    end if
-!
-!    if(csize > 0 .and. csize < 10) then
-!       RCEL = csize
-!    else
-!       goto 1234
-!    end if
-!
-!    INTERPOLATIONTYPE = 2
-!
-!    call build_kdtree(treeglob, nums, sx, sy, ierr, jsferic, dmiss)
-!    call averaging2(1, nums, sx, sy, sv, ipsam, cx, cy, cz, numc, cxx, cyy, n6, cnp, 1, &
-!                    dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl)
-!
-!    call delete_kdtree2(treeglob)
-!
-!    !copy values back
-!    res(:) = cz(1,:)
-!
-!1234 continue
-!
-!    !unroll & cleanup
-!    IAV = IAVtmp
-!    NUMMIN = NUMMINtmp
-!    INTERPOLATIONTYPE = INTTYPEtmp
-!    RCEL = RCELtmp
-!    deallocate(sv, ipsam, cz, cxx, cyy)
-!
-!end subroutine averaging
-
 ! Further custom api functions
 
    subroutine find_cells(c_net_file, c_numCells, c_maxPerCell, cptr_netElemNode) bind(C, name="find_cells")
@@ -3469,18 +3435,18 @@ contains
 
       real(c_double), pointer :: ptr(:) ! temporary pointer
 
-      double precision, dimension(:), target, allocatable, save :: xout, yout !< memory leak
+      real(kind=dp), dimension(:), target, allocatable, save :: xout, yout !< memory leak
       integer, dimension(:), target, allocatable, save :: feature_ids !< memory leak
       integer, dimension(:), target, allocatable :: dummy_ids !< temporary storage for snappnt
-      double precision, dimension(:), allocatable :: xintemp, yintemp
+      real(kind=dp), dimension(:), allocatable :: xintemp, yintemp
       integer :: ntemp
-      double precision, dimension(:), allocatable :: xin, yin
+      real(kind=dp), dimension(:), allocatable :: xin, yin
 
       ! Dambreak
       integer :: startIndex, i, noutSnapped, lstart, oldSize
-      double precision, dimension(:), target, allocatable :: xSnapped, ySnapped
-      double precision, allocatable, dimension(:, :) :: xSnappedLinks, ySnappedLinks
-      double precision :: start_location_x, start_location_y, x_breach, y_breach
+      real(kind=dp), dimension(:), target, allocatable :: xSnapped, ySnapped
+      real(kind=dp), allocatable, dimension(:, :) :: xSnappedLinks, ySnappedLinks
+      real(kind=dp) :: start_location_x, start_location_y, x_breach, y_breach
 
       c_ierror = 1
 
@@ -3491,9 +3457,9 @@ contains
       allocate (xin(c_Nin), yin(c_Nin))
 
       !     copy pointers to fortran array
-      call c_f_pointer(cptr_xin, ptr, (/c_Nin/))
+      call c_f_pointer(cptr_xin, ptr, [c_Nin])
       xin(:) = ptr
-      call c_f_pointer(cptr_yin, ptr, (/c_Nin/))
+      call c_f_pointer(cptr_yin, ptr, [c_Nin])
       yin(:) = ptr
 
       ! xin, yin arrays store the coordinates of the feature and are terminated with a dmiss value.
@@ -3671,6 +3637,7 @@ contains
       use m_netw
       use m_commandline_option
       use unstruc_model, only: md_pmethod
+      use m_partition_METIS_to_idomain, only: partition_METIS_to_idomain
 
       character(kind=c_char), intent(in) :: c_netfile_in(MAXSTRLEN)
       character(kind=c_char), intent(in) :: c_netfile_out(MAXSTRLEN)
@@ -3709,7 +3676,7 @@ contains
 
       call cosphiunetcheck(1)
 
-      call partition_METIS_to_idomain(npart, jacontiguous, md_pmethod, 0)
+      call partition_METIS_to_idomain(idomain, npart, jacontiguous, md_pmethod, 0)
 
       ndomains = npart
 
@@ -3735,6 +3702,8 @@ contains
       use unstruc_files
       use m_netw
       use m_commandline_option
+      use m_reapol
+      use m_filez, only: newfil
 
       character(kind=c_char), intent(in) :: c_netfile_in(MAXSTRLEN)
       character(kind=c_char), intent(in) :: c_netfile_out(MAXSTRLEN)
@@ -3789,6 +3758,7 @@ contains
       use gridoperations
       use array_module
       use m_missing
+      use m_crosspoly
 
       implicit none
       integer(c_int), intent(in) :: numberOfInputVertices
@@ -3799,15 +3769,15 @@ contains
       !return error code
       integer :: ierr
       !locals
-      double precision :: xa, ya, xb, yb, xm, ym, crpm, distanceStartPolygon
-      double precision, pointer :: xVerticesCoordinates(:), yVerticesCoordinates(:)
+      real(kind=dp) :: xa, ya, xb, yb, xm, ym, crpm, distanceStartPolygon
+      real(kind=dp), pointer :: xVerticesCoordinates(:), yVerticesCoordinates(:)
       integer :: l, k1, k2, crossed, isec
       integer, allocatable, target, save :: indexes(:) !as commented above, this is a memory leak of lnx integers
 
       ierr = 0
 
-      call c_f_pointer(c_xVerticesCoordinates, xVerticesCoordinates, (/numberOfInputVertices/))
-      call c_f_pointer(c_yVerticesCoordinates, yVerticesCoordinates, (/numberOfInputVertices/))
+      call c_f_pointer(c_xVerticesCoordinates, xVerticesCoordinates, [numberOfInputVertices])
+      call c_f_pointer(c_yVerticesCoordinates, yVerticesCoordinates, [numberOfInputVertices])
 
       if (allocated(indexes)) then
          deallocate (indexes)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,22 +32,23 @@
 
 ! todo: MERGE THIS WITH UNSTRUC_BOUNDARIES
 module m_bnd !< boundary-type module
+   use precision, only: dp
    implicit none
    integer, parameter :: NAMLEN = 128
 
    type bndtype
       character(len=NAMLEN) :: name !< boundary-type name
       integer :: N !< number of boundary points
-      double precision, dimension(:), allocatable :: x !< inner node x-coordinates
-      double precision, dimension(:), allocatable :: y !< inner node y-coordinates
-      double precision, dimension(:), allocatable :: sigma !< sigma-values
-      double precision, dimension(:), allocatable :: zminmax !< zmin and zmax
-      double precision, dimension(:), allocatable :: z !< boundary condition values
-      double precision, dimension(:, :), allocatable :: xy2 !< outer-node (x,y)-coordinates
+      real(kind=dp), dimension(:), allocatable :: x !< inner node x-coordinates
+      real(kind=dp), dimension(:), allocatable :: y !< inner node y-coordinates
+      real(kind=dp), dimension(:), allocatable :: sigma !< sigma-values
+      real(kind=dp), dimension(:), allocatable :: zminmax !< zmin and zmax
+      real(kind=dp), dimension(:), allocatable :: z !< boundary condition values
+      real(kind=dp), dimension(:, :), allocatable :: xy2 !< outer-node (x,y)-coordinates
       integer, dimension(:), allocatable :: kd !< boundary points
       integer, dimension(:, :), allocatable :: k !< index array, see e.g. kbnd
-      double precision, dimension(:), allocatable :: tht !< Thatcher-Harleman outflow time
-      double precision, dimension(:), allocatable :: thz !< Thatcher-Harleman concentration
+      real(kind=dp), dimension(:), allocatable :: tht !< Thatcher-Harleman outflow time
+      real(kind=dp), dimension(:), allocatable :: thz !< Thatcher-Harleman concentration
    end type bndtype
 
 contains
@@ -58,14 +59,30 @@ contains
 
       type(bndtype), intent(inout) :: bnd !< boundary data
 
-      if (allocated(bnd%x)) deallocate (bnd%x)
-      if (allocated(bnd%y)) deallocate (bnd%y)
-      if (allocated(bnd%sigma)) deallocate (bnd%sigma)
-      if (allocated(bnd%zminmax)) deallocate (bnd%zminmax)
-      if (allocated(bnd%z)) deallocate (bnd%z)
-      if (allocated(bnd%xy2)) deallocate (bnd%xy2)
-      if (allocated(bnd%kd)) deallocate (bnd%kd)
-      if (allocated(bnd%k)) deallocate (bnd%k)
+      if (allocated(bnd%x)) then
+         deallocate (bnd%x)
+      end if
+      if (allocated(bnd%y)) then
+         deallocate (bnd%y)
+      end if
+      if (allocated(bnd%sigma)) then
+         deallocate (bnd%sigma)
+      end if
+      if (allocated(bnd%zminmax)) then
+         deallocate (bnd%zminmax)
+      end if
+      if (allocated(bnd%z)) then
+         deallocate (bnd%z)
+      end if
+      if (allocated(bnd%xy2)) then
+         deallocate (bnd%xy2)
+      end if
+      if (allocated(bnd%kd)) then
+         deallocate (bnd%kd)
+      end if
+      if (allocated(bnd%k)) then
+         deallocate (bnd%k)
+      end if
 
       return
    end subroutine dealloc_bnd
@@ -88,9 +105,9 @@ contains
          allocate (bnd%kd(N))
          allocate (bnd%k(5, N))
 
-         bnd%x = 0d0
-         bnd%y = 0d0
-         bnd%xy2 = 0d0
+         bnd%x = 0.0_dp
+         bnd%y = 0.0_dp
+         bnd%xy2 = 0.0_dp
          bnd%kd = 0
          bnd%k = 0
 
@@ -98,11 +115,11 @@ contains
             allocate (bnd%sigma(kmx * N))
             allocate (bnd%zminmax(2 * N))
             allocate (bnd%z(kmx * N))
-            bnd%sigma = 0d0
-            bnd%z = 0d0
+            bnd%sigma = 0.0_dp
+            bnd%z = 0.0_dp
          else
             allocate (bnd%z(N))
-            bnd%z = 0d0
+            bnd%z = 0.0_dp
          end if
       end if
 

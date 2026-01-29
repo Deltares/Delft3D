@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,13 +31,14 @@
 !
 
 module unstruc_channel_flow
+   use precision, only: dp
    use m_network
    implicit none
    type(t_network), target :: network
    integer :: CSCalculationOption !< Calculation option for total area computation in 1d
 
    logical, public :: useVolumeTables !< Indicates whether 1d volume tables are useds
-   double precision, public :: tableIncrement !< Increment for volume tables
+   real(kind=dp), public :: tableIncrement !< Increment for volume tables
    logical, public :: useVolumeTableFile !< Write the volume tables to file (or not)
    character(len=IdLen), public :: volumeTableFile !< Name of the table input file
 contains
@@ -48,7 +49,7 @@ contains
       CSCalculationOption = CS_TYPE_PREISMAN !< calculation option for total area computation in 1d
       useVolumeTables = .false.
       useVolumeTableFile = .false.
-      tableIncrement = 0.1d0
+      tableIncrement = 0.1_dp
 !call dealloc(network)
    end subroutine default_channel_flow
 

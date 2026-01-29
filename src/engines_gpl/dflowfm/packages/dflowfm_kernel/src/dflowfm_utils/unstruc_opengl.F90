@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,9 +64,9 @@ contains
    !todo: optimize by checking for triangle (n=3)/quads (n=4) first, don't switch mode while in those
    subroutine FillPolygon(xs, ys, n)
       implicit none
+      integer, intent(in) :: n !< num vertices
       real(kind=sp), intent(in) :: xs(n)
       real(kind=sp), intent(in) :: ys(n)
-      integer, intent(in) :: n !< num vertices
       integer :: i
 
 #ifdef HAVE_OPENGL
@@ -204,12 +204,11 @@ contains
       use M_DEVICES
       use m_WEARELT
       use unstruc_colors
+      use m_drawthis
 
       implicit none
       integer :: infoscreen
       real(kind=sp) :: r, g, b
-      integer :: ndraw
-      common / DRAWTHIS / ndraw(50)
 
       if (jaOpenGL == 0) then
          InOpenGLRendering = .false.
@@ -235,23 +234,23 @@ contains
       call fglMatrixMode(GL_PROJECTION)
       call fglLoadIdentity()
 
-      call fglOrtho(X1, X2, Y1, Y2, 0, 1) ! world coordinates extent
+      call fglOrtho(real(X1, dp), real(X2, dp), real(Y1, dp), real(Y2, dp), real(0, dp), real(1, dp)) ! world coordinates extent
       call fglMatrixMode(GL_MODELVIEW)
 
       ! clear the screen
       ! CALL fglClearColor(.4, .4, .4, 0) ! gray background
 
       if (ndraw(10) == 0) then
-         r = nreds / 255d0
-         g = ngreens / 255d0
-         b = nblues / 255d0
+         r = nreds / 255.0_dp
+         g = ngreens / 255.0_dp
+         b = nblues / 255.0_dp
       else
-         r = nredp / 255d0
-         g = ngreenp / 255d0
-         b = nbluep / 255d0
+         r = nredp / 255.0_dp
+         g = ngreenp / 255.0_dp
+         b = nbluep / 255.0_dp
       end if
 
-      call fglClearColor(r, g, b, 0) ! screen background
+      call fglClearColor(real(r, sp), real(g, sp), real(b, sp), real(0, sp)) ! screen background
 
       call fglClear(GL_COLOR_BUFFER_BIT)
 
@@ -261,12 +260,11 @@ contains
 
    subroutine EndRender
 #ifdef HAVE_OPENGL
-      use, intrinsic :: iso_c_binding
       use IFWINA
       use M_DEVICES
       use user32
       implicit none
-      logical(c_bool) :: res
+      integer(1) :: res
 
       if (jaOpenGL == 0) then
          return
@@ -284,12 +282,12 @@ contains
 
    subroutine ReInitializeBackBuffer
 #ifdef HAVE_OPENGL
-      use, intrinsic :: iso_c_binding
       use IFWINA ! renamed symbols to avoid conflicts
       use M_DEVICES
       implicit none
       integer(HANDLE) :: ptr_bytes
-      logical(c_bool) :: res
+      integer(1) :: res
+
       type(T_BITMAPINFO) bmi
 
       ! We render into a bitmap because not all video cards support mixing gdi / opengl directly. This may mean
@@ -330,10 +328,9 @@ contains
 
    subroutine InitializeOpenGl
 #ifdef HAVE_OPENGL
-      use, intrinsic :: iso_c_binding
       use IFWINA ! renamed symbols to avoid conflicts
       implicit none
-      logical(c_bool) :: res
+      integer(1) :: res
       integer :: pixelFormat, error_code
       type(T_PixelFormatDescriptor) pfd
 
@@ -371,7 +368,6 @@ contains
 
    subroutine SetTextHeight(height)
 #ifdef HAVE_OPENGL
-      use, intrinsic :: iso_c_binding
       use IFWINA ! renamed symbols to avoid conflicts
 #endif
       implicit none
@@ -380,14 +376,14 @@ contains
 
 #ifdef HAVE_OPENGL
       integer(HANDLE) :: font
-      logical(c_bool) :: res
+      integer(1) :: res
 
       ! prepare the font to render text in
       font = CreateFont(height, 0, 0, 0, & ! font size
                         FW_NORMAL, & ! bold
-                        .false., & ! italic
-                        .false., & ! underline
-                        .false., & ! strikout
+                        0, & ! italic
+                        0, & ! underline
+                        0, & ! strikout
                         ANSI_CHARSET, &
                         OUT_TT_PRECIS, &
                         CLIP_DEFAULT_PRECIS, &
@@ -400,21 +396,6 @@ contains
 !    res = SelectObject(hdc, prevFont) ! select old font again
       res = DeleteObject(font) ! delete temporary font
 
-#endif
-   end subroutine
-
-   subroutine DeInitializeOpenGl
-#ifdef HAVE_OPENGL
-      use IFWINA
-      use iso_c_binding, only: c_bool
-      implicit none
-      logical(c_bool) :: res
-
-      res = DeleteObject(hbitmap)
-      res = fwglMakeCurrent(NULL, NULL)
-      res = fwglDeleteContext(HRC)
-      res = DeleteDC(memDC)
-      res = ReleaseDC(HWND, HDC)
 #endif
    end subroutine
 

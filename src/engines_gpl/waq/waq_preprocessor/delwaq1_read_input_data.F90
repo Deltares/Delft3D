@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -161,7 +161,7 @@ contains
                 lstack, output_verbose_level, &
                 is_date_format, is_yyddhh_format, &
                 statprocesdef, allitems, &
-                status)
+                status, alone = .true.)
         write (lunrep, '(//'' Messages presented in this .lst file:'')')
         write (lunrep, '( /'' Number of WARNINGS            :'',I6)') status%iwar
         write (lunrep, '(  '' Number of ERRORS during input :'',I6)') status%ierr

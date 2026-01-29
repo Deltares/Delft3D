@@ -4,7 +4,7 @@ subroutine inibcc(lundia    ,error     ,runid     ,timnow    , &
                 & zstep     ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -90,7 +90,6 @@ subroutine inibcc(lundia    ,error     ,runid     ,timnow    , &
     integer                                :: k       ! Loop counter over KMAX 
     integer                                :: lrec    ! Record length of direct access file 
     integer                                :: lrid    ! Length of character string runid 
-    integer                                :: newlun
     integer                                :: np
     integer                                :: npara   ! Number of parameter records in time dependent direct access file 
     integer                                :: nparrd  ! NR. of parameter records actual read 
@@ -221,10 +220,10 @@ subroutine inibcc(lundia    ,error     ,runid     ,timnow    , &
              call flhnew(lunbcc    ,lundia    ,error     ,record(:lrec - 1)    ,access    , &
                        & irecrd    ,nambnd(ito)          ,tprofc(ito, istsc)   ,dumchr    ,itdate    , &
                        & timscl    ,ntimrd    ,parnam    ,npara     ,nparrd    , &
-                       & bubble    ,gdp       )
+                       & bubble    ,namcon(istsc),gdp       )
              if (error) goto 9999
              !
-             ! Test number of parameters read incombination with defined
+             ! Test number of parameters read in combination with defined
              !
              if (tprofc(ito, istsc)(:7)=='uniform') then
                 if (nparrd/=3) then

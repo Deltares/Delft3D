@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -29,7 +29,7 @@
 !!!
 !!! Oes.F90: OES - module (*O*penmi *E*ngine *S*upport)
 !!!
-!!! (c) Deltares, oct 2003
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!
@@ -371,9 +371,6 @@ subroutine OesCreate(logName)
 
     ! arguments
     character(Len=*), intent(in), optional :: logName
-
-    ! locals
-    integer :: ierr
 
     if ( present(logName) ) then
        if (oesLogHandle == 0) then
@@ -2607,7 +2604,7 @@ end function OesGetChildElmSetID
    subroutine small(string)
       implicit none
       character(len=*)           :: string
-      integer       i, j, newlen, lenstr, biga, bigz, smalla, offset
+      integer       i, j, newlen, biga, bigz, smalla, offset
 !
       biga   = ICHAR('A')
       bigz   = ICHAR('Z')
@@ -2629,7 +2626,7 @@ end function OesGetChildElmSetID
    subroutine big(string)
       implicit none
       character(len=*)           :: string
-      integer       i, j, newlen, lenstr, smalla, smallz, biga, offset
+      integer       i, j, newlen, smalla, smallz, biga, offset
 !
       smalla = ICHAR('a')
       smallz = ICHAR('z')

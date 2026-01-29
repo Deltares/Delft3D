@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -733,7 +733,7 @@ contains
             ! Set the flow or a specific substance
             ! (Note that index 1 is for the extra quantity "flow")
             !
-            n = size(wls(i)%loads) - 1 ! Compensate error in wascal
+            n = size(wls(i)%loads) - 1 ! Compensate error in setup_user_defined_waste_loads
 
             if (allocated(wls(i)%set_factor)) then
                 if (wls(i)%set_factor(1) /= 0.0) then

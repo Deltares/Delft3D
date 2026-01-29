@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 
 
       integer      nstoc , nitem, io_mes
-      character*10 flux(nstoc),subs(nstoc),itemid(nitem)
+      character(len=10) flux(nstoc),subs(nstoc),itemid(nitem)
       real         stoch(nstoc)
 
 !          Subroutine to check tables R6-R7-R8

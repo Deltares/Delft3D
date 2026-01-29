@@ -1,1 +1,2 @@
 add_subdirectory(deltares_common test_deltares_common)
+add_subdirectory(io_hyd test_io_hyd)

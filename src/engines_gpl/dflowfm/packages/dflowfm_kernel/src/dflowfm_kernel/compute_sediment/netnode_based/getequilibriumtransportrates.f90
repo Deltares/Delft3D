@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,271 +29,283 @@
 
 !
 !
+module m_get_equilibrium_transport_rates
+   use m_swart, only: swart
+   use m_widarhyr, only: widarhyr
+   use m_check_einstein_garcia2, only: check_einstein_garcia2
+   use m_waveconst
 
- subroutine getequilibriumtransportrates(kk, seq, wse, mx, hsk) ! get them for flowcell kk or ban kk
-    use m_flowgeom
-    use m_flow
-    use m_netw
-    use m_sediment
-    use m_waves, only: twav, uorb
-    use geometry_module, only: dbdistance
-    use m_missing, only: dmiss
-    use m_sferic, only: jsferic, jasfer3D
+   implicit none
+contains
+   subroutine getequilibriumtransportrates(kk, seq, wse, mx, hsk) ! get them for flowcell kk or ban kk
+      use precision, only: dp
+      use m_flowgeom
+      use m_flow
+      use m_netw
+      use m_sediment
+      use m_waves, only: twav, uorb
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use m_get_czz0
 
-    implicit none
+      integer, intent(in) :: kk, mx ! flowcell kk or ban kk, mx fracnr
+      real(kind=dp), intent(out) :: seq(mx) ! seq(kg/m3)
+      real(kind=dp), intent(out) :: wse(mx) ! effective fall velocity (m/s)
+      real(kind=dp), intent(out) :: hsk ! waterdepth, flowcell or ban
 
-    integer, intent(in) :: kk, mx ! flowcell kk or ban kk, mx fracnr
-    double precision, intent(out) :: seq(mx) ! seq(kg/m3)
-    double precision, intent(out) :: wse(mx) ! effective fall velocity (m/s)
-    double precision, intent(out) :: hsk ! waterdepth, flowcell or ban
+      real(kind=dp) :: cz, flx
+      real(kind=dp) :: ucr, ueff, Twave, Uwave, Ucur, Ucrw, Pmob, beta, D50h, sbeq
+      real(kind=dp) :: aref, Tmob, crefa, sseq, ustar, ustar2, rouse, sqcf, z0k, dks, hdune = 0
+      real(kind=dp) :: qsseq, eincheck2
+      real(kind=dp) :: seqbed
+      real(kind=dp) :: hpr, dzz, wu2, wid, ar, hyr, zbu
+      real(kind=dp) :: sumlay, dmorfacL, dh, ustar2swart, ustw2, fw, qeng, cf, wa, z00
+      integer :: j, n, k, kg, nn, n1, L, LL, jabanhydrad = 0
 
-    double precision :: cz, flx
-    double precision :: ucr, ueff, Twave, Uwave, Ucur, Ucrw, Pmob, beta, D50h, sbeq
-    double precision :: aref, Tmob, crefa, sseq, ustar, ustar2, rouse, sqcf, z0k, dks, hdune = 0
-    double precision :: qsseq, eincheck2
-    double precision :: seqbed
-    double precision :: hpr, dzz, wu2, wid, ar, hyr, zbu
-    double precision :: sumlay, dmorfacL, dh, ustar2swart, ustw2, fw, qeng, cf, wa, z00
-    integer :: j, n, k, kg, nn, n1, L, LL, jabanhydrad = 0
+      if (stm_included) then
+         return
+      end if
 
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
+      seq = 0.0_dp
+      flx = 0.0_dp
 
-    if (stm_included) return
+      if (jaceneqtr == 1) then
+         k = kk
+         if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tile type
+            hsk = s1(k) - bl(k)
+         else ! u-netwnodes / conv type
+            hsk = 0.0_dp
+            nn = 0
+            do n = 1, netcell(k)%n
+               n1 = netcell(k)%nod(n)
+               dh = max(0.0_dp, s1(k) - zk(n1))
+               if (dh > 0.0_dp) then
+                  nn = nn + 1
+                  hsk = hsk + dh
+               end if
+            end do
+            if (nn > 0) then
+               hsk = hsk / nn
+            end if
+         end if
+      else
+         n = nban(1, kk) ! net node
+         k = nban(2, kk) ! flow node
+         hsk = 0.0_dp
+         if (jabanhydrad == 1) then ! Hydraulic radius for this ban
+            wu2 = dbdistance(xz(k), yz(k), xk(n), yk(n), jsferic, jasfer3D, dmiss)
+            L = nban(3, kk)
+            zbu = 9.0e9_dp
+            if (L > 0) then
+               zbu = 0.5_dp * (bob(1, L) + bob(2, L))
+            end if
 
-    seq = 0d0; flx = 0d0
+            L = nban(4, kk)
+            if (L > 0) then
+               zbu = 0.5_dp * (bob(1, L) + bob(2, L)) + zbu
+               zbu = 0.5_dp * zbu
+            end if
 
-    if (jaceneqtr == 1) then
-       k = kk
-       if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tile type
-          hsk = s1(k) - bl(k)
-       else ! u-netwnodes / conv type
-          hsk = 0d0; nn = 0
-          do n = 1, netcell(k)%n
-             n1 = netcell(k)%nod(n)
-             dh = max(0d0, s1(k) - zk(n1))
-             if (dh > 0d0) then
-                nn = nn + 1
-                hsk = hsk + dh
-             end if
-          end do
-          if (nn > 0) then
-             hsk = hsk / nn
-          end if
-       end if
-    else
-       n = nban(1, kk) ! net node
-       k = nban(2, kk) ! flow node
-       hsk = 0d0
-       if (jabanhydrad == 1) then ! Hydraulic radius for this ban
-          wu2 = dbdistance(xz(k), yz(k), xk(n), yk(n), jsferic, jasfer3D, dmiss)
-          L = nban(3, kk)
-          zbu = 9d9
-          if (L > 0) then
-             zbu = 0.5d0 * (bob(1, L) + bob(2, L))
-          end if
+            if (s1(k) > zbu) then
+               hpr = s1(k) - zbu
+               dzz = zk(n) - zbu
+               call widarhyr(hpr, dzz, wu2, wid, ar, hyr)
+               hsk = hyr
+            end if
+         else
+            hsk = s1(k) - zk(n) ! todo make netnode oriented waterlevel
+         end if
+      end if
 
-          L = nban(4, kk)
-          if (L > 0) then
-             zbu = 0.5d0 * (bob(1, L) + bob(2, L)) + zbu
-             zbu = 0.5d0 * zbu
-          end if
+      if (hsk < epshs) then ! local waterdepth (m)
+         return
+      end if
 
-          if (s1(k) > zbu) then
-             hpr = s1(k) - zbu
-             dzz = zk(n) - zbu
-             call widarhyr(hpr, dzz, wu2, wid, ar, hyr)
-             hsk = hyr
-          end if
-       else
-          hsk = s1(k) - zk(n) ! todo make netnode oriented waterlevel
-       end if
-    end if
+      call getczz0(hsk, frcuni, ifrctypuni, cz, z0k) ! get roughness as specified in hydrodynamics
+      sqcf = sag / cz ! sqrt(g)/C  ( )
 
-    if (hsk < epshs) then ! local waterdepth (m)
-       return
-    end if
+      ! or whatever comes out of the roughness predictor, and van Rijn takes z0 = 3D90
 
-    call getczz0(hsk, frcuni, ifrctypuni, cz, z0k) ! get roughness as specified in hydrodynamics
-    sqcf = sag / cz ! sqrt(g)/C  ( )
+      dks = 30.0_dp * z0k ! nikuradse roughness (m)
+      if (dks > 0.5_dp * hsk) then !0.2
+         return
+      end if
 
-    ! or whatever comes out of the roughness predictor, and van Rijn takes z0 = 3D90
+      hdune = 0.0_dp ! half duneheight (m)
+      wse = ws
 
-    dks = 30d0 * z0k ! nikuradse roughness (m)
-    if (dks > 0.5d0 * hsk) then !0.2
-       return
-    end if
+      if (jaceneqtr == 1) then
+         ucur = sqrt(ucx(k) * ucx(k) + ucy(k) * ucy(k)) !                                                            ! current (transport) velocity (m/s)
+      else
+         ucur = sqrt(ucnx(n) * ucnx(n) + ucny(n) * ucny(n))
+      end if
 
-    hdune = 0d0 ! half duneheight (m)
-    wse = ws
+      if (jased == 3) then ! Engelund:
+         cf = sqcf * sqcf
+         qeng = 0.05_dp * cf * sqcf * (ucur**5) / (D50(1) * (rhodelta(1) * ag)**2) ! (m2/s)
 
-    if (jaceneqtr == 1) then
-       ucur = sqrt(ucx(k) * ucx(k) + ucy(k) * ucy(k)) !                                                            ! current (transport) velocity (m/s)
-    else
-       ucur = sqrt(ucnx(n) * ucnx(n) + ucny(n) * ucny(n))
-    end if
+         sseq = qeng / (max(ucur, 1.0e-2_dp) * hsk) ! ( ) dimensionless equilibrium 2D transport suspended sediment concentration
+         sseq = alfasus * sseq
+         seq(1) = rhosed(1) * sseq ! equilibrium transport concentration bed + suspended (kg/m3)
+         wse(1) = wse(1) * crefcav
+      else
 
-    if (jased == 3) then ! Engelund:
-       cf = sqcf * sqcf
-       qeng = 0.05d0 * cf * sqcf * (ucur**5) / (D50(1) * (rhodelta(1) * ag)**2) ! (m2/s)
+         ueff = ucur
+         beta = 1.0_dp
+         twave = 0.0_dp !
+         ustar2swart = sqcf * sqcf * Ueff * Ueff
+         if (jawave > NO_WAVES .and. ueff > 0.0_dp .and. .not. flow_without_waves) then
+            if (twav(k) > 1.0e-2_dp) then
+               twave = twav(k)
+               uwave = uorb(k) ! (m/s) for jased == 2, tauwav contains uorb
+               do nn = 1, nd(k)%lnx
+                  LL = abs(nd(n)%ln(nn))
+                  if (hu(LL) > 0.0_dp) then
+                     ar = au(LL) * dx(LL)
+                     wa = wa + ar ! area  weigthed
+                     !z00 = z00 + ar*hu(LL)*exp(-1d0 - vonkar*cz/sag)   ! z0ucur, to avoid double counting
+                     z00 = z00 + ar * z0ucur(LL) ! z0ucur, to avoid double counting
+                  end if
+               end do
+               if (wa > 0) then
+                  z00 = z00 / wa
+               end if
+               z00 = max(z00, epsz0)
 
-       sseq = qeng / (max(ucur, 1d-2) * hsk) ! ( ) dimensionless equilibrium 2D transport suspended sediment concentration
-       sseq = alfasus * sseq
-       seq(1) = rhosed(1) * sseq ! equilibrium transport concentration bed + suspended (kg/m3)
-       wse(1) = wse(1) * crefcav
-    else
+               beta = ucur / (ucur + uwave) ! ( )
 
-       ueff = ucur; beta = 1d0; twave = 0d0 !
-       ustar2swart = sqcf * sqcf * Ueff * Ueff
-       if (jawave > 0 .and. ueff > 0d0 .and. .not. flowWithoutWaves) then
-          if (twav(k) > 1d-2) then
-             twave = twav(k)
-             uwave = uorb(k) ! (m/s) for jased == 2, tauwav contains uorb
-             do nn = 1, nd(k)%lnx
-                LL = abs(nd(n)%ln(nn))
-                if (hu(LL) > 0d0) then
-                   ar = au(LL) * dx(LL)
-                   wa = wa + ar ! area  weigthed
-                   z00 = z00 + ar * hu(LL) * exp(-1d0 - vonkar * cz / sag) ! z0ucur, to avoid double counting
-                end if
-             end do
-             if (wa > 0) then
-                z00 = z00 / wa
-             end if
-             z00 = max(z00, epsz0)
+               Ueff = Ucur + 0.4_dp * uwave ! (m/s) SvR 2007
 
-             beta = ucur / (ucur + uwave) ! ( )
+               if (MxgrKrone > 0) then
+                  call Swart(Twave, uwave, z00, fw, ustw2)
+                  ustar2swart = ustar2swart + ustw2 ! Swart
+               end if
 
-             Ueff = Ucur + 0.4d0 * uwave ! (m/s) SvR 2007
+            end if
+         end if
+         ustar = sqcf * Ueff
 
-             if (MxgrKrone > 0) then
-                call Swart(Twave, uwave, z00, fw, ustw2)
-                ustar2swart = ustar2swart + ustw2 ! Swart
-             end if
+         if (kmx > 0) then
+            ustar = ustbc(k)
+            ustar2swart = ustar * ustar
+         end if
 
-          end if
-       end if
-       ustar = sqcf * Ueff
+         ustar2 = ustar * ustar
 
-       if (kmx > 0) then
-          ustar = ustbc(k)
-          ustar2swart = ustar * ustar
-       end if
+         do j = 1, mxgr ! loop over grainsizes
 
-       ustar2 = ustar * ustar
+            if (j <= MxgrKrone) then ! following Krone/Swart
+               if (ustar2swart > Ustcre2(j)) then ! eroderen
+                  Tmob = (ustar2swart - Ustcre2(j)) / Ustcre2(j) ! ( ) dimensionless mobility parameter
+                  flx = erosionpar(j) * Tmob ! kg/(m2s)
+               end if
+               seq(j) = flx / ws(j) ! equilibrium sediment concentration
 
-       do j = 1, mxgr ! loop over grainsizes
+            else ! soulsby van rijn 2007 ASCE,
 
-          if (j <= MxgrKrone) then ! following Krone/Swart
-             if (ustar2swart > Ustcre2(j)) then ! eroderen
-                Tmob = (ustar2swart - Ustcre2(j)) / Ustcre2(j) ! ( ) dimensionless mobility parameter
-                flx = erosionpar(j) * Tmob ! kg/(m2s)
-             end if
-             seq(j) = flx / ws(j) ! equilibrium sediment concentration
+               !Ucr=Accr(j)*log(12.d0*hsk/dks)   ! 3d0*D90(j))              ! (2007a (12) )
+               !Ucr=Accr(j)*log(hsk/(ee*z0k)) / vonkar
 
-          else ! soulsby van rijn 2007 ASCE,
+               Ucr = Accr(j) / sqcf
 
-             !Ucr=Accr(j)*log(12.d0*hsk/dks)   ! 3d0*D90(j))              ! (2007a (12) )
-             !Ucr=Accr(j)*log(hsk/(ee*z0k)) / vonkar
+               if (Twave > 0) then
+                  Ucrw = Awcr(j) * Twave**Bwcr(j) !  = 0.24d0*(rhodelta*ag)**0.66d0*D50**0.33d0
+                  Ucr = beta * Ucr + (1.0_dp - beta) * Ucrw ! (m/s)
+               end if
 
-             Ucr = Accr(j) / sqcf
+               if (isusandorbed >= 2) then
+                  Pmob = (Ueff - Ucr) / sqsgd50(j) ! ( ) dimensionless mobility parameter
+                  sbeq = 0.0_dp
+                  if (Pmob > 0) then
 
-             if (Twave > 0) then
-                Ucrw = Awcr(j) * Twave**Bwcr(j) !  = 0.24d0*(rhodelta*ag)**0.66d0*D50**0.33d0
-                Ucr = beta * Ucr + (1d0 - beta) * Ucrw ! (m/s)
-             end if
+                     Pmob = Pmob**1.5_dp ! ( ) dimensionless mobility, old power was 2.4d0
 
-             if (isusandorbed >= 2) then
-                Pmob = (Ueff - Ucr) / sqsgd50(j) ! ( ) dimensionless mobility parameter
-                sbeq = 0d0
-                if (Pmob > 0) then
+                     D50h = (D50(j) / hsk)**1.2_dp ! ( )
 
-                   Pmob = Pmob**1.5d0 ! ( ) dimensionless mobility, old power was 2.4d0
+                     sbeq = 0.015_dp * D50h * Pmob ! ( ) dimensionless equilibrium bedload concentration, formula 12 , so bed load transport =
+                     !  qb = u.h.sbeq.rhosed ( (m/s) . m . ( ). (kg/m3) ) = ( kg/(sm) ), old alfa was .005
 
-                   D50h = (D50(j) / hsk)**1.2d0 ! ( )
+                     seq(j) = sbeq * rhosed(j) ! equilibrium concentration (kg/m3)
 
-                   sbeq = 0.015d0 * D50h * Pmob ! ( ) dimensionless equilibrium bedload concentration, formula 12 , so bed load transport =
-                   !  qb = u.h.sbeq.rhosed ( (m/s) . m . ( ). (kg/m3) ) = ( kg/(sm) ), old alfa was .005
+                  end if
+               end if
+               ! reference height is max of (nikuradse and half dune height) (m)
+               aref = max(dks, hdune) ! vRijns book page 7.65 (line 6)
+               aref = max(aref, 0.01_dp * hsk) ! vRijns book page 7.64 (line 3)
+               aref = min(aref, 0.25_dp * hsk) ! check, always < .25 waterdepth
+               ! vrijns book pag 8.50 r 3 ????
+               Tmob = (Ueff * Ueff - Ucr * Ucr) / (Ucr * Ucr) ! Mobility parameter T ( )
+               if (Tmob > 0 .and. ustar > 0.0_dp) then
+                  rouse = ws(j) / (vonkar * ustar)
+                  crefa = 0.015_dp * (D50(j) / aref) * (Tmob**1.5_dp) * Dstar03(j) ! dimensionless reference concentration ( ), (book vRijn 1993, (7.3.31) )
+                  !crefa = min(crefa, 0.65d0)                                   ! max ref concentration ( )               or (book Garcia 2008, (2-226) )
+                  !crefa = min(crefa, 0.15d0)
+                  crefa = min(crefa, 0.05_dp) ! vRijns book ?
 
-                   seq(j) = sbeq * rhosed(j) ! equilibrium concentration (kg/m3)
+                  if (kmx == 0) then
+                     call check_einstein_garcia2(aref, hsk, z0k, rouse, eincheck2) ! numerical check einstein integrals, now used as vertical integrator anyway
 
-                end if
-             end if
-             ! reference height is max of (nikuradse and half dune height) (m)
-             aref = max(dks, hdune) ! vRijns book page 7.65 (line 6)
-             aref = max(aref, 0.01d0 * hsk) ! vRijns book page 7.64 (line 3)
-             aref = min(aref, 0.25d0 * hsk) ! check, always < .25 waterdepth
-             ! vrijns book pag 8.50 r 3 ????
-             Tmob = (Ueff * Ueff - Ucr * Ucr) / (Ucr * Ucr) ! Mobility parameter T ( )
-             if (Tmob > 0 .and. ustar > 0d0) then
-                rouse = ws(j) / (vonkar * ustar)
-                crefa = 0.015d0 * (D50(j) / aref) * (Tmob**1.5d0) * Dstar03(j) ! dimensionless reference concentration ( ), (book vRijn 1993, (7.3.31) )
-                !crefa = min(crefa, 0.65d0)                                   ! max ref concentration ( )               or (book Garcia 2008, (2-226) )
-                !crefa = min(crefa, 0.15d0)
-                crefa = min(crefa, 0.05d0) ! vRijns book ?
+                     !qssevr84   = 0.012d0*Ueff*D50(j)*Pmob**2.4d0*Dstar(j)**-0.6d0       ! boek vanrijn (7.3.46), or 2007b
 
-                if (kmx == 0) then
-                   call check_einstein_garcia2(aref, hsk, z0k, rouse, eincheck2) ! numerical check einstein integrals, now used as vertical integrator anyway
+                     qsseq = eincheck2 * crefa * ustar / vonkar ! (conclusion : inaccuracy of einstein_garcia is about 10-20  )
 
-                   !qssevr84   = 0.012d0*Ueff*D50(j)*Pmob**2.4d0*Dstar(j)**-0.6d0       ! boek vanrijn (7.3.46), or 2007b
+                     !qsseq = qssevr84
 
-                   qsseq = eincheck2 * crefa * ustar / vonkar ! (conclusion : inaccuracy of einstein_garcia is about 10-20  )
+                     sseq = qsseq / (max(ucur, 1.0e-2_dp) * hsk) ! ( ) dimensionless equilibrium 2D transport suspended sediment concentration
 
-                   !qsseq = qssevr84
+                     ! call checksuspended_transport()
 
-                   sseq = qsseq / (max(ucur, 1d-2) * hsk) ! ( ) dimensionless equilibrium 2D transport suspended sediment concentration
+                     seq(j) = seq(j) + rhosed(j) * sseq ! equilibrium transport concentration bed + suspended (kg/m3)
 
-                   ! call checksuspended_transport()
+                     wse(j) = ws(j) * crefa / (sseq + sbeq) ! effective 2Dh fall velocity er (m/s)*( )
 
-                   seq(j) = seq(j) + rhosed(j) * sseq ! equilibrium transport concentration bed + suspended (kg/m3)
+                  else
 
-                   wse(j) = ws(j) * crefa / (sseq + sbeq) ! effective 2Dh fall velocity er (m/s)*( )
+                     seq(j) = crefa
 
-                else
+                     wse(j) = ws(j) ! *alfaT
 
-                   seq(j) = crefa
+                  end if
 
-                   wse(j) = ws(j) ! *alfaT
+               end if
 
-                end if
+            end if
 
-             end if
+         end do
 
-          end if
+      end if ! !jased 1, 2
 
-       end do
+      sumlay = 0.0_dp ! check bed material
 
-    end if ! !jased 1, 2
+      if (jaceneqtr == 1) then
+         kg = k
+      else
+         kg = n
+      end if
+      sumlay = 0.0_dp ! check bed material
+      do j = 1, mxgr
+         sumlay = sumlay + grainlay(j, kg)
+      end do
 
-    sumlay = 0d0 ! check bed material
+      dmorfacL = max(1.0_dp, dmorfac)
+      if (sumlay == 0.0_dp) then
+         seq(1:mxgr) = 0.0_dp
+      else
+         do j = 1, mxgr
+            seq(j) = seq(j) * grainlay(j, kg) / sumlay ! normed with erodable fraction (kg/m3)
+            seqbed = rhosed(j) * grainlay(j, kg) * rhobulkrhosed / (hsk * dmorfacL) ! concentration if all bed material was suspended (kg/m3)
 
-    if (jaceneqtr == 1) then
-       kg = k
-    else
-       kg = n
-    end if
-    sumlay = 0d0 ! check bed material
-    do j = 1, mxgr
-       sumlay = sumlay + grainlay(j, kg)
-    end do
+            if (grainlay(j, kg) < dks) then ! limiting below roughness thickness
+               seqbed = seqbed * grainlay(j, kg) / dks
+            end if
 
-    dmorfacL = max(1d0, dmorfac)
-    if (sumlay == 0d0) then
-       seq(1:mxgr) = 0d0
-    else
-       do j = 1, mxgr
-          seq(j) = seq(j) * grainlay(j, kg) / sumlay ! normed with erodable fraction (kg/m3)
-          seqbed = rhosed(j) * grainlay(j, kg) * rhobulkrhosed / (hsk * dmorfacL) ! concentration if all bed material was suspended (kg/m3)
+            if (seq(j) > seqbed) then
+               seq(j) = seqbed
+            end if
 
-          if (grainlay(j, kg) < dks) then ! limiting below roughness thickness
-             seqbed = seqbed * grainlay(j, kg) / dks
-          end if
+         end do
+      end if
 
-          if (seq(j) > seqbed) then
-             seq(j) = seqbed
-          end if
-
-       end do
-    end if
-
- end subroutine getequilibriumtransportrates
+   end subroutine getequilibriumtransportrates
+end module m_get_equilibrium_transport_rates

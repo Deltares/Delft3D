@@ -1,0 +1,29 @@
+@ echo off
+
+
+rem Usage:
+rem     Either:
+rem         Call this script with one argument being the path to a Dimrset-bin folder containing a matching run script
+rem     Or:
+rem         Build the source code
+rem         In this script: Set dimrset_bin to point to the appropriate "install-folder\bin"
+rem         Execute this script
+rem 
+
+if "%~1" == "" (
+    set dimrset_bin="..\..\..\install_all\bin"
+) else (
+    set dimrset_bin=%1
+)
+
+
+    rem This example testcase is that small, that it can run with a maximum of 5 partitions
+set NPROC=%NUMBER_OF_PROCESSORS%
+if %NPROC% gtr 5 set NPROC=5
+
+
+rem Remove quotes surrounding dimrset_bin, add the appropriate run script, re-add quotes
+call "%dimrset_bin:"=%\run_dflow2d3d_parallel.bat" %NPROC%
+
+
+rem pause

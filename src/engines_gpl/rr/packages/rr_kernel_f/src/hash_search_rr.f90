@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -135,7 +135,6 @@ use m_hash_search, only: t_hashlist
       integer                                  :: next
       integer                                  :: ierr
       character(len=idLen)                     :: locid
-      integer ires
 
       hashlist%hashcon   = 1009
 
@@ -220,10 +219,7 @@ use m_hash_search, only: t_hashlist
       integer                                  :: hashcode
       integer                                  :: inr
       integer                                  :: next
-      integer                                  :: ierr
       character(len=idLen)                     :: locid
-      integer ires
-
 
       locid = hashlist%id_list(ind)
       call str_upper(locid)

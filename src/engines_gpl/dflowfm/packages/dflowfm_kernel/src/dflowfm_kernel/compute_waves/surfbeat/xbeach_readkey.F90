@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,7 +30,7 @@
 !
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Copyright (C) 2007-2024 UNESCO-IHE, WL|Delft Hydraulics and Delft University !
+! Copyright (C) 2007-2026 UNESCO-IHE, Deltares and Delft University !
 ! Dano Roelvink, Ap van Dongeren, Ad Reniers, Jamie Lescinski,            !
 ! Jaap van Thiel de Vries, Robert McCall                                  !
 !                                                                         !
@@ -148,7 +148,9 @@ contains
             call xbeach_errorhandler()
          else
             value_dbl = defval
-            if (.not. lsilent) call writelog('l', '(a12,a,f0.4,a)', (printkey), ' = ', value_dbl, ' (no record found, default value used)')
+            if (.not. lsilent) then
+               call writelog('l', '(a12,a,f0.4,a)', (printkey), ' = ', value_dbl, ' (no record found, default value used)')
+            end if
          end if
       end if
 
@@ -159,7 +161,7 @@ contains
       use m_xbeach_errorhandling
       use m_xbeach_filefunctions
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       character(slen) :: printkey
       character(slen) :: value
       integer(4) :: value_int
@@ -226,7 +228,9 @@ contains
             call xbeach_errorhandler()
          else
             value_int = defval
-            if (.not. lsilent) call writelog('l', '(a12,a,i0,a)', (printkey), ' = ', value_int, ' (no record found, default value used)')
+            if (.not. lsilent) then
+               call writelog('l', '(a12,a,i0,a)', (printkey), ' = ', value_int, ' (no record found, default value used)')
+            end if
          end if
       end if
    end function readkey_int
@@ -236,7 +240,7 @@ contains
       use m_xbeach_filefunctions
 
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       integer, intent(in) :: vlength, tlength
       integer, dimension(tlength) :: value_vec
       integer :: defval, mnval, mxval
@@ -296,8 +300,9 @@ contains
          else
             value_vec(1:vlength) = defval
             do i = 1, vlength
-               if (.not. lsilent) call writelog('l', '(a,a,i0,a)', (printkey), ' = ', &
-                                                value_vec(i), ' (no record found, default value used)')
+               if (.not. lsilent) then
+                  call writelog('l', '(a,a,i0,a)', (printkey), ' = ', value_vec(i), ' (no record found, default value used)')
+               end if
             end do
          end if
       end if
@@ -308,7 +313,7 @@ contains
       use m_xbeach_filefunctions
       use m_xbeach_errorhandling
       implicit none
-      character*(*) :: fname, key, defval
+      character(len=*) :: fname, key, defval
       character(slen) :: value_str
       character(slen) :: value
       integer(4) :: nv, nov, i, j
@@ -350,7 +355,9 @@ contains
             call xbeach_errorhandler()
          else
             value_str = defval
-            if (.not. lsilent) call writelog('l', '(a12,a,a,a)', (printkey), ' = ', trim(value_str), ' (no record found, default value used)')
+            if (.not. lsilent) then
+               call writelog('l', '(a12,a,a,a)', (printkey), ' = ', trim(value_str), ' (no record found, default value used)')
+            end if
          end if
       else
          value = adjustl(value)
@@ -386,7 +393,7 @@ contains
       use m_xbeach_filefunctions
       use m_xbeach_errorhandling
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       character(slen) :: value_str
       character(slen) :: value
       logical, intent(in), optional :: bcast, required, silent
@@ -420,7 +427,9 @@ contains
             call xbeach_errorhandler()
          else
             value_str = ' '
-            if (.not. lsilent) call writelog('l', ' (a12,a)', printkey, ' = None specified')
+            if (.not. lsilent) then
+               call writelog('l', ' (a12,a)', printkey, ' = None specified')
+            end if
             ! write to basic params data file
             !    write(pardatfileid,*)'c ',key,' ','none'
          end if
@@ -437,7 +446,7 @@ contains
       use m_xbeach_errorhandling
       use precision_basics, only: dp
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       integer, intent(in) :: vlength, tlength
       real(dp), dimension(tlength) :: value_vec
       real(dp) :: defval, mnval, mxval
@@ -500,7 +509,7 @@ contains
       ! Function return logical true if the keyword is specified in file,
       ! or logical false if the keyword is not specified in the file.
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       logical, intent(in), optional :: bcast
       logical :: isSet
       character(slen) :: value
@@ -538,7 +547,7 @@ contains
       ! combinations in params.txt
       use m_xbeach_filefunctions
       integer :: lun, i, ier, nlines, ic, ikey, itab
-      character*1 :: ch
+      character(len=1) :: ch
       character(len=*), intent(in) :: fname, key
       character(len=*), intent(out) :: value
       character(slen), dimension(1024), save :: keyword, values
@@ -564,14 +573,18 @@ contains
          open (newunit=lun, file=fname)
          do while (ier == 0)
             read (lun, '(a)', iostat=ier) ch
-            if (ier == 0) i = i + 1
+            if (ier == 0) then
+               i = i + 1
+            end if
          end do
          close (lun)
          nlines = i
          ! reset keyword values and readindex
          keyword = ''
          values = ''
-         if (allocated(readindex)) deallocate (readindex)
+         if (allocated(readindex)) then
+            deallocate (readindex)
+         end if
          ! Read through the file to fill all the keyword = value combinations
          open (newunit=lun, file=fname)
          ikey = 0

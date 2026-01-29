@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ using namespace std;
 #include <mpi.h>
 #include <netcdf.h>
 #include <ctime>
-# include <stdio.h>
+#include <stdio.h>
 #include <fstream>
 #include <iomanip>
 
@@ -76,7 +76,7 @@ using namespace std;
 #  include <Strsafe.h>
 #  include <windows.h>
 #  include <direct.h>
-#include <errno.h>
+#  include <errno.h>
 #  include <io.h>
 #  include <sys/stat.h>
 
@@ -323,30 +323,62 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
 
 
 
+
+//------------------------------------------------------------------------------
+void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component) {
+    MPI_Group mpiGroupComp;
+    int ierr;
+    if (component == NULL) {
+        throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: undefined component.");
+    }
+    bool multipleProcessesCheck = component->numProcesses > 1;
+    if (use_mpi && multipleProcessesCheck) {
+        if (component->mpiCommVar == NULL) {
+            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: communicator handle undefined for component \"%s\".", component->name);
+        }
+        ierr = MPI_Group_incl(mpiGroupWorld, component->numProcesses, component->processes, &mpiGroupComp);
+        if (ierr != MPI_SUCCESS) {
+            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
+        }
+        // Needs to be called by *all* ranks:
+        ierr = MPI_Comm_create(MPI_COMM_WORLD, mpiGroupComp, &component->mpiComm);
+        if (ierr != MPI_SUCCESS) {
+            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subcommunicator of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
+        }
+        if (component->onThisRank) {
+            MPI_Fint* fComm;
+            component->dllGetVar(component->mpiCommVar, (void**)(&fComm));
+            if (fComm == NULL) {
+                throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot obtain reference to communicator handle \"%s\" from component \"%s\".", component->mpiCommVar, component->name);
+            }
+            *fComm = MPI_Comm_c2f(component->mpiComm);
+        }
+    } else {
+       component->mpiComm = NULL;
+    }
+}
+
+
 //------------------------------------------------------------------------------
 void Dimr::runParallelInit(dimr_control_block* cb) {
     int ierr;
-    MPI_Group mpiGroupWorld;
-    MPI_Group mpiGroupComp;
     int nSettingsSet;
 
     // RTCTools/Wanda/Flow1D2D: impossible to autodetect which partition will deliver this source var
-    //              Assumption: there is only one RTC/Wanda/Flow1D2D/ZSF-instance
-    std::set<int> single_instance_component_set = { COMP_TYPE_RTC, COMP_TYPE_WANDA, COMP_TYPE_FLOW1D2D, COMP_TYPE_ZSF};
-
-    if (use_mpi) {
-        ierr = MPI_Comm_group(MPI_COMM_WORLD, &mpiGroupWorld);
-        if (ierr != MPI_SUCCESS) {
-            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot obtain MPI world group. Code: %d.", ierr);
-        }
-    }
+    //              Assumption: there is only one RTC/Wanda/Flow1D2D/DSLE-instance
+    std::set<int> single_instance_component_set = { COMP_TYPE_RTC, COMP_TYPE_WANDA, COMP_TYPE_FLOW1D2D, COMP_TYPE_DSLE};
 
     // set masterSubBlockId
     for (int i = 0; i < cb->numSubBlocks; i++) {
         if (cb->subBlocks[i].type == CT_START) {
             if (cb->masterSubBlockId == -1) {
                 cb->masterSubBlockId = i;
-                log->Write(DEBUG, my_rank, "Master: %s", cb->subBlocks[cb->masterSubBlockId].unit.component->name);
+                if (cb->subBlocks[cb->masterSubBlockId].unit.component) {
+                  log->Write(DEBUG, my_rank, "Master: %s", cb->subBlocks[cb->masterSubBlockId].unit.component->name);
+                }
+                else {
+                  throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: the specified component in the start element was not found.");
+                }
             }
             else {
                 throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: a parallel block cannot have more than one start element.");
@@ -363,26 +395,9 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
     // Wave can only be initialized after the flow component
     dimr_component* masterComponent = cb->subBlocks[cb->masterSubBlockId].unit.component;
 
-    // Create an MPI subgroup and subcommunicator and pass it on to the masterComponent.
-    if (use_mpi && masterComponent->mpiCommVar != NULL) {
-        ierr = MPI_Group_incl(mpiGroupWorld, masterComponent->numProcesses, masterComponent->processes, &mpiGroupComp);
-        if (ierr != MPI_SUCCESS) {
-            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", masterComponent->numProcesses, masterComponent->name, ierr);
-        }
-        // Needs to be called by *all* ranks:
-        ierr = MPI_Comm_create(MPI_COMM_WORLD, mpiGroupComp, &masterComponent->mpiComm);
-        if (ierr != MPI_SUCCESS) {
-            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot create a subcommunicator of %d processes for component \"%s\". Code: %d.", masterComponent->numProcesses, masterComponent->name, ierr);
-        }
-        if (masterComponent->onThisRank) {
-            MPI_Fint* fComm;
-            masterComponent->dllGetVar(masterComponent->mpiCommVar, (void**)(&fComm));
-            if (fComm == NULL) {
-                throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot obtain reference to communicator handle \"%s\" from component \"%s\".", masterComponent->mpiCommVar, masterComponent->name);
-            }
-            *fComm = MPI_Comm_c2f(masterComponent->mpiComm);
-        }
-    }
+    // Create an MPI subgroup and subcommunicator and pass it on to the masterComponent
+    createDistributeMPISubGroupCommunicator(masterComponent);
+
     if (masterComponent->onThisRank) {
         chdir(masterComponent->workingDir);
         log->Write(INFO, my_rank, "%s.Initialize(%s)", masterComponent->name, masterComponent->inputFile);
@@ -442,26 +457,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                 if (cb->subBlocks[i].subBlocks[j].type == CT_START) {
                     dimr_component* thisComponent = cb->subBlocks[i].subBlocks[j].unit.component;
 
-                    // Create an MPI subgroup and subcommunicator and pass it on to thisComponent (similar to block for masterComponent above).
-                    if (use_mpi && thisComponent->mpiCommVar != NULL && thisComponent->numProcesses > 1) { // TODO: consider removing the numproc>1 check.
-                        ierr = MPI_Group_incl(mpiGroupWorld, thisComponent->numProcesses, thisComponent->processes, &mpiGroupComp);
-                        if (ierr != MPI_SUCCESS) {
-                            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", thisComponent->numProcesses, thisComponent->name, ierr);
-                        }
-                        // Needs to be called by *all* ranks:
-                        ierr = MPI_Comm_create(MPI_COMM_WORLD, mpiGroupComp, &thisComponent->mpiComm);
-                        if (ierr != MPI_SUCCESS) {
-                            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot create a subcommunicator of %d processes for component \"%s\". Code: %d.", thisComponent->numProcesses, thisComponent->name, ierr);
-                        }
-                        if (thisComponent->onThisRank) {
-                            MPI_Fint* fComm;
-                            thisComponent->dllGetVar(thisComponent->mpiCommVar, (void**)(&fComm));
-                            if (fComm == NULL) {
-                                throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot obtain reference to communicator handle \"%s\" from component \"%s\".", thisComponent->mpiCommVar, thisComponent->name);
-                            }
-                            *fComm = MPI_Comm_c2f(thisComponent->mpiComm);
-                        }
-                    }
+                    // Create an MPI subgroup and subcommunicator and pass it on to thisComponent (similar to block for masterComponent above)
+                    createDistributeMPISubGroupCommunicator(thisComponent);
 
                     if (thisComponent->onThisRank) { // TODO: AvD/AM: if FM is not start, but startblock, we need all the MPI stuff here as well: make a generic initializeComponent helper routine.
 
@@ -475,8 +472,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
 
                         chdir(thisComponent->workingDir);
                         log->Write(INFO, my_rank, "%s.Initialize(%s)", thisComponent->name, thisComponent->inputFile);
-                                                // SetKeyVals for settings (before initialize)
-                                                int nSettingsSet = thisComponent->dllSetKeyVals(thisComponent->settings);
+                        // SetKeyVals for settings (before initialize)
+                        int nSettingsSet = thisComponent->dllSetKeyVals(thisComponent->settings);
                         timerStart(thisComponent);
                         thisComponent->result = (thisComponent->dllInitialize) (thisComponent->inputFile);
                         if (thisComponent->result != 0)
@@ -491,8 +488,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                             throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
                         }
                         timerEnd(thisComponent);
-                                                // SetKeyVals for parameters (after initialize)
-                                                int nParamsSet = thisComponent->dllSetKeyVals(thisComponent->parameters);
+                        // SetKeyVals for parameters (after initialize)
+                        int nParamsSet = thisComponent->dllSetKeyVals(thisComponent->parameters);
                     }
                 }
             }
@@ -1021,8 +1018,8 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                                          thisCoupler->targetComponent->numProcesses,
                                          thisCoupler->items[k].targetProcess,
                                          transferValuePtr);
-                                } else {
-                                    receive_ptr (thisCoupler->items[k].targetName,
+                                } else if (thisCoupler->targetComponent->onThisRank && thisCoupler->sourceComponent->onThisRank) {
+                                    receive_ptr(thisCoupler->items[k].targetName,
                                          thisCoupler->items[k].sourceName,
                                          thisCoupler->targetComponent->type,
                                          thisCoupler->targetComponent->dllSetVar,
@@ -1033,6 +1030,8 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                                          thisCoupler->targetComponent->numProcesses,
                                          thisCoupler->items[k].targetProcess,
                                          thisCoupler->items[k].sourceVarPtr);
+                                } else {
+                                    log->Write(WARNING, my_rank, "Skipping pointer based exchange on rank %d: target and source component not on same rank!\n", my_rank);
                                 }
 
                                 if (thisCoupler->logger != NULL && my_rank == 0)
@@ -1116,13 +1115,13 @@ void Dimr::receive(const char* name,
                     // || compType == COMP_TYPE_RR // SOBEK-51004: RR must use explicit set_var as long as get_var is not properly implemented for some variables.
                     || compType == COMP_TYPE_FLOW1D
                     || compType == COMP_TYPE_FLOW1D2D
-                    || compType == COMP_TYPE_ZSF
+                    || compType == COMP_TYPE_DSLE
                     || compType == COMP_TYPE_WANDA) {
                     if (dllSetVar == NULL) {
                         throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: set_var function not defined while processing %s", name);
                     }
                     (dllSetVar)(name, (const void*)transferValuePtr);
-                    if (compType == COMP_TYPE_RTC || COMP_TYPE_ZSF) {
+                    if (compType == COMP_TYPE_RTC || compType == COMP_TYPE_DSLE) {
                         // target = rtc
                         // SetVar(name, value) sets variable named "name" to "value" at the current time (t = n)
                         // But, in case of IMPLICIT method, this should be the next time (t = n + 1)
@@ -1240,7 +1239,7 @@ void Dimr::getAddress(
     log->Write(ALL, my_rank, "Dimr::getAddress (%s)", name);
 
     // These components only return a new pointer to a copy of the double value, so call it each time.
-    std::set<int> second_component_set = { COMP_TYPE_DEFAULT_BMI, COMP_TYPE_RTC, COMP_TYPE_ZSF, COMP_TYPE_FLOW1D, COMP_TYPE_FLOW1D2D, COMP_TYPE_FM, COMP_TYPE_DELWAQ };
+    std::set<int> second_component_set = { COMP_TYPE_DEFAULT_BMI, COMP_TYPE_RTC, COMP_TYPE_DSLE, COMP_TYPE_FLOW1D, COMP_TYPE_FLOW1D2D, COMP_TYPE_FM, COMP_TYPE_DELWAQ };
 
     // The order is important: first catch the Wanda case:
     // Otherwise the "else if" part might be executed When "*sourceVarPtr==NULL" and "compType==COMP_TYPE_WANDA"
@@ -1535,8 +1534,8 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
     else if (strstr(libNameLowercase, "cosumo_bmi") != NULL) {
         newComp->type = COMP_TYPE_COSUMO_BMI;
     }
-    else if (strstr(libNameLowercase, "zsf") != NULL) {
-        newComp->type = COMP_TYPE_ZSF;
+    else if (strstr(libNameLowercase, "dsle") != NULL) {
+        newComp->type = COMP_TYPE_DSLE;
     }
     else if (strstr(libNameLowercase, "dimr_testcomponent") != NULL) {
         newComp->type = COMP_TYPE_TEST;
@@ -1588,6 +1587,9 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
     if (commElement != NULL) {
         // Store communicator var name in component.
         newComp->mpiCommVar = commElement->charData;
+    }
+    else {
+        newComp->mpiCommVar = nullptr;
     }
 
     // Element inputFile (optional?)
@@ -1788,8 +1790,6 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
     }
 }
 
-
-
 //------------------------------------------------------------------------------
 // Search for a named component in the list of components
 dimr_component* Dimr::getComponent(const char* compName) {
@@ -1798,9 +1798,8 @@ dimr_component* Dimr::getComponent(const char* compName) {
             return &(componentsList.components[i]);
         }
     }
+    throw Exception(true, Exception::ERR_INVALID_INPUT, "Found no component with name \"%s\".", compName);
 }
-
-
 
 //------------------------------------------------------------------------------
 // Search for a named coupler in the list of couplers
@@ -1810,8 +1809,8 @@ dimr_coupler* Dimr::getCoupler(const char* coupName) {
             return &(couplersList.couplers[i]);
         }
     }
+    return nullptr;
 }
-
 
 //------------------------------------------------------------------------------
 // Search for a named coupler in the list of couplers
@@ -1942,7 +1941,7 @@ void Dimr::connectLibs(void) {
             componentsList.components[i].type == COMP_TYPE_FLOW1D2D ||
             componentsList.components[i].type == COMP_TYPE_DELWAQ ||
             componentsList.components[i].type == COMP_TYPE_COSUMO_BMI ||
-            componentsList.components[i].type == COMP_TYPE_ZSF  ||
+            componentsList.components[i].type == COMP_TYPE_DSLE  ||
             componentsList.components[i].type == COMP_TYPE_TEST ||
             componentsList.components[i].type == COMP_TYPE_WANDA) {
             // RTC-Tools: setVar is used
@@ -1957,6 +1956,7 @@ void Dimr::connectLibs(void) {
 
         if (componentsList.components[i].type == COMP_TYPE_DEFAULT_BMI ||
             componentsList.components[i].type == COMP_TYPE_FM ||
+            componentsList.components[i].type == COMP_TYPE_DSLE ||
             componentsList.components[i].type == COMP_TYPE_COSUMO_BMI) {
             componentsList.components[i].dllGetVarShape = (BMI_GETVARSHAPE)GETPROCADDRESS(dllhandle, BmiGetVarShapeEntryPoint);
             if (componentsList.components[i].dllGetVarShape == NULL) {

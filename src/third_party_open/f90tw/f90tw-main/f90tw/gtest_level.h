@@ -1,0 +1,12 @@
+#ifdef F90TESTWRAPPERS
+
+/* ASSERT_(WHAT) */
+#define LEVEL ASSERT
+#include HEADERLEVELWHAT
+#undef LEVEL
+/* EXPECT_(WHAT) */
+#define LEVEL EXPECT
+#include HEADERLEVELWHAT
+#undef LEVEL
+
+#endif

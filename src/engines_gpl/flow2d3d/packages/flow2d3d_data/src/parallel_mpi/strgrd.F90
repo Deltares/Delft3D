@@ -2,7 +2,7 @@ subroutine strgrd ( icom, runid, mmax, nmax, mmaxgl, nmaxgl, &
                   & nfg , nlg  , mfg , mlg , gdp   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -75,7 +75,6 @@ subroutine strgrd ( icom, runid, mmax, nmax, mmaxgl, nmaxgl, &
     integer                              :: lungrd ! Unit number of local scratch file for array ICOM
     integer                              :: m      ! loop variable
     integer                              :: n      ! loop variable
-    integer                              :: newlun
     integer, dimension(:,:), allocatable :: icomo  ! array ICOM for own subdomain
     character(256)                       :: filnam ! String containing complete file name "TMP_RUNID.extension"
     character(256)                       :: fixid  ! fixed size version of runid, needed for character concatenation
@@ -96,8 +95,8 @@ subroutine strgrd ( icom, runid, mmax, nmax, mmaxgl, nmaxgl, &
     ! define length of runid and put in fixed size array
     ! size is tested in iniid
     !
-    call remove_leading_spaces(runid     ,lrid      )
-    fixid(1:lrid) = runid(1:lrid)
+    fixid = runid
+    call remove_leading_spaces(fixid     ,lrid      )
     !
     ! open scratch file
     !

@@ -1,7 +1,7 @@
 module D3D_Sobek
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -33,7 +33,7 @@ module D3D_Sobek
 !!!
 !!! d3d_sobek.F90: D3S - module (*D*elft-*3*D *S*obek)
 !!!
-!!! (c) Deltares, feb. 2005
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl, Herman.Kernkamp@deltares.nl
 !!!
@@ -179,7 +179,6 @@ function D3S_Init_Delft3D( componentID, runid  , &
 !
     character(Len=D3S_ID_LEN), dimension(:), pointer :: WaterlevelLocIDs  ! id's of water level
     logical                                          :: fake_comm         ! fake communication ?
-    double precision                                 :: deltaT_ratio      ! for checking Delta's (2:1)
 !
 ! body
 !
@@ -311,7 +310,6 @@ function D3S_Init_Sobek(  componentID   , schemID       , &
     character(Len=D3S_ID_LEN), &
         dimension(:), pointer :: volumeLocIDs     ! element ID's of volume locations
     logical                   :: fake_comm        ! fake communication
-    double precision          :: deltaT_ratio     ! for checking Delta's (2:1)
 !
 ! body
 !

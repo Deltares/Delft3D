@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,12 +29,16 @@
 
 !
 !
+module m_reapol
+   use m_reapol_nampli, only: reapol_nampli
 
-      subroutine reapol(mpol, jadoorladen)
-         implicit none
-         integer :: mpol
-         integer, intent(in) :: jadoorladen !< Append to existing polygons (intended to read multiple crs files)
-         integer :: ipli
-         ipli = 0
-         call reapol_nampli(mpol, jadoorladen, 0, ipli)
-      end subroutine reapol
+   implicit none
+contains
+   subroutine reapol(mpol, jadoorladen)
+      integer :: mpol
+      integer, intent(in) :: jadoorladen !< Append to existing polygons (intended to read multiple crs files)
+      integer :: ipli
+      ipli = 0
+      call reapol_nampli(mpol, jadoorladen, 0, ipli)
+   end subroutine reapol
+end module m_reapol

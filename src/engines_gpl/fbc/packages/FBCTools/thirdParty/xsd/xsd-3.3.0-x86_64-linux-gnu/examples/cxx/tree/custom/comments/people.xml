@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/custom/comments/people.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<ppl:catalog xmlns:ppl="http://www.codesynthesis.com/people"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.codesynthesis.com/people people.xsd">
+
+  <person>
+    <!--Record for Joe Dirt-->
+    <name>Joe Dirt</name>
+    <age>28</age>
+  </person>
+
+</ppl:catalog>

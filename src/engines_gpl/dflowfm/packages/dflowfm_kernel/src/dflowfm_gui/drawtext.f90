@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,16 +29,19 @@
 
 !
 !
+module m_draw_text
+   implicit none
+contains
+   subroutine DRAWTEXT(X, Y, TEX)
+      use unstruc_opengl, only: InOpenGLRendering, RenderText
 
-    subroutine DRAWTEXT(X, Y, TEX)
-       use unstruc_opengl
-       implicit none
-       real :: x, y
-       character TEX * (*)
+      real :: x, y
+      character TEX * (*)
 
-       if (InOpenGLRendering) then
-          call RenderText(X, Y, TEX)
-       else
-          call IGRCHAROUT(X, Y, TEX)
-       end if
-    end subroutine
+      if (InOpenGLRendering) then
+         call RenderText(X, Y, TEX)
+      else
+         call IGRCHAROUT(X, Y, TEX)
+      end if
+   end subroutine DRAWTEXT
+end module m_draw_text

@@ -1,0 +1,15 @@
+<!-- Test case for open processes library -->
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e03_f15_c01_open_processes" ref="dwaq_opl">
+        <path version="2025-06-17T19:49:50.145000">e03_waq/f15_openpl/c01_open_processes</path>
+        <checks>
+            <file name="c01_decayt.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>
+

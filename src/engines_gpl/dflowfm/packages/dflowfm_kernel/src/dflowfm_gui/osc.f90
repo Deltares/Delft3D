@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,47 +29,55 @@
 
 !
 !
+module m_osc
+   use m_histor, only: histor
 
-      subroutine OSC(KEY)
-         use m_devices
-         use unstruc_messages
-         implicit none
-         integer :: infoinput
-         integer :: ixp
-         integer :: iyp
-         integer :: key
-         integer :: len
-         integer :: nlevel
-         character STRING * 58, WRDKEY * 40
-         IXP = 2
-         IYP = 10
-         if (NOPSYS == 1) then
-            call ISCREENMODE('T', 80, 25, 16)
-         else
-            return
-         end if
-10       continue
+   implicit none
+contains
+   subroutine OSC(KEY)
+      use m_devices, only: nopsys, npx, npy, ncolr
+      use m_help, only: help
+      use messagehandling, only: msgbuf, msg_flush
+
+      integer :: infoinput
+      integer :: ixp
+      integer :: iyp
+      integer :: key
+      integer :: len
+      integer :: nlevel
+      character STRING * 58, WRDKEY * 40
+      IXP = 2
+      IYP = 10
+      if (NOPSYS == 1) then
+         call ISCREENMODE('T', 80, 25, 16)
+      else
+         return
+      end if
+10    continue
 !     CALL BOTLIN(0,1,KEY)
 !     CALL ITEXTCOLOURN(MNUFOR,MNUBCK)
-         call ITEXTCOLOUR('WHITE', 'BLUE')
-         call INPOPUP('ON')
-         call InStringXY(IXP, IYP, 'enter OS-command ; ', 1, STRING, LEN)
-         call INPOPUP('OFF')
-         KEY = InfoInput(55)
-         if (KEY == 24) then
-            WRDKEY = 'OS-command'
-            NLEVEL = 2
-            call HELP(WRDKEY, NLEVEL)
-         else if (KEY == 25) then
-            call HISTOR()
-         else if ((KEY == 21 .or. KEY == 22) .and. LEN >= 1) then
-            write (msgbuf, '(A,A)') 'OPERATING SYSTEM COMMAND: ', STRING(:LEN)
-            call msg_flush()
-            call IOsCommand(STRING(:LEN))
-         else if (KEY == 23) then
-            if (NOPSYS == 1) call ISCREENMODE('GR', NPX, NPY, NCOLR)
-            KEY = 3
-            return
+      call ITEXTCOLOUR('WHITE', 'BLUE')
+      call INPOPUP('ON')
+      call InStringXY(IXP, IYP, 'enter OS-command ; ', 1, STRING, LEN)
+      call INPOPUP('OFF')
+      KEY = InfoInput(55)
+      if (KEY == 24) then
+         WRDKEY = 'OS-command'
+         NLEVEL = 2
+         call HELP(WRDKEY, NLEVEL)
+      else if (KEY == 25) then
+         call HISTOR()
+      else if ((KEY == 21 .or. KEY == 22) .and. LEN >= 1) then
+         write (msgbuf, '(A,A)') 'OPERATING SYSTEM COMMAND: ', STRING(:LEN)
+         call msg_flush()
+         call IOsCommand(STRING(:LEN))
+      else if (KEY == 23) then
+         if (NOPSYS == 1) then
+            call ISCREENMODE('GR', NPX, NPY, NCOLR)
          end if
-         goto 10
-      end
+         KEY = 3
+         return
+      end if
+      goto 10
+   end
+end module m_osc

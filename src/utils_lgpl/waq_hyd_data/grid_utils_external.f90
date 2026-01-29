@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -46,8 +46,8 @@ module m_grid_utils_external
     integer, parameter :: AggregationFile = 4
     integer, parameter :: NolayGrid = 5
     integer, parameter :: NrGridTypes = 5
-    character*20        GridTypes(NrGridTypes)
-    DATA GridTypes / 'BASEGRID', 'PROCESSGRID', 'BOTTOMGRID', 'AGGREGATIONFILE', 'num_layers' /
+    character(len=20)  GridTypes(NrGridTypes)
+    DATA GridTypes / 'BASEGRID', 'PROCESSGRID', 'BOTTOMGRID', 'AGGREGATIONFILE', 'NOLAY' /
 
     ! this is the grid pointer itself
     type t_grid

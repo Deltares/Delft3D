@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -343,7 +343,6 @@ function convert_cptr_to_meshgeom(c_meshgeom, c_meshgeomdim, meshgeom) result(ie
    type(t_ug_meshgeom), intent(inout)     :: meshgeom
    integer                                :: ierr
    integer                                :: i
-   character(len=ug_nameLen), pointer     :: meshname
 
    ! get the dimensions
 

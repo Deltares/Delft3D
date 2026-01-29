@@ -1,7 +1,7 @@
 subroutine fbcorr(lundia, nto, nambnd, typbnd, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -80,12 +80,12 @@ subroutine fbcorr(lundia, nto, nambnd, typbnd, gdp)
     ! Corrective boundary conditions
     !
     fbcrfilnam = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filbc0', fbcrfilnam)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filbc0', fbcrfilnam)
     if (fbcrfilnam == ' ') then
        !
        ! No file specified, try old keyword Corbnd
        !
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Corbnd', fbcrfilnam)
+       call prop_get(gdp%mdfile_ptr, '*', 'Corbnd', fbcrfilnam)
     endif
     if (fbcrfilnam == ' ') then
        !

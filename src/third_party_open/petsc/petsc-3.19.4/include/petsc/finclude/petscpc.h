@@ -16,7 +16,7 @@
 #define PCGASMType PetscEnum
 #define PCCompositeType PetscEnum
 #define PCRichardsonConvergedReason PetscEnum
-#define PCType character*(80)
+#define PCType character(len=80)
 #define PCFieldSplitSchurPreType PetscEnum
 #define PCPARMSGlobalType PetscEnum
 #define PCPARMSLocalType PetscEnum

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,21 +29,27 @@
 
 !
 !
+module m_toemaar
+   implicit none
+contains
+   subroutine TOEMAAR()
+      use m_okay, only: okay
+      use m_timlin, only: timlin
+      use m_fkeys, only: fkeys
 
-      subroutine TOEMAAR()
-         implicit none
-         integer :: key
-         call OKAY(0)
-         call TIMLIN()
-10       continue
-         call INFLUSH()
-         call INKEYEVENT(KEY)
-         if (KEY == 50 .or. (KEY >= 254 .and. KEY <= 259)) then
-            goto 10
-         else if (KEY >= 24 .and. KEY <= 26) then
-            call FKEYS(KEY)
-            goto 10
-         end if
-         call TIMLIN()
-         return
-      end
+      integer :: key
+      call OKAY(0)
+      call TIMLIN()
+10    continue
+      call INFLUSH()
+      call INKEYEVENT(KEY)
+      if (KEY == 50 .or. (KEY >= 254 .and. KEY <= 259)) then
+         goto 10
+      else if (KEY >= 24 .and. KEY <= 26) then
+         call FKEYS(KEY)
+         goto 10
+      end if
+      call TIMLIN()
+      return
+   end
+end module m_toemaar

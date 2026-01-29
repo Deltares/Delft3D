@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -58,7 +58,7 @@ contains
     subroutine write_error_message(message)
 
         integer :: file_unit
-        character*(*) message
+        character(len=*) message
 
         call get_log_unit_number(file_unit)
         if (file_unit /= 0) then

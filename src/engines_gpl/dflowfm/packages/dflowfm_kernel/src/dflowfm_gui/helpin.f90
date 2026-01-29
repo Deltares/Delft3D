@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,31 +29,37 @@
 
 !
 !
+!>    reads info from a help file and puts it into HELPTEXT
+module m_helpin
 
-      subroutine HELPIN()
-         use unstruc_files
-         implicit none
-         integer :: k
-         integer :: maxhlp
-         integer :: numtxt
-!     reads NUMTXT lines of HELPTEXT
-         parameter(MAXHLP=2000)
-         character HLPTXT(MAXHLP) * 80
-         common / HELPC / HLPTXT, NUMTXT
+   implicit none
 
-         NUMTXT = 0
-         if (MHLP == 0) return
+contains
 
-         K = 0
+   subroutine HELPIN()
+      use unstruc_files
+      use m_helpc
+      use m_filez, only: doclose
+      implicit none
+      integer :: k
 
-10       continue
-         K = K + 1
-         read (MHLP, '(A)', end=9999) HLPTXT(K)
-         goto 10
-
-9999     continue
-         call doclose(mhlp)
-         NUMTXT = K - 1
-
+      NUMTXT = 0
+      if (MHLP == 0) then
          return
-      end
+      end if
+
+      K = 0
+
+10    continue
+      K = K + 1
+      read (MHLP, '(A)', end=9999) HLPTXT(K)
+      goto 10
+
+9999  continue
+      call doclose(mhlp)
+      NUMTXT = K - 1
+
+      return
+   end
+
+end module m_helpin

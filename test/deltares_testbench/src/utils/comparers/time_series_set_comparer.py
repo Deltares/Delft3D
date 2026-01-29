@@ -1,6 +1,6 @@
 """Base class for timeseries set comparer.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import copy
@@ -16,6 +16,7 @@ import src.utils.plot_differences as plot
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.i_logger import ILogger
 
@@ -121,10 +122,10 @@ class TimeseriesSetComparer(IComparer, ABC):
                                 DiffSeries = left_timeseries["values"] - right_timeseries["values"]
                                 MaxDiffTime = np.argmax(abs(DiffSeries))
                                 MaxDiff = DiffSeries[MaxDiffTime]
-                                if abs(MaxDiff) > abs(result.maxAbsDiff):
-                                    result.maxAbsDiff = MaxDiff
-                                    result.maxAbsDiffCoordinates = (locnr, MaxDiffTime)
-                                    result.maxAbsDiffValues = (
+                                if abs(MaxDiff) > abs(result.max_abs_diff):
+                                    result.max_abs_diff = MaxDiff
+                                    result.max_abs_diff_coordinates = (locnr, MaxDiffTime)
+                                    result.max_abs_diff_values = (
                                         left_timeseries["values"][MaxDiffTime],
                                         right_timeseries["values"][MaxDiffTime],
                                     )
@@ -148,24 +149,24 @@ class TimeseriesSetComparer(IComparer, ABC):
                             local_error = True
                             result.error = True
 
-                        result.maxAbsDiff = abs(result.maxAbsDiff)  # RL666: Lets make the error absolute
+                        result.max_abs_diff = abs(result.max_abs_diff)  # RL666: Lets make the error absolute
                         # Make the absolute difference in maxDiff relative, by dividing by (max_ref_value-min_ref_value).
-                        if result.maxAbsDiff < 2 * sys.float_info.epsilon:
+                        if result.max_abs_diff < 2 * sys.float_info.epsilon:
                             # No difference found, so relative difference is set to 0.
-                            result.maxRelDiff = 0.0
+                            result.max_rel_diff = 0.0
                         elif max_ref_value - min_ref_value < 2 * sys.float_info.epsilon:
                             # Very small difference found, so the denominator will be very small, so set relative difference to maximum.
-                            result.maxRelDiff = 1.0
+                            result.max_rel_diff = 1.0
                         else:
-                            result.maxRelDiff = min(1.0, result.maxAbsDiff / (max_ref_value - min_ref_value))
+                            result.max_rel_diff = min(1.0, result.max_abs_diff / (max_ref_value - min_ref_value))
 
                         # Now we know the absolute and relative error, we can see whether the tolerance is exceeded (or test is in error).
-                        result.isToleranceExceeded(
+                        result.is_tolerance_exceeded(
                             paramnew.tolerance_absolute,
                             paramnew.tolerance_relative,
                         )
 
-                        if result.result == "NOK":
+                        if result.result == EndResult.NOK:
                             datetime_series = left_timeseries_worst["dates"]
                             plot.PlotDifferencesTimeSeries(
                                 right_path,

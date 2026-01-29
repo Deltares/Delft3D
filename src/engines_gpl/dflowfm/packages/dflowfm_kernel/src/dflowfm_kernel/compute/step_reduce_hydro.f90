@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,242 +30,292 @@
 !
 !
 
- subroutine step_reduce_hydro(key) ! do a flow timestep dts guus, reduce once, then elimin conjugate grad substi
-    use m_flow ! when entering this subroutine, s1=s0, u1=u0, etc
-    use m_flowgeom
-    use Timers
-    use m_flowtimes
-    use m_sferic
-    use m_wind
-    use m_reduce
-    use m_ship
-    use m_partitioninfo
-    use m_timer
-    use m_xbeach_data
-    use MessageHandling
-    use m_sobekdfm
-    use unstruc_display
-    use m_waves
-    use m_1d2d_fixedweirs, only: compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
+module m_step_reduce_hydro
+   use m_solve_guus, only: pack_matrix, solve_matrix
 
-    implicit none
+   implicit none
 
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
+   private
 
-    integer :: key, jposhchk_sav, itype
-    integer :: k, ierror, noddifmaxlevm
-    logical :: firstnniteration, last_iteration
-    double precision :: dif, difmaxlevm
+   public :: step_reduce_hydro
 
-!-----------------------------------------------------------------------------------------------
-    numnodneg = 0
-    if (wrwaqon .and. allocated(qsrcwaq)) then
-       qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
-    end if
+contains
 
-111 continue
+   subroutine step_reduce_hydro(key) ! do a flow timestep dts guus, reduce once, then elimin conjugate grad substi
+      use m_setkfs, only: setkfs
+      use m_s1nod, only: s1nod
+      use m_s1ini, only: s1ini
+      use m_poshcheck
+      use m_furu
+      use m_flow ! when entering this subroutine, s1=s0, u1=u0, etc
+      use precision, only: dp
+      use m_flowgeom
+      use Timers
+      use m_flowtimes
+      use m_sferic
+      use m_wind
+      use m_reduce
+      use m_ship
+      use m_partitioninfo
+      use m_timer
+      use m_xbeach_data
+      use MessageHandling
+      use m_sobekdfm
+      use unstruc_display
+      use m_waves
+      use m_1d2d_fixedweirs, only: compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
+      use m_drawthis
+      use m_okay
+      use m_volsur
 
-    time1 = time0 + dts ! try to reach time1
-    dti = 1d0 / dts
-    nums1it = 0
-    nums1mit = 0
-    dnums1it = 0
-    firstnniteration = .true. !< Flag for first Nested Newton iteration. Only in case of negative depths
-    !< firstnniteration is set to .false.
+      implicit none
 
-    !call flow_set external forcingsonboundaries(time1) ! set boundary conditions for time that you attempt to reach, every step
-    ! should formally be at this position if setbacks occur
-    ! this may howver cause a problem for some boundary routines that do not
-    ! allow for subsequent calls at decreasing time
-    ! In that case put this in initimestep and accept non smooth bndc's
+      integer :: key, jposhchk_sav, itype
+      integer :: k, ierror, noddifmaxlevm
+      logical :: firstnniteration, last_iteration
+      real(kind=dp) :: dif, difmaxlevm
 
 !-----------------------------------------------------------------------------------------------
-    hs = max(hs, 0d0)
-    call furu() ! staat in s0
+      numnodneg = 0
+      last_iteration = .false.
 
-    if (itstep /= 4) then ! implicit time-step
+      if (wrwaqon) then
+         ! store current cumulative qsrc and qlat for waq at the beginning of this time step
+         if (allocated(qsrcwaq)) then
+            qsrcwaq0 = qsrcwaq
+         end if
+         if (allocated(qlatwaq)) then
+            qlatwaq0 = qlatwaq
+         end if
+      end if
 
-222    if (nonlin == 2 .or. (nonlin == 3 .and. .not. firstnniteration)) then ! only for pressurised
-          ! Nested newton iteration, start with s1m at bed level.
-          s1m = bl !  s1mini
-          call volsur()
-          difmaxlevm = 0d0; noddifmaxlevm = 0
-       end if
+      setback: do
 
-333    call s1ini()
-       call pack_matrix()
+         time1 = time0 + dts ! try to reach time1
+         dti = 1.0_dp / dts
+         nums1it = 0
+         nums1mit = 0
+         dnums1it = 0
+         firstnniteration = .true. !< Flag for first Nested Newton iteration. Only in case of negative depths
+         !< firstnniteration is set to .false.
 
-       !-----------------------------------------------------------------------------------------------
+         !call flow_set external forcingsonboundaries(time1) ! set boundary conditions for time that you attempt to reach, every step
+         ! should formally be at this position if setbacks occur
+         ! this may howver cause a problem for some boundary routines that do not
+         ! allow for subsequent calls at decreasing time
+         ! In that case put this in initimestep and accept non smooth bndc's
 
-444    call s1nod() ! entry point for non-linear continuity
-       if (ifixedWeirScheme1d2d == 1) then
-          if (last_iteration) then
-             ! Impose previously computed 1d2d discharge on 1d2d fixed weirs to keep mass conservation
-             call set_discharge_on_1d2d_fixedweirs()
-          else
-             call compute_1d2d_fixedweirs()
-          end if
-       end if
+!-----------------------------------------------------------------------------------------------
+         hs = max(hs, 0.0_dp)
+         call furu() ! staat in s0
 
-       call solve_matrix(s1, ndx, itsol) ! solve s1
+         if (itstep /= 4) then ! implicit time-step
 
-       ! if (NDRAW(18) > 1) then
-       !    nsiz = ndraw(18)-1
-       !    call tekrai(nsiz,ja)
-       !    call toemaar()
-       ! endif
+            wetdry: do ! Entry point for drying- and flooding matrix update
+               if (nonlin == 2 .or. (nonlin == 3 .and. .not. firstnniteration)) then ! only for pressurised
+                  ! Nested newton iteration, start with s1m at bed level.
+                  s1m = bl !  s1mini
+                  call volsur()
+                  difmaxlevm = 0.0_dp
+                  noddifmaxlevm = 0
+               end if
+
+               call s1ini()
+               call pack_matrix()
+
+               !-----------------------------------------------------------------------------------------------
+
+               nonlincont: do ! entry point for non-linear continuity interation
+                  call s1nod()
+                  if (ifixedWeirScheme1d2d == 1) then
+                     if (last_iteration) then
+                        ! Impose previously computed 1d2d discharge on 1d2d fixed weirs to keep mass conservation
+                        call set_discharge_on_1d2d_fixedweirs()
+                     else
+                        call compute_1d2d_fixedweirs()
+                     end if
+                  end if
+
+                  call solve_matrix(s1, ndx, itsol) ! solve s1
+
+                  ! if (NDRAW(18) > 1) then
+                  !    nsiz = ndraw(18)-1
+                  !    call tekrai(nsiz,ja)
+                  !    call toemaar()
+                  ! endif
 
 !    synchronise all water-levels
-       if (jampi == 1) then
-          if (jatimer == 1) call starttimer(IUPDSALL)
-          itype = merge(ITYPE_SALL, ITYPE_Snonoverlap, jaoverlap == 0)
-          call update_ghosts(itype, 1, Ndx, s1, ierror)
-          if (jatimer == 1) call stoptimer(IUPDSALL)
-       end if
+                  if (jampi == 1) then
+                     if (jatimer == 1) then
+                        call starttimer(IUPDSALL)
+                     end if
+                     itype = merge(ITYPE_SALL, ITYPE_Snonoverlap, jaoverlap == 0)
+                     call update_ghosts(itype, 1, Ndx, s1, ierror)
+                     if (jatimer == 1) then
+                        call stoptimer(IUPDSALL)
+                     end if
+                  end if
 
-       if (firstnniteration .and. nonlin1D >= 3) then
-          ! At first try only check for positive water depths only
-          ! Temporarily save the current JPOSCHK value
-          jposhchk_sav = jposhchk
-          jposhchk = -1
-       end if
+                  if (firstnniteration .and. nonlin1D >= 3) then
+                     ! At first try only check for positive water depths only
+                     ! Temporarily save the current JPOSCHK value
+                     jposhchk_sav = jposhchk
+                     jposhchk = -1
+                  end if
 
-       call poshcheck(key) ! s1 above local bottom? (return through key only for easier interactive)
+                  call poshcheck(key) ! s1 above local bottom? (return through key only for easier interactive)
 
-       if (firstnniteration .and. nonlin1D >= 3) then
-          ! reset JPOSCHK to original value
-          jposhchk = jposhchk_sav
-       end if
+                  if (firstnniteration .and. nonlin1D >= 3) then
+                     ! reset JPOSCHK to original value
+                     jposhchk = jposhchk_sav
+                  end if
 
-       if (key == 1) then
-          return ! for easier mouse interrupt
-       else if (key == 2) then
-          if (nonlin1D >= 3 .and. firstnniteration) then ! jposhcheck==-1
-             ! Negative depth(s): retry with restarted Nested Newton
-             firstnniteration = .false.
-             goto 222
-          end if
+                  if (key == 1) then
+                     return ! for easier mouse interrupt
+                  else if (key == 2) then
+                     if (nonlin1D >= 3 .and. firstnniteration) then ! jposhcheck==-1
+                        ! Negative depth(s): retry with restarted Nested Newton
+                        firstnniteration = .false.
+                        cycle wetdry
+                     end if
 
-          if (wrwaqon .and. allocated(qsrcwaq)) then
-             qsrcwaq = qsrcwaq0 ! restore cumulative qsrc for waq from start of this time step to avoid
-          end if ! double accumulation and use of incorrect dts in case of time step reduction
-          call setkfs()
-          if (jposhchk == 2 .or. jposhchk == 4) then ! redo without timestep reduction, setting hu=0 => 333 s1ini
-             if (nonlin >= 2) then
-                goto 222
-             else
-                goto 333
-             end if
-          else
-             if (jampi == 1 .and. my_rank == 0) call mess(LEVEL_WARN, 'Redo with timestep reduction.')
-             goto 111
-          end if
-       end if
+                     if (wrwaqon) then
+                        ! restore cumulative qsrc and qlat for waq from start of this time step to avoid
+                        ! double accumulation and use of incorrect dts in case of time step reduction
+                        if (allocated(qsrcwaq)) then
+                           qsrcwaq = qsrcwaq0
+                        end if
+                        if (allocated(qlatwaq)) then
+                           qlatwaq = qlatwaq0
+                        end if
+                     end if
+                     call setkfs()
+                     if (jposhchk == 2 .or. jposhchk == 4) then ! redo without timestep reduction, setting hu=0 => wetdry s1ini
+                        cycle wetdry
+                     else
+                        if (jampi == 1 .and. my_rank == 0) then
+                           call mess(LEVEL_WARN, 'Redo with timestep reduction.')
+                        end if
+                        cycle setback
+                     end if
+                  end if
 
-    else
-       s1 = s0
-    end if
+                  if (nonlin >= 2) then
+                     ! In case the water levels drop, s1m must be adjusted to the water level. Nested Newton assumes s1(k) >= s1m(k).
+                     do k = 1, ndx
+                        if (s1(k) < s1m(k)) then
+                           s1m(k) = s1(k)
+                        end if
+                     end do
+                  end if
 
-    if (nonlin >= 2) then
-       ! In case the water levels drop, s1m must be adjusted to the water level. Nested Newton assumes s1(k) >= s1m(k).
-       do k = 1, ndx
-          if (s1(k) < s1m(k)) then
-             s1m(k) = s1(k)
-          end if
-       end do
-    end if
+                  call volsur()
 
-    call volsur()
+                  if (nonlin > 0) then
 
-    if (nonlin > 0) then
+                     difmaxlev = 0.0_dp
+                     noddifmaxlev = 0
 
-       difmaxlev = 0d0; noddifmaxlev = 0
+                     do k = 1, ndx
+                        dif = abs(s1(k) - s00(k))
 
-       do k = 1, ndx
-          dif = abs(s1(k) - s00(k))
+                        if (dif > difmaxlev) then
+                           difmaxlev = dif
+                           noddifmaxlev = k
+                        end if
+                        s00(k) = s1(k)
+                     end do
 
-          if (dif > difmaxlev) then
-             difmaxlev = dif
-             noddifmaxlev = k
-          end if
-          s00(k) = s1(k)
-       end do
+                     nums1it = nums1it + 1
 
-       nums1it = nums1it + 1
+                     if (nums1it > maxNonlinearIterations) then
+                        if (jamapFlowAnalysis > 0) then
+                           noiterations(noddifmaxlev) = noiterations(noddifmaxlev) + 1
+                        end if
 
-       if (nums1it > maxNonlinearIterations) then
-          if (jamapFlowAnalysis > 0) then
-             noiterations(noddifmaxlev) = noiterations(noddifmaxlev) + 1
-          end if
+                        write (msgbuf, '(''No convergence in nonlinear solver at time '', g12.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5_dp * dts
+                        !if (nonlin1D == 2) then
+                        !   ! Nested Newton
+                        !   !call err_flush()
+                        !else
+                        call warn_flush()
+                        dts = 0.5_dp * dts
+                        dsetb = dsetb + 1 ! total nr of setbacks
+                        s1 = s0
+                        if (dts < dtmin) then
+                           s1 = max(s1, bl) ! above bottom
+                           call okay(0)
+                           key = 1 ! for easier mouse interrupt
+                           return
+                        end if
+                        call setkfs()
+                        cycle setback ! redo with timestep reduction => furu
+                        !endif
+                     end if
 
-          write (msgbuf, '(''No convergence in nonlinear solver at time '', g10.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5d0 * dts
-          !if (nonlin1D == 2) then
-          !   ! Nested Newton
-          !   !call err_flush()
-          !else
-          call warn_flush()
-          dts = 0.5d0 * dts
-          dsetb = dsetb + 1 ! total nr of setbacks
-          s1 = s0
-          if (dts < dtmin) then
-             s1 = max(s1, bl) ! above bottom
-             call okay(0)
-             key = 1 ! for easier mouse interrupt
-             return
-          end if
-          call setkfs()
-          goto 111 ! redo with timestep reduction => 111 furu
-          !endif
-       end if
+                     !if (nums1it > 10) then
+                     !   write(tex,*) difmaxlev
+                     !   call gtext(tex,xz(noddifmaxlev), yz(noddifmaxlev), nums1it)
+                     !   call toemaar()
+                     !endif
 
-       !if (nums1it > 10) then
-       !   write(tex,*) difmaxlev
-       !   call gtext(tex,xz(noddifmaxlev), yz(noddifmaxlev), nums1it)
-       !   call toemaar()
-       !endif
+                     if (jampi == 1) then
+                        if (jatimer == 1) then
+                           call starttimer(IMPIREDUCE)
+                        end if
+                        call reduce_double_max(difmaxlev)
+                        if (jatimer == 1) then
+                           call stoptimer(IMPIREDUCE)
+                        end if
+                     end if
 
-       if (jampi == 1) then
-          if (jatimer == 1) call starttimer(IMPIREDUCE)
-          call reduce_double_max(difmaxlev)
-          if (jatimer == 1) call stoptimer(IMPIREDUCE)
-       end if
+                     if (difmaxlev > epsmaxlev) then
+                        ccr = ccrsav ! avoid redo s1ini, ccr is altered by solve
+                        cycle nonlincont ! standard non-lin iteration s1 => nonlincont
+                     else if (ifixedweirscheme1d2d == 1 .and. .not. last_iteration) then
+                        if (check_convergence_1d2d_fixedweirs()) then
+                           last_iteration = .true.
+                        end if
+                        ccr = ccrsav ! avoid redo s1ini, ccr is altered by solve
+                        cycle nonlincont ! when s1 .ne. s1m again do outer loop
+                     end if
 
-       if (difmaxlev > epsmaxlev) then
-          ccr = ccrsav ! avoid redo s1ini, ccr is altered by solve
-          goto 444 ! standard non-lin iteration s1 => 444
-       else if (ifixedweirscheme1d2d == 1 .and. .not. last_iteration) then
-          if (check_convergence_1d2d_fixedweirs()) then
-             last_iteration = .true.
-          end if
-          ccr = ccrsav ! avoid redo s1ini, ccr is altered by solve
-          goto 444 ! when s1 .ne. s1m again do outer loop
+                     ! beyond or past this point s1 is converged
 
-       end if
+                     if (nonlin >= 2) then
+                        difmaxlevm = 0.0_dp
+                        noddifmaxlevm = 0
+                        do k = 1, ndx
+                           dif = abs(s1m(k) - s1(k))
+                           if (dif > difmaxlevm) then
+                              difmaxlevm = dif
+                              noddifmaxlevm = k
+                           end if
+                           s1m(k) = s1(k) ! s1m starts at value of converged inner loop s1
+                        end do
 
-       ! beyond or past this point s1 is converged
+                        if (difmaxlevm > epsmaxlevm) then
+                           nums1mit = nums1mit + 1
+                           call volsur()
+                           ccr = ccrsav ! avoid redo s1ini, ccr is altered by solve
+                           cycle nonlincont ! when s1 .ne. s1m again do outer loop
+                        end if
 
-       if (nonlin >= 2) then
-          difmaxlevm = 0d0; noddifmaxlevm = 0
-          do k = 1, ndx
-             dif = abs(s1m(k) - s1(k))
-             if (dif > difmaxlevm) then
-                difmaxlevm = dif
-                noddifmaxlevm = k
-             end if
-             s1m(k) = s1(k) ! s1m starts at value of converged inner loop s1
-          end do
+                     end if
 
-          if (difmaxlevm > epsmaxlevm) then
-             nums1mit = nums1mit + 1
-             call volsur()
-             ccr = ccrsav ! avoid redo s1ini, ccr is altered by solve
-             goto 444 ! when s1 .ne. s1m again do outer loop
-          end if
+                     dnums1it = dnums1it + nums1it
+                  end if ! nonlin > 0
+                  exit nonlincont
+               end do nonlincont
+               exit wetdry
+            end do wetdry
+         else ! explicit time-step
+            s1 = s0
+            call volsur()
+         end if
+         exit setback
+      end do setback
 
-       end if
+   end subroutine step_reduce_hydro
 
-       dnums1it = dnums1it + nums1it
-    end if
-
- end subroutine step_reduce_hydro
+end module m_step_reduce_hydro

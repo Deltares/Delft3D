@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,24 +30,44 @@
 !
 !
 
-  !   call nextcel(np,La,npb,k1b,k2b,Lb)
-  subroutine nextcel(np, LL, npa, k1a, k2a, La) ! give face, link and nodes, opposite to plakrand LL of cel np
-     use m_netw
-     implicit none
-     integer :: LL, np, La, npa, k1a, k2a
+module m_nextcel
+   use m_tegenovernodesandlink, only: tegenovernodesandlink
 
-     La = 0; npa = 0; k1a = 0; k2a = 0
+   implicit none
 
-     if (np == 0) return
+   private
 
-     if (lne(1, LL) == np) then ! find cell behind current np, eindplaat
-        npa = lne(2, LL)
-     else if (lne(2, LL) == np) then
-        npa = lne(1, LL)
-     end if
+   public :: nextcel
 
-     if (npa == 0) return
+contains
 
-     call tegenovernodesandlink(npa, LL, k1a, k2a, La)
+   !   call nextcel(np,La,npb,k1b,k2b,Lb)
+   subroutine nextcel(np, LL, npa, k1a, k2a, La) ! give face, link and nodes, opposite to plakrand LL of cel np
+      use m_netw
 
-  end subroutine nextcel
+      integer :: LL, np, La, npa, k1a, k2a
+
+      La = 0
+      npa = 0
+      k1a = 0
+      k2a = 0
+
+      if (np == 0) then
+         return
+      end if
+
+      if (lne(1, LL) == np) then ! find cell behind current np, eindplaat
+         npa = lne(2, LL)
+      else if (lne(2, LL) == np) then
+         npa = lne(1, LL)
+      end if
+
+      if (npa == 0) then
+         return
+      end if
+
+      call tegenovernodesandlink(npa, LL, k1a, k2a, La)
+
+   end subroutine nextcel
+
+end module m_nextcel

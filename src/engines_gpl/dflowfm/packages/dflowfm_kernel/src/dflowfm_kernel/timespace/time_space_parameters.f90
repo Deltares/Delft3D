@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,8 +33,6 @@ module timespace_parameters
 
    implicit none
 
-   integer, parameter :: NODE_ID = -1 ! for a reference to a node ID
-   integer, parameter :: LINK_ID = -1 ! for a reference to a link ID
    ! enumeration for filetypes van de providers
    integer, parameter :: FILE_TYPE_UNKNOWN = -1
    integer, parameter :: UNIFORM = 1 ! kx values per tijdstap 1 dim arr       uni
@@ -54,6 +52,7 @@ module timespace_parameters
    integer, parameter :: BCASCII = 17 ! .bc format as ASCII file
    integer, parameter :: FIELD1D = 18 ! Scalar quantity on a 1D network, used for initial/parameter fields.
    integer, parameter :: GEOTIFF = 19 ! GeoTIFF, used for initial/parameter fields.
+   integer, parameter :: NODE_ID = 20 ! for a reference to a node ID
    integer, parameter :: MAX_FILE_TYPES = 103 !  max nr of supported types for end user in ext file.
    ! Enumeration for file types of sub-providers (not directly in ext file)
    integer, parameter :: FOURIER = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
@@ -91,6 +90,7 @@ module timespace_parameters
    integer, parameter :: METHOD_CONSTANT = 4
    integer, parameter :: METHOD_TRIANGULATION = 5
    integer, parameter :: METHOD_AVERAGING = 6
+   integer, parameter :: NEAREST_NEIGHBOUR = 11
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
 contains
@@ -105,7 +105,7 @@ contains
       select case (str_tolower(trim(string)))
       case ('1dfield')
          file_type = FIELD1D
-      case ('aaigrid')
+      case ('arcinfo')
          file_type = ARCINFO
       case ('bcascii')
          file_type = BCASCII
@@ -145,6 +145,9 @@ contains
          method = METHOD_CONSTANT
       case ('linearspacetime')
          method = WEIGHTFACTORS
+      case ('nearestnb')
+         ! Nearest neighbour is currently automatically selected by ec_converter under standard method "weightfactors".
+         method = NEAREST_NEIGHBOUR
       case ('triangulation')
          method = METHOD_TRIANGULATION
       case default
@@ -175,12 +178,42 @@ contains
 
    end function get_default_method_for_file_type
 
+   !> Checks and updates the method in case the interpolationMethod
+   !! linearSpaceTime (weightfactors) was requested and if that is not
+   !! yet supported for the given file type.
+   !!
+   !! Mainly used to hide EC-module inconsistencies from the user.
+   !! For example: uniform timeseries must always have interpolation type SPACEANDTIME.
+   subroutine update_method_with_weightfactor_fallback(file_type, method)
+      implicit none
+      character(len=*), intent(in) :: file_type !< File type string.
+      integer, intent(inout) :: method !< Interpolation method integer (will keep its original value if no updated is needed).
+
+      if (method /= WEIGHTFACTORS) then
+         ! Only fix weightfactors method, other wrong input methods are true
+         ! user input errors and should lead to an error message.
+         return
+      end if
+
+      select case (str_tolower(trim(file_type)))
+      case ('arcinfo')
+         method = SPACEANDTIME
+      case ('uniform', 'unimagdir')
+         method = SPACEANDTIME
+      case ('bcascii')
+         method = SPACEANDTIME
+      end select
+
+   end subroutine update_method_with_weightfactor_fallback
+
    subroutine update_method_in_case_extrapolation(method, is_extrapolation_allowed)
       implicit none
       integer, intent(inout) :: method !< method integer
       logical, intent(in) :: is_extrapolation_allowed !< is extrapolation allowed
 
-      if (.not. is_extrapolation_allowed) return
+      if (.not. is_extrapolation_allowed) then
+         return
+      end if
 
       if (method == WEIGHTFACTORS) then
          method = WEIGHTFACTORS_EXTRAPOLATION

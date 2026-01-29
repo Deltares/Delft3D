@@ -6,7 +6,7 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
                       & phicy, phity, qsx, qsy)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -108,12 +108,9 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
 !
     real(fp)                :: l
     real(fp)                :: xi
-    real(fp)                :: uw
     real(fp)                :: ksi
     real(fp)                :: eta
     real(fp)                :: c
-    real(fp)                :: fsl_bagnold_c
-    real(fp)                :: fsl_bagnold_t
     real(fp)                :: tmp
     real(fp)                :: eps_corr
     real(fp)                :: worbc

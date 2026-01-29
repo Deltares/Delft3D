@@ -41,6 +41,12 @@ set(gridgeom_dll_module ${utils_lgpl_path}/gridgeom/packages/gridgeom_dll)
 # Nefis
 set(nefis_module ${utils_lgpl_path}/nefis/packages/nefis)
 
+# trim2dep
+set(trim2dep ${utils_lgpl_path}/trim2dep)
+
+# qdb
+set(qdb ${utils_lgpl_path}/qdb)
+
 # io_hyd
 set(io_hyd_module ${utils_lgpl_path}/io_hyd/packages/io_hyd)
 
@@ -56,6 +62,7 @@ set(test_ec_module              test/utils_lgpl/ec_module/packages/ec_module_tes
 set(test_io_netcdf              test/utils_lgpl/io_netcdf/packages/test_io_netcdf)
 set(test_waq_utils_f            test/engines_gpl/waq/waq_utils_f)
 set(test_dflowfm_kernel         test/engines_gpl/dflowfm/packages/dflowfm_kernel)
+set(test_nefis                  ${utils_lgpl_path}/nefis/tests)
 
 # Unit tests
 # utils_lgpl

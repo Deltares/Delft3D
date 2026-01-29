@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,11 +31,22 @@
 !
 
 !< get jaopengl module variable
-integer function iget_jaopengl()
-   use unstruc_opengl, only: jaopengl
+module m_iget_jaopengl
+
    implicit none
 
-   iget_jaopengl = jaopengl
+   private
 
-   return
-end function iget_jaopengl
+   public :: iget_jaopengl
+
+contains
+
+   integer function iget_jaopengl()
+      use unstruc_opengl, only: jaopengl
+
+      iget_jaopengl = jaopengl
+
+      return
+   end function iget_jaopengl
+
+end module m_iget_jaopengl

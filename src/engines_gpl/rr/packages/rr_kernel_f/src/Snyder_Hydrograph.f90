@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -57,7 +57,6 @@
    real, optional, intent(in ) :: tR_input   !< Duration of the excess rainfall.
    
    real :: A, PT, tr, tPR, QPR,  W50, W75, Tb
-   integer :: i
       
    A = A_input / 1000000.D0 ! m2 -> km2
    tr = tp / 5.5                      ! standard effective rainfall duration

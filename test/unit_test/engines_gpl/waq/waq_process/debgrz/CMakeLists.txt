@@ -1,7 +1,5 @@
 # test dependencies
-set(dependencies delwaq_lib
-                 waq_process
-                )
+set(dependencies waq_process)
 
 create_test(
     tests_debgrz_computations

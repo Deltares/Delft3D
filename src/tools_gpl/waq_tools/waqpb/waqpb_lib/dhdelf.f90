@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -36,7 +36,7 @@
 !     FILNAM  CHAR*(*)      1     INPUT   file to be deleted
 !     IERROR  INTEGER       1     OUTPUT  Error indication
 !
-      CHARACTER*(*) FILNAM
+      CHARACTER(len=*) FILNAM
       INTEGER       IERROR
 !
 !     Local

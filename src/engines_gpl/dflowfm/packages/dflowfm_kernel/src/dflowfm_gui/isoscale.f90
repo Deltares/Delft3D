@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,114 +30,123 @@
 !
 !
 
-  subroutine ISOSCALE() !   COPY OF ISOSCALE, DIRTY BUT QUICK
-     use unstruc_colors
-     use M_isoscaleunit
-     use m_flowgeom, only: ndx
-     use m_netw, only: nump, numk
-     use m_polygon, only: npl
-     use unstruc_display
+module m_isoscale
 
-     implicit none
-     double precision :: dv
-     double precision :: hic
-     integer :: i, j, ihcopts, jaauto, ncols, ndec, ndraw, nhcdev, nie, nis, numhcopts, nv, nvec
-     integer :: INC
+   implicit none
 
-     double precision :: scalesize
-     double precision :: val
-     double precision :: vfac
-     double precision :: vfacforce
-     double precision :: vmax
-     double precision :: vmin
-     double precision :: wi
-     double precision :: wic
-     double precision :: xleg
-     double precision :: xsc
-     double precision :: xsc0
-     double precision :: xsc1
-     double precision :: xsc2
-     double precision :: yleg
+contains
 
-     double precision :: ysc
-     double precision :: ysc1
-     double precision :: ysc2
+   subroutine ISOSCALE() !   COPY OF ISOSCALE, DIRTY BUT QUICK
+      use precision, only: dp
+      use unstruc_colors
+      use m_isoscaleunit
+      use m_flowgeom, only: ndx
+      use m_netw, only: nump, numk
+      use m_polygon, only: npl
+      use unstruc_display, only: ndrawpol
+      use m_depmax
+      use m_hardcopy
+      use m_scalepos
+      use m_vfac
+      use m_drawthis
+      use m_gtext
+      use m_jgtext
+      use m_dispform_scale
+      use m_box_nop
+      use m_fbox_nop
+      use m_set_col
 
-     common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-     common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-     common / DRAWTHIS / ndraw(50)
-     common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-     common / VFAC / VFAC, VFACFORCE, NVEC
-     character TEXT2 * 10, FMT * 7
-     character(LEN=17) :: MINTEX, MAXTEX
-     real INFOGRAPHICS
+      real(kind=dp) :: hic
+      integer :: i, j
+      integer :: INC
+      real(kind=dp) :: wi
+      real(kind=dp) :: wic
+      real(kind=dp) :: xleg
+      real(kind=dp) :: xsc0
+      real(kind=dp) :: xsc1
+      real(kind=dp) :: xsc2
+      real(kind=dp) :: yleg
+      real(kind=dp) :: ysc1
+      real(kind=dp) :: ysc2
 
-     if (NDRAW(12) == 2 .or. NDRAW(12) == 4) return
+      character TEXT2 * 10, FMT * 7
+      character(LEN=17) :: MINTEX, MAXTEX
+      real INFOGRAPHICS
 
-     if (NDRAW(8) <= 1 .and. NDRAW(28) <= 1 .and. ndrawpol <= 2) return
+      if (NDRAW(12) == 2 .or. NDRAW(12) == 4) then
+         return
+      end if
 
-     if (max(ndx, nump, npl, numk) == 0) return
+      if (NDRAW(8) <= 1 .and. NDRAW(28) <= 1 .and. ndrawpol <= 2) then
+         return
+      end if
 
-     call IGRCHARSIZE(real(SCALESIZE), real(SCALESIZE))
-     WIC = dble(INFOGRAPHICS(3))
-     HIC = dble(INFOGRAPHICS(4))
+      if (max(ndx, nump, npl, numk) == 0) then
+         return
+      end if
 
-     INC = NV / 30 + 1 ! Max 30 color boxes, otherwise increment > 1
+      call IGRCHARSIZE(real(SCALESIZE), real(SCALESIZE))
+      WIC = real(INFOGRAPHICS(3), kind=dp)
+      HIC = real(INFOGRAPHICS(4), kind=dp)
 
-     WI = 11 * WIC + 1.8d0 * HIC
-     XSC0 = 1 - XSC
-     if (XSC0 < 0.6d0) then
-        XSC1 = X1 + XSC0 * (X2 - X1)
-     else
-        XSC1 = X2 - (1 - XSC0) * (X2 - X1) - WI
-     end if
-     XSC2 = XSC1 + WI
-     YSC1 = Y1 + YSC * (Y2 - Y1)
+      INC = NV / 30 + 1 ! Max 30 color boxes, otherwise increment > 1
 
-     MINTEX = 'MN=  '
-     MAXTEX = 'MX=  '
-     write (MINTEX(4:15), '(E11.4)') VMIN
-     write (MAXTEX(4:15), '(E11.4)') VMAX
+      WI = 11 * WIC + 1.8_dp * HIC
+      XSC0 = 1 - XSC
+      if (XSC0 < 0.6_dp) then
+         XSC1 = X1 + XSC0 * (X2 - X1)
+      else
+         XSC1 = X2 - (1 - XSC0) * (X2 - X1) - WI
+      end if
+      XSC2 = XSC1 + WI
+      YSC1 = Y1 + YSC * (Y2 - Y1)
 
-     if (VMAX > VMIN .and. NDRAW(19) >= 2) then
-        YSC2 = min(YSC1 + (NV / INC + 1d0) * HIC + 2.5d0 * HIC, Y2)
-     else
-        YSC2 = min(YSC1 + (1d0) * HIC + 3.5d0 * HIC, Y2)
-        XSC2 = XSC2 + 2 * WIC
-     end if
+      MINTEX = 'MN=  '
+      MAXTEX = 'MX=  '
+      write (MINTEX(4:15), '(E11.4)') VMIN
+      write (MAXTEX(4:15), '(E11.4)') VMAX
 
-     call SETCOL(KLSCL)
-     call FBOXNOP(XSC1, YSC1, XSC2, YSC2)
+      if (VMAX > VMIN .and. NDRAW(19) >= 2) then
+         YSC2 = min(YSC1 + (NV / INC + 1.0_dp) * HIC + 2.5_dp * HIC, Y2)
+      else
+         YSC2 = min(YSC1 + (1.0_dp) * HIC + 3.5_dp * HIC, Y2)
+         XSC2 = XSC2 + 2 * WIC
+      end if
 
-     call SETCOL(KLTEX)
-     call BOXNOP(XSC1, YSC1, XSC2, YSC2)
+      call SETCOL(KLSCL)
+      call FBOXNOP(XSC1, YSC1, XSC2, YSC2)
 
-     call IGRCHARJUSTIFY('L')
+      call SETCOL(KLTEX)
+      call BOXNOP(XSC1, YSC1, XSC2, YSC2)
 
-     call GTEXT(PARAMTEX(1), XSC1 + WIC, YSC2 - 1 * HIC, KLTEX)
-     call GTEXT(UNIT(1), XSC1 + WIC, YSC2 - 2 * HIC, KLTEX)
+      call IGRCHARJUSTIFY('L')
 
-     if (VMAX > VMIN .and. NDRAW(19) >= 2) then
-        if (abs(VMIN) > abs(VMAX)) then
-           call DISPFORMscale(VMIN, FMT, NDEC)
-        else
-           call DISPFORMscale(VMAX, FMT, NDEC)
-        end if
+      call GTEXT(PARAMTEX(1), XSC1 + WIC, YSC2 - 1 * HIC, KLTEX)
+      call GTEXT(UNIT(1), XSC1 + WIC, YSC2 - 2 * HIC, KLTEX)
 
-        XLEG = XSC1 + WIC
-        J = 1
-        do I = 1, NV, INC
-           YLEG = YSC1 + J * HIC
-           write (TEXT2(1:10), FMT) VAL(I)
-           call JGTEXT(TEXT2, XLEG, YLEG, NCOLS(I), WIC, HIC, 0)
-           J = J + 1
-        end do
-        TEXT2 = '          '
-        call JGTEXT(TEXT2, XLEG, YLEG + HIC, NCOLS(NV + 1), WIC, HIC, 0)
-     else
-        call GTEXT(MAXTEX, XSC1 + WIC, YSC2 - 3 * HIC, KLTEX)
-        call GTEXT(MINTEX, XSC1 + WIC, YSC2 - 4 * HIC, KLTEX)
-     end if
+      if (VMAX > VMIN .and. NDRAW(19) >= 2) then
+         if (abs(VMIN) > abs(VMAX)) then
+            call DISPFORMscale(VMIN, FMT, NDEC)
+         else
+            call DISPFORMscale(VMAX, FMT, NDEC)
+         end if
 
-     return
-  end
+         XLEG = XSC1 + WIC
+         J = 1
+         do I = 1, NV, INC
+            YLEG = YSC1 + J * HIC
+            write (TEXT2(1:10), FMT) VAL(I)
+            call JGTEXT(TEXT2, XLEG, YLEG, NCOLS(I), WIC, HIC, 0)
+            J = J + 1
+         end do
+         TEXT2 = '          '
+         call JGTEXT(TEXT2, XLEG, YLEG + HIC, NCOLS(NV + 1), WIC, HIC, 0)
+      else
+         call GTEXT(MAXTEX, XSC1 + WIC, YSC2 - 3 * HIC, KLTEX)
+         call GTEXT(MINTEX, XSC1 + WIC, YSC2 - 4 * HIC, KLTEX)
+      end if
+
+      return
+   end
+
+end module m_isoscale

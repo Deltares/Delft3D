@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -50,7 +50,7 @@
       Use ParameterModule
       Use LocationDataModule
       Use OtherData
-      Use ReadLib
+      Use ReadLib_rtc
 
       implicit none
       
@@ -77,7 +77,7 @@
 !
       CALL SKPCOM (IN, ENDFIL, 'RTC')
       IF (ENDFIL) then
-         Call ERRMSG (911, 0, 'ScanRain', ' Precipitation file', IOUT1)
+         call write_error_message_rtc (911, 0, 'ScanRain', ' Precipitation file', IOUT1)
          RetVal = 911
          Return
       Endif
@@ -132,7 +132,7 @@
 
         CALL SKPCOM (IN, ENDFIL, 'RTC')
         IF (ENDFIL) then
-           CALL ERRMSG (911, 0, '  ScanRain', STRING, IOUT1)
+           call write_error_message_rtc (911, 0, '  ScanRain', STRING, IOUT1)
            RetVal = 911
            Return
         Endif
@@ -162,11 +162,11 @@
 ! *********************************************************************
 !
   991 CONTINUE
-      CALL ERRMSG (911, IECODE, 'ScanRain', ' neerslag file', IOUT1)
+      call write_error_message_rtc (911, IECODE, 'ScanRain', ' neerslag file', IOUT1)
       RetVal = 911
       Return
   150 CONTINUE
-      CALL ERRMSG (902, IECODE, 'ScanRain', ' neerslag file', IOUT1)
+      call write_error_message_rtc (902, IECODE, 'ScanRain', ' neerslag file', IOUT1)
       RetVal = 902
 
 ! *********************************************************************

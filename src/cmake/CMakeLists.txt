@@ -21,9 +21,9 @@ set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the locat
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
 cmake_path(GET PARENT_DIR PARENT_PATH dir)
 
-
-# Set unit test root directory
-set(unit_tests_dir ${dir}/test/unit_test) # This points to the location of OSS/test
+# Set unit and integration test root directory
+set(unit_tests_dir ${dir}/test/unit_test)
+set(integration_tests_dir ${dir}/test/integration_test)
 
 include(modules.cmake)
 
@@ -44,6 +44,8 @@ elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
 else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
+include(compiler_options/compiler_warning_targets.cmake)
+include(compiler_options/fortran_styler.cmake)
 
 # Set available build configurations
 set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
@@ -92,10 +94,6 @@ if (WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    # Set the Tecplot path
-    set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
-    message(STATUS "Tecplot set to ${tecplot_path}")
-
     if(intel_version EQUAL 23)
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
     else()
@@ -109,10 +107,6 @@ if (WIN32)
     message(STATUS "path ${petsc_path}")
     message(STATUS "library directory ${petsc_libdir}")
     list(POP_BACK CMAKE_MESSAGE_INDENT)
-
-    # Set the GDAL path
-    set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
-    message(STATUS "gisinternals set to ${gisinternals_path}")
 
     # Set the SQLITE3 path
     set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
@@ -134,8 +128,19 @@ if (UNIX)
     set(mpi_module_path ${mpi_include_path})
 
     #NetCDF
-    pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
+    pkg_check_modules(NETCDF     REQUIRED netcdf)
+    pkg_check_modules(NETCDF_FTN REQUIRED netcdf-fortran)
+
+    # Create two separate targets, because the targets created by pkg_check_modules with IMPORTED_TARGET
+    # mix variables for both static and dynamic linking of netcdf, and the C library is not explicitly
+    # linked by the Fortran target. Use the same names as on windows.
+    add_library(netcdf INTERFACE)
+    target_include_directories(netcdf INTERFACE ${NETCDF_INCLUDE_DIRS})
+    target_link_libraries(netcdf INTERFACE ${NETCDF_LINK_LIBRARIES})
+
+    add_library(netcdff INTERFACE)
+    target_include_directories(netcdff INTERFACE ${NETCDF_FTN_INCLUDE_DIRS})
+    target_link_libraries(netcdff INTERFACE ${NETCDF_FTN_LINK_LIBRARIES} netcdf)
 
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)
@@ -147,9 +152,14 @@ endif(UNIX)
 if (UNIX)
     set(platform_extension sh)
     set(library_suffix so)
+    set(library_prefix lib)
 elseif (WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
+    set(library_prefix "")
+    include(InstallRequiredSystemLibraries)
 endif()
 
 # Expat:
@@ -158,6 +168,14 @@ endif()
 set(expat_include_path ${checkout_src_root}/third_party_open/expat/x64/include)
 if (WIN32)
     set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
+endif(WIN32)
+
+# getopt:
+#     Windows: use prebuild library in ".../getopt/x64"
+#     Linux  : compile source code  using ".../getopt/cmake_deltares/CMakeLists.txt"
+set(getopt_include_path ${checkout_src_root}/third_party_open/getopt)
+if (WIN32)
+    set(getopt_library_path_win ${checkout_src_root}/third_party_open/getopt/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
 ### Configuration names
@@ -181,9 +199,9 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
 # Basic (single-component) configurations
+set(all_configuration "ALL")
 set(dflowfm_configuration "DFLOWFM")
-set(dflowfm_interacter_configuration "DFLOWFM_INTERACTER")
-set(tests_configuration "TESTS")
+set(dflowfm_configuration_interacter "DFLOWFM_INTERACTER")
 set(dimr_configuration "DIMR")
 set(dwaq_configuration "DWAQ")
 set(dwaves_configuration "DWAVES")
@@ -193,16 +211,30 @@ set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
 set(drr_configuration "DRR")
 set(rtc_configuration "RTC")
+set(fbc_configuration "FBC")
+set(dsle_configuration "DSLE")
+
+# Combined (multi-component) configurations for running specific testbenches
+# These are equivalent to our branch-prefixes
+set(testbench-all_configuration "ALL-TESTBENCH")
+set(testbench-none_configuration "NONE-TESTBENCH")
+set(testbench-fm_configuration "FM-TESTBENCH")
+set(testbench-d3d4_configuration "D3D4-TESTBENCH")
+set(testbench-rr_configuration "RR-TESTBENCH")
+set(testbench-waq_configuration "WAQ-TESTBENCH")
+set(testbench-part_configuration "PART-TESTBENCH")
+set(testbench-wave_configuration "WAVE-TESTBENCH")
+set(testbench-tc_configuration "TC-TESTBENCH")
+set(testbench-qp_configuration "QP-TESTBENCH")
 
 # Combined (multi-component) configurations
-set(delft3dfm_configuration "DELFT3DFM")
-set(delft3d4_configuration "DELFT3D4")
-set(all_configuration "ALL")
+# For products that we release
+set(fm-suite_configuration "FM-SUITE")
+set(d3d4-suite_configuration "D3D4-SUITE")
 
 # Determine the configuration to make
-if(NOT (${configuration_type} STREQUAL ${tests_configuration}
-     OR ${configuration_type} STREQUAL ${dflowfm_configuration}
-     OR ${configuration_type} STREQUAL ${dflowfm_interacter_configuration}
+if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
+     OR ${configuration_type} STREQUAL ${dflowfm_configuration_interacter}
      OR ${configuration_type} STREQUAL ${dimr_configuration}
      OR ${configuration_type} STREQUAL ${dwaq_configuration}
      OR ${configuration_type} STREQUAL ${dwaves_configuration}
@@ -210,105 +242,186 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
      OR ${configuration_type} STREQUAL ${tools_configuration}
      OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
-     OR ${configuration_type} STREQUAL ${delft3dfm_configuration}
-     OR ${configuration_type} STREQUAL ${delft3d4_configuration}
      OR ${configuration_type} STREQUAL ${drr_configuration}
      OR ${configuration_type} STREQUAL ${rtc_configuration}
-     OR ${configuration_type} STREQUAL ${all_configuration}))
+     OR ${configuration_type} STREQUAL ${fbc_configuration}
+     OR ${configuration_type} STREQUAL ${dsle_configuration}
+     OR ${configuration_type} STREQUAL ${fm-suite_configuration}
+     OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
+     OR ${configuration_type} STREQUAL ${all_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-all_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-none_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-fm_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-d3d4_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-rr_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-waq_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-part_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-wave_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-tc_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-qp_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
 
-### Basic configurations
+### Component configurations
 
-# Tests configuration
-if(${configuration_type} STREQUAL ${tests_configuration})
-    message(STATUS "Generating solution for Tests ...")
-    include(configurations/tests_configuration.cmake)
-endif()
+# Unit test configuration, should be findable for every configuration
+include(configurations/miscellaneous/unit_test_configuration.cmake)
 
 # D-Flow FM configuration
 if(${configuration_type} STREQUAL ${dflowfm_configuration})
     message(STATUS "Generating solution for D-Flow FM ...")
-    include(configurations/dflowfm_configuration.cmake)
+    include(configurations/components/dflowfm_configuration_without_interacter.cmake)
 endif()
 
 # D-Flow FM (with Interacter-GUI) configuration
-if(${configuration_type} STREQUAL ${dflowfm_interacter_configuration})
+if(${configuration_type} STREQUAL ${dflowfm_configuration_interacter})
     message(STATUS "Generating solution for D-Flow FM (with interacter) ...")
-    include(configurations/dflowfm_interacter_configuration.cmake)
+    include(configurations/components/dflowfm_configuration_interacter.cmake)
 endif()
 
 # DIMR configuration
 if(${configuration_type} STREQUAL ${dimr_configuration})
     message(STATUS "Generating solution for DIMR ...")
-    include(configurations/dimr_configuration.cmake)
+    include(configurations/components/dimr_configuration.cmake)
 endif()
 
 # D-WAQ configuration
 if(${configuration_type} STREQUAL ${dwaq_configuration})
     message(STATUS "Generating solution for D-Waq ...")
-    include(configurations/dwaq_configuration.cmake)
+    include(configurations/components/dwaq_configuration.cmake)
     message(STATUS "Finished generating solution for D-Waq")
 endif()
 
 # D-Waves configuration
 if(${configuration_type} STREQUAL ${dwaves_configuration})
     message(STATUS "Generating solution for D-Waves ...")
-    include(configurations/dwaves_configuration.cmake)
+    include(configurations/components/dwaves_configuration.cmake)
 endif()
 
 # SWAN configuration
 if(${configuration_type} STREQUAL ${swan_configuration})
     message(STATUS "Generating solution for SWAN ...")
-    include(configurations/swan_configuration.cmake)
+    include(configurations/components/swan_configuration.cmake)
 endif()
 
 # Flow2D3D (Delft3D4) configuration
 if(${configuration_type} STREQUAL ${flow2d3d_configuration})
     message(STATUS "Generating solution for Flow2D3D ...")
-    include(configurations/flow2d3d_configuration.cmake)
+    include(configurations/components/flow2d3d_configuration.cmake)
 endif()
 
 # Tools configuration
 if(${configuration_type} STREQUAL ${tools_configuration})
     message(STATUS "Generating solution for Tools ...")
-    include(configurations/tools_configuration.cmake)
+    include(configurations/miscellaneous/tools_configuration_no_fm.cmake)
 endif()
 
 # Tools_gpl configuration
 if(${configuration_type} STREQUAL ${tools_gpl_configuration})
     message(STATUS "Generating solution for Tools_GPL ...")
-    include(configurations/tools_gpl_configuration.cmake)
+    include(configurations/miscellaneous/tools_gpl_configuration.cmake)
 endif()
 
 # RTC configuration
 if(${configuration_type} STREQUAL ${rtc_configuration})
     message(STATUS "Generating solution for rtc ...")
-    include(configurations/rtc_configuration.cmake)
+    include(configurations/components/rtc_configuration.cmake)
 endif()
 
 # D-RR configuration
 if(${configuration_type} STREQUAL ${drr_configuration})
     message(STATUS "Generating solution for D-RR ...")
-    include(configurations/drr_configuration.cmake)
+    include(configurations/components/drr_configuration.cmake)
 endif()
 
-### Composed configurations
-
-# Delft3D-FM configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
-if(${configuration_type} STREQUAL ${delft3dfm_configuration})
-    message(STATUS "Generating solution for Delft3D-FM ...")
-    include(configurations/delft3dfm_configuration.cmake)
+# FBC configuration
+if(${configuration_type} STREQUAL ${fbc_configuration})
+    message(STATUS "Generating solution for FBC-tools ...")
+    include(configurations/components/fbc_configuration.cmake)
 endif()
 
-# Delft3D4 configuration (dflow2d3d, dwaq, dwaves, and some tools)
-if(${configuration_type} STREQUAL ${delft3d4_configuration})
-    message(STATUS "Generating solution for Delft3D4 ...")
-    include(configurations/delft3d4_configuration.cmake)
+if(${configuration_type} STREQUAL ${dsle_configuration})
+    message(STATUS "Generating solution for D-SLE ...")
+    include(configurations/components/dsle_configuration.cmake)
 endif()
+
+### Composed configurations for testbenches
 
 # ALL configuration
-if(${configuration_type} STREQUAL ${all_configuration})
-    message(STATUS "Generating solution for all (open-source) projects in OSS tree ...")
-    include(configurations/all_configuration.cmake)
+if(${configuration_type} STREQUAL ${testbench-all_configuration} OR ${configuration_type} STREQUAL ${all_configuration})
+    message(STATUS "Generating solution for all testbenches ...")
+    include(configurations/testbench/all_configuration.cmake)
 endif()
+
+# NONE configuration
+if(${configuration_type} STREQUAL ${testbench-none_configuration})
+    message(STATUS "Generating solution for none testbenches ...")
+    include(configurations/testbench/waq_configuration.cmake)
+endif()
+
+# D3D4 configuration
+if(${configuration_type} STREQUAL ${testbench-d3d4_configuration})
+    message(STATUS "Generating solution for d3d4 testbench ...")
+    include(configurations/testbench/d3d4_configuration.cmake)
+endif()
+
+# RR configuration
+if(${configuration_type} STREQUAL ${testbench-rr_configuration})
+    message(STATUS "Generating solution for rr testbench ...")
+    include(configurations/testbench/rr_configuration.cmake)
+endif()
+
+# WAQ configuration
+if(${configuration_type} STREQUAL ${testbench-waq_configuration})
+    message(STATUS "Generating solution for waq testbench ...")
+    include(configurations/testbench/waq_configuration.cmake)
+endif()
+
+# PART configuration
+if(${configuration_type} STREQUAL ${testbench-part_configuration})
+    message(STATUS "Generating solution for part testbench ...")
+    include(configurations/testbench/part_configuration.cmake)
+endif()
+
+# WAVE configuration
+if(${configuration_type} STREQUAL ${testbench-wave_configuration})
+    message(STATUS "Generating solution for wave testbench ...")
+    include(configurations/testbench/wave_configuration.cmake)
+endif()
+
+# TC configuration
+if(${configuration_type} STREQUAL ${testbench-tc_configuration})
+    message(STATUS "Generating solution for tc testbench ...")
+    include(configurations/testbench/waq_configuration.cmake)
+endif()
+
+# QUICKPLOT configuration
+if(${configuration_type} STREQUAL ${testbench-qp_configuration})
+    message(STATUS "Generating solution for QUICKPLOT testbench ...")
+    include(configurations/testbench/waq_configuration.cmake)
+endif()
+
+### Composed configurations for releases
+
+# Delft3D-FM suite configuration (dimr, dflowfm, dwaq, dwaves, and some tools)
+if(${configuration_type} STREQUAL ${fm-suite_configuration} OR ${configuration_type} STREQUAL ${testbench-fm_configuration})
+    message(STATUS "Generating solution for Delft3D-FM ...")
+    include(configurations/suites/fm_configuration.cmake)
+endif()
+
+# Delft3D4 suite configuration (dflow2d3d, dwaq, dwaves, and some tools)
+if(${configuration_type} STREQUAL ${d3d4-suite_configuration})
+    message(STATUS "Generating solution for Delft3D4 ...")
+    include(configurations/suites/d3d4_configuration.cmake)
+endif()
+
+if(UNIX)
+    add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
+endif()
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../agpl-3.0.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
+              DESTINATION share)

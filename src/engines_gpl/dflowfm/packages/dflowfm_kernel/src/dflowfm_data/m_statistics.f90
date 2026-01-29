@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,29 +31,30 @@
 !
 
 module m_statistics
+   use precision, only: dp
    implicit none
-   double precision :: avedif !< for now only, cum dif with analytic sol
-   double precision :: sqadif !< for now only, cum dif with analytic sol
-   double precision :: rmsdif !< for now only, cum dif with analytic sol
-   double precision :: dmxdif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: avedif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: sqadif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: rmsdif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: dmxdif !< for now only, cum dif with analytic sol
    integer :: numdif
 
-   double precision :: cumavedif !< for now only, cum dif with analytic sol
-   double precision :: cumrmsdif !< for now only, cum dif with analytic sol
-   double precision :: cumdmxdif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: cumavedif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: cumrmsdif !< for now only, cum dif with analytic sol
+   real(kind=dp) :: cumdmxdif !< for now only, cum dif with analytic sol
    integer :: numcum, npdf
-   double precision, allocatable :: xpdf(:), ypdf(:)
+   real(kind=dp), allocatable :: xpdf(:), ypdf(:)
 contains
    subroutine reset_statistics()
-      avedif = 0d0 ! for now only, cum dif with analytic sol
-      sqadif = 0d0
-      rmsdif = 0d0 ! for now only, cum dif with analytic sol
-      dmxdif = 0d0 ! for now only, cum dif with analytic sol
+      avedif = 0.0_dp ! for now only, cum dif with analytic sol
+      sqadif = 0.0_dp
+      rmsdif = 0.0_dp ! for now only, cum dif with analytic sol
+      dmxdif = 0.0_dp ! for now only, cum dif with analytic sol
       numdif = 0
 
-      cumavedif = 0d0 ! for now only, cum dif with analytic sol
-      cumrmsdif = 0d0 ! for now only, cum dif with analytic sol
-      cumdmxdif = 0d0 ! for now only, cum dif with analytic sol
+      cumavedif = 0.0_dp ! for now only, cum dif with analytic sol
+      cumrmsdif = 0.0_dp ! for now only, cum dif with analytic sol
+      cumdmxdif = 0.0_dp ! for now only, cum dif with analytic sol
       numcum = 0
       npdf = 0
    end subroutine reset_statistics

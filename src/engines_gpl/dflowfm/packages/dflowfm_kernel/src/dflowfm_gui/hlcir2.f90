@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,20 +29,27 @@
 
 !
 !
+module m_hlcir2
+   use m_cir
 
-      !> Draw a filled circle at current position.
+   implicit none
+contains
+   !> Draw a filled circle at current position.
       !! Filled means: one colour for inside, one colour for edge.
-      subroutine HLCIR2(R, icolfill, icoledge)
-         implicit none
-         double precision, intent(in) :: R !< Radius in world coords.
-         integer, intent(in) :: icolfill !< Colour number for inner fill
-         integer, intent(in) :: icoledge !< Colour number for edge
+   subroutine HLCIR2(R, icolfill, icoledge)
+      use precision, only: dp
+      use m_set_col, only: setcol
 
-         call IGRFILLPATTERN(4, 0, 0)
-         call SETCOL(icolfill)
-         call CIR(R)
-         call IGRFILLPATTERN(0, 0, 0)
-         call SETCOL(icoledge)
-         call CIR(R)
-         call IGRFILLPATTERN(4, 0, 0)
-      end subroutine HLCIR2
+      real(kind=dp), intent(in) :: R !< Radius in world coords.
+      integer, intent(in) :: icolfill !< Colour number for inner fill
+      integer, intent(in) :: icoledge !< Colour number for edge
+
+      call IGRFILLPATTERN(4, 0, 0)
+      call SETCOL(icolfill)
+      call CIR(R)
+      call IGRFILLPATTERN(0, 0, 0)
+      call SETCOL(icoledge)
+      call CIR(R)
+      call IGRFILLPATTERN(4, 0, 0)
+   end subroutine HLCIR2
+end module m_hlcir2

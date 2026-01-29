@@ -1,0 +1,62 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e50_f01_c01_delft3d-waq" ref="plct_default">
+        <path version="2024-11-23T09:00:00">e50_plct/f01_proc_def/c01_delft3d-waq</path>
+        <checks>
+            <file name="plct.log" type="NUMBERTEXT">
+               <skipline>PLCT version</skipline>
+               <skipline>Session started</skipline>
+               <skipline>session finished</skipline>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e50_f01_c02_delft3d-eco" ref="plct_default">
+        <path version="2024-11-23T09:00:00">e50_plct/f01_proc_def/c02_delft3d-eco</path>
+        <checks>
+            <file name="plct.log" type="NUMBERTEXT">
+               <skipline>PLCT version</skipline>
+               <skipline>Session started</skipline>
+               <skipline>session finished</skipline>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e50_f01_c03_sobek-waq" ref="plct_default">
+        <path version="2024-11-23T09:00:00">e50_plct/f01_proc_def/c03_sobek-waq</path>
+        <checks>
+            <file name="plct.log" type="NUMBERTEXT">
+               <skipline>PLCT version</skipline>
+               <skipline>Session started</skipline>
+               <skipline>session finished</skipline>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e50_f01_c04_sobek-eco" ref="plct_default">
+        <path version="2024-11-23T09:00:00">e50_plct/f01_proc_def/c04_sobek-eco</path>
+        <checks>
+            <file name="plct.log" type="NUMBERTEXT">
+               <skipline>PLCT version</skipline>
+               <skipline>Session started</skipline>
+               <skipline>session finished</skipline>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e50_f01_c11_unreachable_processes" ref="plct_default">
+        <path version="2024-11-23T09:00:00">e50_plct/f01_proc_def/c11_unreachable_processes</path>
+        <checks>
+            <file name="plct.log" type="NUMBERTEXT">
+               <skipline>PLCT version</skipline>
+               <skipline>Session started</skipline>
+               <skipline>session finished</skipline>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e50_f01_c12_multiple_extra_processes" ref="plct_default">
+        <path version="2024-11-23T09:00:00">e50_plct/f01_proc_def/c12_multiple_extra_processes</path>
+        <checks>
+            <file name="plct.log" type="NUMBERTEXT">
+               <skipline>PLCT version</skipline>
+               <skipline>Session started</skipline>
+               <skipline>session finished</skipline>
+            </file>
+        </checks>
+    </testCase>
+</testCases>

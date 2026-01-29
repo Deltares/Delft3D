@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  Delft FEWS Published Interface (Copyright 2003 WL | Delft Hydraulics) -->
+<schema targetNamespace="http://www.wldelft.nl/fews/PI" xmlns:fews="http://www.wldelft.nl/fews/PI" xmlns="http://www.w3.org/2001/XMLSchema"  elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+    <include schemaLocation="pi_sharedtypes.xsd"/>
+    <element name="State" type="fews:StateComplexType">
+        <annotation>
+            <documentation>A state consists of a number of locations.
+                from which FFS reads and writes the model state data.
+                A such reading is reading by the FFS and writing is writing by the FFS. </documentation>
+        </annotation>
+    </element>
+    <complexType name="StateComplexType">
+        <annotation>
+            <documentation>A state consists of a number of locations.
+                from which FFS reads and writes the model state data.
+                A such reading is reading by the FFS and writing is writing by the FFS. </documentation>
+        </annotation>
+        <sequence>
+            <element name="stateId" type="fews:idString">
+                <annotation>
+                    <documentation>id of this state, defined by the module</documentation>
+                </annotation>
+            </element>
+            <element name="stateName" type="fews:nameString" minOccurs="0">
+                <annotation>
+                    <documentation>optional descriptive name of this state</documentation>
+                </annotation>
+            </element>
+            <element name="timeZone" type="fews:TimeZoneSimpleType" minOccurs="0">
+                <annotation>
+                    <documentation>the time zone of the pi input files is assumed when the time zone in a pi output file is missing</documentation>
+                </annotation>
+            </element>
+            <element name="dateTime" type="fews:DateTimeComplexType" minOccurs="0">
+                <annotation>
+                    <documentation>date and time this state is valid for/was taken</documentation>
+                </annotation>
+            </element>
+            <element name="stateLoc" type="fews:StateReadWriteDirectoryComplexType" maxOccurs="unbounded">
+                <annotation>
+                    <documentation>Each state location consists of a read and a write location.
+                        The type attribute indicates whether this points to a file or a directory.</documentation>
+                </annotation>
+            </element>
+            <element name="comment" type="fews:commentString" minOccurs="0">
+                <annotation>
+                    <documentation>use this field as a notebook to add comments, suggestions
+                        description of data entered etc.</documentation>
+                </annotation>
+            </element>
+        </sequence>
+        <attribute name="version" type="fews:versionString" use="required" fixed="1.2"/>
+    </complexType>
+    <complexType name="StateReadWriteDirectoryComplexType">
+        <annotation>
+            <documentation>Each state location consists of a read and a write location.
+                The type attribute indicates whether this points to a file or a directory.</documentation>
+        </annotation>
+        <sequence>
+            <element name="readLocation" type="anyURI">
+                <annotation>
+                    <documentation>The name of the input state of the model. The write location is imported by the general adapter. This imported file is renamed to the read location internally</documentation>
+                </annotation>
+            </element>
+            <element name="writeLocation" type="anyURI">
+                <annotation>
+                    <documentation>The name of the output state of the model. The write location is imported by the general adapter. This imported file is renamed to the read location internally</documentation>
+                </annotation>
+            </element>
+        </sequence>
+        <attribute name="type" use="required">
+            <annotation>
+                <documentation>type: either file or directory</documentation>
+            </annotation>
+            <simpleType>
+                <restriction base="string">
+                    <enumeration value="file"/>
+                    <enumeration value="directory"/>
+                </restriction>
+            </simpleType>
+        </attribute>
+    </complexType>
+</schema>

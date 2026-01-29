@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,6 +31,7 @@
 !
 
 module m_netstore
+   use precision, only: dp
    use network_data
    implicit none
 
@@ -44,7 +45,7 @@ module m_netstore
    type(tnod), allocatable, dimension(:) :: nod_st ! dimension(maxnodes)
    type(tface), allocatable, dimension(:) :: netcell_st ! dimension(maxcells)
 
-   double precision, allocatable, dimension(:) :: xk_st, yk_st ! dimension(maxnodes)
+   real(kind=dp), allocatable, dimension(:) :: xk_st, yk_st ! dimension(maxnodes)
    integer, allocatable, dimension(:) :: nmk_st ! dimension(maxnodes)
    integer, allocatable, dimension(:) :: nb_st ! dimension(maxnodes)
    integer, allocatable, dimension(:) :: lnn_st ! dimension(maxlinks)
@@ -64,6 +65,7 @@ contains
    subroutine local_netstore(k)
       use m_netw
       use m_alloc
+      use m_qnerror
 
       implicit none
 
@@ -126,8 +128,8 @@ contains
          !     maxlinks check
          if (size(iL_st) < maxlinks) then
             call realloc(lnn_st, maxlinks)
-            call realloc(lne_st, (/2, maxlinks/))
-            call realloc(kn_st, (/3, maxlinks/))
+            call realloc(lne_st, [2, maxlinks])
+            call realloc(kn_st, [3, maxlinks])
             call realloc(iL_st, maxlinks)
          end if
 
@@ -158,10 +160,6 @@ contains
       do i = 1, numcells
          icell = ip_st(i)
          N = netcell(icell)%N
-
-         if (icell == 5005) then
-            continue
-         end if
 
          !     store cell data
          netcell_st(i)%lin(1:N) = netcell(icell)%lin(1:N)
@@ -265,29 +263,55 @@ contains
 
       integer :: i
 
-      if (allocated(xk_st)) deallocate (xk_st)
-      if (allocated(yk_st)) deallocate (yk_st)
-      if (allocated(nmk_st)) deallocate (nmk_st)
-      if (allocated(nb_st)) deallocate (nb_st)
-      if (allocated(ik_st)) deallocate (ik_st)
-      if (allocated(ip_st)) deallocate (ip_st)
-      if (allocated(iL_st)) deallocate (iL_st)
+      if (allocated(xk_st)) then
+         deallocate (xk_st)
+      end if
+      if (allocated(yk_st)) then
+         deallocate (yk_st)
+      end if
+      if (allocated(nmk_st)) then
+         deallocate (nmk_st)
+      end if
+      if (allocated(nb_st)) then
+         deallocate (nb_st)
+      end if
+      if (allocated(ik_st)) then
+         deallocate (ik_st)
+      end if
+      if (allocated(ip_st)) then
+         deallocate (ip_st)
+      end if
+      if (allocated(iL_st)) then
+         deallocate (iL_st)
+      end if
 
-      if (allocated(lnn_st)) deallocate (lnn_st)
-      if (allocated(lne_st)) deallocate (lne_st)
-      if (allocated(kn_st)) deallocate (kn_st)
+      if (allocated(lnn_st)) then
+         deallocate (lnn_st)
+      end if
+      if (allocated(lne_st)) then
+         deallocate (lne_st)
+      end if
+      if (allocated(kn_st)) then
+         deallocate (kn_st)
+      end if
 
       if (allocated(netcell_st)) then
          do i = 1, ubound(netcell_st, 1)
-            if (allocated(netcell_st(i)%lin)) deallocate (netcell_st(i)%lin)
-            if (allocated(netcell_st(i)%nod)) deallocate (netcell_st(i)%nod)
+            if (allocated(netcell_st(i)%lin)) then
+               deallocate (netcell_st(i)%lin)
+            end if
+            if (allocated(netcell_st(i)%nod)) then
+               deallocate (netcell_st(i)%nod)
+            end if
          end do
          deallocate (netcell_st)
       end if
 
       if (allocated(nod_st)) then
          do i = 1, ubound(nod_st, 1)
-            if (allocated(nod_st(i)%lin)) deallocate (nod_st(i)%lin)
+            if (allocated(nod_st(i)%lin)) then
+               deallocate (nod_st(i)%lin)
+            end if
          end do
          deallocate (nod_st)
       end if

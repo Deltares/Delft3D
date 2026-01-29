@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,14 +29,17 @@
 
 !
 !
-
-subroutine getq3(hg, a, h1, h2, q) ! momentumbehoud bovenstrooms
-   implicit none ! bepaal q gegeven a,hg,h1,h2
-   double precision :: hg, a, h1, h2, q
-   double precision :: g, t, r, tr
-   g = 9.81d0
-   t = g * a * (h2 - h1)
-   r = 1.0 / h1 - 1d0 / hg
-   tr = t / r
-   q = sqrt(tr)
-end subroutine getq3
+module m_getq3
+   implicit none
+contains
+   subroutine getq3(hg, a, h1, h2, q) ! momentumbehoud bovenstrooms
+      use precision, only: dp
+      real(kind=dp) :: hg, a, h1, h2, q
+      real(kind=dp) :: g, t, r, tr
+      g = 9.81_dp
+      t = g * a * (h2 - h1)
+      r = 1.0 / h1 - 1.0_dp / hg
+      tr = t / r
+      q = sqrt(tr)
+   end subroutine getq3
+end module m_getq3

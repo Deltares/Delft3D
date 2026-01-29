@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/parser/mixin/schema.xsd
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <xsd:complexType name="base">
+    <xsd:sequence>
+      <xsd:element name="a" type="xsd:boolean"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="derived">
+    <xsd:complexContent>
+      <xsd:extension base="base">
+        <xsd:sequence>
+          <xsd:element name="b" type="xsd:int"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:element name="root" type="derived"/>
+
+</xsd:schema>

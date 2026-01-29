@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,46 +29,61 @@
 
 !
 !
+module m_anchor
+   use m_towor
+   use m_setxor
 
-      subroutine ANCHOR(X, Y)
-         use unstruc_colors
-         use m_flow, only: nplot
-         use m_GlobalParameters, only: INDTP_ALL
-         implicit none
-         integer :: jashow
-         integer :: jmouse
-         integer :: ma
-         integer :: na
-         integer :: k
-         double precision :: x, y, xa, ya, xlc, ylc, xx, yy
-         real :: xr, yr
-         !    VEEG OUDE CROSS UIT EN ZET NIEUWE
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
+   implicit none
+contains
+   subroutine ANCHOR(X, Y)
+      use precision, only: dp
+      use unstruc_colors, only: klank
+      use m_locatora, only: xa, ya
+      use m_dproject, only: dproject
+      use m_inflowcell, only: inflowcell
+      use m_disdis, only: disdis
+      use m_set_col, only: setcol
+      use m_flow, only: nplot
+      use m_GlobalParameters, only: INDTP_ALL
 
-         if (X == 0 .and. Y == 0) then
-            MA = 25
-            NA = 40
-            call TOWOR(MA, NA, XA, YA)
-         else
-            call SETXOR(1)
-            call SETCOL(KLANK)
-            call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
-            call IGrMARKER(xr, yr, 2)
-            call SETXOR(0)
-            XA = X
-            YA = Y
-         end if
+      integer :: ma
+      integer :: na
+      integer :: k
+      real(kind=dp) :: x, y, xx, yy
+      real :: xr, yr
+      !    VEEG OUDE CROSS UIT EN ZET NIEUWE
 
-         call inflowcell(XA, YA, k, 1, INDTP_ALL) ! Use anchor for new nplot point (vertical profile)
-         if (k > 0) nplot = k
-
+      if (X == 0 .and. Y == 0) then
+         MA = 25
+         NA = 40
+         call TOWOR(MA, NA, XA, YA)
+      else
          call SETXOR(1)
          call SETCOL(KLANK)
-         call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
+         call dPROJECT(xa, ya, xx, yy, 1)
+         xr = xx
+         yr = yy
          call IGrMARKER(xr, yr, 2)
          call SETXOR(0)
+         XA = X
+         YA = Y
+      end if
 
-         call DISDIS()
+      call inflowcell(XA, YA, k, 1, INDTP_ALL) ! Use anchor for new nplot point (vertical profile)
+      if (k > 0) then
+         nplot = k
+      end if
 
-         return
-      end
+      call SETXOR(1)
+      call SETCOL(KLANK)
+      call dPROJECT(xa, ya, xx, yy, 1)
+      xr = xx
+      yr = yy
+      call IGrMARKER(xr, yr, 2)
+      call SETXOR(0)
+
+      call DISDIS()
+
+      return
+   end
+end module m_anchor

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,33 +33,44 @@
 !> Computes the Eulerian horizontal velocities.
 !! In absence of waves, these are equal to the Lagrangian ucx/ucy.
 !! The Stokes drift on links is averaged to cell centers using the Perot weights.
-subroutine getucxucyeuler(N, ucxeu, ucyeu)
-   use m_flowgeom
-   use m_flow
-   use m_waves, only: ustokes ! available for all wave models
+module m_getucxucyeuler
 
    implicit none
 
-   integer, intent(in) :: N !< Length of cell arrays (probably ndkx)
-   double precision, intent(out) :: ucxeu(N) !< Target array in which to store Eulerian x-velocities
-   double precision, intent(out) :: ucyeu(N) !< Target array in which to store Eulerian y-velocities
+contains
 
-   integer :: Lb, Lt, L, LL, k1, k2
+   subroutine getucxucyeuler(N, ucxeu, ucyeu)
+      use precision, only: dp
+      use m_flowgeom, only: jawave, no_waves, lnx, ln, wcx1, wcy1, wcx2, wcy2
+      use m_flow, only: ndkx, ucx, ucy, flow_without_waves, lbot, kmxl
+      use m_waves, only: ustokes ! available for all wave models
 
-   ucxeu(1:ndkx) = ucx(1:ndkx); ucyeu(1:ndkx) = ucy(1:ndkx)
-   if (jawave > 0 .and. .not. flowWithoutWaves) then
-      do LL = 1, lnx
-         Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
-         do L = Lb, Lt
-            if (ustokes(L) /= 0d0) then ! link flows
-               k1 = ln(1, L)
-               k2 = ln(2, L)
-               ucxeu(k1) = ucxeu(k1) - wcx1(LL) * ustokes(L)
-               ucyeu(k1) = ucyeu(k1) - wcy1(LL) * ustokes(L)
-               ucxeu(k2) = ucxeu(k2) - wcx2(LL) * ustokes(L)
-               ucyeu(k2) = ucyeu(k2) - wcy2(LL) * ustokes(L)
-            end if
+      implicit none
+
+      integer, intent(in) :: N !< Length of cell arrays (probably ndkx)
+      real(kind=dp), intent(out) :: ucxeu(N) !< Target array in which to store Eulerian x-velocities
+      real(kind=dp), intent(out) :: ucyeu(N) !< Target array in which to store Eulerian y-velocities
+
+      integer :: Lb, Lt, L, LL, k1, k2
+
+      ucxeu(1:ndkx) = ucx(1:ndkx)
+      ucyeu(1:ndkx) = ucy(1:ndkx)
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
+         do LL = 1, lnx
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
+            do L = Lb, Lt
+               if (ustokes(L) /= 0.0_dp) then ! link flows
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  ucxeu(k1) = ucxeu(k1) - wcx1(LL) * ustokes(L)
+                  ucyeu(k1) = ucyeu(k1) - wcy1(LL) * ustokes(L)
+                  ucxeu(k2) = ucxeu(k2) - wcx2(LL) * ustokes(L)
+                  ucyeu(k2) = ucyeu(k2) - wcy2(LL) * ustokes(L)
+               end if
+            end do
          end do
-      end do
-   end if
-end subroutine getucxucyeuler
+      end if
+   end subroutine getucxucyeuler
+
+end module m_getucxucyeuler

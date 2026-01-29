@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,27 +29,36 @@
 
 !
 !
+module m_tek_link
+   use m_setlinkcolour
 
-  subroutine TEKLINK(L, NCOL)
-     use m_netw
-     use unstruc_colors
-     implicit none
-     integer :: L, NCOL
-     integer :: k1
-     integer :: k2
+   implicit none
+contains
+   subroutine TEKLINK(L, NCOL)
+      use m_netw, only: kn, yk, xk
+      use unstruc_colors
+      use m_set_col
+      use m_movabs
+      use m_lnabs
+      use m_ptabs
 
-     call SETLINKCOLOUR(L, NCOL)
+      integer :: L, NCOL
+      integer :: k1
+      integer :: k2
 
-     K1 = KN(1, L)
-     K2 = KN(2, L)
-     if (K1 /= 0 .and. K2 /= 0) then
-        call MOVABS(XK(K1), YK(K1))
-        call LNABS(XK(K2), YK(K2))
-        if (NCOL > 0) then
-           call SETCOL(NCOLNN)
-           call PTABS(XK(K1), YK(K1))
-           call PTABS(XK(K2), YK(K2))
-        end if
-     end if
-     return
-  end subroutine TEKLINK
+      call SETLINKCOLOUR(L, NCOL)
+
+      K1 = KN(1, L)
+      K2 = KN(2, L)
+      if (K1 /= 0 .and. K2 /= 0) then
+         call MOVABS(XK(K1), YK(K1))
+         call LNABS(XK(K2), YK(K2))
+         if (NCOL > 0) then
+            call SETCOL(NCOLNN)
+            call PTABS(XK(K1), YK(K1))
+            call PTABS(XK(K2), YK(K2))
+         end if
+      end if
+      return
+   end subroutine TEKLINK
+end module m_tek_link

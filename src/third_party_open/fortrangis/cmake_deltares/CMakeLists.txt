@@ -14,9 +14,7 @@ set(configFile ${fortranc_path}/config.h)
 set(fortranc_library_name fortranc)
 add_library(${fortranc_library_name} ${fortranc_sources})
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
+target_link_libraries(${fortranc_library_name} PRIVATE no_compiler_warnings)
 
 target_include_directories(${fortranc_library_name} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 
@@ -41,7 +39,7 @@ add_library(${fortrangis_library_name} ${fortrangis_sources})
 target_include_directories(${fortrangis_library_name} PRIVATE ${src_path}/include)
 
 # Add dependencies
-target_link_libraries(${fortrangis_library_name} PRIVATE ${fortranc_library_name})
+target_link_libraries(${fortrangis_library_name} PRIVATE ${fortranc_library_name} no_compiler_warnings)
 
 # Add dependencies of underlying 3rd party libraries
 # Use target_link_libraries with INTERFACE to propagate all these dependencies
@@ -61,12 +59,9 @@ if (UNIX)
     target_link_libraries(${fortrangis_library_name} INTERFACE PkgConfig::PROJ PkgConfig::GDAL)
 endif(UNIX)
 if (WIN32)
-    # GDAL comes pre-compiled on Windows
-    target_link_libraries(${fortrangis_library_name} INTERFACE "gdal_i.lib")
-    target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj "sqlite3.lib" "ole32.lib" "shell32.lib")
-
-    target_include_directories(${fortrangis_library_name} INTERFACE ${gisinternals_path})
-    target_link_directories(${fortrangis_library_name} INTERFACE ${sqlite3_path}/lib ${gisinternals_path})
+   target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj)
+   find_package(gdal REQUIRED HINTS "${src_path}/../gdal")
+   target_link_libraries(${fortrangis_library_name} PRIVATE GDAL::GDAL)
 endif(WIN32)
 
 # Propagate preprocessor variable definitions to any other package that uses fortrangis.
@@ -74,11 +69,6 @@ target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_PROJ)
 target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_SHAPELIB)
 target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_GDAL)
 
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${fortrangis_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${fortrangis_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
-
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortranc_sources})
 set_target_properties (${fortrangis_library_name} PROPERTIES FOLDER third_party_open/fortrangis)
-

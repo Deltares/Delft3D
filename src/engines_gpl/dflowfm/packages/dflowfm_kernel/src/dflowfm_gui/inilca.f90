@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,17 +30,23 @@
 !
 !
 
-      subroutine INILCA()
-         use m_wearelt
-         implicit none
-         integer :: jashow
-         integer :: jmouse
-         double precision :: XLC, YLC, XA, YA
-         double precision :: xla, yla
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         !CALL ORGLOCATOR(XLA,XLB)
-         XLA = 0.05 * xmax + 0.95 * xmin
-         yLA = 0.05 * ymax + 0.95 * ymin
-         call ANCHOR(XLA, yla)
-         return
-      end
+module m_inilca
+
+   implicit none
+
+contains
+
+   subroutine INILCA()
+      use precision, only: dp
+      use m_wearelt, only: xmax, xmin, ymax, ymin
+      use m_anchor, only: anchor
+
+      real(kind=dp) :: xla, yla
+      !CALL ORGLOCATOR(XLA,XLB)
+      XLA = 0.05 * xmax + 0.95 * xmin
+      yLA = 0.05 * ymax + 0.95 * ymin
+      call ANCHOR(XLA, yla)
+      return
+   end
+
+end module m_inilca

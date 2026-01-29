@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,24 +30,32 @@
 !
 !
 
- subroutine copywaterlevelstosamples()
-    use m_samples
-    use m_flowgeom
-    use m_flow
-    use unstruc_display, only: wetplot
+module m_copywaterlevelstosamples
 
-    use M_MISSING
-    implicit none
-    integer :: k, n
-    double precision, external :: znod
+   implicit none
 
-    k = 0
-    do n = 1, ndx
-       if (hs(n) >= wetplot) then
-          k = k + 1
-          call increasesam(k)
-          xs(k) = xz(n); ys(k) = yz(n); zs(k) = znod(n)
-       end if
-    end do
-    ns = k
- end subroutine copywaterlevelstosamples
+contains
+
+   subroutine copywaterlevelstosamples()
+      use m_samples, only: ns, xs, ys, zs, increasesam
+      use m_flowgeom, only: ndx, xz, yz
+      use m_flow, only: hs
+      use unstruc_display_data, only: wetplot
+      use m_znod
+
+      integer :: k, n
+
+      k = 0
+      do n = 1, ndx
+         if (hs(n) >= wetplot) then
+            k = k + 1
+            call increasesam(k)
+            xs(k) = xz(n)
+            ys(k) = yz(n)
+            zs(k) = znod(n)
+         end if
+      end do
+      ns = k
+   end subroutine copywaterlevelstosamples
+
+end module m_copywaterlevelstosamples

@@ -1,0 +1,35 @@
+set(waq_include_dir ${CMAKE_CURRENT_LIST_DIR}/dwaq)
+include(${waq_include_dir}/dwaq_functions.cmake)
+
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
+set(include_paths_kernel ${waq_include_dir}/dwaq_base.cmake
+                         ${waq_include_dir}/dwaq_kernel.cmake
+                         ${waq_include_dir}/dwaq_dflowfm_online_coupling.cmake)
+
+include_component("D-WAQ kernel" "${include_paths_kernel}")
+include_component("D-WAQ tools" ${waq_include_dir}/dwaq_tools.cmake)
+include_component("D-PART kernel" ${waq_include_dir}/dpart.cmake)
+include_component("D-WAQ third party libraries" ${waq_include_dir}/dwaq_third_party.cmake)
+include_component("D-WAQ utils" ${waq_include_dir}/dwaq_utils.cmake)
+include_component("D-WAQ unit and integration tests" ${waq_include_dir}/dwaq_tests.cmake)
+
+#intel MPI & MKL
+if(${configuration_type} STREQUAL ${dwaq_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-waq_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-part_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-none_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-qp_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-tc_configuration})
+    message(STATUS "Intel MPI & MKL")
+    list(APPEND CMAKE_MESSAGE_INDENT "   ")
+
+    add_target_with_subdirectory(intelredist ${intelredist_module})
+
+    list(POP_BACK CMAKE_MESSAGE_INDENT)
+endif()
+
+# Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
+project(dwaq)
+
+list(POP_BACK CMAKE_MESSAGE_INDENT)

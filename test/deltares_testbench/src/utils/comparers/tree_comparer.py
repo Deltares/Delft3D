@@ -1,6 +1,6 @@
 """Dump files, xml, json.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import os
@@ -13,6 +13,7 @@ import numpy as np
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.i_logger import ILogger
 
@@ -285,26 +286,26 @@ class TreeComparer(IComparer):
             local_error = False
             # Create container that will hold all the values and append them in the paramResults
             end_result = ComparisonResult(error=local_error)
-            end_result.result = "OK"
+            end_result.result = EndResult.OK
             # Go through all the results
             # If there is an ERROR or if the values are NOK then new result will be modified
             # Those wrong path are append in the end_result
             # And the coordinates of the block that fails
             for result in results:
-                if result.result == "NOK":
-                    end_result.result = "NOK"
-                    if result.maxAbsDiffCoordinates not in end_result.maxAbsDiffCoordinates:
-                        end_result.maxAbsDiffCoordinates = result.maxAbsDiffCoordinates
-                    if result.lineNumber != 0:
-                        result.path = f"{result.path} (row: {result.lineNumber})"
+                if result.result == EndResult.NOK:
+                    end_result.result = EndResult.NOK
+                    if result.max_abs_diff_coordinates not in end_result.max_abs_diff_coordinates:
+                        end_result.max_abs_diff_coordinates = result.max_abs_diff_coordinates
+                    if result.line_number != 0:
+                        result.path = f"{result.path} (row: {result.line_number})"
                     if result.path not in end_result.path:
                         end_result.path.append(result.path)
                         parameter.location = result.path
                 if result.error:
                     end_result.error = True
-                    end_result.result = "ERROR"
-                    if result.lineNumber != 0:
-                        result.path = f"{result.path} (row: {result.lineNumber})"
+                    end_result.result = EndResult.ERROR
+                    if result.line_number != 0:
+                        result.path = f"{result.path} (row: {result.line_number})"
                     if result.path not in end_result.path:
                         end_result.path.append(result.path)
             paramResults.append((testcase_name, file_check, parameter, end_result))
@@ -358,12 +359,12 @@ class TreeComparer(IComparer):
         local_error = False
         columnresults = ComparisonResult(error=local_error)
         # Result is always NOK when a column is missing
-        columnresults.result = "NOK"
+        columnresults.result = EndResult.NOK
 
         if reftable.__len__() < testtable.__len__():
             # Column was added to the table
             missingcolumns = list(set(testtable.keys()) - set(reftable.keys()))
-            columnresults.maxAbsDiffCoordinates = (
+            columnresults.max_abs_diff_coordinates = (
                 testbranch["block_start"][0],
                 testbranch["block_end"][0],
             )
@@ -374,7 +375,7 @@ class TreeComparer(IComparer):
         else:
             # Column was removed from the table
             missingcolumns = list(set(reftable.keys()) - set(testtable.keys()))
-            columnresults.maxAbsDiffCoordinates = (
+            columnresults.max_abs_diff_coordinates = (
                 refbranch["block_start"][0],
                 refbranch["block_end"][0],
             )
@@ -643,46 +644,46 @@ class TreeComparer(IComparer):
                         testvalue = float(testvalue)
                     # The values are exactly the same
                     if refvalue == testvalue:
-                        result.result = "OK"
+                        result.result = EndResult.OK
                     # The values are not the same but they are within the Tolerances
                     elif abs(testvalue - refvalue) <= self.SetPythonCompatibility(
                         parameter.getToleranceAbsolute()
                     ) and abs((testvalue - refvalue) / refvalue) <= self.SetPythonCompatibility(
                         parameter.getToleranceRelative()
                     ):
-                        result.result = "OK"
+                        result.result = EndResult.OK
                     # The value is not the same and is above absolute Tolerances
                     elif abs(testvalue - refvalue) >= self.SetPythonCompatibility(parameter.getToleranceAbsolute()):
-                        result.maxAbsDiff = abs(testvalue - refvalue)
-                        result.maxAbsDiffValues = (testvalue, refvalue)
+                        result.max_abs_diff = abs(testvalue - refvalue)
+                        result.max_abs_diff_values = (testvalue, refvalue)
                         message = "Absolute Error:   test = %12.6e     ref = %12.6e (%12.6e): %s" % (
                             testvalue,
                             refvalue,
-                            result.maxAbsDiff,
+                            result.max_abs_diff,
                             result.path,
                         )
                         logger.info(message)
-                        result.result = "NOK"
+                        result.result = EndResult.NOK
                     # The value is not the same and is above relative Tolerances
                     else:
-                        result.maxRelDiff = abs((testvalue - refvalue) / refvalue)
-                        result.maxRelDiffValues = (testvalue, refvalue)
+                        result.max_rel_diff = abs((testvalue - refvalue) / refvalue)
+                        result.max_rel_diff_values = (testvalue, refvalue)
                         message = "Relative Error:   test = %12.6e     ref = %12.6e (%10.2f %%): %s" % (
                             testvalue,
                             refvalue,
-                            result.maxRelDiff * 100,
+                            result.max_rel_diff * 100,
                             result.path,
                         )
                         logger.info(message)
-                        result.result = "NOK"
+                        result.result = EndResult.NOK
                     results.append(result)
                 except:
                     # if the values tested are strings then they are tested here for their equality
                     try:
                         if refvalue == testvalue:
-                            result.result = "OK"
+                            result.result = EndResult.OK
                         else:
-                            result.result = "NOK"
+                            result.result = EndResult.NOK
                             results.append(result)
                     except:
                         local_error = True
@@ -714,12 +715,12 @@ class TreeComparer(IComparer):
                 for i, ref_val in enumerate(refvalue):
                     # Create a container for the results
                     result = ComparisonResult(error=local_error)
-                    result.lineNumber = i + 1
-                    result.columnNumber = columnNumber
+                    result.line_number = i + 1
+                    result.column_number = columnNumber
                     result.path = f"{pathstr}>{key}"
                     # values equal
                     if ref_val == testvalue[i]:
-                        result.result = "OK"
+                        result.result = EndResult.OK
                     # values of absolute diff and relative diff within margins
                     else:
                         if isinstance(ref_val, str) and isinstance(testvalue[i], str):
@@ -728,36 +729,36 @@ class TreeComparer(IComparer):
                                 + f"     ref = {ref_val} ({False}): {result.path}({i:d})"
                             )
                             logger.info(message)
-                            result.result = "NOK"
+                            result.result = EndResult.NOK
                         elif abs(testvalue[i] - ref_val) <= self.SetPythonCompatibility(parameter.tolerance_absolute):
-                            result.result = "OK"
+                            result.result = EndResult.OK
                         elif abs((testvalue[i] - ref_val) / ref_val) <= self.SetPythonCompatibility(
                             parameter.tolerance_relative
                         ):
-                            result.result = "OK"
+                            result.result = EndResult.OK
                         # absolute tolerance exceeded
                         elif abs(testvalue[i] - ref_val) > self.SetPythonCompatibility(parameter.tolerance_absolute):
-                            result.maxAbsDiff = abs(testvalue[i] - ref_val)
-                            result.maxAbsDiffValues = (testvalue[i], ref_val)
+                            result.max_abs_diff = abs(testvalue[i] - ref_val)
+                            result.max_abs_diff_values = (testvalue[i], ref_val)
                             message = (
                                 f"Absolute Error:   test = {testvalue[i]:12.6e}"
-                                + f"     ref = {ref_val:12.6e} ({result.maxAbsDiff:12.6e}): {result.path}({i:d})"
+                                + f"     ref = {ref_val:12.6e} ({result.max_abs_diff:12.6e}): {result.path}({i:d})"
                             )
                             logger.info(message)
-                            result.result = "NOK"
+                            result.result = EndResult.NOK
                         # relative tolerance exceeded
                         elif abs((testvalue[i] - ref_val) / ref_val) > self.SetPythonCompatibility(
                             parameter.tolerance_relative
                         ):
-                            result.maxRelDiff = abs((testvalue[i] - ref_val) / ref_val)
-                            result.maxRelDiffValues = (testvalue[i], ref_val)
+                            result.max_rel_diff = abs((testvalue[i] - ref_val) / ref_val)
+                            result.max_rel_diff_values = (testvalue[i], ref_val)
 
                             message = (
                                 f"Relative Error:   test = {testvalue:12.6e}"
-                                + f"     ref = {ref_val:12.6e} ({result.maxRelDiff * 100:10.2f}): {result.path}({i:d})"
+                                + f"     ref = {ref_val:12.6e} ({result.max_rel_diff * 100:10.2f}): {result.path}({i:d})"
                             )
                             logger.info(message)
-                            result.result = "NOK"
+                            result.result = EndResult.NOK
                     results.append(result)
         return results
 

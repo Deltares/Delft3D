@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,17 +31,32 @@
 !
 
 ! update m_wind::vextcum(:) with the realized inflow from m_wind::qextreal(:)
-subroutine updateCumulativeInflow(deltat)
-   use m_wind
-   use m_flowgeom, only: ndx
+module m_updatecumulativeinflow
 
-   integer :: k
-   double precision, intent(in) :: deltat ! dt of current timestep
+   implicit none
 
-   if (jaQext == 0) return
+   private
 
-   do k = 1, ndx
-      vextcum(k) = vextcum(k) + qextreal(k) * deltat
-   end do
+   public :: updatecumulativeinflow
 
-end subroutine updateCumulativeInflow
+contains
+
+   subroutine updateCumulativeInflow(deltat)
+      use precision, only: dp
+      use m_wind, only: jaqext, vextcum, qextreal
+      use m_flowgeom, only: ndx
+
+      integer :: k
+      real(kind=dp), intent(in) :: deltat ! dt of current timestep
+
+      if (jaQext == 0) then
+         return
+      end if
+
+      do k = 1, ndx
+         vextcum(k) = vextcum(k) + qextreal(k) * deltat
+      end do
+
+   end subroutine updateCumulativeInflow
+
+end module m_updatecumulativeinflow

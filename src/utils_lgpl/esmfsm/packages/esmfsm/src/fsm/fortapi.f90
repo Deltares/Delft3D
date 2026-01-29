@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -407,7 +407,6 @@ subroutine alignment_error (type)
     include 'globals-fsm.i'
 
     character   error*2000
-    integer     status
 
     error = 'FSM Error: ' // &
                 type (1:len (type)) // &

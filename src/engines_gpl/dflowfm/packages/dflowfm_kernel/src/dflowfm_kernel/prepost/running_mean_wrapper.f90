@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -137,7 +137,9 @@ contains
       type(TPRunningMean), allocatable :: buffer(:)
 
       keep_ = .false.
-      if (present(keep)) keep_ = keep
+      if (present(keep)) then
+         keep_ = keep
+      end if
 
       if (keep_) then
          allocate (buffer(currentSize))

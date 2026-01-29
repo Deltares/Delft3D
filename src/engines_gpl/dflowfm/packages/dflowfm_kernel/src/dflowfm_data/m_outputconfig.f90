@@ -211,12 +211,15 @@ module m_output_config
    integer, public :: IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN
    integer, public :: IDX_HIS_DISCHARGE_MAGNITUDE
 
-   integer, public :: IDX_HIS_TKE
+   integer, public :: IDX_HIS_VIU
    integer, public :: IDX_HIS_VICWWS
+   integer, public :: IDX_HIS_DIFWWS
    integer, public :: IDX_HIS_VICWWU
+   integer, public :: IDX_HIS_TKIN
    integer, public :: IDX_HIS_EPS
    integer, public :: IDX_HIS_TAU
    integer, public :: IDX_HIS_RICH
+   integer, public :: IDX_HIS_RICHS
    integer, public :: IDX_HIS_SALINITY
    integer, public :: IDX_HIS_TEMPERATURE
    integer, public :: IDX_HIS_POTENTIAL_DENSITY
@@ -257,6 +260,16 @@ module m_output_config
    integer, public :: IDX_HIS_QFREVA
    integer, public :: IDX_HIS_QFRCON
    integer, public :: IDX_HIS_QTOT
+
+   integer, public :: IDX_HIS_ICE_S1
+   integer, public :: IDX_HIS_ICE_ZMIN
+   integer, public :: IDX_HIS_ICE_ZMAX
+   integer, public :: IDX_HIS_ICE_AREA_FRACTION
+   integer, public :: IDX_HIS_ICE_THICKNESS
+   integer, public :: IDX_HIS_ICE_PRESSURE
+   integer, public :: IDX_HIS_ICE_TEMPERATURE
+   integer, public :: IDX_HIS_SNOW_THICKNESS
+   integer, public :: IDX_HIS_SNOW_TEMPERATURE
 
    integer, public :: IDX_HIS_SED_FRAC_NAME
    integer, public :: IDX_HIS_SED
@@ -364,8 +377,8 @@ module m_output_config
    integer, public :: IDX_MAP_CFU
    integer, public :: IDX_MAP_CFUTYP
    integer, public :: IDX_MAP_TEM1
+   integer, public :: IDX_MAP_SED
    integer, public :: IDX_MAP_CONST
-   integer, public :: IDX_MAP_MORS
    integer, public :: IDX_MAP_TURKIN1
    integer, public :: IDX_MAP_VICWWU
    integer, public :: IDX_MAP_TUREPS1
@@ -513,7 +526,6 @@ contains
 
 !> Reallocate config set.
    subroutine reallocate_config_set(config_set)
-      use m_alloc
 
       type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
 
@@ -546,7 +558,6 @@ contains
 
 !> Define an output configuration quantity. And set the IDX variable to the current entry
    subroutine add_output_config(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_attributes, description)
-      use netcdf, only: nf90_double, nf90_float
 
       type(t_output_quantity_config_set), intent(inout) :: config_set !< Array containing all output quantity configs.
       integer, intent(out) :: idx !< Index for the current variable.
@@ -647,7 +658,8 @@ contains
 
 !> scan the input tree, using the keys in the config_set
    subroutine scan_input_tree(tree, paragraph, config_set)
-      use properties
+      use properties, only: prop_get
+      use tree_data_types, only: tree_data
 
       type(tree_data), pointer, intent(in) :: tree !< Property tree
       character(len=*), intent(in) :: paragraph !< Paragraph of the location of the input data.
@@ -656,14 +668,15 @@ contains
       integer :: i
 
       do i = 1, config_set%count
-         call prop_get_string(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
+         call prop_get(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
       end do
 
    end subroutine scan_input_tree
 
 !> Set the properties for the diagnostics file
    subroutine set_properties(tree, paragraph, config_set)
-      use properties
+      use properties, only: prop_set
+      use tree_data_types, only: tree_data
 
       type(tree_data), pointer, intent(in) :: tree !< Property tree
       character(len=*), intent(in) :: paragraph !< Paragraph of the location of the input data.
@@ -683,6 +696,5 @@ contains
       end do
 
    end subroutine set_properties
-
 
 end module m_output_config

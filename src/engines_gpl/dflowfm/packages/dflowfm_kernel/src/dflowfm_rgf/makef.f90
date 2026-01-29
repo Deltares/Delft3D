@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,22 +30,35 @@
 !
 !
 
-      subroutine MAKEF(XR, YR, MMAX, NMAX) ! naar rekenvlak SUBROUTINE MAKEF
-         use M_SFERIC
-         use M_MISSING
-         implicit none
-         integer :: mmax, nmax
-         double precision :: XR(MMAX, NMAX), YR(MMAX, NMAX), FI2
-         integer :: i, j
-         do I = 1, MMAX
-            do J = 1, NMAX
-               if (XR(I, J) /= DXYMIS) then
-                  FI2 = DG2RD * YR(I, J)
-                  YR(I, J) = (1d0 + sin(FI2)) / cos(FI2)
-                  YR(I, J) = log(YR(I, J))
-                  XR(I, J) = DG2RD * XR(I, J)
-               end if
-            end do
+module m_makef
+
+   implicit none
+
+   private
+
+   public :: makef
+
+contains
+
+   subroutine MAKEF(XR, YR, MMAX, NMAX) ! naar rekenvlak SUBROUTINE MAKEF
+      use precision, only: dp
+      use M_SFERIC, only: dg2rd
+      use M_MISSING, only: dxymis
+
+      integer :: mmax, nmax
+      real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), FI2
+      integer :: i, j
+      do I = 1, MMAX
+         do J = 1, NMAX
+            if (XR(I, J) /= DXYMIS) then
+               FI2 = DG2RD * YR(I, J)
+               YR(I, J) = (1.0_dp + sin(FI2)) / cos(FI2)
+               YR(I, J) = log(YR(I, J))
+               XR(I, J) = DG2RD * XR(I, J)
+            end if
          end do
-         return
-      end subroutine MAKEF
+      end do
+      return
+   end subroutine MAKEF
+
+end module m_makef
