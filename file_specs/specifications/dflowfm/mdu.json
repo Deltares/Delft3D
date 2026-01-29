@@ -456,7 +456,7 @@
                     "key": "kmx",
                     "value_type": "int",
                     "default_value": 0,
-                    "description": "Number of vertical layers. NB. If keyword `sigmaGrowthFactor` is used, then number of layers is determined by D-Flow FM.",
+                    "description": "Number of vertical layers. NB. If keyword `zLayerGrowthFactor` is used, then number of layers is determined by D-Flow FM.",
                     "unit": "-"
                 },
                 {
@@ -477,6 +477,14 @@
                 },
                 {
                     "key": "sigmaGrowthFactor",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed.",
+                    "unit": "-",
+                    "status": "deprecated"
+                },
+                {
+                    "key": "zLayerGrowthFactor",
                     "value_type": "float",
                     "default_value": 1.0,
                     "description": "Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed.",

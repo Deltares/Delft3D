@@ -105,10 +105,11 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `baMin` | Minimum grid cell area, i.c.m. cutcells. | `1e-06` |  | [m²] |
 | `openBoundaryTolerance` | Search tolerance factor between boundary polyline and grid cells. | `3.0` |  | [cell size] |
 | `renumberFlowNodes` | Renumber the flow nodes. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
-| `kmx` | Number of vertical layers. NB. If keyword `sigmaGrowthFactor` is used, then number of layers is determined by D-Flow FM. | `0` |  | [-] |
+| `kmx` | Number of vertical layers. NB. If keyword `zLayerGrowthFactor` is used, then number of layers is determined by D-Flow FM. | `0` |  | [-] |
 | `layerType` | Vertical layer type. | `1` | <ul><li>**`1`**: sigma-layers</li><li>**`2`**: z- or z-sigma-layers</li></ul> |  |
 | `numTopSig` | Number of sigma-layers on top of z-layers in case of z-sigma-layers. | `0` |  |  |
 | `sigmaGrowthFactor` | Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed. | `1.0` |  | [-] |
+| `zLayerGrowthFactor` | Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed. | `1.0` |  | [-] |
 | `floorLevTopLay` | The floor level of the top layer. | `-999.0` |  | [m] |
 | `dzTop` | z-layer thickness of layers above level `dzTopUniAboveZ`. | `-999.0` |  | [m] |
 | `dzTopUniAboveZ` | The level above which the layers will have uniform thickness of `dzTop`. | `-999.0` |  | [m] |
