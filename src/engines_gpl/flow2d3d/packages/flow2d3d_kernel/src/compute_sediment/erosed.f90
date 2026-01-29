@@ -120,18 +120,24 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:,:)    , pointer :: dbodsd
     real(fp)         , dimension(:)      , pointer :: dcwwlc
     real(fp)         , dimension(:)      , pointer :: dm
+    real(fp)         , dimension(:)      , pointer :: dm_he
     real(fp)         , dimension(:)      , pointer :: dg
+    real(fp)         , dimension(:)      , pointer :: dg_he
     real(fp)         , dimension(:)      , pointer :: dgsd
+    real(fp)         , dimension(:)      , pointer :: dgsd_he
     real(fp)         , dimension(:,:)    , pointer :: dxx
+    real(fp)         , dimension(:,:)    , pointer :: dxx_he
     real(fp)         , dimension(:)      , pointer :: dzduu
     real(fp)         , dimension(:)      , pointer :: dzdvv
     real(fp)         , dimension(:)      , pointer :: epsclc
     real(fp)         , dimension(:)      , pointer :: epswlc
     real(fp)         , dimension(:,:)    , pointer :: fixfac
     real(fp)         , dimension(:,:)    , pointer :: frac
+    real(fp)         , dimension(:,:)    , pointer :: frache
     integer          , dimension(:)      , pointer :: kfsed
     integer          , dimension(:,:)    , pointer :: kmxsed
     real(fp)         , dimension(:)      , pointer :: mudfrac
+    real(fp)         , dimension(:)      , pointer :: mudfrache ! dummy not used
     real(fp)         , dimension(:)      , pointer :: sandfrac
     real(fp)         , dimension(:,:)    , pointer :: hidexp
     real(fp)         , dimension(:)      , pointer :: rsdqlc
@@ -211,6 +217,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     integer                              , pointer :: iunderlyr
     real(fp)         , dimension(:,:)    , pointer :: depfac
     real(fp)         , dimension(:,:)    , pointer :: mfluff
+    integer                              , pointer :: ihidexptrcrs
+    integer                              , pointer :: ithresh
     include 'flow_steps_f.inc'
 !
 ! Local parameters
@@ -441,18 +449,24 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     dbodsd              => gdp%gderosed%dbodsd
     dcwwlc              => gdp%gderosed%dcwwlc
     dm                  => gdp%gderosed%dm
+    dm_he               => gdp%gderosed%dm_he
     dg                  => gdp%gderosed%dg
+    dg_he               => gdp%gderosed%dg_he
     dgsd                => gdp%gderosed%dgsd
+    dgsd_he             => gdp%gderosed%dgsd_he
     dxx                 => gdp%gderosed%dxx
+    dxx_he              => gdp%gderosed%dxx_he
     dzduu               => gdp%gderosed%e_dzdn
     dzdvv               => gdp%gderosed%e_dzdt
     epsclc              => gdp%gderosed%epsclc
     epswlc              => gdp%gderosed%epswlc
     fixfac              => gdp%gderosed%fixfac
     frac                => gdp%gderosed%frac
+    frache             => gdp%gderosed%frache
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
     mudfrac             => gdp%gderosed%mudfrac
+    mudfrache          => gdp%gderosed%mudfrache
     sandfrac            => gdp%gderosed%sandfrac
     hidexp              => gdp%gderosed%hidexp
     rsdqlc              => gdp%gderosed%rsdqlc
@@ -526,6 +540,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     depfac              => gdp%gdmorpar%flufflyr%depfac
     mfluff              => gdp%gdmorpar%flufflyr%mfluff
     wetslope            => gdp%gdmorpar%wetslope
+    ihidexptrcrs        => gdp%gdmorlyr%settings%ihidexptrcrs
+    ithresh             => gdp%gdmorpar%ithresh
     !
     allocate (localpar (npar), stat = istat)
     !
@@ -611,6 +627,10 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     if (lsedtot > 1) then
        call getfrac(gdp%gdmorlyr,frac      ,anymud    ,mudcnt    , &
                   & mudfrac     ,gdp%d%nmlb,gdp%d%nmub)
+       if (ihidexptrcrs == 1) then 
+          call getfrac(gdp%gdmorlyr,frache    ,anymud    ,mudcnt    , &
+                     & mudfrache   ,gdp%d%nmlb,gdp%d%nmub, 1, 2)
+       endif 
     endif
     !
     ! Calculate velocity components and magnitude at the zeta points
@@ -630,7 +650,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     dtmor = dt * morfac
     !
     call getfixfac(gdp%gdmorlyr, gdp%d%nmlb, gdp%d%nmub, lsedtot, &
-                 & nmmax       , fixfac    , ffthresh  )
+                 & nmmax       , fixfac    , ffthresh  , ithresh)
     !
     ! Set fixfac to 1.0 for tracer sediments and adjust frac
     !
@@ -679,16 +699,29 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! calculate geometric mean sediment diameter Dg
        ! calculate percentiles Dxx
        !
-       call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
-                   & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
+       if (ihidexptrcrs == 1) then 
+          call compdiam(frache   ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+                      & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
+                      & gdp%d%nmub,xx        ,nxx       ,sedd50fld ,dm_he     , &
+                      & dg_he     ,dxx_he    ,dgsd_he   )
+       else 
+          call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+                      & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
                    & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
                    & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
+       endif
        !
        ! determine hiding & exposure factors
        !
-       call comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
-                     & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
-                     & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
+       if (ihidexptrcrs == 1) then 
+          call comphidexp(frache   ,dm_he     ,nmmax     ,lsedtot   , &
+                        & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
+                        & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
+       else 
+          call comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
+                        & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
+                        & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
+       endif
        !
        ! compute sand fraction
        !
