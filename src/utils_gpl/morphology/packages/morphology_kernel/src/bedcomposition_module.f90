@@ -426,14 +426,14 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
              do l = 1, this%settings%nfrac
                 temp  = msed(l, 1, nm) + dbodsd(l, nm) ! account for mobility of sediment here too?
                 if (temp < 0.0_fp) then
-                   if (temp < -morlyrnum%MinMassShortWarning .and. morlyrnum%MaxNumShortWarning>0) then
-                      morlyrnum%MaxNumShortWarning = morlyrnum%MaxNumShortWarning - 1
+                   if (temp < -morlyrnum%mass_shortage_thresh .and. morlyrnum%max_num_shortage_warnings>0) then
+                      morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
                       write(message,'(a,i5,a,i3,a,e20.4,a,e20.4)') &
                          & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
                          & ' Mass available   : ' ,msed(l, 1, nm), &
                          & ' Mass to be eroded: ', dbodsd(l, nm)
                       call addmessage(messages,message)
-                      if (morlyrnum%MaxNumShortWarning == 0) then
+                      if (morlyrnum%max_num_shortage_warnings == 0) then
                          message = 'Sediment erosion shortage messages suppressed'
                          call addmessage(messages,message)
                       endif
