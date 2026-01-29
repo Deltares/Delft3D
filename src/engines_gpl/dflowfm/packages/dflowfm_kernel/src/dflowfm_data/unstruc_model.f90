@@ -938,10 +938,8 @@ contains
             numtopsig = 0
          end if
          call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform)
-         call prop_get(md_ptr, 'geometry', 'sigmaGrowthFactor', z_layer_growth_factor, success) ! Deprecated, sigmaGrowthFactor is replaced by zLayerGrowthFactor
-         if (.not. success) then
-            call prop_get(md_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor)
-         end if
+         call prop_get(md_ptr, 'geometry', 'sigmaGrowthFactor', z_layer_growth_factor) ! Deprecated, sigmaGrowthFactor is replaced by zLayerGrowthFactor
+         call prop_get(md_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor)
          call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
          call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
