@@ -264,12 +264,9 @@ contains
       integer :: row, col_start, col_end, idx, num_links
 
       ! Stack input vectors: [input_x; input_y]
-      allocate (input_vector(matrix%num_cols))
       allocate (output_vector(matrix%num_rows))
-
-      input_vector(1:size(input_x)) = input_x
-      input_vector(size(input_x) + 1:) = input_y
-
+      input_vector = [input_x, input_y]
+    
 #ifdef USE_MKL_SPARSE
       ! Use Intel MKL if available (10x faster)
       call mkl_dcsrmv('N', matrix%num_rows, matrix%num_cols, 1.0_dp, 'G', &
