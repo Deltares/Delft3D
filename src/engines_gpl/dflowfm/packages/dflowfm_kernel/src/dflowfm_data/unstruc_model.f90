@@ -664,7 +664,7 @@ contains
    subroutine readMDUFile(filename, istat)
       use time_module, only: ymd2modified_jul, datetimestring_to_seconds
       use m_flow, notinuse_s => success
-      !,                  only : kmx, layertype, mxlayz, sigmagrowthfactor, iturbulencemodel, &
+      !,                  only : kmx, layertype, mxlayz, z_layer_growth_factor, iturbulencemodel, &
       !                         LAYTP_SIGMA, numtopsig, spirbeta,                              &
       !                         dztopuniabovez, dztop, uniformhu, jahazlayer, Floorlevtoplay,         &
       !                         javakeps,                                                             &
@@ -937,8 +937,9 @@ contains
             call warn_flush()
             numtopsig = 0
          end if
-         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform, success)
-         call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
+         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform)
+         call prop_get(md_ptr, 'geometry', 'sigmaGrowthFactor', z_layer_growth_factor) ! Deprecated, sigmaGrowthFactor is replaced by zLayerGrowthFactor
+         call prop_get(md_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor)
          call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
          call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
@@ -2642,7 +2643,7 @@ contains
 
 !> Write a model definition to a file pointer
    subroutine writeMDUFilepointer(mout, writeall, istat)
-      use m_flow ! ,                !  only : kmx, layertype, mxlayz, sigmagrowthfactor, numtopsig, &
+      use m_flow ! ,                !  only : kmx, layertype, mxlayz, z_layer_growth_factor, numtopsig, &
       !         Iturbulencemodel, spirbeta, dztopuniabovez, dztop, jahazlayer, Floorlevtoplay ,  &
       !         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,         &
       !         Tsigma, jarhoxu, iStrchType, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
@@ -2929,7 +2930,7 @@ contains
             call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform', jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')
          end if
 
-         call prop_set(prop_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor, 'Layer thickness growth factor from bed up')
+         call prop_set(prop_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor, 'z-layer thickness growth factor from DzTopUniAboveZ downwards')
          if (writeall .or. dztop /= dmiss) then
             call prop_set(prop_ptr, 'geometry', 'Dztop', Dztop, 'Z-layer thickness of layers above level Dztopuniabovez')
          end if
@@ -2957,7 +2958,7 @@ contains
          end if
 
          if (writeall .or. dztopuniabovez /= dmiss) then
-            call prop_set(prop_ptr, 'geometry', 'Dztopuniabovez', Dztopuniabovez, 'Above this level layers will have uniform Dztop, below we use SigmaGrowthFactor')
+            call prop_set(prop_ptr, 'geometry', 'Dztopuniabovez', Dztopuniabovez, 'Above this level layers will have uniform Dztop, below we use zLayerGrowthFactor')
          end if
          if (Tsigma /= 100.0_dp) then
             call prop_set(prop_ptr, 'geometry', 'Tsigma', Tsigma, 'Sigma Adaptation period for Layertype==4 (s)')
