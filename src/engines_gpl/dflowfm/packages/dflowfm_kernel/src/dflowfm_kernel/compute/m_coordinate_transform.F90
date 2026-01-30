@@ -66,6 +66,7 @@ contains
    !> Initialize transformation matrices (call once at model startup)
    subroutine initialize_coordinate_transform()
       use m_flowgeom, only: lnx, lnx1D, ndx, ln, lncn, csb, snb, csbn, snbn
+      use network_data, only: numk
       use m_sferic, only: jsferic, jasfer3D
       use m_alloc, only: aerr
 
@@ -103,15 +104,14 @@ contains
          ! Build sparse transformation matrices for 2D links
          num_2d_links = lnx - lnx1D
 
-         call build_node_transform_matrix(node_transform, num_2d_links, ndx, &
-                                          ln(1:2, lnx1D + 1:lnx), &
-                                          csb(:, lnx1D + 1:lnx), snb(:, lnx1D + 1:lnx), &
-                                          jsferic, jasfer3D)
+         ! Build sparse matrices (single routine for both)
+         call build_transform_matrix(node_transform, num_2d_links, ndx, &
+                                     ln(1:2, lnx1D + 1:lnx), &
+                                     csb(:, lnx1D + 1:lnx), snb(:, lnx1D + 1:lnx))
 
-         !call build_corner_transform_matrix(corner_transform, num_2d_links, numk, &
-         !                                   lncn(1:2, lnx1D + 1:lnx), &
-         !                                   csbn(:, lnx1D + 1:lnx), snbn(:, lnx1D + 1:lnx), &
-         !                                   jsferic, jasfer3D)
+         call build_transform_matrix(corner_transform, num_2d_links, numk, &
+                                     lncn(1:2, lnx1D + 1:lnx), &
+                                     csbn(:, lnx1D + 1:lnx), snbn(:, lnx1D + 1:lnx))
       end if
 
       is_initialized = .true.
@@ -167,26 +167,22 @@ contains
    ! Private implementation routines (users never see these)
    !========================================================================
 
-   !> Build sparse matrix for node-to-link transformation
-   subroutine build_node_transform_matrix(matrix, num_links, num_nodes, &
-                                          link_nodes, csb_coef, snb_coef, &
-                                          jsferic, jasfer3D)
+   !> Build sparse matrix for coordinate transformation (works for both nodes and corners)
+   subroutine build_transform_matrix(matrix, num_links, num_points, &
+                                     link_point_indices, cs_coef, sn_coef)
       implicit none
 
       type(sparse_transform_matrix), intent(out) :: matrix
-      integer, intent(in) :: num_links, num_nodes
-      integer, intent(in) :: link_nodes(2, num_links)
-      real(dp), intent(in) :: csb_coef(2, num_links), snb_coef(2, num_links)
-      integer, intent(in) :: jsferic, jasfer3D
+      integer, intent(in) :: num_links, num_points
+      integer, intent(in) :: link_point_indices(2, num_links)  ! Can be nodes or corners
+      real(dp), intent(in) :: cs_coef(2, num_links)            ! csb or csbn
+      real(dp), intent(in) :: sn_coef(2, num_links)            ! snb or snbn
 
-      integer :: L, row, idx, k1, k2
-      logical :: use_spherical
-
-      use_spherical = (jsferic == 1 .and. jasfer3D == 1)
+      integer :: L, row, idx, pt1, pt2
 
       matrix%num_rows = 2 * num_links
-      matrix%num_cols = 2 * num_nodes ! ucx and ucy stacked
-      matrix%num_nonzeros = 4 * num_links ! 2 entries per row
+      matrix%num_cols = 2 * num_points  ! input vectors stacked [x; y]
+      matrix%num_nonzeros = 4 * num_links
 
       allocate (matrix%values(matrix%num_nonzeros))
       allocate (matrix%column_indices(matrix%num_nonzeros))
@@ -194,67 +190,38 @@ contains
 
       idx = 1
       do L = 1, num_links
-         k1 = link_nodes(1, L)
-         k2 = link_nodes(2, L)
+         pt1 = link_point_indices(1, L)
+         pt2 = link_point_indices(2, L)
 
          ! Row for side 1 of link
          row = 2 * L - 1
          matrix%row_pointers(row) = idx
 
-         if (use_spherical) then
-            ! ucx_link(1,L) = csb(1,L)*ucx(k1) + snb(1,L)*ucy(k1)
-            matrix%values(idx) = csb_coef(1, L)
-            matrix%column_indices(idx) = k1
-            idx = idx + 1
+         ! output(1,L) = cs(1,L)*input_x(pt1) + sn(1,L)*input_y(pt1)
+         matrix%values(idx) = cs_coef(1, L)
+         matrix%column_indices(idx) = pt1
+         idx = idx + 1
 
-            matrix%values(idx) = snb_coef(1, L)
-            matrix%column_indices(idx) = num_nodes + k1 ! ucy offset
-            idx = idx + 1
-         else
-            ! Cartesian: ucx_link(1,L) = ucx(k1)
-            matrix%values(idx) = 1.0_dp
-            matrix%column_indices(idx) = k1
-            idx = idx + 1
+         matrix%values(idx) = sn_coef(1, L)
+         matrix%column_indices(idx) = num_points + pt1  ! y offset
+         idx = idx + 1
 
-            matrix%values(idx) = 0.0_dp
-            matrix%column_indices(idx) = num_nodes + k1
-            idx = idx + 1
-         end if
-
-         ! Row for side 2 of link (similar logic)
+         ! Row for side 2 of link
          row = 2 * L
          matrix%row_pointers(row) = idx
 
-         if (use_spherical) then
-            matrix%values(idx) = csb_coef(2, L)
-            matrix%column_indices(idx) = k2
-            idx = idx + 1
+         matrix%values(idx) = cs_coef(2, L)
+         matrix%column_indices(idx) = pt2
+         idx = idx + 1
 
-            matrix%values(idx) = snb_coef(2, L)
-            matrix%column_indices(idx) = num_nodes + k2
-            idx = idx + 1
-         else
-            matrix%values(idx) = 1.0_dp
-            matrix%column_indices(idx) = k2
-            idx = idx + 1
-
-            matrix%values(idx) = 0.0_dp
-            matrix%column_indices(idx) = num_nodes + k2
-            idx = idx + 1
-         end if
+         matrix%values(idx) = sn_coef(2, L)
+         matrix%column_indices(idx) = num_points + pt2
+         idx = idx + 1
       end do
 
       matrix%row_pointers(matrix%num_rows + 1) = idx
 
-   end subroutine build_node_transform_matrix
-
-   !!> Build sparse matrix for corner-to-link transformation
-   !subroutine build_corner_transform_matrix(matrix, num_links, num_corners, &
-   !                                         link_corners, csbn_coef, snbn_coef, &
-   !                                         jsferic, jasfer3D)
-   !   ! Similar to build_node_transform_matrix but for corners
-   !   ! (Implementation omitted for brevity - same structure)
-   !end subroutine build_corner_transform_matrix
+   end subroutine build_transform_matrix
 
    !> Apply sparse matrix transformation (this is where the speed happens)
    subroutine apply_sparse_transform(matrix, input_x, input_y, output_x, output_y)
