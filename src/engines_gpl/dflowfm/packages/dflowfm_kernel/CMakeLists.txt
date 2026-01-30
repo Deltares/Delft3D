@@ -199,6 +199,34 @@ if (WIN32)
     )
 
     include_directories(${petsc_path})
+
+    # Try to find MKL for sparse matrix operations (Windows)
+    if(DEFINED ENV{MKLROOT})
+       set(mkl_root $ENV{MKLROOT})
+    elseif(DEFINED ENV{ONEAPI_ROOT})
+       set(mkl_root "$ENV{ONEAPI_ROOT}/mkl/latest")
+    endif()
+    if(DEFINED mkl_root)
+        message(STATUS "MKL found at: ${mkl_root}")
+        
+        target_include_directories(${library_name} PUBLIC "${mkl_root}/include"
+                                                           "${mkl_root}/include/intel64/lp64")
+        
+        # Windows uses different library paths
+        target_link_directories(${library_name} PUBLIC "${mkl_root}/lib")
+        
+        # Windows MKL libraries (no pthread, m, or dl needed)
+        target_link_libraries(${library_name} PUBLIC 
+            mkl_intel_lp64_dll.lib
+            mkl_sequential_dll.lib
+            mkl_core_dll.lib
+        )
+        
+        target_compile_definitions(${library_name} PRIVATE USE_MKL_SPARSE)
+        message(STATUS "MKL Sparse BLAS support enabled for dflowfm_kernel (Windows)")
+    else()
+        message(STATUS "MKL not found - set MKLROOT environment variable to enable MKL Sparse BLAS")
+    endif()
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"

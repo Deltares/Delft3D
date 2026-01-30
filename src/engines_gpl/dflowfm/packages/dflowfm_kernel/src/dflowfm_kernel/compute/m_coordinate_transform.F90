@@ -184,7 +184,7 @@ contains
    ! Private implementation routines (users never see these)
    !========================================================================
 
-      !> Build sparse matrix for coordinate transformation (works for both nodes and corners)
+   !> Build sparse matrix for coordinate transformation (works for both nodes and corners)
    !! Computes BOTH x and y components in one matrix-vector multiply
    subroutine build_transform_matrix(matrix, num_links, num_points, &
                                      link_point_indices, cs_coef, sn_coef)
@@ -192,16 +192,16 @@ contains
 
       type(sparse_transform_matrix), intent(out) :: matrix
       integer, intent(in) :: num_links, num_points
-      integer, intent(in) :: link_point_indices(2, num_links)  ! Can be nodes or corners
-      real(dp), intent(in) :: cs_coef(2, num_links)            ! csb or csbn
-      real(dp), intent(in) :: sn_coef(2, num_links)            ! snb or snbn
+      integer, intent(in) :: link_point_indices(2, num_links) ! Can be nodes or corners
+      real(dp), intent(in) :: cs_coef(2, num_links) ! csb or csbn
+      real(dp), intent(in) :: sn_coef(2, num_links) ! snb or snbn
 
       integer :: L, idx, pt1, pt2
 
       ! 4 rows per link: ucx(1), ucy(1), ucx(2), ucy(2)
       matrix%num_rows = 4 * num_links
-      matrix%num_cols = 2 * num_points  ! input vectors stacked [x; y]
-      matrix%num_nonzeros = 8 * num_links  ! 4 coefficients per side × 2 sides
+      matrix%num_cols = 2 * num_points ! input vectors stacked [x; y]
+      matrix%num_nonzeros = 8 * num_links ! 4 coefficients per side × 2 sides
 
       allocate (matrix%values(matrix%num_nonzeros))
       allocate (matrix%column_indices(matrix%num_nonzeros))
@@ -213,17 +213,17 @@ contains
          pt2 = link_point_indices(2, L)
 
          ! Row 1: ucx_link(1,L) = cs(1,L)*input_x(pt1) + sn(1,L)*input_y(pt1)
-         matrix%row_pointers(4*L - 3) = idx
+         matrix%row_pointers(4 * L - 3) = idx
          matrix%values(idx) = cs_coef(1, L)
          matrix%column_indices(idx) = pt1
          idx = idx + 1
          matrix%values(idx) = sn_coef(1, L)
-         matrix%column_indices(idx) = num_points + pt1  ! y offset
+         matrix%column_indices(idx) = num_points + pt1 ! y offset
          idx = idx + 1
 
          ! Row 2: ucy_link(1,L) = -sn(1,L)*input_x(pt1) + cs(1,L)*input_y(pt1)
-         matrix%row_pointers(4*L - 2) = idx
-         matrix%values(idx) = -sn_coef(1, L)  ! Note the minus sign!
+         matrix%row_pointers(4 * L - 2) = idx
+         matrix%values(idx) = -sn_coef(1, L) ! Note the minus sign!
          matrix%column_indices(idx) = pt1
          idx = idx + 1
          matrix%values(idx) = cs_coef(1, L)
@@ -231,7 +231,7 @@ contains
          idx = idx + 1
 
          ! Row 3: ucx_link(2,L) = cs(2,L)*input_x(pt2) + sn(2,L)*input_y(pt2)
-         matrix%row_pointers(4*L - 1) = idx
+         matrix%row_pointers(4 * L - 1) = idx
          matrix%values(idx) = cs_coef(2, L)
          matrix%column_indices(idx) = pt2
          idx = idx + 1
@@ -240,8 +240,8 @@ contains
          idx = idx + 1
 
          ! Row 4: ucy_link(2,L) = -sn(2,L)*input_x(pt2) + cs(2,L)*input_y(pt2)
-         matrix%row_pointers(4*L) = idx
-         matrix%values(idx) = -sn_coef(2, L)  ! Note the minus sign!
+         matrix%row_pointers(4 * L) = idx
+         matrix%values(idx) = -sn_coef(2, L) ! Note the minus sign!
          matrix%column_indices(idx) = pt2
          idx = idx + 1
          matrix%values(idx) = cs_coef(2, L)
@@ -255,51 +255,71 @@ contains
 
    !> Apply sparse matrix transformation (this is where the speed happens)
    subroutine apply_sparse_transform(matrix, input_x, input_y, output_x, output_y)
-
+      !use, intrinsic :: iso_c_binding
       type(sparse_transform_matrix), intent(in) :: matrix
       real(dp), intent(in) :: input_x(:), input_y(:)
       real(dp), intent(out) :: output_x(:, :), output_y(:, :)
 
       real(dp), allocatable :: input_vector(:), output_vector(:)
-      integer :: row, col_start, col_end, idx, num_links
+      integer :: row, num_links
+
+      external :: mkl_dcsrgemv
+      !
+      !interface
+      !   subroutine mkl_dcsrgemv(transa, m, a, ia, ja, x, y) bind(C, name='mkl_dcsrgemv')
+      !      use, intrinsic :: iso_c_binding
+      !      character(c_char), value :: transa
+      !      integer(c_int), value :: m
+      !      real(c_double) :: a(*)
+      !      integer(c_int) :: ia(*)
+      !      integer(c_int) :: ja(*)
+      !      real(c_double) :: x(*)
+      !      real(c_double) :: y(*)
+      !   end subroutine mkl_dcsrgemv
+      !end interface
 
       ! Stack input vectors: [input_x; input_y]
-      allocate (output_vector(matrix%num_rows))
-      input_vector = [input_x, input_y]
-    
-#ifdef USE_MKL_SPARSE
-      ! Use Intel MKL if available (10x faster)
-      call mkl_dcsrmv('N', matrix%num_rows, matrix%num_cols, 1.0_dp, 'G', &
-                      matrix%values, matrix%column_indices, &
-                      matrix%row_pointers, matrix%row_pointers(2:), &
-                      input_vector, 0.0_dp, output_vector)
-#else
-      ! Fallback: manual CSR matrix-vector multiply (still fast!)
-      output_vector = 0.0_dp
-      !$OMP PARALLEL DO PRIVATE(row, col_start, col_end, idx)
-      do row = 1, matrix%num_rows
-         col_start = matrix%row_pointers(row)
-         col_end = matrix%row_pointers(row + 1) - 1
+      if (.not. allocated(output_vector)) then
+         allocate (output_vector(matrix%num_rows))
+         allocate (input_vector(2 * size(input_x)))
+      end if
 
-         do idx = col_start, col_end
-            output_vector(row) = output_vector(row) + &
-                                 matrix%values(idx) * input_vector(matrix%column_indices(idx))
-         end do
-      end do
-      !$OMP END PARALLEL DO
-#endif
+      ! Copy data to heap-allocated array instead of using array constructor
+      input_vector(1:size(input_x)) = input_x
+      input_vector(size(input_x) + 1:2 * size(input_x)) = input_y
+
+!#ifdef USE_MKL_SPARSE
+      ! Use Intel MKL via C interface if available (10x faster)
+      call mkl_dcsrgemv('N', matrix%num_rows, matrix%values, &
+                        matrix%row_pointers, matrix%column_indices, &
+                        input_vector, output_vector)
+!#else
+!      ! Fallback: manual CSR matrix-vector multiply (still fast!)
+!      output_vector = 0.0_dp
+!      !$OMP PARALLEL DO PRIVATE(row, col_start, col_end, idx)
+!      do row = 1, matrix%num_rows
+!         col_start = matrix%row_pointers(row)
+!         col_end = matrix%row_pointers(row + 1) - 1
+!
+!         do idx = col_start, col_end
+!            output_vector(row) = output_vector(row) + &
+!                                 matrix%values(idx) * input_vector(matrix%column_indices(idx))
+!         end do
+!      end do
+!      !$OMP END PARALLEL DO
+!#endif
 
       ! Unstack output: output_vector → output_x, output_y
       ! Matrix structure: [ucx(1,L), ucy(1,L), ucx(2,L), ucy(2,L), ...]
-      num_links = matrix%num_rows / 4  ! Changed from /2
+      num_links = matrix%num_rows / 4 ! Changed from /2
       do row = 1, num_links
-         output_x(1, row) = output_vector(4*row - 3)  ! ucx_link(1,L)
-         output_y(1, row) = output_vector(4*row - 2)  ! ucy_link(1,L)
-         output_x(2, row) = output_vector(4*row - 1)  ! ucx_link(2,L)
-         output_y(2, row) = output_vector(4*row)      ! ucy_link(2,L)
+         output_x(1, row) = output_vector(4 * row - 3) ! ucx_link(1,L)
+         output_y(1, row) = output_vector(4 * row - 2) ! ucy_link(1,L)
+         output_x(2, row) = output_vector(4 * row - 1) ! ucx_link(2,L)
+         output_y(2, row) = output_vector(4 * row) ! ucy_link(2,L)
       end do
 
-      deallocate (input_vector, output_vector)
+      ! deallocate (input_vector, output_vector)
 
    end subroutine apply_sparse_transform
 
