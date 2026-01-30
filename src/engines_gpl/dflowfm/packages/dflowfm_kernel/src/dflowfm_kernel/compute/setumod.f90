@@ -377,113 +377,111 @@ contains
          if (kmx == 0) then
 
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
+               call compute_viscosity_and_stress_vectorized()
 
-               vksag6 = vonkar * sag / 6.0_dp
-               call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
-
-               do L = lnx1D + 1, lnx
-                  if (hu(L) > 0) then ! link will flow
-
-                     cs = csu(L)
-                     sn = snu(L)
-                     k1 = ln(1, L)
-                     k2 = ln(2, L)
-
-                     vicL = 0.0_dp
-                     if (Elder > 0.0_dp) then !  add Elder
-                        Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
-                        vicL = vicL + Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L) * v(L)) ! vonkar*sag/(6*Cz) = 0.009
-                     end if
-
-                     k3 = lncn(1, L)
-                     k4 = lncn(2, L)
-
-                     duxdn = (ucx_in_link_frame(2, L) - ucx_in_link_frame(1, L)) * dxi(L)
-                     duydn = (ucy_in_link_frame(2, L) - ucy_in_link_frame(1, L)) * dxi(L)
-                     duxdt = (ucnx_in_link_frame(2, L) - ucnx_in_link_frame(1, L)) * wui(L)
-                     duydt = (ucny_in_link_frame(2, L) - ucny_in_link_frame(1, L)) * wui(L)
-
-                     if (Smagorinsky > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky
-                        dundn = cs * duxdn + sn * duydn
-                        dutdn = -sn * duxdn + cs * duydn
-                        dundt = cs * duxdt + sn * duydt
-                        dutdt = -sn * duxdt + cs * duydt
-                        if (NDRAW(29) == 37) then ! plot curl
-                           plotlin(L) = (dutdn - dundt)
-                        end if
-                        if (Smagorinsky > 0) then
-                           shearvar = 2.0_dp * (dundn * dundn + dutdt * dutdt + dundt * dutdn) + dundt * dundt + dutdn * dutdn
-                           if (shearvar > 1.0e-15_dp) then ! avoid underflow
-                              vicL = vicL + Smagorinsky * Smagorinsky * sqrt(shearvar) / (dxi(L) * wui(L))
-                           end if
-                        end if
-
-                     end if
-
-                     if (nshiptxy > 0) then
-                        if (vicuship /= 0.0_dp) then
-                           vicL = vicL + vicushp(L)
-                        end if
-                     end if
-
-                     ! JRE: add roller induced viscosity
-                     if ((jawave == WAVE_SURFBEAT) .and. (swave == 1) .and. (roller == 1)) then
-                        DRL = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
-                        nuhroller = nuhfac * hu(L) * (DRL / rhomean)**(1.0_dp / 3.0_dp)
-                        vicL = max(nuhroller, vicL)
-                     end if
-
-                     if (javiusp == 1) then ! user specified part
-                        vicc = viusp(L)
-                     else
-                        vicc = vicouv
-                     end if
-                     vicL = vicL + vicc
-
-                     if (ja_timestep_auto_visc == 0) then
-                        dxiAu = dxi(L) * hu(L) * wu(L)
-                        if (dxiAu > 0.0_dp) then
-                           viscocity_max_limit = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
-                           if (vicL > viscocity_max_limit) then
-                              vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
-                              number_limited_links = number_limited_links + 1
-                           end if
-                        end if
-                     end if
-
-                     vicLu(L) = vicL ! horizontal eddy viscosity applied in mom eq.
-                     viu(L) = max(0.0_dp, vicL - vicc) ! modeled turbulent part
-
-                     c11 = cs * cs
-                     c12 = cs * sn
-                     c22 = sn * sn
-                     suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
-                     suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
-
-                     suxL = suxL * vicL / wui(L)
-                     suyL = suyL * vicL / wui(L)
-                     if (istresstyp == 3) then
-                        hmin = min(hs(k1), hs(k2))
-                        suxL = hmin * suxL
-                        suyL = hmin * suyL
-                     end if
-
-                     if (jsferic == 1 .and. jasfer3D == 1) then
-                        dvxc(k1) = dvxc(k1) + lin2nodx(L, 1, suxL, suyL)
-                        dvyc(k1) = dvyc(k1) + lin2nody(L, 1, suxL, suyL)
-                        dvxc(k2) = dvxc(k2) - lin2nodx(L, 2, suxL, suyL)
-                        dvyc(k2) = dvyc(k2) - lin2nody(L, 2, suxL, suyL)
-                     else
-                        dvxc(k1) = dvxc(k1) + suxL
-                        dvyc(k1) = dvyc(k1) + suyL
-                        dvxc(k2) = dvxc(k2) - suxL
-                        dvyc(k2) = dvyc(k2) - suyL
-                     end if
-
-                  end if
-
-               end do
-
+               !vksag6 = vonkar * sag / 6.0_dp
+               !call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
+               !
+               !do L = lnx1D + 1, lnx
+               !   if (hu(L) > 0) then ! link will flow
+               !
+               !      cs = csu(L)
+               !      sn = snu(L)
+               !      k1 = ln(1, L)
+               !      k2 = ln(2, L)
+               !
+               !      vicL = 0.0_dp
+               !      if (Elder > 0.0_dp) then !  add Elder
+               !         Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
+               !         vicL = vicL + Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L) * v(L)) ! vonkar*sag/(6*Cz) = 0.009
+               !      end if
+               !
+               !      k3 = lncn(1, L)
+               !      k4 = lncn(2, L)
+               !
+               !      duxdn = (ucx_in_link_frame(2, L) - ucx_in_link_frame(1, L)) * dxi(L)
+               !      duydn = (ucy_in_link_frame(2, L) - ucy_in_link_frame(1, L)) * dxi(L)
+               !      duxdt = (ucnx_in_link_frame(2, L) - ucnx_in_link_frame(1, L)) * wui(L)
+               !      duydt = (ucny_in_link_frame(2, L) - ucny_in_link_frame(1, L)) * wui(L)
+               !
+               !      if (Smagorinsky > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky
+               !         dundn = cs * duxdn + sn * duydn
+               !         dutdn = -sn * duxdn + cs * duydn
+               !         dundt = cs * duxdt + sn * duydt
+               !         dutdt = -sn * duxdt + cs * duydt
+               !         if (NDRAW(29) == 37) then ! plot curl
+               !            plotlin(L) = (dutdn - dundt)
+               !         end if
+               !         if (Smagorinsky > 0) then
+               !            shearvar = 2.0_dp * (dundn * dundn + dutdt * dutdt + dundt * dutdn) + dundt * dundt + dutdn * dutdn
+               !            if (shearvar > 1.0e-15_dp) then ! avoid underflow
+               !               vicL = vicL + Smagorinsky * Smagorinsky * sqrt(shearvar) / (dxi(L) * wui(L))
+               !            end if
+               !         end if
+               !
+               !      end if
+               !
+               !      if (nshiptxy > 0) then
+               !         if (vicuship /= 0.0_dp) then
+               !            vicL = vicL + vicushp(L)
+               !         end if
+               !      end if
+               !
+               !      ! JRE: add roller induced viscosity
+               !      if ((jawave == WAVE_SURFBEAT) .and. (swave == 1) .and. (roller == 1)) then
+               !         DRL = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
+               !         nuhroller = nuhfac * hu(L) * (DRL / rhomean)**(1.0_dp / 3.0_dp)
+               !         vicL = max(nuhroller, vicL)
+               !      end if
+               !
+               !      if (javiusp == 1) then ! user specified part
+               !         vicc = viusp(L)
+               !      else
+               !         vicc = vicouv
+               !      end if
+               !      vicL = vicL + vicc
+               !
+               !      if (ja_timestep_auto_visc == 0) then
+               !         dxiAu = dxi(L) * hu(L) * wu(L)
+               !         if (dxiAu > 0.0_dp) then
+               !            viscocity_max_limit = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
+               !            if (vicL > viscocity_max_limit) then
+               !               vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
+               !               number_limited_links = number_limited_links + 1
+               !            end if
+               !         end if
+               !      end if
+               !
+               !      vicLu(L) = vicL ! horizontal eddy viscosity applied in mom eq.
+               !      viu(L) = max(0.0_dp, vicL - vicc) ! modeled turbulent part
+               !
+               !      c11 = cs * cs
+               !      c12 = cs * sn
+               !      c22 = sn * sn
+               !      suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
+               !      suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
+               !
+               !      suxL = suxL * vicL / wui(L)
+               !      suyL = suyL * vicL / wui(L)
+               !      if (istresstyp == 3) then
+               !         hmin = min(hs(k1), hs(k2))
+               !         suxL = hmin * suxL
+               !         suyL = hmin * suyL
+               !      end if
+               !
+               !      if (jsferic == 1 .and. jasfer3D == 1) then
+               !         dvxc(k1) = dvxc(k1) + lin2nodx(L, 1, suxL, suyL)
+               !         dvyc(k1) = dvyc(k1) + lin2nody(L, 1, suxL, suyL)
+               !         dvxc(k2) = dvxc(k2) - lin2nodx(L, 2, suxL, suyL)
+               !         dvyc(k2) = dvyc(k2) - lin2nody(L, 2, suxL, suyL)
+               !      else
+               !         dvxc(k1) = dvxc(k1) + suxL
+               !         dvyc(k1) = dvyc(k1) + suyL
+               !         dvxc(k2) = dvxc(k2) - suxL
+               !         dvyc(k2) = dvyc(k2) - suyL
+               !      end if
+               !   end if
+               !end do
             else
 
                !$OMP PARALLEL DO                                  &
@@ -831,5 +829,120 @@ contains
       call timstop(handle_umod)
 
    end subroutine setumod
+
+   !> Compute viscosity and stress for 2D links (vectorized proof of concept)
+   !! Computes for ALL links, caller zeros dry links afterward
+   subroutine compute_viscosity_and_stress_vectorized()
+      use precision, only: dp
+      use m_flowgeom
+      use m_flow
+      use m_get_chezy, only: get_chezy
+      use m_xbeach_data, only: DR, roller, swave, nuhfac
+      use m_waveconst, only: WAVE_SURFBEAT
+      use m_coordinate_transform, only: transform_velocities_to_links, &
+                                        ucx_in_link_frame, ucy_in_link_frame, &
+                                        ucnx_in_link_frame, ucny_in_link_frame
+      use m_sferic, only: jsferic, jasfer3D
+      use m_lin2nodx, only: lin2nodx
+      use m_lin2nody, only: lin2nody
+
+      implicit none
+
+      real(kind=dp) :: vksag6
+
+      integer :: L1, L2, k1, k2
+      real(kind=dp) :: vicc, dxiAu, viscocity_max_limit, DRL, nuhroller, hmin
+      real(kind=dp), dimension(:), allocatable, save :: Cz, vicL, shearvar
+      real(kind=dp), dimension(:), allocatable, save :: duxdn, duydn, duxdt, duydt, dundn, dutdn, dundt, dutdt
+
+      ! PASS 1: Transform velocities for ALL 2D links at once
+      call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
+
+      L1 = lnx1D + 1
+      L2 = lnx
+
+      ! PASS 2: Compute gradients (vectorized!)
+      duxdn(L1:L2) = (ucx_in_link_frame(2, L1:L2) - ucx_in_link_frame(1, L1:L2)) * dxi(L1:L2)
+      duydn(L1:L2) = (ucy_in_link_frame(2, L1:L2) - ucy_in_link_frame(1, L1:L2)) * dxi(L1:L2)
+      duxdt(L1:L2) = (ucnx_in_link_frame(2, L1:L2) - ucnx_in_link_frame(1, L1:L2)) * wui(L1:L2)
+      duydt(L1:L2) = (ucny_in_link_frame(2, L1:L2) - ucny_in_link_frame(1, L1:L2)) * wui(L1:L2)
+
+      vksag6 = vonkar * sag / 6.0_dp
+      vicL = 0.0_dp
+
+      if (Elder > 0.0_dp) then !  add Elder
+         Cz = get_chezy(hu(L1:L2), frcu(L1:L2), u1(L1:L2), v(L1:L2), ifrcutp(L1:L2))
+         vicL = Elder * (vksag6 / Cz) * (hu(L1:L2)) * sqrt(u1(L1:L2) * u1(L1:L2) + v(L1:L2)**2)
+      end if
+
+      if (Smagorinsky > 0) then ! add Smagorinsky
+         dundn = csu(L1:L2) * duxdn + snu(L1:L2) * duydn
+         dutdn = -snu(L1:L2) * duxdn + csu(L1:L2) * duydn
+         dundt = csu(L1:L2) * duxdt + snu(L1:L2) * duydt
+         dutdt = -snu(L1:L2) * duxdt + csu(L1:L2) * duydt
+
+         shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
+         vicL = vicL + Smagorinsky**2 * sqrt(shearvar) / (dxi(L1:L2) * wui(L1:L2))
+      end if
+      !if (nshiptxy > 0) then
+      !   if (vicuship /= 0.0_dp) then
+      !      vicL = vicL + vicushp(L)
+      !   end if
+      !end if
+
+      ! JRE: add roller induced viscosity
+      !if ((jawave == WAVE_SURFBEAT) .and. (swave == 1) .and. (roller == 1)) then
+      !   DRL = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
+      !   nuhroller = nuhfac * hu(L) * (DRL / rhomean)**(1.0_dp / 3.0_dp)
+      !   vicL = max(nuhroller, vicL)
+      !end if
+
+      !if (javiusp == 1) then ! user specified part
+      !   vicc = viusp(L)
+      !else
+      !   vicc = vicouv
+      !end if
+      !vicL = vicL + vicouv
+
+      !if (ja_timestep_auto_visc == 0) then
+      !   dxiAu = dxi(L) * hu(L) * wu(L)
+      !   if (dxiAu > 0.0_dp) then
+      !      viscocity_max_limit = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
+      !      if (vicL > viscocity_max_limit) then
+      !         vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
+      !         number_limited_links = number_limited_links + 1
+      !      end if
+      !   end if
+      !end if
+
+      !vicLu(L) = vicL ! horizontal eddy viscosity applied in mom eq.
+      !viu(L) = max(0.0_dp, vicL - vicc) ! modeled turbulent part
+      !
+      !c11 = cs * cs
+      !c12 = cs * sn
+      !c22 = sn * sn
+      !suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
+      !suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
+      !
+      !suxL = suxL * vicL / wui(L)
+      !suyL = suyL * vicL / wui(L)
+      !if (istresstyp == 3) then
+      !   hmin = min(hs(k1), hs(k2))
+      !   suxL = hmin * suxL
+      !   suyL = hmin * suyL
+      !end if
+
+      !if (jsferic == 1 .and. jasfer3D == 1) then
+      !   dvxc(k1) = dvxc(k1) + lin2nodx(L, 1, suxL, suyL)
+      !   dvyc(k1) = dvyc(k1) + lin2nody(L, 1, suxL, suyL)
+      !   dvxc(k2) = dvxc(k2) - lin2nodx(L, 2, suxL, suyL)
+      !   dvyc(k2) = dvyc(k2) - lin2nody(L, 2, suxL, suyL)
+      !else
+      !   dvxc(k1) = dvxc(k1) + suxL
+      !   dvyc(k1) = dvyc(k1) + suyL
+      !   dvxc(k2) = dvxc(k2) - suxL
+      !   dvyc(k2) = dvyc(k2) - suyL
+      !end if
+   end subroutine compute_viscosity_and_stress_vectorized
 
 end module m_setumod
