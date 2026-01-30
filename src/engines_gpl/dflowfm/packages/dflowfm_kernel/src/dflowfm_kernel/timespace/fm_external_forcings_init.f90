@@ -1140,39 +1140,44 @@ contains
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
 
-
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+      ! Local variables
+      logical :: is_successful !< Success flag
+      integer :: file_pointer !< File pointer for reading polygon file
+      integer :: cidx !< Index for crossed cells
+      integer :: i, j !< Loop indices
+      integer :: ierr !< Error code
+      integer :: npl_tmp !< Temporary variable to store number of polygon points
+      integer :: bubble_source_count
+      integer :: kstart !< Starting vertical index for bubblescreen sources/sinks in a cell
+      integer :: kend !< Ending vertical index for bubblescreen sources/sinks in a cell
+      integer, dimension(:), allocatable :: crossed_cells !< Indices of crossed cells in network_data::netcells
+      real(kind=dp) :: tmsx !< Temporary x-coordinate for bubblescreen source/sink
+      real(kind=dp) :: tmsy !< Temporary y-coordinate for bubblescreen source/sink
+      real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
+      real(kind=dp), dimension(:), allocatable :: xpl_tmp !< Temporary array to store polygon x-coordinates
+      real(kind=dp), dimension(:), allocatable :: ypl_tmp !< Temporary array to store polygon y-coordinates
+      real(kind=dp), dimension(:), allocatable :: zpl_tmp !< Temporary array to store polygon z-coordinates
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      character(len=:), allocatable :: error !< Error message
+      type(tface) :: tmcell !< Temporary cell structure
+      type(t_BubblescreenData) :: bubblescreen !< Bubblescreen data structure
 
-      integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
-      character, dimension(:), allocatable :: error
-
-      ! Local variables
-      integer :: file_pointer
-      logical :: is_successful
-      real(kind=dp), allocatable :: xpl_tmp(:), ypl_tmp(:), zpl_tmp(:) !< Temporary arrays to store polygon coordinates
-      integer :: npl_tmp !< Temporary variable to store number of polygon points
-
-      type(tface) :: tmcell
-      integer :: cidx, i, j, ierr
-      real(kind=dp) :: tmsx, tmsy, tmsz
-      real(kind=dp) :: kstart, kend
-      integer :: bubble_source_count = 0
-
-      type(t_BubblescreenData) :: bubblescreen
-
+      ! Initialize variables
       is_successful = .false.
+      bubble_source_count = 0
 
       ! Read bubblescreen attributes from the tree node
       is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
-      allocate(character(len=len_trim(id)+50) :: srcid)
+      allocate(srcid(len_trim(id)+50))
 
       ! Read and initialize polygon data from location_file
       call oldfil(file_pointer, location_file)
@@ -1181,9 +1186,9 @@ contains
       ! Copy polygon data to temporary arrays
       npl_tmp = npl
       bubblescreen%num_flow_cells = npl
-      allocate (xpl_tmp(npl_tmp))
-      allocate (ypl_tmp(npl_tmp))
-      allocate (zpl_tmp(npl_tmp))
+      allocate(xpl_tmp(npl_tmp))
+      allocate(ypl_tmp(npl_tmp))
+      allocate(zpl_tmp(npl_tmp))
       xpl_tmp = xpl(1:npl_tmp)
       ypl_tmp = ypl(1:npl_tmp)
       zpl_tmp = zpl(1:npl_tmp)
@@ -1210,7 +1215,6 @@ contains
                if (zws(i) >= tmsz) then
                   write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
 
-                  
                   call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
 
                   ! TODO: each source/sink has a differerent id but we have only one specification in the discharge_input file. 

@@ -144,7 +144,7 @@ contains
       use MessageHandling, only: IDLEN
       use m_find_flownode, only: find_nearest_flownodes
 
-      character(len=*), intent(in) :: name !!< Name of the source/sink.
+      character(len=*), intent(in) :: name !< Name of the source/sink.
       real(kind=dp), dimension(:), intent(in) :: x_points !< x-coordinates of the source/sink (polyline from sink to source point).
       real(kind=dp), dimension(:), intent(in) :: y_points !< y-coordinates of the source/sink (polyline from sink to source point).
       real(kind=dp), dimension(:), intent(in) :: z_source !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
