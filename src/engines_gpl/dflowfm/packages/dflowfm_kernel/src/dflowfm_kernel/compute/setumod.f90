@@ -55,7 +55,7 @@ contains
       use m_flowgeom
       use m_flowtimes, only: handle_umod, ja_timestep_auto_visc, dti
       use m_sferic
-      use m_xbeach_data, only: DR, roller, swave, nuhfac
+      !use m_xbeach_data, only: DR, roller, swave, nuhfac
       use unstruc_model, only: md_restartfile
       use m_setucxcuy_leastsquare, only: reconst2nd
       use MessageHandling
@@ -90,13 +90,13 @@ contains
       real(kind=dp) :: cs, sn
       real(kind=dp) :: hmin, hs1, hs2
       real(kind=dp) :: fcor, vcor, fcor1, fcor2, fvcor
-      real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty, vksag6, Cz
+      real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty!, vksag6, Cz
       real(kind=dp) :: huv
       real(kind=dp), allocatable :: u1_tmp(:), vluban(:)
 
       integer :: nw, L1, L2, kt, Lb, Lt, Lb1, Lt1, Lb2, Lt2, kb1, kb2, ntmp, m
 
-      real(kind=dp) :: DRL, nuhroller
+!      real(kind=dp) :: DRL, nuhroller
 
       real(kind=dp) :: dxiAu, vicc, vlban, fcLL
 
@@ -837,7 +837,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_get_chezy, only: get_chezy
-      use m_xbeach_data, only: DR, roller, swave, nuhfac
+!      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
       use m_coordinate_transform, only: transform_velocities_to_links, &
                                         ucx_in_link_frame, ucy_in_link_frame, &
@@ -851,7 +851,7 @@ contains
       real(kind=dp) :: vksag6
 
       integer :: L, L1, L2, k1, k2
-      real(kind=dp) :: vicc, dxiAu, viscocity_max_limit, DRL, nuhroller, hmin
+      !real(kind=dp) :: vicc, dxiAu, viscocity_max_limit, DRL, nuhroller, hmin
       real(kind=dp), dimension(:), allocatable, save :: Cz, shearvar
       real(kind=dp), dimension(:), allocatable, save :: c11, c12, c22, suxL, suyL, dvx1, dvy1, dvx2, dvy2
       real(kind=dp), dimension(:), allocatable, save :: duxdn, duydn, duxdt, duydt, dundn, dutdn, dundt, dutdt
@@ -863,17 +863,17 @@ contains
       L2 = lnx
 
       ! PASS 2: Compute gradients (vectorized!)
-      duxdn(L1:L2) = (ucx_in_link_frame(2, L1:L2) - ucx_in_link_frame(1, L1:L2)) * dxi(L1:L2)
-      duydn(L1:L2) = (ucy_in_link_frame(2, L1:L2) - ucy_in_link_frame(1, L1:L2)) * dxi(L1:L2)
-      duxdt(L1:L2) = (ucnx_in_link_frame(2, L1:L2) - ucnx_in_link_frame(1, L1:L2)) * wui(L1:L2)
-      duydt(L1:L2) = (ucny_in_link_frame(2, L1:L2) - ucny_in_link_frame(1, L1:L2)) * wui(L1:L2)
+      duxdn = (ucx_in_link_frame(2, L1:L2) - ucx_in_link_frame(1, L1:L2)) * dxi(L1:L2)
+      duydn = (ucy_in_link_frame(2, L1:L2) - ucy_in_link_frame(1, L1:L2)) * dxi(L1:L2)
+      duxdt = (ucnx_in_link_frame(2, L1:L2) - ucnx_in_link_frame(1, L1:L2)) * wui(L1:L2)
+      duydt = (ucny_in_link_frame(2, L1:L2) - ucny_in_link_frame(1, L1:L2)) * wui(L1:L2)
 
       vksag6 = vonkar * sag / 6.0_dp
-      vicLu = 0.0_dp
+      vicLU(L1:L2) = 0.0_dp
 
       if (Elder > 0.0_dp) then !  add Elder
          Cz = get_chezy(hu(L1:L2), frcu(L1:L2), u1(L1:L2), v(L1:L2), ifrcutp(L1:L2))
-         vicLu = Elder * (vksag6 / Cz) * (hu(L1:L2)) * sqrt(u1(L1:L2) * u1(L1:L2) + v(L1:L2)**2)
+         vicLU(L1:L2) = Elder * (vksag6 / Cz) * (hu(L1:L2)) * sqrt(u1(L1:L2) * u1(L1:L2) + v(L1:L2)**2)
       end if
 
       if (Smagorinsky > 0) then ! add Smagorinsky
@@ -883,7 +883,7 @@ contains
          dutdt = -snu(L1:L2) * duxdt + csu(L1:L2) * duydt
 
          shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-         vicLu = vicLu + Smagorinsky**2 * sqrt(shearvar) / (dxi(L1:L2) * wui(L1:L2))
+         vicLU(L1:L2) = vicLU(L1:L2) + Smagorinsky**2 * sqrt(shearvar) / (dxi(L1:L2) * wui(L1:L2))
       end if
       !if (nshiptxy > 0) then
       !   if (vicuship /= 0.0_dp) then
@@ -898,12 +898,14 @@ contains
       !   vicL = max(nuhroller, vicL)
       !end if
 
-      !if (javiusp == 1) then ! user specified part
-      !   vicc = viusp(L)
-      !else
-      !   vicc = vicouv
-      !end if
-      vicLu = vicLu + vicouv
+      !> TODO: rewrite this once ja_timestep_auto_visc is functional
+      viu(L1:L2) = vicLU(L1:L2)
+      ! Add base viscosity (user-specified or constant)
+      if (javiusp == 1) then
+         vicLU(L1:L2) = vicLU(L1:L2) + viusp(L1:L2)
+      else
+         vicLU(L1:L2) = vicLU(L1:L2) + vicouv
+      end if
 
       !if (ja_timestep_auto_visc == 0) then
       !   dxiAu = dxi(L) * hu(L) * wu(L)
@@ -916,7 +918,6 @@ contains
       !   end if
       !end if
 
-      viu = max(0.0_dp, vicLu - vicc) ! modeled turbulent part
       if (.not. allocated(c11)) then
          c11 = csu(L1:L2)**2
          c12 = csu(L1:L2) * snu(L1:L2)
@@ -925,8 +926,8 @@ contains
       suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
       suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
       !
-      suxL = suxL * vicLu / wui(L1:L2)
-      suyL = suyL * vicLu / wui(L1:L2)
+      suxL = suxL * vicLU(L1:L2) / wui(L1:L2)
+      suyL = suyL * vicLU(L1:L2) / wui(L1:L2)
       if (istresstyp == 3) then
          suxL = suxL * min(hs(ln(1, L1:L2)), hs(ln(2, L1:L2)))
          suyL = suyL * min(hs(ln(1, L1:L2)), hs(ln(2, L1:L2)))
