@@ -1746,8 +1746,8 @@ contains
                      wR = 0.0_dp
                   end if
                   ! TK_Temp: Dont think if kl > 0 and kr > 0 is needed, lines above ensure both have a value > 0
-                  ! if (kL > 0) then
-                  !    if (kR > 0) then               
+                  if (kL > 0) then
+                     if (kR > 0) then               
                         kbegin = maxlay_tgt * (i - 1) + 1 ! refers to target column
                         kend = maxlay_tgt * i
 
@@ -1892,8 +1892,8 @@ contains
                               !
                            end do ! target layers
                         end if ! are we averaging the source in the vertical direction ?
-                  !    end if ! kR > 0: right support point exists
-                  ! end if ! kL > 0: left support point exists
+                     end if ! kR > 0: right support point exists
+                  end if ! kL > 0: left support point exists
                else ! no vertical coordinate assigned to this source item, i.e. 3D source
                   ! 2D subproviders
                   connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps !!!!! ???????
