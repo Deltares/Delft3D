@@ -184,22 +184,24 @@ contains
    ! Private implementation routines (users never see these)
    !========================================================================
 
-   !> Build sparse matrix for coordinate transformation (works for both nodes and corners)
+      !> Build sparse matrix for coordinate transformation (works for both nodes and corners)
+   !! Computes BOTH x and y components in one matrix-vector multiply
    subroutine build_transform_matrix(matrix, num_links, num_points, &
                                      link_point_indices, cs_coef, sn_coef)
       implicit none
 
       type(sparse_transform_matrix), intent(out) :: matrix
       integer, intent(in) :: num_links, num_points
-      integer, intent(in) :: link_point_indices(2, num_links) ! Can be nodes or corners
-      real(dp), intent(in) :: cs_coef(2, num_links) ! csb or csbn
-      real(dp), intent(in) :: sn_coef(2, num_links) ! snb or snbn
+      integer, intent(in) :: link_point_indices(2, num_links)  ! Can be nodes or corners
+      real(dp), intent(in) :: cs_coef(2, num_links)            ! csb or csbn
+      real(dp), intent(in) :: sn_coef(2, num_links)            ! snb or snbn
 
-      integer :: L, row, idx, pt1, pt2
+      integer :: L, idx, pt1, pt2
 
-      matrix%num_rows = 2 * num_links
-      matrix%num_cols = 2 * num_points ! input vectors stacked [x; y]
-      matrix%num_nonzeros = 4 * num_links
+      ! 4 rows per link: ucx(1), ucy(1), ucx(2), ucy(2)
+      matrix%num_rows = 4 * num_links
+      matrix%num_cols = 2 * num_points  ! input vectors stacked [x; y]
+      matrix%num_nonzeros = 8 * num_links  ! 4 coefficients per side × 2 sides
 
       allocate (matrix%values(matrix%num_nonzeros))
       allocate (matrix%column_indices(matrix%num_nonzeros))
@@ -210,28 +212,39 @@ contains
          pt1 = link_point_indices(1, L)
          pt2 = link_point_indices(2, L)
 
-         ! Row for side 1 of link
-         row = 2 * L - 1
-         matrix%row_pointers(row) = idx
-
-         ! output(1,L) = cs(1,L)*input_x(pt1) + sn(1,L)*input_y(pt1)
+         ! Row 1: ucx_link(1,L) = cs(1,L)*input_x(pt1) + sn(1,L)*input_y(pt1)
+         matrix%row_pointers(4*L - 3) = idx
          matrix%values(idx) = cs_coef(1, L)
          matrix%column_indices(idx) = pt1
          idx = idx + 1
-
          matrix%values(idx) = sn_coef(1, L)
-         matrix%column_indices(idx) = num_points + pt1 ! y offset
+         matrix%column_indices(idx) = num_points + pt1  ! y offset
          idx = idx + 1
 
-         ! Row for side 2 of link
-         row = 2 * L
-         matrix%row_pointers(row) = idx
+         ! Row 2: ucy_link(1,L) = -sn(1,L)*input_x(pt1) + cs(1,L)*input_y(pt1)
+         matrix%row_pointers(4*L - 2) = idx
+         matrix%values(idx) = -sn_coef(1, L)  ! Note the minus sign!
+         matrix%column_indices(idx) = pt1
+         idx = idx + 1
+         matrix%values(idx) = cs_coef(1, L)
+         matrix%column_indices(idx) = num_points + pt1
+         idx = idx + 1
 
+         ! Row 3: ucx_link(2,L) = cs(2,L)*input_x(pt2) + sn(2,L)*input_y(pt2)
+         matrix%row_pointers(4*L - 1) = idx
          matrix%values(idx) = cs_coef(2, L)
          matrix%column_indices(idx) = pt2
          idx = idx + 1
-
          matrix%values(idx) = sn_coef(2, L)
+         matrix%column_indices(idx) = num_points + pt2
+         idx = idx + 1
+
+         ! Row 4: ucy_link(2,L) = -sn(2,L)*input_x(pt2) + cs(2,L)*input_y(pt2)
+         matrix%row_pointers(4*L) = idx
+         matrix%values(idx) = -sn_coef(2, L)  ! Note the minus sign!
+         matrix%column_indices(idx) = pt2
+         idx = idx + 1
+         matrix%values(idx) = cs_coef(2, L)
          matrix%column_indices(idx) = num_points + pt2
          idx = idx + 1
       end do
@@ -280,12 +293,15 @@ contains
 #endif
 
       ! Unstack output: output_vector → output_x, output_y
-      num_links = matrix%num_rows / 2
+      ! Matrix structure: [ucx(1,L), ucy(1,L), ucx(2,L), ucy(2,L), ...]
+      num_links = matrix%num_rows / 4  ! Changed from /2
       do row = 1, num_links
-         output_x(1, row) = output_vector(2 * row - 1)
-         output_x(2, row) = output_vector(2 * row)
+         output_x(1, row) = output_vector(4*row - 3)  ! ucx_link(1,L)
+         output_y(1, row) = output_vector(4*row - 2)  ! ucy_link(1,L)
+         output_x(2, row) = output_vector(4*row - 1)  ! ucx_link(2,L)
+         output_y(2, row) = output_vector(4*row)      ! ucy_link(2,L)
       end do
-      output_y(:, :) = 0.0_dp
+
       deallocate (input_vector, output_vector)
 
    end subroutine apply_sparse_transform
