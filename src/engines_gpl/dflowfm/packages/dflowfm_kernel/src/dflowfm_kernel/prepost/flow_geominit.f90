@@ -124,6 +124,7 @@ contains
       use m_set_bobs
       use m_cosphiu, only: cosphiu
       use m_getcellsurface1d, only: getcellsurface1d
+      use m_coordinate_transform, only: initialize_coordinate_transform
 
       implicit none
 
@@ -1134,6 +1135,8 @@ contains
       call setcentertolinkorientations()
 
       call setcornertolinkorientations()
+
+      call initialize_coordinate_transform()
 
       call allocatelinktocornerweights()
       call setlinktocornerweights()

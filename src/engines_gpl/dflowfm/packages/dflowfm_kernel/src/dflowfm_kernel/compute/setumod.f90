@@ -76,6 +76,7 @@ contains
       use m_wall2linx, only: wall2linx
       use m_wall2liny, only: wall2liny
       use m_waveconst
+      use m_coordinate_transform, only: transform_velocities_to_links, ucx_in_link_frame, ucy_in_link_frame, ucnx_in_link_frame, ucny_in_link_frame
 
       implicit none
 
@@ -378,6 +379,8 @@ contains
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
 
                vksag6 = vonkar * sag / 6.0_dp
+               call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
+
                do L = lnx1D + 1, lnx
                   if (hu(L) > 0) then ! link will flow
 
@@ -395,17 +398,10 @@ contains
                      k3 = lncn(1, L)
                      k4 = lncn(2, L)
 
-                     if (jasfer3D == 1) then
-                        duxdn = (nod2linx(L, 2, ucx(k2), ucy(k2)) - nod2linx(L, 1, ucx(k1), ucy(k1))) * dxi(L)
-                        duydn = (nod2liny(L, 2, ucx(k2), ucy(k2)) - nod2liny(L, 1, ucx(k1), ucy(k1))) * dxi(L)
-                        duxdt = (cor2linx(L, 2, ucnx(k4), ucny(k4)) - cor2linx(L, 1, ucnx(k3), ucny(k3))) * wui(L)
-                        duydt = (cor2liny(L, 2, ucnx(k4), ucny(k4)) - cor2liny(L, 1, ucnx(k3), ucny(k3))) * wui(L)
-                     else
-                        duxdn = (ucx(k2) - ucx(k1)) * dxi(L)
-                        duydn = (ucy(k2) - ucy(k1)) * dxi(L)
-                        duxdt = (ucnx(k4) - ucnx(k3)) * wui(L)
-                        duydt = (ucny(k4) - ucny(k3)) * wui(L)
-                     end if
+                     duxdn = (ucx_in_link_frame(2, L) - ucx_in_link_frame(1, L)) * dxi(L)
+                     duydn = (ucy_in_link_frame(2, L) - ucy_in_link_frame(1, L)) * dxi(L)
+                     duxdt = (ucnx_in_link_frame(2, L) - ucnx_in_link_frame(1, L)) * wui(L)
+                     duydt = (ucny_in_link_frame(2, L) - ucny_in_link_frame(1, L)) * wui(L)
 
                      if (Smagorinsky > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky
                         dundn = cs * duxdn + sn * duydn
@@ -436,13 +432,6 @@ contains
                         nuhroller = nuhfac * hu(L) * (DRL / rhomean)**(1.0_dp / 3.0_dp)
                         vicL = max(nuhroller, vicL)
                      end if
-
-!             if (viuchk < 0.5d0) then
-!                vicL = min(vicL, viuchk*dti /( dxi(L)*dxi(L) + wui(L)*wui(L) ) )
-!             endif
-
-!            viuchk: safe would be min(vol1(k1)/nd(k1)%N, vol1(k2)/nd(k2)%N) * dti / (dxi(L)*Au(L)),
-!                    hence 0.2d0*min(vol1(k1),vol1(k2))... is safe up to pentagons
 
                      if (javiusp == 1) then ! user specified part
                         vicc = viusp(L)
