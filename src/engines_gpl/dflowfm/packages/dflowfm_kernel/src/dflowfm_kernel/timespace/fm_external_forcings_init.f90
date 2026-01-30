@@ -1138,7 +1138,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
+      use m_transport, only: NUMCONST
 
 
       ! Parameters
@@ -1161,7 +1161,7 @@ contains
       integer :: npl_tmp !< Temporary variable to store number of polygon points
 
       type(tface) :: tmcell
-      integer :: cidx, i, j, ierr
+      integer :: cidx, i, ierr
       real(kind=dp) :: tmsx, tmsy, tmsz
       real(kind=dp) :: kstart, kend
       integer :: bubble_source_count = 0

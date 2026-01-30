@@ -22,7 +22,7 @@
 
 module m_coordinate_transform
    use precision, only: dp
-   implicit none
+   implicit none(external)
 
    private
 
@@ -81,6 +81,12 @@ contains
       ! Check if we actually need transformation (spherical coordinates only)
       use_spherical_transform = (jsferic == 1 .and. jasfer3D == 1)
 
+      ! Allocate result arrays
+      allocate (ucx_in_link_frame(2, lnx), stat=ierr)
+      allocate (ucy_in_link_frame(2, lnx), stat=ierr)
+      allocate (ucnx_in_link_frame(2, lnx), stat=ierr)
+      allocate (ucny_in_link_frame(2, lnx), stat=ierr)
+
       if (.not. use_spherical_transform) then
          ! Cartesian: just store indices for direct gather
          num_2d_links = lnx - lnx1D
@@ -94,12 +100,6 @@ contains
             link_k4(L) = lncn(2, lnx1D + L)
          end do
       else
-
-         ! Allocate result arrays
-         allocate (ucx_in_link_frame(2, lnx), stat=ierr)
-         allocate (ucy_in_link_frame(2, lnx), stat=ierr)
-         allocate (ucnx_in_link_frame(2, lnx), stat=ierr)
-         allocate (ucny_in_link_frame(2, lnx), stat=ierr)
 
          ! Build sparse transformation matrices for 2D links
          num_2d_links = lnx - lnx1D
@@ -123,28 +123,45 @@ contains
    subroutine transform_velocities_to_links(ucx, ucy, ucnx, ucny)
       use m_flowgeom, only: lnx, lnx1D
 
-      implicit none
-
       real(dp), intent(in) :: ucx(:) ! Node x-velocities in global frame
       real(dp), intent(in) :: ucy(:) ! Node y-velocities in global frame
       real(dp), intent(in) :: ucnx(:) ! Corner x-velocities in global frame
       real(dp), intent(in) :: ucny(:) ! Corner y-velocities in global frame
 
+      integer :: L
+
       if (.not. is_initialized) then
-         call qnerror('m_coordinate_transform not initialized', &
-                      'Call initialize_coordinate_transform() first', ' ')
+         return
+         !todo : error handling
+      end if
+      if (use_spherical_transform) then
+         ! Transform node velocities (2D links only)
+         call apply_sparse_transform(node_transform, ucx, ucy, &
+                                     ucx_in_link_frame(:, lnx1D + 1:lnx), &
+                                     ucy_in_link_frame(:, lnx1D + 1:lnx))
+
+         ! Transform corner velocities (2D links only)
+         call apply_sparse_transform(corner_transform, ucnx, ucny, &
+                                     ucnx_in_link_frame(:, lnx1D + 1:lnx), &
+                                     ucny_in_link_frame(:, lnx1D + 1:lnx))
+
+      else
+         ! Cartesian: direct gather (no transformation needed)
+         !$OMP PARALLEL DO PRIVATE(L)
+         do L = 1, size(link_k1)
+            ucx_in_link_frame(1, lnx1D + L) = ucx(link_k1(L))
+            ucx_in_link_frame(2, lnx1D + L) = ucx(link_k2(L))
+            ucy_in_link_frame(1, lnx1D + L) = ucy(link_k1(L))
+            ucy_in_link_frame(2, lnx1D + L) = ucy(link_k2(L))
+
+            ucnx_in_link_frame(1, lnx1D + L) = ucnx(link_k3(L))
+            ucnx_in_link_frame(2, lnx1D + L) = ucnx(link_k4(L))
+            ucny_in_link_frame(1, lnx1D + L) = ucny(link_k3(L))
+            ucny_in_link_frame(2, lnx1D + L) = ucny(link_k4(L))
+         end do
+         !$OMP END PARALLEL DO
          return
       end if
-
-      ! Transform node velocities (2D links only)
-      call apply_sparse_transform(node_transform, ucx, ucy, &
-                                  ucx_in_link_frame(:, lnx1D + 1:lnx), &
-                                  ucy_in_link_frame(:, lnx1D + 1:lnx))
-
-      ! Transform corner velocities (2D links only)
-      call apply_sparse_transform(corner_transform, ucnx, ucny, &
-                                  ucnx_in_link_frame(:, lnx1D + 1:lnx), &
-                                  ucny_in_link_frame(:, lnx1D + 1:lnx))
 
    end subroutine transform_velocities_to_links
 
@@ -174,14 +191,14 @@ contains
 
       type(sparse_transform_matrix), intent(out) :: matrix
       integer, intent(in) :: num_links, num_points
-      integer, intent(in) :: link_point_indices(2, num_links)  ! Can be nodes or corners
-      real(dp), intent(in) :: cs_coef(2, num_links)            ! csb or csbn
-      real(dp), intent(in) :: sn_coef(2, num_links)            ! snb or snbn
+      integer, intent(in) :: link_point_indices(2, num_links) ! Can be nodes or corners
+      real(dp), intent(in) :: cs_coef(2, num_links) ! csb or csbn
+      real(dp), intent(in) :: sn_coef(2, num_links) ! snb or snbn
 
       integer :: L, row, idx, pt1, pt2
 
       matrix%num_rows = 2 * num_links
-      matrix%num_cols = 2 * num_points  ! input vectors stacked [x; y]
+      matrix%num_cols = 2 * num_points ! input vectors stacked [x; y]
       matrix%num_nonzeros = 4 * num_links
 
       allocate (matrix%values(matrix%num_nonzeros))
@@ -203,7 +220,7 @@ contains
          idx = idx + 1
 
          matrix%values(idx) = sn_coef(1, L)
-         matrix%column_indices(idx) = num_points + pt1  ! y offset
+         matrix%column_indices(idx) = num_points + pt1 ! y offset
          idx = idx + 1
 
          ! Row for side 2 of link
