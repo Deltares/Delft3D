@@ -143,8 +143,10 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      max_num_src = compute_no_sourcesinks(bnd_ptr, base_dir, file_name)
-      ! max_num_src = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      ! max_num_src = compute_no_sourcesinks(bnd_ptr, base_dir, file_name)
+      max_num_src =  compute_no_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
+      max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      
       if (max_num_src > 0) then
          call reallocsrc(max_num_src, 0)
       end if
@@ -1126,7 +1128,7 @@ contains
 
    end function init_sourcesink_forcings
 
-   function compute_no_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
+   function compute_no_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
       use fm_external_forcings_data, only: numsrc
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
@@ -1161,7 +1163,7 @@ contains
       integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
       character, dimension(:), allocatable :: error
 
-      no_sourcesinks = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      no_sourcesinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)     
       do i = 1, num_items_in_file
          block_ptr => bnd_ptr%child_nodes(i)%node_ptr
@@ -1172,6 +1174,7 @@ contains
             is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
 
             if (is_successful) then
+               call savepol()
                call oldfil(file_pointer, location_file)
                call reapol(file_pointer, 0)
                npl_tmp = npl
@@ -1180,6 +1183,7 @@ contains
 
                xpl_tmp = xpl(1:npl_tmp)
                ypl_tmp = ypl(1:npl_tmp)
+               call restorepol()
 
                call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
                no_sourcesinks = no_sourcesinks + size(crossed_cells) * kmx
@@ -1188,7 +1192,7 @@ contains
          end select
       end do 
 
-   end function compute_no_sourcesinks
+   end function compute_no_bubblescreens_sourcesinks
    !> Read and initialize bubblescreen object from new external forcings file.
    function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
@@ -1202,7 +1206,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
+      use m_transport, only: NUMCONST
 
 
       ! Parameters
@@ -1238,6 +1242,8 @@ contains
       is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
       allocate(character(len=len_trim(id)+50) :: srcid)
 
+      call savepol()
+
       ! Read and initialize polygon data from location_file
       call oldfil(file_pointer, location_file)
       call reapol(file_pointer, 0)
@@ -1253,8 +1259,11 @@ contains
 
       tmsz = zpl_tmp(1) ! Assume all polygon points have the same z-coordinate
 
+      call restorepol()
+
       call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
       bubblescreen%num_flow_cells = size(crossed_cells)
+
 
       if (.not. allocated(error)) then
          bubblescreen%id = id
@@ -1299,6 +1308,10 @@ contains
       else
          bubblescreens = [bubblescreens, bubblescreen]
       end if
+      ! is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(id), 'discharge', trim(discharge_input),size(bubblescreens) + 1, &
+      !                                                 1, bubblescreens_air_discharge)
+      is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(id), 'discharge', trim(discharge_input), (numconst + 1) * (bubblescreen%start_index - 1) + 1, &
+                                                      1, qstss)
       
       ! if (.not. is_successful) then
       !    write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
