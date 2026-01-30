@@ -850,9 +850,10 @@ contains
 
       real(kind=dp) :: vksag6
 
-      integer :: L1, L2, k1, k2
+      integer :: L, L1, L2, k1, k2
       real(kind=dp) :: vicc, dxiAu, viscocity_max_limit, DRL, nuhroller, hmin
-      real(kind=dp), dimension(:), allocatable, save :: Cz, vicL, shearvar
+      real(kind=dp), dimension(:), allocatable, save :: Cz, shearvar
+      real(kind=dp), dimension(:), allocatable, save :: c11, c12, c22, suxL, suyL, dvx1, dvy1, dvx2, dvy2
       real(kind=dp), dimension(:), allocatable, save :: duxdn, duydn, duxdt, duydt, dundn, dutdn, dundt, dutdt
 
       ! PASS 1: Transform velocities for ALL 2D links at once
@@ -868,11 +869,11 @@ contains
       duydt(L1:L2) = (ucny_in_link_frame(2, L1:L2) - ucny_in_link_frame(1, L1:L2)) * wui(L1:L2)
 
       vksag6 = vonkar * sag / 6.0_dp
-      vicL = 0.0_dp
+      vicLu = 0.0_dp
 
       if (Elder > 0.0_dp) then !  add Elder
          Cz = get_chezy(hu(L1:L2), frcu(L1:L2), u1(L1:L2), v(L1:L2), ifrcutp(L1:L2))
-         vicL = Elder * (vksag6 / Cz) * (hu(L1:L2)) * sqrt(u1(L1:L2) * u1(L1:L2) + v(L1:L2)**2)
+         vicLu = Elder * (vksag6 / Cz) * (hu(L1:L2)) * sqrt(u1(L1:L2) * u1(L1:L2) + v(L1:L2)**2)
       end if
 
       if (Smagorinsky > 0) then ! add Smagorinsky
@@ -882,7 +883,7 @@ contains
          dutdt = -snu(L1:L2) * duxdt + csu(L1:L2) * duydt
 
          shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-         vicL = vicL + Smagorinsky**2 * sqrt(shearvar) / (dxi(L1:L2) * wui(L1:L2))
+         vicLu = vicLu + Smagorinsky**2 * sqrt(shearvar) / (dxi(L1:L2) * wui(L1:L2))
       end if
       !if (nshiptxy > 0) then
       !   if (vicuship /= 0.0_dp) then
@@ -902,7 +903,7 @@ contains
       !else
       !   vicc = vicouv
       !end if
-      !vicL = vicL + vicouv
+      vicLu = vicLu + vicouv
 
       !if (ja_timestep_auto_visc == 0) then
       !   dxiAu = dxi(L) * hu(L) * wu(L)
@@ -915,34 +916,44 @@ contains
       !   end if
       !end if
 
-      !vicLu(L) = vicL ! horizontal eddy viscosity applied in mom eq.
-      !viu(L) = max(0.0_dp, vicL - vicc) ! modeled turbulent part
+      viu = max(0.0_dp, vicLu - vicc) ! modeled turbulent part
+      if (.not. allocated(c11)) then
+         c11 = csu(L1:L2)**2
+         c12 = csu(L1:L2) * snu(L1:L2)
+         c22 = snu(L1:L2)**2
+      end if
+      suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
+      suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
       !
-      !c11 = cs * cs
-      !c12 = cs * sn
-      !c22 = sn * sn
-      !suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
-      !suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
-      !
-      !suxL = suxL * vicL / wui(L)
-      !suyL = suyL * vicL / wui(L)
-      !if (istresstyp == 3) then
-      !   hmin = min(hs(k1), hs(k2))
-      !   suxL = hmin * suxL
-      !   suyL = hmin * suyL
-      !end if
+      suxL = suxL * vicLu / wui(L1:L2)
+      suyL = suyL * vicLu / wui(L1:L2)
+      if (istresstyp == 3) then
+         suxL = suxL * min(hs(ln(1, L1:L2)), hs(ln(2, L1:L2)))
+         suyL = suyL * min(hs(ln(1, L1:L2)), hs(ln(2, L1:L2)))
+      end if
 
-      !if (jsferic == 1 .and. jasfer3D == 1) then
-      !   dvxc(k1) = dvxc(k1) + lin2nodx(L, 1, suxL, suyL)
-      !   dvyc(k1) = dvyc(k1) + lin2nody(L, 1, suxL, suyL)
-      !   dvxc(k2) = dvxc(k2) - lin2nodx(L, 2, suxL, suyL)
-      !   dvyc(k2) = dvyc(k2) - lin2nody(L, 2, suxL, suyL)
-      !else
-      !   dvxc(k1) = dvxc(k1) + suxL
-      !   dvyc(k1) = dvyc(k1) + suyL
-      !   dvxc(k2) = dvxc(k2) - suxL
-      !   dvyc(k2) = dvyc(k2) - suyL
-      !end if
+      ! PASS 5: Scatter stress to nodes (serial - race condition)
+
+      if (jsferic == 1 .and. jasfer3D == 1) then
+         dvx1 = csb(1, L1:L2) * suxL - snb(1, L1:L2) * suyL
+         dvy1 = snb(1, L1:L2) * suxL + csb(1, L1:L2) * suyL
+         dvx2 = -csb(2, L1:L2) * suxL - snb(2, L1:L2) * suyL
+         dvy2 = -snb(2, L1:L2) * suxL + csb(2, L1:L2) * suyL
+      else
+         dvx1 = suxL
+         dvy1 = suyL
+         dvx2 = -suxL
+         dvy2 = -suyL
+      end if
+      do L = L1, L2
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+
+         dvxc(k1) = dvxc(k1) + dvx1(L-L1+1)
+         dvyc(k1) = dvyc(k1) + dvy1(L-L1+1)
+         dvxc(k2) = dvxc(k2) + dvx2(L-L1+1)
+         dvyc(k2) = dvyc(k2) + dvy2(L-L1+1)
+      end do
    end subroutine compute_viscosity_and_stress_vectorized
 
 end module m_setumod
