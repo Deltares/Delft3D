@@ -500,6 +500,9 @@ contains
       case ('bs')
          founam(ifou) = 'ta'
          fouref(ifou, 1) = fouid
+      case ('bx')
+         founam(ifou) = 'taubmx'
+         fouref(ifou, 1) = fouid
       case ('ct') ! constituent: temperature (scalar)
          if (ltem /= 0) then
             founam(ifou) = 'r1'
@@ -612,6 +615,7 @@ contains
           founam(ifou) /= 'wd' .and. &
           founam(ifou) /= 'sul' .and. &
           founam(ifou) /= 'ta' .and. &
+          founam(ifou) /= 'taubmx' .and. &
           founam(ifou) /= 'uxa' .and. &
           founam(ifou) /= 'uya' .and. &
           founam(ifou) /= 'ws' .and. &
@@ -1044,7 +1048,7 @@ contains
          nmaxus = lnkx
       case ('qxk')
          nmaxus = lnx
-      case ('ta')
+      case ('ta','taubmx')
          nmaxus = ndx
       case ('ux', 'uy', 'uc')
          nmaxus = ndkx
@@ -1074,7 +1078,7 @@ contains
          fouvarunit = 'm'
       case ('ws', 'u1', 'ux', 'uy', 'uc', 'uxa', 'uya')
          fouvarunit = 'm s-1'
-      case ('ta')
+      case ('ta','taubmx')
          fouvarunit = 'N m-2'
       case ('r1')
          if (fconno == ltem) then
@@ -1479,7 +1483,7 @@ contains
          !
       else
          select case (columns(1))
-         case ('ws', 'ct', 'ux', 'uy', 'uxa', 'uya', 'uc', 'cs', 'bs', 'fb', 'wdog', 'vog', 'q1', 'sul', 'wd', 'eh')
+         case ('ws', 'ct', 'ux', 'uy', 'uxa', 'uya', 'uc', 'cs', 'bs', 'bx', 'fb', 'wdog', 'vog', 'q1', 'sul', 'wd', 'eh')
             nofou = nofou + 1
             nofouvar = nofouvar + nofouvarstep
          case default
@@ -1660,6 +1664,8 @@ contains
                call gettauswave(jawaveswartdelwaq)
             end if
             fieldptr => taus
+         case ('taubmx')
+            fieldptr => taubmx
          case ('fb')
             fieldptr => freeboard ! freeboard
          case ('wdog')
@@ -1828,6 +1834,9 @@ contains
          case ('ta')
             unc_loc = UNC_LOC_S
             namfun = 'bed stress'
+         case ('taubmx')
+            unc_loc = UNC_LOC_S
+            namfun = 'maximum bed stress'
          case ('fb')
             unc_loc = UNC_LOC_S
             namfun = 'freeboard'
