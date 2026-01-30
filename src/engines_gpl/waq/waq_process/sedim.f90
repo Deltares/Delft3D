@@ -195,17 +195,15 @@ contains
             ! If the exchange is a vertical exchange, also include the settling from the cell above
 
             if ( iq > num_exchanges_u_dir + num_exchanges_v_dir ) then
-                if ( ivan > 0 ) then
+                if ( ivan > 0 .and. inaar > 0 ) then
                     ip1 = ipoint(1) + (ivan-1) * increm(1)
                     ip3 = ipoint(3) + (ivan-1) * increm(3)
-                    process_space_real(ipv) = process_space_real(ipv) + &
+                    process_space_real(ipn) = process_space_real(ipn) + &
                         max( 0.0, -process_space_real(ip3) * process_space_real(ip1) ) / seconds_per_day
-                endif
 
-                if ( inaar > 0 ) then
                     ip1 = ipoint(1) + (inaar-1) * increm(1)
                     ip3 = ipoint(3) + (inaar-1) * increm(3)
-                    process_space_real(ipn) = process_space_real(ipn) + &
+                    process_space_real(ipv) = process_space_real(ipv) + &
                         max( 0.0, process_space_real(ip3) * process_space_real(ip1) ) / seconds_per_day
                 endif
             endif
