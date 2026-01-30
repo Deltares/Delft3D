@@ -58,13 +58,13 @@
                 <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
             </location>
             <path>bin/run_dimr.sh</path>
-            <environments>
-                <!-- <environment name="D3D_HOME" type="path">[programpath(dimr)]/../..</environment> -->
-                <!-- <environment name="ARCH" type="raw">lnx64</environment> -->
-                <!-- <environment name="OMP_NUM_THREADS" type="raw">1</environment> -->
-                <!-- <environment name="OMP_NUM_THREADS_SWAN" type="raw">1</environment> -->
-                <!-- <environment name="LD_PRELOAD" type="path">[programpath(dimr)]/../lib/libmkl_core.so</environment> -->
-            </environments>
+            <!-- <environments>
+                     <environment name="D3D_HOME" type="path">[programpath(dimr)]/../..</environment>
+                     <environment name="ARCH" type="raw">lnx64</environment>
+                     <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                     <environment name="OMP_NUM_THREADS_SWAN" type="raw">1</environment>
+                     <environment name="LD_PRELOAD" type="path">[programpath(dimr)]/../lib/libmkl_core.so</environment>
+                 </environments> -->
         </program>
     </programs>
     <!--
