@@ -197,6 +197,10 @@
             "issuedTo": "Stichting Deltares"
         },
         {
+            "file": "bin\\csumo_precice.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
             "file": "bin\\datsel.exe",
             "issuedTo": "Stichting Deltares"
         },
