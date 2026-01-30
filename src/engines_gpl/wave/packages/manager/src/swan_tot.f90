@@ -147,7 +147,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          end if
          !
          ! Vegetation map
-         if (dom%vegetation == 1) then
+         if (.not.dom%veg_from_flow) then
             if (dom%vegfil /= '') then
                write (*, '(a)') '  Allocate and read vegetation map'
                call get_vegi_map(swan_input_fields, dom%vegfil)
@@ -303,7 +303,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                 & sumvars, 0.0)
          end if
          mult = 1.0
-         if (dom%vegetation == 2 .or. (dom%vegetation == 1 .and. dom%vegfil /= '')) then
+         if (dom%veg_from_flow .or. (dom%vegetation >= 1 .and. dom%vegfil /= '')) then
             !
             ! Write Vegetation map file
             !
@@ -311,7 +311,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             !
             ! mult needed for writing correct stem density to output
             ! in SWAN, the applied density is veg*nstems
-            if (dom%vegetation == 1) then
+            if (.not.dom%veg_from_flow) then
                mult = dom%veg_nstems
             end if
             !

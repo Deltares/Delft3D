@@ -878,8 +878,6 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           temperature = temeqs
        endif
        !
-       taks0 = 0.0_fp
-       !
        ! Calculate Van Rijn's reference height
        !
        if (iopkcw==1) then
