@@ -1583,20 +1583,20 @@ contains
       bfm_included = len_trim(md_bedformfile) /= 0
 
       call prop_get(md_ptr, 'sedtrails', 'SedtrailsGrid', md_sedtrailsfile, success)
-      call prop_get(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
-      ti_st_array = 0.0_dp
-      call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
-      call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
       if (md_sedtrailsfile /= '') then
          inquire (file=md_sedtrailsfile, exist=ex)
          if (ex) then
             jasedtrails = 1
             call mess(LEVEL_INFO, 'SedTrails enabled.')
+            call prop_get(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
+            ti_st_array = 0.0_dp
+            call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
             
             if (ti_st_array(1) > 0.0_dp) then
                ti_st_array(1) = max(ti_st_array(1), dt_user)
             end if
             call getOutputTimeArrays(ti_st_array, ti_sts, ti_st, ti_ste, success)
+            call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
 
             call str_lower(sedtrails_analysis)
             if (.not. (trim(sedtrails_analysis) == 'all' .or. &
@@ -1953,15 +1953,14 @@ contains
       call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
       call check_time_interval(ti_maps, ti_map, ti_mape, dt_user, 'MapInterval', tstart_user)
 
-      ti_com_array = 0.0_hp
-      call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
-      call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
-
       if (jawave == WAVE_SWAN_ONLINE) then
+         ti_com_array = 0.0_hp
          ti_com = dt_user !< defaults to backward compatible behaviour
+         call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
          call getOutputTimeArrays(ti_com_array, ti_coms, ti_com, ti_come, success)
          call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
    
+         call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
          if (success) then
             ti_com = huge(0.0_hp)
          end if
@@ -2349,21 +2348,13 @@ contains
             call mess(LEVEL_WARN, '''EulerVelocities'' is set to 0, because 3Dstokesprofile is set to 0.')
             jaeulervel = WAVE_EULER_VELOCITIES_OUTPUT_OFF
          end if
-      end if
-      
-      call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
-      call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
-      ti_wav_array = 0.0_dp
-      call prop_get(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
-
-      if (jaavgwavquant == 1) then
-         jaavgwriteall = 1 ! write all by default, unless explicitly switched off
-      end if
-
-      call prop_get(md_ptr, 'output', 'MomentumBalance', jamombal, success)
-      call prop_get(md_ptr, 'output', 'AvgWaveWriteAll', jaavgwriteall, success)
+      end if     
 
       if (jawave == WAVE_SURFBEAT) then ! not for Delta Shell
+         call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
+         call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
+         ti_wav_array = 0.0_dp
+         call prop_get(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
          
          if (ti_wav_array(2) < 0.0_dp) then
             ti_wav_array(2) = 0.0_dp
@@ -2377,6 +2368,13 @@ contains
             write (msgbuf, *) 'Setting ''AvgWaveOutputInterval'' to tstop-tstart = ', ti_wav, ' s'
             call warn_flush()
          end if
+
+         if (jaavgwavquant == 1) then
+            jaavgwriteall = 1 ! write all by default, unless explicitly switched off
+         end if
+
+         call prop_get(md_ptr, 'output', 'MomentumBalance', jamombal, success)
+         call prop_get(md_ptr, 'output', 'AvgWaveWriteAll', jaavgwriteall, success)
 
          if (success .and. jaavgwriteall == 0) then ! else don't bother, everything written anyway
             call prop_get(md_ptr, 'output', 'AvgWaveWriteH', jaavgwriteH, success) ! height
