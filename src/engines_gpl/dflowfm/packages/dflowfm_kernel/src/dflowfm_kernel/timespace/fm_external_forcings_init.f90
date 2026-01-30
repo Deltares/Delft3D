@@ -143,7 +143,8 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      max_num_src = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      max_num_src = compute_no_sourcesinks(bnd_ptr, base_dir, file_name)
+      ! max_num_src = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
       if (max_num_src > 0) then
          call reallocsrc(max_num_src, 0)
       end if
@@ -1125,6 +1126,69 @@ contains
 
    end function init_sourcesink_forcings
 
+   function compute_no_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
+      use fm_external_forcings_data, only: numsrc
+      use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
+      use m_filez, only: oldfil
+      use m_reapol, only: reapol
+      use tree_data_types, only: tree_data
+      use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use string_module, only: str_tolower
+      use m_polygon, only: npl
+      use network_data
+      use m_flow
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline      
+
+
+      integer :: no_sourcesinks
+      type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
+
+      type(tree_data), pointer :: block_ptr
+
+      integer :: num_items_in_file
+      character(len=:), allocatable :: id !< Bubblescreen id
+      character(len=:), allocatable :: srcid !< Source id
+      character(len=:), allocatable :: location_file !< Bubblescreen location file
+      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      integer :: file_pointer
+      integer :: i
+      logical :: is_successful
+      real(kind=dp), allocatable :: xpl_tmp(:), ypl_tmp(:) !< Temporary arrays to store polygon coordinates
+      integer :: npl_tmp !< Temporary variable to store number of polygon points
+      integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
+      character, dimension(:), allocatable :: error
+
+      no_sourcesinks = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      num_items_in_file = tree_num_nodes(bnd_ptr)     
+      do i = 1, num_items_in_file
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         group_name = trim(tree_get_name(block_ptr))
+
+         select case (str_tolower(group_name))
+         case ('bubblescreen')
+            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
+
+            if (is_successful) then
+               call oldfil(file_pointer, location_file)
+               call reapol(file_pointer, 0)
+               npl_tmp = npl
+               allocate (xpl_tmp(npl_tmp))
+               allocate (ypl_tmp(npl_tmp))
+
+               xpl_tmp = xpl(1:npl_tmp)
+               ypl_tmp = ypl(1:npl_tmp)
+
+               call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
+               no_sourcesinks = no_sourcesinks + size(crossed_cells) * kmx
+               
+            end if
+         end select
+      end do 
+
+   end function compute_no_sourcesinks
    !> Read and initialize bubblescreen object from new external forcings file.
    function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
@@ -1180,7 +1244,6 @@ contains
 
       ! Copy polygon data to temporary arrays
       npl_tmp = npl
-      bubblescreen%num_flow_cells = npl
       allocate (xpl_tmp(npl_tmp))
       allocate (ypl_tmp(npl_tmp))
       allocate (zpl_tmp(npl_tmp))
@@ -1191,6 +1254,7 @@ contains
       tmsz = zpl_tmp(1) ! Assume all polygon points have the same z-coordinate
 
       call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
+      bubblescreen%num_flow_cells = size(crossed_cells)
 
       if (.not. allocated(error)) then
          bubblescreen%id = id
@@ -1206,23 +1270,22 @@ contains
 
             kstart = kbot(crossed_cells(cidx))
             kend = ktop(crossed_cells(cidx))
+            ! TODO: this is wrong, should be loop over all layers in cell
             do i = kstart, kstart + kmx - 1
-               if (zws(i) >= tmsz) then
-                  write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
+               write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
 
-                  
-                  call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
+               
+               call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
 
-                  ! TODO: each source/sink has a differerent id but we have only one specification in the discharge_input file. 
-                  ! Check how this can be coupled correctly.
-                  is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(srcid), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
-                                                                  1, qstss)
-                                  
-                  write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, zws(i)
-                  call msg_flush()
+               ! TODO: each source/sink has a differerent id but we have only one specification in the discharge_input file. 
+               ! Check how this can be coupled correctly.
+               ! is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(srcid), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
+               !                                                 1, qstss)
+                                 
+               write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, zws(i)
+               call msg_flush()
 
-                  bubble_source_count = bubble_source_count + 1
-               end if
+               bubble_source_count = bubble_source_count + 1
             end do
 
          end do
