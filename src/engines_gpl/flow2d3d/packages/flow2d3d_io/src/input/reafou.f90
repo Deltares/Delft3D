@@ -1,5 +1,4 @@
-subroutine reafou(error     ,lundia    ,lunfou    ,filfou    ,kmax      , &
-                & lstsc     ,lsal      ,ltem      ,nofou     ,gdp       )
+module reafou_m
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -26,25 +25,23 @@ subroutine reafou(error     ,lundia    ,lunfou    ,filfou    ,kmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!!--description-----------------------------------------------------------------
-!
-!    Function: - Read fourier input file and stores the
-!                variables necessary for the analysis in
-!                arrays.
-! Method used:
-!
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
+
+implicit none (type,external)
+
+contains
+
+!> Read fourier input file and stores the variables necessary for the analysis in
+!! arrays.
+subroutine reafou(error     ,lundia    ,lunfou    ,filfou    ,kmax      , &
+                & lstsc     ,lsal      ,ltem      ,nofou     ,gdp       )
+
     use precision
     use mathconsts
     use globaldata
-    use string_module
-    !
-    implicit none
-    !
+    use string_module, only:str_lower, remove_leading_spaces
+    use regel_m, only:regel
+    external prterr, dtn
+
     type(globdat),target :: gdp
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
@@ -174,7 +171,7 @@ subroutine reafou(error     ,lundia    ,lunfou    ,filfou    ,kmax      , &
     linenumber = linenumber + 1
     fouid      = fouid      + 1
     !
-    call small(record, 132)
+    call str_lower(record, 132)
     call regel(record, il , ir, maxvld, nveld, error)
     if (error) goto 9999
     !
@@ -220,6 +217,10 @@ subroutine reafou(error     ,lundia    ,lunfou    ,filfou    ,kmax      , &
        foutyp(ifou)     = 'v'
        fouref(ifou,1)   = fouid
        fouref(ifou+1,1) = fouid
+    elseif (founam(ifou)=='bx') then
+       founam(ifou)     = 'taubmx          '
+       foutyp(ifou)     = 's'
+       fouref(ifou,1)   = fouid
     elseif (founam(ifou)=='ct') then
        if (ltem/=0) then
           founam(ifou)   = 'r1              '
@@ -625,3 +626,5 @@ subroutine setfouunit(founam, lsal, ltem, fconno, fouvarunit)
        fouvarunit = ''
     end select 
 end subroutine setfouunit
+
+end module reafou_m

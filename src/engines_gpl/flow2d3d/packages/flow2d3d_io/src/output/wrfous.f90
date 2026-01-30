@@ -70,6 +70,7 @@ subroutine wrfous(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
     integer                              , pointer :: iblwl
     integer                              , pointer :: ibleh
     integer                              , pointer :: iblcn
+    integer                              , pointer :: iblbs
     real(fp)       , dimension(:)        , pointer :: fknfac
     real(fp)       , dimension(:)        , pointer :: foufas
     real(fp)       , dimension(:,:,:)    , pointer :: fousma
@@ -152,6 +153,7 @@ subroutine wrfous(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
     iblwl         => gdp%gdfourier%iblwl
     ibleh         => gdp%gdfourier%ibleh
     iblcn         => gdp%gdfourier%iblcn
+    iblbs         => gdp%gdfourier%iblbs
     ftmsto        => gdp%gdfourier%ftmsto
     ftmstr        => gdp%gdfourier%ftmstr
     idvar         => gdp%gdfourier%idvar
@@ -206,6 +208,12 @@ subroutine wrfous(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
        write (blnm(3:4), '(i2.2)') iblcn
        namfun = namcon(fconno(ifou))
     endif
+    if (founam(ifou)(:2)=='ta') then
+       iblbs = iblbs + 1
+       blnm = 'BS??'
+       write (blnm(3:4), '(i2.2)') iblbs
+       namfun = 'maximum bed stress'
+    endif
     !
     if (getfiletype(gdp, FILOUT_FOU) == FTYPE_NETCDF) then
        !
@@ -216,7 +224,7 @@ subroutine wrfous(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
        ! Write information to "TEKAL" data file
        !
        if (inode == master) then
-          write (lunfou, '(a,a16)') '* Results fourier analysis on: ', namfun
+          write (lunfou, '(a,a)') '* Results fourier analysis on: ', trim(namfun)
           !
           if (kmax>1) then
              write (lunfou, '(a,i3)') '* Layer number               : ', flayno(ifou)

@@ -38,6 +38,8 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
 !!--declarations----------------------------------------------------------------
     use precision
     use globaldata
+    use string_module, only: str_lower
+    use regel_m, only: regel
     !
     implicit none
     !
@@ -82,7 +84,7 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
     !
     ! reset record in smaller case characters and define contents
     !
-    call small(record    ,300       )
+    call str_lower(record    ,300       )
     call regel(record    ,il        ,ir        ,maxvld    ,nveld     , &
              & error     )
     if (error) goto 999
@@ -91,7 +93,7 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
     !
     if (record(il(1):il(1))=='*' .or. nveld==0) goto 10
     !
-    ! requested fourier analysis water-level
+    ! quantity: water-level
     !
     if (record(il(1):il(1) + 1)=='wl') then
        nofou = nofou + 1
@@ -104,13 +106,13 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
           nofouvar = nofouvar + 2
        endif
     !
-    ! requested fourier analysis energy head
+    ! quantity: energy head
     !
     elseif (record(il(1):il(1) + 1)=='eh') then
        nofou = nofou + 1
        nofouvar = nofouvar + 1
     !
-    ! requested fourier analysis velocity
+    ! quantity: velocity
     !
     elseif (record(il(1):il(1) + 1)=='uv') then
        nofou = nofou + 2
@@ -122,7 +124,7 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
           nofouvar = nofouvar + 4
        endif
     !
-    ! requested fourier analysis discharge
+    ! quantity: discharge
     !
     elseif (record(il(1):il(1) + 1)=='qf') then
        nofou = nofou + 2
@@ -132,7 +134,7 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
           nofouvar = nofouvar + 4
        endif
     !
-    ! requested fourier analysis bedstress
+    ! quantity: bed stress
     !
     elseif (record(il(1):il(1) + 1)=='bs') then
        nofou = nofou + 2
@@ -142,7 +144,13 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
           nofouvar = nofouvar + 4
        endif
     !
-    ! requested fourier analysis temperature
+    ! quantity: maximum bed stress
+    !
+    elseif (record(il(1):il(1) + 1)=='bx') then
+       nofou = nofou + 1
+       nofouvar = nofouvar + 1
+    !
+    ! quantity: temperature
     !
     elseif (record(il(1):il(1) + 1)=='ct') then
        nofou = nofou + 1
@@ -152,7 +160,7 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
           nofouvar = nofouvar + 2
        endif
     !
-    ! requested fourier analysis salinity
+    ! quantity: salinity
     !
     elseif (record(il(1):il(1) + 1)=='cs') then
        nofou = nofou + 1
@@ -162,7 +170,7 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
           nofouvar = nofouvar + 2
        endif
     !
-    ! requested fourier analysis constituent
+    ! quantity: constituent
     !
     elseif ((record(il(1):il(1))=='c') .and.                                    &
           & (record(il(1) + 1:il(1) + 1)=='1' .or. record(il(1) + 1:il(1) + 1)  &
@@ -177,7 +185,7 @@ subroutine fouini(lundia    ,lunfou    ,error     ,nofou     ,gdp       )
        endif
     else
        !
-       ! requested fourier analysis undefined
+       ! quantity: undefined
        !
        call prterr(lundia    ,'F001'    ,record(il(1):ir(1))  )
        !

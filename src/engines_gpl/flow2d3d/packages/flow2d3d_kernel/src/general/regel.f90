@@ -1,5 +1,4 @@
-subroutine regel(string    ,il        ,ir        ,maxvld    ,nveld     , &
-               & error     )
+module regel_m
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -26,17 +25,16 @@ subroutine regel(string    ,il        ,ir        ,maxvld    ,nveld     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!!--description-----------------------------------------------------------------
-!
-!    Function: Analyses character string line
-!
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
+
+implicit none (type,external)
+
+contains
+
+!> Analyses character string line
+subroutine regel(string    ,il        ,ir        ,maxvld    ,nveld     , &
+               & error     )
+
     use precision
-    implicit none
 !
 ! Global variables
 !
@@ -107,3 +105,5 @@ subroutine regel(string    ,il        ,ir        ,maxvld    ,nveld     , &
     !
  9999 continue
 end subroutine regel
+
+end module regel_m

@@ -38,10 +38,12 @@ subroutine rdfour(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !!--declarations----------------------------------------------------------------
     use precision
     use globaldata
-    use string_module
+    use properties, only: prop_get
+    use string_module, only: remove_leading_spaces
     use system_utils, only: exifil
+    use reafou_m, only: reafou
     !
-    implicit none
+    implicit none (type,external)
     !
     type(globdat),target :: gdp
     !
@@ -64,62 +66,18 @@ subroutine rdfour(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !
 ! Local variables
 !
-    integer                        :: lenc      ! Help var. (length of var. cvar to be looked for in the MD-file) 
     integer                        :: lfile     ! Length of file name 
-    integer                        :: lkw       ! Length of keyword 
     integer                        :: lunfou    ! Unit number fourier input file 
-    integer                        :: nlook     ! Help var.: nr. of data to look for in the MD-file 
-    integer                        :: ntrec     ! Help. var to keep track of NRREC 
-    logical                        :: found     ! Flag=TRUE if keyword found 
-    logical                        :: lerror    ! Flag=TRUE if an error is encountered 
-    logical                        :: newkw     ! Logical var. specifying whether a new recnam should be read from the MD-file or just new data in the continuation line 
     character(12)                  :: fildef    ! Default file name (usually = blank) 
     character(256)                 :: filfou    ! File name for fourier analysis input 
-    character(6)                   :: keyw      ! Name of record to look for in the MD-file (usually KEYWRD or RECNAM) 
-    character(9)                   :: fmtfou    ! Format of fourier analysis input file 
-!
 !
 !! executable statements -------------------------------------------------------
 !
-!
     itis  => gdp%gdrdpara%itis
     !
-    lerror = .false.
-    nlook = 1
-    newkw = .true.
     fildef = ' '
-    fmtfou = 'formatted'
-    !
-    !-----locate 'Filfou' record for Fourier analysis
-    !
-    keyw = 'Filfou'
-    newkw = .true.
-    ntrec = nrrec
-    lkw = 6
-    call search(lunmd     ,lerror    ,newkw     ,nrrec     ,found     , &
-              & ntrec     ,mdfrec    ,itis      ,keyw      ,lkw       , &
-              & 'NO'      )
-    lerror = .false.
-    !
-    !-----not found ?
-    !
     filfou = fildef
-    if (found) then
-       lenc = 12
-       call read2c(lunmd     ,lerror    ,keyw      ,newkw     ,nlook     , &
-                 & mdfrec    ,filfou    ,fildef    ,lenc      ,nrrec     , &
-                 & ntrec     ,lundia    ,gdp       )
-       !
-       !
-       !-------reading error?
-       !
-       if (lerror) then
-          lerror = .false.
-          filfou = fildef
-       endif
-    endif
-    !
-    !-----Quantities for Fourier analysis in file
+    call prop_get(gdp%mdfile_ptr,'*','Filfou',filfou)
     !
     if (filfou/=fildef) then
        !
@@ -133,7 +91,7 @@ subroutine rdfour(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           !
           !---------read data from external file
           !
-          open (newunit=lunfou, file = filfou(1:lfile), form = fmtfou,               &
+          open (newunit=lunfou, file = filfou(1:lfile), form = 'formatted', &
               & status = 'old')
           call reafou(error     ,lundia    ,lunfou    ,filfou    ,kmax      , &
                     & lstsc     ,lsal      ,ltem      ,nofou     ,gdp       )

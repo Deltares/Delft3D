@@ -281,7 +281,11 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
                 iblbs = iblbs + 1
                 blnm = 'BS??'
                 write (blnm(3:4), '(i2.2)') iblbs
-                namfun = 'bed stress'
+                if (founam(ifou)(:6)=='taubmx') then
+                   namfun = 'maximum bed stress'
+                else
+                   namfun = 'bed stress'
+                endif
              endif
              write(namfunlong,'(i3.3,2a)') fouref(ifou,1), ": ", trim(namfun)
              !

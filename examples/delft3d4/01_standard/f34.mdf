@@ -127,6 +127,7 @@ Flmap =  7.5000000e+002 150  1.5000000e+003
 Flhis =  0.0000000e+000 5  1.5000000e+003
 Flpp  =  0.0000000e+000 0  0.0000000e+000
 Flrst = 0
+Filfou= #f34.fou#
 Commnt=                              
 Addtim= #Y#
 Commnt=                              
