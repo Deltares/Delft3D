@@ -72,18 +72,18 @@ contains
 
       ! Check: in Cartesian, output should equal input
       ! Link 1: nodes 1 and 2
-      call f90_expect_near(ucx_in_link_frame(1, 1), ucx(1), tolerance, "Link 1, side 1, ucx mismatch")
-      call f90_expect_near(ucx_in_link_frame(2, 1), ucx(2), tolerance, "Link 1, side 2, ucx mismatch")
-      call f90_expect_near(ucy_in_link_frame(1, 1), ucy(1), tolerance, "Link 1, side 1, ucy mismatch")
-      call f90_expect_near(ucy_in_link_frame(2, 1), ucy(2), tolerance, "Link 1, side 2, ucy mismatch")
+      call f90_expect_near(ucx_link(1, 1), ucx(1), tolerance, "Link 1, side 1, ucx mismatch")
+      call f90_expect_near(ucx_link(2, 1), ucx(2), tolerance, "Link 1, side 2, ucx mismatch")
+      call f90_expect_near(ucy_link(1, 1), ucy(1), tolerance, "Link 1, side 1, ucy mismatch")
+      call f90_expect_near(ucy_link(2, 1), ucy(2), tolerance, "Link 1, side 2, ucy mismatch")
 
       ! Link 2: nodes 2 and 3
-      call f90_expect_near(ucx_in_link_frame(1, 2), ucx(2), tolerance, "Link 2, side 1, ucx mismatch")
-      call f90_expect_near(ucx_in_link_frame(2, 2), ucx(3), tolerance, "Link 2, side 2, ucx mismatch")
+      call f90_expect_near(ucx_link(1, 2), ucx(2), tolerance, "Link 2, side 1, ucx mismatch")
+      call f90_expect_near(ucx_link(2, 2), ucx(3), tolerance, "Link 2, side 2, ucx mismatch")
 
       ! Corner velocities
-      call f90_expect_near(ucnx_in_link_frame(1, 1), ucnx(1), tolerance, "Link 1, corner 1, ucnx mismatch")
-      call f90_expect_near(ucny_in_link_frame(1, 1), ucny(1), tolerance, "Link 1, corner 1, ucny mismatch")
+      call f90_expect_near(ucnx_link(1, 1), ucnx(1), tolerance, "Link 1, corner 1, ucnx mismatch")
+      call f90_expect_near(ucny_link(1, 1), ucny(1), tolerance, "Link 1, corner 1, ucny mismatch")
 
       ! Cleanup
       call cleanup_coordinate_transform()
@@ -186,25 +186,25 @@ contains
       expected_ucy_node2 = cs   ! -sn*0 + cs*1 = cs
       
       ! Check node transformations
-      call f90_expect_near(ucx_in_link_frame(1, 1), expected_ucx_node1, tolerance, &
+      call f90_expect_near(ucx_link(1, 1), expected_ucx_node1, tolerance, &
                           "Node 1 ucx transformation incorrect")
-      call f90_expect_near(ucy_in_link_frame(1, 1), expected_ucy_node1, tolerance, &
+      call f90_expect_near(ucy_link(1, 1), expected_ucy_node1, tolerance, &
                           "Node 1 ucy transformation incorrect")
       
-      call f90_expect_near(ucx_in_link_frame(2, 1), expected_ucx_node2, tolerance, &
+      call f90_expect_near(ucx_link(2, 1), expected_ucx_node2, tolerance, &
                           "Node 2 ucx transformation incorrect")
-      call f90_expect_near(ucy_in_link_frame(2, 1), expected_ucy_node2, tolerance, &
+      call f90_expect_near(ucy_link(2, 1), expected_ucy_node2, tolerance, &
                           "Node 2 ucy transformation incorrect")
       
       ! Check corner transformations (should be same as nodes)
-      call f90_expect_near(ucnx_in_link_frame(1, 1), expected_ucx_node1, tolerance, &
+      call f90_expect_near(ucnx_link(1, 1), expected_ucx_node1, tolerance, &
                           "Corner 1 ucnx transformation incorrect")
-      call f90_expect_near(ucny_in_link_frame(1, 1), expected_ucy_node1, tolerance, &
+      call f90_expect_near(ucny_link(1, 1), expected_ucy_node1, tolerance, &
                           "Corner 1 ucny transformation incorrect")
       
-      call f90_expect_near(ucnx_in_link_frame(2, 1), expected_ucx_node2, tolerance, &
+      call f90_expect_near(ucnx_link(2, 1), expected_ucx_node2, tolerance, &
                           "Corner 2 ucnx transformation incorrect")
-      call f90_expect_near(ucny_in_link_frame(2, 1), expected_ucy_node2, tolerance, &
+      call f90_expect_near(ucny_link(2, 1), expected_ucy_node2, tolerance, &
                           "Corner 2 ucny transformation incorrect")
       
       ! Cleanup

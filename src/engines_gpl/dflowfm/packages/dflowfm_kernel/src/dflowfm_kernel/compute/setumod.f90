@@ -76,7 +76,6 @@ contains
       use m_wall2linx, only: wall2linx
       use m_wall2liny, only: wall2liny
       use m_waveconst
-      use m_coordinate_transform, only: transform_velocities_to_links, ucx_in_link_frame, ucy_in_link_frame, ucnx_in_link_frame, ucny_in_link_frame
 
       implicit none
 
@@ -399,10 +398,10 @@ contains
                !      k3 = lncn(1, L)
                !      k4 = lncn(2, L)
                !
-               !      duxdn = (ucx_in_link_frame(2, L) - ucx_in_link_frame(1, L)) * dxi(L)
-               !      duydn = (ucy_in_link_frame(2, L) - ucy_in_link_frame(1, L)) * dxi(L)
-               !      duxdt = (ucnx_in_link_frame(2, L) - ucnx_in_link_frame(1, L)) * wui(L)
-               !      duydt = (ucny_in_link_frame(2, L) - ucny_in_link_frame(1, L)) * wui(L)
+               !      duxdn = (ucx_link(2, L) - ucx_link(1, L)) * dxi(L)
+               !      duydn = (ucy_link(2, L) - ucy_link(1, L)) * dxi(L)
+               !      duxdt = (ucnx_link(2, L) - ucnx_link(1, L)) * wui(L)
+               !      duydt = (ucny_link(2, L) - ucny_link(1, L)) * wui(L)
                !
                !      if (Smagorinsky > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky
                !         dundn = cs * duxdn + sn * duydn
@@ -840,8 +839,8 @@ contains
 !      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
       use m_coordinate_transform, only: transform_velocities_to_links, &
-                                        ucx_in_link_frame, ucy_in_link_frame, &
-                                        ucnx_in_link_frame, ucny_in_link_frame
+                                        ucx_link, ucy_link, &
+                                        ucnx_link, ucny_link
       use m_sferic, only: jsferic, jasfer3D
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
@@ -863,10 +862,10 @@ contains
       L2 = lnx
 
       ! PASS 2: Compute gradients (vectorized!)
-      duxdn = (ucx_in_link_frame(2, L1:L2) - ucx_in_link_frame(1, L1:L2)) * dxi(L1:L2)
-      duydn = (ucy_in_link_frame(2, L1:L2) - ucy_in_link_frame(1, L1:L2)) * dxi(L1:L2)
-      duxdt = (ucnx_in_link_frame(2, L1:L2) - ucnx_in_link_frame(1, L1:L2)) * wui(L1:L2)
-      duydt = (ucny_in_link_frame(2, L1:L2) - ucny_in_link_frame(1, L1:L2)) * wui(L1:L2)
+      duxdn = (ucx_link(2, L1:L2) - ucx_link(1, L1:L2)) * dxi(L1:L2)
+      duydn = (ucy_link(2, L1:L2) - ucy_link(1, L1:L2)) * dxi(L1:L2)
+      duxdt = (ucnx_link(2, L1:L2) - ucnx_link(1, L1:L2)) * wui(L1:L2)
+      duydt = (ucny_link(2, L1:L2) - ucny_link(1, L1:L2)) * wui(L1:L2)
 
       vksag6 = vonkar * sag / 6.0_dp
       vicLU(L1:L2) = 0.0_dp
