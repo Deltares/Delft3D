@@ -133,7 +133,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Read name of slurry input file
     !
     filslu = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filslu', filslu)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filslu', filslu)
     !
     ! Create slurry branch in input tree
     !
