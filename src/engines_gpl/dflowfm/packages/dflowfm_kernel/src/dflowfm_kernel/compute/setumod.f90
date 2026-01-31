@@ -842,18 +842,19 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
-
+      use m_flowtimes, only: dti, ja_timestep_auto_visc
+   
       implicit none
 
       real(kind=dp) :: vksag6
 
       integer :: L, L1, L2, numL2D, k1, k2
-      !real(kind=dp) :: vicc, dxiAu, viscocity_max_limit, DRL, nuhroller, hmin
+      real(kind=dp) :: vicc, dxiAu
       real(kind=dp) :: Cz, shearvar
       real(kind=dp) :: suxL, suyL
       real(kind=dp) :: dundn, dutdn, dundt, dutdt
       real(kind=dp), dimension(:), allocatable, save :: duxdn, duydn, duxdt, duydt
-      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, c11, c12, c22, hmin
+      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, c11, c12, c22, hmin, visc_limit
 
       ! PASS 1: Transform velocities for ALL 2D links at once
       call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
@@ -865,18 +866,19 @@ contains
       vicLU(L1:L2) = 0.0_dp
 
       if (.not. allocated(duxdn)) then
-         allocate(duxdn(lnx))
-         allocate(duydn(lnx))
-         allocate(duxdt(lnx))
-         allocate(duydt(lnx))
-         allocate(dvx1(lnx))
-         allocate(dvy1(lnx))
-         allocate(dvx2(lnx))
-         allocate(dvy2(lnx))
-         allocate(c11(lnx))
-         allocate(c12(lnx))
-         allocate(c22(lnx))
-         allocate(hmin(lnx))
+         allocate (duxdn(lnx))
+         allocate (duydn(lnx))
+         allocate (duxdt(lnx))
+         allocate (duydt(lnx))
+         allocate (dvx1(lnx))
+         allocate (dvy1(lnx))
+         allocate (dvx2(lnx))
+         allocate (dvy2(lnx))
+         allocate (c11(lnx))
+         allocate (c12(lnx))
+         allocate (c22(lnx))
+         allocate (hmin(lnx))
+         allocate (visc_limit(lnx))
       end if
 
       !$OMP SIMD
@@ -908,46 +910,26 @@ contains
          end do
       end if
 
-      !if (nshiptxy > 0) then
-      !   if (vicuship /= 0.0_dp) then
-      !      vicL = vicL + vicushp(L)
-      !   end if
-      !end if
+      visc_limit = huge(1.0_dp)
 
-      ! JRE: add roller induced viscosity
-      !if ((jawave == WAVE_SURFBEAT) .and. (swave == 1) .and. (roller == 1)) then
-      !   DRL = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
-      !   nuhroller = nuhfac * hu(L) * (DRL / rhomean)**(1.0_dp / 3.0_dp)
-      !   vicL = max(nuhroller, vicL)
-      !end if
-
-      !> TODO: rewrite this once ja_timestep_auto_visc is functional
-      viu(L1:L2) = vicLU(L1:L2)
-      ! Add base viscosity (user-specified or constant)
-      if (javiusp == 1) then
-         vicLU(L1:L2) = vicLU(L1:L2) + viusp(L1:L2)
-      else
-         vicLU(L1:L2) = vicLU(L1:L2) + vicouv
-      end if
-
-      !if (ja_timestep_auto_visc == 0) then
-      !   dxiAu = dxi(L) * hu(L) * wu(L)
-      !   if (dxiAu > 0.0_dp) then
-      !      viscocity_max_limit = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
-      !      if (vicL > viscocity_max_limit) then
-      !         vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
-      !         number_limited_links = number_limited_links + 1
-      !      end if
-      !   end if
-      !end if
-
-      ! Pre-gather hs if needed (ONE indirect access loop)
-      !if (istresstyp == 3) then
-
+      !precompute indirect volumes and conditionals (visc_limit)
       do L = L1, L2
          hmin(L) = min(hs(ln(1, L)), hs(ln(2, L)))
+         if (ja_timestep_auto_visc == 0) then
+               dxiAu = dxi(L) * hu(L) * wu(L)
+               if (dxiAu > 0.0_dp) then
+                  visc_limit(L) = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
+               end if
+            end if
       end do
-      !end if
+
+      ! simd assignment
+      !$OMP SIMD
+      do L = L1, L2
+         vicc = vicLU(L) + merge(viusp(L), vicouv, javiusp == 1)
+         vicLU(L) = min(vicLU(L), visc_limit(L))
+         viu(L) = max(0.0_dp, vicLU(L) - vicc)
+      end do
 
       if (.not. allocated(c11)) then
          c11(L1:L2) = csu(L1:L2)**2
