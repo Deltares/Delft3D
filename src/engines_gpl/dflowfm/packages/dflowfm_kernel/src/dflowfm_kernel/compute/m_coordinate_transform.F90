@@ -47,7 +47,7 @@ module m_coordinate_transform
 contains
 
    subroutine initialize_coordinate_transform()
-      use m_flowgeom, only: lnx, lnx1D, ln, lncn
+      use m_flowgeom, only: lnx, ln, lncn
       use m_sferic, only: jsferic, jasfer3D
 
       implicit none
@@ -76,17 +76,17 @@ contains
       allocate (ux4(lnx), uy4(lnx), stat=ierr)
 
       ! Build flattened index maps (one-time cost at initialization)
-      node_map_1 = ln(1, lnx1D + 1:lnx)
-      node_map_2 = ln(2, lnx1D + 1:lnx)
-      corner_map_1 = lncn(1, lnx1D + 1:lnx)
-      corner_map_2 = lncn(2, lnx1D + 1:lnx)
+      node_map_1 = ln(1, 1:lnx)
+      node_map_2 = ln(2, 1:lnx)
+      corner_map_1 = lncn(1, 1:lnx)
+      corner_map_2 = lncn(2, 1:lnx)
 
       is_initialized = .true.
 
    end subroutine initialize_coordinate_transform
 
    subroutine transform_node_velocities_combined(ucx, ucy, ucxq, ucyq)
-      use m_flowgeom, only: lnx1D, lnx, csb, snb
+      use m_flowgeom, only: lnx, lnx1D, csb, snb
 
       real(dp), intent(in) :: ucx(:), ucy(:), ucxq(:), ucyq(:)
       integer :: L1, L2, L
