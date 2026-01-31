@@ -398,10 +398,10 @@ contains
                !      k3 = lncn(1, L)
                !      k4 = lncn(2, L)
                !
-               !      duxdn = (ucx_link(2, L) - ucx_link(1, L)) * dxi(L)
-               !      duydn = (ucy_link(2, L) - ucy_link(1, L)) * dxi(L)
-               !      duxdt = (ucnx_link(2, L) - ucnx_link(1, L)) * wui(L)
-               !      duydt = (ucny_link(2, L) - ucny_link(1, L)) * wui(L)
+               !      duxdn = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
+               !      duydn = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
+               !      duxdt = (ucnx_link_2(L) - ucnx_link_1(L)) * wui(L)
+               !      duydt = (ucny_link_2(L) - ucny_link_1(L)) * wui(L)
                !
                !      if (Smagorinsky > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky
                !         dundn = cs * duxdn + sn * duydn
@@ -838,9 +838,7 @@ contains
       use m_get_chezy, only: get_chezy
 !      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
-      use m_coordinate_transform, only: transform_velocities_to_links, &
-                                        ucx_link, ucy_link, &
-                                        ucnx_link, ucny_link
+      use m_coordinate_transform, only: transform_velocities_to_links, ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2
       use m_sferic, only: jsferic, jasfer3D
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
@@ -862,10 +860,10 @@ contains
       L2 = lnx
 
       ! PASS 2: Compute gradients (vectorized!)
-      duxdn = (ucx_link(2, L1:L2) - ucx_link(1, L1:L2)) * dxi(L1:L2)
-      duydn = (ucy_link(2, L1:L2) - ucy_link(1, L1:L2)) * dxi(L1:L2)
-      duxdt = (ucnx_link(2, L1:L2) - ucnx_link(1, L1:L2)) * wui(L1:L2)
-      duydt = (ucny_link(2, L1:L2) - ucny_link(1, L1:L2)) * wui(L1:L2)
+      duxdn = (ucx_link_2  - ucx_link_1) * dxi(L1:L2)
+      duydn = (ucy_link_2  - ucy_link_1) * dxi(L1:L2)
+      duxdt = (ucnx_link_2 - ucnx_link_1) * wui(L1:L2)
+      duydt = (ucny_link_2 - ucny_link_1) * wui(L1:L2)
 
       vksag6 = vonkar * sag / 6.0_dp
       vicLU(L1:L2) = 0.0_dp
