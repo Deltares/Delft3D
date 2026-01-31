@@ -940,10 +940,10 @@ contains
       !precompute indirect volumes and conditionals (visc_limit)
       if (ja_timestep_auto_visc == 0) then
          do L = L1, L2
-            k1 = ln(1, L)
-            k2 = ln(2, L)
             dxiAu = dxi(L) * hu(L) * wu(L)
             if (dxiAu > 0.0_dp) then
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                visc_limit(L) = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
             end if
          end do
