@@ -913,8 +913,9 @@ contains
       real(kind=dp) :: Cz, shearvar
       real(kind=dp) :: suxL, suyL
       real(kind=dp) :: dundn, dutdn, dundt, dutdt
-      real(kind=dp), dimension(:), allocatable, save :: duxdn, duydn, duxdt, duydt
-      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, c11, c12, c22, hmin, visc_limit
+      real(kind=dp) :: duxdn, duydn, duxdt, duydt
+      real(kind=dp) :: c11, c12, c22
+      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, visc_limit
 
       L1 = lnx1D + 1
       L2 = lnx
@@ -922,18 +923,11 @@ contains
       vksag6 = vonkar * sag / 6.0_dp
       vicLU(L1:L2) = 0.0_dp
 
-      if (.not. allocated(duxdn)) then
-         allocate (duxdn(lnx))
-         allocate (duydn(lnx))
-         allocate (duxdt(lnx))
-         allocate (duydt(lnx))
+      if (.not. allocated(dvx1)) then
          allocate (dvx1(lnx))
          allocate (dvy1(lnx))
          allocate (dvx2(lnx))
          allocate (dvy2(lnx))
-         allocate (c11(lnx))
-         allocate (c12(lnx))
-         allocate (c22(lnx))
          allocate (hmin(lnx))
          allocate (visc_limit(lnx))
       end if
@@ -955,30 +949,25 @@ contains
          end do
       end if
 
-      if (.not. allocated(c11)) then
-         c11(L1:L2) = csu(L1:L2)**2
-         c12(L1:L2) = csu(L1:L2) * snu(L1:L2)
-         c22(L1:L2) = snu(L1:L2)**2
-      end if
-
       !$OMP SIMD
       do L = L1, L2
          if (hu(L) > 0) then
-            duxdn(L) = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
-            duydn(L) = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
-            duxdt(L) = (ucnx_link_2(L) - ucnx_link_1(L)) * wui(L)
-            duydt(L) = (ucny_link_2(L) - ucny_link_1(L)) * wui(L)
 
             if (Elder > 0.0_dp) then !  add Elder
                Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                vicLU(L) = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
             end if
 
+            duxdn = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
+            duydn = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
+            duxdt = (ucnx_link_2(L) - ucnx_link_1(L)) * wui(L)
+            duydt = (ucny_link_2(L) - ucny_link_1(L)) * wui(L)
+
             if (Smagorinsky > 0) then ! add Smagorinsky
-               dundn = csu(L) * duxdn(L) + snu(L) * duydn(L)
-               dutdn = -snu(L) * duxdn(L) + csu(L) * duydn(L)
-               dundt = csu(L) * duxdt(L) + snu(L) * duydt(L)
-               dutdt = -snu(L) * duxdt(L) + csu(L) * duydt(L)
+               dundn = csu(L) * duxdn + snu(L) * duydn
+               dutdn = -snu(L) * duxdn + csu(L) * duydn
+               dundt = csu(L) * duxdt + snu(L) * duydt
+               dutdt = -snu(L) * duxdt + csu(L) * duydt
 
                shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
                vicLU(L) = vicLU(L) + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wui(L))
@@ -988,8 +977,12 @@ contains
             vicLU(L) = min(vicLU(L), visc_limit(L))
             viu(L) = max(0.0_dp, vicLU(L) - vicc)
 
-            suxL = (duxdn(L) + c11(L) * duxdn(L) + c12(L) * (duydn(L) - duxdt(L)) - c22(L) * duydt(L)) * vicLU(L) * hmin_(L) / wui(L)
-            suyL = (duydn(L) + c11(L) * duxdt(L) + c12(L) * (duxdn(L) + duydt(L)) + c22(L) * duydn(L)) * vicLU(L) * hmin_(L) / wui(L)
+            c11 = csu(L)**2
+            c12 = csu(L) * snu(L)
+            c22 = snu(L)**2
+
+            suxL = (duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt) * vicLU(L) * hmin_(L) / wui(L)
+            suyL = (duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn) * vicLU(L) * hmin_(L) / wui(L)
 
             if (jsferic == 1 .and. jasfer3D == 1) then
                dvx1(L) = csb_1(L) * suxL - snb_1(L) * suyL
