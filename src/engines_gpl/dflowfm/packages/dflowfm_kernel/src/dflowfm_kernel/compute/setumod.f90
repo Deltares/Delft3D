@@ -916,7 +916,7 @@ contains
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_flowtimes, only: dti, ja_timestep_auto_visc
-
+      use m_coordinate_transform, only: csb_1, csb_2, snb_1, snb_2
       implicit none
 
       real(kind=dp) :: vksag6
@@ -954,37 +954,8 @@ contains
          allocate (viusp(lnx))
          viusp = vicouv
       end if
-      !$OMP SIMD
-      do L = L1, L2
-         duxdn(L) = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
-         duydn(L) = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
-         duxdt(L) = (ucnx_link_2(L) - ucnx_link_1(L)) * wui(L)
-         duydt(L) = (ucny_link_2(L) - ucny_link_1(L)) * wui(L)
-      end do
-
-      if (Elder > 0.0_dp) then !  add Elder
-         !$OMP SIMD
-         do L = L1, L2
-            Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
-            vicLU(L) = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
-         end do
-      end if
-
-      if (Smagorinsky > 0) then ! add Smagorinsky
-         !$OMP SIMD
-         do L = L1, L2
-            dundn = csu(L) * duxdn(L) + snu(L) * duydn(L)
-            dutdn = -snu(L) * duxdn(L) + csu(L) * duydn(L)
-            dundt = csu(L) * duxdt(L) + snu(L) * duydt(L)
-            dutdt = -snu(L) * duxdt(L) + csu(L) * duydt(L)
-
-            shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-            vicLU(L) = vicLU(L) + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wui(L))
-         end do
-      end if
 
       visc_limit = huge(1.0_dp)
-
       !precompute indirect volumes and conditionals (visc_limit)
       if (ja_timestep_auto_visc == 0) then
          do L = L1, L2
@@ -997,34 +968,53 @@ contains
          end do
       end if
 
-      ! simd assignment
-      !$OMP SIMD
-      do L = L1, L2
-         vicc = vicLU(L) + viusp(L)
-         vicLU(L) = min(vicLU(L), visc_limit(L))
-         viu(L) = max(0.0_dp, vicLU(L) - vicc)
-      end do
-
       if (.not. allocated(c11)) then
          c11(L1:L2) = csu(L1:L2)**2
          c12(L1:L2) = csu(L1:L2) * snu(L1:L2)
          c22(L1:L2) = snu(L1:L2)**2
       end if
+
       !$OMP SIMD
       do L = L1, L2
-         suxL = (duxdn(L) + c11(L) * duxdn(L) + c12(L) * (duydn(L) - duxdt(L)) - c22(L) * duydt(L)) * vicLU(L) * hmin_(L) / wui(L)
-         suyL = (duydn(L) + c11(L) * duxdt(L) + c12(L) * (duxdn(L) + duydt(L)) + c22(L) * duydn(L)) * vicLU(L) * hmin_(L) / wui(L)
+         if (hu(L) > 0) then
+            duxdn(L) = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
+            duydn(L) = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
+            duxdt(L) = (ucnx_link_2(L) - ucnx_link_1(L)) * wui(L)
+            duydt(L) = (ucny_link_2(L) - ucny_link_1(L)) * wui(L)
 
-         if (jsferic == 1 .and. jasfer3D == 1) then
-            dvx1(L) = csb(1, L) * suxL - snb(1, L) * suyL
-            dvy1(L) = snb(1, L) * suxL + csb(1, L) * suyL
-            dvx2(L) = -csb(2, L) * suxL - snb(2, L) * suyL
-            dvy2(L) = -snb(2, L) * suxL + csb(2, L) * suyL
-         else
-            dvx1(L) = suxL
-            dvy1(L) = suyL
-            dvx2(L) = -suxL
-            dvy2(L) = -suyL
+            if (Elder > 0.0_dp) then !  add Elder
+               Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
+               vicLU(L) = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
+            end if
+
+            if (Smagorinsky > 0) then ! add Smagorinsky
+               dundn = csu(L) * duxdn(L) + snu(L) * duydn(L)
+               dutdn = -snu(L) * duxdn(L) + csu(L) * duydn(L)
+               dundt = csu(L) * duxdt(L) + snu(L) * duydt(L)
+               dutdt = -snu(L) * duxdt(L) + csu(L) * duydt(L)
+
+               shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
+               vicLU(L) = vicLU(L) + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wui(L))
+            end if
+
+            vicc = vicLU(L) + viusp(L)
+            vicLU(L) = min(vicLU(L), visc_limit(L))
+            viu(L) = max(0.0_dp, vicLU(L) - vicc)
+
+            suxL = (duxdn(L) + c11(L) * duxdn(L) + c12(L) * (duydn(L) - duxdt(L)) - c22(L) * duydt(L)) * vicLU(L) * hmin_(L) / wui(L)
+            suyL = (duydn(L) + c11(L) * duxdt(L) + c12(L) * (duxdn(L) + duydt(L)) + c22(L) * duydn(L)) * vicLU(L) * hmin_(L) / wui(L)
+
+            if (jsferic == 1 .and. jasfer3D == 1) then
+               dvx1(L) = csb_1(L) * suxL - snb_1(L) * suyL
+               dvy1(L) = snb_1(L) * suxL + csb_1(L) * suyL
+               dvx2(L) = -csb_2(L) * suxL - snb_2(L) * suyL
+               dvy2(L) = -snb_2(L) * suxL + csb_2(L) * suyL
+            else
+               dvx1(L) = suxL
+               dvy1(L) = suyL
+               dvx2(L) = -suxL
+               dvy2(L) = -suyL
+            end if
          end if
       end do
 
