@@ -88,7 +88,7 @@ contains
       real(dp), intent(in) :: ucnx(:) ! Corner x-velocities (global frame)
       real(dp), intent(in) :: ucny(:) ! Corner y-velocities (global frame)
 
-      integer :: L1, L2
+      integer :: L1, L2, L
 
       L1 = lnx1D + 1
       L2 = lnx
@@ -113,17 +113,18 @@ contains
 
          ! Node rotations: [u_link] = [cs  sn] [u_global]
          !                            [-sn cs] [v_global]
-         ucx_link_1 = csb(1, L1:L2) * ux1 + snb(1, L1:L2) * uy1
-         ucy_link_1 = -snb(1, L1:L2) * ux1 + csb(1, L1:L2) * uy1
-         ucx_link_2 = csb(2, L1:L2) * ux2 + snb(2, L1:L2) * uy2
-         ucy_link_2 = -snb(2, L1:L2) * ux2 + csb(2, L1:L2) * uy2
+      do L = L1, L2
+         ucx_link_1(L) = csb(1, L) * ux1(L) + snb(1, L) * uy1(L)
+         ucy_link_1(L) = -snb(1, L) * ux1(L) + csb(1, L) * uy1(L)
+         ucx_link_2(L) = csb(2, L) * ux2(L) + snb(2, L) * uy2(L)
+         ucy_link_2(L) = -snb(2, L) * ux2(L) + csb(2, L) * uy2(L)
 
          ! Corner rotations
-         ucnx_link_1 = csbn(1, L1:L2) * ux3 + snbn(1, L1:L2) * uy3
-         ucny_link_1 = -snbn(1, L1:L2) * ux3 + csbn(1, L1:L2) * uy3
-         ucnx_link_2 = csbn(2, L1:L2) * ux4 + snbn(2, L1:L2) * uy4
-         ucny_link_2 = -snbn(2, L1:L2) * ux4 + csbn(2, L1:L2) * uy4
-
+         ucnx_link_1(L) = csbn(1, L) * ux3(L) + snbn(1, L) * uy3(L)
+         ucny_link_1(L) = -snbn(1, L) * ux3(L) + csbn(1, L) * uy3(L)
+         ucnx_link_2(L) = csbn(2, L) * ux4(L) + snbn(2, L) * uy4(L)
+         ucny_link_2(L) = -snbn(2, L) * ux4(L) + csbn(2, L) * uy4(L)
+      end do
       else
          ucx_link_1 = ux1
          ucy_link_1 = uy1
