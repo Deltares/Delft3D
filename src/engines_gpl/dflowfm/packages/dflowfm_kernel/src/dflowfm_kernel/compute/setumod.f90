@@ -38,7 +38,7 @@ module m_setumod
 
    public :: setumod
 
-   real(kind=dp), dimension(:), allocatable :: hmin_
+   real(kind=dp), dimension(:), allocatable :: hmin_, fcor1_, fcor2_
 
 contains
 
@@ -92,7 +92,7 @@ contains
       real(kind=dp) :: hmin, hs1, hs2
       real(kind=dp) :: fcor, vcor, fcor1, fcor2, fvcor
       real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty !, vksag6, Cz
-      real(kind=dp) :: huv
+      real(kind=dp) :: huv, ab_correction
       real(kind=dp), allocatable :: u1_tmp(:), vluban(:)
 
       integer :: nw, L1, L2, kt, Lb, Lt, Lb1, Lt1, Lb2, Lt2, kb1, kb2, ntmp, m
@@ -203,6 +203,7 @@ contains
       end do
       !$OMP END PARALLEL DO
 
+      ! pre compute hmin as it is reused a lot
       if (.not. allocated(hmin_)) then
          allocate (hmin_(lnkx))
       end if
@@ -214,51 +215,66 @@ contains
 
       if (newcorio == 1 .and. icorio > 0 .and. icorio <= 20 .and. kmx == 0) then
 
-         fcor1 = fcorio
-         fcor2 = fcorio
+         if (.not. allocated(fcor1_)) then
+            allocate (fcor1_(lnkx), fcor2_(lnx))
+         end if
 
-         !$OMP SIMD
-         do L = lnx1D + 1, lnx
-
-            cs = csu(L)
-            sn = snu(L)
-
-            ! Variable Coriolis coefficient (if spherical)
-            if (jsferic > 0 .or. jacorioconstant > 0) then
-               if (icorio >= 4 .and. icorio <= 6) then
-                  fcor1 = fcori(L)
-                  fcor2 = fcor1 ! defined at u-point
-               else
-                  fcor1 = fcori(k1)
-                  fcor2 = fcori(k2) ! defined at zeta-points
-               end if
-            end if
-
-            ! Compute Coriolis force using pre-computed velocities
-            if (jasfer3D == 1) then
-               ! Use pre-computed ucxq_link
-               fvcor = acL(L) * (-sn * ucxq_link_1(L) + cs * ucyq_link_1(L)) * fcor1 + &
-                       (1.0_dp - acL(L)) * (-sn * ucxq_link_2(L) + cs * ucyq_link_2(L)) * fcor2
+         ! Variable Coriolis coefficient (if spherical)
+         if (jsferic > 0 .or. jacorioconstant > 0) then
+            if (icorio >= 4 .and. icorio <= 6) then
+               fcor1_ = fcori
+               fcor2_ = fcori ! defined at u-point
             else
-               ! Non-spherical path
-               fvcor = acL(L) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 + &
-                       (1.0_dp - acL(L)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2
+               do L = lnx1D + 1, lnx
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  fcor1_ = fcori(k1)
+                  fcor2_ = fcori(k2) ! defined at zeta-points
+               end do
             end if
+         else
+            fcor1_ = fcorio
+            fcor2_ = fcorio
+         end if
 
-            ! Apply depth threshold correction
-            if (trshcorio > 0 .and. hmin_(L) < trshcorio) then
-               fvcor = fvcor * hmin_(L) / trshcorio
-            end if
+! PASS 2: Main Coriolis computation - split for optimal vectorization
+         if (jasfer3D == 1) then
+            ! Spherical case - use pre-computed link velocities (OPTIMAL!)
+            !$OMP SIMD
+            do L = lnx1D + 1, lnx
+               cs = csu(L)
+               sn = snu(L)
 
-            ! Add to momentum equation
-            adve(L) = adve(L) - fvcor
+               fvcor = acL(L) * (-sn * ucxq_link_1(L) + cs * ucyq_link_1(L)) * fcor1_(L) + &
+                       (1.0_dp - acL(L)) * (-sn * ucxq_link_2(L) + cs * ucyq_link_2(L)) * fcor2_(L)
 
-            ! Optional Adams-Bashforth time integration
-            if (Corioadamsbashfordfac > 0.0_dp .and. fvcoro(L) /= 0.0_dp) then
-               adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
-            end if
-            fvcoro(L) = fvcor
-         end do
+               ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
+                               merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
+
+               adve(L) = adve(L) - fvcor - ab_correction
+               fvcoro(L) = fvcor
+            end do
+            !$OMP END SIMD
+
+         else
+            ! Cartesian case - could also use link velocities but original code uses nodes
+            ! NOTE: Consider extending ucxq_link optimization to Cartesian case for consistency
+            do L = lnx1D + 1, lnx
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               cs = csu(L)
+               sn = snu(L)
+
+               fvcor = acL(L) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1_(L) + &
+                       (1.0_dp - acL(L)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2_(L)
+
+               ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
+                               merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
+
+               adve(L) = adve(L) - fvcor - ab_correction
+               fvcoro(L) = fvcor
+            end do
+         end if
       else if (newcorio == 1 .and. icorio > 0 .and. icorio < 40) then
          fcor1 = fcorio
          fcor2 = fcorio
@@ -997,13 +1013,8 @@ contains
       end if
       !$OMP SIMD
       do L = L1, L2
-         suxL = (duxdn(L) + c11(L) * duxdn(L) + c12(L) * (duydn(L) - duxdt(L)) - c22(L) * duydt(L)) * vicLU(L) * hmin(L) / wui(L)
-         suyL = (duydn(L) + c11(L) * duxdt(L) + c12(L) * (duxdn(L) + duydt(L)) + c22(L) * duydn(L)) * vicLU(L) * hmin(L) / wui(L)
-
-         !if (istresstyp == 3) then
-         ! suxL = suxL * min(hs(ln(1, L)), hs(ln(2, L)))
-         ! suyL = suyL * min(hs(ln(1, L)), hs(ln(2, L)))
-         !end if
+         suxL = (duxdn(L) + c11(L) * duxdn(L) + c12(L) * (duydn(L) - duxdt(L)) - c22(L) * duydt(L)) * vicLU(L) * hmin_(L) / wui(L)
+         suyL = (duydn(L) + c11(L) * duxdt(L) + c12(L) * (duxdn(L) + duydt(L)) + c22(L) * duydn(L)) * vicLU(L) * hmin_(L) / wui(L)
 
          if (jsferic == 1 .and. jasfer3D == 1) then
             dvx1(L) = csb(1, L) * suxL - snb(1, L) * suyL
