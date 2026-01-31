@@ -57,6 +57,7 @@ contains
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use m_coordinate_transform, only: transform_node_velocities_combined
       implicit none
 
       logical :: make2dh
@@ -76,18 +77,6 @@ if (Perot_type /= NOT_DEFINED) then
    ucx = 0.0_dp
    ucy = 0.0_dp
 
-   ! OPTIMIZATION: Pre-allocate arrays for link-transformed velocities (if spherical)
-   if (jasfer3D == 1) then
-      if (.not. allocated(ucx_link_1)) allocate(ucx_link_1(lnx))
-      if (.not. allocated(ucy_link_1)) allocate(ucy_link_1(lnx))
-      if (.not. allocated(ucx_link_2)) allocate(ucx_link_2(lnx))
-      if (.not. allocated(ucy_link_2)) allocate(ucy_link_2(lnx))
-      ucx_link_1 = 0.0_dp
-      ucy_link_1 = 0.0_dp
-      ucx_link_2 = 0.0_dp
-      ucy_link_2 = 0.0_dp
-   end if
-
    if (make2dh) then ! original 2D coding
 
       do i = 1, wetLink2D - 1
@@ -96,19 +85,11 @@ if (Perot_type /= NOT_DEFINED) then
             k1 = ln(1, L)
             k2 = ln(2, L)
             
-            ! ORIGINAL: Accumulate in node frame
             ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
             ucy(k1) = ucy(k1) + wcy1(L) * u1(L)
             ucx(k2) = ucx(k2) + wcx2(L) * u1(L)
             ucy(k2) = ucy(k2) + wcy2(L) * u1(L)
             
-            ! NEW: Also accumulate directly in link-transformed frame (if spherical)
-            if (jasfer3D == 1) then
-               ucx_link_1(L) = ucx_link_1(L) + wcx1(L) * u1(L) * csb(1, L)
-               ucy_link_1(L) = ucy_link_1(L) + wcy1(L) * u1(L) * snb(1, L)
-               ucx_link_2(L) = ucx_link_2(L) + wcx2(L) * u1(L) * csb(2, L)
-               ucy_link_2(L) = ucy_link_2(L) + wcy2(L) * u1(L) * snb(2, L)
-            end if
          end if
       end do
 
@@ -122,19 +103,11 @@ if (Perot_type /= NOT_DEFINED) then
          k1 = ln(1, L)
          k2 = ln(2, L)
          
-         ! ORIGINAL: Accumulate in node frame
          ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
          ucy(k1) = ucy(k1) + wcy1(L) * u1(L)
          ucx(k2) = ucx(k2) + wcx2(L) * u1(L)
          ucy(k2) = ucy(k2) + wcy2(L) * u1(L)
          
-         ! NEW: Also accumulate directly in link-transformed frame (if spherical)
-         if (jasfer3D == 1) then
-            ucx_link_1(L) = ucx_link_1(L) + wcx1(L) * u1(L) * csb(1, L)
-            ucy_link_1(L) = ucy_link_1(L) + wcy1(L) * u1(L) * snb(1, L)
-            ucx_link_2(L) = ucx_link_2(L) + wcx2(L) * u1(L) * csb(2, L)
-            ucy_link_2(L) = ucy_link_2(L) + wcy2(L) * u1(L) * snb(2, L)
-         end if
       end do
 
       if (ChangeVelocityAtStructures) then
@@ -161,14 +134,6 @@ if (Perot_type /= NOT_DEFINED) then
             ucy(k1) = ucy(k1) + wcy1(L) * u1correction
             ucx(k2) = ucx(k2) + wcx2(L) * u1correction
             ucy(k2) = ucy(k2) + wcy2(L) * u1correction
-            
-            ! NEW: Also accumulate correction in link-transformed frame (if spherical)
-            if (jasfer3D == 1) then
-               ucx_link_1(L) = ucx_link_1(L) + wcx1(L) * u1correction * csb(1, L)
-               ucy_link_1(L) = ucy_link_1(L) + wcy1(L) * u1correction * snb(1, L)
-               ucx_link_2(L) = ucx_link_2(L) + wcx2(L) * u1correction * csb(2, L)
-               ucy_link_2(L) = ucy_link_2(L) + wcy2(L) * u1correction * snb(2, L)
-            end if
          end do
       end if
    end if
@@ -471,7 +436,7 @@ if (Perot_type /= NOT_DEFINED) then
 
          end if
 
-      end if
+      end if !
 
       if (icorio == 7 .or. icorio == 27) then ! make ahus or ahusk
          hus = 0
@@ -1191,6 +1156,7 @@ if (Perot_type /= NOT_DEFINED) then
          call setuc1D()
       end if
 
+      call transform_node_velocities_combined(ucx, ucy, ucxu, ucyu)
    end subroutine setucxucyucxuucyunew
 
 end module m_setucxucyucxuucyunew

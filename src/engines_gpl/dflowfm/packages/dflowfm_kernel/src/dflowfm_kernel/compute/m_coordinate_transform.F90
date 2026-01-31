@@ -10,21 +10,27 @@
 
 module m_coordinate_transform
    use precision, only: dp
+
    implicit none(external)
 
    private
 
+! node related, dim = ndkx
+real(kind=dp), allocatable, public :: ucx_link_1(:)   !< pre-transformed ucx for link side 1 (stress/viscosity optimization)
+real(kind=dp), allocatable, public :: ucy_link_1(:)   !< pre-transformed ucy for link side 1 (stress/viscosity optimization)
+real(kind=dp), allocatable, public :: ucx_link_2(:)   !< pre-transformed ucx for link side 2 (stress/viscosity optimization)
+real(kind=dp), allocatable, public :: ucy_link_2(:)   !< pre-transformed ucy for link side 2 (stress/viscosity optimization)
+real(kind=dp), allocatable, public :: ucxq_link_1(:)  !< pre-transformed ucxq for link side 1 (Coriolis optimization)
+real(kind=dp), allocatable, public :: ucyq_link_1(:)  !< pre-transformed ucyq for link side 1 (Coriolis optimization)
+real(kind=dp), allocatable, public :: ucxq_link_2(:)  !< pre-transformed ucxq for link side 2 (Coriolis optimization)
+real(kind=dp), allocatable, public :: ucyq_link_2(:)  !< pre-transformed ucyq for link side 2 (Coriolis optimization)
+real(kind=dp), allocatable, public :: ucnx_link_1(:), ucnx_link_2(:) ! Corner x-velocity in link frame (2, lnx)
+real(kind=dp), allocatable, public :: ucny_link_1(:), ucny_link_2(:) ! Corner y-velocity in link frame (2, lnx)
+
    ! Public interface
    public :: initialize_coordinate_transform
-   public :: transform_velocities_to_links
+   public :: transform_node_velocities_combined, transform_corner_velocities
    public :: cleanup_coordinate_transform
-
-   ! Velocities stored in link-local coordinates, indexed by LINK (not node!)
-   ! Layout: ucx_link(side, L) where side=1,2 and L = lnx1D+1:lnx
-   real(dp), allocatable, public :: ucx_link_1(:), ucx_link_2(:)  ! Node x-velocity in link frame (2, lnx)
-   real(dp), allocatable, public :: ucy_link_1(:), ucy_link_2(:) ! Node y-velocity in link frame (2, lnx)
-   real(dp), allocatable, public :: ucnx_link_1(:), ucnx_link_2(:) ! Corner x-velocity in link frame (2, lnx)
-   real(dp), allocatable, public :: ucny_link_1(:), ucny_link_2(:) ! Corner y-velocity in link frame (2, lnx)
 
    ! Pre-flattened index maps (enables vectorizable gather: ux1 = ucx(node_map_1))
    integer, allocatable :: node_map_1(:), node_map_2(:) ! ln(1:2, lnx1D+1:lnx) flattened
@@ -36,7 +42,7 @@ module m_coordinate_transform
 
    logical :: use_spherical_transform = .false.
    logical :: is_initialized = .false.
-   integer :: num_2d_links = 0
+   integer :: lnx = 0
 
 contains
 
@@ -50,23 +56,26 @@ contains
       if (is_initialized) return
 
       use_spherical_transform = (jsferic == 1 .and. jasfer3D == 1)
-      num_2d_links = lnx - lnx1D
 
       ! Allocate link-indexed velocity arrays
-      allocate (ucx_link_1(num_2d_links), ucy_link_1(num_2d_links), stat=ierr)
-      allocate (ucx_link_2(num_2d_links), ucy_link_2(num_2d_links), stat=ierr)
-      allocate (ucnx_link_1(num_2d_links), ucny_link_1(num_2d_links), stat=ierr)
-      allocate (ucnx_link_2(num_2d_links), ucny_link_2(num_2d_links), stat=ierr)
+      allocate (ucx_link_1(lnx), ucy_link_1(lnx))
+      allocate (ucx_link_2(lnx), ucy_link_2(lnx))
+      allocate (ucnx_link_1(lnx), ucny_link_1(lnx))
+      allocate (ucnx_link_2(lnx), ucny_link_2(lnx))
+      allocate (ucxq_link_1(lnx), ucxq_link_2(lnx))
+      allocate (ucyq_link_1(lnx), ucyq_link_2(lnx))
+      allocate (ucnx_link_1(lnx),ucnx_link_2(lnx))
+      allocate (ucny_link_1(lnx),ucny_link_2(lnx))
 
       ! Allocate pre-flattened index maps
-      allocate (node_map_1(num_2d_links), node_map_2(num_2d_links), stat=ierr)
-      allocate (corner_map_1(num_2d_links), corner_map_2(num_2d_links), stat=ierr)
+      allocate (node_map_1(lnx), node_map_2(lnx), stat=ierr)
+      allocate (corner_map_1(lnx), corner_map_2(lnx), stat=ierr)
 
       ! Allocate temporary gather buffers
-      allocate (ux1(num_2d_links), uy1(num_2d_links), stat=ierr)
-      allocate (ux2(num_2d_links), uy2(num_2d_links), stat=ierr)
-      allocate (ux3(num_2d_links), uy3(num_2d_links), stat=ierr)
-      allocate (ux4(num_2d_links), uy4(num_2d_links), stat=ierr)
+      allocate (ux1(lnx), uy1(lnx), stat=ierr)
+      allocate (ux2(lnx), uy2(lnx), stat=ierr)
+      allocate (ux3(lnx), uy3(lnx), stat=ierr)
+      allocate (ux4(lnx), uy4(lnx), stat=ierr)
 
       ! Build flattened index maps (one-time cost at initialization)
       node_map_1 = ln(1, lnx1D + 1:lnx)
@@ -78,68 +87,112 @@ contains
 
    end subroutine initialize_coordinate_transform
 
-   !> Transform velocities from global to link-local coordinates
-   !! Uses vectorizable array indexing for gather operations
-   subroutine transform_velocities_to_links(ucx, ucy, ucnx, ucny)
-      use m_flowgeom, only: lnx1D, lnx, csb, snb, csbn, snbn
+subroutine transform_node_velocities_combined(ucx, ucy, ucxq, ucyq)
+   use m_flowgeom, only: lnx1D, lnx, csb, snb
 
-      real(dp), intent(in) :: ucx(:) ! Node x-velocities (global frame)
-      real(dp), intent(in) :: ucy(:) ! Node y-velocities (global frame)
-      real(dp), intent(in) :: ucnx(:) ! Corner x-velocities (global frame)
-      real(dp), intent(in) :: ucny(:) ! Corner y-velocities (global frame)
+   real(dp), intent(in) :: ucx(:), ucy(:), ucxq(:), ucyq(:)
+   integer :: L1, L2, L
+   real(dp) :: cs1, sn1, cs2, sn2  ! Local variables for rotation coefficients
 
-      integer :: L1, L2, L
+   L1 = lnx1D + 1
+   L2 = lnx
 
-      L1 = lnx1D + 1
-      L2 = lnx
+   if (.not. is_initialized) return
 
-      if (.not. is_initialized) return
+   do L = L1, L2
+      ux1(L) = ucx(node_map_1(L))
+      uy1(L) = ucy(node_map_1(L))
+      ux2(L) = ucx(node_map_2(L))
+      uy2(L) = ucy(node_map_2(L))
+      
+      ux3(L) = ucxq(node_map_1(L))
+      uy3(L) = ucyq(node_map_1(L))
+      ux4(L) = ucxq(node_map_2(L))
+      uy4(L) = ucyq(node_map_2(L))
+   end do
 
-      ! PHASE 1: Gather velocities - VECTORIZABLE with array indexing!
-      ! Compiler can optimize: ux1 = ucx(node_map_1) using vector gather instructions
-      ux1 = ucx(node_map_1)
-      uy1 = ucy(node_map_1)
-      ux2 = ucx(node_map_2)
-      uy2 = ucy(node_map_2)
-
-      ux3 = ucnx(corner_map_1)
-      uy3 = ucny(corner_map_1)
-      ux4 = ucnx(corner_map_2)
-      uy4 = ucny(corner_map_2)
-
-      if (use_spherical_transform) then
-         ! PHASE 2: Rotate - PERFECTLY VECTORIZABLE!
-         ! Use csb, snb, csbn, snbn directly from m_flowgeom
-
-         ! Node rotations: [u_link] = [cs  sn] [u_global]
-         !                            [-sn cs] [v_global]
+   if (use_spherical_transform) then
+      !$OMP SIMD PRIVATE(cs1, sn1, cs2, sn2)
       do L = L1, L2
-         ucx_link_1(L) = csb(1, L) * ux1(L) + snb(1, L) * uy1(L)
-         ucy_link_1(L) = -snb(1, L) * ux1(L) + csb(1, L) * uy1(L)
-         ucx_link_2(L) = csb(2, L) * ux2(L) + snb(2, L) * uy2(L)
-         ucy_link_2(L) = -snb(2, L) * ux2(L) + csb(2, L) * uy2(L)
-
-         ! Corner rotations
-         ucnx_link_1(L) = csbn(1, L) * ux3(L) + snbn(1, L) * uy3(L)
-         ucny_link_1(L) = -snbn(1, L) * ux3(L) + csbn(1, L) * uy3(L)
-         ucnx_link_2(L) = csbn(2, L) * ux4(L) + snbn(2, L) * uy4(L)
-         ucny_link_2(L) = -snbn(2, L) * ux4(L) + csbn(2, L) * uy4(L)
+         ! Load rotation coefficients into local scalars (compiler keeps in registers)
+         cs1 = csb(1, L)
+         sn1 = snb(1, L)
+         cs2 = csb(2, L)
+         sn2 = snb(2, L)
+         
+         ! Node 1: Rotate BOTH velocity types with same coefficients
+         ucx_link_1(L) = cs1 * ux1(L) + sn1 * uy1(L)
+         ucy_link_1(L) = -sn1 * ux1(L) + cs1 * uy1(L)
+         ucxq_link_1(L) = cs1 * ux3(L) + sn1 * uy3(L)
+         ucyq_link_1(L) = -sn1 * ux3(L) + cs1 * uy3(L)
+         
+         ! Node 2: Rotate BOTH velocity types with same coefficients
+         ucx_link_2(L) = cs2 * ux2(L) + sn2 * uy2(L)
+         ucy_link_2(L) = -sn2 * ux2(L) + cs2 * uy2(L)
+         ucxq_link_2(L) = cs2 * ux4(L) + sn2 * uy4(L)
+         ucyq_link_2(L) = -sn2 * ux4(L) + cs2 * uy4(L)
       end do
-      else
-         ucx_link_1 = ux1
-         ucy_link_1 = uy1
-         ucx_link_2 = ux2
-         ucy_link_2 = uy2
+   else
+      !$OMP SIMD
+      do L = L1, L2
+         ucx_link_1(L) = ux1(L)
+         ucy_link_1(L) = uy1(L)
+         ucxq_link_1(L) = ux3(L)
+         ucyq_link_1(L) = uy3(L)
+         
+         ucx_link_2(L) = ux2(L)
+         ucy_link_2(L) = uy2(L)
+         ucxq_link_2(L) = ux4(L)
+         ucyq_link_2(L) = uy4(L)
+      end do
+   end if
 
-         ucnx_link_1 = ux3
-         ucny_link_1 = uy3
-         ucnx_link_2 = ux4
-         ucny_link_2 = uy4
-      end if
+end subroutine transform_node_velocities_combined
 
-   end subroutine transform_velocities_to_links
+!> Transform corner velocities (ucnx/ucny)
+subroutine transform_corner_velocities(ucnx, ucny)
+   use m_flowgeom, only: lnx1D, lnx, csbn, snbn
+
+   real(dp), intent(in) :: ucnx(:)  ! Corner x-velocities (global frame)
+   real(dp), intent(in) :: ucny(:)  ! Corner y-velocities (global frame)
+
+   integer :: L1, L2, L
+
+   L1 = lnx1D + 1
+   L2 = lnx
+
+   if (.not. is_initialized) return
+
+   do L = L1, L2
+      ux1(L) = ucnx(corner_map_1(L))
+      uy1(L) = ucny(corner_map_1(L))
+      ux2(L) = ucnx(corner_map_2(L))
+      uy2(L) = ucny(corner_map_2(L))
+   end do
+
+
+   if (use_spherical_transform) then
+      !$OMP SIMD
+      do L = L1, L2
+         ucnx_link_1(L) = csbn(1, L) * ux1(L) + snbn(1, L) * uy1(L)
+         ucny_link_1(L) = -snbn(1, L) * ux1(L) + csbn(1, L) * uy1(L)
+         ucnx_link_2(L) = csbn(2, L) * ux2(L) + snbn(2, L) * uy2(L)
+         ucny_link_2(L) = -snbn(2, L) * ux2(L) + csbn(2, L) * uy2(L)
+      end do
+   else
+      !$OMP SIMD
+      do L = L1, L2
+         ucnx_link_1(L) = ux1(L)
+         ucny_link_1(L) = uy1(L)
+         ucnx_link_2(L) = ux2(L)
+         ucny_link_2(L) = uy2(L)
+      end do
+   end if
+
+end subroutine transform_corner_velocities
 
    subroutine cleanup_coordinate_transform()
+
       if (is_initialized) then
          deallocate (ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2)
          deallocate (node_map_1, node_map_2, corner_map_1, corner_map_2)

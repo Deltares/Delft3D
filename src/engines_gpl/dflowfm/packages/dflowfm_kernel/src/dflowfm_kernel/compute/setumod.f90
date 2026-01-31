@@ -52,6 +52,7 @@ contains
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
       use m_setucxucyucxuucyu, only: setucxucyucxuucyu
       use m_setcornervelocities, only: setcornervelocities
+      use m_coordinate_transform, only: ucxq_link_1, ucyq_link_1, ucxq_link_2, ucyq_link_2
       use timers, only: timstrt, timstop
       use m_flow
       use m_flowgeom
@@ -207,7 +208,7 @@ contains
       if (.not. allocated(hmin_)) then
          allocate (hmin_(lnkx))
       end if
-      do L = L1, L2
+      do L = lnx1D + 1, lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
          hmin_(L) = min(hs(k1), hs(k2))
@@ -910,6 +911,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_get_chezy, only: get_chezy
+      use m_coordinate_transform, only: ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2
 !      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
       !use m_coordinate_transform, only: transform_velocities_to_links, ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2

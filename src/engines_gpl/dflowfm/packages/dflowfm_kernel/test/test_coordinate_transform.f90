@@ -2,7 +2,7 @@
    use assertions_gtest
    use m_coordinate_transform
    use precision, only: dp
-   implicit none
+   implicit none(external)
 
 contains
 
@@ -19,7 +19,7 @@ contains
       integer, parameter :: NUM_NODES = 4
       integer, parameter :: NUM_CORNERS = 4
       real(kind=dp), parameter :: tolerance = 1e-10_dp
-      real(kind=dp), dimension(:), allocatable :: ucx, ucy
+      real(kind=dp), dimension(:), allocatable :: ucx, ucy, ucxu, ucyu
       integer :: ierr, L, numk
 
       ! Set up minimal flow geometry for Cartesian case
@@ -64,11 +64,14 @@ contains
 
       ucx = [1.0_dp, 2.0_dp, 3.0_dp, 4.0_dp]
       ucy = [0.5_dp, 1.5_dp, 2.5_dp, 3.5_dp]
+      ucxu = ucx
+      ucyu = ucy
       ucnx = [0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp]
       ucny = [0.6_dp, 0.7_dp, 0.8_dp, 0.9_dp]
 
       ! Transform
-      call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
+      call transform_node_velocities_combined(ucx, ucy, ucxu, ucyu)
+      call transform_corner_velocities(ucnx, ucny)
 
       ! Check: in Cartesian, output should equal input
       ! Link 1: nodes 1 and 2
@@ -106,8 +109,8 @@ contains
       integer, parameter :: NUM_NODES = 2
       integer, parameter :: NUM_CORNERS = 2
       real(kind=dp), parameter :: tolerance = 1e-10_dp
-      real(kind=dp), allocatable :: ucx(:), ucy(:)
-      real(kind=dp), allocatable :: ucnx(:), ucny(:)  ! <-- ADD THIS LINE
+      real(kind=dp), allocatable :: ucx(:), ucy(:), ucxu(:), ucyu(:)
+      real(kind=dp), allocatable :: ucnx(:), ucny(:)  
       integer :: ierr
       real(kind=dp) :: angle, cs, sn
       real(dp) :: expected_ucx_node1 ,expected_ucy_node1 ,expected_ucx_node2, expected_ucy_node2
@@ -171,9 +174,12 @@ contains
       ucny(1) = 0.0_dp
       ucnx(2) = 0.0_dp
       ucny(2) = 1.0_dp
+
+      ucxu = ucx
+      ucyu = ucy
       
-      ! Transform to link frame
-      call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
+      call transform_node_velocities_combined(ucx, ucy, ucxu, ucyu)
+      call transform_corner_velocities(ucnx, ucny)
       
       ! Expected results in LINK frame:
       ! ucx_link = cs*ucx + sn*ucy
