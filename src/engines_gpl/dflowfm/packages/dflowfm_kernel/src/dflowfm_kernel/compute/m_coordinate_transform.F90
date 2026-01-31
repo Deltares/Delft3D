@@ -16,16 +16,16 @@ module m_coordinate_transform
    private
 
 ! node related, dim = ndkx
-real(kind=dp), allocatable, public :: ucx_link_1(:)   !< pre-transformed ucx for link side 1 (stress/viscosity optimization)
-real(kind=dp), allocatable, public :: ucy_link_1(:)   !< pre-transformed ucy for link side 1 (stress/viscosity optimization)
-real(kind=dp), allocatable, public :: ucx_link_2(:)   !< pre-transformed ucx for link side 2 (stress/viscosity optimization)
-real(kind=dp), allocatable, public :: ucy_link_2(:)   !< pre-transformed ucy for link side 2 (stress/viscosity optimization)
-real(kind=dp), allocatable, public :: ucxq_link_1(:)  !< pre-transformed ucxq for link side 1 (Coriolis optimization)
-real(kind=dp), allocatable, public :: ucyq_link_1(:)  !< pre-transformed ucyq for link side 1 (Coriolis optimization)
-real(kind=dp), allocatable, public :: ucxq_link_2(:)  !< pre-transformed ucxq for link side 2 (Coriolis optimization)
-real(kind=dp), allocatable, public :: ucyq_link_2(:)  !< pre-transformed ucyq for link side 2 (Coriolis optimization)
-real(kind=dp), allocatable, public :: ucnx_link_1(:), ucnx_link_2(:) ! Corner x-velocity in link frame (2, lnx)
-real(kind=dp), allocatable, public :: ucny_link_1(:), ucny_link_2(:) ! Corner y-velocity in link frame (2, lnx)
+   real(kind=dp), allocatable, public :: ucx_link_1(:) !< pre-transformed ucx for link side 1 (stress/viscosity optimization)
+   real(kind=dp), allocatable, public :: ucy_link_1(:) !< pre-transformed ucy for link side 1 (stress/viscosity optimization)
+   real(kind=dp), allocatable, public :: ucx_link_2(:) !< pre-transformed ucx for link side 2 (stress/viscosity optimization)
+   real(kind=dp), allocatable, public :: ucy_link_2(:) !< pre-transformed ucy for link side 2 (stress/viscosity optimization)
+   real(kind=dp), allocatable, public :: ucxq_link_1(:) !< pre-transformed ucxq for link side 1 (Coriolis optimization)
+   real(kind=dp), allocatable, public :: ucyq_link_1(:) !< pre-transformed ucyq for link side 1 (Coriolis optimization)
+   real(kind=dp), allocatable, public :: ucxq_link_2(:) !< pre-transformed ucxq for link side 2 (Coriolis optimization)
+   real(kind=dp), allocatable, public :: ucyq_link_2(:) !< pre-transformed ucyq for link side 2 (Coriolis optimization)
+   real(kind=dp), allocatable, public :: ucnx_link_1(:), ucnx_link_2(:) ! Corner x-velocity in link frame (2, lnx)
+   real(kind=dp), allocatable, public :: ucny_link_1(:), ucny_link_2(:) ! Corner y-velocity in link frame (2, lnx)
 
    ! Public interface
    public :: initialize_coordinate_transform
@@ -64,8 +64,6 @@ contains
       allocate (ucnx_link_2(lnx), ucny_link_2(lnx))
       allocate (ucxq_link_1(lnx), ucxq_link_2(lnx))
       allocate (ucyq_link_1(lnx), ucyq_link_2(lnx))
-      allocate (ucnx_link_1(lnx),ucnx_link_2(lnx))
-      allocate (ucny_link_1(lnx),ucny_link_2(lnx))
 
       ! Allocate pre-flattened index maps
       allocate (node_map_1(lnx), node_map_2(lnx), stat=ierr)
@@ -87,114 +85,118 @@ contains
 
    end subroutine initialize_coordinate_transform
 
-subroutine transform_node_velocities_combined(ucx, ucy, ucxq, ucyq)
-   use m_flowgeom, only: lnx1D, lnx, csb, snb
+   subroutine transform_node_velocities_combined(ucx, ucy, ucxq, ucyq)
+      use m_flowgeom, only: lnx1D, lnx, csb, snb
 
-   real(dp), intent(in) :: ucx(:), ucy(:), ucxq(:), ucyq(:)
-   integer :: L1, L2, L
-   real(dp) :: cs1, sn1, cs2, sn2  ! Local variables for rotation coefficients
+      real(dp), intent(in) :: ucx(:), ucy(:), ucxq(:), ucyq(:)
+      integer :: L1, L2, L
+      real(dp) :: cs1, sn1, cs2, sn2 ! Local variables for rotation coefficients
 
-   L1 = lnx1D + 1
-   L2 = lnx
+      L1 = lnx1D + 1
+      L2 = lnx
 
-   if (.not. is_initialized) return
+      if (.not. is_initialized) return
 
-   do L = L1, L2
-      ux1(L) = ucx(node_map_1(L))
-      uy1(L) = ucy(node_map_1(L))
-      ux2(L) = ucx(node_map_2(L))
-      uy2(L) = ucy(node_map_2(L))
-      
-      ux3(L) = ucxq(node_map_1(L))
-      uy3(L) = ucyq(node_map_1(L))
-      ux4(L) = ucxq(node_map_2(L))
-      uy4(L) = ucyq(node_map_2(L))
-   end do
-
-   if (use_spherical_transform) then
-      !$OMP SIMD PRIVATE(cs1, sn1, cs2, sn2)
       do L = L1, L2
-         ! Load rotation coefficients into local scalars (compiler keeps in registers)
-         cs1 = csb(1, L)
-         sn1 = snb(1, L)
-         cs2 = csb(2, L)
-         sn2 = snb(2, L)
-         
-         ! Node 1: Rotate BOTH velocity types with same coefficients
-         ucx_link_1(L) = cs1 * ux1(L) + sn1 * uy1(L)
-         ucy_link_1(L) = -sn1 * ux1(L) + cs1 * uy1(L)
-         ucxq_link_1(L) = cs1 * ux3(L) + sn1 * uy3(L)
-         ucyq_link_1(L) = -sn1 * ux3(L) + cs1 * uy3(L)
-         
-         ! Node 2: Rotate BOTH velocity types with same coefficients
-         ucx_link_2(L) = cs2 * ux2(L) + sn2 * uy2(L)
-         ucy_link_2(L) = -sn2 * ux2(L) + cs2 * uy2(L)
-         ucxq_link_2(L) = cs2 * ux4(L) + sn2 * uy4(L)
-         ucyq_link_2(L) = -sn2 * ux4(L) + cs2 * uy4(L)
-      end do
-   else
-      !$OMP SIMD
-      do L = L1, L2
-         ucx_link_1(L) = ux1(L)
-         ucy_link_1(L) = uy1(L)
-         ucxq_link_1(L) = ux3(L)
-         ucyq_link_1(L) = uy3(L)
-         
-         ucx_link_2(L) = ux2(L)
-         ucy_link_2(L) = uy2(L)
-         ucxq_link_2(L) = ux4(L)
-         ucyq_link_2(L) = uy4(L)
-      end do
-   end if
+         ux1(L) = ucx(node_map_1(L))
+         uy1(L) = ucy(node_map_1(L))
+         ux2(L) = ucx(node_map_2(L))
+         uy2(L) = ucy(node_map_2(L))
 
-end subroutine transform_node_velocities_combined
+         ux3(L) = ucxq(node_map_1(L))
+         uy3(L) = ucyq(node_map_1(L))
+         ux4(L) = ucxq(node_map_2(L))
+         uy4(L) = ucyq(node_map_2(L))
+      end do
+
+      if (use_spherical_transform) then
+         !$OMP SIMD PRIVATE(cs1, sn1, cs2, sn2)
+         do L = L1, L2
+            ! Load rotation coefficients into local scalars (compiler keeps in registers)
+            cs1 = csb(1, L)
+            sn1 = snb(1, L)
+            cs2 = csb(2, L)
+            sn2 = snb(2, L)
+
+            ! Node 1: Rotate BOTH velocity types with same coefficients
+            ucx_link_1(L) = cs1 * ux1(L) + sn1 * uy1(L)
+            ucy_link_1(L) = -sn1 * ux1(L) + cs1 * uy1(L)
+            ucxq_link_1(L) = cs1 * ux3(L) + sn1 * uy3(L)
+            ucyq_link_1(L) = -sn1 * ux3(L) + cs1 * uy3(L)
+
+            ! Node 2: Rotate BOTH velocity types with same coefficients
+            ucx_link_2(L) = cs2 * ux2(L) + sn2 * uy2(L)
+            ucy_link_2(L) = -sn2 * ux2(L) + cs2 * uy2(L)
+            ucxq_link_2(L) = cs2 * ux4(L) + sn2 * uy4(L)
+            ucyq_link_2(L) = -sn2 * ux4(L) + cs2 * uy4(L)
+         end do
+      else
+         !$OMP SIMD
+         do L = L1, L2
+            ucx_link_1(L) = ux1(L)
+            ucy_link_1(L) = uy1(L)
+            ucxq_link_1(L) = ux3(L)
+            ucyq_link_1(L) = uy3(L)
+
+            ucx_link_2(L) = ux2(L)
+            ucy_link_2(L) = uy2(L)
+            ucxq_link_2(L) = ux4(L)
+            ucyq_link_2(L) = uy4(L)
+         end do
+      end if
+
+   end subroutine transform_node_velocities_combined
 
 !> Transform corner velocities (ucnx/ucny)
-subroutine transform_corner_velocities(ucnx, ucny)
-   use m_flowgeom, only: lnx1D, lnx, csbn, snbn
+   subroutine transform_corner_velocities(ucnx, ucny)
+      use m_flowgeom, only: lnx1D, lnx, csbn, snbn
 
-   real(dp), intent(in) :: ucnx(:)  ! Corner x-velocities (global frame)
-   real(dp), intent(in) :: ucny(:)  ! Corner y-velocities (global frame)
+      real(dp), intent(in) :: ucnx(:) ! Corner x-velocities (global frame)
+      real(dp), intent(in) :: ucny(:) ! Corner y-velocities (global frame)
 
-   integer :: L1, L2, L
+      integer :: L1, L2, L
 
-   L1 = lnx1D + 1
-   L2 = lnx
+      L1 = lnx1D + 1
+      L2 = lnx
 
-   if (.not. is_initialized) return
+      if (.not. is_initialized) return
 
-   do L = L1, L2
-      ux1(L) = ucnx(corner_map_1(L))
-      uy1(L) = ucny(corner_map_1(L))
-      ux2(L) = ucnx(corner_map_2(L))
-      uy2(L) = ucny(corner_map_2(L))
-   end do
-
-
-   if (use_spherical_transform) then
-      !$OMP SIMD
       do L = L1, L2
-         ucnx_link_1(L) = csbn(1, L) * ux1(L) + snbn(1, L) * uy1(L)
-         ucny_link_1(L) = -snbn(1, L) * ux1(L) + csbn(1, L) * uy1(L)
-         ucnx_link_2(L) = csbn(2, L) * ux2(L) + snbn(2, L) * uy2(L)
-         ucny_link_2(L) = -snbn(2, L) * ux2(L) + csbn(2, L) * uy2(L)
+         ux1(L) = ucnx(corner_map_1(L))
+         uy1(L) = ucny(corner_map_1(L))
+         ux2(L) = ucnx(corner_map_2(L))
+         uy2(L) = ucny(corner_map_2(L))
       end do
-   else
-      !$OMP SIMD
-      do L = L1, L2
-         ucnx_link_1(L) = ux1(L)
-         ucny_link_1(L) = uy1(L)
-         ucnx_link_2(L) = ux2(L)
-         ucny_link_2(L) = uy2(L)
-      end do
-   end if
 
-end subroutine transform_corner_velocities
+      if (use_spherical_transform) then
+         !$OMP SIMD
+         do L = L1, L2
+            ucnx_link_1(L) = csbn(1, L) * ux1(L) + snbn(1, L) * uy1(L)
+            ucny_link_1(L) = -snbn(1, L) * ux1(L) + csbn(1, L) * uy1(L)
+            ucnx_link_2(L) = csbn(2, L) * ux2(L) + snbn(2, L) * uy2(L)
+            ucny_link_2(L) = -snbn(2, L) * ux2(L) + csbn(2, L) * uy2(L)
+         end do
+      else
+         !$OMP SIMD
+         do L = L1, L2
+            ucnx_link_1(L) = ux1(L)
+            ucny_link_1(L) = uy1(L)
+            ucnx_link_2(L) = ux2(L)
+            ucny_link_2(L) = uy2(L)
+         end do
+      end if
+
+   end subroutine transform_corner_velocities
 
    subroutine cleanup_coordinate_transform()
 
       if (is_initialized) then
-         deallocate (ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2)
+         deallocate (ucx_link_1, ucy_link_1)
+         deallocate (ucx_link_2, ucy_link_2)
+         deallocate (ucnx_link_1, ucny_link_1)
+         deallocate (ucnx_link_2, ucny_link_2)
+         deallocate (ucxq_link_1, ucxq_link_2)
+         deallocate (ucyq_link_1, ucyq_link_2)
          deallocate (node_map_1, node_map_2, corner_map_1, corner_map_2)
          deallocate (ux1, uy1, ux2, uy2, ux3, uy3, ux4, uy4)
 
