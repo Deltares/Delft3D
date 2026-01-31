@@ -31,12 +31,14 @@
 !
 
 module m_setumod
-
+   use precision, only: dp
    implicit none
 
    private
 
    public :: setumod
+
+   real(kind=dp), dimension(:), allocatable :: hmin_
 
 contains
 
@@ -201,7 +203,63 @@ contains
       end do
       !$OMP END PARALLEL DO
 
-      if (newcorio == 1 .and. icorio > 0 .and. icorio < 40) then
+      if (.not. allocated(hmin_)) then
+         allocate (hmin_(lnkx))
+      end if
+      do L = L1, L2
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         hmin_(L) = min(hs(k1), hs(k2))
+      end do
+
+      if (newcorio == 1 .and. icorio > 0 .and. icorio <= 20 .and. kmx == 0) then
+
+         fcor1 = fcorio
+         fcor2 = fcorio
+
+         !$OMP SIMD
+         do L = lnx1D + 1, lnx
+
+            cs = csu(L)
+            sn = snu(L)
+
+            ! Variable Coriolis coefficient (if spherical)
+            if (jsferic > 0 .or. jacorioconstant > 0) then
+               if (icorio >= 4 .and. icorio <= 6) then
+                  fcor1 = fcori(L)
+                  fcor2 = fcor1 ! defined at u-point
+               else
+                  fcor1 = fcori(k1)
+                  fcor2 = fcori(k2) ! defined at zeta-points
+               end if
+            end if
+
+            ! Compute Coriolis force using pre-computed velocities
+            if (jasfer3D == 1) then
+               ! Use pre-computed ucxq_link
+               fvcor = acL(L) * (-sn * ucxq_link_1(L) + cs * ucyq_link_1(L)) * fcor1 + &
+                       (1.0_dp - acL(L)) * (-sn * ucxq_link_2(L) + cs * ucyq_link_2(L)) * fcor2
+            else
+               ! Non-spherical path
+               fvcor = acL(L) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 + &
+                       (1.0_dp - acL(L)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2
+            end if
+
+            ! Apply depth threshold correction
+            if (trshcorio > 0 .and. hmin_(L) < trshcorio) then
+               fvcor = fvcor * hmin_(L) / trshcorio
+            end if
+
+            ! Add to momentum equation
+            adve(L) = adve(L) - fvcor
+
+            ! Optional Adams-Bashforth time integration
+            if (Corioadamsbashfordfac > 0.0_dp .and. fvcoro(L) /= 0.0_dp) then
+               adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
+            end if
+            fvcoro(L) = fvcor
+         end do
+      else if (newcorio == 1 .and. icorio > 0 .and. icorio < 40) then
          fcor1 = fcorio
          fcor2 = fcorio
          !x$OMP PARALLEL DO                           &
@@ -236,13 +294,13 @@ contains
                   fvcor = 0.0_dp
                   ! set u tangential
                   if (icorio <= 20) then ! Olga types
-                     if (jasfer3D == 1) then
-                        fvcor = acL(LL) * (-sn * nod2linx(LL, 1, ucxq(k1), ucyq(k1)) + cs * nod2liny(LL, 1, ucxq(k1), ucyq(k1))) * fcor1 + &
-                                (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucxq(k2), ucyq(k2)) + cs * nod2liny(LL, 2, ucxq(k2), ucyq(k2))) * fcor2
-                     else
-                        fvcor = acl(LL) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 + &
-                                (1.0_dp - acl(LL)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2
-                     end if
+                     !if (jasfer3D == 1) then
+                     !   fvcor = acL(LL) * (-sn * nod2linx(LL, 1, ucxq(k1), ucyq(k1)) + cs * nod2liny(LL, 1, ucxq(k1), ucyq(k1))) * fcor1 + &
+                     !           (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucxq(k2), ucyq(k2)) + cs * nod2liny(LL, 2, ucxq(k2), ucyq(k2))) * fcor2
+                     !else
+                     !   fvcor = acl(LL) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 + &
+                     !           (1.0_dp - acl(LL)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2
+                     !end if
                   else ! David types
                      if (icorio <= 26) then ! hs/hu
                         hs1 = hs(n1)
@@ -843,7 +901,7 @@ contains
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_flowtimes, only: dti, ja_timestep_auto_visc
-   
+
       implicit none
 
       real(kind=dp) :: vksag6
@@ -913,22 +971,21 @@ contains
       visc_limit = huge(1.0_dp)
 
       !precompute indirect volumes and conditionals (visc_limit)
-      do L = L1, L2
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         hmin(L) = min(hs(k1), hs(k2))
-         if (ja_timestep_auto_visc == 0) then
-               dxiAu = dxi(L) * hu(L) * wu(L)
-               if (dxiAu > 0.0_dp) then
-                  visc_limit(L) = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
-               end if
+      if (ja_timestep_auto_visc == 0) then
+         do L = L1, L2
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            dxiAu = dxi(L) * hu(L) * wu(L)
+            if (dxiAu > 0.0_dp) then
+               visc_limit(L) = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
             end if
-      end do
+         end do
+      end if
 
       ! simd assignment
       !$OMP SIMD
       do L = L1, L2
-         vicc = vicLU(L) +viusp(L)
+         vicc = vicLU(L) + viusp(L)
          vicLU(L) = min(vicLU(L), visc_limit(L))
          viu(L) = max(0.0_dp, vicLU(L) - vicc)
       end do
