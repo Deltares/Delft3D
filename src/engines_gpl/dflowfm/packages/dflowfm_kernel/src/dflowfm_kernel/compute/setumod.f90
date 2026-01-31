@@ -89,7 +89,7 @@ contains
       real(kind=dp) :: cs, sn
       real(kind=dp) :: hmin, hs1, hs2
       real(kind=dp) :: fcor, vcor, fcor1, fcor2, fvcor
-      real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty!, vksag6, Cz
+      real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty !, vksag6, Cz
       real(kind=dp) :: huv
       real(kind=dp), allocatable :: u1_tmp(:), vluban(:)
 
@@ -847,41 +847,67 @@ contains
 
       real(kind=dp) :: vksag6
 
-      integer :: L, L1, L2, k1, k2
+      integer :: L, L1, L2, numL2D, k1, k2
       !real(kind=dp) :: vicc, dxiAu, viscocity_max_limit, DRL, nuhroller, hmin
-      real(kind=dp), dimension(:), allocatable, save :: Cz, shearvar
-      real(kind=dp), dimension(:), allocatable, save :: c11, c12, c22, suxL, suyL, dvx1, dvy1, dvx2, dvy2
-      real(kind=dp), dimension(:), allocatable, save :: duxdn, duydn, duxdt, duydt, dundn, dutdn, dundt, dutdt
+      real(kind=dp) :: Cz, shearvar
+      real(kind=dp) :: suxL, suyL
+      real(kind=dp) :: dundn, dutdn, dundt, dutdt
+      real(kind=dp), dimension(:), allocatable, save :: duxdn, duydn, duxdt, duydt
+      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, c11, c12, c22, hmin
 
       ! PASS 1: Transform velocities for ALL 2D links at once
       call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
 
       L1 = lnx1D + 1
       L2 = lnx
-
-      ! PASS 2: Compute gradients (vectorized!)
-      duxdn = (ucx_link_2  - ucx_link_1) * dxi(L1:L2)
-      duydn = (ucy_link_2  - ucy_link_1) * dxi(L1:L2)
-      duxdt = (ucnx_link_2 - ucnx_link_1) * wui(L1:L2)
-      duydt = (ucny_link_2 - ucny_link_1) * wui(L1:L2)
-
+      numL2D = L2 - L1 - 1
       vksag6 = vonkar * sag / 6.0_dp
       vicLU(L1:L2) = 0.0_dp
 
+      if (.not. allocated(duxdn)) then
+         allocate(duxdn(lnx))
+         allocate(duydn(lnx))
+         allocate(duxdt(lnx))
+         allocate(duydt(lnx))
+         allocate(dvx1(lnx))
+         allocate(dvy1(lnx))
+         allocate(dvx2(lnx))
+         allocate(dvy2(lnx))
+         allocate(c11(lnx))
+         allocate(c12(lnx))
+         allocate(c22(lnx))
+         allocate(hmin(lnx))
+      end if
+
+      !$OMP SIMD
+      do L = L1, L2
+         duxdn(L) = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
+         duydn(L) = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
+         duxdt(L) = (ucnx_link_2(L) - ucnx_link_1(L)) * wui(L)
+         duydt(L) = (ucny_link_2(L) - ucny_link_1(L)) * wui(L)
+      end do
+
       if (Elder > 0.0_dp) then !  add Elder
-         Cz = get_chezy(hu(L1:L2), frcu(L1:L2), u1(L1:L2), v(L1:L2), ifrcutp(L1:L2))
-         vicLU(L1:L2) = Elder * (vksag6 / Cz) * (hu(L1:L2)) * sqrt(u1(L1:L2) * u1(L1:L2) + v(L1:L2)**2)
+         !$OMP SIMD
+         do L = L1, L2
+            Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
+            vicLU(L) = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
+         end do
       end if
 
       if (Smagorinsky > 0) then ! add Smagorinsky
-         dundn = csu(L1:L2) * duxdn + snu(L1:L2) * duydn
-         dutdn = -snu(L1:L2) * duxdn + csu(L1:L2) * duydn
-         dundt = csu(L1:L2) * duxdt + snu(L1:L2) * duydt
-         dutdt = -snu(L1:L2) * duxdt + csu(L1:L2) * duydt
+         !$OMP SIMD
+         do L = L1, L2
+            dundn = csu(L) * duxdn(L) + snu(L) * duydn(L)
+            dutdn = -snu(L) * duxdn(L) + csu(L) * duydn(L)
+            dundt = csu(L) * duxdt(L) + snu(L) * duydt(L)
+            dutdt = -snu(L) * duxdt(L) + csu(L) * duydt(L)
 
-         shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-         vicLU(L1:L2) = vicLU(L1:L2) + Smagorinsky**2 * sqrt(shearvar) / (dxi(L1:L2) * wui(L1:L2))
+            shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
+            vicLU(L) = vicLU(L) + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wui(L))
+         end do
       end if
+
       !if (nshiptxy > 0) then
       !   if (vicuship /= 0.0_dp) then
       !      vicL = vicL + vicushp(L)
@@ -915,42 +941,50 @@ contains
       !   end if
       !end if
 
+      ! Pre-gather hs if needed (ONE indirect access loop)
+      !if (istresstyp == 3) then
+
+      do L = L1, L2
+         hmin(L) = min(hs(ln(1, L)), hs(ln(2, L)))
+      end do
+      !end if
+
       if (.not. allocated(c11)) then
-         c11 = csu(L1:L2)**2
-         c12 = csu(L1:L2) * snu(L1:L2)
-         c22 = snu(L1:L2)**2
+         c11(L1:L2) = csu(L1:L2)**2
+         c12(L1:L2) = csu(L1:L2) * snu(L1:L2)
+         c22(L1:L2) = snu(L1:L2)**2
       end if
-      suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
-      suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
-      !
-      suxL = suxL * vicLU(L1:L2) / wui(L1:L2)
-      suyL = suyL * vicLU(L1:L2) / wui(L1:L2)
-      if (istresstyp == 3) then
-         suxL = suxL * min(hs(ln(1, L1:L2)), hs(ln(2, L1:L2)))
-         suyL = suyL * min(hs(ln(1, L1:L2)), hs(ln(2, L1:L2)))
-      end if
+      !$OMP SIMD
+      do L = L1, L2
+         suxL = (duxdn(L) + c11(L) * duxdn(L) + c12(L) * (duydn(L) - duxdt(L)) - c22(L) * duydt(L)) * vicLU(L) * hmin(L) / wui(L)
+         suyL = (duydn(L) + c11(L) * duxdt(L) + c12(L) * (duxdn(L) + duydt(L)) + c22(L) * duydn(L)) * vicLU(L) * hmin(L) / wui(L)
 
-      ! PASS 5: Scatter stress to nodes (serial - race condition)
+         !if (istresstyp == 3) then
+         ! suxL = suxL * min(hs(ln(1, L)), hs(ln(2, L)))
+         ! suyL = suyL * min(hs(ln(1, L)), hs(ln(2, L)))
+         !end if
 
-      if (jsferic == 1 .and. jasfer3D == 1) then
-         dvx1 = csb(1, L1:L2) * suxL - snb(1, L1:L2) * suyL
-         dvy1 = snb(1, L1:L2) * suxL + csb(1, L1:L2) * suyL
-         dvx2 = -csb(2, L1:L2) * suxL - snb(2, L1:L2) * suyL
-         dvy2 = -snb(2, L1:L2) * suxL + csb(2, L1:L2) * suyL
-      else
-         dvx1 = suxL
-         dvy1 = suyL
-         dvx2 = -suxL
-         dvy2 = -suyL
-      end if
+         if (jsferic == 1 .and. jasfer3D == 1) then
+            dvx1(L) = csb(1, L) * suxL - snb(1, L) * suyL
+            dvy1(L) = snb(1, L) * suxL + csb(1, L) * suyL
+            dvx2(L) = -csb(2, L) * suxL - snb(2, L) * suyL
+            dvy2(L) = -snb(2, L) * suxL + csb(2, L) * suyL
+         else
+            dvx1(L) = suxL
+            dvy1(L) = suyL
+            dvx2(L) = -suxL
+            dvy2(L) = -suyL
+         end if
+      end do
+
       do L = L1, L2
          k1 = ln(1, L)
          k2 = ln(2, L)
 
-         dvxc(k1) = dvxc(k1) + dvx1(L-L1+1)
-         dvyc(k1) = dvyc(k1) + dvy1(L-L1+1)
-         dvxc(k2) = dvxc(k2) + dvx2(L-L1+1)
-         dvyc(k2) = dvyc(k2) + dvy2(L-L1+1)
+         dvxc(k1) = dvxc(k1) + dvx1(L)
+         dvyc(k1) = dvyc(k1) + dvy1(L)
+         dvxc(k2) = dvxc(k2) + dvx2(L)
+         dvyc(k2) = dvyc(k2) + dvy2(L)
       end do
    end subroutine compute_viscosity_and_stress_vectorized
 
