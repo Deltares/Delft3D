@@ -189,6 +189,16 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable :: flowCourantNumber(:) !< Courant number
 
 ! node related, dim = ndkx
+real(kind=dp), allocatable :: ucx_link_1(:)   !< pre-transformed ucx for link side 1 (stress/viscosity optimization)
+real(kind=dp), allocatable :: ucy_link_1(:)   !< pre-transformed ucy for link side 1 (stress/viscosity optimization)
+real(kind=dp), allocatable :: ucx_link_2(:)   !< pre-transformed ucx for link side 2 (stress/viscosity optimization)
+real(kind=dp), allocatable :: ucy_link_2(:)   !< pre-transformed ucy for link side 2 (stress/viscosity optimization)
+real(kind=dp), allocatable :: ucxq_link_1(:)  !< pre-transformed ucxq for link side 1 (Coriolis optimization)
+real(kind=dp), allocatable :: ucyq_link_1(:)  !< pre-transformed ucyq for link side 1 (Coriolis optimization)
+real(kind=dp), allocatable :: ucxq_link_2(:)  !< pre-transformed ucxq for link side 2 (Coriolis optimization)
+real(kind=dp), allocatable :: ucyq_link_2(:)  !< pre-transformed ucyq for link side 2 (Coriolis optimization)
+real(kind=dp), allocatable :: ucnx_link_1(:), ucnx_link_2(:) ! Corner x-velocity in link frame (2, lnx)
+real(kind=dp), allocatable :: ucny_link_1(:), ucny_link_2(:) ! Corner y-velocity in link frame (2, lnx)
 
    real(kind=dp), allocatable :: volau(:) !< trial, au based cell volume (m3)
    real(kind=dp), allocatable, target :: ucx(:) !< [m/s] cell center velocity, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}

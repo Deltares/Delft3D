@@ -838,7 +838,7 @@ contains
       use m_get_chezy, only: get_chezy
 !      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
-      use m_coordinate_transform, only: transform_velocities_to_links, ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2
+      !use m_coordinate_transform, only: transform_velocities_to_links, ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2
       use m_sferic, only: jsferic, jasfer3D
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
@@ -855,9 +855,6 @@ contains
       real(kind=dp) :: dundn, dutdn, dundt, dutdt
       real(kind=dp), dimension(:), allocatable, save :: duxdn, duydn, duxdt, duydt
       real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, c11, c12, c22, hmin, visc_limit
-
-      ! PASS 1: Transform velocities for ALL 2D links at once
-      call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
 
       L1 = lnx1D + 1
       L2 = lnx

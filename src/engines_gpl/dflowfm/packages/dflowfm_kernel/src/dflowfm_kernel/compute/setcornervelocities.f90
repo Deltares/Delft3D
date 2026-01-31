@@ -43,7 +43,7 @@ contains
 !> set corner related velocity x- and y components
    subroutine setcornervelocities()
       use precision, only: dp
-      use m_flow, only: kmx, jacomp, ucx, ucy, jased, ustbc, ustb, kbotc, kmxc
+      use m_flow, only: kmx, jacomp, ucx, ucy, jased, ustbc, ustb, kbotc, kmxc, ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2, ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
       use m_flowgeom, only: ucnx, ucny, lnx1d, lnx, ln, lncn, wcnx3, wcny3, wcnx4, wcny4, mxban, nban, banf, ban, nrcnw, cscnw, sncnw, kcnw, kcu, wcln
       use m_sferic, only: jasfer3d
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -56,6 +56,18 @@ contains
 
       ucnx = 0
       ucny = 0
+
+! NEW: Allocate and zero link-frame corner velocity arrays
+      if (jasfer3D == 1) then
+         if (.not. allocated(ucnx_link_1)) allocate (ucnx_link_1(lnx))
+         if (.not. allocated(ucny_link_1)) allocate (ucny_link_1(lnx))
+         if (.not. allocated(ucnx_link_2)) allocate (ucnx_link_2(lnx))
+         if (.not. allocated(ucny_link_2)) allocate (ucny_link_2(lnx))
+         ucnx_link_1 = 0.0_dp
+         ucny_link_1 = 0.0_dp
+         ucnx_link_2 = 0.0_dp
+         ucny_link_2 = 0.0_dp
+      end if
 
       if (kmx == 0) then
 
@@ -70,14 +82,23 @@ contains
                   uLx = 0.5_dp * (ucx(k1) + ucx(k2))
                   uLy = 0.5_dp * (ucy(k1) + ucy(k2))
                else
-                  uLx = 0.5_dp * (nod2linx(L, 1, ucx(k1), ucy(k1)) + nod2linx(L, 2, ucx(k2), ucy(k2)))
-                  uLy = 0.5_dp * (nod2liny(L, 1, ucx(k1), ucy(k1)) + nod2liny(L, 2, ucx(k2), ucy(k2)))
+                  ! Use pre-computed ucx_link from setucxucyucxuucyunew
+                  uLx = 0.5_dp * (ucx_link_1(L) + ucx_link_2(L))
+                  uLy = 0.5_dp * (ucy_link_1(L) + ucy_link_2(L))
                end if
 
                ucnx(k3) = ucnx(k3) + uLx * wcnx3(L)
                ucny(k3) = ucny(k3) + uLy * wcny3(L)
                ucnx(k4) = ucnx(k4) + uLx * wcnx4(L)
                ucny(k4) = ucny(k4) + uLy * wcny4(L)
+
+! Accumulate corner velocities in link frame (uLx/uLy already in link frame)
+               if (jasfer3D == 1) then
+                  ucnx_link_1(L) = ucnx_link_1(L) + uLx * wcnx3(L)
+                  ucny_link_1(L) = ucny_link_1(L) + uLy * wcny3(L)
+                  ucnx_link_2(L) = ucnx_link_2(L) + uLx * wcnx4(L)
+                  ucny_link_2(L) = ucny_link_2(L) + uLy * wcny4(L)
+               end if
             end do
 
          else ! use banf instead
