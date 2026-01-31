@@ -880,7 +880,10 @@ contains
          allocate (hmin(lnx))
          allocate (visc_limit(lnx))
       end if
-
+      if (javiusp == 0 .and. .not. allocated(viusp)) then
+         allocate (viusp(lnx))
+         viusp = vicouv
+      end if
       !$OMP SIMD
       do L = L1, L2
          duxdn(L) = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
@@ -914,7 +917,9 @@ contains
 
       !precompute indirect volumes and conditionals (visc_limit)
       do L = L1, L2
-         hmin(L) = min(hs(ln(1, L)), hs(ln(2, L)))
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         hmin(L) = min(hs(k1), hs(k2))
          if (ja_timestep_auto_visc == 0) then
                dxiAu = dxi(L) * hu(L) * wu(L)
                if (dxiAu > 0.0_dp) then
@@ -926,7 +931,7 @@ contains
       ! simd assignment
       !$OMP SIMD
       do L = L1, L2
-         vicc = vicLU(L) + merge(viusp(L), vicouv, javiusp == 1)
+         vicc = vicLU(L) +viusp(L)
          vicLU(L) = min(vicLU(L), visc_limit(L))
          viu(L) = max(0.0_dp, vicLU(L) - vicc)
       end do
