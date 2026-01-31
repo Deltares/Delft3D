@@ -216,63 +216,50 @@ contains
 
       if (newcorio == 1 .and. icorio > 0 .and. icorio <= 20 .and. kmx == 0) then
 
-         if (.not. allocated(fcor1_)) then
-            allocate (fcor1_(lnkx), fcor2_(lnx))
-         end if
-
-         ! Variable Coriolis coefficient (if spherical)
-         if (jsferic > 0 .or. jacorioconstant > 0) then
-            if (icorio >= 4 .and. icorio <= 6) then
-               fcor1_ = fcori
-               fcor2_ = fcori ! defined at u-point
-            else
-               do L = lnx1D + 1, lnx
-                  k1 = ln(1, L)
-                  k2 = ln(2, L)
-                  fcor1_ = fcori(k1)
-                  fcor2_ = fcori(k2) ! defined at zeta-points
-               end do
+         if ((jsferic > 0 .or. jacorioconstant > 0) .and. (icorio < 4 .or. icorio > 6)) then
+            if (.not. allocated(fcor1_)) then
+               allocate (fcor1_(lnkx), fcor2_(lnx))
             end if
-         else
-            fcor1_ = fcorio
-            fcor2_ = fcorio
-         end if
-
-! PASS 2: Main Coriolis computation - split for optimal vectorization
-         if (jasfer3D == 1) then
-            ! Spherical case - use pre-computed link velocities (OPTIMAL!)
-            !$OMP SIMD
-            do L = lnx1D + 1, lnx
-               fvcor = acL(L) * ucyq_link_1(L) * fcor1_(L) + &
-                       (1.0_dp - acL(L)) * ucyq_link_2(L) * fcor2_(L)
-
-               ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
-                               merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
-
-               adve(L) = adve(L) - fvcor - ab_correction
-               fvcoro(L) = fvcor
-            end do
-            !$OMP END SIMD
-
-         else
-            ! Cartesian case - could also use link velocities but original code uses nodes
-            ! NOTE: Consider extending ucxq_link optimization to Cartesian case for consistency
             do L = lnx1D + 1, lnx
                k1 = ln(1, L)
                k2 = ln(2, L)
-               cs = csu(L)
-               sn = snu(L)
+               fcor1_(L) = fcori(k1)
+               fcor2_(L) = fcori(k2) ! defined at zeta-points
+            end do
+            !$OMP SIMD
+            do L = lnx1D + 1, lnx
+               if (hu(L) > 0) then
+                  fvcor = acL(L) * ucyq_link_1(L) * fcor1_(L) + &
+                          (1.0_dp - acL(L)) * ucyq_link_2(L) * fcor2_(L)
 
-               fvcor = acL(L) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1_(L) + &
-                       (1.0_dp - acL(L)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2_(L)
+                  ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
+                                  merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
 
-               ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
-                               merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
+                  adve(L) = adve(L) - fvcor - ab_correction
+                  fvcoro(L) = fvcor
+               end if
+            end do
 
-               adve(L) = adve(L) - fvcor - ab_correction
-               fvcoro(L) = fvcor
+         else
+
+            !$OMP SIMD
+            do L = lnx1D + 1, lnx
+               if (hu(L) > 0) then
+                  if (jsferic > 0 .or. jacorioconstant > 0) then
+                     fcor = fcori(L)
+                  else
+                     fcor = fcorio
+                  end if
+                  fvcor = (acL(L) * ucyq_link_1(L) + (1.0_dp - acL(L)) * ucyq_link_2(L)) * fcor
+                  ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
+                                  merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
+
+                  adve(L) = adve(L) - fvcor - ab_correction
+                  fvcoro(L) = fvcor
+               end if
             end do
          end if
+
       else if (newcorio == 1 .and. icorio > 0 .and. icorio < 40) then
          fcor1 = fcorio
          fcor2 = fcorio

@@ -101,7 +101,7 @@ contains
    end subroutine initialize_coordinate_transform
 
    subroutine transform_node_velocities_combined(ucx, ucy, ucxq, ucyq)
-      use m_flowgeom, only: lnx, lnx1D
+      use m_flowgeom, only: lnx, lnx1D, csu, snu
 
       real(dp), intent(in), contiguous :: ucx(:), ucy(:), ucxq(:), ucyq(:)
       integer :: L1, L2, L
@@ -143,13 +143,13 @@ contains
          do L = L1, L2
             ucx_link_1(L) = ux1(L)
             ucy_link_1(L) = uy1(L)
-            ucxq_link_1(L) = ux3(L)
-            ucyq_link_1(L) = uy3(L)
-
             ucx_link_2(L) = ux2(L)
             ucy_link_2(L) = uy2(L)
-            ucxq_link_2(L) = ux4(L)
-            ucyq_link_2(L) = uy4(L)
+
+            ucxq_link_1(L) = csu(L) * ux3(L) + snu(L) * uy3(L)
+            ucyq_link_1(L) = -snu(L) * ux3(L) + csu(L) * uy3(L)
+            ucxq_link_2(L) = csu(L) * ux4(L) + snu(L) * uy4(L)
+            ucyq_link_2(L) = -snu(L) * ux4(L) + csu(L) * uy4(L) 
          end do
       end if
 
