@@ -52,7 +52,7 @@ contains
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
       use m_setucxucyucxuucyu, only: setucxucyucxuucyu
       use m_setcornervelocities, only: setcornervelocities
-      use m_coordinate_transform, only: ucxq_link_1, ucyq_link_1, ucxq_link_2, ucyq_link_2
+      use m_coordinate_transform, only: ucyq_link_1, ucyq_link_2
       use timers, only: timstrt, timstop
       use m_flow
       use m_flowgeom
@@ -243,11 +243,8 @@ contains
             ! Spherical case - use pre-computed link velocities (OPTIMAL!)
             !$OMP SIMD
             do L = lnx1D + 1, lnx
-               cs = csu(L)
-               sn = snu(L)
-
-               fvcor = acL(L) * (-sn * ucxq_link_1(L) + cs * ucyq_link_1(L)) * fcor1_(L) + &
-                       (1.0_dp - acL(L)) * (-sn * ucxq_link_2(L) + cs * ucyq_link_2(L)) * fcor2_(L)
+               fvcor = acL(L) * ucyq_link_1(L) * fcor1_(L) + &
+                       (1.0_dp - acL(L)) * ucyq_link_2(L) * fcor2_(L)
 
                ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
                                merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
