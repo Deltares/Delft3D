@@ -27,6 +27,12 @@ module m_coordinate_transform
    real(kind=dp), allocatable, public :: ucnx_link_1(:), ucnx_link_2(:) ! Corner x-velocity in link frame (2, lnx)
    real(kind=dp), allocatable, public :: ucny_link_1(:), ucny_link_2(:) ! Corner y-velocity in link frame (2, lnx)
 
+   real(kind=dp), allocatable, public :: csb_1(:), csb_2(:) !< cosine of link angle at node 1/2
+   real(kind=dp), allocatable, public :: snb_1(:), snb_2(:) !< sine of link angle at node 1/2
+   real(kind=dp), allocatable, public :: csbn_1(:), csbn_2(:) !< cosine of link angle at corner 1/2
+   real(kind=dp), allocatable, public :: snbn_1(:), snbn_2(:) !< sine of link angle at corner 1/2
+
+   real(kind=dp), allocatable :: ucx_global(:) !< transformed ucx back to global frame
    ! Public interface
    public :: initialize_coordinate_transform
    public :: transform_node_velocities_combined, transform_corner_velocities
@@ -49,7 +55,7 @@ contains
    subroutine initialize_coordinate_transform()
       use m_flowgeom, only: lnx, ln, lncn
       use m_sferic, only: jsferic, jasfer3D
-
+      use m_flowgeom, only: csb, snb, csbn, snbn
       implicit none
       integer :: ierr
 
@@ -75,6 +81,15 @@ contains
       allocate (ux3(lnx), uy3(lnx), stat=ierr)
       allocate (ux4(lnx), uy4(lnx), stat=ierr)
 
+      csb_1 = csb(1, :)
+      csb_2 = csb(2, :)
+      snb_1 = snb(1, :)
+      snb_2 = snb(2, :)
+      csbn_1 = csbn(1, :)
+      csbn_2 = csbn(2, :)
+      snbn_1 = snbn(1, :)
+      snbn_2 = snbn(2, :)
+
       ! Build flattened index maps (one-time cost at initialization)
       node_map_1 = ln(1, 1:lnx)
       node_map_2 = ln(2, 1:lnx)
@@ -86,11 +101,10 @@ contains
    end subroutine initialize_coordinate_transform
 
    subroutine transform_node_velocities_combined(ucx, ucy, ucxq, ucyq)
-      use m_flowgeom, only: lnx, lnx1D, csb, snb
+      use m_flowgeom, only: lnx, lnx1D
 
-      real(dp), intent(in) :: ucx(:), ucy(:), ucxq(:), ucyq(:)
+      real(dp), intent(in), contiguous :: ucx(:), ucy(:), ucxq(:), ucyq(:)
       integer :: L1, L2, L
-      real(dp) :: cs1, sn1, cs2, sn2 ! Local variables for rotation coefficients
 
       L1 = lnx1D + 1
       L2 = lnx
@@ -110,25 +124,19 @@ contains
       end do
 
       if (use_spherical_transform) then
-         !$OMP SIMD PRIVATE(cs1, sn1, cs2, sn2)
+         !$OMP SIMD
          do L = L1, L2
-            ! Load rotation coefficients into local scalars (compiler keeps in registers)
-            cs1 = csb(1, L)
-            sn1 = snb(1, L)
-            cs2 = csb(2, L)
-            sn2 = snb(2, L)
-
             ! Node 1: Rotate BOTH velocity types with same coefficients
-            ucx_link_1(L) = cs1 * ux1(L) + sn1 * uy1(L)
-            ucy_link_1(L) = -sn1 * ux1(L) + cs1 * uy1(L)
-            ucxq_link_1(L) = cs1 * ux3(L) + sn1 * uy3(L)
-            ucyq_link_1(L) = -sn1 * ux3(L) + cs1 * uy3(L)
+            ucx_link_1(L) = csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
+            ucy_link_1(L) = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
+            ucxq_link_1(L) = csb_1(L) * ux3(L) + snb_1(L) * uy3(L)
+            ucyq_link_1(L) = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
 
             ! Node 2: Rotate BOTH velocity types with same coefficients
-            ucx_link_2(L) = cs2 * ux2(L) + sn2 * uy2(L)
-            ucy_link_2(L) = -sn2 * ux2(L) + cs2 * uy2(L)
-            ucxq_link_2(L) = cs2 * ux4(L) + sn2 * uy4(L)
-            ucyq_link_2(L) = -sn2 * ux4(L) + cs2 * uy4(L)
+            ucx_link_2(L) = csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
+            ucy_link_2(L) = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
+            ucxq_link_2(L) = csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
+            ucyq_link_2(L) = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
          end do
       else
          !$OMP SIMD
@@ -149,10 +157,10 @@ contains
 
 !> Transform corner velocities (ucnx/ucny)
    subroutine transform_corner_velocities(ucnx, ucny)
-      use m_flowgeom, only: lnx1D, lnx, csbn, snbn
+      use m_flowgeom, only: lnx1D, lnx
 
-      real(dp), intent(in) :: ucnx(:) ! Corner x-velocities (global frame)
-      real(dp), intent(in) :: ucny(:) ! Corner y-velocities (global frame)
+      real(dp), intent(in), contiguous :: ucnx(:) ! Corner x-velocities (global frame)
+      real(dp), intent(in), contiguous :: ucny(:) ! Corner y-velocities (global frame)
 
       integer :: L1, L2, L
 
@@ -171,10 +179,10 @@ contains
       if (use_spherical_transform) then
          !$OMP SIMD
          do L = L1, L2
-            ucnx_link_1(L) = csbn(1, L) * ux1(L) + snbn(1, L) * uy1(L)
-            ucny_link_1(L) = -snbn(1, L) * ux1(L) + csbn(1, L) * uy1(L)
-            ucnx_link_2(L) = csbn(2, L) * ux2(L) + snbn(2, L) * uy2(L)
-            ucny_link_2(L) = -snbn(2, L) * ux2(L) + csbn(2, L) * uy2(L)
+            ucnx_link_1(L) = csbn_1(L) * ux1(L) + snbn_1(L) * uy1(L)
+            ucny_link_1(L) = -snbn_1(L) * ux1(L) + csbn_1(L) * uy1(L)
+            ucnx_link_2(L) = csbn_2(L) * ux2(L) + snbn_2(L) * uy2(L)
+            ucny_link_2(L) = -snbn_2(L) * ux2(L) + csbn_2(L) * uy2(L)
          end do
       else
          !$OMP SIMD
