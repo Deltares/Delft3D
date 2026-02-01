@@ -1156,7 +1156,6 @@ if (Perot_type /= NOT_DEFINED) then
          call setuc1D()
       end if
 
-      call transform_node_velocities_combined(ucx, ucy, ucxu, ucyu)
    end subroutine setucxucyucxuucyunew
 
 end module m_setucxucyucxuucyunew

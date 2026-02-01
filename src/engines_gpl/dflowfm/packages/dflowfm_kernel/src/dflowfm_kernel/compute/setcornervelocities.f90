@@ -173,8 +173,6 @@ contains
 
       end if
 
-      call transform_corner_velocities(ucnx, ucny)
-
    end subroutine setcornervelocities
 
 end module m_setcornervelocities

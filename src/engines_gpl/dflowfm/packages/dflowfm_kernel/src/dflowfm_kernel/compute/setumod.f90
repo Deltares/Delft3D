@@ -52,7 +52,7 @@ contains
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
       use m_setucxucyucxuucyu, only: setucxucyucxuucyu
       use m_setcornervelocities, only: setcornervelocities
-      use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2
+      use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2, transform_node_velocities_combined, transform_corner_velocities
       use timers, only: timstrt, timstop
       use m_flow
       use m_flowgeom
@@ -80,7 +80,7 @@ contains
       use m_wall2liny, only: wall2liny
       use m_waveconst
 
-      implicit none
+      implicit none(external)
 
       integer, intent(in) :: jazws0
       ! locals
@@ -130,6 +130,7 @@ contains
          end if
          if (newcorio == 1) then
             call setucxucyucxuucyunew()
+            call transform_node_velocities_combined(ucx, ucy, ucxu, ucyu)
          else
             call setucxucyucxuucyu()
          end if
@@ -440,6 +441,7 @@ contains
       end if
       if (ihorvic > 0 .or. jaconveyance2D >= 3 .or. ndraw(29) == 37) then
          call setcornervelocities() ! must be called after ucx, ucy have been set
+         call transform_corner_velocities(ucnx, ucny)
       end if
       if (vicouv < 0.0_dp) then
          ihorvic = 0
