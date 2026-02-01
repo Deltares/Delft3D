@@ -45,6 +45,9 @@ module m_coordinate_transform
    ! Temporary gather buffers (flat arrays for vectorization)
    real(dp), allocatable, public :: ux1(:), uy1(:), ux2(:), uy2(:) ! Node velocities
    real(dp), allocatable, public :: ux3(:), uy3(:), ux4(:), uy4(:) ! Corner velocities
+! In m_coordinate_transform, add:
+   real(kind=dp), allocatable, public :: uxcorner1(:), uycorner1(:)
+   real(kind=dp), allocatable, public :: uxcorner2(:), uycorner2(:)
 
    logical :: use_spherical_transform = .false.
    logical :: is_initialized = .false.
@@ -80,6 +83,8 @@ contains
       allocate (ux2(lnx), uy2(lnx), stat=ierr)
       allocate (ux3(lnx), uy3(lnx), stat=ierr)
       allocate (ux4(lnx), uy4(lnx), stat=ierr)
+      allocate (uxcorner1(lnx), uycorner1(lnx))
+      allocate (uxcorner2(lnx), uycorner2(lnx))
 
       csb_1 = csb(1, :)
       csb_2 = csb(2, :)
@@ -170,10 +175,11 @@ contains
       if (.not. is_initialized) return
 
       do L = L1, L2
-         ux1(L) = ucnx(corner_map_1(L))
-         uy1(L) = ucny(corner_map_1(L))
-         ux2(L) = ucnx(corner_map_2(L))
-         uy2(L) = ucny(corner_map_2(L))
+         ! In transform_corner_velocities, populate them:
+         uxcorner1(L) = ucnx(corner_map_1(L))
+         uycorner1(L) = ucny(corner_map_1(L))
+         uxcorner2(L) = ucnx(corner_map_2(L))
+         uycorner2(L) = ucny(corner_map_2(L))
       end do
 
       !if (use_spherical_transform) then

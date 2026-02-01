@@ -909,7 +909,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_get_chezy, only: get_chezy
-      use m_coordinate_transform, only: ux1, uy1, ux2, uy2, csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2
+      use m_coordinate_transform, only: ux1, uy1, ux2, uy2, csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner1, uycorner1, uxcorner2, uycorner2
 !      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
       use m_sferic, only: jsferic, jasfer3D
@@ -935,7 +935,6 @@ contains
       L2 = lnx
       numL2D = L2 - L1 - 1
       vksag6 = vonkar * sag / 6.0_dp
-      vicLU(L1:L2) = 0.0_dp
 
       if (.not. allocated(dvx1)) then
          allocate (dvx1(lnx))
@@ -983,15 +982,15 @@ contains
             duydn = (ucy_link_2 - ucy_link_1) * dxi(L)
 
             if (jsferic == 1 .and. jasfer3D == 1) then
-               ucnx_link_1 = csbn_1(L) * ux1(L) + snbn_1(L) * uy1(L)
-               ucny_link_1 = -snbn_1(L) * ux1(L) + csbn_1(L) * uy1(L)
-               ucnx_link_2 = csbn_2(L) * ux2(L) + snbn_2(L) * uy2(L)
-               ucny_link_2 = -snbn_2(L) * ux2(L) + csbn_2(L) * uy2(L)
+               ucnx_link_1 = +csbn_1(L) * uxcorner1(L) + snbn_1(L) * uycorner1(L)
+               ucny_link_1 = -snbn_1(L) * uxcorner1(L) + csbn_1(L) * uycorner1(L)
+               ucnx_link_2 = +csbn_2(L) * uxcorner2(L) + snbn_2(L) * uycorner2(L)
+               ucny_link_2 = -snbn_2(L) * uxcorner2(L) + csbn_2(L) * uycorner2(L)
             else
-               ucnx_link_1 = ux1(L)
-               ucny_link_1 = uy1(L)
-               ucnx_link_2 = ux2(L)
-               ucny_link_2 = uy2(L)
+               ucnx_link_1 = uxcorner1(L)
+               ucny_link_1 = uycorner1(L)
+               ucnx_link_2 = uxcorner2(L)
+               ucny_link_2 = uycorner2(L)
             end if
             duxdt = (ucnx_link_2 - ucnx_link_1) * wuil
             duydt = (ucny_link_2 - ucny_link_1) * wuil
