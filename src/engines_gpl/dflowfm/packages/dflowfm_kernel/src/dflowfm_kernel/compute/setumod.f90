@@ -147,7 +147,7 @@ contains
       end do
 
       if (kmx == 0 .and. newcorio == 1 .and. Perot_type /= NOT_DEFINED) then
-         call set_V()
+         call set_V(jasfer3D)
       else
          !$OMP PARALLEL DO                           &
          !$OMP PRIVATE(L,LL,Lb,Lt,k1,k2,cs,sn,hmin,fcor,vcor)
@@ -892,7 +892,8 @@ contains
       use m_flow
       use m_get_chezy, only: get_chezy
       use m_coordinate_transform, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner1, uycorner1, uxcorner2, uycorner2
-      use m_coordinate_transform, only: ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2
+      use m_coordinate_transform, only: ux1, uy1, ux2, uy2
+      !use m_coordinate_transform, only: ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2
 !      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
       use m_sferic, only: jsferic, jasfer3D
@@ -911,8 +912,10 @@ contains
       real(kind=dp) :: duxdn, duydn, duxdt, duydt
       real(kind=dp) :: c11, c12, c22
       real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, volmin
-      real(kind=dp) :: wuiL, dxiL, ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2
-      !real(kind=dp) :: csb_1L, snb_1L, csb_2L, snb_2L
+      real(kind=dp) :: wuiL, dxiL
+      real(kind=dp) :: ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2
+      real(kind=dp) :: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
+      real(kind=dp) :: csb_1L, snb_1L, csb_2L, snb_2L
 
       L1 = lnx1D + 1
       L2 = lnx
@@ -948,8 +951,23 @@ contains
                vicL = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
             end if
 
-            duxdn = (ucx_link_2(L) - ucx_link_1(L)) * dxiL
-            duydn = (ucy_link_2(L) - ucy_link_1(L)) * dxiL
+            csb_1L = csb_1(L)
+            snb_1L = snb_1(L)
+            csb_2L = csb_2(L)
+            snb_2L = snb_2(L)
+            if (jsferic == 1 .and. jasfer3D == 1) then
+               ucx_link_1 = +csb_1L * ux1(L) + snb_1L * uy1(L)
+               ucy_link_1 = -snb_1L * ux1(L) + csb_1L * uy1(L)
+               ucx_link_2 = +csb_2L * ux2(L) + snb_2L * uy2(L)
+               ucy_link_2 = -snb_2L * ux2(L) + csb_2L * uy2(L)
+            else
+               ucx_link_1 = ux1(L)
+               ucy_link_1 = uy1(L)
+               ucx_link_2 = ux2(L)
+               ucy_link_2 = uy2(L)
+            end if
+            duxdn = (ucx_link_2 - ucx_link_1) * dxi(L)
+            duydn = (ucy_link_2 - ucy_link_1) * dxi(L)
 
             if (jsferic == 1 .and. jasfer3D == 1) then
                ucnx_link_1 = +csbn_1(L) * uxcorner1(L) + snbn_1(L) * uycorner1(L)
@@ -1003,10 +1021,10 @@ contains
             suyL = (duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn) * vicLU(L) * hmin_(L) / wuiL
 
             if (jsferic == 1 .and. jasfer3D == 1) then
-               dvx1(L) = csb_1(L) * suxL - snb_1(L) * suyL
-               dvy1(L) = snb_1(L) * suxL + csb_1(L) * suyL
-               dvx2(L) = -csb_2(L) * suxL - snb_2(L) * suyL
-               dvy2(L) = -snb_2(L) * suxL + csb_2(L) * suyL
+               dvx1(L) = csb_1L * suxL - snb_1L * suyL
+               dvy1(L) = snb_1L * suxL + csb_1L * suyL
+               dvx2(L) = -csb_2L * suxL - snb_2L * suyL
+               dvy2(L) = -snb_2L * suxL + csb_2L * suyL
             else
                dvx1(L) = suxL
                dvy1(L) = suyL
@@ -1028,31 +1046,42 @@ contains
    end subroutine compute_viscosity_and_stress_vectorized
 
    !> Set tangential velocity v(L) for newcorio=1, kmx=0 case
-   subroutine set_V()
+   subroutine set_V(jasfer3D)
       use precision, only: dp
       use m_flow, only: hu, v
       use m_flowgeom, only: lnx, lnx1D, csu, snu, acL
-      use m_coordinate_transform, only: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
-      implicit none
+      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, ux1, uy1, ux2, uy2
+      integer, intent(in) :: jasfer3D
 
-      integer :: LL
+      integer :: L
       real(kind=dp) :: cs, sn, acL_LL, acL_iv
+      real(kind=dp) :: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
 
 !$OMP SIMD
-      do LL = lnx1D + 1, lnx
-         if (hu(LL) > 0) then
-            cs = csu(LL)
-            sn = snu(LL)
-            acL_LL = acL(LL)
+      do L = lnx1D + 1, lnx
+         if (hu(L) > 0) then
+            cs = csu(L)
+            sn = snu(L)
+            acL_LL = acL(L)
             acL_iv = 1.0_dp - acL_LL
-
-            v(LL) = acL_LL * (-sn * ucx_link_1(LL) + cs * ucy_link_1(LL)) + &
-                    acL_iv * (-sn * ucx_link_2(LL) + cs * ucy_link_2(LL))
+            if (jasfer3D) then
+               ucx_link_1 = +csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
+               ucy_link_1 = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
+               ucx_link_2 = +csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
+               ucy_link_2 = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
+            else
+               ucx_link_1 = ux1(L)
+               ucy_link_1 = uy1(L)
+               ucx_link_2 = ux2(L)
+               ucy_link_2 = uy2(L)
+            end if
+            v(L) = acL_LL * (-sn * ucx_link_1 + cs * ucy_link_1) + &
+                   acL_iv * (-sn * ucx_link_2 + cs * ucy_link_2)
          end if
       end do
    end subroutine set_V
 
-      !> Interpolate accumulated node stresses back to link centers for 2D case
+   !> Interpolate accumulated node stresses back to link centers for 2D case
    !! Projects dvxc/dvyc (stress at nodes) to suu (stress at links)
    subroutine interpolate_stress_to_links_2D()
       use precision, only: dp
@@ -1075,7 +1104,7 @@ contains
             ! no pre-gather, 8 loads & stores & loads is not worth it!
             k1 = ln(1, L)
             k2 = ln(2, L)
-            
+
             acl_L = acl(L)
             acl_iv = 1.0_dp - acl_L
 
@@ -1085,7 +1114,7 @@ contains
                dvy_link_1 = snb_1(L) * dvxc(k1) + csb_1(L) * dvyc(k1)
                dvx_link_2 = csb_2(L) * dvxc(k2) - snb_2(L) * dvyc(k2)
                dvy_link_2 = snb_2(L) * dvxc(k2) + csb_2(L) * dvyc(k2)
-               
+
                suu_1 = csu(L) * dvx_link_1 + snu(L) * dvy_link_1
                suu_2 = csu(L) * dvx_link_2 + snu(L) * dvy_link_2
             else

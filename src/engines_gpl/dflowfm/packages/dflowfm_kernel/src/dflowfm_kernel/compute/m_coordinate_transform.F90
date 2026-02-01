@@ -88,10 +88,10 @@ contains
       allocate (uxcorner1(lnx), uycorner1(lnx))
       allocate (uxcorner2(lnx), uycorner2(lnx))
       allocate (bai_1(lnx), bai_2(lnx))
-      allocate(ucx_link_1(lnx))
-      allocate(ucy_link_1(lnx))
-      allocate(ucx_link_2(lnx))
-      allocate(ucy_link_2(lnx))
+      !allocate(ucx_link_1(lnx))
+      !allocate(ucy_link_1(lnx))
+      !allocate(ucx_link_2(lnx))
+      !allocate(ucy_link_2(lnx))
 
       csb_1 = csb(1, :)
       csb_2 = csb(2, :)
@@ -138,35 +138,35 @@ contains
          uy4(L) = ucyq(node_map_2(L))
       end do
 
-      if (use_spherical_transform) then
-         !$OMP SIMD
-         do L = L1, L2
-            ! Node 1: Rotate BOTH velocity types with same coefficients
-            ucx_link_1(L) = csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
-            ucy_link_1(L) = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
-            ucx_link_2(L) = csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
-            ucy_link_2(L) = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
-      
-            !! Node 2: Rotate BOTH velocity types with same coefficients
-            !ucyq_link_1(L) = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
-            !ucxq_link_1(L) = csb_1(L) * ux3(L) + snb_1(L) * uy3(L)
-            !ucxq_link_2(L) = csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
-            !ucyq_link_2(L) = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
-         end do
-      else
-         !$OMP SIMD
-         do L = L1, L2
-            ucx_link_1(L) = ux1(L)
-            ucy_link_1(L) = uy1(L)
-            ucx_link_2(L) = ux2(L)
-            ucy_link_2(L) = uy2(L)
-      
-            !ucxq_link_1(L) = csu(L) * ux3(L) + snu(L) * uy3(L)
-            !ucyq_link_1(L) = -snu(L) * ux3(L) + csu(L) * uy3(L)
-            !ucxq_link_2(L) = csu(L) * ux4(L) + snu(L) * uy4(L)
-            !ucyq_link_2(L) = -snu(L) * ux4(L) + csu(L) * uy4(L) 
-         end do
-      end if
+      !if (use_spherical_transform) then
+      !   !$OMP SIMD
+      !   do L = L1, L2
+      !      ! Node 1: Rotate BOTH velocity types with same coefficients
+      !      ucx_link_1(L) = csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
+      !      ucy_link_1(L) = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
+      !      ucx_link_2(L) = csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
+      !      ucy_link_2(L) = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
+      !
+      !      !! Node 2: Rotate BOTH velocity types with same coefficients
+      !      !ucyq_link_1(L) = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
+      !      !ucxq_link_1(L) = csb_1(L) * ux3(L) + snb_1(L) * uy3(L)
+      !      !ucxq_link_2(L) = csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
+      !      !ucyq_link_2(L) = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
+      !   end do
+      !else
+      !   !$OMP SIMD
+      !   do L = L1, L2
+      !      ucx_link_1(L) = ux1(L)
+      !      ucy_link_1(L) = uy1(L)
+      !      ucx_link_2(L) = ux2(L)
+      !      ucy_link_2(L) = uy2(L)
+      !
+      !      !ucxq_link_1(L) = csu(L) * ux3(L) + snu(L) * uy3(L)
+      !      !ucyq_link_1(L) = -snu(L) * ux3(L) + csu(L) * uy3(L)
+      !      !ucxq_link_2(L) = csu(L) * ux4(L) + snu(L) * uy4(L)
+      !      !ucyq_link_2(L) = -snu(L) * ux4(L) + csu(L) * uy4(L) 
+      !   end do
+      !end if
 
    end subroutine transform_node_velocities_combined
 
