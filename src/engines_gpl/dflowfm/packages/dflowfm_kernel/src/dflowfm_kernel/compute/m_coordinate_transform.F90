@@ -88,6 +88,10 @@ contains
       allocate (uxcorner1(lnx), uycorner1(lnx))
       allocate (uxcorner2(lnx), uycorner2(lnx))
       allocate (bai_1(lnx), bai_2(lnx))
+      allocate(ucx_link_1(lnx))
+      allocate(ucy_link_1(lnx))
+      allocate(ucx_link_2(lnx))
+      allocate(ucy_link_2(lnx))
 
       csb_1 = csb(1, :)
       csb_2 = csb(2, :)

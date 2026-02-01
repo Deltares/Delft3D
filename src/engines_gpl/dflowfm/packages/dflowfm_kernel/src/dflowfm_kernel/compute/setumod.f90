@@ -704,31 +704,7 @@ contains
          if (istresstyp == 2 .or. istresstyp == 3) then
 
             if (kmx == 0) then
-               !$OMP PARALLEL DO                       &
-               !$OMP PRIVATE(L,k1,k2,huv)
-
-               do L = lnx1D + 1, lnx
-                  if (hu(L) > 0) then ! link will flow
-                     k1 = ln(1, L)
-                     k2 = ln(2, L)
-                     huv = 0.5_dp * (hs(k1) + hs(k2)) ! *huvli(L)
-                     if (huv > epshu) then
-
-                        if (jasfer3D == 1) then
-                           suu(L) = acl(L) * bai(k1) * (csu(L) * nod2linx(L, 1, dvxc(k1), dvyc(k1)) + snu(L) * nod2liny(L, 1, dvxc(k1), dvyc(k1))) + &
-                                    (1.0_dp - acl(L)) * bai(k2) * (csu(L) * nod2linx(L, 2, dvxc(k2), dvyc(k2)) + snu(L) * nod2liny(L, 2, dvxc(k2), dvyc(k2)))
-                        else
-                           suu(L) = acl(L) * bai(k1) * (csu(L) * dvxc(k1) + snu(L) * dvyc(k1)) + &
-                                    (1.0_dp - acl(L)) * bai(k2) * (csu(L) * dvxc(k2) + snu(L) * dvyc(k2))
-                        end if
-
-                        if (istresstyp == 3) then
-                           suu(L) = suu(L) / huv
-                        end if
-                     end if
-                  end if
-               end do
-               !$OMP END PARALLEL DO
+               call interpolate_stress_to_links_2D()
             else
 
                !$OMP PARALLEL DO                       &
