@@ -933,7 +933,7 @@ contains
       real(kind=dp) :: duxdn, duydn, duxdt, duydt
       real(kind=dp) :: c11, c12, c22
       real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, volmin
-      real(kind=dp) :: wuiL, ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2
+      real(kind=dp) :: wuiL, dxiL, ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2
       !real(kind=dp) :: csb_1L, snb_1L, csb_2L, snb_2L
 
       L1 = lnx1D + 1
@@ -964,29 +964,14 @@ contains
          if (hu(L) > 0) then
             vicL = 0.0_dp
             wuiL = wu(L)
+            dxiL = dxi(L)
             if (Elder > 0.0_dp) then !  add Elder
                Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                vicL = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
             end if
-            !csb_1L = csb_1(L)
-            !snb_1L = snb_1(L)
-            !csb_2L = csb_2(L)
-            !snb_2L = snb_2(L)
-            !if (jsferic == 1 .and. jasfer3D == 1) then
-            !   ucx_link_1 = csb_1L * ux1(L) + snb_1L * uy1(L)
-            !   ucy_link_1 = -snb_1L * ux1(L) + csb_1L * uy1(L)
-            !   ucx_link_2 = csb_2L * ux2(L) + snb_2L * uy2(L)
-            !   ucy_link_2 = -snb_2L * ux2(L) + csb_2L * uy2(L)
-            !else
-            !   ucx_link_1 = ux1(L)
-            !   ucy_link_1 = uy1(L)
-            !   ucx_link_2 = ux2(L)
-            !   ucy_link_2 = uy2(L)
-            !end if
-            !duxdn = (ucx_link_2 - ucx_link_1) * dxi(L)
-            !duydn = (ucy_link_2 - ucy_link_1) * dxi(L)
-            duxdn = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
-            duydn = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
+
+            duxdn = (ucx_link_2(L) - ucx_link_1(L)) * dxiL
+            duydn = (ucy_link_2(L) - ucy_link_1(L)) * dxiL
 
             if (jsferic == 1 .and. jasfer3D == 1) then
                ucnx_link_1 = +csbn_1(L) * uxcorner1(L) + snbn_1(L) * uycorner1(L)
@@ -1009,7 +994,7 @@ contains
                dutdt = -snu(L) * duxdt + csu(L) * duydt
 
                shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-               vicL = vicL + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wuiL)
+               vicL = vicL + Smagorinsky**2 * sqrt(shearvar) / (dxiL * wuiL)
             end if
 
             if (javiusp == 1) then
@@ -1020,7 +1005,7 @@ contains
             vicL = vicL + vicc
 
             if (ja_timestep_auto_visc == 0) then
-               dxiAu = dxi(L) * hu(L) * wu(L)
+               dxiAu = dxiL * hu(L) * wu(L)
                if (dxiAu > 0.0_dp) then
                   viscosity_max_limit = 0.2_dp * dti * volmin(L) / dxiAu
                   if (vicL > viscosity_max_limit) then
