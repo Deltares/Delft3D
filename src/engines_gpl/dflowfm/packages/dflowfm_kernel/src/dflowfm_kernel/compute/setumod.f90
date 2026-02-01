@@ -909,13 +909,13 @@ contains
       real(kind=dp) :: vksag6
 
       integer :: L, L1, L2, numL2D, k1, k2
-      real(kind=dp) :: vicc, dxiAu
+      real(kind=dp) :: vicc, vicl, dxiAu, viscosity_max_limit
       real(kind=dp) :: Cz, shearvar
       real(kind=dp) :: suxL, suyL
       real(kind=dp) :: dundn, dutdn, dundt, dutdt
       real(kind=dp) :: duxdn, duydn, duxdt, duydt
       real(kind=dp) :: c11, c12, c22
-      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, visc_limit
+      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, volmin
 
       L1 = lnx1D + 1
       L2 = lnx
@@ -929,33 +929,26 @@ contains
          allocate (dvx2(lnx))
          allocate (dvy2(lnx))
          allocate (hmin(lnx))
-         allocate (visc_limit(lnx))
-      end if
-      if (javiusp == 0 .and. .not. allocated(viusp)) then
-         allocate (viusp(lnx))
-         viusp = vicouv
+         allocate (volmin(lnx))
       end if
 
-      visc_limit = huge(1.0_dp)
       !precompute indirect volumes and conditionals (visc_limit)
       if (ja_timestep_auto_visc == 0) then
          do L = L1, L2
-            dxiAu = dxi(L) * hu(L) * wu(L)
-            if (dxiAu > 0.0_dp) then
-               k1 = ln(1, L)
-               k2 = ln(2, L)
-               visc_limit(L) = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
-            end if
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            volmin(L) = min(vol1(k1), vol1(k2))
          end do
       end if
 
       !$OMP SIMD
       do L = L1, L2
          if (hu(L) > 0) then
+            vicL = 0.0_dp
 
             if (Elder > 0.0_dp) then !  add Elder
                Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
-               vicLU(L) = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
+               vicL = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
             end if
 
             duxdn = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
@@ -970,12 +963,28 @@ contains
                dutdt = -snu(L) * duxdt + csu(L) * duydt
 
                shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-               vicLU(L) = vicLU(L) + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wui(L))
+               vicL = vicL + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wui(L))
             end if
 
-            vicc = vicLU(L) + viusp(L)
-            vicLU(L) = min(vicLU(L), visc_limit(L))
-            viu(L) = max(0.0_dp, vicLU(L) - vicc)
+            if (javiusp == 1) then
+               vicc = viusp(L)
+            else
+               vicc = vicouv
+            end if
+            vicL = vicL + vicc
+
+            if (ja_timestep_auto_visc == 0) then
+               dxiAu = dxi(L) * hu(L) * wu(L)
+               if (dxiAu > 0.0_dp) then
+                  viscosity_max_limit = 0.2_dp * dti * volmin(L) / dxiAu
+                  if (vicL > viscosity_max_limit) then
+                     vicL = viscosity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
+                  end if
+               end if
+            end if
+
+            vicLU(L) = vicL ! Total viscosity
+            viu(L) = max(0.0_dp, vicL - vicc) ! Modeled turbulent part only
 
             c11 = csu(L)**2
             c12 = csu(L) * snu(L)
