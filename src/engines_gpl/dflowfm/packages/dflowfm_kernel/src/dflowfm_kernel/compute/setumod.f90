@@ -1078,10 +1078,11 @@ contains
    !! Projects dvxc/dvyc (stress at nodes) to suu (stress at links)
    subroutine interpolate_stress_to_links_2D()
       use precision, only: dp
-      use m_flow, only: hu, hs, suu, istresstyp
-      use m_flowgeom, only: lnx, lnx1D, ln, csu, snu, acl, dvxc, dvyc, epshu
+      use m_flow, only: hu, hs, suu, istresstyp, dvxc, dvyc
+      use m_flowgeom, only: lnx, lnx1D, ln, csu, snu, acl
+      use m_flowparameters, only: epshu
       use m_sferic, only: jasfer3D
-      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2
+      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, bai_1, bai_2
       implicit none
 
       integer :: L, k1, k2
@@ -1115,7 +1116,7 @@ contains
             end if
 
             ! Use pre-gathered bai constants (bai_1_, bai_2_ from module)
-            suu(L) = acl_L * bai_1_(L) * suu_1 + acl_iv * bai_2_(L) * suu_2
+            suu(L) = acl_L * bai_1(L) * suu_1 + acl_iv * bai_2(L) * suu_2
 
             if (istresstyp == 3) then
                huv = 0.5_dp * (hs(k1) + hs(k2))

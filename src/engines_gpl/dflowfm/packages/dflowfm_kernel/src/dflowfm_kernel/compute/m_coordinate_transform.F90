@@ -49,6 +49,8 @@ module m_coordinate_transform
    real(kind=dp), allocatable, public :: uxcorner1(:), uycorner1(:)
    real(kind=dp), allocatable, public :: uxcorner2(:), uycorner2(:)
 
+   real(kind=dp), allocatable, public :: bai_1(:), bai_2(:) !<inverse bottom area at link node 1/2
+
    logical :: use_spherical_transform = .false.
    logical :: is_initialized = .false.
    integer :: lnx = 0
@@ -58,7 +60,7 @@ contains
    subroutine initialize_coordinate_transform()
       use m_flowgeom, only: lnx, ln, lncn
       use m_sferic, only: jsferic, jasfer3D
-      use m_flowgeom, only: csb, snb, csbn, snbn
+      use m_flowgeom, only: csb, snb, csbn, snbn, bai
       implicit none
       integer :: ierr
 
@@ -85,6 +87,7 @@ contains
       allocate (ux4(lnx), uy4(lnx), stat=ierr)
       allocate (uxcorner1(lnx), uycorner1(lnx))
       allocate (uxcorner2(lnx), uycorner2(lnx))
+      allocate (bai_1(lnx), bai_2(lnx))
 
       csb_1 = csb(1, :)
       csb_2 = csb(2, :)
@@ -100,6 +103,9 @@ contains
       node_map_2 = ln(2, 1:lnx)
       corner_map_1 = lncn(1, 1:lnx)
       corner_map_2 = lncn(2, 1:lnx)
+
+      bai_1 = bai(node_map_1)
+      bai_2 = bai(node_map_2)
 
       is_initialized = .true.
 
