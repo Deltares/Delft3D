@@ -44,7 +44,8 @@ contains
    subroutine setcornervelocities()
       use precision, only: dp
       use m_flow, only: kmx, jacomp, ucx, ucy, jased, ustbc, ustb, kbotc, kmxc
-      use m_coordinate_transform, only: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2, transform_corner_velocities
+      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, ux1, uy1, ux2, uy2, &
+                                   transform_corner_velocities
       use m_flowgeom, only: ucnx, ucny, lnx1d, lnx, ln, lncn, wcnx3, wcny3, wcnx4, wcny4, mxban, nban, banf, ban, nrcnw, cscnw, sncnw, kcnw, kcu, wcln
       use m_sferic, only: jasfer3d
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -54,6 +55,7 @@ contains
       integer :: L, k1, k2, k3, k4, k, kk, LL, Lb, Lt, kw
       integer :: m, n
       real(kind=dp) :: uLx, uLy, csk, snk, sg
+      real(kind=dp) :: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
 
       ucnx = 0
       ucny = 0
@@ -71,9 +73,12 @@ contains
                   uLx = 0.5_dp * (ucx(k1) + ucx(k2))
                   uLy = 0.5_dp * (ucy(k1) + ucy(k2))
                else
-                  ! Use pre-computed ucx_link from setucxucyucxuucyunew
-                  uLx = 0.5_dp * (ucx_link_1(L) + ucx_link_2(L))
-                  uLy = 0.5_dp * (ucy_link_1(L) + ucy_link_2(L))
+                  ucx_link_1 =  csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
+                  ucy_link_1 = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
+                  ucx_link_2 =  csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
+                  ucy_link_2 = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
+                  uLx = 0.5_dp * (ucx_link_1 + ucx_link_2)
+                  uLy = 0.5_dp * (ucy_link_1 + ucy_link_2)
                end if
 
                ucnx(k3) = ucnx(k3) + uLx * wcnx3(L)

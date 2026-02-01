@@ -52,7 +52,7 @@ contains
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
       use m_setucxucyucxuucyu, only: setucxucyucxuucyu
       use m_setcornervelocities, only: setcornervelocities
-      use m_coordinate_transform, only: ucyq_link_1, ucyq_link_2
+      use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2
       use timers, only: timstrt, timstop
       use m_flow
       use m_flowgeom
@@ -95,7 +95,7 @@ contains
       real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty !, vksag6, Cz
       real(kind=dp) :: huv, ab_correction
       real(kind=dp), allocatable :: u1_tmp(:), vluban(:)
-
+      real(kind=dp) :: ucyq_link_1, ucyq_link_2
       integer :: nw, L1, L2, kt, Lb, Lt, Lb1, Lt1, Lb2, Lt2, kb1, kb2, ntmp, m
 
 !      real(kind=dp) :: DRL, nuhroller
@@ -229,8 +229,15 @@ contains
             !$OMP SIMD
             do L = lnx1D + 1, lnx
                if (hu(L) > 0) then
-                  fvcor = acL(L) * ucyq_link_1(L) * fcor1_(L) + &
-                          (1.0_dp - acL(L)) * ucyq_link_2(L) * fcor2_(L)
+                  if (jasfer3D == 1) then
+                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
+                     ucyq_link_2 = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
+                  else
+                     ucyq_link_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
+                     ucyq_link_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+                  end if
+                  fvcor = acL(L) * ucyq_link_1 * fcor1_(L) + &
+                          (1.0_dp - acL(L)) * ucyq_link_2 * fcor2_(L)
 
                   ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
                                   merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
@@ -250,7 +257,14 @@ contains
                   else
                      fcor = fcorio
                   end if
-                  fvcor = (acL(L) * ucyq_link_1(L) + (1.0_dp - acL(L)) * ucyq_link_2(L)) * fcor
+                  if (jasfer3D == 1) then
+                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
+                     ucyq_link_2 = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
+                  else
+                     ucyq_link_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
+                     ucyq_link_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+                  end if
+                  fvcor = (acL(L) * ucyq_link_1 + (1.0_dp - acL(L)) * ucyq_link_2) * fcor
                   ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
                                   merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
 
@@ -895,15 +909,13 @@ contains
       use m_flowgeom
       use m_flow
       use m_get_chezy, only: get_chezy
-      use m_coordinate_transform, only: ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2
+      use m_coordinate_transform, only: ux1, uy1, ux2, uy2, csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2
 !      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
-      !use m_coordinate_transform, only: transform_velocities_to_links, ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2, ucnx_link_1, ucnx_link_2, ucny_link_1, ucny_link_2
       use m_sferic, only: jsferic, jasfer3D
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_flowtimes, only: dti, ja_timestep_auto_visc
-      use m_coordinate_transform, only: csb_1, csb_2, snb_1, snb_2
       implicit none
 
       real(kind=dp) :: vksag6
@@ -916,6 +928,8 @@ contains
       real(kind=dp) :: duxdn, duydn, duxdt, duydt
       real(kind=dp) :: c11, c12, c22
       real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, volmin
+      real(kind=dp) :: wuil, ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2, ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2
+      real(kind=dp) :: csb_1L, snb_1L, csb_2L, snb_2L
 
       L1 = lnx1D + 1
       L2 = lnx
@@ -945,16 +959,42 @@ contains
       do L = L1, L2
          if (hu(L) > 0) then
             vicL = 0.0_dp
-
+            wuil = wu(L)
             if (Elder > 0.0_dp) then !  add Elder
                Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                vicL = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
             end if
+            csb_1L = csb_1(L)
+            snb_1L = snb_1(L)
+            csb_2L = csb_2(L)
+            snb_2L = snb_2(L)
+            if (jsferic == 1 .and. jasfer3D == 1) then
+               ucx_link_1 = csb_1L * ux1(L) + snb_1L * uy1(L)
+               ucy_link_1 = -snb_1L * ux1(L) + csb_1L * uy1(L)
+               ucx_link_2 = csb_2L * ux2(L) + snb_2L * uy2(L)
+               ucy_link_2 = -snb_2L * ux2(L) + csb_2L * uy2(L)
+            else
+               ucx_link_1 = ux1(L)
+               ucy_link_1 = uy1(L)
+               ucx_link_2 = ux2(L)
+               ucy_link_2 = uy2(L)
+            end if
+            duxdn = (ucx_link_2 - ucx_link_1) * dxi(L)
+            duydn = (ucy_link_2 - ucy_link_1) * dxi(L)
 
-            duxdn = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
-            duydn = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
-            duxdt = (ucnx_link_2(L) - ucnx_link_1(L)) * wui(L)
-            duydt = (ucny_link_2(L) - ucny_link_1(L)) * wui(L)
+            if (jsferic == 1 .and. jasfer3D == 1) then
+               ucnx_link_1 = csbn_1(L) * ux1(L) + snbn_1(L) * uy1(L)
+               ucny_link_1 = -snbn_1(L) * ux1(L) + csbn_1(L) * uy1(L)
+               ucnx_link_2 = csbn_2(L) * ux2(L) + snbn_2(L) * uy2(L)
+               ucny_link_2 = -snbn_2(L) * ux2(L) + csbn_2(L) * uy2(L)
+            else
+               ucnx_link_1 = ux1(L)
+               ucny_link_1 = uy1(L)
+               ucnx_link_2 = ux2(L)
+               ucny_link_2 = uy2(L)
+            end if
+            duxdt = (ucnx_link_2 - ucnx_link_1) * wuil
+            duydt = (ucny_link_2 - ucny_link_1) * wuil
 
             if (Smagorinsky > 0) then ! add Smagorinsky
                dundn = csu(L) * duxdn + snu(L) * duydn
@@ -963,7 +1003,7 @@ contains
                dutdt = -snu(L) * duxdt + csu(L) * duydt
 
                shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-               vicL = vicL + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wui(L))
+               vicL = vicL + Smagorinsky**2 * sqrt(shearvar) / (dxi(L) * wuil)
             end if
 
             if (javiusp == 1) then
@@ -990,14 +1030,14 @@ contains
             c12 = csu(L) * snu(L)
             c22 = snu(L)**2
 
-            suxL = (duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt) * vicLU(L) * hmin_(L) / wui(L)
-            suyL = (duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn) * vicLU(L) * hmin_(L) / wui(L)
+            suxL = (duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt) * vicLU(L) * hmin_(L) / wuil
+            suyL = (duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn) * vicLU(L) * hmin_(L) / wuil
 
             if (jsferic == 1 .and. jasfer3D == 1) then
-               dvx1(L) = csb_1(L) * suxL - snb_1(L) * suyL
-               dvy1(L) = snb_1(L) * suxL + csb_1(L) * suyL
-               dvx2(L) = -csb_2(L) * suxL - snb_2(L) * suyL
-               dvy2(L) = -snb_2(L) * suxL + csb_2(L) * suyL
+               dvx1(L) = csb_1L * suxL - snb_1L * suyL
+               dvy1(L) = snb_1L * suxL + csb_1L * suyL
+               dvx2(L) = -csb_2L * suxL - snb_2L * suyL
+               dvy2(L) = -snb_2L * suxL + csb_2L * suyL
             else
                dvx1(L) = suxL
                dvy1(L) = suyL
