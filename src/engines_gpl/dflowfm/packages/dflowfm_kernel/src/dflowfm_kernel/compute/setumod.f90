@@ -145,7 +145,7 @@ contains
          hmin_(L) = min(hs(k1), hs(k2))
       end do
 
-      if (kmx == 0 .and. newcorio == 1) then
+      if (kmx == 0 .and. newcorio == 1 .and. Perot_type /= NOT_DEFINED) then
          call set_V()
       else
          !$OMP PARALLEL DO                           &
@@ -1052,35 +1052,78 @@ contains
    !> Set tangential velocity v(L) for newcorio=1, kmx=0 case
    subroutine set_V()
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_sferic
-      use m_nod2linx, only: nod2linx
-      use m_nod2liny, only: nod2liny
+      use m_flow, only: hu, v
+      use m_flowgeom, only: lnx, lnx1D, csu, snu, acL
+      use m_coordinate_transform, only: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
       implicit none
-      
-      integer :: L, LL, k1, k2
-      real(kind=dp) :: cs, sn
-      
-      !$OMP SIMD
+
+      integer :: LL
+      real(kind=dp) :: cs, sn, acL_LL, acL_iv
+
+!$OMP SIMD
       do LL = lnx1D + 1, lnx
          if (hu(LL) > 0) then
+            cs = csu(LL)
+            sn = snu(LL)
+            acL_LL = acL(LL)
+            acL_iv = 1.0_dp - acL_LL
 
-         cs = csu(LL)
-         sn = snu(LL)
+            v(LL) = acL_LL * (-sn * ucx_link_1(LL) + cs * ucy_link_1(LL)) + &
+                    acL_iv * (-sn * ucx_link_2(LL) + cs * ucy_link_2(LL))
+         end if
+      end do
+   end subroutine set_V
 
-            if (Perot_type /= NOT_DEFINED) then
-               if (jasfer3D == 1) then
-                  v(L) = acL(LL) * (-sn * nod2linx(LL, 1, ucx(k1), ucy(k1)) + cs * nod2liny(LL, 1, ucx(k1), ucy(k1))) + &
-                         (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucx(k2), ucy(k2)) + cs * nod2liny(LL, 2, ucx(k2), ucy(k2)))
-               else
-                  v(L) = acl(LL) * (-sn * ucx(k1) + cs * ucy(k1)) + &
-                         (1.0_dp - acl(LL)) * (-sn * ucx(k2) + cs * ucy(k2))
-               end if
+      !> Interpolate accumulated node stresses back to link centers for 2D case
+   !! Projects dvxc/dvyc (stress at nodes) to suu (stress at links)
+   subroutine interpolate_stress_to_links_2D()
+      use precision, only: dp
+      use m_flow, only: hu, hs, suu, istresstyp
+      use m_flowgeom, only: lnx, lnx1D, ln, csu, snu, acl, dvxc, dvyc, epshu
+      use m_sferic, only: jasfer3D
+      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2
+      implicit none
+
+      integer :: L, k1, k2
+      real(kind=dp) :: huv, acl_L, acl_iv
+      real(kind=dp) :: dvx_link_1, dvy_link_1, dvx_link_2, dvy_link_2
+      real(kind=dp) :: suu_1, suu_2
+
+      !DIR$ IVDEP
+      !$OMP SIMD
+      do L = lnx1D + 1, lnx
+         if (hu(L) > 0 .and. hmin_(L) > epshu) then
+            ! no pre-gather, 8 loads & stores & loads is not worth it!
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            
+            acl_L = acl(L)
+            acl_iv = 1.0_dp - acl_L
+
+            if (jasfer3D == 1) then
+               ! Transform node stresses to link frame
+               dvx_link_1 = csb_1(L) * dvxc(k1) - snb_1(L) * dvyc(k1)
+               dvy_link_1 = snb_1(L) * dvxc(k1) + csb_1(L) * dvyc(k1)
+               dvx_link_2 = csb_2(L) * dvxc(k2) - snb_2(L) * dvyc(k2)
+               dvy_link_2 = snb_2(L) * dvxc(k2) + csb_2(L) * dvyc(k2)
+               
+               suu_1 = csu(L) * dvx_link_1 + snu(L) * dvy_link_1
+               suu_2 = csu(L) * dvx_link_2 + snu(L) * dvy_link_2
+            else
+               suu_1 = csu(L) * dvxc(k1) + snu(L) * dvyc(k1)
+               suu_2 = csu(L) * dvxc(k2) + snu(L) * dvyc(k2)
+            end if
+
+            ! Use pre-gathered bai constants (bai_1_, bai_2_ from module)
+            suu(L) = acl_L * bai_1_(L) * suu_1 + acl_iv * bai_2_(L) * suu_2
+
+            if (istresstyp == 3) then
+               huv = 0.5_dp * (hs(k1) + hs(k2))
+               suu(L) = suu(L) / huv
             end if
          end if
       end do
-      
-   end subroutine set_V
+
+   end subroutine interpolate_stress_to_links_2D
 
 end module m_setumod
