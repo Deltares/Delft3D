@@ -1057,7 +1057,7 @@ contains
       real(kind=dp) :: cs, sn, acL_LL, acL_iv
       real(kind=dp) :: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
 
-!$OMP SIMD
+      !$OMP SIMD
       do L = lnx1D + 1, lnx
          if (hu(L) > 0) then
             cs = csu(L)
