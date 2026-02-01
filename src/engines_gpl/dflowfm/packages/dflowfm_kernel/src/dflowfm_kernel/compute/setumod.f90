@@ -1097,8 +1097,6 @@ contains
       real(kind=dp) :: dvx_link_1, dvy_link_1, dvx_link_2, dvy_link_2
       real(kind=dp) :: suu_1, suu_2
 
-      !DIR$ IVDEP
-      !$OMP SIMD
       do L = lnx1D + 1, lnx
          if (hu(L) > 0 .and. hmin_(L) > epshu) then
             ! no pre-gather, 8 loads & stores & loads is not worth it!
