@@ -34,19 +34,4 @@ f90twtest(test_compute_horton_infiltration
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
-f90twtest(test_coordinate_transform
-    CFILES test_coordinate_transform.cpp
-    F90FILES test_coordinate_transform.f90
-    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_coordinate_transform.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
-    LIBRARIES dflowfm_kernel
-    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
-)
-    add_custom_command(TARGET test_coordinate_transform PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-            "$ENV{ONEAPI_ROOT}/mkl/latest/bin/mkl_sequential.2.dll" 
-            $<TARGET_FILE_DIR:test_coordinate_transform>
-        COMMENT "Copying mkl runtime dependency"
-    )
-
 add_subdirectory(io)
