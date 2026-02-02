@@ -1138,7 +1138,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
+      use m_transport, only: NAMLEN, NUMCONST
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1150,7 +1150,7 @@ contains
       logical :: is_successful !< Success flag
       integer :: file_pointer !< File pointer for reading polygon file
       integer :: cidx !< Index for crossed cells
-      integer :: i, j !< Loop indices
+      integer :: i !< Loop indices
       integer :: ierr !< Error code
       integer :: npl_tmp !< Temporary variable to store number of polygon points
       integer :: bubble_source_count
@@ -1167,17 +1167,17 @@ contains
       character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
-      character(len=:), allocatable :: error !< Error message
+      character, dimension(:), allocatable :: error !< Error message
       type(tface) :: tmcell !< Temporary cell structure
-      type(t_BubblescreenData) :: bubblescreen !< Bubblescreen data structure
+      type(t_BubbleScreen) :: bubble_screen !< Bubblescreen data structure
 
       ! Initialize variables
       is_successful = .false.
       bubble_source_count = 0
 
-      ! Read bubblescreen attributes from the tree node
+      ! Read bubble screen attributes from the tree node
       is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
-      allocate(srcid(len_trim(id)+50))
+      allocate(character(len=len_trim(id)+50) :: srcid)
 
       ! Read and initialize polygon data from location_file
       call oldfil(file_pointer, location_file)
@@ -1185,7 +1185,6 @@ contains
 
       ! Copy polygon data to temporary arrays
       npl_tmp = npl
-      bubblescreen%num_flow_cells = npl
       allocate(xpl_tmp(npl_tmp))
       allocate(ypl_tmp(npl_tmp))
       allocate(zpl_tmp(npl_tmp))
@@ -1198,11 +1197,17 @@ contains
       call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
 
       if (.not. allocated(error)) then
-         bubblescreen%id = id
-         bubblescreen%start_index = numsrc + 1
+         bubble_screen%id = id
+         bubble_screen%num_flow_cells = size(crossed_cells)
+         allocate(bubble_screen%flow_cells(size(crossed_cells)))
          
          do cidx = 1, size(crossed_cells)
-            ! For each crossed cell, create a bubblescreen source/sink object
+            bubble_source_count = 0
+
+            ! Set start index for sources in this cell
+            bubble_screen%flow_cells(cidx)%start_index = numsrc + 1
+
+            ! Get x and y coordinates of the first node of the cell
             tmcell = netcell(crossed_cells(cidx))
             ! tmsx = xk(tmcell%nod(1))
             ! tmsy = yk(tmcell%nod(1))
@@ -1211,9 +1216,10 @@ contains
 
             kstart = kbot(crossed_cells(cidx))
             kend = ktop(crossed_cells(cidx))
-            do i = kstart, kstart + kmx - 1
-               if (zws(i) >= tmsz) then
-                  write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
+            do i = kstart, kend
+               if (zws(i) >= tmsz) then ! Only add source/sink if the cell layer is equal or above the bubble screen elevation
+                  bubble_source_count = bubble_source_count + 1
+                  write(srcid, '(A,I0)') trim(id), bubble_source_count
 
                   call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
 
@@ -1222,23 +1228,25 @@ contains
                   is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(srcid), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
                                                                   1, qstss)
                                   
-                  write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, zws(i)
+                  write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubble screen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, zws(i)
                   call msg_flush()
 
-                  bubble_source_count = bubble_source_count + 1
                end if
             end do
 
+            ! Fill in remaining bubblescreen flow cell data
+            bubble_screen%flow_cells(cidx)%cell_index = crossed_cells(cidx)
+            bubble_screen%flow_cells(cidx)%num_sources_sinks = bubble_source_count
+
          end do
-         bubblescreen%num_source_sinks = bubble_source_count
       end if
 
       ! Append the initialized bubblescreen to the global array 
       ! (not really caring about performance here, as number of bubblescreens is expected to be low)
-      if (.not. allocated(bubblescreens)) then 
-         bubblescreens = [bubblescreen]
+      if (.not. allocated(bubble_screens)) then 
+         bubble_screens = [bubble_screen]
       else
-         bubblescreens = [bubblescreens, bubblescreen]
+         bubble_screens = [bubble_screens, bubble_screen]
       end if
       
       ! if (.not. is_successful) then

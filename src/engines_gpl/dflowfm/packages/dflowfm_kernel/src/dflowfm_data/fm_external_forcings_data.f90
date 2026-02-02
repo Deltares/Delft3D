@@ -384,15 +384,25 @@ module fm_external_forcings_data
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
    integer :: numsrc !< nr of point sources/sinks
-   type t_BubblescreenData
+
+   !> Bubble screen data structure
+   type t_BubbleScreen
       character(len=255) :: id !< name of bubble screen
-      integer :: start_index !< start index for bubble sources/sinks
       integer :: num_flow_cells !< nr of grid cells in bubble screen
-      integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
-   end type t_BubblescreenData
+      type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< flow cell data
+   end type t_BubbleScreen
+
+   !> Flow cell specific bubble screen data
+   type t_BubbleScreenFlowCell
+      integer :: cell_index !< index of flow cell in grid
+      integer :: start_index !< start index for sources/sinks in this flow cell
+      integer :: num_sources_sinks !< number of sources/sinks in this flow cell
+      real(kind=dp) :: z_level !< [m] vertical level of bubble screen in this flow cell
+   end type t_BubbleScreenFlowCell
+
    ! TODO: add support for multiple bubble screens
-   type (t_BubblescreenData), dimension(:), allocatable :: bubblescreens !< bubble screen data
-   
+   type (t_BubbleScreen), dimension(:), allocatable :: bubble_screens !< bubble screen data
+
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
