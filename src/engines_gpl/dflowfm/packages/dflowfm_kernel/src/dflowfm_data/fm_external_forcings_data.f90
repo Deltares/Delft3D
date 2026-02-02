@@ -384,12 +384,19 @@ module fm_external_forcings_data
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
    integer :: numsrc !< nr of point sources/sinks
+
+   type t_BubbleScreenFlowCell
+      integer :: netcell_index !< index in network_data::netcells
+      integer :: flowcell_start_index !< start index in the flowcell arrays
+      integer :: num_source_sinks !< nr of point sources/sinks in this cell
+      integer :: start_index !< start index for bubble sources/sinks
+   end type t_BubbleScreenFlowCell
    type t_BubblescreenData
       character(len=255) :: id !< name of bubble screen
       integer :: start_index !< start index for bubble sources/sinks
       integer :: num_flow_cells !< nr of grid cells in bubble screen
       integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
-      integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
+      type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< Flow cells data
 
       integer :: npl !< number of polyline points
       real(kind=dp), dimension(:), allocatable :: xpl !< x - polyline points

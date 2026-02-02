@@ -1156,12 +1156,14 @@ contains
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
       integer :: file_pointer
-      integer :: i
+      integer :: i, kstart, kend, cidx
       logical :: is_successful
       integer :: npl_tmp !< Temporary variable to store number of polygon points
       ! integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
       character, dimension(:), allocatable :: error
       type(t_BubblescreenData) :: bubblescreen
+      ! type(t_BubbleScreenFlowCell), pointer :: bubble_flow_cell
+      integer, dimension(:), allocatable :: crossed_cells
 
       no_sourcesinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)     
@@ -1189,9 +1191,21 @@ contains
                bubblescreen%z = zpl(1)
                call restorepol()
 
-               call find_cells_crossed_by_polyline(bubblescreen%xpl, bubblescreen%ypl, bubblescreen%crossed_cells, error)
-               bubblescreen%num_flow_cells = size(bubblescreen%crossed_cells)
-               no_sourcesinks = no_sourcesinks + size(bubblescreen%crossed_cells) * kmx
+               call find_cells_crossed_by_polyline(bubblescreen%xpl, bubblescreen%ypl, crossed_cells, error)
+               bubblescreen%num_flow_cells = size(crossed_cells)
+               allocate(bubblescreen%flow_cells(bubblescreen%num_flow_cells))
+               do cidx = 1, size(crossed_cells)
+                  ! bubble_flow_cell => bubblescreen%flow_cells(cidx)
+                  bubblescreen%flow_cells(cidx)%netcell_index = crossed_cells(cidx)
+                  kstart = kbot(crossed_cells(cidx))
+                  kend = ktop(crossed_cells(cidx))
+                  bubblescreen%flow_cells(cidx)%flowcell_start_index = kstart
+                  bubblescreen%flow_cells(cidx)%num_source_sinks = kend - kstart + 1
+                  no_sourcesinks = no_sourcesinks + bubblescreen%flow_cells(cidx)%num_source_sinks
+               end do
+
+               ! no_sourcesinks = no_sourcesinks + size(crossed_cells) * kmx
+
                
             end if
          end select
@@ -1244,6 +1258,7 @@ contains
       integer :: bubble_source_count = 0
 
       type(t_BubblescreenData), pointer :: bubblescreen
+      ! type(t_BubbleScreenFlowCell), pointer :: bubble_flow_cell
 
       is_successful = .false.
 
@@ -1262,16 +1277,17 @@ contains
 
          bubblescreen%start_index = numsrc + 1
          
-         do cidx = 1, size(bubblescreen%crossed_cells)
+         do cidx = 1, size(bubblescreen%flow_cells)
+            ! bubble_flow_cell => bubblescreen%flow_cells(cidx)
             ! For each crossed cell, create a bubblescreen source/sink object
-            tmcell = netcell(bubblescreen%crossed_cells(cidx))
+            tmcell = netcell(bubblescreen%flow_cells(cidx)%netcell_index)
             tmsx = xzw(tmcell%nod(1))
             tmsy = yzw(tmcell%nod(1))
 
-            kstart = kbot(bubblescreen%crossed_cells(cidx))
-            kend = ktop(bubblescreen%crossed_cells(cidx))
+            bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
             ! TODO: this is wrong, should be loop over all layers in cell
-            do i = kstart, kstart + kmx - 1
+            do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
+                     bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
                write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
 
                
@@ -1288,8 +1304,9 @@ contains
       end if
 
 
-      is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(id), 'discharge', trim(discharge_input), (numconst + 1) * (bubblescreen%start_index - 1) + 1, &
-                                                      1, qstss)
+      is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(id), 'discharge', &
+                        trim(discharge_input), (numconst + 1) * (bubblescreen%start_index - 1) + 1, &
+                        1, qstss)
       
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
