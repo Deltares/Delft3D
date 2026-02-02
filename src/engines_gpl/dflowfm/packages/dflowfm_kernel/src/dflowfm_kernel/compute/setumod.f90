@@ -634,9 +634,7 @@ contains
 
                      vicL = vicL + vicc
 
-                     if (javiuplus3D > 0) then
-                        vicL = vicL + vicwwu(L)
-                     end if
+                     vicL = vicL + vicwwu(L)
 
                      if (nshiptxy > 0) then
                         if (vicuship /= 0.0_dp) then
@@ -1033,7 +1031,7 @@ contains
             end if
          end if
       end do
-
+      dvxc = 0.0_dp
       do L = L1, L2
          k1 = ln(1, L)
          k2 = ln(2, L)

@@ -42,7 +42,7 @@ contains
 
    subroutine CHANGENUMERICALPARAMETERS()
       use m_flow, only: iadvec, cflmx, iadvec1d, limtypsa, limtyphu, limtypmom, itstep, teta0, icgsolver, jasal, &
-                        temperature_model, jacreep, epsmaxlev, irov, icorio, jatidep, epshu, jaexplicitsinks, corioadamsbashfordfac, newcorio, &
+                        temperature_model, jacreep, epsmaxlev, irov, icorio, jatidep, epshu, corioadamsbashfordfac, newcorio, &
                         epshs
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
@@ -104,8 +104,6 @@ contains
       it(2 * 18) = 6
       OPTION(19) = 'Epshu, flooding criterion           (m) '
       it(2 * 19) = 6
-      OPTION(20) = 'JaExplicitsinks                     ( ) '
-      it(2 * 20) = 2
       OPTION(21) = 'Corioadamsbashfordfac               ( ) '
       it(2 * 21) = 6
       OPTION(22) = 'Newcorio                            ( ) '
@@ -222,7 +220,6 @@ contains
       call IFORMPUTinteger(2 * 17, jatidep)
       call IFormPutDouble(2 * 18, epscg, '(e10.5)')
       call IFormPutDouble(2 * 19, epshu, '(e10.5)')
-      call IFORMPUTinteger(2 * 20, jaexplicitsinks)
       call IFormputDouble(2 * 21, Corioadamsbashfordfac, '(e10.5)')
       call IFormputinteger(2 * 22, Newcorio)
 
@@ -284,7 +281,6 @@ contains
             call IFORMgeTinteger(2 * 17, jatidep)
             call IFormgetDouble(2 * 18, epscg)
             call IFormgetDouble(2 * 19, epshu)
-            call IFORMgeTinteger(2 * 20, jaexplicitsinks)
             call IFormgetDouble(2 * 21, Corioadamsbashfordfac)
             call IFormgetinteger(2 * 22, Newcorio)
 
