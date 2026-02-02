@@ -393,7 +393,7 @@ module fm_external_forcings_data
    end type t_BubbleScreenFlowCell
    type t_BubblescreenData
       character(len=255) :: id !< name of bubble screen
-      integer :: start_index !< start index for bubble sources/sinks
+      integer :: start_index !< start index for bubble sources/sinks | air discharge can be found in qstss((numconst + 1) * (bubblescreen%start_index - 1) + 1)
       integer :: num_flow_cells !< nr of grid cells in bubble screen
       integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
       type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< Flow cells data

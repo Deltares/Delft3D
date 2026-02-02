@@ -1198,15 +1198,12 @@ contains
                   ! bubble_flow_cell => bubblescreen%flow_cells(cidx)
                   bubblescreen%flow_cells(cidx)%netcell_index = crossed_cells(cidx)
                   kstart = kbot(crossed_cells(cidx))
-                  kend = ktop(crossed_cells(cidx))
+                  kend = kstart  + kmxn(crossed_cells(cidx)) - 1
                   bubblescreen%flow_cells(cidx)%flowcell_start_index = kstart
-                  bubblescreen%flow_cells(cidx)%num_source_sinks = kend - kstart + 1
+                  bubblescreen%flow_cells(cidx)%num_source_sinks = kmxn(crossed_cells(cidx))
                   no_sourcesinks = no_sourcesinks + bubblescreen%flow_cells(cidx)%num_source_sinks
                end do
-
-               ! no_sourcesinks = no_sourcesinks + size(crossed_cells) * kmx
-
-               
+           
             end if
          end select
       end do 
