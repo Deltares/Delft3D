@@ -1,4 +1,4 @@
-module m_bubble_screen
+module m_bubblescreen
     use precision_basics, only: dp
     use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubble_screens, zsrc, zsrc2, ksrc, qstss
     use m_alloc, only: realloc
@@ -12,11 +12,13 @@ module m_bubble_screen
 
     private
 
+    public :: compute_bubble_screen_vertical_distribution
+
 contains
 
-    subroutine compute_bubble_screen_vertical_distribution(bubble_screen)       
+    subroutine compute_bubble_screen_vertical_distribution(bubblescreen)       
         ! Parameters
-        type(t_BubbleScreen), intent(in) :: bubble_screen !< Bubble screen data structure
+        type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
 
         ! Local variables
         integer :: i_flow_cell !< Flow cell index
@@ -26,7 +28,7 @@ contains
         integer :: k_top !< Top layer index
         integer :: k_max_velocity !< Layer index for maximum downward velocity
         integer :: n !< Flow cell index
-        real(kind=dp) :: area_frac !< Area fraction of the flow cell
+        real(kind=dp) :: area_fraction !< Area fraction of the flow cell
         real(kind=dp) :: delta_velocity !< Change in vertical velocity per layer
         real(kind=dp) :: max_velocity !< Maximum downward vertical velocity for this flow cell
         real(kind=dp) :: total_area !< Total area of the bubble screen
@@ -45,22 +47,22 @@ contains
         ! ====================================================================================================
         total_discharge_water = compute_bubble_screen_water_discharge_from_air(total_discharge_air)
 
-        total_area = compute_bubble_screen_area(bubble_screen)
+        total_area = compute_bubble_screen_area(bubblescreen)
 
         ! Compute vertical distribution for each flow cell
-        do i_flow_cell = 1, bubble_screen%num_flow_cells
-            flow_cell = bubble_screen%flow_cells(i_flow_cell)
+        do i_flow_cell = 1, bubblescreen%num_flow_cells
+            flow_cell = bubblescreen%flow_cells(i_flow_cell)
             n = flow_cell%cell_index
 
             ! TODO: Check if the flow cell contains enough vertical layers (min 3)
             ! ====================================================================================================
 
             ! Compute maximum downward vertical velocity based on area fraction
-            area_frac = ba(n) / total_area
-            max_velocity = -1.0_dp * total_discharge_water * area_frac / ba(n)
+            area_fraction = ba(n) / total_area
+            max_velocity = -1.0_dp * total_discharge_water * area_fraction / ba(n)
 
             ! Get top and bottom indices of active layers in the bubble screen and layer index with maximum downward velocity
-            call find_active_layer_indices(flow_cell, bubble_screen%id, k_bot, k_top, k_max_velocity)
+            call find_active_layer_indices(flow_cell, bubblescreen%id, k_bot, k_top, k_max_velocity)
 
             ! Reset vertical velocity array
             if (.not. allocated(vertical_velocity)) then
@@ -111,9 +113,9 @@ contains
     end function compute_bubble_screen_water_discharge_from_air
 
     !> Computes the total area of a bubble screen based on its flow cells
-    function compute_bubble_screen_area(bubble_screen) result(area)
+    function compute_bubble_screen_area(bubblescreen) result(area)
         ! Parameters
-        type(t_BubbleScreen), intent(in) :: bubble_screen !< Bubble screen data structure
+        type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
         real(kind=dp) :: area !< [m2] Area of the bubble screen
 
         ! Local variables
@@ -121,8 +123,8 @@ contains
 
         area = 0.0_dp
 
-        do i = 1, bubble_screen%num_flow_cells
-            area = area + ba(bubble_screen%flow_cells(i)%cell_index)
+        do i = 1, bubblescreen%num_flow_cells
+            area = area + ba(bubblescreen%flow_cells(i)%cell_index)
         end do
 
     end function compute_bubble_screen_area
@@ -173,4 +175,4 @@ contains
 
     end subroutine find_active_layer_indices
 
-end module m_bubble_screen
+end module m_bubblescreen

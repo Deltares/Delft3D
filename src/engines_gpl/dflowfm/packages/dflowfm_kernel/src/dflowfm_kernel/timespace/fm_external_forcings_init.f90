@@ -1139,6 +1139,7 @@ contains
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
       use m_transport, only: NAMLEN, NUMCONST
+      use m_bubblescreen
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1211,8 +1212,8 @@ contains
             tmcell = netcell(crossed_cells(cidx))
             ! tmsx = xk(tmcell%nod(1))
             ! tmsy = yk(tmcell%nod(1))
-            tmsx = xzw(tmcell%nod(1))
-            tmsy = yzw(tmcell%nod(1))
+            tmsx = xzw(tmcell%lin(1))
+            tmsy = yzw(tmcell%lin(1))
 
             kstart = kbot(crossed_cells(cidx))
             kend = ktop(crossed_cells(cidx))
@@ -1240,6 +1241,8 @@ contains
 
          end do
       end if
+
+      call compute_bubble_screen_vertical_distribution(bubble_screen)
 
       ! Append the initialized bubblescreen to the global array 
       ! (not really caring about performance here, as number of bubblescreens is expected to be low)
