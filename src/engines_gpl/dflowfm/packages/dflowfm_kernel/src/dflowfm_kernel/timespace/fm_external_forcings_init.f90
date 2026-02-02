@@ -1047,7 +1047,7 @@ contains
 
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
@@ -1159,7 +1159,7 @@ contains
       integer :: i
       logical :: is_successful
       integer :: npl_tmp !< Temporary variable to store number of polygon points
-      integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
+      ! integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
       character, dimension(:), allocatable :: error
       type(t_BubblescreenData) :: bubblescreen
 
@@ -1189,8 +1189,9 @@ contains
                bubblescreen%z = zpl(1)
                call restorepol()
 
-               call find_cells_crossed_by_polyline(bubblescreen%xpl, bubblescreen%ypl, crossed_cells, error)
-               no_sourcesinks = no_sourcesinks + size(crossed_cells) * kmx
+               call find_cells_crossed_by_polyline(bubblescreen%xpl, bubblescreen%ypl, bubblescreen%crossed_cells, error)
+               bubblescreen%num_flow_cells = size(bubblescreen%crossed_cells)
+               no_sourcesinks = no_sourcesinks + size(bubblescreen%crossed_cells) * kmx
                
             end if
          end select
@@ -1230,9 +1231,6 @@ contains
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
-      integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
-      character, dimension(:), allocatable :: error
-
       ! Local variables
       integer :: file_pointer
       logical :: is_successful
@@ -1251,32 +1249,27 @@ contains
 
       ! Read bubblescreen attributes from the tree node
       is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
-      allocate(character(len=len_trim(id)+50) :: srcid)
+      if (is_successful) then
+         allocate(character(len=len_trim(id)+50) :: srcid)
 
-      ! Find the bubblescreen with matching id
-      do i = 1, size(bubblescreens)
-         if (trim(bubblescreens(i)%id) == trim(id)) then
-            bubblescreen => bubblescreens(i)
-            exit
-         end if
-      end do
+         ! Find the bubblescreen with matching id
+         do i = 1, size(bubblescreens)
+            if (trim(bubblescreens(i)%id) == trim(id)) then
+               bubblescreen => bubblescreens(i)
+               exit
+            end if
+         end do
 
-      call find_cells_crossed_by_polyline(bubblescreen%xpl, bubblescreen%ypl, crossed_cells, error)
-      bubblescreen%num_flow_cells = size(crossed_cells)
-
-
-      if (.not. allocated(error)) then
-         bubblescreen%id = id
          bubblescreen%start_index = numsrc + 1
          
-         do cidx = 1, size(crossed_cells)
+         do cidx = 1, size(bubblescreen%crossed_cells)
             ! For each crossed cell, create a bubblescreen source/sink object
-            tmcell = netcell(crossed_cells(cidx))
+            tmcell = netcell(bubblescreen%crossed_cells(cidx))
             tmsx = xzw(tmcell%nod(1))
             tmsy = yzw(tmcell%nod(1))
 
-            kstart = kbot(crossed_cells(cidx))
-            kend = ktop(crossed_cells(cidx))
+            kstart = kbot(bubblescreen%crossed_cells(cidx))
+            kend = ktop(bubblescreen%crossed_cells(cidx))
             ! TODO: this is wrong, should be loop over all layers in cell
             do i = kstart, kstart + kmx - 1
                write(srcid, '(A,I0)') trim(id), bubble_source_count + 1

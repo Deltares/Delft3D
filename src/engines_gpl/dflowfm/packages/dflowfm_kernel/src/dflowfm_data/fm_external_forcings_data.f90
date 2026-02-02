@@ -389,10 +389,13 @@ module fm_external_forcings_data
       integer :: start_index !< start index for bubble sources/sinks
       integer :: num_flow_cells !< nr of grid cells in bubble screen
       integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
-      integer :: z
+      integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
+
+      integer :: npl !< number of polyline points
       real(kind=dp), dimension(:), allocatable :: xpl !< x - polyline points
       real(kind=dp), dimension(:), allocatable :: ypl !< y - polyline points
-      integer :: npl !< number of polyline points
+      integer :: z !< z - level for bubble screen
+
    end type t_BubblescreenData
    type (t_BubblescreenData), dimension(:), allocatable, target :: bubblescreens !< bubble screen data
    
