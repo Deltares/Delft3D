@@ -389,9 +389,13 @@ module fm_external_forcings_data
       integer :: start_index !< start index for bubble sources/sinks
       integer :: num_flow_cells !< nr of grid cells in bubble screen
       integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
+      integer :: z
+      real(kind=dp), dimension(:), allocatable :: xpl !< x - polyline points
+      real(kind=dp), dimension(:), allocatable :: ypl !< y - polyline points
+      integer :: npl !< number of polyline points
    end type t_BubblescreenData
-   ! TODO: add support for multiple bubble screens
-   type (t_BubblescreenData), dimension(:), allocatable :: bubblescreens !< bubble screen data
+   type (t_BubblescreenData), dimension(:), allocatable, target :: bubblescreens !< bubble screen data
+   
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
