@@ -125,7 +125,7 @@ function(F90TWTEST NAME)
     # create the fortran library
     add_library(${FLIBNAME} STATIC ${F2HFILE} ${FTW_F90FILES})
     set_property(TARGET ${FLIBNAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(${FLIBNAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${FTW_INCLUDES})
+    target_include_directories(${FLIBNAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${FTW_INCLUDES})
     set_property(TARGET ${FLIBNAME}
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${XF90FILES}
     )
@@ -134,15 +134,15 @@ function(F90TWTEST NAME)
     if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
         target_compile_options(${FLIBNAME} PRIVATE "-ffree-line-length-none")
     endif()
-    target_link_libraries( ${FLIBNAME} PUBLIC ${FTW_LIBRARIES} f90tw_gtest)
+    target_link_libraries( ${FLIBNAME} PRIVATE ${FTW_LIBRARIES} f90tw_gtest)
     if(NOT "${FTW_F2HFILES}" STREQUAL "")
         add_dependencies(${FLIBNAME} ${F2HTRGNAME})
     endif()
 
     # compile c and create the executable
     add_executable(${NAME} ${FTW_CFILES} ${F2HFILE})
-    target_include_directories(${NAME} PUBLIC ${FPPINCLDS} ${CMAKE_CURRENT_BINARY_DIR} ${FTW_INCLUDES})
-    target_link_libraries(${NAME} PUBLIC ${FLIBNAME} f90tw_gtest)
+    target_include_directories(${NAME} PRIVATE ${FPPINCLDS} ${CMAKE_CURRENT_BINARY_DIR} ${FTW_INCLUDES})
+    target_link_libraries(${NAME} PRIVATE ${FLIBNAME} f90tw_gtest)
     target_compile_definitions(${NAME} PUBLIC ${FTW_DEFINITIONS})
     add_dependencies(${NAME} ${FLIBNAME})
     set_target_properties(${NAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)

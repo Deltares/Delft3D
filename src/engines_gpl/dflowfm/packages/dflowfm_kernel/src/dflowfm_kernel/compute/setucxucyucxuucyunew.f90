@@ -57,7 +57,6 @@ contains
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
-      use m_coordinate_transform, only: transform_node_velocities_combined
       implicit none
 
       logical :: make2dh
@@ -73,70 +72,73 @@ contains
       ! keep track of depth averaged flow velocity
       make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
 
-if (Perot_type /= NOT_DEFINED) then
-   ucx = 0.0_dp
-   ucy = 0.0_dp
+      if (Perot_type /= NOT_DEFINED) then
+         ucx = 0.0_dp
+         ucy = 0.0_dp
 
-   if (make2dh) then ! original 2D coding
+         if (make2dh) then ! original 2D coding
 
-      do i = 1, wetLink2D - 1
-         L = onlyWetLinks(i)
-         if (kcu(L) /= 3) then ! link flows
-            k1 = ln(1, L)
-            k2 = ln(2, L)
-            
-            ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
-            ucy(k1) = ucy(k1) + wcy1(L) * u1(L)
-            ucx(k2) = ucx(k2) + wcx2(L) * u1(L)
-            ucy(k2) = ucy(k2) + wcy2(L) * u1(L)
-            
-         end if
-      end do
-
-      do i = wetLink2D, wetLinkCount
-         L = onlyWetLinks(i)
-         if (jabarrieradvection == 3) then
-            if (struclink(L) == 1) then
-               cycle
-            end if
-         end if
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         
-         ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
-         ucy(k1) = ucy(k1) + wcy1(L) * u1(L)
-         ucx(k2) = ucx(k2) + wcx2(L) * u1(L)
-         ucy(k2) = ucy(k2) + wcy2(L) * u1(L)
-         
-      end do
-
-      if (ChangeVelocityAtStructures) then
-         ! Perform velocity correction for fixed weir and structures
-         do i = 1, size(structuresAndWeirsList)
-            L = structuresAndWeirsList(i)
-            if (jabarrieradvection == 3 .and. L > lnx1D) then
-               if (struclink(L) == 1) then
-                  cycle
+            do i = 1, wetLink2D - 1
+               L = onlyWetLinks(i)
+               if (kcu(L) /= 3) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
+                  ucy(k1) = ucy(k1) + wcy1(L) * u1(L)
+                  ucx(k2) = ucx(k2) + wcx2(L) * u1(L)
+                  ucy(k2) = ucy(k2) + wcy2(L) * u1(L)
                end if
+            end do
+
+            do i = wetLink2D, wetLinkCount
+               L = onlyWetLinks(i)
+               if (jabarrieradvection == 3) then
+                  if (struclink(L) == 1) then
+                     cycle
+                  end if
+               end if
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
+               ucy(k1) = ucy(k1) + wcy1(L) * u1(L)
+               ucx(k2) = ucx(k2) + wcx2(L) * u1(L)
+               ucy(k2) = ucy(k2) + wcy2(L) * u1(L)
+            end do
+
+            if (ChangeVelocityAtStructures) then
+               ! Perform velocity correction for fixed weir and structures
+               ! In some cases the flow area of the hydraulic structure is larger than the flow area of the branch.
+               ! In those cases the flow velocity at the structure is not used, but the upstream velocity
+               do i = 1, size(structuresAndWeirsList)
+                  L = structuresAndWeirsList(i)
+                  if (jabarrieradvection == 3 .and. L > lnx1D) then
+                     if (struclink(L) == 1) then
+                        cycle
+                     end if
+                  end if
+                  if (comparereal(au_nostrucs(L), 0.0_dp) == 1) then
+                     !There is flow over the weir crest. Hence, `hu>0`, so `au>0` and `au_nostrucs>0`.
+                     u1correction = q1(L) / au_nostrucs(L) - u1(L)
+                  elseif (comparereal(q1(L), 0.0_dp) /= 0) then
+                     !There is no flow over the weir crest, but there is flow at the link because, for
+                     !instance, there is a pump.
+                     u1correction = -u1(L)
+                  else
+                     !There is no flow at the link, so no correction.
+                     cycle !to next structure
+                     !It would be the same as:
+                     !u1correction=0.0_dp
+                     !But this way we skip the rest of the loop.
+                  end if
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  ucx(k1) = ucx(k1) + wcx1(L) * u1correction
+                  ucy(k1) = ucy(k1) + wcy1(L) * u1correction
+                  ucx(k2) = ucx(k2) + wcx2(L) * u1correction
+                  ucy(k2) = ucy(k2) + wcy2(L) * u1correction
+               end do
             end if
-            if (comparereal(au_nostrucs(L), 0.0_dp) == 1) then
-               u1correction = q1(L) / au_nostrucs(L) - u1(L)
-            elseif (comparereal(q1(L), 0.0_dp) /= 0) then
-               u1correction = -u1(L)
-            else
-               cycle
-            end if
-            k1 = ln(1, L)
-            k2 = ln(2, L)
-            
-            ! ORIGINAL: Accumulate correction in node frame
-            ucx(k1) = ucx(k1) + wcx1(L) * u1correction
-            ucy(k1) = ucy(k1) + wcy1(L) * u1correction
-            ucx(k2) = ucx(k2) + wcx2(L) * u1correction
-            ucy(k2) = ucy(k2) + wcy2(L) * u1correction
-         end do
-      end if
-   end if
+         end if
 
          if (kmx > 0) then
             do LL = 1, lnx
@@ -436,7 +438,7 @@ if (Perot_type /= NOT_DEFINED) then
 
          end if
 
-      end if !
+      end if
 
       if (icorio == 7 .or. icorio == 27) then ! make ahus or ahusk
          hus = 0
