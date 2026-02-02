@@ -391,7 +391,7 @@ module fm_external_forcings_data
       integer :: num_source_sinks !< nr of point sources/sinks in this cell
       integer :: start_index !< start index for bubble sources/sinks
    end type t_BubbleScreenFlowCell
-   type t_BubblescreenData
+   type t_Bubblescreen
       character(len=255) :: id !< name of bubble screen
       integer :: start_index !< start index for bubble sources/sinks | air discharge can be found in qstss((numconst + 1) * (bubblescreen%start_index - 1) + 1)
       integer :: num_flow_cells !< nr of grid cells in bubble screen
@@ -403,8 +403,8 @@ module fm_external_forcings_data
       real(kind=dp), dimension(:), allocatable :: ypl !< y - polyline points
       integer :: z !< z - level for bubble screen
 
-   end type t_BubblescreenData
-   type (t_BubblescreenData), dimension(:), allocatable, target :: bubblescreens !< bubble screen data
+   end type t_Bubblescreen
+   type (t_Bubblescreen), dimension(:), allocatable, target :: bubblescreens !< bubble screen data
    
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents

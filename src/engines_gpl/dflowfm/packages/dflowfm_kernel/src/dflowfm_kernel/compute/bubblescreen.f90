@@ -13,8 +13,8 @@ contains
       use m_transport, only:  NUMCONST
 
 
-      integer :: bi, si, fi, li, k
-      type(t_BubblescreenData) :: bubblescreen
+      integer :: bi, li
+      type(t_Bubblescreen) :: bubblescreen
       real(kind=dp) :: totaldischarge
 
 

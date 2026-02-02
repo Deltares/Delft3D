@@ -144,7 +144,7 @@ contains
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
       ! max_num_src = compute_no_sourcesinks(bnd_ptr, base_dir, file_name)
-      max_num_src =  compute_no_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
+      max_num_src =  compute_number_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
       
       if (max_num_src > 0) then
@@ -1128,7 +1128,7 @@ contains
 
    end function init_sourcesink_forcings
 
-   function compute_no_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
+   function compute_number_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
       use fm_external_forcings_data, only: numsrc
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
@@ -1152,7 +1152,7 @@ contains
 
       integer :: num_items_in_file
       character(len=:), allocatable :: id !< Bubblescreen id
-      character(len=:), allocatable :: srcid !< Source id
+
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
       integer :: file_pointer
@@ -1161,7 +1161,7 @@ contains
       integer :: npl_tmp !< Temporary variable to store number of polygon points
       ! integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
       character, dimension(:), allocatable :: error
-      type(t_BubblescreenData) :: bubblescreen
+      type(t_Bubblescreen) :: bubblescreen
       ! type(t_BubbleScreenFlowCell), pointer :: bubble_flow_cell
       integer, dimension(:), allocatable :: crossed_cells
 
@@ -1215,7 +1215,7 @@ contains
          bubblescreens = [bubblescreens, bubblescreen]
       end if
       
-   end function compute_no_bubblescreens_sourcesinks
+   end function compute_number_bubblescreens_sourcesinks
    !> Read and initialize bubblescreen object from new external forcings file.
    function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
@@ -1242,19 +1242,13 @@ contains
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
-      ! Local variables
-      integer :: file_pointer
       logical :: is_successful
-      real(kind=dp), allocatable :: xpl_tmp(:), ypl_tmp(:), zpl_tmp(:) !< Temporary arrays to store polygon coordinates
-      integer :: npl_tmp !< Temporary variable to store number of polygon points
-
       type(tface) :: tmcell
       integer :: cidx, i, ierr
       real(kind=dp) :: tmsx, tmsy
-      real(kind=dp) :: kstart, kend
       integer :: bubble_source_count = 0
 
-      type(t_BubblescreenData), pointer :: bubblescreen
+      type(t_Bubblescreen), pointer :: bubblescreen
       ! type(t_BubbleScreenFlowCell), pointer :: bubble_flow_cell
 
       is_successful = .false.
