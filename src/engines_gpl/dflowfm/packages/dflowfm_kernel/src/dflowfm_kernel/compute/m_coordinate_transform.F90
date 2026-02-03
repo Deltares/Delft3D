@@ -202,7 +202,9 @@ contains
       if (is_initialized) then
          deallocate (node_map_1, node_map_2, corner_map_1, corner_map_2)
          deallocate (ux1, uy1, ux2, uy2, ux3, uy3, ux4, uy4)
-
+         deallocate (uxcorner1, uycorner1)
+         deallocate (uxcorner2, uycorner2)
+         deallocate (bai_1, bai_2)
          is_initialized = .false.
       end if
    end subroutine cleanup_coordinate_transform

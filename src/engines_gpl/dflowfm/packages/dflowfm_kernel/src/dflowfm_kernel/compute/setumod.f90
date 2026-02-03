@@ -95,7 +95,7 @@ contains
       real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty !, vksag6, Cz
       real(kind=dp) :: huv, ab_correction
       real(kind=dp), allocatable :: u1_tmp(:), vluban(:)
-      real(kind=dp) :: ucyq_link_1, ucyq_link_2
+      real(kind=dp) :: ucyq_link_1, ucyq_link_2, ucxq_link_1, ucxq_link_2, tangential_1, tangential_2
       integer :: nw, L1, L2, kt, Lb, Lt, Lb1, Lt1, Lb2, Lt2, kb1, kb2, ntmp, m
 
 !      real(kind=dp) :: DRL, nuhroller
@@ -136,7 +136,7 @@ contains
       end if
 
       call initialize_coordinate_transform()
-      call prefetch_node_velocities(ucx, ucy, ucxq, ucyq)  
+      call prefetch_node_velocities(ucx, ucy, ucxq, ucyq)
 
       ! pre compute hmin as it is reused a lot
       if (.not. allocated(hmin_)) then
@@ -237,14 +237,22 @@ contains
             do L = lnx1D + 1, lnx
                if (hu(L) > 0) then
                   if (jasfer3D == 1) then
-                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
+                     ! Step 1: Transform to link frame
+                     ucxq_link_1 = +csb_1(L) * ux3(L) + snb_1(L) * uy3(L) 
+                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L) 
+                     ucxq_link_2 = +csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
                      ucyq_link_2 = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
+
+                     ! Step 2: Project to tangential direction
+                     tangential_1 = -snu(L) * ucxq_link_1 + csu(L) * ucyq_link_1
+                     tangential_2 = -snu(L) * ucxq_link_2 + csu(L) * ucyq_link_2
                   else
-                     ucyq_link_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-                     ucyq_link_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+                     tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
+                     tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
                   end if
-                  fvcor = acL(L) * ucyq_link_1 * fcor1_(L) + &
-                          (1.0_dp - acL(L)) * ucyq_link_2 * fcor2_(L)
+
+                  fvcor = acL(L) * tangential_1 * fcor1_(L) + &
+                          (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
 
                   ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
                                   merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
@@ -265,13 +273,23 @@ contains
                      fcor = fcorio
                   end if
                   if (jasfer3D == 1) then
-                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
+                     ! Step 1: Transform to link frame
+                     ucxq_link_1 = +csb_1(L) * ux3(L) + snb_1(L) * uy3(L) 
+                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L) 
+                     ucxq_link_2 = +csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
                      ucyq_link_2 = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
+
+                     ! Step 2: Project to tangential direction
+                     tangential_1 = -snu(L) * ucxq_link_1 + csu(L) * ucyq_link_1
+                     tangential_2 = -snu(L) * ucxq_link_2 + csu(L) * ucyq_link_2
                   else
-                     ucyq_link_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-                     ucyq_link_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+                     tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
+                     tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
                   end if
-                  fvcor = (acL(L) * ucyq_link_1 + (1.0_dp - acL(L)) * ucyq_link_2) * fcor
+
+                  fvcor = acL(L) * tangential_1 * fcor + &
+                          (1.0_dp - acL(L)) * tangential_2 * fcor
+
                   ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
                                   merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
 
