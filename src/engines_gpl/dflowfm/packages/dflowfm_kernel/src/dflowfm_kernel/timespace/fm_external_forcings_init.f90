@@ -1159,10 +1159,8 @@ contains
       integer :: i, kstart, kend, cidx
       logical :: is_successful
       integer :: npl_tmp !< Temporary variable to store number of polygon points
-      ! integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
       character, dimension(:), allocatable :: error
       type(t_Bubblescreen) :: bubblescreen
-      ! type(t_BubbleScreenFlowCell), pointer :: bubble_flow_cell
       integer, dimension(:), allocatable :: crossed_cells
 
       no_sourcesinks = 0
@@ -1195,8 +1193,8 @@ contains
                bubblescreen%num_flow_cells = size(crossed_cells)
                allocate(bubblescreen%flow_cells(bubblescreen%num_flow_cells))
                do cidx = 1, size(crossed_cells)
-                  ! bubble_flow_cell => bubblescreen%flow_cells(cidx)
                   bubblescreen%flow_cells(cidx)%netcell_index = crossed_cells(cidx)
+                  ! TODO: Check if kbot will not change for changing morphology
                   kstart = kbot(crossed_cells(cidx))
                   kend = kstart  + kmxn(crossed_cells(cidx)) - 1
                   bubblescreen%flow_cells(cidx)%flowcell_start_index = kstart
@@ -1249,7 +1247,6 @@ contains
       integer :: bubble_source_count = 0
 
       type(t_Bubblescreen), pointer :: bubblescreen
-      ! type(t_BubbleScreenFlowCell), pointer :: bubble_flow_cell
 
       is_successful = .false.
 
@@ -1269,14 +1266,12 @@ contains
          bubblescreen%start_index = numsrc + 1
          
          do cidx = 1, size(bubblescreen%flow_cells)
-            ! bubble_flow_cell => bubblescreen%flow_cells(cidx)
             ! For each crossed cell, create a bubblescreen source/sink object
             tmcell = netcell(bubblescreen%flow_cells(cidx)%netcell_index)
             tmsx = xzw(tmcell%nod(1))
             tmsy = yzw(tmcell%nod(1))
 
             bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
-            ! TODO: this is wrong, should be loop over all layers in cell
             do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
                      bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
                write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
