@@ -1136,8 +1136,6 @@ contains
 
       call setcornertolinkorientations()
 
-      call initialize_coordinate_transform()
-
       call allocatelinktocornerweights()
       call setlinktocornerweights()
 

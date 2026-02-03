@@ -45,7 +45,7 @@ contains
       use precision, only: dp
       use m_flow, only: kmx, jacomp, ucx, ucy, jased, ustbc, ustb, kbotc, kmxc
       use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, ux1, uy1, ux2, uy2, &
-                                   transform_corner_velocities
+                                   prefetch_corner_velocities
       use m_flowgeom, only: ucnx, ucny, lnx1d, lnx, ln, lncn, wcnx3, wcny3, wcnx4, wcny4, mxban, nban, banf, ban, nrcnw, cscnw, sncnw, kcnw, kcu, wcln
       use m_sferic, only: jasfer3d
       use m_get_Lbot_Ltop, only: getlbotltop

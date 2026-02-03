@@ -52,7 +52,7 @@ contains
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
       use m_setucxucyucxuucyu, only: setucxucyucxuucyu
       use m_setcornervelocities, only: setcornervelocities
-      use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2, transform_node_velocities_combined, transform_corner_velocities
+      use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2, prefetch_node_velocities, prefetch_corner_velocities, initialize_coordinate_transform
       use timers, only: timstrt, timstop
       use m_flow
       use m_flowgeom
@@ -130,11 +130,13 @@ contains
          end if
          if (newcorio == 1) then
             call setucxucyucxuucyunew()
-            call transform_node_velocities_combined(ucx, ucy, ucxu, ucyu)
+            call prefetch_node_velocities(ucx, ucy, ucxq, ucyq)  
          else
             call setucxucyucxuucyu()
          end if
       end if
+
+      call initialize_coordinate_transform()
 
       ! pre compute hmin as it is reused a lot
       if (.not. allocated(hmin_)) then
@@ -441,7 +443,7 @@ contains
       end if
       if (ihorvic > 0 .or. jaconveyance2D >= 3 .or. ndraw(29) == 37) then
          call setcornervelocities() ! must be called after ucx, ucy have been set
-         call transform_corner_velocities(ucnx, ucny)
+         call prefetch_corner_velocities(ucnx, ucny)
       end if
       if (vicouv < 0.0_dp) then
          ihorvic = 0
@@ -902,7 +904,7 @@ contains
 
       real(kind=dp) :: vksag6
 
-      integer :: L, L1, L2, numL2D, k1, k2
+      integer :: L, L1, L2, k1, k2
       real(kind=dp) :: vicc, vicl, dxiAu, viscosity_max_limit
       real(kind=dp) :: Cz, shearvar
       real(kind=dp) :: suxL, suyL
@@ -917,7 +919,6 @@ contains
 
       L1 = lnx1D + 1
       L2 = lnx
-      numL2D = L2 - L1 - 1
       vksag6 = vonkar * sag / 6.0_dp
 
       if (.not. allocated(dvx1)) then
@@ -1032,6 +1033,7 @@ contains
          end if
       end do
       dvxc = 0.0_dp
+      dvyc = 0.0_dp
       do L = L1, L2
          k1 = ln(1, L)
          k2 = ln(2, L)
