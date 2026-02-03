@@ -845,7 +845,7 @@ contains
    function unc_def_var_map(ncid, id_tsp, id_var, itype, iloc, var_name, standard_name, long_name, unit, is_timedep, dimids, cell_method, which_meshdim, jabndnd, ivalid_max) result(ierr)
       use m_save_ugrid_state, only: mesh2dname, mesh1dname, contactname_1D2D
       use netcdf_utils, only: ncu_append_atts
-      use m_flowgeom, only: ndx, ndxi, ndx2d
+      use m_flowgeom, only: ndx, ndxi
       use dfm_error, only: dfm_noerr
       use m_missing, only: dmiss
       use fm_location_types, only: unc_loc_s3d, unc_loc_u3d, unc_loc_w, unc_loc_wu, unc_loc_cn, unc_loc_s, unc_loc_u, unc_loc_l
@@ -1412,7 +1412,7 @@ contains
 
    function unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
       use precision, only: dp
-      use m_flowgeom, only: ndxi, ndx2d, lnx1d, lnxi, lnx, lnx1db, ln2lne, lne2ln
+      use m_flowgeom, only: ndx2d, lnx1d, lnxi, lnx, lnx1db, ln2lne, lne2ln
       use dfm_error, only: dfm_noerr
       use m_alloc, only: realloc
       use m_missing, only: dmiss
@@ -1438,6 +1438,7 @@ contains
 
       integer :: n1d_write !< Number of 1D nodes to write.
       integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
+      integer :: L_mask
 !TODO remove save and deallocate?
       real(kind=dp), allocatable, save :: workL(:)
       real(kind=dp), pointer, dimension(:) :: p_data
@@ -1593,11 +1594,13 @@ contains
          ! TODO: AvD: include flow link bug fix (Feb 15, 2017) from 1d/2D above also in U3D and WU code below.
       case (UNC_LOC_U3D) ! Horizontal velocity point location in all layers.
          ! Fill work array.
-         call realloc(workU3D, [kmx, outputlnx], keepExisting=.false.)
+         lnx2d = output_mask%lnx
+         call realloc(workU3D, [kmx, lnx2d], keepExisting=.false.)
          ! Loop over horizontal flowlinks.
-         do LL = 1, lnx
+         do L_mask = 1, lnx2d
             ! Store missing values for inactive layers (i.e. z layers below bottomlevel or above waterlevel for current horizontal flowlink LL).
-            workU3D(:, LL) = dmiss
+            LL = output_mask%link_indices(L_mask)
+            workU3D(:, L_mask) = dmiss
             ! The current horizontal flowlink LL has active layers nlaybL:nlaybL+nrlayLx-1.
             call getlayerindicesLmax(LL, nlaybL, nrlayLx)
             ! The current horizontal flowlink LL has indices Lb:Ltx in values array (one value per active layer).
@@ -1606,7 +1609,7 @@ contains
             ! Here Lb corresponds to nlaybL and Ltx corresponds to nlaybL+nrlayLx-1
             ! Loop over active layers.
             do L = Lb, Ltx
-               workU3D(L - Lb + nlaybL, LL) = values(L)
+               workU3D(L - Lb + nlaybL, L_mask) = values(L)
             end do
          end do
 
@@ -6702,8 +6705,8 @@ contains
             call reconstructucz(0)
             if (jamapucvec == 1) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucz, UNC_LOC_S3D, ucz, jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucxa, UNC_LOC_S, ucx(1:ndxndxi), jabndnd=jabndnd_)
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucya, UNC_LOC_S, ucy(1:ndxndxi), jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucxa, UNC_LOC_S, ucx, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucya, UNC_LOC_S, ucy, jabndnd=jabndnd_)
             end if
 
             if (jamapucmag == 1) then
