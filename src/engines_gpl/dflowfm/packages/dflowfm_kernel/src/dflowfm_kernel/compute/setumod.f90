@@ -130,13 +130,13 @@ contains
          end if
          if (newcorio == 1) then
             call setucxucyucxuucyunew()
-            call prefetch_node_velocities(ucx, ucy, ucxq, ucyq)  
          else
             call setucxucyucxuucyu()
          end if
       end if
 
       call initialize_coordinate_transform()
+      call prefetch_node_velocities(ucx, ucy, ucxq, ucyq)  
 
       ! pre compute hmin as it is reused a lot
       if (.not. allocated(hmin_)) then
@@ -950,11 +950,11 @@ contains
                vicL = Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
             end if
 
-            csb_1L = csb_1(L)
-            snb_1L = snb_1(L)
-            csb_2L = csb_2(L)
-            snb_2L = snb_2(L)
             if (jsferic == 1 .and. jasfer3D == 1) then
+               csb_1L = csb_1(L)
+               snb_1L = snb_1(L)
+               csb_2L = csb_2(L)
+               snb_2L = snb_2(L)
                ucx_link_1 = +csb_1L * ux1(L) + snb_1L * uy1(L)
                ucy_link_1 = -snb_1L * ux1(L) + csb_1L * uy1(L)
                ucx_link_2 = +csb_2L * ux2(L) + snb_2L * uy2(L)
