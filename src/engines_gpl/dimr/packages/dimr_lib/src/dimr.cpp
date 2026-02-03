@@ -143,7 +143,7 @@ bool readComputeTimesFile(const char* fileName, dimr_control_block* controlBlock
     vector<double>& controlblock_timearray = *(controlBlock->computeTimes); // Shortcut to keep the code readable
     // Enough data?
     if (controlblock_timearray.size() < MINIMUM_TIME_POINTS)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "File '%s' must contain at least %d times", fileName, MINIMUM_TIME_POINTS);
+        throw Exception(Exception::ERR_INVALID_INPUT, "File '%s' must contain at least %d times", fileName, MINIMUM_TIME_POINTS);
     // Update controlBlock with read times
     controlBlock->tStart = controlblock_timearray[0];                       // First  timePoint to do a computation
     controlBlock->tStep = controlblock_timearray[1] - controlBlock->tStart; // Second timePoint to do a computation
@@ -280,7 +280,7 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
             std::string message = "#### ERROR: dimr initialize ABORT,: " + componentName + " initialize failed, with return value " + ss.str() + " \n";
             printf(message.c_str());
             log->Write(FATAL, my_rank, message.c_str(), configfile);
-            throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+            throw Exception(Exception::ERR_UNKNOWN, message.c_str());
         }
         timerEnd(cb->unit.component);
         (cb->unit.component->dllGetStartTime) (&cb->tStart);
@@ -299,7 +299,7 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
         std::string message = "#### ERROR: dimr update ABORT,: " + componentName + " update failed, with return value " + ss.str() + " at time : " + curTime.str() + "\n";
         printf(message.c_str());
         log->Write(FATAL, my_rank, message.c_str(), configfile);
-        throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+        throw Exception(Exception::ERR_UNKNOWN, message.c_str());
     }
     timerEnd(cb->unit.component);
     if (phase == GLOBAL_PHASE_FINISH) {
@@ -314,7 +314,7 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
             std::string message = "#### ERROR: dimr finalize ABORT,: " + componentName + " finalize failed, with return value " + ss.str() + " \n";
             printf(message.c_str());
             log->Write(FATAL, my_rank, message.c_str(), configfile);
-            throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+            throw Exception(Exception::ERR_UNKNOWN, message.c_str());
         }
         timerEnd(cb->unit.component);
     }
@@ -329,27 +329,27 @@ void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component) {
     MPI_Group mpiGroupComp;
     int ierr;
     if (component == NULL) {
-        throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: undefined component.");
+        throw Exception(Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: undefined component.");
     }
     bool multipleProcessesCheck = component->numProcesses > 1;
     if (use_mpi && multipleProcessesCheck) {
         if (component->mpiCommVar == NULL) {
-            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: communicator handle undefined for component \"%s\".", component->name);
+            throw Exception(Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: communicator handle undefined for component \"%s\".", component->name);
         }
         ierr = MPI_Group_incl(mpiGroupWorld, component->numProcesses, component->processes, &mpiGroupComp);
         if (ierr != MPI_SUCCESS) {
-            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
+            throw Exception(Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
         }
         // Needs to be called by *all* ranks:
         ierr = MPI_Comm_create(MPI_COMM_WORLD, mpiGroupComp, &component->mpiComm);
         if (ierr != MPI_SUCCESS) {
-            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subcommunicator of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
+            throw Exception(Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subcommunicator of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
         }
         if (component->onThisRank) {
             MPI_Fint* fComm;
             component->dllGetVar(component->mpiCommVar, (void**)(&fComm));
             if (fComm == NULL) {
-                throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot obtain reference to communicator handle \"%s\" from component \"%s\".", component->mpiCommVar, component->name);
+                throw Exception(Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot obtain reference to communicator handle \"%s\" from component \"%s\".", component->mpiCommVar, component->name);
             }
             *fComm = MPI_Comm_c2f(component->mpiComm);
         }
@@ -377,17 +377,17 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                   log->Write(DEBUG, my_rank, "Master: %s", cb->subBlocks[cb->masterSubBlockId].unit.component->name);
                 }
                 else {
-                  throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: the specified component in the start element was not found.");
+                  throw Exception(Exception::ERR_INVALID_INPUT, "runParallelInit: the specified component in the start element was not found.");
                 }
             }
             else {
-                throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: a parallel block cannot have more than one start element.");
+                throw Exception(Exception::ERR_INVALID_INPUT, "runParallelInit: a parallel block cannot have more than one start element.");
             }
         }
     }
     if (cb->masterSubBlockId == -1)
     {
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: a parallel block must have at least one start element.");
+        throw Exception(Exception::ERR_INVALID_INPUT, "runParallelInit: a parallel block must have at least one start element.");
     }
 
     // Hack:
@@ -413,7 +413,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
             std::string message = "#### ERROR: dimr initialize ABORT,: " + componentName + " initialize failed, with return value " + ss.str() + " \n";
             printf(message.c_str());
             log->Write(FATAL, my_rank, message.c_str(), configfile);
-            throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+            throw Exception(Exception::ERR_UNKNOWN, message.c_str());
         }
         timerEnd(masterComponent);
                 // SetKeyVals for parameters (after initialize)
@@ -485,7 +485,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                             printf(message.c_str());
                             log->Write(FATAL, my_rank, message.c_str(), configfile);
 
-                            throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+                            throw Exception(Exception::ERR_UNKNOWN, message.c_str());
                         }
                         timerEnd(thisComponent);
                         // SetKeyVals for parameters (after initialize)
@@ -606,7 +606,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                                 }
                             }
                             if (thisCoupler->items[k].targetProcess == -1) {
-                                throw Exception(true, Exception::ERR_MPI, "Coupler %s: item %d: \"%s\" is not accepted by any of the partitions.",
+                                throw Exception(Exception::ERR_MPI, "Coupler %s: item %d: \"%s\" is not accepted by any of the partitions.",
                                     thisCoupler->name, k, thisCoupler->items[k].targetName);
                             }
                             free(targets);
@@ -626,7 +626,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
 
                         int ncid = -1;
                         if (nc_create(fileName.c_str(), nc_mode, &ncid))
-                            throw Exception(true, Exception::ERR_OS, "Could not create NetCDF file at location \"%s\".", fileName.c_str());
+                            throw Exception(Exception::ERR_OS, "Could not create NetCDF file at location \"%s\".", fileName.c_str());
                         ncfiles[fileName] = ncid;
 
                         // write global attributes
@@ -705,7 +705,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                             const string valuestr(oss.str());
                             int status = nc_def_dim(ncid, valuestr.c_str(), 1, &thisCoupler->logger->netcdfReferences->item_values[k]);
                             if (status != NC_NOERR) {
-                                throw Exception(true, Exception::ERR_OS, "Could not create dimension \"%s\".", valuestr.c_str());
+                                throw Exception(Exception::ERR_OS, "Could not create dimension \"%s\".", valuestr.c_str());
                             }
 
                             int dimensions[2] = { thisCoupler->logger->netcdfReferences->timeDim, thisCoupler->logger->netcdfReferences->item_values[k] };
@@ -854,7 +854,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                         // After MasterComponent:
                         // When the MasterComponent is going to run, it will increase currentTime
                         // This does not match with executing this follower at the current time
-                        throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelUpdate: Zero timestep, needed for block %d, is not possible.", i);
+                        throw Exception(Exception::ERR_INVALID_INPUT, "runParallelUpdate: Zero timestep, needed for block %d, is not possible.", i);
                     }
                 }
                 else {
@@ -904,7 +904,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                     printf(message.c_str());
                     log->Write(FATAL, my_rank, message.c_str(), configfile);
 
-                    throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+                    throw Exception(Exception::ERR_UNKNOWN, message.c_str());
                 }
                 timerEnd(masterComponent->unit.component);
                 *currentTime = *currentTime + tStep;
@@ -957,7 +957,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                                 printf(message.c_str());
                                 log->Write(FATAL, my_rank, message.c_str(), configfile);
 
-                                throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+                                throw Exception(Exception::ERR_UNKNOWN, message.c_str());
                             }
                             timerEnd(thisComponent);
                         }
@@ -1042,7 +1042,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                                     size_t indices[] = { static_cast<size_t>(timeIndexCounter), 0 };
                                     int status = nc_put_var1_double(ncid, thisCoupler->logger->netcdfReferences->item_variables[k], indices, transferValuePtr);
                                     if (status != NC_NOERR)
-                                        throw Exception(true, Exception::ERR_OS, "Could not write value at index (%i, 0).", timeIndexCounter);
+                                        throw Exception(Exception::ERR_OS, "Could not write value at index (%i, 0).", timeIndexCounter);
                                 }
 
                                 // Force update of the pointers for ITEM_TYPE_PTR
@@ -1118,7 +1118,7 @@ void Dimr::receive(const char* name,
                     || compType == COMP_TYPE_DSLE
                     || compType == COMP_TYPE_WANDA) {
                     if (dllSetVar == NULL) {
-                        throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: set_var function not defined while processing %s", name);
+                        throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: set_var function not defined while processing %s", name);
                     }
                     (dllSetVar)(name, (const void*)transferValuePtr);
                     if (compType == COMP_TYPE_RTC || compType == COMP_TYPE_DSLE) {
@@ -1161,7 +1161,7 @@ void Dimr::receive(const char* name,
                         {
                             // targetProcess=-1: no process can accept this item
                             // targetProcess=my_rank: this process is registered to be able to accept this item but something goes wrong
-                            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: get_var function not defined while processing %s", name);
+                            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: get_var function not defined while processing %s", name);
                         }
                     }
                     else
@@ -1218,7 +1218,7 @@ void Dimr::receive_ptr(const char * name,
                 {
                         // targetProcess=-1: no process can accept this item
                         // targetProcess=my_rank: this process is registered to be able to accept this item but something goes wrong
-                        throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: get_var function not defined while processing %s", name);
+                        throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: get_var function not defined while processing %s", name);
                 }
         }
 }
@@ -1245,7 +1245,7 @@ void Dimr::getAddress(
     // Otherwise the "else if" part might be executed When "*sourceVarPtr==NULL" and "compType==COMP_TYPE_WANDA"
     if (compType == COMP_TYPE_WANDA) {
         if (dllGetVar == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: get_var function not defined while processing %s", name);
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: get_var function not defined while processing %s", name);
         }
         // Wanda does not use pointers to internal structures:
         // - Use the DIMR-transfer array
@@ -1257,7 +1257,7 @@ void Dimr::getAddress(
                 // sourceVarPtr=NULL: getVar not yet called for this parameter, probably because "send" is being called
                 //                    via the toplevel "get_var"
                 if (dllGetVar == NULL) {
-                    throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: get_var function not defined while processing %s", name);
+                    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: get_var function not defined while processing %s", name);
                 }
                 log->Write(ALL, my_rank, "Dimr::getAddress -- calling");
                 (dllGetVar)(name, (void**)(sourceVarPtr));
@@ -1325,7 +1325,7 @@ void Dimr::runParallelFinish(dimr_control_block* cb) {
                 printf(message.c_str());
                 log->Write(FATAL, my_rank, message.c_str(), configfile);
 
-                throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+                throw Exception(Exception::ERR_UNKNOWN, message.c_str());
             }
             timerEnd(cb->subBlocks[i].unit.component);
 
@@ -1357,7 +1357,7 @@ void Dimr::runParallelFinish(dimr_control_block* cb) {
                         printf(message.c_str());
                         log->Write(FATAL, my_rank, message.c_str(), configfile);
 
-                        throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
+                        throw Exception(Exception::ERR_UNKNOWN, message.c_str());
                     }
                     timerEnd(cb->subBlocks[i].subBlocks[j].unit.component);
                 }
@@ -1382,23 +1382,23 @@ void Dimr::scanConfigFile(void) {
 
     XmlTree* rootXml = static_cast<XmlTree*>(config->Lookup("/dimrConfig"));
     if (rootXml == NULL)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "Configuration file \"%s\" does not have a <dimrConfig> root element", configfile);
+        throw Exception(Exception::ERR_INVALID_INPUT, "Configuration file \"%s\" does not have a <dimrConfig> root element", configfile);
     XmlTree* fileversion = rootXml->Lookup("documentation/fileVersion");
     if (fileversion == NULL)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "Configuration file \"%s\" does not have a deltaresHydro documentation->fileVersion element", configfile);
+        throw Exception(Exception::ERR_INVALID_INPUT, "Configuration file \"%s\" does not have a deltaresHydro documentation->fileVersion element", configfile);
 
     // Check version number
     const char* versionnr = fileversion->charData;
     float versionnumber;
     int intRead = sscanf(versionnr, "%f", &versionnumber);
     if (intRead != 1)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "Configuration file \"%s\" does not have a version number", configfile);
+        throw Exception(Exception::ERR_INVALID_INPUT, "Configuration file \"%s\" does not have a version number", configfile);
     if ((int)floor(versionnumber) != 1)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "Configuration file \"%s\": Version number (%3.2f) must have main version 2", configfile, versionnumber);
+        throw Exception(Exception::ERR_INVALID_INPUT, "Configuration file \"%s\": Version number (%3.2f) must have main version 2", configfile, versionnumber);
 
     XmlTree* controlXml = rootXml->Lookup("control");
     if (controlXml == NULL)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "Configuration file \"%s\" does not have a deltaresHydro control element", configfile);
+        throw Exception(Exception::ERR_INVALID_INPUT, "Configuration file \"%s\" does not have a deltaresHydro control element", configfile);
     // Allocate the control structure and check its size
     control = (dimr_control_block*)malloc(sizeof(dimr_control_block));
     control->numSubBlocks = 0;
@@ -1427,7 +1427,7 @@ void Dimr::scanGlobalSettings(XmlTree* rootXml) {
     if (loggerNcFormat != NULL) {
         int intRead = sscanf(loggerNcFormat->charData, "%d", &(nc_mode));
         if (intRead != 1)
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "logger_ncFormat must contain the value 3 or 4");
+            throw Exception(Exception::ERR_INVALID_INPUT, "logger_ncFormat must contain the value 3 or 4");
         if (nc_mode == 3) {
             nc_mode = NC_CLASSIC_MODEL;
         }
@@ -1460,7 +1460,7 @@ void Dimr::scanUnits(XmlTree* rootXml) {
                 componentsList.components = (dimr_component*)realloc(componentsList.components,
                     componentsList.numComponents * sizeof(dimr_component));
                 if (componentsList.components == NULL) {
-                    throw Exception(true, Exception::ERR_INVALID_INPUT, "Allocation error in scanUnits (component)");
+                    throw Exception(Exception::ERR_INVALID_INPUT, "Allocation error in scanUnits (component)");
                 }
             }
             scanComponent(rootXml->children[i], &(componentsList.components[componentsList.numComponents - 1]));
@@ -1473,7 +1473,7 @@ void Dimr::scanUnits(XmlTree* rootXml) {
             else {
                 couplersList.couplers = (dimr_coupler*)realloc(couplersList.couplers, couplersList.numCouplers * sizeof(dimr_coupler));
                 if (couplersList.couplers == NULL) {
-                    throw Exception(true, Exception::ERR_INVALID_INPUT, "Allocation error in scanUnits (coupler)");
+                    throw Exception(Exception::ERR_INVALID_INPUT, "Allocation error in scanUnits (coupler)");
                 }
             }
             scanCoupler(rootXml->children[i], &(couplersList.couplers[couplersList.numCouplers - 1]));
@@ -1488,14 +1488,14 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
     // Needed for path handling
     char* curPath = new char[MAXSTRING];
     if (!getcwd(curPath, MAXSTRING))
-        throw Exception(true, Exception::ERR_OS, "ERROR obtaining the current working directory (scan)");
+        throw Exception(Exception::ERR_OS, "ERROR obtaining the current working directory (scan)");
     //
     //
     newComp->name = xmlComponent->GetAttrib("name");
     // Element library
     XmlTree* libraryElement = xmlComponent->Lookup("library");
     if (libraryElement == NULL)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "Component \"%s\" does not contain a library element", newComp->name);
+        throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" does not contain a library element", newComp->name);
     newComp->library = libraryElement->charData;
     int libLen = strlen(newComp->library);
     char* libNameLowercase = new char[libLen + 1];
@@ -1557,7 +1557,7 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
         newComp->onThisRank = false;         // Not found (yet): only active on other ranks.
         for (int i = 0; i < newComp->numProcesses; i++) {
             if (newComp->processes[i] >= numranks) {
-                throw Exception(true, Exception::ERR_INVALID_INPUT, "Component \"%s\" configured for process #%d, but max running MPI rank is only %d.",
+                throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" configured for process #%d, but max running MPI rank is only %d.",
                     newComp->name, newComp->processes[i], numranks - 1);
             }
             else  if (newComp->processes[i] == my_rank) {
@@ -1619,7 +1619,7 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
         // Is workingDir a valid absolute path?
         if (chdir(newComp->workingDir))
         {
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"", newComp->name, newComp->workingDir);
+            throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"", newComp->name, newComp->workingDir);
         }
     }
     else {
@@ -1646,14 +1646,14 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup) {
     // Element sourceComponent
     XmlTree* sourceComponent = xmlCoupler->Lookup("sourceComponent");
     if (sourceComponent == NULL)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "The coupler \"%s\" does not contain a sourceComponent element", newCoup->name);
+        throw Exception(Exception::ERR_INVALID_INPUT, "The coupler \"%s\" does not contain a sourceComponent element", newCoup->name);
     newCoup->sourceComponentName = sourceComponent->charData;
     // Add reference to the actual component acting as source
     newCoup->sourceComponent = getComponent(newCoup->sourceComponentName);
     // Element targetComponent
     XmlTree* targetComponent = xmlCoupler->Lookup("targetComponent");
     if (targetComponent == NULL)
-        throw Exception(true, Exception::ERR_INVALID_INPUT, "The coupler \"%s\" does not contain a targetComponent element", newCoup->name);
+        throw Exception(Exception::ERR_INVALID_INPUT, "The coupler \"%s\" does not contain a targetComponent element", newCoup->name);
     newCoup->targetComponentName = targetComponent->charData;
     // Add reference to the actual component acting as target
     newCoup->targetComponent = getComponent(newCoup->targetComponentName);
@@ -1676,7 +1676,7 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup) {
                 newCoup->itemTypes = (unsigned int*)realloc(newCoup->itemTypes, newCoup->numItems * sizeof(unsigned int));
                 if (newCoup->items == NULL || newCoup->itemTypes == NULL)
                 {
-                    throw Exception(true, Exception::ERR_INVALID_INPUT, "Allocation error in scanUnits (couple unit)");
+                    throw Exception(Exception::ERR_INVALID_INPUT, "Allocation error in scanUnits (couple unit)");
                 }
             }
             if (xmlCoupler->children[j]->GetAttrib("type") == NULL || strcmp(xmlCoupler->children[j]->GetAttrib("type"), "pointer") != 0) {
@@ -1690,18 +1690,18 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup) {
             // Read sourceName
             XmlTree* xmlSource = xmlCoupler->children[j]->Lookup("sourceName");
             if (xmlSource == NULL)
-                throw Exception(true, Exception::ERR_INVALID_INPUT, "The coupler \"%s\", item %d, does not contain a sourceName element", newCoup->name, newCoup->numItems);
+                throw Exception(Exception::ERR_INVALID_INPUT, "The coupler \"%s\", item %d, does not contain a sourceName element", newCoup->name, newCoup->numItems);
             newItem->sourceName = xmlSource->charData;
             if (newItem->sourceName == NULL)
-                throw Exception(true, Exception::ERR_INVALID_INPUT, "Item %d of coupler \"%s\" does not contain a source::name element", newCoup->numItems, newCoup->name);
+                throw Exception(Exception::ERR_INVALID_INPUT, "Item %d of coupler \"%s\" does not contain a source::name element", newCoup->numItems, newCoup->name);
 
             // Read targetName
             XmlTree* xmlTarget = xmlCoupler->children[j]->Lookup("targetName");
             if (xmlTarget == NULL)
-                throw Exception(true, Exception::ERR_INVALID_INPUT, "The coupler \"%s\", item %d, does not contain a targetName element", newCoup->name, newCoup->numItems);
+                throw Exception(Exception::ERR_INVALID_INPUT, "The coupler \"%s\", item %d, does not contain a targetName element", newCoup->name, newCoup->numItems);
             newItem->targetName = xmlTarget->charData;
             if (newItem->targetName == NULL)
-                throw Exception(true, Exception::ERR_INVALID_INPUT, "Item %d of coupler \"%s\" does not contain a target::name element", newCoup->numItems, newCoup->name);
+                throw Exception(Exception::ERR_INVALID_INPUT, "Item %d of coupler \"%s\" does not contain a target::name element", newCoup->numItems, newCoup->name);
 
             // source/targetVarPtr will be set in runParallelInit
             newItem->sourceVarPtr = NULL;
@@ -1720,12 +1720,12 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup) {
         // Read workingDir
         newCoup->logger->workingDir = logger->GetElement("workingDir");
         if (newCoup->logger->workingDir == NULL)
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "The coupler \"%s\"'s logger element does not contain a workingDir element.", newCoup->name);
+            throw Exception(Exception::ERR_INVALID_INPUT, "The coupler \"%s\"'s logger element does not contain a workingDir element.", newCoup->name);
 
         // Read fileName
         newCoup->logger->outputFile = logger->GetElement("outputFile");
         if (newCoup->logger->outputFile == NULL)
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "The coupler \"%s\"'s logger element does not contain an outputFile element.", newCoup->name);
+            throw Exception(Exception::ERR_INVALID_INPUT, "The coupler \"%s\"'s logger element does not contain an outputFile element.", newCoup->name);
     }
 }
 
@@ -1747,7 +1747,7 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
         controlBlock->type = CT_STARTGROUP;
         XmlTree* timeElt = controlBlockXml->Lookup("time");
         if (timeElt == NULL)
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "The startGroup component \"%s\" does not contain a time element", controlBlockXml->name);
+            throw Exception(Exception::ERR_INVALID_INPUT, "The startGroup component \"%s\" does not contain a time element", controlBlockXml->name);
         // The time field either contains:
         // - tStart, tStep, tStop                             , e.g. <time>0.0 3.6e3 9.99e4</time>
         // - name of a file containing computation time points, e.g. <time>wave_computations.tim</time>
@@ -1756,7 +1756,7 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
             // No, it's not the name of a file. Assume that it contains tStart, tStep, tStop
             int intRead = sscanf(timeElt->charData, "%lf %lf %lf", &(controlBlock->tStart), &(controlBlock->tStep), &(controlBlock->tEnd));
             if (intRead != 3)
-                throw Exception(true, Exception::ERR_INVALID_INPUT, "'%s' must either contain 'tStart, tStep, tEnd' or the name of a time series file", timeElt->charData);
+                throw Exception(Exception::ERR_INVALID_INPUT, "'%s' must either contain 'tStart, tStep, tEnd' or the name of a time series file", timeElt->charData);
             // computeTimesCurrent>0 indicates a time series read from file
             controlBlock->computeTimesCurrent = -1;
         }
@@ -1781,7 +1781,7 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
             else {
                 controlBlock->subBlocks = (dimr_control_block*)realloc(controlBlock->subBlocks, controlBlock->numSubBlocks * sizeof(dimr_control_block));
                 if (controlBlock->subBlocks == NULL) {
-                    throw Exception(true, Exception::ERR_INVALID_INPUT, "Allocation error in scanControl");
+                    throw Exception(Exception::ERR_INVALID_INPUT, "Allocation error in scanControl");
                 }
             }
             scanControl(controlBlockXml->children[i], &(controlBlock->subBlocks[controlBlock->numSubBlocks - 1]));
@@ -1798,7 +1798,7 @@ dimr_component* Dimr::getComponent(const char* compName) {
             return &(componentsList.components[i]);
         }
     }
-    throw Exception(true, Exception::ERR_INVALID_INPUT, "Found no component with name \"%s\".", compName);
+    throw Exception(Exception::ERR_INVALID_INPUT, "Found no component with name \"%s\".", compName);
 }
 
 //------------------------------------------------------------------------------
@@ -1828,7 +1828,7 @@ void Dimr::connectLibs(void) {
 
 #if defined (OSX)
     // Macintosh:VERY SIMILAR TO LINUX
-    throw Exception(true, Exception::ERR_OS, "ABORT: %s has not be ported to Apple Mac OS/X yet", exeName);
+    throw Exception(Exception::ERR_OS, "ABORT: %s has not be ported to Apple Mac OS/X yet", exeName);
 #endif
 #ifndef _WIN32
     char* err;
@@ -1847,7 +1847,7 @@ void Dimr::connectLibs(void) {
         if (strchr(componentsList.components[i].library, '/') != NULL
             || strchr(componentsList.components[i].library, '\\') != NULL
             || strchr(componentsList.components[i].library, '.') != NULL) {
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "Invalid component library name \"%s\"\n", lib, -1);
+            throw Exception(Exception::ERR_INVALID_INPUT, "Invalid component library name \"%s\"\n", lib, -1);
         }
 #else
         char* lib = new char[strlen(componentsList.components[i].library) + 4 + 1];
@@ -1855,7 +1855,7 @@ void Dimr::connectLibs(void) {
         if (strchr(componentsList.components[i].library, '/') != NULL
             || strchr(componentsList.components[i].library, '\\') != NULL
             || strchr(componentsList.components[i].library, '.') != NULL) {
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "Invalid component library name \"%s\"\n", lib, -1);
+            throw Exception(Exception::ERR_INVALID_INPUT, "Invalid component library name \"%s\"\n", lib, -1);
         }
 #endif
 
@@ -1879,49 +1879,49 @@ void Dimr::connectLibs(void) {
 
 #ifndef _WIN32
             if ((err = dlerror()) != NULL)
-                throw Exception(true, Exception::ERR_OS, "Cannot load component library \"%s\". Error: %s\n", lib, err);
+                throw Exception(Exception::ERR_OS, "Cannot load component library \"%s\". Error: %s\n", lib, err);
 #else
             if (GetLastError() == 193)
-                throw Exception(true, Exception::ERR_OS, "Cannot load component library \"%s\". Return code: %d\n    Most probably a 32bit - 64bit conflict.", lib, GetLastError());
+                throw Exception(Exception::ERR_OS, "Cannot load component library \"%s\". Return code: %d\n    Most probably a 32bit - 64bit conflict.", lib, GetLastError());
             else
-                throw Exception(true, Exception::ERR_OS, "Cannot load component library \"%s\". Return code: %d", lib, GetLastError());
+                throw Exception(Exception::ERR_OS, "Cannot load component library \"%s\". Return code: %d", lib, GetLastError());
 #endif
         }
 
         // Collect BMI entry points
         componentsList.components[i].dllInitialize = (BMI_INITIALIZE)GETPROCADDRESS(dllhandle, BmiInitializeEntryPoint);
         if (componentsList.components[i].dllInitialize == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiInitializeEntryPoint, lib, GetLastError());
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiInitializeEntryPoint, lib, GetLastError());
         }
 
         componentsList.components[i].dllUpdate = (BMI_UPDATE)GETPROCADDRESS(dllhandle, BmiUpdateEntryPoint);
         if (componentsList.components[i].dllUpdate == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiUpdateEntryPoint, lib, GetLastError());
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiUpdateEntryPoint, lib, GetLastError());
         }
 
         componentsList.components[i].dllFinalize = (BMI_FINALIZE)GETPROCADDRESS(dllhandle, BmiFinalizeEntryPoint);
         if (componentsList.components[i].dllFinalize == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiFinalizeEntryPoint, lib, GetLastError());
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiFinalizeEntryPoint, lib, GetLastError());
         }
 
         componentsList.components[i].dllGetStartTime = (BMI_GETSTARTTIME)GETPROCADDRESS(dllhandle, BmiGetStartTimeEntryPoint);
         if (componentsList.components[i].dllGetStartTime == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetStartTimeEntryPoint, lib, GetLastError());
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetStartTimeEntryPoint, lib, GetLastError());
         }
 
         componentsList.components[i].dllGetEndTime = (BMI_GETENDTIME)GETPROCADDRESS(dllhandle, BmiGetEndTimeEntryPoint);
         if (componentsList.components[i].dllGetEndTime == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetEndTimeEntryPoint, lib, GetLastError());
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetEndTimeEntryPoint, lib, GetLastError());
         }
 
         componentsList.components[i].dllGetTimeStep = (BMI_GETTIMESTEP)GETPROCADDRESS(dllhandle, BmiGetTimeStepEntryPoint);
         if (componentsList.components[i].dllGetTimeStep == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetStartTimeEntryPoint, lib, GetLastError());
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetStartTimeEntryPoint, lib, GetLastError());
         }
 
         componentsList.components[i].dllGetCurrentTime = (BMI_GETCURRENTTIME)GETPROCADDRESS(dllhandle, BmiGetCurrentTimeEntryPoint);
         if (componentsList.components[i].dllGetCurrentTime == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetCurrentTimeEntryPoint, lib, GetLastError());
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetCurrentTimeEntryPoint, lib, GetLastError());
         }
 
         componentsList.components[i].dllGetAttribute = (BMI_GETATTRIBUTE)GETPROCADDRESS(dllhandle, BmiGetAttributeEntryPoint);
@@ -1947,7 +1947,7 @@ void Dimr::connectLibs(void) {
             // RTC-Tools: setVar is used
             componentsList.components[i].dllSetVar = (BMI_SETVAR)GETPROCADDRESS(dllhandle, BmiSetVarEntryPoint);
             if (componentsList.components[i].dllSetVar == NULL) {
-                throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiSetVarEntryPoint, lib, GetLastError());
+                throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiSetVarEntryPoint, lib, GetLastError());
             }
         }
         else {
@@ -1960,7 +1960,7 @@ void Dimr::connectLibs(void) {
             componentsList.components[i].type == COMP_TYPE_COSUMO_BMI) {
             componentsList.components[i].dllGetVarShape = (BMI_GETVARSHAPE)GETPROCADDRESS(dllhandle, BmiGetVarShapeEntryPoint);
             if (componentsList.components[i].dllGetVarShape == NULL) {
-                throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetVarShapeEntryPoint, lib, GetLastError());
+                throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetVarShapeEntryPoint, lib, GetLastError());
             }
         }
         else {
@@ -1971,7 +1971,7 @@ void Dimr::connectLibs(void) {
         if (componentsList.components[i].type == COMP_TYPE_FLOW1D) {
             componentsList.components[i].setLogger = (BMI_SET_LOGGER)GETPROCADDRESS(dllhandle, BmiSetLogger);
             if (componentsList.components[i].setLogger == NULL) {
-                throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiSetLogger, lib, GetLastError());
+                throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiSetLogger, lib, GetLastError());
             }
             componentsList.components[i].setLogger((BMILogger)&_log);
             double level = (double)this->logLevel;
@@ -1981,7 +1981,7 @@ void Dimr::connectLibs(void) {
       if (componentsList.components[i].type == COMP_TYPE_FM || componentsList.components[i].type == COMP_TYPE_COSUMO_BMI) {
             componentsList.components[i].setLogger = (BMI_SET_LOGGER)GETPROCADDRESS(dllhandle, BmiSetLogger);
             if (componentsList.components[i].setLogger == NULL) {
-                throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiSetLogger, lib, GetLastError());
+                throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiSetLogger, lib, GetLastError());
             }
             componentsList.components[i].setLogger((BMILogger)&_log);
             // Is it possible to set the debugLevel in FM? componentsList.components[i].dllSetVar("debugLevel", (const void *)&level);
@@ -1989,7 +1989,7 @@ void Dimr::connectLibs(void) {
 
         componentsList.components[i].dllGetVar = (BMI_GETVAR)GETPROCADDRESS(dllhandle, BmiGetVarEntryPoint);
         if (componentsList.components[i].dllGetVar == NULL) {
-            throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetVarEntryPoint, lib, GetLastError());
+            throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetVarEntryPoint, lib, GetLastError());
         }
 
         delete[] lib;
@@ -2045,7 +2045,7 @@ void Dimr::freeLibs(void) {
 
 #if defined (OSX)
     // Macintosh:VERY SIMILAR TO LINUX
-    throw Exception(true, Exception::ERR_OS, "ABORT: %s has not be ported to Apple Mac OS/X yet", exeName);
+    throw Exception(Exception::ERR_OS, "ABORT: %s has not be ported to Apple Mac OS/X yet", exeName);
 #endif
 #ifndef _WIN32
     char* err;
@@ -2062,14 +2062,14 @@ void Dimr::freeLibs(void) {
         dlerror(); /* clear error code */
         int ierr = dlclose(componentsList.components[i].libHandle);
         if ((err = dlerror()) != NULL) {
-            throw Exception(true, Exception::ERR_OS, "Cannot free component library \"%s\". Error: %s\n", componentsList.components[i].library, err);
+            throw Exception(Exception::ERR_OS, "Cannot free component library \"%s\". Error: %s\n", componentsList.components[i].library, err);
         }
 #else
         DWORD ierr;
         SetLastError(0); /* clear error code */
         bool success = FreeLibrary(componentsList.components[i].libHandle);
         if ((ierr = GetLastError()) != 0) {
-            throw Exception(true, Exception::ERR_OS, "Cannot free component library \"%s\". Return code: %d.", componentsList.components[i].library, ierr);
+            throw Exception(Exception::ERR_OS, "Cannot free component library \"%s\". Return code: %d.", componentsList.components[i].library, ierr);
         }
 #endif
 
