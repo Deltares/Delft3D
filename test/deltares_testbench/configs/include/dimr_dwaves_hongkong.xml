@@ -1,0 +1,29 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e04_f10_c01_HongKong" ref="dimr_trunk" ignore="false">
+        <path version="2026-01-29T14:56:00">e04_wave/f10-HongKong/c01</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="wave/wavm-hkwm_2017-squaredNet_HK_20190507_v01_cut_ref2.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="dir" toleranceAbsolute="400.0"/>
+                    <parameter name="hsign" toleranceAbsolute="10.0"/>
+                    <parameter name="period" toleranceAbsolute="10.0"/>
+                </parameters>
+            </file>
+            <file name="wave/wavm-hkwm_2017-nest01_HK_20190507_v01.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="dir" toleranceAbsolute="400.0"/>
+                    <parameter name="hsign" toleranceAbsolute="10.0"/>
+                    <parameter name="period" toleranceAbsolute="10.0"/>
+                </parameters>
+            </file>
+            <file name="wave/wavm-hkwm_2017-nest02_HK.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="dir" toleranceAbsolute="400.0"/>
+                    <parameter name="hsign" toleranceAbsolute="10.0"/>
+                    <parameter name="period" toleranceAbsolute="10.0"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>
