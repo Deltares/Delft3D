@@ -389,6 +389,7 @@ module fm_external_forcings_data
    type t_BubbleScreen
       character(len=255) :: id !< name of bubble screen
       integer :: num_flow_cells !< nr of grid cells in bubble screen
+      real(kind=dp) :: z_level !< [m] vertical level of bubble screen
       type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< flow cell data
    end type t_BubbleScreen
 
@@ -397,11 +398,10 @@ module fm_external_forcings_data
       integer :: cell_index !< index of flow cell in grid
       integer :: start_index !< start index for sources/sinks in this flow cell
       integer :: num_sources_sinks !< number of sources/sinks in this flow cell
-      real(kind=dp) :: z_level !< [m] vertical level of bubble screen in this flow cell
    end type t_BubbleScreenFlowCell
 
    ! TODO: add support for multiple bubble screens
-   type (t_BubbleScreen), dimension(:), allocatable :: bubble_screens !< bubble screen data
+   type (t_BubbleScreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
 
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
