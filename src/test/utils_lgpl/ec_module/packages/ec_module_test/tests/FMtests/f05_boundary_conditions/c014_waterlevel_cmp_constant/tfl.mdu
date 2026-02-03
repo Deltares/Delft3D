@@ -41,8 +41,8 @@ RenumberFlowNodes                    = 1                                     # S
 Kmx                                  = 0                                     # Max nr of vertical layers
 Layertype                            = 1                                     # Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers)
 Numtopsig                            = 0                                     # Nr of sigmalayers in top of Zlayer model
-SigmaGrowthFactor                    = 1.                                    # layer thickness growth factor from bed up
- 
+zLayerGrowthFactor                   = 1.                                    # z-layer thickness growth factor from DzTopUniAboveZ downwards
+
 [numerics]
 CFLMax                               = 0.7                                   # Max. Courant nr.
 AdvecType                            = 3                                     # Adv type, 0=no, 1= Wenneker, qu-udzt, 2=1, q(uio-u), 3=Perot q(uio-u), 4=Perot q(ui-u), 5=Perot q(ui-u) without itself
