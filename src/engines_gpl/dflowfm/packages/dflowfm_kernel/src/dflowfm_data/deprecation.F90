@@ -121,7 +121,7 @@ contains
 
       type(deprecated_keyword) :: keyword
 
-      keyword = get_keyword(chapter, key, set, OBSOLETE)
+      keyword = get_keyword(chapter, key, set)
       if (len_trim(keyword%additional_information) /= 0) then
          call mess(LEVEL_INFO, prefix//': keyword ['//trim(chapter)//'] '//trim(key)//': '//keyword%additional_information)
       end if
@@ -160,7 +160,7 @@ contains
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_get_name, tree_get_data_string
       use unstruc_messages, only: threshold_abort
-      use messagehandling, only: LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARN, mess
+      use messagehandling, only: LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARN, mess, msgbuf
       use string_module, only: strcmpi
 
       implicit none
@@ -238,13 +238,21 @@ contains
       end do
 
       if (num_deprecated > 0) then
-         call mess(LEVEL_WARN, prefix//': Deprecated keywords used:  '//trim(keyword_set%additional_information))
+         write (msgbuf, '(A, I0, A)')  &
+            prefix // ': Summary warning: ', num_deprecated, &
+            ' deprecated keyword(s) detected. All individual WARNING messages are listed above. ' // &
+            trim(keyword_set%additional_information)
+         call mess(LEVEL_WARN, msgbuf)
       end if
-
-      threshold_abort = temp_threshold !> restore threshold_abort
-
+      
+      threshold_abort = temp_threshold   ! restore threshold_abort
+      
       if (num_obsolete > 0) then
-         call mess(LEVEL_ERROR, prefix//': Old unsupported keywords used: '//trim(keyword_set%additional_information))
+         write (msgbuf, '(A, I0, A)')  &
+            prefix // ': Summary error: ', num_obsolete, &
+            ' obsolete/unsupported keyword(s) detected. All individual ERROR messages are listed above. ' // &
+            trim(keyword_set%additional_information)
+         call mess(LEVEL_ERROR, msgbuf)
          status = DFM_WRONGINPUT
       end if
 

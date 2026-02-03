@@ -81,7 +81,7 @@ contains
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, jahistaucurrent, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
-         TEMPERATURE_MODEL_COMPOSITE, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
+                                  TEMPERATURE_MODEL_COMPOSITE, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
       use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
@@ -165,7 +165,6 @@ contains
       IVAL_RAIN = 0
       IVAL_INFILTCAP = 0
       IVAL_INFILTACT = 0
-      IVAL_INFILTHORTONSTATE = 0
       IVAL_RHOP = 0
       IVAL_RHO = 0
       IVAL_SBCX1 = 0 ! should be done per fraction
@@ -269,7 +268,6 @@ contains
       if (jahisinfilt > 0) then
          IVAL_INFILTCAP = next_index(i)
          IVAL_INFILTACT = next_index(i)
-         IVAL_INFILTHORTONSTATE = next_index(i)
       end if
       if (numwqbots > 0) then
          IVAL_WQB1 = next_index(i)
@@ -500,7 +498,6 @@ contains
       IPNT_RAIN = ivalpoint(IVAL_RAIN, kmx, nlyrs)
       IPNT_INFILTCAP = ivalpoint(IVAL_INFILTCAP, kmx, nlyrs)
       IPNT_INFILTACT = ivalpoint(IVAL_INFILTACT, kmx, nlyrs)
-      IPNT_INFILTHORTONSTATE = ivalpoint(IVAL_INFILTHORTONSTATE, kmx, nlyrs)
       IPNT_WQB1 = ivalpoint(IVAL_WQB1, kmx, nlyrs)
       IPNT_SINK1 = ivalpoint(IVAL_SINK1, kmx, nlyrs)
       IPNT_BODSED1 = ivalpoint(IVAL_BODSED1, kmx, nlyrs)

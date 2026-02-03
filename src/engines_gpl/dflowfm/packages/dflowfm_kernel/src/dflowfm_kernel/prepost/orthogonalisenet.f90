@@ -1041,11 +1041,11 @@ contains
 !        find index of nodes k0 and k1 w.r.t. cell kL in netcell: kk0L and kk1L resp.
             kk0L = 1
             do while (netcell(icL)%nod(kk0L) /= k0)
-            kk0L = kk0L + 1
+               kk0L = kk0L + 1
             end do
             kk1L = 1
             do while (netcell(icL)%nod(kk1L) /= k1)
-            kk1L = kk1L + 1
+               kk1L = kk1L + 1
             end do
 
             N = netcell(icL)%N
@@ -1116,11 +1116,11 @@ contains
 !           find index of nodes k0 and k1 w.r.t. cell kL in netcell: kk0L and kk1L resp.
                kk0R = 1
                do while (netcell(icR)%nod(kk0R) /= k0 .and. kk0R < N)
-               kk0R = kk0R + 1
+                  kk0R = kk0R + 1
                end do
                kk1R = 1
                do while (netcell(icR)%nod(kk1R) /= k1 .and. kk1R < N)
-               kk1R = kk1R + 1
+                  kk1R = kk1R + 1
                end do
 
                if (netcell(icR)%nod(kk0R) /= k0 .or. netcell(icR)%nod(kk1R) /= k1) then
@@ -2208,7 +2208,7 @@ contains
             N = netcell(adm%icell(ic))%n
             k = 1
             do while (netcell(adm%icell(ic))%nod(k) /= k0 .and. k < N)
-            k = k + 1
+               k = k + 1
             end do
 
             kL = k - 1

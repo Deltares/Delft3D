@@ -384,6 +384,14 @@ module fm_external_forcings_data
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
    integer :: numsrc !< nr of point sources/sinks
+   type t_BubblescreenData
+      character(len=255) :: id !< name of bubble screen
+      integer :: start_index !< start index for bubble sources/sinks
+      integer :: num_flow_cells !< nr of grid cells in bubble screen
+      integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
+   end type t_BubblescreenData
+   ! TODO: add support for multiple bubble screens
+   type (t_BubblescreenData), dimension(:), allocatable :: bubblescreens !< bubble screen data
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield

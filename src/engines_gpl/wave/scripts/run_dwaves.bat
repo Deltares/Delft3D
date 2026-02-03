@@ -31,16 +31,11 @@ echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%~dp0..\..\..
+set scriptDir=%~dp0
+set D3D_HOME=%scriptDir%..
 
-rem Remove "\dwaves\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-24%
-rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
-
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-set swanbatdir=%D3D_HOME%\%ARCH%\swan\scripts
-set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
+set libdir=%D3D_HOME%\lib
+set bindir=%D3D_HOME%\bin
 
 
     rem
@@ -48,9 +43,9 @@ set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
     rem
 
     rem Run
-set PATH=%waveexedir%;%swanbatdir%;%sharedir%
-echo executing in this window: "%waveexedir%\wave.exe" %argfile% 0
-"%waveexedir%\wave.exe" %argfile% 0
+set PATH=%bindir%;%libdir%
+echo executing in this window: "%bindir%\wave.exe" %argfile% 0
+"%bindir%\wave.exe" %argfile% 0
 
 goto end
 

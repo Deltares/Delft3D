@@ -64,7 +64,7 @@ contains
       logical :: res
       logical :: is_successful
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
-      type(tree_data), pointer :: node_ptr
+      type(tree_data), pointer :: block_ptr
       integer :: istat
       character(len=:), allocatable :: group_name
       integer :: i
@@ -153,24 +153,27 @@ contains
       initial_threshold_abort = threshold_abort
       threshold_abort = LEVEL_FATAL
       do i = 1, num_items_in_file
-         node_ptr => bnd_ptr%child_nodes(i)%node_ptr
-         group_name = trim(tree_get_name(node_ptr))
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         group_name = trim(tree_get_name(block_ptr))
 
          select case (str_tolower(group_name))
          case ('general')
             ! General block, was already read.
 
          case ('boundary')
-            res = res .and. init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
+            res = res .and. init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
 
          case ('lateral')
-            res = res .and. init_lateral_forcings(node_ptr, base_dir, i, major)
+            res = res .and. init_lateral_forcings(block_ptr, base_dir, i, major)
 
          case ('meteo')
-            res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
+            res = res .and. init_meteo_forcings(block_ptr, base_dir, file_name, group_name)
 
          case ('sourcesink')
-            res = res .and. init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name)
+            res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
+
+         case ('bubblescreen')
+            res = res .and. init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name)
 
          case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
@@ -223,7 +226,7 @@ contains
    end subroutine init_new
 
    !> reads boundary blocks from new external forcings file and makes required initialisations
-   function init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
+   function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
       use timespace_parameters, only: NODE_ID
@@ -234,10 +237,10 @@ contains
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
 
-      type(tree_data), pointer, intent(in) :: node_ptr !< The tree node of the boundary block
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
-      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
-      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages.
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to boundary block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages
       integer, dimension(:), intent(in) :: itpenzr !< boundary condition nr in openbndsect for z
       integer, dimension(:), intent(in) :: itpenur !< boundary condition nr in openbndsect for u
       integer, intent(inout) :: ib !< block counter for boundaries
@@ -246,7 +249,7 @@ contains
 
       integer, dimension(1) :: target_index
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
-      type(tree_data), pointer :: block_ptr
+      type(tree_data), pointer :: key_value_ptr
       character(len=300) :: error_message
       character(len=1) :: oper
       logical :: is_successful
@@ -255,7 +258,7 @@ contains
       res = .true.
 
       ! First check for required input:
-      call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
+      call prop_get(block_ptr, '', 'quantity', quantity, is_successful)
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
          call err_flush()
@@ -263,56 +266,56 @@ contains
       end if
       ib = ib + 1
 
-      call prop_get(node_ptr, '', 'nodeId', location_file, is_successful)
+      call prop_get(block_ptr, '', 'nodeId', location_file, is_successful)
       if (is_successful) then
          filetype = NODE_ID
          method = SPACEANDTIME
       else
          filetype = POLY_TIM
          method = WEIGHTFACTORS
-         call prop_get(node_ptr, '', 'locationFile', location_file, is_successful)
+         call prop_get(block_ptr, '', 'locationFile', location_file, is_successful)
       end if
 
       if (is_successful) then
          call resolvePath(location_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+       write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
          call err_flush()
          return
       end if
 
-      call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
+      call prop_get(block_ptr, '', 'forcingFile ', forcing_file, is_successful)
       if (is_successful) then
          call resolvePath(forcing_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+        write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
 
       oper = '-'
-      call prop_get(node_ptr, '', 'operand ', oper, is_successful)
+      call prop_get(block_ptr, '', 'operand ', oper, is_successful)
 
       num_items_in_block = 0
-      if (associated(node_ptr%child_nodes)) then
-         num_items_in_block = size(node_ptr%child_nodes)
+      if (associated(block_ptr%child_nodes)) then
+         num_items_in_block = size(block_ptr%child_nodes)
       end if
 
       ! Perform dummy-reads of supported keywords to prevent them from being reported as unused input.
       ! The keywords below were already read in read_location_files_from_boundary_blocks().
-      call prop_get(node_ptr, '', 'returnTime', property_value)
-      call prop_get(node_ptr, '', 'return_time', property_value)
-      call prop_get(node_ptr, '', 'openBoundaryTolerance', property_value)
-      call prop_get(node_ptr, '', 'nodeId', property_value)
-      call prop_get(node_ptr, '', 'bndWidth1D', property_value)
-      call prop_get(node_ptr, '', 'bndBlDepth', property_value)
+      call prop_get(block_ptr, '', 'returnTime', property_value)
+      call prop_get(block_ptr, '', 'return_time', property_value)
+      call prop_get(block_ptr, '', 'openBoundaryTolerance', property_value)
+      call prop_get(block_ptr, '', 'nodeId', property_value)
+      call prop_get(block_ptr, '', 'bndWidth1D', property_value)
+      call prop_get(block_ptr, '', 'bndBlDepth', property_value)
 
       ! Now loop over all key-value pairs, to support reading *multiple* lines with forcingFile=...
       do j = 1, num_items_in_block
-         block_ptr => node_ptr%child_nodes(j)%node_ptr
+         key_value_ptr => block_ptr%child_nodes(j)%node_ptr
          ! todo: read multiple quantities
-         property_name = trim(tree_get_name(block_ptr))
-         call tree_get_data_string(block_ptr, property_value, is_successful)
+         property_name = trim(tree_get_name(key_value_ptr))
+         call tree_get_data_string(key_value_ptr, property_value, is_successful)
          if (is_successful) then
             if (strcmpi(property_name, 'forcingFile')) then
                forcing_file = property_value
@@ -349,7 +352,7 @@ contains
                      is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
                   else
                      is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=NODE_ID, method=method, &
-                                                                     operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
+                                                               operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
                   end if
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
@@ -374,7 +377,7 @@ contains
    !> Read the discharge specification by the current [Lateral] block from new external forcings file.
    !! File version 1 only allowed for a locationFile, file version 2.01 allowed for nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates.
    !! File version 2.02 allows for everything: locationFile, nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates.
-   subroutine read_lateral_discharge_definition(node_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_success)
+   subroutine read_lateral_discharge_definition(block_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_success)
       use messageHandling, only: mess, err, LEVEL_ERROR
       use precision, only: dp
       use m_missing, only: imiss, dmiss
@@ -384,7 +387,7 @@ contains
       use m_laterals, only: ILATTP_1D
       use unstruc_files, only: resolvePath
 
-      type(tree_data), pointer, intent(in) :: node_ptr !< The tree node of the lateral block
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: loc_id !< The id of the lateral
       character(len=*), intent(in) :: base_dir !< The base directory of the lateral
       integer, intent(inout) :: ilattype !< The type of lateral (1D, 2D, or both)
@@ -397,7 +400,7 @@ contains
       character(len=*), intent(out) :: location_file !< The location file of the lateral, only set if loc_spec_type = LOCTP_POLYGON_FILE
       logical, intent(out) :: is_success !< Flag indicating if the reading was successful
 
-      logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
+   logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
       integer :: number_of_discharge_specifications, ierr
       integer, parameter :: maximum_number_of_discharge_specifications = 4
 
@@ -409,13 +412,13 @@ contains
       location_file = ''
       is_success = .false.
 
-      has_node_id = has_key(node_ptr, 'Lateral', 'nodeId')
-      has_branch_id = has_key(node_ptr, 'Lateral', 'branchId')
-      has_chainage = has_key(node_ptr, 'Lateral', 'chainage')
-      has_num_coordinates = has_key(node_ptr, 'Lateral', 'numCoordinates')
-      has_x_coordinates = has_key(node_ptr, 'Lateral', 'xCoordinates')
-      has_y_coordinates = has_key(node_ptr, 'Lateral', 'yCoordinates')
-      has_location_file = has_key(node_ptr, 'Lateral', 'locationFile')
+      has_node_id = has_key(block_ptr, 'Lateral', 'nodeId')
+      has_branch_id = has_key(block_ptr, 'Lateral', 'branchId')
+      has_chainage = has_key(block_ptr, 'Lateral', 'chainage')
+      has_num_coordinates = has_key(block_ptr, 'Lateral', 'numCoordinates')
+      has_x_coordinates = has_key(block_ptr, 'Lateral', 'xCoordinates')
+      has_y_coordinates = has_key(block_ptr, 'Lateral', 'yCoordinates')
+      has_location_file = has_key(block_ptr, 'Lateral', 'locationFile')
 
       ! Test if multiple discharge methods were set
       number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
@@ -433,7 +436,7 @@ contains
       ! numcoor+xcoors+ycoors   => location_specifier = LOCTP_XY_POLYGON
       ! locationFile = test.pol => location_specifier = LOCTP_POLYGON_FILE
       if (has_node_id) then
-         call prop_get(node_ptr, 'Lateral', 'nodeId', node_id)
+         call prop_get(block_ptr, 'Lateral', 'nodeId', node_id)
          loc_spec_type = LOCTP_NODEID
          ilattype = ILATTP_1D
          is_success = .true.
@@ -446,8 +449,8 @@ contains
             return
          end if
 
-         call prop_get(node_ptr, 'Lateral', 'branchId', branch_id)
-         call prop_get(node_ptr, 'Lateral', 'chainage', chainage)
+         call prop_get(block_ptr, 'Lateral', 'branchId', branch_id)
+         call prop_get(block_ptr, 'Lateral', 'chainage', chainage)
          if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0_dp) then
             loc_spec_type = LOCTP_BRANCHID_CHAINAGE
             ilattype = ILATTP_1D
@@ -461,18 +464,18 @@ contains
 
       if (has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates) then
          if (.not. (has_num_coordinates .and. has_x_coordinates .and. has_y_coordinates)) then
-            call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
+       call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
             return
          end if
-         call prop_get(node_ptr, 'Lateral', 'numCoordinates', num_coordinates)
+         call prop_get(block_ptr, 'Lateral', 'numCoordinates', num_coordinates)
          if (num_coordinates <= 0) then
             call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates must be greater than 0.')
             return
          end if
          allocate (x_coordinates(num_coordinates), stat=ierr)
          allocate (y_coordinates(num_coordinates), stat=ierr)
-         call prop_get(node_ptr, 'Lateral', 'xCoordinates', x_coordinates, num_coordinates)
-         call prop_get(node_ptr, 'Lateral', 'yCoordinates', y_coordinates, num_coordinates)
+         call prop_get(block_ptr, 'Lateral', 'xCoordinates', x_coordinates, num_coordinates)
+         call prop_get(block_ptr, 'Lateral', 'yCoordinates', y_coordinates, num_coordinates)
          loc_spec_type = LOCTP_POLYGON_XY
          is_success = .true.
          return
@@ -480,7 +483,7 @@ contains
 
       if (has_location_file) then
          location_file = ''
-         call prop_get(node_ptr, 'Lateral', 'locationFile', location_file)
+         call prop_get(block_ptr, 'Lateral', 'locationFile', location_file)
          if (len_trim(location_file) == 0) then
             call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': locationFile is empty.')
             return
@@ -494,7 +497,7 @@ contains
    end subroutine read_lateral_discharge_definition
 
    !> Read lateral blocks from new external forcings file and makes required initialisations
-   function init_lateral_forcings(node_ptr, base_dir, block_number, major) result(is_successful)
+   function init_lateral_forcings(block_ptr, base_dir, block_number, major) result(is_successful)
       use messageHandling, only: err_flush, msgbuf, mess, LEVEL_ERROR, LEVEL_INFO
       use string_module, only: str_tolower
       use tree_data_types, only: tree_data
@@ -508,9 +511,9 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use timespace, only: selectelset_internal_nodes
 
-      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the lateral block.
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
-      integer, intent(in) :: block_number !< Number of the block, only used in error message.
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      integer, intent(in) :: block_number !< Number of the block, only used in error message
       integer, intent(in) :: major !< Major version number of ext-file
 
       character(len=INI_VALUE_LEN) :: loc_id
@@ -525,7 +528,7 @@ contains
       is_successful = .false.
 
       loc_id = ' '
-      call prop_get(node_ptr, 'Lateral', 'id', loc_id, is_read)
+      call prop_get(block_ptr, 'Lateral', 'id', loc_id, is_read)
       if (.not. is_read .or. len_trim(loc_id) == 0) then
          write (msgbuf, '(a,i0,a)') 'Required field ''id'' missing in lateral (block #', block_number, ').'
          call err_flush()
@@ -536,9 +539,9 @@ contains
       ! locationType = 1d | 2d | all/1d2d
       item_type = ' '
       if (major >= 2) then
-         call prop_get(node_ptr, 'Lateral', 'locationType', item_type, is_read)
+         call prop_get(block_ptr, 'Lateral', 'locationType', item_type, is_read)
       else
-         call prop_get(node_ptr, 'Lateral', 'type', item_type, is_read)
+         call prop_get(block_ptr, 'Lateral', 'type', item_type, is_read)
       end if
       select case (str_tolower(trim(item_type)))
       case ('1d')
@@ -552,9 +555,9 @@ contains
       end select
 
       call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
-      call prop_get(node_ptr, 'Lateral', 'applyTransport', apply_transport(numlatsg + 1), is_read)
+      call prop_get(block_ptr, 'Lateral', 'applyTransport', apply_transport(numlatsg + 1), is_read)
 
-      call read_lateral_discharge_definition(node_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_successful)
+      call read_lateral_discharge_definition(block_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_successful)
       if (.not. is_successful) then
          return
       end if
@@ -564,9 +567,9 @@ contains
       call prepare_lateral_mask(kclat, ilattype)
 
       numlatsg = numlatsg + 1
-      call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
+      call realloc(nnlat, max(2*ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
       call selectelset_internal_nodes(xz, yz, kclat, ndxi, nnLat(nlatnd + 1:), nlat, &
-                                      loc_spec_type, location_file, num_coordinates, x_coordinates, y_coordinates, branch_id, chainage, node_id)
+                          loc_spec_type, location_file, num_coordinates, x_coordinates, y_coordinates, branch_id, chainage, node_id)
 
       n1latsg(numlatsg) = nlatnd + 1
       n2latsg(numlatsg) = nlatnd + nlat
@@ -584,9 +587,9 @@ contains
       ! Flow = 1.23 | test.tim | REALTIME
       kx = 1
       rec = ' '
-      call prop_get(node_ptr, 'Lateral', 'discharge', rec, is_read)
+      call prop_get(block_ptr, 'Lateral', 'discharge', rec, is_read)
       if (.not. is_read .and. major <= 1) then ! Old pre-2.00 keyword 'flow'
-         call prop_get(node_ptr, 'Lateral', 'flow', rec, is_read)
+         call prop_get(block_ptr, 'Lateral', 'flow', rec, is_read)
       end if
       if (len_trim(rec) > 0) then
          call resolvePath(rec, base_dir)
@@ -615,7 +618,7 @@ contains
 
    !> Read the current [Meteo] block from new external forcings file
       !! and do required initialisation for that quantity.
-   function init_meteo_forcings(node_ptr, base_dir, file_name, group_name) result(res)
+   function init_meteo_forcings(block_ptr, base_dir, file_name, group_name) result(res)
       use string_module, only: strcmpi, str_tolower
       use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess, warn_flush
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
@@ -642,10 +645,10 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_alloc, only: aerr
 
-      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the meteo block.
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
-      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from node_ptr.
-      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages.
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages
 
       logical :: res
 
@@ -658,23 +661,23 @@ contains
       character(len=1) :: oper
       real(dp) :: max_search_radius
       ! generalized properties+pointers to target element grid:
-      integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      integer :: target_num_points !< Number of points in target element set.
-      real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set.
-      real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set.
+      integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set
+      integer :: target_num_points !< Number of points in target element set
+      real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set
+      real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set
       integer :: ierr, method, ilattype
       logical :: is_successful
 
       res = .false.
 
-      call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
+      call prop_get(block_ptr, '', 'quantity ', quantity, is_successful)
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
 
-      call prop_get(node_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
+      call prop_get(block_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
             ']. Field ''forcingFileType'' is missing.'
@@ -682,7 +685,7 @@ contains
          return
       end if
 
-      call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
+      call prop_get(block_ptr, '', 'forcingFile ', forcing_file, is_successful)
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
             ']. Field ''forcingFile'' is missing.'
@@ -693,16 +696,16 @@ contains
       end if
 
       target_mask_file = ''
-      call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file)
+      call prop_get(block_ptr, '', 'targetMaskFile ', target_mask_file)
 
       invert_mask = .false.
-      call prop_get(node_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
+      call prop_get(block_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
 
       is_variable_name_available = .false.
       variable_name = ' '
-      call prop_get(node_ptr, '', 'forcingVariableName ', variable_name, is_variable_name_available)
+      call prop_get(block_ptr, '', 'forcingVariableName ', variable_name, is_variable_name_available)
 
-      call prop_get(node_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
+      call prop_get(block_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
       if (is_successful) then
          method = convert_method_string_to_integer(interpolation_method)
          call update_method_with_weightfactor_fallback(forcing_file_type, method)
@@ -722,20 +725,20 @@ contains
       end if
 
       is_extrapolation_allowed = .false.
-      call prop_get(node_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
+      call prop_get(block_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
       call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
 
       max_search_radius = -1
-      call prop_get(node_ptr, '', 'extrapolationSearchRadius ', max_search_radius, is_successful)
+      call prop_get(block_ptr, '', 'extrapolationSearchRadius ', max_search_radius, is_successful)
 
       oper = 'O'
-      call prop_get(node_ptr, '', 'operand ', oper, is_successful)
+      call prop_get(block_ptr, '', 'operand ', oper, is_successful)
 
       transformcoef = DMISS
-      call prop_get(node_ptr, '', 'averagingType ', transformcoef(4), is_successful)
-      call prop_get(node_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
-      call prop_get(node_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
-      call prop_get(node_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
+      call prop_get(block_ptr, '', 'averagingType ', transformcoef(4), is_successful)
+      call prop_get(block_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
+      call prop_get(block_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
+      call prop_get(block_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
 
       filetype = convert_file_type_string_to_integer(forcing_file_type)
 
@@ -774,7 +777,7 @@ contains
 
             if (.not. allocated(ec_pwxwy_x)) then
                allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0.0_dp)
-               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
+               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2*ndx)
             end if
 
             if (jaspacevarcharn == 1) then
@@ -824,7 +827,7 @@ contains
                return
             end if
             method = get_default_method_for_file_type(forcing_file_type)
-            call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
+            call prop_get(block_ptr, '', 'locationType', item_type, is_successful)
             select case (str_tolower(trim(item_type)))
             case ('1d')
                ilattype = ILATTP_1D
@@ -957,7 +960,7 @@ contains
    end function init_meteo_forcings
 
    !> Read sourcesink blocks from new external forcings file.
-   function init_sourcesink_forcings(node_ptr, base_dir, file_name, group_name) result(is_successful)
+   function init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
@@ -969,10 +972,10 @@ contains
       use fm_external_forcings_data, only: numsrc, qstss
       use dfm_error, only: DFM_NOERR
 
-      type(tree_data), pointer, intent(in) :: node_ptr !< Tree structure containing the sourcesink block.
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file.
-      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from node_ptr.
-      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages.
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
 
       character(len=INI_VALUE_LEN) :: sourcesink_id
       character(len=INI_VALUE_LEN) :: sourcesink_name
@@ -999,19 +1002,19 @@ contains
       is_successful = .false.
 
       sourcesink_id = ' '
-      call prop_get(node_ptr, '', 'id', sourcesink_id, is_read)
+      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
       if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
          call err_flush()
          return
       end if
-      call prop_get(node_ptr, '', 'name', sourcesink_name, is_read)
+      call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
 
-      call prop_get(node_ptr, '', 'locationFile', location_file, have_location_file)
+      call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
       if (have_location_file) then
          call resolvePath(location_file, base_dir)
       else
-         call prop_get(node_ptr, '', 'numCoordinates', num_coordinates, is_read)
+         call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
          if (is_read) then
             if (num_coordinates <= 0) then
                write (msgbuf, '(3a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
@@ -1019,10 +1022,10 @@ contains
                return
             end if
             allocate (x_coordinates(num_coordinates), stat=ierr)
-            call prop_get(node_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_read)
+            call prop_get(block_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_read)
             if (is_read) then
                allocate (y_coordinates(num_coordinates), stat=ierr)
-               call prop_get(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
+               call prop_get(block_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
             end if
          end if
          have_location_coordinates = is_read
@@ -1036,19 +1039,19 @@ contains
       ! read optional vertical profiles.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
-      call prop_get(node_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
-      call prop_get(node_ptr, '', 'zSink', z_range_sink, num_range_points, is_read)
+      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
+      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, is_read)
 
-      call prop_get(node_ptr, '', 'discharge', discharge_input, is_read)
+      call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
 
       ! read optional value 'area' to compute the momentum released
       area = 0.0_dp
-      call prop_get(node_ptr, '', 'area', area, is_read)
+      call prop_get(block_ptr, '', 'area', area, is_read)
 
       if (have_location_file) then
          call addsorsin_from_polyline_file(location_file, sourcesink_id, z_range_source, z_range_sink, area, ierr)
@@ -1067,7 +1070,7 @@ contains
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
       is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
-                                                     1, qstss)
+                                                    1, qstss)
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
@@ -1106,7 +1109,7 @@ contains
             end if
 
             property_name = trim(const_name_with_prefix)//'Delta'
-            call prop_get(node_ptr, '', property_name, constituent_delta_file(i_const), is_read)
+            call prop_get(block_ptr, '', property_name, constituent_delta_file(i_const), is_read)
 
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
@@ -1121,6 +1124,129 @@ contains
       is_successful = .true.
 
    end function init_sourcesink_forcings
+
+   !> Read and initialize bubblescreen object from new external forcings file.
+   function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+      use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
+      use m_filez, only: oldfil
+      use m_reapol, only: reapol
+      use messageHandling, only: err_flush, msgbuf, msg_flush
+      use tree_data_types, only: tree_data
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
+      use network_data
+      use m_flow
+      use fm_external_forcings_data
+      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
+      use m_transport, only: NUMCONST
+
+
+      ! Parameters
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+      character(len=:), allocatable :: id !< Bubblescreen id
+      character(len=:), allocatable :: srcid !< Source id
+      character(len=:), allocatable :: location_file !< Bubblescreen location file
+      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+
+      integer, allocatable :: crossed_cells(:) !< Indices of crossed cells in network_data::netcells
+      character, dimension(:), allocatable :: error
+
+      ! Local variables
+      integer :: file_pointer
+      logical :: is_successful
+      real(kind=dp), allocatable :: xpl_tmp(:), ypl_tmp(:), zpl_tmp(:) !< Temporary arrays to store polygon coordinates
+      integer :: npl_tmp !< Temporary variable to store number of polygon points
+
+      type(tface) :: tmcell
+      integer :: cidx, i, ierr
+      real(kind=dp) :: tmsx, tmsy, tmsz
+      real(kind=dp) :: kstart, kend
+      integer :: bubble_source_count = 0
+
+      type(t_BubblescreenData) :: bubblescreen
+
+      is_successful = .false.
+
+      ! Read bubblescreen attributes from the tree node
+      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
+      allocate(character(len=len_trim(id)+50) :: srcid)
+
+      ! Read and initialize polygon data from location_file
+      call oldfil(file_pointer, location_file)
+      call reapol(file_pointer, 0)
+
+      ! Copy polygon data to temporary arrays
+      npl_tmp = npl
+      bubblescreen%num_flow_cells = npl
+      allocate (xpl_tmp(npl_tmp))
+      allocate (ypl_tmp(npl_tmp))
+      allocate (zpl_tmp(npl_tmp))
+      xpl_tmp = xpl(1:npl_tmp)
+      ypl_tmp = ypl(1:npl_tmp)
+      zpl_tmp = zpl(1:npl_tmp)
+
+      tmsz = zpl_tmp(1) ! Assume all polygon points have the same z-coordinate
+
+      call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
+
+      if (.not. allocated(error)) then
+         bubblescreen%id = id
+         bubblescreen%start_index = numsrc + 1
+         
+         do cidx = 1, size(crossed_cells)
+            ! For each crossed cell, create a bubblescreen source/sink object
+            tmcell = netcell(crossed_cells(cidx))
+            ! tmsx = xk(tmcell%nod(1))
+            ! tmsy = yk(tmcell%nod(1))
+            tmsx = xzw(tmcell%nod(1))
+            tmsy = yzw(tmcell%nod(1))
+
+            kstart = kbot(crossed_cells(cidx))
+            kend = ktop(crossed_cells(cidx))
+            do i = kstart, kstart + kmx - 1
+               if (zws(i) >= tmsz) then
+                  write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
+
+                  
+                  call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
+
+                  ! TODO: each source/sink has a differerent id but we have only one specification in the discharge_input file. 
+                  ! Check how this can be coupled correctly.
+                  is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(srcid), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
+                                                                  1, qstss)
+                                  
+                  write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, zws(i)
+                  call msg_flush()
+
+                  bubble_source_count = bubble_source_count + 1
+               end if
+            end do
+
+         end do
+         bubblescreen%num_source_sinks = bubble_source_count
+      end if
+
+      ! Append the initialized bubblescreen to the global array 
+      ! (not really caring about performance here, as number of bubblescreens is expected to be low)
+      if (.not. allocated(bubblescreens)) then 
+         bubblescreens = [bubblescreen]
+      else
+         bubblescreens = [bubblescreens, bubblescreen]
+      end if
+      
+      ! if (.not. is_successful) then
+      !    write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+      !       //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
+      !    call err_flush()
+      !    return
+      ! end if
+
+      is_successful = .true.
+
+   end function init_bubblescreen_forcings
 
    !> Get several target grid properties for a given location type.
    !!

@@ -44,8 +44,8 @@ contains
    subroutine setcdwcoefficient(uwi, cd10, L)
       use precision, only: dp
       use m_wind, only: wind_drag_type, cdb, wdb, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
-          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
-          CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
+                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
+                        CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
       use m_physcoef, only: vonkarw, viskinair
       use m_missing, only: dmiss
       use m_flow, only: ag, hs, jaCdwusp, Cdwusp
