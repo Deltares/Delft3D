@@ -109,6 +109,8 @@ contains
       real(kind=dp) :: u_ene
       real(kind=dp) :: u_mom
 
+      japiaczek33 = 0
+
       if (ifixedweirscheme >= 3 .and. ifixedweirscheme <= 5) then
          do L = 1, lnxi
             if (iadv(L) == IADV_SUBGRID_WEIR) then

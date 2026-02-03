@@ -37,7 +37,7 @@ module m_changenumericalparameters2
 contains
 
    subroutine CHANGENUMERICALPARAMETERS2()
-      use m_flow, only: iturbulencemodel, jaustarint, javakeps, idensform, jarhoxu, javasal, ifixedweirscheme, tsigma, cffacver, cffachormom, cfexphormom, cfconhormom, javatem, addksources, jalogprofatubndin, javau, jacomp, drop2d, drop3d, jastructurelayersactive, max_iterations_pressure_density
+      use m_flow, only: iturbulencemodel, jaustarint, javakeps, idensform, jarhoxu, javasal, ifixedweirscheme, tsigma, cffacver, cffachormom, cfexphormom, cfconhormom, javatem, javiuplus3d, jaqaisq1, addksources, jalogprofatubndin, javau, jacomp, drop2d, drop3d, jastructurelayersactive, max_iterations_pressure_density
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
       use m_helpnow, only: nlevel, wrdkey
@@ -97,6 +97,12 @@ contains
       it(2 * i) = 6
       i = i + 1
       OPTION(i) = 'Javatem                                 '
+      it(2 * i) = 2
+      i = i + 1
+      OPTION(i) = 'Javiuplus3D                             '
+      it(2 * i) = 2
+      i = i + 1
+      OPTION(i) = 'Jaqaisq1                                '
       it(2 * i) = 2
       i = i + 1
       OPTION(i) = 'Addksources                             '
@@ -273,6 +279,10 @@ contains
       i = i + 1
       call IFORMPUTINTEGER(2 * i, JAVATEM)
       i = i + 1
+      call IFORMputINTEGER(2 * i, javiuplus3D)
+      i = i + 1
+      call IFORMputINTEGER(2 * i, jaqaisq1)
+      i = i + 1
       call IFORMputdouble(2 * i, addksources, '(F7.3)')
       i = i + 1
       call IFORMputINTEGER(2 * i, jaLogprofatubndin)
@@ -355,6 +365,10 @@ contains
             call IFORMGETdouble(2 * i, Cfconhormom)
             i = i + 1
             call IFORMGETINTEGER(2 * i, JAVATEM)
+            i = i + 1
+            call IFORMGETINTEGER(2 * i, javiuplus3D)
+            i = i + 1
+            call IFORMGETINTEGER(2 * i, jaqaisq1)
             i = i + 1
             call IFORMGETdouble(2 * i, addksources)
             i = i + 1

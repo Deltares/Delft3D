@@ -642,7 +642,9 @@ contains
 
                      vicL = vicL + vicc
 
-                     vicL = vicL + vicwwu(L)
+                     if (javiuplus3D > 0) then
+                        vicL = vicL + vicwwu(L)
+                     end if
 
                      if (nshiptxy > 0) then
                         if (vicuship /= 0.0_dp) then

@@ -183,6 +183,8 @@ module m_flowparameters
 
    integer :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
+   integer :: javiuplus3D = 1 !< add vertical eddy viscosity to horizontal eddy viscosity (1 = yes, 0 = no)
+
    integer :: jafrculin !< use linear friction yes/no
 
    integer :: jaFrcInternalTides2D !< use internal tides friction (1) or not (0)
@@ -285,7 +287,7 @@ module m_flowparameters
    real(kind=dp) :: teta0 !< 1.00d0   ! .52      ! uniform teta in horizontal (),
    integer :: ivariableteta !< 0=fully implicit,   1=teta constant,        2=variable teta
                                                         !! (set teta=1.0)      (set teta=0.51->0.99)   (set teta<0)
-   integer, parameter :: japiaczek33 = 0 ! testing 1 2
+   integer :: japiaczek33 = 1 ! testing 1 2
 
    integer :: jacstbnd !< Delft-3D type cell-centered velocities at boundaries (ucx, ucy)
    !< or more precise: copy of inside cell vector, WITHOUT taking bnd. normal comp.
@@ -400,6 +402,8 @@ module m_flowparameters
 
    integer :: jadiagnostictransport = 0 ! Switch for diagnostic ("frozen") transport, 0 = prognostic transport, 1 = diagnostic transport
 
+   integer :: jaexplicitsinks = 1
+
    integer :: jaanalytic !< analytic solution available in black sideview => do not also show computed surface in black
 
    integer :: jaustarint !< 1=integral bed layer velocity,  0=velocity at half bed layer
@@ -411,6 +415,8 @@ module m_flowparameters
    real(kind=dp) :: Eddyviscositybedfacmax !< eddyviscosityatbed = min(eddyviscosityatbed, eddyviscosityatbedfacmax*eddyviscosityatbed+1 )
 
    real(kind=dp) :: Eddyviscositysurfacmax !< eddyviscosityatbed = min(eddyviscosityatsur, eddyviscosityatseufacmax*eddyviscosityatsur-1 )
+
+   integer :: jaqaisq1 = 0 !< 1 : qa = q1, 0 : qa = au*u1
 
    integer :: inisal2D !< 1 if specified through meteo module
 
