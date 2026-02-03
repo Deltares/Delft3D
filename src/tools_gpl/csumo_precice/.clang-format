@@ -1,0 +1,40 @@
+BasedOnStyle: Google
+Standard: Latest
+
+# Indentation and tabs
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Line length
+ColumnLimit: 120
+
+# Include sorting and grouping
+SortIncludes: true
+IncludeBlocks: Regroup
+
+# Namespace formatting
+NamespaceIndentation: All
+
+# Access modifier and case label indentation
+IndentAccessModifiers: true
+IndentCaseLabels: true
+
+# Custom brace wrapping
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+
+# Use one space before a comment
+SpacesBeforeTrailingComments: 1
+
+# Perform deterministic formatting
+DerivePointerAlignment: false
