@@ -82,7 +82,7 @@ contains
                    in11, in12, in13, in14, in15, in16, in17, in18, in19, in20, in21
         integer :: ivan, inaar, ip, ipv, ipn, ipq, iq, iseg, iflux, ikmrkv, ikmrkn, iwa1, iwa2, ikmrk1, ikmrk2, ik, iwater
         real(kind = real_wp) :: conc, zersed, vsed, tau, tcrsed, delt, psed, alpha, p, pmax, maxsed, potsed
-
+        real(kind = real_wp) :: flowrate, volume, surf
 
         IP1 = IPOINT(1)       ! Concentration inorganic matter
         IP2 = IPOINT(2)       ! Zeroth-order flux -- at all useful?
@@ -140,14 +140,18 @@ contains
             process_space_real(ip) = 0.0
         enddo
 
-        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+        !
+        ! Limit the estimation to the vertical exchanges
+        !
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir +1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
-            IVAN  = IEXPNT(1, IQ)
-            INAAR = IEXPNT(2, IQ)
+            IVAN     = IEXPNT(1, IQ)
+            INAAR    = IEXPNT(2, IQ)
 
-            ipv   = ipoint(14) + (ivan  - 1) * increm(14)
-            ipn   = ipoint(14) + (inaar - 1) * increm(14)
-            ipq   = ipoint(16) + (iq    - 1) * increm(16)
+            ipv      = ipoint(14) + (ivan  - 1) * increm(14)
+            ipn      = ipoint(14) + (inaar - 1) * increm(14)
+            ipq      = ipoint(16) + (iq    - 1) * increm(16)
+            flowrate = process_space_real(ipq)
 
             IKMRKV = 1
             IKMRKN = 1
@@ -165,55 +169,91 @@ contains
             ENDIF
 
             !
+            ! Note: including the horizontal exchanges fails, unclear why.
+            ! Hence commented out.
+            !
             ! Handle "from" segment
             !
-            IF ( (IKMRKV == 0 .OR. IKMRKV == 3 ) ) THEN
-                if ( inaar > 0 ) then
-                    ip1 = ipoint(1) + (inaar-1) * increm(1)
-                else
-                    ! Use the "to" segment as a proxy
-                    ip1 = ipoint(1) + (ivan-1) * increm(1)
-                endif
+            !IF ( (IKMRKV == 0 .OR. IKMRKV == 3 ) ) THEN
+            !    if ( inaar > 0 ) then
+            !        ip1 = ipoint(1) + (inaar-1) * increm(1)
+            !    else
+            !        ! Use the "to" segment as a proxy
+            !        ip1 = ipoint(1) + (ivan-1) * increm(1)
+            !    endif
+            !
+            !    conc = process_space_real(ip1)
+            !
+            !    process_space_real(ipv) = process_space_real(ipv) + max( 0.0, -flowrate * max( 0.0, conc )  )
+            !
+            !ENDIF
 
-                process_space_real(ipv) = process_space_real(ipv) + &
-                    max( 0.0, -process_space_real(ipq) * process_space_real(ip1) )
-            ENDIF
             !
             ! Handle "to" segment
             !
-            IF ( (IKMRKN == 0 .OR. IKMRKN == 3 ) ) THEN
-                if ( ivan > 0 ) then
-                    ip1 = ipoint(1) + (ivan-1) * increm(1)
-                else
-                    ip1 = ipoint(1) + (inaar-1) * increm(1)
-                endif
-
-                process_space_real(ipn) = process_space_real(ipn) + &
-                    max( 0.0, process_space_real(ipq) * process_space_real(ip1) )
-            ENDIF
+            !IF ( (IKMRKN == 0 .OR. IKMRKN == 3 ) ) THEN
+            !    if ( ivan > 0 ) then
+            !        ip1 = ipoint(1) + (ivan-1) * increm(1)
+            !    else
+            !        ip1 = ipoint(1) + (inaar-1) * increm(1)
+            !    endif
+            !
+            !    conc = process_space_real(ip1)
+            !
+            !    process_space_real(ipn) = process_space_real(ipn) + max( 0.0, flowrate * max( 0.0, conc ) )
+            !
+            !ENDIF
 
             ! If the exchange is a vertical exchange, also include the settling from the cell above
 
             if ( iq > num_exchanges_u_dir + num_exchanges_v_dir ) then
                 if ( ivan > 0 .and. inaar > 0 ) then
-                    ip1 = ipoint(1) + (ivan-1) * increm(1)
-                    ip3 = ipoint(3) + (ivan-1) * increm(3)
-                    process_space_real(ipn) = process_space_real(ipn) + &
-                        max( 0.0, -process_space_real(ip3) * process_space_real(ip1) ) / seconds_per_day
+                    ip1    = ipoint(1)  + (ivan-1) * increm(1)
+                    ip3    = ipoint(3)  + (ivan-1) * increm(3)
+                    ip6    = ipoint(6)  + (ivan-1) * increm(6)
+                    ip13   = ipoint(13) + (ivan-1) * increm(13)
+                    conc   = process_space_real(ip1)
+                    vsed   = process_space_real(ip3) / seconds_per_day   ! Conversion from m/day to m/s
+                    depth  = process_space_real(ip6)
+                    volume = process_space_real(ip13)
+                    if ( depth > 0.0 ) then
+                        surf   = volume / depth
+                    else
+                        surf   = 0.0
+                    endif
+!!                    process_space_real(ipn) = process_space_real(ipn) + max( 0.0, -vsed * surf * max( 0.0, conc ) )
+                    process_space_real(ipn) = max( 0.0, -vsed * surf * max( 0.0, conc ) )
 
-                    ip1 = ipoint(1) + (inaar-1) * increm(1)
-                    ip3 = ipoint(3) + (inaar-1) * increm(3)
-                    process_space_real(ipv) = process_space_real(ipv) + &
-                        max( 0.0, process_space_real(ip3) * process_space_real(ip1) ) / seconds_per_day
+                    ip1    = ipoint(1)  + (inaar-1) * increm(1)
+                    ip3    = ipoint(3)  + (inaar-1) * increm(3)
+                    ip6    = ipoint(6)  + (inaar-1) * increm(6)
+                    ip13   = ipoint(13) + (inaar-1) * increm(13)
+                    conc   = process_space_real(ip1)
+                    vsed   = process_space_real(ip3) / seconds_per_day   ! Conversion from m/day to m/s
+                    depth  = process_space_real(ip6)
+                    volume = process_space_real(ip13)
+                    if ( depth > 0.0 ) then
+                        surf   = volume / depth
+                    else
+                        surf   = 0.0
+                    endif
+!!                    process_space_real(ipv) = process_space_real(ipv) + max( 0.0, vsed * surf * max( 0.0, conc ) )
+                    process_space_real(ipv) = max( 0.0, vsed * surf * max( 0.0, conc ) )
+
                 endif
             endif
         end do
 
+        !
+        ! Properly scale the maximum flux
+        !
         do iseg = 1,num_cells
             ip  = ipoint(14) + (iseg - 1) * increm(14)
             ipv = ipoint(13) + (iseg - 1) * increm(13)
-            if ( process_space_real(ipv) > 0.0 ) then
-                process_space_real(ip) = seconds_per_day * process_space_real(ip) / process_space_real(ipv)
+            volume = process_space_real(ip13)
+
+            if ( volume > 0.0 ) then
+                process_space_real(ip) = seconds_per_day * process_space_real(ip) / volume
             else
                 process_space_real(ip) = 0.0
             endif
@@ -222,6 +262,8 @@ contains
         IFLUX = 0
         IP1   = IPOINT(1)
         IP3   = IPOINT(3)
+        IP6   = IPOINT(6)
+        IP13  = IPOINT(13)
         DO ISEG = 1, num_cells
 
             !     zero output
@@ -284,7 +326,7 @@ contains
 
                         !        limit sedimentation to available mass (M/L2/DAY)
                         !!MAXSED = MIN (POTSED, CONC / DELT * DEPTH)
-                        MAXSED = MIN (POTSED, process_space_real(ip13) * DEPTH)
+                        MAXSED = MIN (POTSED, (process_space_real(ip14) + conc / delt) * depth )
 
                         !        convert sedimentation to flux in M/L3/DAY
                         FL(1 + IFLUX) = MAXSED * (1. - ALPHA) / DEPTH
