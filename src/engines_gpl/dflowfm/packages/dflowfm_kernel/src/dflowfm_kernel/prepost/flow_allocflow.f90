@@ -46,7 +46,7 @@ contains
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
                         kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, kmx, kbotc, kmxc, layertype, &
                         LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, &
-                        zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
+                        zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
                         zslay, dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
                         sqi, dvyc, uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, &
                         ucy_mor, uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, &
@@ -300,7 +300,7 @@ contains
                zbb = zbt
                dzb = dzm
                do while (zbb > zmn .and. mx < kmxx - 1)
-                  dzb = dzb * sigmagrowthfactor
+                  dzb = dzb * z_layer_growth_factor
                   zbb = zbb - dzb
                   mx = mx + 1
                end do
@@ -393,7 +393,7 @@ contains
 
                   dzb = dzm
                   do k = mx - kuni - 1, 1, -1
-                     dzb = dzb * sigmagrowthfactor
+                     dzb = dzb * z_layer_growth_factor
                      zslay(k, j) = zslay(k + 1, j) - dzb
                   end do
                end if

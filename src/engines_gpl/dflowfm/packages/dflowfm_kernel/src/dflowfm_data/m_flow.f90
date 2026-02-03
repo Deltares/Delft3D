@@ -80,7 +80,7 @@ module m_flow ! flow arrays-999
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
    real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
    integer :: tur_time_int_method = TURB_LAX_CONNECTED !< Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
-   real(kind=dp) :: sigmagrowthfactor !<layer thickness growth factor from bed up
+   real(kind=dp) :: z_layer_growth_factor !< z-layer thickness growth factor from DzTopUniAboveZ downwards
    real(kind=dp) :: dztopuniabovez = -999.0_dp !< bottom level of lowest uniform layer == blmin if not specified
    real(kind=dp) :: Floorlevtoplay = -999.0_dp !< floor  level of top zlayer, == sini if not specified
    real(kind=dp) :: dztop = -999.0_dp !< if specified, dz of top layer, kmx = computed, if not, dz = (ztop-zbot)/kmx
@@ -564,7 +564,7 @@ contains
       layertype = LAYTP_SIGMA !< 1 = sigma-layers, 2 = z- or z-sigma-layers, 3 = polygon defined mixed layers, 4 = density controlled sigma-layers
       iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
-      sigmagrowthfactor = 1.0_dp !<layer thickness growth factor from bed up
+      z_layer_growth_factor = 1.0_dp
 
       ! Remaining of variables is handled in reset_flow()
       call reset_flow()
