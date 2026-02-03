@@ -236,20 +236,8 @@ contains
             !$OMP SIMD
             do L = lnx1D + 1, lnx
                if (hu(L) > 0) then
-                  if (jasfer3D == 1) then
-                     ! Step 1: Transform to link frame
-                     ucxq_link_1 = +csb_1(L) * ux3(L) + snb_1(L) * uy3(L) 
-                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L) 
-                     ucxq_link_2 = +csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
-                     ucyq_link_2 = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
-
-                     ! Step 2: Project to tangential direction
-                     tangential_1 = -snu(L) * ucxq_link_1 + csu(L) * ucyq_link_1
-                     tangential_2 = -snu(L) * ucxq_link_2 + csu(L) * ucyq_link_2
-                  else
-                     tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-                     tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
-                  end if
+                  tangential_1 = compute_tangential_velocity(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L), jasfer3D)
+                  tangential_2 = compute_tangential_velocity(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L), jasfer3D)
 
                   fvcor = acL(L) * tangential_1 * fcor1_(L) + &
                           (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
@@ -274,8 +262,8 @@ contains
                   end if
                   if (jasfer3D == 1) then
                      ! Step 1: Transform to link frame
-                     ucxq_link_1 = +csb_1(L) * ux3(L) + snb_1(L) * uy3(L) 
-                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L) 
+                     ucxq_link_1 = +csb_1(L) * ux3(L) + snb_1(L) * uy3(L)
+                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
                      ucxq_link_2 = +csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
                      ucyq_link_2 = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
 
@@ -902,6 +890,34 @@ contains
 
    end subroutine setumod
 
+      !> Compute tangential velocity component for Coriolis force
+   !! Transforms velocity from global frame to link frame, then projects to tangential direction
+      elemental function compute_tangential_velocity(ux_node, uy_node, csb_node, snb_node, csu_link, snu_link, jasfer3D) result(tangential)
+         real(dp), intent(in) :: ux_node !< x-velocity at node (global frame)
+         real(dp), intent(in) :: uy_node !< y-velocity at node (global frame)
+         real(dp), intent(in) :: csb_node !< cosine of node-to-link transformation
+         real(dp), intent(in) :: snb_node !< sine of node-to-link transformation
+         real(dp), intent(in) :: csu_link !< cosine of link direction (for tangential projection)
+         real(dp), intent(in) :: snu_link !< sine of link direction (for tangential projection)
+         integer, intent(in) :: jasfer3D !< flag for 3D sferic mode
+         real(dp) :: tangential
+
+         real(dp) :: ux_link, uy_link ! Velocity in link-local frame
+
+         if (jasfer3D == 1) then
+            ! Step 1: Transform from global to link-local frame
+            ux_link = csb_node * ux_node + snb_node * uy_node ! link-x (normal)
+            uy_link = -snb_node * ux_node + csb_node * uy_node ! link-y (tangential in link frame)
+
+            ! Step 2: Project to tangential direction in global frame
+            tangential = -snu_link * ux_link + csu_link * uy_link
+         else
+            ! Cartesian: direct projection to tangential
+            tangential = -snu_link * ux_node + csu_link * uy_node
+         end if
+
+      end function compute_tangential_velocity
+
    !> Compute viscosity and stress for 2D links (vectorized proof of concept)
    !! Computes for ALL links, caller zeros dry links afterward
    subroutine compute_viscosity_and_stress_vectorized()
@@ -933,7 +949,6 @@ contains
       real(kind=dp) :: wuiL, dxiL
       real(kind=dp) :: ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2
       real(kind=dp) :: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
-      real(kind=dp) :: csb_1L, snb_1L, csb_2L, snb_2L
 
       L1 = lnx1D + 1
       L2 = lnx
@@ -969,14 +984,10 @@ contains
             end if
 
             if (jsferic == 1 .and. jasfer3D == 1) then
-               csb_1L = csb_1(L)
-               snb_1L = snb_1(L)
-               csb_2L = csb_2(L)
-               snb_2L = snb_2(L)
-               ucx_link_1 = +csb_1L * ux1(L) + snb_1L * uy1(L)
-               ucy_link_1 = -snb_1L * ux1(L) + csb_1L * uy1(L)
-               ucx_link_2 = +csb_2L * ux2(L) + snb_2L * uy2(L)
-               ucy_link_2 = -snb_2L * ux2(L) + csb_2L * uy2(L)
+               ucx_link_1 = +csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
+               ucy_link_1 = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
+               ucx_link_2 = +csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
+               ucy_link_2 = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
             else
                ucx_link_1 = ux1(L)
                ucy_link_1 = uy1(L)
@@ -1038,10 +1049,10 @@ contains
             suyL = (duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn) * vicLU(L) * hmin_(L) / wuiL
 
             if (jsferic == 1 .and. jasfer3D == 1) then
-               dvx1(L) = csb_1L * suxL - snb_1L * suyL
-               dvy1(L) = snb_1L * suxL + csb_1L * suyL
-               dvx2(L) = -csb_2L * suxL - snb_2L * suyL
-               dvy2(L) = -snb_2L * suxL + csb_2L * suyL
+               dvx1(L) = +csb_1(L) * suxL - snb_1(L) * suyL
+               dvy1(L) = +snb_1(L) * suxL + csb_1(L) * suyL
+               dvx2(L) = -csb_2(L) * suxL - snb_2(L) * suyL
+               dvy2(L) = -snb_2(L) * suxL + csb_2(L) * suyL
             else
                dvx1(L) = suxL
                dvy1(L) = suyL
