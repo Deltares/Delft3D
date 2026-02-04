@@ -79,7 +79,6 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     type(bedcomp_data)             , pointer     :: morlyr
     real(fp)                       , intent(out) :: fwfac
     type(griddimtype)   , target   , intent(in)  :: griddim
-    integer                        , pointer :: ithresh
 !
 ! Local variables
 !
@@ -125,7 +124,6 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
        return
     end if
     !
-    ithresh             => morpar%ithresh
     do j = 1, nto
        morpar%morbnd(j)%icond = 1
        morpar%morbnd(j)%ibcmt = 0
@@ -369,8 +367,8 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get(mor_ptr, 'Morphology', 'BedUpdStt', morpar%tmor)       
        !
-       call prop_get_integer(mor_ptr, 'Morphology', 'IThresh', ithresh)
-       if (ithresh < 1 .or. ithresh > 2) then
+       call prop_get_integer(mor_ptr, 'Morphology', 'IThresh', morpar%ithresh)
+       if (morpar%ithresh < 1 .or. morpar%ithresh > 2) then
           errmsg = 'IThresh should be in the range 1 (default) to 2 in ' // trim(filmor)
           call write_error(errmsg, unit=lundia)
           error = .true.

@@ -638,6 +638,7 @@ contains
          end select
          write(lundia,'(3a)') txtput1, ':', txtput2
          if (crslyr) then
+             associate(telfil=>morpar%telfil) 
                               istat = bedcomp_getpointer_realfp (morlyr, 'A_max'               , a_max)
               if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'SinkFrac_max'        , sinkfrac_max)
               if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'asfm'                , asfm)
@@ -701,6 +702,7 @@ contains
                   !
                   write(lundia,'(2a,e20.4)') txtput1, ':', thclyr(1)
               endif
+             end associate !telfil
          endif
          !
          !
