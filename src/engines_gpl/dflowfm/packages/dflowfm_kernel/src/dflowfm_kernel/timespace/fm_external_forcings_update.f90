@@ -97,7 +97,10 @@ contains
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
-      use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
+      use fm_external_forcings_data, only: bubblescreen_air_discharge
+      use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, &
+                           item_dac_air_temperature, item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, &
+                           item_dacs_dew_point_temperature, item_dew_point_temperature, item_bubblescreen_discharge
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
@@ -214,6 +217,10 @@ contains
          do i_const = 1, numconst
             call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_constituent_delta(i_const), time_in_seconds)
          end do
+      end if
+
+      if (size(bubblescreen_air_discharge) > 0) then
+         call get_timespace_value_by_item_and_consider_success_value(item_bubblescreen_discharge, time_in_seconds)
       end if
 
       if (jasubsupl > 0) then

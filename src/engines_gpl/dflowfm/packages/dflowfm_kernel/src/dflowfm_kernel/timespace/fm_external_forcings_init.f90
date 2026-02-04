@@ -1202,16 +1202,20 @@ contains
                   no_sourcesinks = no_sourcesinks + bubblescreen%flow_cells(cidx)%num_source_sinks
                end do
            
+               ! Append the initialized bubblescreen to the global array 
+               ! (not really caring about performance here, as number of bubblescreens is expected to be low)
+               if (.not. allocated(bubblescreens)) then 
+                  bubblescreens = [bubblescreen]
+               else
+                  bubblescreens = [bubblescreens, bubblescreen]
+               end if
+
             end if
          end select
+
       end do 
-      ! Append the initialized bubblescreen to the global array 
-      ! (not really caring about performance here, as number of bubblescreens is expected to be low)
-      if (.not. allocated(bubblescreens)) then 
-         bubblescreens = [bubblescreen]
-      else
-         bubblescreens = [bubblescreens, bubblescreen]
-      end if
+
+      allocate(bubblescreen_air_discharge(size(bubblescreens)))
       
    end function compute_number_bubblescreens_sourcesinks
    !> Read and initialize bubblescreen object from new external forcings file.
@@ -1242,7 +1246,7 @@ contains
 
       logical :: is_successful
       type(tface) :: tmcell
-      integer :: cidx, i, ierr
+      integer :: cidx, i, ierr, bi
       real(kind=dp) :: tmsx, tmsy
       integer :: bubble_source_count = 0
 
@@ -1258,6 +1262,7 @@ contains
          ! Find the bubblescreen with matching id
          do i = 1, size(bubblescreens)
             if (trim(bubblescreens(i)%id) == trim(id)) then
+               bi = i
                bubblescreen => bubblescreens(i)
                exit
             end if
@@ -1290,9 +1295,9 @@ contains
       end if
 
 
-      is_successful = adduniformtimerelation_objects('sourcesink_discharge', '', 'source sink', trim(id), 'discharge', &
-                        trim(discharge_input), (numconst + 1) * (bubblescreen%start_index - 1) + 1, &
-                        1, qstss)
+      is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
+                        trim(discharge_input), bi, &
+                        1, bubblescreen_air_discharge)
       
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &

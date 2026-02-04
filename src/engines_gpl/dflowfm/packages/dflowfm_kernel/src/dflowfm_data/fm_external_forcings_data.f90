@@ -405,6 +405,7 @@ module fm_external_forcings_data
 
    end type t_Bubblescreen
    type (t_Bubblescreen), dimension(:), allocatable, target :: bubblescreens !< bubble screen data
+   real (kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< array to catch bubble screen air discharges
    
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
