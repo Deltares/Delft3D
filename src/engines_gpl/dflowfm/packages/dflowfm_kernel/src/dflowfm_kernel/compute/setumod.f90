@@ -892,33 +892,33 @@ contains
 
    end subroutine setumod
 
-      !> Compute tangential velocity component for Coriolis force
+   !> Compute tangential velocity component for Coriolis force
    !! Transforms velocity from global frame to link frame, then projects to tangential direction
-      elemental function compute_tangential_velocity(ux_node, uy_node, csb_node, snb_node, csu_link, snu_link, jasfer3D) result(tangential)
-         real(dp), intent(in) :: ux_node !< x-velocity at node (global frame)
-         real(dp), intent(in) :: uy_node !< y-velocity at node (global frame)
-         real(dp), intent(in) :: csb_node !< cosine of node-to-link transformation
-         real(dp), intent(in) :: snb_node !< sine of node-to-link transformation
-         real(dp), intent(in) :: csu_link !< cosine of link direction (for tangential projection)
-         real(dp), intent(in) :: snu_link !< sine of link direction (for tangential projection)
-         integer, intent(in) :: jasfer3D !< flag for 3D sferic mode
-         real(dp) :: tangential
+   elemental function compute_tangential_velocity(ux_node, uy_node, csb_node, snb_node, csu_link, snu_link, jasfer3D) result(tangential)
+      real(dp), intent(in) :: ux_node !< x-velocity at node (global frame)
+      real(dp), intent(in) :: uy_node !< y-velocity at node (global frame)
+      real(dp), intent(in) :: csb_node !< cosine of node-to-link transformation
+      real(dp), intent(in) :: snb_node !< sine of node-to-link transformation
+      real(dp), intent(in) :: csu_link !< cosine of link direction (for tangential projection)
+      real(dp), intent(in) :: snu_link !< sine of link direction (for tangential projection)
+      integer, intent(in) :: jasfer3D !< flag for 3D sferic mode
+      real(dp) :: tangential
 
-         real(dp) :: ux_link, uy_link ! Velocity in link-local frame
+      real(dp) :: ux_link, uy_link ! Velocity in link-local frame
 
-         if (jasfer3D == 1) then
-            ! Step 1: Transform from global to link-local frame
-            ux_link = csb_node * ux_node + snb_node * uy_node ! link-x (normal)
-            uy_link = -snb_node * ux_node + csb_node * uy_node ! link-y (tangential in link frame)
+      if (jasfer3D == 1) then
+         ! Step 1: Transform from global to link-local frame
+         ux_link = csb_node * ux_node + snb_node * uy_node ! link-x (normal)
+         uy_link = -snb_node * ux_node + csb_node * uy_node ! link-y (tangential in link frame)
 
-            ! Step 2: Project to tangential direction in global frame
-            tangential = -snu_link * ux_link + csu_link * uy_link
-         else
-            ! Cartesian: direct projection to tangential
-            tangential = -snu_link * ux_node + csu_link * uy_node
-         end if
+         ! Step 2: Project to tangential direction in global frame
+         tangential = -snu_link * ux_link + csu_link * uy_link
+      else
+         ! Cartesian: direct projection to tangential
+         tangential = -snu_link * ux_node + csu_link * uy_node
+      end if
 
-      end function compute_tangential_velocity
+   end function compute_tangential_velocity
 
    !> Compute viscosity and stress for 2D links (vectorized proof of concept)
    !! Computes for ALL links, caller zeros dry links afterward
@@ -1051,10 +1051,10 @@ contains
             suyL = (duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn) * vicLU(L) * hmin_(L) / wuiL
 
             if (jsferic == 1 .and. jasfer3D == 1) then
-               dvx1(L) = +csb_1(L) * suxL - snb_1(L) * suyL
-               dvy1(L) = +snb_1(L) * suxL + csb_1(L) * suyL
-               dvx2(L) = -csb_2(L) * suxL - snb_2(L) * suyL
-               dvy2(L) = -snb_2(L) * suxL + csb_2(L) * suyL
+               dvx1(L) = +(csb_1(L) * suxL - snb_1(L) * suyL)
+               dvy1(L) = +(snb_1(L) * suxL + csb_1(L) * suyL)
+               dvx2(L) = -(csb_2(L) * suxL - snb_2(L) * suyL)
+               dvy2(L) = -(snb_2(L) * suxL + csb_2(L) * suyL)
             else
                dvx1(L) = suxL
                dvy1(L) = suyL
