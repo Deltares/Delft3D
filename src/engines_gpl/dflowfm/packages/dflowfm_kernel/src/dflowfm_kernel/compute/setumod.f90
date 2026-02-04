@@ -236,7 +236,7 @@ contains
             end do
             !$OMP SIMD
             do L = lnx1D + 1, lnx
-               if(jasfer3D == 1) then
+               if (jasfer3D == 1) then
                   tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
                   tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
                else
@@ -266,7 +266,7 @@ contains
                else
                   fcor = fcorio
                end if
-               if(jasfer3D == 1) then
+               if (jasfer3D == 1) then
                   tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
                   tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
                else
@@ -1029,7 +1029,7 @@ contains
             dutdt = -snu(L) * duxdt + csu(L) * duydt
 
             shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
-            vicL = vicL + Smagorinsky**2 * sqrt(shearvar) * dxL * wuL
+            vicL = vicL + merge(Smagorinsky**2 * sqrt(shearvar) * dxL * wuL, 0.0_dp, shearvar > 1.0e-15_dp)
          end if
 
          if (nshiptxy > 0 .and. vicuship /= 0.0_dp) then
