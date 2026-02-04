@@ -40,6 +40,17 @@ object PublishToGui : BuildType({
             cleanOutputDir = false
             publishPackages = true
         }
+        step {
+            name = "Upload artifact to Nexus"
+            type = "RawUploadNexusWindows"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("file_path", "target/Dimr.Libs.%DIMR_nuget_version%.nupkg")
+            param("nexus_username", "%nexus_username%")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_repo", "/nuget-release")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+            param("target_path", "Delft3DGUI/Dimr.Libs.%DIMR_nuget_version%.nupkg")
+        }
         powerShell {
             name = "Set ECModule version"
             formatStderrAsError = true
