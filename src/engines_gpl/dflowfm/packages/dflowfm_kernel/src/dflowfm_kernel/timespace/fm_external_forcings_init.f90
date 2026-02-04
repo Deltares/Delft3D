@@ -1138,7 +1138,7 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_transport, only: NAMLEN, NUMCONST
+      use m_transport, only: numconst
       use m_bubblescreen
       use m_setsorsin
 
@@ -1239,7 +1239,7 @@ contains
          call setsorsin() ! Finalize source/sink data structure
       end if
 
-      call compute_bubblescreen_vertical_distribution(bubblescreen)
+      call update_bubblescreen_discharges(bubblescreen)
 
       ! Append the initialized bubblescreen to the global array 
       ! (not really caring about performance here, as number of bubblescreens is expected to be low)

@@ -72,11 +72,11 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
     integer , dimension(7, nsrc)                            , intent(in)  :: mnksrc !< Description and declaration in esm_alloc_int.f90
     integer , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfsmin !< Bottom-most active layer index at grid cell nm
     integer , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfsmax !< Top-most active layer index at grid cell nm
-    real(fp), dimension(nsrc)                                             :: disch  !< Discharge per per vertical layer [m3/s]
+    real(fp), dimension(nsrc)                                             :: disch  !< Discharge per vertical layer [m3/s]
     real(fp), dimension(nsrc)                               , intent(out) :: disinp !< Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: gsqs   !< Grid cell square area
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci), intent(in)  :: r1     !< Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(lstsc, nsrc)                        , intent(out) :: rint   !< Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci), intent(in)  :: r1     !< Concentrations at new time level
+    real(fp), dimension(lstsc, nsrc)                        , intent(out) :: rint   !< Concentration at discharge points (as obtained from BCC file)
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                            :: s1     !< Waterlevel (free surface elevation) at grid cell nm
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sink   !< Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sour   !< Description and declaration in esm_alloc_real.f90
