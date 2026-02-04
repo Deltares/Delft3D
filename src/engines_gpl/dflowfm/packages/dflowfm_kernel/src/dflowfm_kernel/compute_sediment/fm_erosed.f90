@@ -974,8 +974,8 @@ contains
                end if
                !
                kmaxsd = kmaxlc ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
-               thick0 = max(thicklc(kmaxsd) * h0, epshs)
-               thick1 = max(thicklc(kmaxsd) * h1, epshs)
+               thick0 = max(thicklc(kmaxsd) * h0, epshu)
+               thick1 = thicklc(kmaxsd) * h1
                !
                call erosilt(thicklc, kmaxlc, wslc, mdia, &
                           & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation

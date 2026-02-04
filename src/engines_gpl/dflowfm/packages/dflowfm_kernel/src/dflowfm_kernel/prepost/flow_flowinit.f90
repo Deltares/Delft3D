@@ -688,10 +688,9 @@ contains
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcumin, frcmax, ifrctypuni, dynroughveg
       use m_missing, only: dmiss, imiss
       use m_alloc
-      use m_flow, only: kcsveg
       use unstruc_model, only: md_dynvegpol
       use timespace_parameters, only: LOCTP_POLYGON_FILE
-      use timespace, only: selectelset_internal_nodes
+      use timespace, only: selectelset_internal_links
       use m_delpol
       use MessageHandling
 
@@ -706,6 +705,7 @@ contains
       logical :: ex
 
       integer, dimension(:), allocatable :: kp
+      integer, dimension(:), allocatable :: kcsveg
 
       do link = 1, lnx
          if (frcu(link) == dmiss) then
@@ -745,7 +745,8 @@ contains
             allocate (kp(1:lnx))
             kp = 0
             ! find cells inside polygon
-            call selectelset_internal_nodes(xz, yz, kcs, lnx, kp, pointscount, LOC_FILE=md_dynvegpol, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE)
+            call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
+            
             do k = 1, pointscount
                kcsveg(kp(k)) = 1
             end do
