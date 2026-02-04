@@ -224,7 +224,7 @@ contains
 
       if (newcorio == 1 .and. icorio > 0 .and. icorio <= 20 .and. kmx == 0) then
          !> very performance sensitive loop, tiny bit of code duplication to avoid conditionals and extra vector loads inside
-         if ((jsferic > 0 .or. jacorioconstant > 0) .and. (icorio < 4 .or. icorio > 6)) then
+         if ((jsferic > 0 .or. jacorioconstant > 0) .and. (icorio < 4 .or. icorio > 6)) then !> zeta based fcor
             if (.not. allocated(fcor1_)) then
                allocate (fcor1_(lnkx), fcor2_(lnx))
             end if
@@ -236,10 +236,14 @@ contains
             end do
             !$OMP SIMD
             do L = lnx1D + 1, lnx
-               tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
-               tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
-               fvcor = acL(L) * tangential_1 * fcor1_(L) + &
-                       (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
+               if(jasfer3D == 1) then
+                  tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
+                  tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
+               else
+                  tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
+                  tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+               end if
+               fvcor = acL(L) * tangential_1 * fcor1_(L) + (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
 
                if (trshcorio > 0.0_dp .and. hmin_(L) < trshcorio) then
                   fvcor = fvcor * hmin_(L) / trshcorio
@@ -254,16 +258,21 @@ contains
                   end if
                end if
             end do
-         else
-            !$OMP SIMD
+         else ! u-based fcor
+            !!$OMP SIMD
             do L = lnx1D + 1, lnx
                if (jsferic > 0 .or. jacorioconstant > 0) then
                   fcor = fcori(L)
                else
                   fcor = fcorio
                end if
-               tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-               tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+               if(jasfer3D == 1) then
+                  tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
+                  tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
+               else
+                  tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
+                  tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+               end if
                fvcor = acL(L) * tangential_1 * fcor + (1.0_dp - acL(L)) * tangential_2 * fcor
 
                if (trshcorio > 0.0_dp .and. hmin_(L) < trshcorio) then
