@@ -49,7 +49,7 @@ object PublishToGui : BuildType({
             param("nexus_password", "%nexus_password%")
             param("nexus_repo", "/nuget-release")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
-            param("target_path", "Delft3DGUI/Dimr.Libs.%DIMR_nuget_version%.nupkg")
+            param("target_path", "/Delft3DGUI/Dimr.Libs.%DIMR_nuget_version%.nupkg")
         }
         powerShell {
             name = "Set ECModule version"
