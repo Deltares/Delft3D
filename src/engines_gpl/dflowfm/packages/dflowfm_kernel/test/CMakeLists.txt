@@ -25,4 +25,13 @@ f90twtest(test_pol_to_cellmask
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
+f90twtest(test_compute_horton_infiltration
+    CFILES test_compute_horton_infiltration.cpp
+    F90FILES test_compute_horton_infiltration.f90
+    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_compute_horton_infiltration.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES dflowfm_kernel
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)
+
 add_subdirectory(io)

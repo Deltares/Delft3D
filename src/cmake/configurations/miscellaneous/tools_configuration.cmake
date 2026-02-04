@@ -65,6 +65,16 @@ if(NOT TARGET cosumo_bmi)
     add_subdirectory(${checkout_src_root}/${cosumo_bmi_module} cosumo_bmi)
 endif()
 
+# csumo_nfio (csumo helper)
+if (NOT TARGET csumo_nfio)
+    add_subdirectory(${checkout_src_root}/${csumo_nfio_module} csumo_nfio)
+endif()
+
+# csumo_precice
+if (NOT TARGET csumo_precice)
+    add_subdirectory(${checkout_src_root}/${csumo_precice_module} csumo_precice)
+endif()
+
 # Third party
 # FLAP
 if(NOT TARGET FLAP)

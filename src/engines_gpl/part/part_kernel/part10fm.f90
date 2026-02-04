@@ -45,6 +45,7 @@ contains
         use random_generator
         use timers
         use m_part_modeltypes
+        use spec_feat_par
         use m_fm_particles_in_grid, only: displace_spherical, part_findcellsingle
 
 
@@ -71,6 +72,7 @@ contains
         real(kind = dp) :: tp              ! real value of iptime(ipart)
         real(kind = dp) :: trp             ! horizontal random walk
         real(sp) :: wdirr           ! is wind direction in radians
+        real(sp) :: leeway_ang_sign
         integer :: mpartold, iedge, i, maxiter, npbounce
         real(kind = dp) :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
         real(kind = dp) :: dpxwind, dpywind, windcurratio, dwx, dwy, daz, xcr, ycr
@@ -232,9 +234,15 @@ contains
                         ! but only for the oil model (surface floating), to be consistent with the delft3d approach
                         ! for all oil fractions. If it hits mpart=0 due to dispersion the particle will not stick but resamples.
                         if (oil) then
-                            do ifract = 1, nfract
-                                if (wpart(1 + 3 * (ifract - 1), ipart) > 0.0) then
-                                    call part10fm_pdrag(ipart, ifract, rseed) ! only for floating oil
+                            do ifract = 1 , nfract
+                                if ( wpart(1 + 3 * (ifract - 1), ipart) > 0.0 ) then
+                                    call part10fm_pdrag(ipart, ifract, rseed) ! only for floating oil and particles near surface when winddrag option is used
+                                endif
+                            enddo
+                        else if (apply_wind_drag) then  !when leeway function is used and not the oil module
+                            do isub = 1 , nosubs
+                                if (wpart(isub, ipart)>0.0 ) then
+                                    call part10fm_pdrag(ipart, isub, rseed) ! only for floating oil and particles near surface when winddrag option is used
                                 endif
                             enddo
                         endif
@@ -308,19 +316,21 @@ contains
         !
         !   system administration : frank kleissen
         use partmem
-        use m_particles
+        use m_particles, laypart => kpart
         use m_part_times
         use m_part_recons
         use m_sferic
         use m_sferic_part, only: ptref
+        use m_part_flow, only: h0, kmx
 
-        use m_part_mesh, only: xzwcell, yzwcell, zzwcell
+        use m_part_mesh, only: xzwcell, yzwcell, zzwcell, cell2nod
         use geometry_module, only: Cart3Dtospher, sphertocart3D
         use physicalconsts, only: earth_radius
         use mathconsts, only: raddeg_hp
         use random_generator
         use timers
         use m_part_modeltypes
+        use spec_feat_par
 
         !locals
         logical :: partdomain, openbound
@@ -331,6 +341,7 @@ contains
         integer(int_wp) :: ifract                  ! loop counter for nfract
         integer(int_wp) :: itdelt                  ! delta-t of the particle for smooth loading
         integer(int_wp) :: kp                      ! k of the particle
+        integer(int_wp) :: ilay                    ! loop counter for noslay
         logical :: dstick                  ! logical that determines sticking
         logical :: twolay                  ! model type is "two layers"
         real(kind = dp) :: abuac                   ! actual value of abuoy(ipart) ( * sqrt(ddfac)
@@ -345,13 +356,20 @@ contains
         real(kind = dp) :: t0                      ! helpvariable with initial time step buoyant spreading
         real(kind = dp) :: tp                      ! real value of iptime(ipart)
         real(kind = dp) :: trp                     ! horizontal random walk
-        real(kind = dp) :: wdirr                        ! is wind direction in radians
+        real(kind = dp) :: wdirr                   ! is wind direction in radians
+        real(kind = dp) :: wdirr_lee               ! wind direction corrected for leeway
+        real(kind = dp) :: defang_rad              ! deflection angle in radians
+        real(kind = dp), dimension(noslay)  :: totdepthlay             ! total depth (below water surface) of bottom of layers
+        real(kind = dp) :: thicknessl, depthp              ! layerthickness, depth particle
         integer :: mpartold, npadd, mparttemp
+        integer               :: partcel,  partcellay, partlay        !particle cell number in layer 1, particle cell number, particle layer number
         integer :: nfcons = 10
         real(kind = dp) :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
         real(kind = dp), dimension(1) :: xx, yy
         real(kind = dp) :: dpxwind, dpywind, windcurratio, wvel_sf, dwx, dwy, ux0, uy0, ux0old, uy0old, xcr, ycr
+        real(sp) :: vxw, vyw, vw_net        ! particle velocity in x and y dir., winddriven, net wind speed (ie wind minus current)
         real(kind = dp) :: ioptev(nfract)
+        real(kind = dp) :: leeway_ang_sign ! leeway divergence angle sign (angle left is <0, right >0)
         integer(kind = int_wp), save :: ithndl = 0              ! handle to time this subroutine
 
         if (timon) then
@@ -368,9 +386,21 @@ contains
         ypartold = ypart(ipart)
         mpartold = mpart(ipart)
         partdomain = mpart(ipart) == 0
+        leeway_ang_sign = 1.0
         !partdomain = .FALSE.    ! if false the particle is in the domain
         niter = 0
         cdrag = drand(3) / 100.0          !  wind drag as a fraction
+
+        ! note that the leeway is not using the oil module, but in combination with the
+        ! apply_wind_drag option (see also part10, for the d3dV4 application))
+        if ( oil ) then
+            defang_rad = defang * twopi / 360.0    !  deflection angle oil modelling
+        elseif ( leeway ) then
+            defang_rad = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
+            cdrag      = leeway_multiplier          !  windage (leeway), given as a fraction
+            leeway_modifier_rad = atan2(leeway_modifier, earth_radius) * raddeg_hp
+        endif
+
         ! the next section is taken from the oildsp routine to allow access to the stickyness (if oilmod).
         if (oil) then
             npadd = 0
@@ -388,9 +418,48 @@ contains
         ! drag on the difference vector: cd * (wind - flow)
         ux0 = u0x(mpart(ipart)) + alphafm(mpart(ipart)) * (xpart(ipart) - xzwcell(mpart(ipart)))  ! in m/s ?
         uy0 = u0y(mpart(ipart)) + alphafm(mpart(ipart)) * (ypart(ipart) - yzwcell(mpart(ipart)))
+        ux0old = u0x(mpartold) + alphafm(mpartold) * (xpartold - xzwcell(mpartold))  ! in m/s ?
+        uy0old = u0y(mpartold) + alphafm(mpartold) * (ypartold - yzwcell(mpartold))
 
         dwx = cdrag * (dpxwind - ux0) * dts
-        dwy = cdrag * (dpywind - uy0) * dts
+        dwy = cdrag * (dpywind - uy0) * dts  !this is for carthesian grids.
+
+        ! TODO implement the drag for near surface particles, in part10 this is resolved by, this needs to be done for fm:
+        if (apply_wind_drag) then  ! calculate particle deth from surface
+            partcel = abs(cell2nod(mpart(ipart)))  ! the segment number of the layer 1
+            !layer number
+            partlay = laypart(ipart)
+
+            totdepthlay(1) = h0(partcel)
+            partcellay = partcel + (partlay-1) * hyd%nosegl
+            do ilay = 2, noslay
+               if (ilay <= kmx) then
+                  totdepthlay(ilay) = totdepthlay(ilay - 1) + h0(partcel + (ilay-1) * hyd%nosegl)
+               end if
+            enddo
+
+            thicknessl = h0(partcellay)
+            ! depth of the particle from water surface
+            if ( laypart(ipart) == 1 ) then
+                depthp = thicknessl * hpart(ipart)
+            else
+                depthp = totdepthlay(partlay-1) + thicknessl * hpart(ipart)
+            endif
+
+            if (depthp < max_wind_drag_depth .and. leeway) then
+                leeway_ang_sign = float(mod(ipart, 3) - 1)
+
+                wdirr_lee = wdirr + leeway_ang_sign * defang_rad
+                vxw       = - wvelo(mpart(ipart)) * sin(wdirr_lee)
+                vyw       = - wvelo(mpart(ipart)) * cos(wdirr_lee)
+
+                ! drag on the difference vector: cd * (wind - flow)
+                if ( abs(vxw-ux0old) == 0.0 .and. abs(vyw-uy0old) == 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
+                    dwx = (cdrag*(vxw-ux0old) + leeway_modifier * sin(wdirr_lee)) * dts    ! THis modifier may need to be adjusted de to the angle
+                    dwy = (cdrag*(vyw-uy0old) + leeway_modifier * cos(wdirr_lee)) * dts    !
+                endif
+            end if
+        end if
 
         if (jsferic == 0) then
             xpart(ipart) = xpartold + dwx    !cartesian
@@ -399,9 +468,7 @@ contains
         else
             ! if spherical then for an accurate conversion we need to calculate distances
             zpartold = zpart(ipart)
-
-            call displace_spherical( xpartold, ypartold, zpartold, &
-                     dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
+            call displace_spherical( xpartold, ypartold, zpartold, dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
         endif
 
         call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
@@ -420,7 +487,7 @@ contains
             dpywind = windcurratio * uy0old
             dpxwind = windcurratio * ux0old
 
-            !now we can calculate the new displacement in the direction of hte flow
+            ! now we can calculate the new displacement in the direction of the flow
             dwx = (cdrag * (dpxwind - ux0old)) * dts
             dwy = (cdrag * (dpywind - uy0old)) * dts
 

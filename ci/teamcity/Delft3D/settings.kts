@@ -153,11 +153,13 @@ project {
     buildType(PublishToGui)
     buildType(DIMRbak)
     buildType(Publish)
+    buildType(PinAndTag)
     buildTypesOrder = arrayListOf(
         Trigger,
         PublishToGui,
         DIMRbak,
-        Publish
+        Publish,
+        PinAndTag
     )
         
     features {
