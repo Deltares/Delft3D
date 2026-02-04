@@ -137,16 +137,17 @@ contains
 
       call initialize_coordinate_transform()
       call prefetch_node_velocities(ucx, ucy, ucxq, ucyq)
-
-      ! pre compute hmin as it is reused a lot
-      if (.not. allocated(hmin_)) then
-         allocate (hmin_(lnkx))
+      if (kmx == 0) then
+         ! pre compute hmin as it is reused a lot
+         if (.not. allocated(hmin_)) then
+            allocate (hmin_(lnkx))
+         end if
+         do L = lnx1D + 1, lnx
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            hmin_(L) = min(hs(k1), hs(k2))
+         end do
       end if
-      do L = lnx1D + 1, lnx
-         k1 = ln(1, L)
-         k2 = ln(2, L)
-         hmin_(L) = min(hs(k1), hs(k2))
-      end do
 
       if (kmx == 0 .and. newcorio == 1 .and. Perot_type /= NOT_DEFINED) then
          call set_V(jasfer3D)
@@ -222,7 +223,6 @@ contains
       end if
 
       if (newcorio == 1 .and. icorio > 0 .and. icorio <= 20 .and. kmx == 0) then
-
          !> very performance sensitive loop, tiny bit of code duplication to avoid conditionals and extra vector loads inside
          if ((jsferic > 0 .or. jacorioconstant > 0) .and. (icorio < 4 .or. icorio > 6)) then
             if (.not. allocated(fcor1_)) then
@@ -316,13 +316,13 @@ contains
                   fvcor = 0.0_dp
                   ! set u tangential
                   if (icorio <= 20) then ! Olga types
-                     !if (jasfer3D == 1) then
-                     !   fvcor = acL(LL) * (-sn * nod2linx(LL, 1, ucxq(k1), ucyq(k1)) + cs * nod2liny(LL, 1, ucxq(k1), ucyq(k1))) * fcor1 + &
-                     !           (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucxq(k2), ucyq(k2)) + cs * nod2liny(LL, 2, ucxq(k2), ucyq(k2))) * fcor2
-                     !else
-                     !   fvcor = acl(LL) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 + &
-                     !           (1.0_dp - acl(LL)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2
-                     !end if
+                     if (jasfer3D == 1) then
+                        fvcor = acL(LL) * (-sn * nod2linx(LL, 1, ucxq(k1), ucyq(k1)) + cs * nod2liny(LL, 1, ucxq(k1), ucyq(k1))) * fcor1 + &
+                                (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucxq(k2), ucyq(k2)) + cs * nod2liny(LL, 2, ucxq(k2), ucyq(k2))) * fcor2
+                     else
+                        fvcor = acl(LL) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 + &
+                                (1.0_dp - acl(LL)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2
+                     end if
                   else ! David types
                      if (icorio <= 26) then ! hs/hu
                         hs1 = hs(n1)
@@ -899,12 +899,12 @@ contains
 
       real(dp) :: ux_link, uy_link ! Velocity in link-local frame
 
-         ! Step 1: Transform from global to link-local frame
-         ux_link = csb_node * ux_node + snb_node * uy_node ! link-x (normal)
-         uy_link = -snb_node * ux_node + csb_node * uy_node ! link-y (tangential in link frame)
+      ! Step 1: Transform from global to link-local frame
+      ux_link = csb_node * ux_node + snb_node * uy_node ! link-x (normal)
+      uy_link = -snb_node * ux_node + csb_node * uy_node ! link-y (tangential in link frame)
 
-         ! Step 2: Project to tangential direction in global frame
-         tangential = -snu_link * ux_link + csu_link * uy_link
+      ! Step 2: Project to tangential direction in global frame
+      tangential = -snu_link * ux_link + csu_link * uy_link
 
    end function compute_tangential_velocity_spherical
 
@@ -936,7 +936,7 @@ contains
       real(kind=dp) :: dundn, dutdn, dundt, dutdt
       real(kind=dp) :: duxdn, duydn, duxdt, duydt
       real(kind=dp) :: c11, c12, c22
-      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, volmin, drl, chezy_elder
+      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, volmin, drl, chezy_elder
       real(kind=dp) :: wuiL, wuL, dxiL, dxL
       real(kind=dp) :: ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2
       real(kind=dp) :: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
@@ -951,7 +951,6 @@ contains
          allocate (dvy1(lnx))
          allocate (dvx2(lnx))
          allocate (dvy2(lnx))
-         allocate (hmin(lnx))
          allocate (volmin(lnx))
       end if
 
@@ -972,17 +971,18 @@ contains
       end if
       if (Elder > 0.0_dp) then !  add Elder
          chezy_elder = get_chezy(hu, frcu, u1, v, ifrcutp)
+         chezy_elder = Elder * (vksag6 / chezy_elder) * (hu) * sqrt(u1 * u1 + v**2)
       end if
 
       !$OMP SIMD
       do L = L1, L2
          vicL = 0.0_dp
          wuiL = wui(L)
-         wuL = 1/wuiL
+         wuL = 1 / wuiL
          dxL = dx(L)
-         dxiL = 1/dxL
+         dxiL = 1 / dxL
          if (Elder > 0.0_dp) then !  add Elder
-            vicL = Elder * (vksag6 / chezy_elder(L)) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L)**2)
+            vicL = vicL + chezy_elder(L)
          end if
 
          if (jsferic == 1 .and. jasfer3D == 1) then
@@ -1033,7 +1033,7 @@ contains
             vicL = max(nuhroller, vicL)
          end if
 
-        if (javiusp) then
+         if (javiusp) then
             vicc = viusp(L)
          else
             vicc = vicouv
