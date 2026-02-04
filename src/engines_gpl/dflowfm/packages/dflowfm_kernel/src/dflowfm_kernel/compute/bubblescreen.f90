@@ -55,7 +55,7 @@ contains
             max_velocity = -1.0_dp * total_discharge_water * area_fraction / ba(n)
 
             ! Get start and stop indices of active layers in the bubble screen and layer index with maximum downward velocity
-            call find_active_layer_indices(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
+            call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
 
             ! Compute vertical distribution of discharge for this flow cell
             call compute_discharge_vertical_distribution(n, k_start, k_stop, k_max_velocity, max_velocity, discharge)
@@ -106,8 +106,8 @@ contains
 
     end function compute_bubblescreen_area
 
-    !> Finds the layer index of the lowest and highest active source/sinks in the bubble screen and the layer index with maximum downward vertical velocity in a flow cell
-    subroutine find_active_layer_indices(flow_cell_index, z_bot, bubblescreen_id, k_start, k_stop, k_max_velocity)
+    !> Finds the layer interfaces of the bottom (k_start), top (k_stop) and maximum velocity (k_max_velocity) for a bubble screen in a flow cell
+    subroutine find_active_layer_interfaces(flow_cell_index, z_bot, bubblescreen_id, k_start, k_stop, k_max_velocity)
         ! Parameters
         integer, intent(in) :: flow_cell_index !< 2D flow cell index {in network_data::netcell}
         real(kind=dp), intent(in) :: z_bot !< [m] Bottom elevation of the flow cell
@@ -123,15 +123,40 @@ contains
         real(kind=dp) :: z_top !< [m] Top elevation of the flow cell
         real(kind=dp) :: z_max_velocity !< [m] Elevation of maximum downward velocity
 
+
+        ! A visual illustrating the difference between layer indices (K) and layer interfaces (k) for 3D cells
+        ! A 2D flow cell is shown with kmx=4 layers
+        ! The method that is used to find k_start, k_stop, and k_max_velocity is illustrated as well
+        ! 
+        !   ----------- k = 4 <----- if z_top (the water level) is defined here
+        !                            k=4 will be selected as the closest interface
+        !       K=4
+        !                 v--------- if z_max_velocity is here (defined as 20% from z_top down to z_bot)
+        !   ----------- k = 3        k=3 will be selected as the closest interface
+        !
+        !       K=3
+        !
+        !   ----------- k = 2
+        !
+        !       K=2
+        !
+        !   ----------- k = 1
+        !                 ^--------- if z_bot (the z-level of the bubblescreen) is here
+        !       K=1                  k=1 will be selected as the closest interface
+        !   
+        !   ----------- k = 0
+
+
+        ! Get bottom and top layer interfaces of the flow cell
         call getkbotktop(flow_cell_index, k_bot, k_top)
 
-        ! Start all indices at bottom layer interface
+        ! Start all interfaces at bottom layer interface
         k_start = k_bot - 1
         k_stop = k_bot - 1
         k_max_velocity = k_bot - 1
 
         z_top = s1(flow_cell_index) ! Top elevation is set to water level in the flow cell
-        z_max_velocity = z_top - 0.2_dp * (z_top - z_bot) ! Max velocity is located at 20% below the free surface
+        z_max_velocity = z_top - 0.2_dp * (z_top - z_bot) ! Max velocity is located at 20% below z_top down to z_bot
 
         ! Find for each z value (bot, max_velocity, top) the closest layer interface
         do k = k_bot, k_top
@@ -160,7 +185,7 @@ contains
             k_max_velocity = k_stop - 1
         end if
 
-    end subroutine find_active_layer_indices
+    end subroutine find_active_layer_interfaces
 
     !> Computes the vertical distribution of discharge for a bubble screen in a flow cell
     subroutine compute_discharge_vertical_distribution(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, discharge)
@@ -180,6 +205,51 @@ contains
         real(kind=dp) :: delta_velocity !< Change in vertical velocity per layer
         real(kind=dp) :: vertical_fraction !< Fractional vertical position within bubble screen
         real(kind=dp), dimension(:), allocatable :: vertical_velocity !< Vertical velocity array (at layer interfaces) size:{kmx+1}
+
+        ! It is assumed that a bubble screen induces a triangular downward vertical velocity profile
+        ! The maximum velocity is 20% from z_top down to z_bot, at z_top and z_bot the velocity is zero
+        ! A visual illustrating the triangular vertical velocity profile is shown for a 2D flow cell with kmx=4 layers
+        ! The velocities are defined at the layer interfaces (k)
+        ! This visual continues from the visual in find_active_layer_interfaces
+        !
+        !    <-- velocity magnitude
+        !  0 m/s          --- k = 4 (k_top; velocity = 0)
+        !              ==  |
+        !            ====  |
+        ! -6 m/s   ====== --- k = 3 (k_max_velocity; velocity = maximal)
+        !           =====  |
+        !            ====  |
+        ! -3 m/s      === --- k = 2
+        !              ==  |
+        !               =  |
+        !  0 m/s          --- k = 1 (k_start; velocity = 0)
+        !                  |
+        !                  |
+        !  0 m/s          --- k = 0
+        !
+        ! Using the velocity distribution, delta velocities are computed at layer indices (K)
+        ! The delta velocities are then multiplied by the flow cell area to get the discharge per layer
+        !
+        ! This results in the following discharge distribution per layer index (K):
+        ! + indicates a source, - indicates a sink
+        !
+        !    <-- discharge magnitude
+        !                 ---
+        ! +6 m3/s  ++++++  |  K=4
+        !                  |
+        !                 ---
+        ! -3 m3/s     ---  |  K=3
+        !                  |
+        !                 ---
+        ! -3 m3/s     ---  |  K=2
+        !                  |
+        !                 ---
+        !  0 m3/s          |  K=1
+        !                  |
+        !                 ---
+        !
+        ! The discharge distribution always sums to zero for all 3D layers in a 2D cell
+
 
         ! Get bottom and top layer indices of the flow cell
         call getkbotktop(flow_cell_index, k_bot, k_top)
@@ -204,6 +274,7 @@ contains
             end if
         end do
 
+        ! Compute discharge using vertical velocity profile
         do i = 1, kmx
             delta_velocity = vertical_velocity(i+1) - vertical_velocity(i)
             discharge(i) = delta_velocity * ba(flow_cell_index)
