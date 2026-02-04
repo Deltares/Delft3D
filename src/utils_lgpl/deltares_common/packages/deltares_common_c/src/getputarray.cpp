@@ -42,7 +42,7 @@
 
 #include "getputarray.h"
 
-#if defined(linux)
+#if defined(__linux__)
 #define Sleep usleep
 #define SEC 1000000.0
 #else

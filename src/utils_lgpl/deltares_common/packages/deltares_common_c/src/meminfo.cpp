@@ -1,5 +1,5 @@
 #include "meminfo.h"
-#if linux
+#if defined(__linux__)
 #include <sys/sysinfo.h>
 #endif
 
