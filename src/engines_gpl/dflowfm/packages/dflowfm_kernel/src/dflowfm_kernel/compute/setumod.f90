@@ -930,7 +930,7 @@ contains
       use m_coordinate_transform, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner1, uycorner1, uxcorner2, uycorner2
       use m_coordinate_transform, only: ux1, uy1, ux2, uy2
       !use m_coordinate_transform, only: ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2
-!      use m_xbeach_data, only: DR, roller, swave, nuhfac
+      use m_xbeach_data, only: DR, roller, swave, nuhfac
       use m_waveconst, only: WAVE_SURFBEAT
       use m_sferic, only: jsferic, jasfer3D
       use m_lin2nodx, only: lin2nodx
@@ -942,12 +942,13 @@ contains
 
       integer :: L, L1, L2, k1, k2
       real(kind=dp) :: vicc, vicl, dxiAu, viscosity_max_limit
+      real(kind=dp) :: nuhroller
       real(kind=dp) :: Cz, shearvar
       real(kind=dp) :: suxL, suyL
       real(kind=dp) :: dundn, dutdn, dundt, dutdt
       real(kind=dp) :: duxdn, duydn, duxdt, duydt
       real(kind=dp) :: c11, c12, c22
-      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, volmin
+      real(kind=dp), dimension(:), allocatable, save :: dvx1, dvy1, dvx2, dvy2, hmin, volmin, drl
       real(kind=dp) :: wuiL, dxiL
       real(kind=dp) :: ucnx_link_1, ucny_link_1, ucnx_link_2, ucny_link_2
       real(kind=dp) :: ucx_link_1, ucy_link_1, ucx_link_2, ucy_link_2
@@ -971,6 +972,13 @@ contains
             k1 = ln(1, L)
             k2 = ln(2, L)
             volmin(L) = min(vol1(k1), vol1(k2))
+         end do
+      end if
+      if ((jawave == WAVE_SURFBEAT) .and. (swave == 1) .and. (roller == 1)) then
+         do L = L1, L2
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            drl(L) = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
          end do
       end if
 
@@ -1021,6 +1029,16 @@ contains
 
                shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
                vicL = vicL + Smagorinsky**2 * sqrt(shearvar) / (dxiL * wuiL)
+            end if
+
+            if (nshiptxy > 0 .and. vicuship /= 0.0_dp) then
+               vicL = vicL + vicushp(L)
+            end if
+
+            ! JRE: add roller induced viscosity
+            if ((jawave == WAVE_SURFBEAT) .and. (swave == 1) .and. (roller == 1)) then
+               nuhroller = nuhfac * hu(L) * (drl(L) / rhomean)**(1.0_dp / 3.0_dp)
+               vicL = max(nuhroller, vicL)
             end if
 
             if (javiusp == 1) then
