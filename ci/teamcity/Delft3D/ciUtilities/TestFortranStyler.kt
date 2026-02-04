@@ -49,8 +49,6 @@ object TestFortranStyler : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
-        cleanupTemporaryRemote {}
         python {
             name = "Run unit tests"
             workingDir = "tools/deltares_fortran_styler"

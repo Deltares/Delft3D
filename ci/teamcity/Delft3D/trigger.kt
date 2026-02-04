@@ -38,8 +38,6 @@ object Trigger : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
-        cleanupTemporaryRemote {}
         python {
             name = "Retrieve Linux Testbench XMLs from CSV"
             command = file {

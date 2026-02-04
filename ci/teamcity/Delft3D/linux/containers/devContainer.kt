@@ -49,8 +49,6 @@ object LinuxDevContainer : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
-        cleanupTemporaryRemote {}
         exportJiraIssueId {
             paramName = "env.JIRA_ISSUE_ID"
         }
