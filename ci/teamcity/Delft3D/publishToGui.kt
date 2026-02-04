@@ -94,59 +94,59 @@ object PublishToGui : BuildType({
         }
     }
 
-    if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
-        dependencies {
-            dependency(LinuxCollect) {
-                snapshot {
-                }
-                
-                artifacts {
-                    artifactRules = """
-                        dimrset_lnx64_*.tar.gz!lnx64/bin/** => source/bin
-                        dimrset_lnx64_*.tar.gz!lnx64/lib/** => source/lib
-                        ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => source/share
-                    """.trimIndent()
-                }
+    // if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
+    dependencies {
+        dependency(LinuxCollect) {
+            snapshot {
             }
-            dependency(WindowsCollect) {
-                snapshot {
-                }
-                artifacts {
-                    artifactRules = "dimrset_x64_*.zip!**=>source"
-                }
+            
+            artifacts {
+                artifactRules = """
+                    dimrset_lnx64_*.tar.gz!lnx64/bin/** => source/bin
+                    dimrset_lnx64_*.tar.gz!lnx64/lib/** => source/lib
+                    ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => source/share
+                """.trimIndent()
             }
-            dependency(LinuxTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
+        }
+        dependency(WindowsCollect) {
+            snapshot {
             }
-            dependency(WindowsTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
+            artifacts {
+                artifactRules = "dimrset_x64_*.zip!**=>source"
             }
-            dependency(LinuxUnitTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
+        }
+        dependency(LinuxTest) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
-            dependency(WindowsUnitTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
+        }
+        dependency(WindowsTest) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
-            dependency(LinuxRunAllContainerExamples) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
+        }
+        dependency(LinuxUnitTest) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
+        dependency(WindowsUnitTest) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
+        dependency(LinuxRunAllContainerExamples) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
     }
+    // }
 
     cleanup {
         keepRule {
