@@ -1239,8 +1239,6 @@ contains
          call setsorsin() ! Finalize source/sink data structure
       end if
 
-      call update_bubblescreen_discharges(bubblescreen)
-
       ! Append the initialized bubblescreen to the global array 
       ! (not really caring about performance here, as number of bubblescreens is expected to be low)
       if (.not. allocated(bubblescreens)) then 

@@ -1,9 +1,9 @@
 module m_bubblescreen
     use precision_basics, only: dp, comparereal
-    use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, ksrc, qstss
+    use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubblescreens, ksrc, qstss
     use m_alloc, only: realloc
     use m_cell_geometry, only: ba
-    use m_flow, only: s1, zws, kmx, kbot
+    use m_flow, only: kmx, zws, kbot, s1, vol1
     use m_get_kbot_ktop, only: getkbotktop
     use m_transport, only: numconst, constituents
     use messageHandling, only: err_flush, msgbuf, msg_flush
@@ -12,12 +12,26 @@ module m_bubblescreen
 
     private
 
-    public :: update_bubblescreen_discharges
+    public :: update_bubblescreens_discharge
+    public :: update_bubblescreen_discharge
 
 contains
 
-    !> Updates the discharges for a bubble screen based on user-specified air discharge rates
-    subroutine update_bubblescreen_discharges(bubblescreen)       
+    !> Wrapper subroutine to update discharges for all bubble screens
+    subroutine update_bubblescreens_discharge()
+        ! Parameters
+
+        ! Local variables
+        integer :: i !< Loop index for bubble screens
+
+        do i = 1, size(bubblescreens)
+            call update_bubblescreen_discharge(bubblescreens(i))
+        end do
+
+    end subroutine update_bubblescreens_discharge
+
+    !> Updates the discharges for a single bubble screen based on user-specified air discharge rates
+    subroutine update_bubblescreen_discharge(bubblescreen)       
         ! Parameters
         type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
 
@@ -42,10 +56,10 @@ contains
         ! ====================================================================================================
         ! TODO: switch to correct lookup of air discharge for this bubble screen when ready (found qstss array)
 
-        air_discharge = 100.0_dp ! Placeholder value
+        air_discharge = 3.0e-2_dp ! Placeholder value
         ! air_discharge = qstss(flow_cell%start_index) ! Get air discharge from first source/sink in array (all source/sinks are set to the same value by the EC module)
         ! ====================================================================================================
-        water_discharge = compute_bubblescreen_water_discharge_from_air(air_discharge)
+        water_discharge = convert_discharge_air_to_water(air_discharge)
 
         total_area = compute_bubblescreen_area(bubblescreen)
 
@@ -72,10 +86,10 @@ contains
 
         end do
 
-    end subroutine update_bubblescreen_discharges
+    end subroutine update_bubblescreen_discharge
 
-    !> Computes the water discharge rate from the air discharge rate for a bubble screen.
-    function compute_bubblescreen_water_discharge_from_air(air_discharge, alpha) result(water_discharge)
+    !> Converts the air discharge rate to water discharge rate using an empirical formula
+    function convert_discharge_air_to_water(air_discharge, alpha) result(water_discharge)
         ! Parameters
         real(kind=dp), intent(in) :: air_discharge !< [m3/s] Air discharge rate
         real(kind=dp), intent(in), optional :: alpha !< Empirical coefficient (default 1000)
@@ -94,7 +108,7 @@ contains
         ! Compute water discharge using empirical formula
         water_discharge = (alpha0 * air_discharge) ** (2.0_dp / 3.0_dp)
 
-    end function compute_bubblescreen_water_discharge_from_air
+    end function convert_discharge_air_to_water
 
     !> Computes the total area of a bubble screen based on its flow cells
     function compute_bubblescreen_area(bubblescreen) result(area)
@@ -311,7 +325,7 @@ contains
             total_water_discharge = total_water_discharge + discharge(1, l)
 
             do i = 1, numconst
-                discharge(i+1, l) = discharge(1, l) * constituents(i, k) ! Compute constituent discharge by multiplying water discharge by constituent concentration
+                discharge(i+1, l) = discharge(1, l) * constituents(i, k) / vol1(k) ! Compute constituent discharge by multiplying water discharge by constituent concentration
                 total_constituent_discharge(i) = total_constituent_discharge(i) + discharge(i+1, l)
             end do
         end do
