@@ -978,7 +978,7 @@ contains
       do L = L1, L2
          if (hu(L) > 0) then
             vicL = 0.0_dp
-            wuiL = wu(L)
+            wuiL = wui(L)
             dxiL = dxi(L)
             if (Elder > 0.0_dp) then !  add Elder
                Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
