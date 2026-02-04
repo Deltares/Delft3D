@@ -2,6 +2,7 @@ package Delft3D.template
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import Delft3D.step.*
 
 object TemplateMergeRequest : Template({
 
