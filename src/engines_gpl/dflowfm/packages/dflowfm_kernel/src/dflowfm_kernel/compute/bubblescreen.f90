@@ -30,8 +30,8 @@ contains
         real(kind=dp) :: area_fraction !< Area fraction of the flow cell
         real(kind=dp) :: max_velocity !< Maximum downward vertical velocity for this flow cell
         real(kind=dp) :: total_area !< Total area of the bubble screen
-        real(kind=dp) :: total_discharge_air !< Air discharge for this bubble screen
-        real(kind=dp) :: total_discharge_water !< Water discharge for this bubble screen
+        real(kind=dp) :: air_discharge !< Air discharge for this bubble screen
+        real(kind=dp) :: water_discharge !< Water discharge for this bubble screen
         real(kind=dp), dimension(1+numconst, kmx) :: discharge !< Discharge array for water and constituents for all layers in 2D flow cell
         type(t_BubbleScreenFlowCell) :: flow_cell !< Current flow cell
 
@@ -42,10 +42,10 @@ contains
         ! ====================================================================================================
         ! TODO: switch to correct lookup of air discharge for this bubble screen when ready (found qstss array)
 
-        total_discharge_air = 100.0_dp ! Placeholder value
-        ! total_discharge_air = qstss(flow_cell%start_index) ! Get air discharge from first source/sink in array (all source/sinks are set to the same value by the EC module)
+        air_discharge = 100.0_dp ! Placeholder value
+        ! air_discharge = qstss(flow_cell%start_index) ! Get air discharge from first source/sink in array (all source/sinks are set to the same value by the EC module)
         ! ====================================================================================================
-        total_discharge_water = compute_bubblescreen_water_discharge_from_air(total_discharge_air)
+        water_discharge = compute_bubblescreen_water_discharge_from_air(air_discharge)
 
         total_area = compute_bubblescreen_area(bubblescreen)
 
@@ -56,7 +56,7 @@ contains
 
             ! Compute maximum downward vertical velocity based on area fraction
             area_fraction = ba(n) / total_area
-            max_velocity = -1.0_dp * total_discharge_water * area_fraction / ba(n)
+            max_velocity = -1.0_dp * water_discharge * area_fraction / ba(n)
 
             ! Get start and stop indices of active layers in the bubble screen and layer index with maximum downward velocity
             call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
@@ -75,11 +75,11 @@ contains
     end subroutine update_bubblescreen_discharges
 
     !> Computes the water discharge rate from the air discharge rate for a bubble screen.
-    function compute_bubblescreen_water_discharge_from_air(discharge_air, alpha) result(discharge_water)
+    function compute_bubblescreen_water_discharge_from_air(air_discharge, alpha) result(water_discharge)
         ! Parameters
-        real(kind=dp), intent(in) :: discharge_air !< [m3/s] Air discharge rate
+        real(kind=dp), intent(in) :: air_discharge !< [m3/s] Air discharge rate
         real(kind=dp), intent(in), optional :: alpha !< Empirical coefficient (default 1000)
-        real(kind=dp) :: discharge_water !< [m3/s] Resulting water discharge rate
+        real(kind=dp) :: water_discharge !< [m3/s] Resulting water discharge rate
 
         ! Local variables
         real(kind=dp) :: alpha0
@@ -92,7 +92,7 @@ contains
         end if
 
         ! Compute water discharge using empirical formula
-        discharge_water = (alpha0 * discharge_air) ** (2.0_dp / 3.0_dp)
+        water_discharge = (alpha0 * air_discharge) ** (2.0_dp / 3.0_dp)
 
     end function compute_bubblescreen_water_discharge_from_air
 
