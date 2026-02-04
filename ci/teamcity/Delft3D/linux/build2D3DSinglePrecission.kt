@@ -45,7 +45,6 @@ object LinuxBuild2D3DSP : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         script {
             name = "Add version attributes"
             workingDir = "./src/version_includes"

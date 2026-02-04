@@ -50,11 +50,10 @@ Bamin             = 1E-06
 OpenBoundaryTolerance= 3
 RenumberFlowNodes = 1
 Numtopsig         = 0
-SigmaGrowthFactor = 1
 Kmx               = 18        # Maximum number of vertical layers
 Layertype         = 1         # Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers)
 Numtopsig         = 0         # Number of sigma layers in top of z-layer model
-SigmaGrowthFactor = 1.        # Layer thickness growth factor from bed up
+zLayerGrowthFactor = 1.       # z-layer thickness growth factor from DzTopUniAboveZ downwards
 StretchType       = 1         # Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential
 Dxwuimin2D        = 0.1       # Smallest fraction dx/wu , set dx > Dxwuimin2D*wu, Default = 0.1
 StretchCoef       = 1, 1.404019, 1.971269, 2.767610, 3.885900, 5.455881, 7.660161, 10.755012, 15.100148, 15.100148, 10.755012, 7.660161, 5.455881, 3.885900, 2.767610, 1.971269, 1.404019, 1             # Prescribes the layer thicknesses in percentages
