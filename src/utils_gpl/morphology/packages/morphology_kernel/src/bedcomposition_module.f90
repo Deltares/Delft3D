@@ -551,7 +551,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
                 !
                 ! store surplus of mass in underlayers
                 !
-                call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm), work)
+                call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm))
                 !
              elseif ( thdiff2 < 0.0_fp ) then
                 !
@@ -637,7 +637,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
        enddo
     endselect
     if (istat == 0) then 
-       istat = deallocwork(this,work)
+       istat = deallocwork(this)
     endif
 end function updmorlyr
 !
@@ -1346,7 +1346,7 @@ end subroutine lyrerosion_mass
 !
 !
 !==============================================================================
-subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, work)
+subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
 !!--description-----------------------------------------------------------------
 !
 !    Function:
