@@ -95,7 +95,7 @@ contains
       real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty !, vksag6, Cz
       real(kind=dp) :: huv, ab_correction
       real(kind=dp), allocatable :: u1_tmp(:), vluban(:)
-      real(kind=dp) :: ucyq_link_1, ucyq_link_2, ucxq_link_1, ucxq_link_2, tangential_1, tangential_2
+      real(kind=dp) :: tangential_1, tangential_2
       integer :: nw, L1, L2, kt, Lb, Lt, Lb1, Lt1, Lb2, Lt2, kb1, kb2, ntmp, m
 
 !      real(kind=dp) :: DRL, nuhroller
@@ -223,6 +223,7 @@ contains
 
       if (newcorio == 1 .and. icorio > 0 .and. icorio <= 20 .and. kmx == 0) then
 
+         !> very performance sensitive loop, tiny bit of code duplication to avoid conditionals and extra vector loads inside
          if ((jsferic > 0 .or. jacorioconstant > 0) .and. (icorio < 4 .or. icorio > 6)) then
             if (.not. allocated(fcor1_)) then
                allocate (fcor1_(lnkx), fcor2_(lnx))
@@ -233,56 +234,49 @@ contains
                fcor1_(L) = fcori(k1)
                fcor2_(L) = fcori(k2) ! defined at zeta-points
             end do
-            !$OMP SIMD
+            !$OMP SIMD ALIGNED(ux3, uy3, csb_1, snb_1, csu, snu, acL, fcor1_, fcor2_, hmin_, hu, adve, fvcoro : 64)
             do L = lnx1D + 1, lnx
-               if (hu(L) > 0) then
-                  tangential_1 = compute_tangential_velocity(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L), jasfer3D)
-                  tangential_2 = compute_tangential_velocity(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L), jasfer3D)
+               tangential_1 = compute_tangential_velocity(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L), jasfer3D)
+               tangential_2 = compute_tangential_velocity(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L), jasfer3D)
+               fvcor = acL(L) * tangential_1 * fcor1_(L) + &
+                       (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
 
-                  fvcor = acL(L) * tangential_1 * fcor1_(L) + &
-                          (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
-
-                  ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
-                                  merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
-
-                  adve(L) = adve(L) - fvcor - ab_correction
-                  fvcoro(L) = fvcor
+               if (trshcorio > 0.0_dp .and. hmin_(L) < trshcorio) then
+                  fvcor = fvcor * hmin_(L) / trshcorio
+               end if
+               if (hu(L) > 0.0_dp) then
+                  if (Corioadamsbashfordfac > 0.0_dp) then
+                     ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
+                     adve(L) = adve(L) - fvcor - ab_correction
+                     fvcoro(L) = fvcor
+                  else
+                     adve(L) = adve(L) - fvcor
+                  end if
                end if
             end do
-
          else
-
             !$OMP SIMD
             do L = lnx1D + 1, lnx
-               if (hu(L) > 0) then
-                  if (jsferic > 0 .or. jacorioconstant > 0) then
-                     fcor = fcori(L)
+               if (jsferic > 0 .or. jacorioconstant > 0) then
+                  fcor = fcori(L)
+               else
+                  fcor = fcorio
+               end if
+               tangential_1 = compute_tangential_velocity(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L), jasfer3D)
+               tangential_2 = compute_tangential_velocity(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L), jasfer3D)
+               fvcor = acL(L) * tangential_1 * fcor + (1.0_dp - acL(L)) * tangential_2 * fcor
+
+               if (trshcorio > 0.0_dp .and. hmin_(L) < trshcorio) then
+                  fvcor = fvcor * hmin_(L) / trshcorio
+               end if
+               if (hu(L) > 0.0_dp) then
+                  if (Corioadamsbashfordfac > 0.0_dp) then
+                     ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
+                     adve(L) = adve(L) - fvcor - ab_correction
+                     fvcoro(L) = fvcor
                   else
-                     fcor = fcorio
+                     adve(L) = adve(L) - fvcor
                   end if
-                  if (jasfer3D == 1) then
-                     ! Step 1: Transform to link frame
-                     ucxq_link_1 = +csb_1(L) * ux3(L) + snb_1(L) * uy3(L)
-                     ucyq_link_1 = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
-                     ucxq_link_2 = +csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
-                     ucyq_link_2 = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
-
-                     ! Step 2: Project to tangential direction
-                     tangential_1 = -snu(L) * ucxq_link_1 + csu(L) * ucyq_link_1
-                     tangential_2 = -snu(L) * ucxq_link_2 + csu(L) * ucyq_link_2
-                  else
-                     tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-                     tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
-                  end if
-
-                  fvcor = acL(L) * tangential_1 * fcor + &
-                          (1.0_dp - acL(L)) * tangential_2 * fcor
-
-                  ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
-                                  merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
-
-                  adve(L) = adve(L) - fvcor - ab_correction
-                  fvcoro(L) = fvcor
                end if
             end do
          end if
@@ -1181,5 +1175,39 @@ contains
       end do
 
    end subroutine interpolate_stress_to_links_2D
+
+   !> Compute Coriolis force with optional depth threshold and Adams-Bashforth correction
+   !! Returns: (adve_correction, fvcoro_new)
+   elemental subroutine compute_coriolis_correction(fvcor_in, fvcoro_prev, hmin, trshcorio, adamsfac, &
+                                                    adve_correction, fvcoro_new)
+      real(dp), intent(in) :: fvcor_in !< Computed Coriolis force
+      real(dp), intent(in) :: fvcoro_prev !< Previous Coriolis force
+      real(dp), intent(in) :: hmin !< Minimum depth at link
+      real(dp), intent(in) :: trshcorio !< Depth threshold for Coriolis ramping
+      real(dp), intent(in) :: adamsfac !< Adams-Bashforth factor
+      real(dp), intent(out) :: adve_correction !< Correction to apply to adve
+      real(dp), intent(out) :: fvcoro_new !< New value for fvcoro
+
+      real(dp) :: fvcor, ab_correction
+
+      fvcor = fvcor_in
+
+      ! Apply depth threshold ramping
+      if (trshcorio > 0.0_dp) then
+         if (hmin < trshcorio) then
+            fvcor = fvcor * hmin / trshcorio
+         end if
+      end if
+
+      ! Compute Adams-Bashforth correction if enabled
+      if (adamsfac > 0.0_dp) then
+         ab_correction = adamsfac * (fvcor - fvcoro_prev) * merge(1.0_dp, 0.0_dp, fvcoro_prev /= 0.0_dp)
+         adve_correction = -(fvcor + ab_correction)
+         fvcoro_new = fvcor
+      else
+         adve_correction = -fvcor
+         fvcoro_new = fvcoro_prev ! unchanged
+      end if
+   end subroutine compute_coriolis_correction
 
 end module m_setumod
