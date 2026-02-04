@@ -25,6 +25,11 @@ cmake_path(GET PARENT_DIR PARENT_PATH dir)
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
 
+# Specify C++ standard for all targets, disable compiler specific extentions
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 include(modules.cmake)
 
 # Check CMake optional arguments

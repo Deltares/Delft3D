@@ -38,8 +38,6 @@
 #include <iostream>
 #include <set>
 
-using namespace std;
-
 #include "dimr.h"
 #include "dimr_lib_version.h"
 
@@ -58,8 +56,6 @@ using namespace std;
 
 
 #include <typeinfo>
-//#include <filesystem>
-using namespace std;
 
 #include <string>
 #include <sstream>
