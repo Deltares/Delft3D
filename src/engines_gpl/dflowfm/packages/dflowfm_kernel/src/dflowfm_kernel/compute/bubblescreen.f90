@@ -205,13 +205,12 @@ contains
         real(kind=dp), dimension(1+numconst, kmx), intent(inout) :: discharge !< Discharge array for water and constituents for all layers in 2D flow cell 
 
         ! Local variables
-        integer :: i !< Loop index
+        integer :: l !< Local layer index within flow cell
         integer :: k !< Layer index
-        integer :: k_bot !< Flow cell bottom layer index
-        integer :: k_top !< Flow cell top layer index
         real(kind=dp) :: delta_velocity !< Change in vertical velocity per layer
         real(kind=dp) :: vertical_fraction !< Fractional vertical position within bubble screen
         real(kind=dp), dimension(kmx+1) :: vertical_velocity !< Vertical velocity array (at layer interfaces) size:{kmx+1}
+
 
         ! It is assumed that a bubble screen induces a triangular downward vertical velocity profile
         ! The maximum velocity is 20% from z_top down to z_bot, at z_top and z_bot the velocity is zero
@@ -258,31 +257,28 @@ contains
         ! The discharge distribution always sums to zero for all 3D layers in a 2D cell
 
 
-        ! Get bottom and top layer indices of the flow cell
-        call getkbotktop(flow_cell_index, k_bot, k_top)
-
         ! Initialize discharge and vertical velocity arrays
         discharge = 0.0_dp
         vertical_velocity = 0.0_dp
 
         ! Fill vertical velocity array
-        do i = 1, kmx+1
-            k = k_bot + i - 2
+        do l = 1, kmx+1
+            k = kbot(flow_cell_index) + l - 2
             if (k < k_start .or. k > k_stop) then
-                vertical_velocity(i) = 0.0_dp ! Outside bubble screen active layers
+                vertical_velocity(l) = 0.0_dp ! Outside bubble screen active layers
             else if (k <= k_max_velocity) then
                 vertical_fraction = (zws(k) - zws(k_start)) / (zws(k_max_velocity) - zws(k_start))
-                vertical_velocity(i) = max_velocity * vertical_fraction
+                vertical_velocity(l) = max_velocity * vertical_fraction
             else
                 vertical_fraction = (zws(k_stop) - zws(k)) / (zws(k_stop) - zws(k_max_velocity))
-                vertical_velocity(i) = max_velocity * vertical_fraction
+                vertical_velocity(l) = max_velocity * vertical_fraction
             end if
         end do
 
         ! Compute discharge using vertical velocity profile
-        do i = 1, kmx
-            delta_velocity = vertical_velocity(i+1) - vertical_velocity(i)
-            discharge(1, i) = delta_velocity * ba(flow_cell_index)
+        do l = 1, kmx
+            delta_velocity = vertical_velocity(l+1) - vertical_velocity(l)
+            discharge(1, l) = delta_velocity * ba(flow_cell_index)
         end do
 
     end subroutine compute_water_discharge
@@ -300,7 +296,6 @@ contains
         integer :: i !< Loop index
         integer :: k !< Layer index
         integer :: l !< Local layer index within flow cell
-        integer :: k_bot !< Flow cell bottom layer index
         real(kind=dp) :: source_fraction !< Fraction of source for constituent discharges
         real(kind=dp) :: total_water_discharge !< Total water discharge
         real(kind=dp), dimension(numconst) :: total_constituent_discharge !< Total constituent discharge per constituent
@@ -310,11 +305,9 @@ contains
         total_water_discharge = 0.0_dp
         total_constituent_discharge = 0.0_dp
 
-        k_bot = kbot(flow_cell_index) ! Get bottom layer index of flow cell
-
         ! First compute constituent discharges for sink layers
         do k = k_start+1, k_max_velocity
-            l = k - k_bot + 1 ! Convert to local layer index in flow cell
+            l = k - kbot(flow_cell_index) + 1 ! Convert to local layer index in flow cell
             total_water_discharge = total_water_discharge + discharge(1, l)
 
             do i = 1, numconst
@@ -325,7 +318,7 @@ contains
 
         ! Then compute constituent discharges for source layers
         do k = k_max_velocity+1, k_stop
-            l = k - k_bot + 1 ! Convert to local layer index in flow cell
+            l = k - kbot(flow_cell_index) + 1 ! Convert to local layer index in flow cell
             source_fraction = -1.0_dp * discharge(1, l) / total_water_discharge ! Fraction of source is proportional to water discharge
             do i = 1, numconst
                 discharge(i+1, l) = -1.0_dp * total_constituent_discharge(i) * source_fraction
@@ -344,12 +337,9 @@ contains
         integer :: i !< Source/sink index
         integer :: j !< Constituent index
         integer :: k !< Layer index
-        integer :: k_bot !< Bottom layer index of flow cell
-
-        k_bot = kbot(flow_cell%cell_index) ! Get bottom layer index of flow cell
         
         do i = 1, flow_cell%num_sources_sinks
-            k = ksrc(5, flow_cell%start_index + i - 1) - k_bot + 1 ! Convert source/sink layer index to local layer index in flow cell
+            k = ksrc(5, flow_cell%start_index + i - 1) - kbot(flow_cell%cell_index) + 1 ! Convert source/sink layer index to local layer index in flow cell
             do j = 1, numconst+1
                 qstss((1+numconst)*(flow_cell%start_index + i - 2) + j) = discharge(j, k) ! Write discharge to source/sink discharge array
             end do
