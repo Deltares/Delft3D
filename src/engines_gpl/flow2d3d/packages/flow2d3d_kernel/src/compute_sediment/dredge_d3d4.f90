@@ -51,6 +51,7 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     type (morpar_type)        , pointer :: gdmorpar
     type (message_stack)      , pointer :: messages
     real(fp)                  , pointer :: hdt
+    real(fp)                  , pointer :: morfac
     integer                   , pointer :: lundia
     integer                   , pointer :: julday
     integer                   , pointer :: nmlb
@@ -77,6 +78,11 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     real(fp), dimension(:), allocatable      :: dz_dummy
     integer                                  :: istat
     integer                                  :: ndomains ! number of DD domains or MPI partitions
+    real(fp)                                 :: hdtmor
+
+! Struiksma Hirano merge
+    real(fp), dimension(:)  , allocatable  :: dunelength  
+    real(fp), dimension(:,:), allocatable  :: sbot           
 !
 !! executable statements -------------------------------------------------------
 !
@@ -88,6 +94,7 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     messages            => gdp%messages
     
     hdt                 => gdp%gdnumeco%hdt
+    morfac              => gdp%gdmorpar%morfac
     lundia              => gdp%gdinout%lundia
     julday              => gdp%gdinttim%julday
     nmlb                => gdp%d%nmlb
@@ -116,14 +123,21 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     !
     if (.not.error .and. gdmorpar%cmpupd) then
        allocate(dz_dummy(nmlb:nmub), stat=istat)   ! no actual bed update, unlike updmorlyr in fm_erosed.f90
+       allocate (dunelength(nmlb:nmub)         , stat=istat)
+       allocate (sbot     (nmlb:nmub, lsedtot), stat=istat)
+       dunelength = 1.0e10_fp
+       sbot      = 0.0_fp
+       hdtmor    = hdt*morfac
        if (gdmorpar%moroutput%morstats) then
            call morstats(gderosed, gdmorpar, dbodsd, nmlb, nmub, lsedtot)
        endif   
-       if (updmorlyr(gdmorlyr, dbodsd, dz_dummy, messages) /= 0) then
+       if (updmorlyr(gdmorlyr, dbodsd, dz_dummy, dunelength, sbot, hdtmor, messages) /= 0) then
            call writemessages(messages, lundia)
            error = .true.
        endif
        deallocate(dz_dummy, stat=istat)
+       deallocate (dunelength, stat=istat)
+       deallocate (sbot     , stat=istat)       
     endif
 
     if (error) call d3stop(1, gdp)
