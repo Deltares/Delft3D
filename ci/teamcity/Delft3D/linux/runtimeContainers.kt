@@ -46,7 +46,6 @@ object LinuxRuntimeContainers : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         step {
             name = "Download artifact from Nexus"
             type = "RawDownloadNexusLinux"
