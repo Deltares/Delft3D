@@ -1147,34 +1147,35 @@ contains
       real(kind=dp) :: suu_1, suu_2
 
       do L = lnx1D + 1, lnx
-         if (hu(L) > 0 .and. hmin_(L) > epshu) then
+         if (hu(L) > 0) then
             ! no pre-gather, 8 loads & stores & loads is not worth it!
             k1 = ln(1, L)
             k2 = ln(2, L)
+            huv = 0.5_dp * (hs(k1) + hs(k2)) ! *huvli(L)
+            if (huv > epshu) then
+               acl_L = acl(L)
+               acl_iv = 1.0_dp - acl_L
 
-            acl_L = acl(L)
-            acl_iv = 1.0_dp - acl_L
+               if (jasfer3D == 1) then
+                  ! Transform node stresses to link frame
+                  dvx_link_1 = csb_1(L) * dvxc(k1) - snb_1(L) * dvyc(k1)
+                  dvy_link_1 = snb_1(L) * dvxc(k1) + csb_1(L) * dvyc(k1)
+                  dvx_link_2 = csb_2(L) * dvxc(k2) - snb_2(L) * dvyc(k2)
+                  dvy_link_2 = snb_2(L) * dvxc(k2) + csb_2(L) * dvyc(k2)
 
-            if (jasfer3D == 1) then
-               ! Transform node stresses to link frame
-               dvx_link_1 = csb_1(L) * dvxc(k1) - snb_1(L) * dvyc(k1)
-               dvy_link_1 = snb_1(L) * dvxc(k1) + csb_1(L) * dvyc(k1)
-               dvx_link_2 = csb_2(L) * dvxc(k2) - snb_2(L) * dvyc(k2)
-               dvy_link_2 = snb_2(L) * dvxc(k2) + csb_2(L) * dvyc(k2)
+                  suu_1 = csu(L) * dvx_link_1 + snu(L) * dvy_link_1
+                  suu_2 = csu(L) * dvx_link_2 + snu(L) * dvy_link_2
+               else
+                  suu_1 = csu(L) * dvxc(k1) + snu(L) * dvyc(k1)
+                  suu_2 = csu(L) * dvxc(k2) + snu(L) * dvyc(k2)
+               end if
 
-               suu_1 = csu(L) * dvx_link_1 + snu(L) * dvy_link_1
-               suu_2 = csu(L) * dvx_link_2 + snu(L) * dvy_link_2
-            else
-               suu_1 = csu(L) * dvxc(k1) + snu(L) * dvyc(k1)
-               suu_2 = csu(L) * dvxc(k2) + snu(L) * dvyc(k2)
-            end if
+               ! Use pre-gathered bai constants (bai_1_, bai_2_ from module)
+               suu(L) = acl_L * bai_1(L) * suu_1 + acl_iv * bai_2(L) * suu_2
 
-            ! Use pre-gathered bai constants (bai_1_, bai_2_ from module)
-            suu(L) = acl_L * bai_1(L) * suu_1 + acl_iv * bai_2(L) * suu_2
-
-            if (istresstyp == 3) then
-               huv = 0.5_dp * (hs(k1) + hs(k2))
-               suu(L) = suu(L) / huv
+               if (istresstyp == 3) then
+                  suu(L) = suu(L) / huv
+               end if
             end if
          end if
       end do
