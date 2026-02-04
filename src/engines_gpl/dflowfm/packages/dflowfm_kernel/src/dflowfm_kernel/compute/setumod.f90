@@ -1138,46 +1138,38 @@ contains
       use m_flowgeom, only: lnx, lnx1D, ln, csu, snu, acl
       use m_flowparameters, only: epshu
       use m_sferic, only: jasfer3D
-      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, bai_1, bai_2
+      !use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, bai_1, bai_2
+      use m_nod2linx, only: nod2linx
+      use m_nod2liny, only: nod2liny
+      use m_flowgeom, only: bai
       implicit none
 
       integer :: L, k1, k2
-      real(kind=dp) :: huv, acl_L, acl_iv
-      real(kind=dp) :: dvx_link_1, dvy_link_1, dvx_link_2, dvy_link_2
-      real(kind=dp) :: suu_1, suu_2
+      real(kind=dp) :: huv
+      !real(kind=dp) :: dvx_link_1, dvy_link_1, dvx_link_2, dvy_link_2
+      !real(kind=dp) :: suu_1, suu_2, acl_L, acl_iv
 
-      do L = lnx1D + 1, lnx
-         if (hu(L) > 0 .and. hmin_(L) > epshu) then
-            ! no pre-gather, 8 loads & stores & loads is not worth it!
-            k1 = ln(1, L)
-            k2 = ln(2, L)
+               do L = lnx1D + 1, lnx
+                  if (hu(L) > 0) then ! link will flow
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
+                     huv = 0.5_dp * (hs(k1) + hs(k2)) ! *huvli(L)
+                     if (huv > epshu) then
 
-            acl_L = acl(L)
-            acl_iv = 1.0_dp - acl_L
+                        if (jasfer3D == 1) then
+                           suu(L) = acl(L) * bai(k1) * (csu(L) * nod2linx(L, 1, dvxc(k1), dvyc(k1)) + snu(L) * nod2liny(L, 1, dvxc(k1), dvyc(k1))) + &
+                                    (1.0_dp - acl(L)) * bai(k2) * (csu(L) * nod2linx(L, 2, dvxc(k2), dvyc(k2)) + snu(L) * nod2liny(L, 2, dvxc(k2), dvyc(k2)))
+                        else
+                           suu(L) = acl(L) * bai(k1) * (csu(L) * dvxc(k1) + snu(L) * dvyc(k1)) + &
+                                    (1.0_dp - acl(L)) * bai(k2) * (csu(L) * dvxc(k2) + snu(L) * dvyc(k2))
+                        end if
 
-            if (jasfer3D == 1) then
-               ! Transform node stresses to link frame
-               dvx_link_1 = csb_1(L) * dvxc(k1) - snb_1(L) * dvyc(k1)
-               dvy_link_1 = snb_1(L) * dvxc(k1) + csb_1(L) * dvyc(k1)
-               dvx_link_2 = csb_2(L) * dvxc(k2) - snb_2(L) * dvyc(k2)
-               dvy_link_2 = snb_2(L) * dvxc(k2) + csb_2(L) * dvyc(k2)
-
-               suu_1 = csu(L) * dvx_link_1 + snu(L) * dvy_link_1
-               suu_2 = csu(L) * dvx_link_2 + snu(L) * dvy_link_2
-            else
-               suu_1 = csu(L) * dvxc(k1) + snu(L) * dvyc(k1)
-               suu_2 = csu(L) * dvxc(k2) + snu(L) * dvyc(k2)
-            end if
-
-            ! Use pre-gathered bai constants (bai_1_, bai_2_ from module)
-            suu(L) = acl_L * bai_1(L) * suu_1 + acl_iv * bai_2(L) * suu_2
-
-            if (istresstyp == 3) then
-               huv = 0.5_dp * (hs(k1) + hs(k2))
-               suu(L) = suu(L) / huv
-            end if
-         end if
-      end do
+                        if (istresstyp == 3) then
+                           suu(L) = suu(L) / huv
+                        end if
+                     end if
+                  end if
+               end do
 
    end subroutine interpolate_stress_to_links_2D
 
