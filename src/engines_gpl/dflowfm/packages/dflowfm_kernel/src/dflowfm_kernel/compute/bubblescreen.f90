@@ -14,6 +14,12 @@ module m_bubblescreen
 
     public :: update_bubblescreens_discharge
     public :: update_bubblescreen_discharge
+    public :: convert_discharge_air_to_water
+    public :: compute_bubblescreen_area
+    public :: find_active_layer_interfaces
+    public :: compute_water_discharge
+    public :: compute_constituent_discharge
+    public :: write_discharge_to_source_sinks
 
 contains
 
