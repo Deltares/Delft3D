@@ -83,6 +83,7 @@ contains
       this%numl = numl
 
       call allocate_arrays(this)
+      this%cells_mask = 0
 
       if (.not. this%is_defined) then
          ! Set to defaults.
@@ -197,6 +198,7 @@ contains
 
          inside = -1
          num_cells_inside = 0
+         this%cells_mask(1) = -1
          do k = 1, ndx ! Updated to use this%ndx instead of ndx
             call dbpinpol(xz(k), yz(k), this%cells_mask(k), dmiss, jins, npl, xpl, ypl, zpl) ! Updated to use this%cells_mask
             if (this%cells_mask(k) == 1) then ! Updated to use this%cells_mask
