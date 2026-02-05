@@ -73,13 +73,15 @@ contains
       else ! user defined OpenMP threads
          openmp_threads = maxnumthreads
       end if
-     call get_environment_variable("OMP_NUM_THREADS", value, status=status)
-     if (status == 0) then
-        read(value, *, iostat=status) env_num_threads
-        if (status == 0 .and. env_num_threads > 0) then
-           openmp_threads = max(openmp_threads, env_num_threads)
-        end if
-     end if
+      if (openmp_threads == 0) then !> no user defined numthreads, use OMP_NUM_THREADS environment variable
+         call get_environment_variable("OMP_NUM_THREADS", value, status=status)
+         if (status == 0) then
+            read (value, *, iostat=status) env_num_threads
+            if (status == 0 .and. env_num_threads > 0) then
+               openmp_threads = env_num_threads
+            end if
+         end if
+      end if
       if (openmp_threads > 1) then
          call mess(LEVEL_INFO, 'OpenMP enabled, number of threads = ', openmp_threads)
          call omp_set_num_threads(openmp_threads)
