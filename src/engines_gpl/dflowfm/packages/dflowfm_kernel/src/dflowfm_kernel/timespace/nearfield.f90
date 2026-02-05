@@ -121,6 +121,12 @@ module m_nearfield
    real(fp), dimension(:, :), allocatable :: nf_intake_wght !< Fraction * nf_numintake of each intake point of all diffusers
    real(fp), dimension(:, :), allocatable :: nf_intake_z !< Z coordinate            of each intake point of all diffusers
 
+   type :: intake_location_t
+      integer :: index_2d
+      integer :: index_3d
+      real(kind=dp) :: z_coordinate
+      integer :: weight_count
+   end type intake_location_t
 contains
 !
 !
@@ -299,7 +305,6 @@ contains
       ! Locals
       integer :: i
       integer :: idif
-      integer :: iintake
       real(fp) :: sum_weight_intakes
       !
       ! Body
@@ -327,13 +332,7 @@ contains
          !
          ! Intake preparations:
          ! sum_weight_intakes is needed to compute the discharge in each intake point
-         sum_weight_intakes = 0.0_fp
-         do iintake = 1, nf_intake_cnt_max
-            if (nf_intake_n(idif, iintake) == 0) then
-               exit
-            end if
-            sum_weight_intakes = sum_weight_intakes + nf_intake_wght(idif, iintake)
-         end do
+         sum_weight_intakes = real(nf_numintake_idif(idif), kind=dp)
          !
          ! ENTRAINMENT:
          call entrainmentToSrc(idif)
@@ -392,6 +391,7 @@ contains
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
+
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
@@ -399,17 +399,17 @@ contains
       !
       ! Locals
       integer :: i
-      integer :: j
       integer :: nf_intake_cnt
       integer :: nk
-      real(hp), dimension(:), allocatable :: find_x !< array containing x-coordinates of locations for which the cell index n is searched for by calling find_flownode
-      real(hp), dimension(:), allocatable :: find_y !< array containing y-coordinates of locations for which the cell index n is searched for by calling find_flownode
+      real(dp), dimension(:), allocatable :: find_x !< array containing x-coordinates of locations for which the cell index n is searched for by calling find_flownode
+      real(dp), dimension(:), allocatable :: find_y !< array containing y-coordinates of locations for which the cell index n is searched for by calling find_flownode
       character(IdLen), dimension(:), allocatable :: find_name !< array containing names         of locations for which the cell index n is searched for by calling find_flownode
       integer, dimension(:), allocatable :: find_n !< array containing the result of a call to find_flownode
+      type(intake_location_t), dimension(:), allocatable :: map_cell_index_to_intake_weight !< Count how many c-sumo intakes lie in each 3D FM cell in this partition
       !
       ! Body
-      call realloc(find_x, nf_numintake, keepExisting=.false., fill=0.0_hp)
-      call realloc(find_y, nf_numintake, keepExisting=.false., fill=0.0_hp)
+      call realloc(find_x, nf_numintake, keepExisting=.false., fill=0.0_dp)
+      call realloc(find_y, nf_numintake, keepExisting=.false., fill=0.0_dp)
       call realloc(find_n, nf_numintake, keepExisting=.false., fill=0)
       call realloc(find_name, nf_numintake, keepExisting=.false., fill=' ')
       do i = 1, nf_numintake
@@ -422,62 +422,48 @@ contains
          write (find_name(i), '(i0.4,a,i0.4)') idif, "intake", i
       end do
       call find_nearest_flownodes(nf_numintake_idif(idif), find_x, find_y, find_name, find_n, jakdtree, jaoutside=0, iLocTp=INDTP_2D)
-      !
-      if (nf_numintake_idif(idif) /= 0) then
-         !
-         ! First handle the first intake point of this diffuser: it will always result in an additional intake point
-         ! Copy nf_intake(:,:,NF_IZ) to nf_intake_z: administration index has changed
-         nf_intake_cnt = 1
-         call realloc(nf_intake_n, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
-         call realloc(nf_intake_nk, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
-         call realloc(nf_intake_z, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
-         call realloc(nf_intake_wght, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
-         if (find_n(1) == 0) then
-            call mess(LEVEL_ERROR, "Intake point '", trim(find_name(1)), "' not found")
-         end if
 
-         nf_intake_n(idif, 1) = find_n(1)
-         nf_intake_nk(idif, 1) = find_3d_layer_index_intake(find_n(1), idif, 1)
-         nf_intake_z(idif, 1) = -nf_intake(idif, 1, NF_IZ)
-         nf_intake_wght(idif, 1) = nf_intake_wght(idif, 1) + 1.0_fp
-         !
-         ! Now handle the rest of the intake points of this diffuser
-         do i = 2, nf_numintake_idif(idif)
-            if (has_intake_end_marker(idif, i)) then
-               exit
-            end if
-            if (find_n(i) == 0) then
-               call mess(LEVEL_ERROR, "Intake point '", trim(find_name(i)), "' not found")
-            end if
+      allocate (map_cell_index_to_intake_weight(0))
+
+      do i = 1, nf_numintake_idif(idif)
+         if (find_n(i) /= 0) then
             nk = find_3d_layer_index_intake(find_n(i), idif, i)
-            !
-            ! Check whether this nk-point is already in array nf_intake_nk
-            ! If yes: increase wght, set nk=0
-            do j = 1, nf_intake_cnt
-               if (nf_intake_nk(idif, j) == nk) then
-                  nf_intake_wght(idif, j) = nf_intake_wght(idif, j) + 1.0_fp ! weight/wght_tot: relative withdrawal from this cell
-                  nk = 0
-                  exit
-               end if
-            end do
-            !
-            ! nk /= 0: This nk-point is not yet in array nf-intake_nk, so this is a new flow node:
-            ! Increase arrays and add the new point
-            if (nk /= 0) then
-               nf_intake_cnt = nf_intake_cnt + 1 ! For this diffuser
-               nf_intake_cnt_max = max(nf_intake_cnt_max, nf_intake_cnt) ! Of all diffusers
-               call realloc(nf_intake_n, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
-               call realloc(nf_intake_nk, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
-               call realloc(nf_intake_z, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
-               call realloc(nf_intake_wght, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
-               nf_intake_n(idif, nf_intake_cnt) = find_n(i)
-               nf_intake_nk(idif, nf_intake_cnt) = nk
-               nf_intake_z(idif, nf_intake_cnt) = -nf_intake(idif, i, NF_IZ)
-               nf_intake_wght(idif, nf_intake_cnt) = 1.0_hp
-            end if
-         end do
-      end if
+            call add_to_map(map_cell_index_to_intake_weight, find_n(i), nk, -nf_intake(idif, i, NF_IZ))
+         end if
+      end do
+
+      nf_intake_cnt = size(map_cell_index_to_intake_weight, 1)
+      nf_intake_cnt_max = max(nf_intake_cnt_max, nf_intake_cnt) ! Of all diffusers
+      call realloc(nf_intake_n, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
+      call realloc(nf_intake_nk, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
+      call realloc(nf_intake_z, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
+      call realloc(nf_intake_wght, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
+      do i = 1, nf_intake_cnt
+         nf_intake_n(idif, i) = map_cell_index_to_intake_weight(i)%index_2d
+         nf_intake_nk(idif, i) = map_cell_index_to_intake_weight(i)%index_3d
+         nf_intake_z(idif, i) = map_cell_index_to_intake_weight(i)%z_coordinate
+         nf_intake_wght(idif, i) = real(map_cell_index_to_intake_weight(i)%weight_count, kind=dp)
+      end do
    end subroutine getIntakeLocations
+
+   !> Update array that maps a cell index to the number of intake points in that cell
+   subroutine add_to_map(map_cell_to_count, index_2d, index_3d, z_coordinate)
+      type(intake_location_t), dimension(:), allocatable, intent(inout) :: map_cell_to_count !< keep track of the cells and z-locations of intake points and count how many intakes are represented
+      integer, intent(in) :: index_2d !< 2D cell index
+      integer, intent(in) :: index_3d !< 3D cell index
+      real(kind=dp), intent(in) :: z_coordinate !< z-coordinate of intake point
+
+      integer :: i
+
+      do i = 1, size(map_cell_to_count)
+         if (map_cell_to_count(i)%index_3d == index_3d) then
+            map_cell_to_count(i)%weight_count = map_cell_to_count(i)%weight_count + 1
+            return
+         end if
+      end do
+      ! Key not found: add new row
+      map_cell_to_count = [map_cell_to_count, intake_location_t(index_2d, index_3d, z_coordinate, weight_count=1)]
+   end subroutine add_to_map
 
    !> Check whether the intake point for this diffuser has position (0,0,0),
    !! which marks that there are no more intake points for this diffuser.
