@@ -114,7 +114,7 @@ XmlTree::XmlTree (
     char *buffer = new char[bufSize];
     while (fgets (buffer, bufSize, input) != NULL)
         if (XML_Parse (parser, buffer, strlen (buffer), 0) != XML_STATUS_OK)
-            throw Exception (true, Exception::ERR_XML_PARSING, "XML parse error in configuration file");
+            throw Exception(Exception::ERR_XML_PARSING, "XML parse error in configuration file");
 
     XML_Parse (parser, buffer, 0, 1);
     XML_ParserFree (parser);
@@ -185,7 +185,7 @@ chardata (
     XmlTree ** curnode = (XmlTree **) userdata;
 
     if (len + CharDataLen >= sizeof CharDataBuffer)
-        throw Exception (true, Exception::ERR_XML_PARSING, "XML charcter data block exceeds buffer size (%d bytes)", sizeof CharDataBuffer);
+        throw Exception(Exception::ERR_XML_PARSING, "XML charcter data block exceeds buffer size (%d bytes)", sizeof CharDataBuffer);
 
     memcpy (CharDataBuffer+CharDataLen, data, len);
     CharDataLen += len;
@@ -210,7 +210,7 @@ XmlTree::XmlTree (
 
     int pathlen = strlen (ppn) + strlen (name) + 2;
     if (pathlen > this->maxPathname)
-        throw Exception (true, Exception::ERR_XML_PARSING," XML pathname for node \"%s\" is too long", name);
+        throw Exception(Exception::ERR_XML_PARSING," XML pathname for node \"%s\" is too long", name);
 
     this->name = new char [strlen (name) + 1];
     strcpy (this->name, name);

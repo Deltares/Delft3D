@@ -70,7 +70,6 @@ object TestBenchValidation : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         dockerCommand {
             name = "Run validation"
             commandType = other {
