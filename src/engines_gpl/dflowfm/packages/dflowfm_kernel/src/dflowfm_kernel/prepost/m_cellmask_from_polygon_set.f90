@@ -30,17 +30,19 @@
 module m_cellmask_from_polygon_set
    use m_missing, only: jins, dmiss
    use precision, only: dp
-   use m_polygon, only: xpl, ypl, zpl, npl, maxpol, restorepol, savepol
+   !use m_polygon, only: xpl, ypl, zpl, npl, maxpol, restorepol, savepol
 
-   implicit none
+   implicit none(external)
 
    private
 
    public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
-   public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+   public :: init_cell_geom_as_polylines, point_find_netcell
    public :: find_cells_crossed_by_polyline
 
    integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
+   real(kind=dp), allocatable :: xpl, ypl, zpl !> local polyline arrays for cell geometry caching
+   integer :: npl
    real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
    real(kind=dp), allocatable :: x_poly_max(:), y_poly_max(:) !< Polygon bounding box max coordinates, (dim = polygons)
    real(kind=dp), allocatable :: polygon_type(:) !< Polygon type, positive or dmiss = drypoint , negative = enclosure (dim = polygons)
@@ -250,7 +252,7 @@ contains
       integer :: k, n, k1, total_points, ipoint
 
       if (cellmask_initialized) then !> reuse cellmask cache boolean
-         call cleanup_cell_geom_polylines
+         call cellmask_from_polygon_set_cleanup
       end if
 
       call savepol()
@@ -292,13 +294,6 @@ contains
       call cellmask_from_polygon_set_init(npl, xpl, ypl, zpl)
 
    end subroutine init_cell_geom_as_polylines
-
-   !> call general polygon cleanup and restore previous polygon data
-   subroutine cleanup_cell_geom_polylines()
-      call cellmask_from_polygon_set_cleanup()
-      maxpol = 0 !< reset maxpol to prevent unnecessarily large realloc
-      call restorepol()
-   end subroutine cleanup_cell_geom_polylines
 
 !> Fast replacement for INCELLS using cached geometry in global polygon arrays
    elemental function point_find_netcell(x, y) result(k)
