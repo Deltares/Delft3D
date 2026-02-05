@@ -34,9 +34,8 @@ echo Working directory: %workdir%
 set scriptDir=%~dp0
 set D3D_HOME=%scriptDir%..
 
-set sharedir=%D3D_HOME%\share
-set swanbatdir=%D3D_HOME%\bin
-set waveexedir=%D3D_HOME%\bin
+set libdir=%D3D_HOME%\lib
+set bindir=%D3D_HOME%\bin
 
 
     rem
@@ -44,9 +43,9 @@ set waveexedir=%D3D_HOME%\bin
     rem
 
     rem Run
-set PATH=%waveexedir%;%swanbatdir%;%sharedir%
-echo executing in this window: "%waveexedir%\wave.exe" %argfile% 0
-"%waveexedir%\wave.exe" %argfile% 0
+set PATH=%bindir%;%libdir%
+echo executing in this window: "%bindir%\wave.exe" %argfile% 0
+"%bindir%\wave.exe" %argfile% 0
 
 goto end
 
