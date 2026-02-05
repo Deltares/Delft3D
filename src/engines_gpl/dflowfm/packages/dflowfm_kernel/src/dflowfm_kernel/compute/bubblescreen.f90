@@ -3,7 +3,7 @@ module m_bubblescreen
     use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubblescreens, ksrc, qstss
     use m_alloc, only: realloc
     use m_cell_geometry, only: ba
-    use m_flow, only: kmx, zws, kbot, s1, vol1
+    use m_flow, only: kmx, zws, kbot, s1
     use m_get_kbot_ktop, only: getkbotktop
     use m_transport, only: numconst, constituents
     use messageHandling, only: err_flush, msgbuf, msg_flush
@@ -310,6 +310,7 @@ contains
         integer :: i !< Loop index
         integer :: k !< Layer index
         integer :: l !< Local layer index within flow cell
+        real(kind=dp) :: layer_volume !< Volume of the layer
         real(kind=dp) :: source_fraction !< Fraction of source for constituent discharges
         real(kind=dp) :: total_water_discharge !< Total water discharge
         real(kind=dp), dimension(numconst) :: total_constituent_discharge !< Total constituent discharge per constituent
@@ -325,7 +326,8 @@ contains
             total_water_discharge = total_water_discharge + discharge(1, l)
 
             do i = 1, numconst
-                discharge(i+1, l) = discharge(1, l) * constituents(i, k) / vol1(k) ! Compute constituent discharge by multiplying water discharge by constituent concentration
+                layer_volume = (zws(k) - zws(k-1)) * ba(flow_cell_index)
+                discharge(i+1, l) = discharge(1, l) * constituents(i, k) / layer_volume
                 total_constituent_discharge(i) = total_constituent_discharge(i) + discharge(i+1, l)
             end do
         end do
