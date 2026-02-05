@@ -92,11 +92,11 @@ contains
     end subroutine test_compute_bubblescreen_area
     !$f90tw)
 
-    !$f90tw TESTCODE(TEST, test_bubblescreen, test_active_layer_interfaces, test_active_layer_interfaces,
+    !$f90tw TESTCODE(TEST, test_bubblescreen, test_find_active_layer_interfaces, test_find_active_layer_interfaces,
     !> Test active layer interfaces computation for a flow cell with 10 layers.
     !! The bubble screen is located at z = -7.8 m, the water level is at z = -0.4 m.
     !! The subroutine should return the correct start, stop, and max velocity layer interfaces.
-    subroutine test_active_layer_interfaces() bind(C)
+    subroutine test_find_active_layer_interfaces() bind(C)
         use m_flow, only: kmx, zws, kbot, ktop, s1
 
         ! Local variables
@@ -142,7 +142,7 @@ contains
         deallocate(s1)
         deallocate(zws)
 
-    end subroutine test_active_layer_interfaces
+    end subroutine test_find_active_layer_interfaces
     !$f90tw)
 
     !$f90tw TESTCODE(TEST, test_bubblescreen, test_compute_water_discharge, test_compute_water_discharge,
