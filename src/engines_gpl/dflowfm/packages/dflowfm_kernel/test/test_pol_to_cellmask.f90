@@ -948,6 +948,60 @@ contains
    end subroutine test_find_cells_crossed_by_polyline_edge_cases
 !$f90tw)
 
+!$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_edge_case2, test_find_cells_crossed_by_polyline_edge_case2,
+   subroutine test_find_cells_crossed_by_polyline_edge_case2() bind(C)
+      ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
+      use network_data, only: nump
+      use m_alloc, only: realloc
+
+      real(kind=dp), allocatable :: xpoly(:), ypoly(:)
+      integer, allocatable :: crossed_cells(:)
+      character, dimension(:), allocatable :: error
+      integer :: i
+      logical :: found_cell
+
+      npl = 0 ! Reset from previous tests
+
+      ! Setup 3x3 grid of square cells (0-30 in x, 0-30 in y)
+      ! Cell layout:
+      ! 7 | 8 | 9
+      ! --|---|--
+      ! 4 | 5 | 6
+      ! --|---|--
+      ! 1 | 2 | 3
+      nump = 9
+      call setup_grid_netcells(3, 3, 10.0_dp)
+
+      ! Initialize cache
+      call init_cell_geom_as_polylines()
+
+      !edge case: Create polyline that does not cross any cell boundaries but goes through the center of the grid from (5,5) to (6,6)
+      allocate (xpoly(2), ypoly(2))
+      xpoly(1) = 5.0_dp
+      ypoly(1) = 5.0_dp
+      xpoly(2) = 6.0_dp
+      ypoly(2) = 6.0_dp
+
+
+      ! Call the function
+      call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
+
+      ! Check for errors
+      call f90_expect_true(.not. allocated(error), "No error should occur")
+
+      call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
+
+      call f90_expect_true(size(crossed_cells) == 1, "cellmask should equal crossed cells")
+      ! Cleanup
+      deallocate (xpoly, ypoly)
+      if (allocated(crossed_cells)) deallocate (crossed_cells)
+      call cleanup_cell_geom_polylines()
+      call cleanup_netcells()
+
+   end subroutine test_find_cells_crossed_by_polyline_edge_case2
+!$f90tw)
+
 ! ============================================================================
 ! Helper subroutines for setting up test geometries
 ! ============================================================================
