@@ -54,7 +54,12 @@ contains
       integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
       integer :: openmp_threads
+      character(len=20) :: value
+      integer :: env_num_threads
+      integer :: status
+
       iresult = DFM_NOERR
+
 #ifndef _OPENMP
       associate (maxnumthreads => maxnumthreads) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
       end associate
@@ -68,14 +73,21 @@ contains
       else ! user defined OpenMP threads
          openmp_threads = maxnumthreads
       end if
-      if (openmp_threads > 0) then
-         call omp_set_num_threads(openmp_threads)
+      if (openmp_threads == 0) then !> no user defined numthreads, use OMP_NUM_THREADS environment variable
+         call get_environment_variable("OMP_NUM_THREADS", value, status=status)
+         if (status == 0) then
+            read (value, *, iostat=status) env_num_threads
+            if (status == 0 .and. env_num_threads > 0) then
+               openmp_threads = env_num_threads
+            end if
+         end if
       end if
-      openmp_threads = omp_get_max_threads() !check number of threads set by environment before reporting
       if (openmp_threads > 1) then
          call mess(LEVEL_INFO, 'OpenMP enabled, number of threads = ', openmp_threads)
+         call omp_set_num_threads(openmp_threads)
       else
          call mess(LEVEL_INFO, 'OpenMP disabled.')
+         call omp_set_num_threads(1)
       end if
 #endif
 

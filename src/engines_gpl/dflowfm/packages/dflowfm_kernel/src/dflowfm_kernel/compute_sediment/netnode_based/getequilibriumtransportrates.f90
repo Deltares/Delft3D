@@ -155,7 +155,7 @@ contains
          beta = 1.0_dp
          twave = 0.0_dp !
          ustar2swart = sqcf * sqcf * Ueff * Ueff
-         if (jawave > NO_WAVES .and. ueff > 0.0_dp .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. ueff > 0.0_dp .and. .not. flow_without_waves) then
             if (twav(k) > 1.0e-2_dp) then
                twave = twav(k)
                uwave = uorb(k) ! (m/s) for jased == 2, tauwav contains uorb

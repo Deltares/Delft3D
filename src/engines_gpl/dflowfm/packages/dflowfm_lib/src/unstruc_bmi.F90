@@ -1437,6 +1437,7 @@ contains
       use morphology_data_module, only: PARSOURCE_FIELD
       use string_module, only: str_token
       use m_init_openmp, only: init_openmp
+      use messagehandling, only: stringtolevel
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       type(c_ptr), value, intent(in) :: xptr

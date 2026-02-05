@@ -49,9 +49,11 @@ project {
             name = "Build-environment Containers"
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
+            buildType(LinuxDevContainer)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
+                LinuxDevContainer,
             )
         }        
         subProject {
@@ -151,11 +153,13 @@ project {
     buildType(PublishToGui)
     buildType(DIMRbak)
     buildType(Publish)
+    buildType(PinAndTag)
     buildTypesOrder = arrayListOf(
         Trigger,
         PublishToGui,
         DIMRbak,
-        Publish
+        Publish,
+        PinAndTag
     )
         
     features {

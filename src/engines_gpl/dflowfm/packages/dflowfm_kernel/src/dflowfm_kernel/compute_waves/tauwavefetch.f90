@@ -64,7 +64,7 @@ contains
       use m_getfetch, only: getfetch
       use m_hurdlestive, only: hurdlestive
       use m_ian_young_pt, only: ian_young_pt
-      use m_tauwavehk, only: tauwavehk
+      use m_wave_shear_velocity, only: compute_wave_shear_velocity
       use m_fetch_operation_utils, only: initialise_fetch_proc_data, stop_fetch_computation, stop_fetch_computation, &
                                          stop_fetch_computation, send_s1_to_fetch_proc, get_fetch_values_from_fetch_proc
       use m_waveconst
@@ -156,7 +156,7 @@ contains
 
                Hwav(cell) = Hsig * rsqrt2 ! Hwav === hrms
                Twav(cell) = Tsig
-               call tauwavehk(Hwav(cell), Twav(cell), hs(cell), Uorb(cell), rlabda(cell), dum) ! basically now just a dispersion function with 2DH stokes drift magnitude
+               call compute_wave_shear_velocity(Hwav(cell), Twav(cell), hs(cell), Uorb(cell), rlabda(cell), dum) ! basically now just a dispersion function with 2DH stokes drift magnitude
             end if
          end if
 

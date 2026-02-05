@@ -45,7 +45,7 @@ contains
    subroutine update_verticalprofiles()
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
-      use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flowwithoutwaves, adve, u1, qw, &
+      use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, qw, &
                         a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, numsrc, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
@@ -113,7 +113,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) !Constant
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -168,7 +168,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! algebraic
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -319,7 +319,7 @@ contains
 
                ! Calculate turkin source from wave dissipation: preparation
                if (jawave > NO_WAVES) then
-                  if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
+                  if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then ! Ustokes correction at bed
                      adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                   end if
 
@@ -419,7 +419,7 @@ contains
                   ! Addition of production and of dissipation to matrix ;
                   ! observe implicit treatment by Newton linearization.
 
-                  if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_VISC .and. .not. flowWithoutWaves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
+                  if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_VISC .and. .not. flow_without_waves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
                      dijdij(k) = ((u1(Lu) - ustokes(Lu) - u1(L) + ustokes(L))**2 + (v(Lu) - vstokes(Lu) - v(L) + vstokes(L))**2) / dzw(k)**2
                   else
                      dijdij(k) = ((u1(Lu) - u1(L))**2 + (v(Lu) - v(L))**2) / dzw(k)**2

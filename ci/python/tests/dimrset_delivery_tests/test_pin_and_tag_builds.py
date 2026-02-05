@@ -3,11 +3,10 @@
 from unittest.mock import Mock, call, patch
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
-from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.pin_and_tag_builds import PinAndTagger
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings, TeamcityIds
-from ci_tools.dimrset_delivery.step_2_pin_and_tag_builds import PinAndTagger
 from ci_tools.example_utils.logger import LogLevel
 
 
@@ -26,7 +25,6 @@ class TestPinAndTagBuilds:
         self.mock_context.dimr_version = "1.2.3"
 
         self.mock_services = Mock(spec=Services)
-        self.mock_services.git_client = Mock(spec=GitClient)
         self.mock_services.teamcity = Mock(spec=TeamCity)
         self.mock_services.teamcity.teamcity_ids = Mock(spec=TeamcityIds)
         self.mock_services.teamcity.teamcity_ids.delft3d_windows_collect_build_type_id = "windows_build_type"
@@ -57,7 +55,6 @@ class TestPinAndTagBuilds:
         self.mock_services.teamcity.pin_build.assert_any_call(build_id="id1")
         self.mock_services.teamcity.pin_build.assert_any_call(build_id="id2")
         self.mock_services.teamcity.pin_build.assert_any_call(build_id="12345")  # Also pins the original build
-        self.mock_services.git.tag_commit.assert_called_once_with("abc123def", "DIMRset_1.2.3")
 
     def test_pin_and_tag_builds_dry_run(self) -> None:
         """Test dry run mode - should only print what would be done."""
@@ -94,19 +91,6 @@ class TestPinAndTagBuilds:
             "TeamCity client is required but not initialized.", severity=LogLevel.ERROR
         )
 
-    def test_pin_and_tag_builds_missing_git_client(self) -> None:
-        """Test error when Git client is None."""
-        # Arrange
-        self.mock_services.git = None
-        helper = PinAndTagger(self.mock_context, self.mock_services)
-
-        # Act
-        result = helper.execute_step()
-
-        # Assert
-        assert result is False
-        self.mock_context.log.assert_any_call("Git client is required but not initialized.", severity=LogLevel.ERROR)
-
     def test_pin_and_tag_builds_with_different_versions(self) -> None:
         """Test with different kernel and DIMR versions."""
         # Arrange
@@ -128,7 +112,6 @@ class TestPinAndTagBuilds:
         )
         self.mock_services.teamcity.pin_build.assert_any_call(build_id="id3")
         self.mock_services.teamcity.pin_build.assert_any_call(build_id="12345")  # Also pins the original build
-        self.mock_services.git.tag_commit.assert_called_once_with("xyz789abc", "DIMRset_2.0.0")
 
     def test_pin_and_tag_builds_success_message(self) -> None:
         """Test that success message is printed after completion."""
@@ -155,20 +138,6 @@ class TestPinAndTagBuilds:
         assert result is False
         self.mock_context.log.assert_any_call("Error during build tagging: TeamCity error", severity=LogLevel.ERROR)
 
-    def test_pin_and_tag_builds_git_client_exception(self) -> None:
-        """Test when Git client raises an exception."""
-        # Arrange
-        self.mock_services.teamcity.get_dependent_build_ids_with_filter.return_value = []
-        self.mock_services.git.tag_commit.side_effect = Exception("Git error")
-        helper = PinAndTagger(self.mock_context, self.mock_services)
-
-        # Act
-        result = helper.execute_step()
-
-        # Assert
-        assert result is False
-        self.mock_context.log.assert_any_call("Error during build tagging: Git error", severity=LogLevel.ERROR)
-
     def test_pin_and_tag_builds_dry_run_teamcity_client_required(self) -> None:
         """Test that dry run without teamcity client."""
         # Arrange
@@ -184,20 +153,6 @@ class TestPinAndTagBuilds:
         self.mock_context.log.assert_any_call(
             "TeamCity client is required but not initialized.", severity=LogLevel.ERROR
         )
-
-    def test_pin_and_tag_builds_dry_run_git_client_required(self) -> None:
-        """Test that dry run without git client."""
-        # Arrange
-        self.mock_context.dry_run = True
-        self.mock_services.git = None
-        helper = PinAndTagger(self.mock_context, self.mock_services)
-
-        # Act
-        result = helper.execute_step()
-
-        # Assert
-        assert result is False
-        self.mock_context.log.assert_any_call("Git client is required but not initialized.", severity=LogLevel.ERROR)
 
     def test_pin_and_tag_builds_context_method_calls(self) -> None:
         """Test that all expected context methods are called in the correct order."""

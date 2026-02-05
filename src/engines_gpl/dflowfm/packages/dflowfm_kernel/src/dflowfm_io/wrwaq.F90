@@ -1805,7 +1805,7 @@ contains
       end if
 
       ! Taus file (contains taus at the bottom of computational cells)
-      if (jawave == NO_WAVES .or. flowWithoutWaves) then ! If jawave > 0, then taus is obtained from subroutine tauwave (taus = taucur + tauwave).
+      if (jawave == NO_WAVES .or. (jawave > NO_WAVES .and. flow_without_waves)) then ! If jawave > 0, then taus is obtained from subroutine tauwave (taus = taucur + tauwave).
          call gettaus(1, 2)
       else
          call gettauswave(jawaveswartdelwaq)

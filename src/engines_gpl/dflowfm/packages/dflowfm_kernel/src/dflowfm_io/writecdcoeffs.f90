@@ -48,7 +48,7 @@ contains
       use unstruc_model
       use m_wind
       use m_waves
-      use m_flow, only: jawave, flowWithoutWaves
+      use m_flow, only: jawave, flow_without_waves
       use m_flowgeom, only: ndx
       use m_filez, only: doclose, newfil
       use m_waveconst
@@ -82,7 +82,7 @@ contains
 
       write (msgbu, '(a)') '* column 1 : Wind speed               (m/s) '
       write (msgbu, '(a)') '* column 2 : Resulting Cd coefficient (   ) '
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          write (msgbu, '(a)') '* column 3 : Hwav                     (m  ) '
          write (msgbu, '(a)') '* column 4 : Twav                     (s  ) '
          write (msgbu, '(a)') '61  4'
@@ -90,7 +90,7 @@ contains
          write (msgbu, '(a)') '61  2'
       end if
 
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          fetchL = 20000.0_dp
          fetchD = 4.0_dp
          allocate (hwavsav(ndx), twavsav(ndx))
@@ -99,26 +99,26 @@ contains
       end if
 
       uwi = 0.1_dp
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
          hwav = hsig
          twav = tsig
       end if
       call setcdwcoefficient(uwi, Cd10, 1)
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          write (msgbu, '(4F14.6)') uwi, Cd10, hsig, tsig
       else
          write (msgbu, '(2F14.6)') uwi, Cd10
       end if
 
       uwi = 0.2_dp
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
          hwav = hsig
          twav = tsig
       end if
       call setcdwcoefficient(uwi, Cd10, 1)
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          write (msgbu, '(4F14.6)') uwi, Cd10, hsig, tsig
       else
          write (msgbu, '(2F14.6)') uwi, Cd10
@@ -126,13 +126,13 @@ contains
 
       do k = 1, 28
          uwi = uwi + 0.2_dp
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
             hwav = hsig
             twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             write (msgbu, '(4F14.6)') uwi, Cd10, hsig, tsig
          else
             write (msgbu, '(2F14.6)') uwi, Cd10
@@ -141,13 +141,13 @@ contains
 
       do k = 1, 24
          uwi = uwi + 1.0_dp
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
             hwav = hsig
             twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             write (msgbu, '(4F14.6)') uwi, Cd10, hsig, tsig
          else
             write (msgbu, '(2F14.6)') uwi, Cd10
@@ -156,13 +156,13 @@ contains
 
       do k = 1, 8
          uwi = uwi + 10.0_dp
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
             hwav = hsig
             twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             write (msgbu, '(4F14.6)') uwi, Cd10, hsig, tsig
          else
             write (msgbu, '(2F14.6)') uwi, Cd10
@@ -171,7 +171,7 @@ contains
 
       call doclose(msgbu)
 
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          hwav = hwavsav
          twav = twavsav
          deallocate (hwavsav, twavsav)

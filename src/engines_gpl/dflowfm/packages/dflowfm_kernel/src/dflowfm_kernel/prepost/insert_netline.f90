@@ -103,7 +103,7 @@ contains
          end if
          kk = 1
          do while (netcell(ic)%lin(kk) /= L .and. kk < N)
-         kk = kk + 1
+            kk = kk + 1
          end do
          if (netcell(ic)%lin(kk) /= L) then
             cycle

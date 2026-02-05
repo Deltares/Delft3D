@@ -35,7 +35,6 @@ object WindowsUnitTest : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         python {
             conditions {
                 matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")

@@ -36,7 +36,8 @@ module precision_basics
    use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_is_finite
    use stdlib_kinds, only: sp, dp, xdp, qp
 
-   implicit none
+   implicit none(type, external)
+   private
 
 ! A few notes on the use the floating point precisions from the stdlib_kinds module.
 ! This a rather arbitrary choice since there are many ways that seem to result in
@@ -78,10 +79,10 @@ module precision_basics
 ! hardware types.
 
 ! For backward compatibility: hp=high precision, equal to dp
-   integer, parameter :: hp = dp
+   integer, parameter, public :: hp = dp
 
 ! long integer of at least 54 bits:
-   integer, parameter :: long = selected_int_kind(16)
+   integer, parameter, public :: long = selected_int_kind(16)
 
    interface comparereal
       module procedure comparerealdouble
@@ -90,11 +91,14 @@ module precision_basics
       module procedure comparerealsingle_finite_check
    end interface
 
-   private :: ieee_is_nan, ieee_is_finite
-
+   public :: comparereal
+   public :: dp
+   public :: sp
+   public :: int32
+   public :: int64
 contains
 
-   function comparerealdouble(val1, val2, eps)
+   pure function comparerealdouble(val1, val2, eps)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two double precision numbers
@@ -112,9 +116,6 @@ contains
 ! eps must be machine precision dependent.
 ! eps may not be given by the user! See what happens when
 ! val1 = -666.0, val2 = -999.0, eps = 0.5
-!
-!!--declarations----------------------------------------------------------------
-      implicit none
 !
 ! Return value
 !
@@ -155,7 +156,7 @@ contains
 
    end function comparerealdouble
 
-   function comparerealsingle(val1, val2, eps)
+   pure function comparerealsingle(val1, val2, eps)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two real numbers of type sp
@@ -173,9 +174,6 @@ contains
 ! eps must be machine precision dependent.
 ! eps may not be given by the user! See what happens when
 ! val1 = -666.0, val2 = -999.0, eps = 0.5
-!
-!!--declarations----------------------------------------------------------------
-      implicit none
 !
 ! Return value
 !
@@ -217,7 +215,7 @@ contains
 
    end function comparerealsingle
 
-   function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(compare)
+   pure function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(compare)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two double precision numbers
@@ -228,9 +226,6 @@ contains
 !                0 if val1 = val2 (also if both val1 and val2 are NaN, or both Inf with the same sign)
 !               +1 if val1 > val2
 !               +2 if val1 is not NaN and val2 is NaN
-!
-!!--declarations----------------------------------------------------------------
-      implicit none
 !
 ! Return value
 !
@@ -267,7 +262,7 @@ contains
 
    end function comparerealdouble_finite_check
 
-   function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(compare)
+   pure function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(compare)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two real numbers of type sp
@@ -278,9 +273,6 @@ contains
 !                0 if val1 = val2 (also if both val1 and val2 are NaN, or both Inf with the same sign)
 !               +1 if val1 > val2
 !               +2 if val1 is not NaN and val2 is NaN
-!
-!!--declarations----------------------------------------------------------------
-      implicit none
 !
 ! Return value
 !
@@ -316,5 +308,4 @@ contains
       end if
 
    end function comparerealsingle_finite_check
-
 end module precision_basics
