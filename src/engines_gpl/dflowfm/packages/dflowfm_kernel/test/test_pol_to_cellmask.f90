@@ -973,9 +973,6 @@ contains
       nump = 9
       call setup_grid_netcells(3, 3, 10.0_dp)
 
-      ! Initialize cache
-      call init_cell_geom_as_polylines()
-
       !edge case: Create polyline that does not cross any cell boundaries but goes through the center of the grid from (5,5) to (6,6)
       allocate (xpoly(2), ypoly(2))
       xpoly(1) = 5.0_dp
@@ -983,16 +980,15 @@ contains
       xpoly(2) = 6.0_dp
       ypoly(2) = 6.0_dp
 
-
       ! Call the function
       call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")
 
-      call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
+      call f90_expect_true(crossed_cells(1) == 1, "Cell 1 should be crossed")
 
-      call f90_expect_true(size(crossed_cells) == 1, "cellmask should equal crossed cells")
+      call f90_expect_true(size(crossed_cells) == 1, "crossed cells should be length 1")
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)

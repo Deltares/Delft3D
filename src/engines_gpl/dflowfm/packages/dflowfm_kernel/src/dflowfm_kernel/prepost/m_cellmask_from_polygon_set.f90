@@ -250,7 +250,7 @@ contains
       integer :: k, n, k1, total_points, ipoint
 
       if (cellmask_initialized) then !> reuse cellmask cache boolean
-         return
+         call cleanup_cell_geom_polylines
       end if
 
       call savepol()
@@ -356,9 +356,7 @@ contains
          return
       end if
 
-      if (.not. cellmask_initialized) then
-         call init_cell_geom_as_polylines()
-      end if
+      call init_cell_geom_as_polylines()
 
       call realloc(cellmask, nump, keepexisting=.false., fill=0)
 
