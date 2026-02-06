@@ -200,8 +200,7 @@ contains
     !$f90tw TESTCODE(TEST, test_bubblescreen, test_compute_constituent_discharge, test_compute_constituent_discharge,
     !> Test computation of constituent discharge for a flow cell with 10 layers and 1 constituent
     subroutine test_compute_constituent_discharge() bind(C)
-        use m_cell_geometry, only: ba
-        use m_flow, only: kmx, zws, kbot
+        use m_flow, only: kmx, zws, kbot, vol1
         use m_transport, only: numconst, constituents
 
         ! Local variables
@@ -224,10 +223,10 @@ contains
         ! Setup - globals
         kmx = 10
         numconst = 1
-        call realloc(ba, 1, fill=10.0_dp)
         call realloc(zws, 11, fill=0.0_dp)
         call realloc(kbot, 1, fill=2)
         call realloc(constituents, [1, 11], fill=1.0_dp)
+        call realloc(vol1, 11, fill=10.0_dp)
         zws(1:11) = [-10.0_dp, -9.0_dp, -8.0_dp, -7.0_dp, -6.0_dp, -5.0_dp, -4.0_dp, -3.0_dp, -2.0_dp, -1.0_dp, 0.0_dp]
 
         ! Setup - expected values
@@ -245,10 +244,10 @@ contains
         end do
 
         ! Cleanup
-        deallocate(ba)
         deallocate(zws)
         deallocate(kbot)
         deallocate(constituents)
+        deallocate(vol1)
 
     end subroutine test_compute_constituent_discharge
     !$f90tw)

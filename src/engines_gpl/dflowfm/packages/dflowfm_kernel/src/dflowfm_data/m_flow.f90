@@ -163,9 +163,9 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable :: s00(:) !< waterlevel    (m ) for checking iteration in nonlin
    real(kind=dp), allocatable, target :: a0(:) !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: a1(:) !< [m2] storage area at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol1(:) !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol0(:) !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol1_f(:) !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: vol1(:) !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target :: vol0(:) !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, target :: vol1_f(:) !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable :: sq(:) !< total  influx (m3/s) at water level point
    real(kind=dp), allocatable :: sqa(:) !< total  out! flux (m3/s) at s point, u1 based, non-conservative for iadvec == 38
    real(kind=dp), allocatable, target :: hs(:) !< [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}

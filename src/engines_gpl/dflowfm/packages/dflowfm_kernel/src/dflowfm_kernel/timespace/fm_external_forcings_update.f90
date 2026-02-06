@@ -63,6 +63,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
+   use m_setsorsin, only: setsorsin
 
    implicit none
 
@@ -275,8 +276,9 @@ contains
          end if
       end if
 
-      if (allocated(bubblescreens)) then
+      if (allocated(bubblescreens) .and. .not. initialization) then
          call update_bubblescreens_discharge()
+         call setsorsin()
       end if
 
       ! Update nudging temperature (and salinity)
