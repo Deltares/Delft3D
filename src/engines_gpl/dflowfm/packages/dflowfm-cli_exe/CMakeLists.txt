@@ -59,6 +59,7 @@ target_link_libraries(${executable_name} PRIVATE
                       gridgeom
                       deltares_common
                       netcdff
+                      precicef
 )
 
 if(UNIX)

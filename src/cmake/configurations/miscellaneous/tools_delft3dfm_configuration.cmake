@@ -37,5 +37,10 @@ if(NOT TARGET csumo_precice)
     add_subdirectory(${checkout_src_root}/${csumo_precice_module} csumo_precice)
 endif()
 
+# precicef (preCICE fortran bindings)
+if(NOT TARGET precicef)
+    add_subdirectory(${checkout_src_root}/${precicef_module} precicef)
+endif()
+
 # D-Waq tools
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_tools.cmake)
