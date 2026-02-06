@@ -30,7 +30,6 @@
 module m_cellmask_from_polygon_set
    use m_missing, only: jins, dmiss
    use precision, only: dp
-   !use m_polygon, only: xpl, ypl, zpl, npl, maxpol, restorepol, savepol
 
    implicit none(external)
 
@@ -254,8 +253,6 @@ contains
       if (cellmask_initialized) then !> reuse cellmask cache boolean
          call cellmask_from_polygon_set_cleanup
       end if
-
-      call savepol()
 
       ! calculate total points needed: sum(netcell(k)%n + 1) for all cells
       ! +1 for dmiss separator after each polygon
