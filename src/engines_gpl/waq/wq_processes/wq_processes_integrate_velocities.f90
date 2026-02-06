@@ -46,6 +46,7 @@ contains
         !     Routines            : none
 
         use timers
+        use m_dhnolay
 
         implicit none
 
@@ -81,36 +82,68 @@ contains
         real(kind = dp) :: cto          ! to concentration
         real(kind = dp) :: dq           ! total flux from and to
 
+        real(kind = real_wp), allocatable :: concnew(:), concold(:)
+        integer                           :: cell, t, number_partial_steps
+        real(kind = dp)                   :: dtp                   !< partial time step in seconds
+
         integer(kind = int_wp), save :: ithndl = 0
         if (timon) call timstrt("wq_processes_integrate_velocities", ithndl)
 
-        !     loop accross the number of exchanges
-        do iq = 1, num_exchanges
-            ifrom = ipoint(1, iq)
-            ito = ipoint(2, iq)
-            if (ifrom <= 0 .or. ito <= 0) cycle
-            a = area(iq)
-            vfrom = volume(ifrom)
-            vto = volume(ito)
-            if (vfrom <= 0.0 .or. vto <= 0.0) cycle
-            do isys = 1, num_substances_transported
-                if (ivpnt(isys) > 0) then
-                    q = velo  (ivpnt(isys), iq) * a
-                    if (q == 0.0) cycle
-                    if (q > 0.0) then
-                        cfrom = conc(isys, ifrom)
-                        if (cfrom<=0.0) cycle
-                        dq = min(q * cfrom, (cfrom * vfrom) / dts)
-                    else
-                        cto = conc(isys, ito)
-                        if (cto<=0.0) cycle
-                        dq = max(q * cto, -(cto * vto) / dts)
-                    endif
-                    deriv(ifrom, isys) = deriv(ifrom, isys) - dq / vfrom
-                    deriv(ito, isys) = deriv(ito, isys) + dq / vto
-                endif
-            enddo
+        !     determine if there are additional velocities. If there are none, no need to proceed
+
+        if ( all( ivpnt == 0 ) ) then
+            return
+        endif
+
+        call dhnolay( number_partial_steps ) ! Equal to the number of layers
+        dtp                  = dts / number_partial_steps
+
+        allocate( concnew(num_cells), concold(num_cells) )
+
+        do isys = 1, num_substances_transported
+            if (ivpnt(isys) > 0) then
+
+                concnew = conc(isys,:)
+                concold = conc(isys,:)
+
+                do t = 1,number_partial_steps
+
+                    !     loop across the number of exchanges
+                    do iq = 1, num_exchanges
+                        ifrom = ipoint(1, iq)
+                        ito = ipoint(2, iq)
+                        if (ifrom <= 0 .or. ito <= 0) cycle
+                        a = area(iq)
+                        vfrom = volume(ifrom)
+                        vto = volume(ito)
+                        if (vfrom <= 0.0 .or. vto <= 0.0) cycle
+
+                        q = velo  (ivpnt(isys), iq) * a
+                        if (q == 0.0) cycle
+                        if (q > 0.0) then
+                            cfrom = concold(ifrom)
+                            if (cfrom<=0.0) cycle
+                            dq = cfrom * min(q * dtp, vfrom)
+                        else
+                            cto = concold(ito)
+                            if (cto<=0.0) cycle
+                            dq = cto * max(q * dtp, -vto)
+                        endif
+
+                        concnew(ifrom) = concold(ifrom) - dq / vfrom
+                        concnew(ito)   = concold(ito)   + dq / vto
+                    enddo
+
+                    concold = concnew
+                enddo
+
+                do cell = 1,num_cells
+                    deriv(cell,isys) = deriv(cell,isys) + (concnew(cell) - conc(isys,cell))/ dts
+                enddo
+
+            endif
         enddo
+
         if (timon) call timstop(ithndl)
         return
     end
