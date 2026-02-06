@@ -1079,11 +1079,12 @@ contains
          if (hu(L) > 0) then
             vicLU(L) = vicL ! Total viscosity
             viu(L) = max(0.0_dp, vicL - vicc) ! Modeled turbulent part only
-            dvx1(L) = dvx1_
-            dvy1(L) = dvy1_
-            dvx2(L) = dvx2_
-            dvy2(L) = dvy2_
          end if
+         dvx1(L) = merge(dvx1_, 0.0_dp, hu(L) > 0)
+         dvy1(L) = merge(dvy1_, 0.0_dp, hu(L) > 0)
+         dvx2(L) = merge(dvx2_, 0.0_dp, hu(L) > 0)
+         dvy2(L) = merge(dvy2_, 0.0_dp, hu(L) > 0)
+
       end do
       dvxc = 0.0_dp
       dvyc = 0.0_dp
