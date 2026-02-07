@@ -66,7 +66,16 @@ contains
       if (ja_time_step_analysis == 1) then
          if (mout == 0) then
             call newfil(mout, trim(md_ident)//'.steps')
-            write (mout, '(A)') 'time0/60, dts, dtsc, kkcflmx, kcflmx-kbot(kkcflmx)+1, vol1(kcflmx), squ2D(kcflmx), squ(kcflmx), sqi(kcflmx) '
+            write (mout, '(A)') 'column 1: time0/60              : simulated time since start [min].'  
+            write (mout, '(A)') 'column 2: dts                   : internal computational timestep [s]. This is the timestep used to advance the solution from the current time level to the next time level.'  
+            write (mout, '(A)') 'column 3: dtsc                  : maximum timestep based on Courant number at the limiting 2D flow node number `kkcflmx` [s].'  
+            write (mout, '(A)') 'column 4: kkcflmx               : 2D flow node number of the cell that is limiting the timestep based on Courant number [-]. It is equal to zero if no 2D flow node is limiting the timestep because the timestep is limited by `dtmax`.'  
+            write (mout, '(A)') 'column 5: kcflmx-kbot(kkcflmx)+1: Layer (1 is the bottom-most layer) which is limiting the timestep. Variable `kcflmx` is the 3D flow node number of the cell that is limiting the timestep based on Courant number [-]. Variable `kbot` is the bottom layer 3D flow node number for each 2D flow node number. I.e., for a 2D flow node number `index`, variable `kbot(index)` provides the 3D flow node number of the bottom layer at that 2D location.'  
+            write (mout, '(A)') 'column 6: vol1(kcflmx)          : Volume of the limiting cell at end of the timestep [m^3].'  
+            write (mout, '(A)') 'column 7: squ2D(kcflmx)         : Outgoing 2D flux of the limiting cell [m^3/s]. Only if `autotimestep = 3` or `autotimestep = 4`. Otherwise, this value is equal to `squ(kcflmx)`.'  
+            write (mout, '(A)') 'column 8: squ(kcflmx)           : Outgoing flux of the limiting cell [m^3/s].'  
+            write (mout, '(A)') 'column 9: sqi(kcflmx)           : Incoming flux of the limiting cell [m^3/s].'  
+            write (mout, '(A)') '------------------------------------------'              
          end if
          if (kkcflmx > 0) then
             if (kcflmx == 0) then
