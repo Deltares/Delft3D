@@ -89,6 +89,7 @@ contains
 
       call realloc(sumhorflux, [NUMCONST, Ndkx], keepExisting=.false., fill=0.0_dp)
       call realloc(ndeltasteps, Ndx, keepExisting=.false., fill=1)
+      call realloc(deltaflux, Lnx, keepExisting=.false., fill=1.0_dp)
       call realloc(jaupdate, Ndx, keepExisting=.false., fill=1)
       call realloc(jaupdatehorflux, Lnx, keepExisting=.false., fill=1)
       call realloc(dtmax, Ndx, keepExisting=.false., fill=0.0_dp)

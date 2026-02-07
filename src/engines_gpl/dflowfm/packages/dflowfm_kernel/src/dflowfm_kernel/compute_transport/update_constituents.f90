@@ -234,7 +234,7 @@ contains
          if (stmpar%morpar%mornum%suspended_flux_factor /= 1.0_dp) then
             fluxhor = fluxhor * stmpar%morpar%mornum%suspended_flux_factor
          end if
-         call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
+         call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux, deltaflux, jaupdatehorflux)
          call stoptimer(IDEBUG)
 
          if (jased == 4 .and. stmpar%lsedsus > 0) then ! at the moment, this function is only required by suspended sediment. Can be extended to other fluxes if necessary

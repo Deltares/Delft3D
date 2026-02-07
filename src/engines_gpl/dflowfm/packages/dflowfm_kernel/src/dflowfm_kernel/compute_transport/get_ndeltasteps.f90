@@ -45,7 +45,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: Ndxi, Lnxi, Lnx, ln
       use m_flowtimes, only: dts
-      use m_transport, only: numnonglobal, dtmin_transp, nsubsteps, ndeltasteps, dtmax
+      use m_transport, only: numnonglobal, dtmin_transp, nsubsteps, ndeltasteps, dtmax, deltaflux
       use timers, only: timon, timstrt, timstop
       use m_flowparameters, only: ja_transport_local_time_step
 
@@ -94,6 +94,12 @@ contains
          end if
       end if
 
+!     set nfluxsteps
+      do LL = 1, Lnx
+         deltaflux(LL) = real(min(ndeltasteps(ln(1, LL)), ndeltasteps(ln(2, LL))), kind=dp)/real(nsubsteps, kind=dp)
+      end do
+
+      
       if (timon) then
          call timstop(ithndl)
       end if
