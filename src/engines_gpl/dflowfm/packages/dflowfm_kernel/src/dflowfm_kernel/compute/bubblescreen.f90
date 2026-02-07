@@ -42,11 +42,11 @@ contains
         type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
 
         ! Local variables
-        integer :: i_flow_cell !< Flow cell index
+        integer :: i_flow_cell !< Bubblescreen flow cell index
         integer :: k_start !< Start active layer index (bottom)
         integer :: k_stop !< Stop active layer index (top) (inclusive)
         integer :: k_max_velocity !< Layer index for maximum downward velocity
-        integer :: n !< Flow cell index
+        integer :: n !< 2D cell index
         real(kind=dp) :: area_fraction !< Area fraction of the flow cell
         real(kind=dp) :: max_velocity !< Maximum downward vertical velocity for this flow cell
         real(kind=dp) :: total_area !< Total area of the bubble screen
@@ -227,8 +227,8 @@ contains
         real(kind=dp), dimension(kmx), intent(inout) :: discharge_water !< Water discharge for all layers in 2D flow cell; size={kmx}
 
         ! Local variables
+        integer :: k !< Global layer index
         integer :: l !< Local layer index within flow cell
-        integer :: k !< Layer index
         real(kind=dp) :: velocity_gradient !< [1/s] Vertical velocity gradient
         real(kind=dp) :: vertical_fraction !< Fractional vertical position within bubble screen
         real(kind=dp), dimension(kmx+1) :: vertical_velocity !< Vertical velocity array (at layer interfaces) size:{kmx+1}
@@ -318,7 +318,7 @@ contains
 
         ! Local variables
         integer :: i !< Loop index
-        integer :: k !< Layer index
+        integer :: k !< Global layer index
         integer :: l !< Local layer index within flow cell
         real(kind=dp), dimension(numconst) :: source_constituents !< [kg/m3, ppt, degC] Constituent concentration/temperature for source layers; size={numconst}
         real(kind=dp), dimension(numconst) :: sum_sink_constituents !< [kg/m3, ppt, degC] Sum of constituent concentrations in sink layers; size={numconst}
@@ -362,7 +362,7 @@ contains
 
         ! Local variables
         integer :: i !< Constituent index
-        integer :: k !< Layer index
+        integer :: k !< Global layer index
         integer :: l !< Local layer index within flow cell
 
         do l = 1, kmx

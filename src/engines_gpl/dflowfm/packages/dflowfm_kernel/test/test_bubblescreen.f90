@@ -148,8 +148,7 @@ contains
     !$f90tw TESTCODE(TEST, test_bubblescreen, test_compute_water_discharge, test_compute_water_discharge,
     !> Test computation of water discharge for a flow cell with 10 layers
     subroutine test_compute_water_discharge() bind(C)
-        use m_cell_geometry, only: ba
-        use m_flow, only: kmx, zws, kbot
+        use m_flow, only: kmx, zws, kbot, vol1
 
         ! Local variables
         character(len=5) :: str_i !< String for constructing error messages with layer index
@@ -159,8 +158,8 @@ contains
         integer :: k_stop !< Stopping layer interface for bubble screen 
         integer :: k_max_velocity !< Layer interface of maximum velocity for bubble screen
         real(kind=dp) :: max_velocity !< Maximum velocity in bubble screen flow cell
-        real(kind=dp), dimension(1, 10) :: expected_discharge !< Expected water discharge for each layer in flow cell (assuming 10 layers)
-        real(kind=dp), dimension(1, 10) :: computed_discharge !< Computed water discharge for each layer in flow cell (assuming 10 layers)
+        real(kind=dp), dimension(10) :: expected_discharge !< Expected water discharge for each layer in flow cell (assuming 10 layers)
+        real(kind=dp), dimension(10) :: computed_discharge !< Computed water discharge for each layer in flow cell (assuming 10 layers)
 
         ! Setup - inputs
         flow_cell_index = 1
@@ -172,12 +171,12 @@ contains
         ! Setup - globals
         kmx = 10
         call realloc(kbot, 1, fill=2)
-        call realloc(ba, 1, fill=10.0_dp) ! Flow cell area = 10 m2
         call realloc(zws, 11, fill=0.0_dp)
-        zws(1:11) = [-10.0_dp, -9.0_dp, -8.0_dp, -7.0_dp, -6.0_dp, -5.0_dp, -4.0_dp, -3.0_dp, -2.0_dp, -1.0_dp, 0.0_dp]
+        zws = [-10.0_dp, -9.0_dp, -8.0_dp, -7.0_dp, -6.0_dp, -5.0_dp, -4.0_dp, -3.0_dp, -2.0_dp, -1.0_dp, 0.0_dp]
+        call realloc(vol1, 11, fill=10.0_dp)
 
         ! Setup - expected values
-        expected_discharge(1, 1:10) = [0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, 3.0_dp, 3.0_dp]
+        expected_discharge = [0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, 3.0_dp, 3.0_dp]
 
         ! Call function to test
         call compute_water_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, computed_discharge)
@@ -185,14 +184,14 @@ contains
         ! Compare results
         do i = 1, 10
             write(str_i, "(I0)") i
-            call f90_expect_true(comparereal(computed_discharge(1, i), expected_discharge(1, i), eps=1.0e-7_dp) == 0, &
+            call f90_expect_true(comparereal(computed_discharge(i), expected_discharge(i), eps=1.0e-7_dp) == 0, &
                 "Computed discharge for layer "//trim(str_i)//" should match expected value")
         end do
 
         ! Cleanup
         deallocate(kbot)
-        deallocate(ba)
         deallocate(zws)
+        deallocate(vol1)
 
     end subroutine test_compute_water_discharge
     !$f90tw)
@@ -210,36 +209,35 @@ contains
         integer :: k_start !< Starting layer interface for bubble screen
         integer :: k_stop !< Stopping layer interface for bubble screen 
         integer :: k_max_velocity !< Layer interface of maximum velocity for bubble screen
-        real(kind=dp), dimension(2, 10) :: expected_discharge
-        real(kind=dp), dimension(2, 10) :: computed_discharge
+        real(kind=dp), dimension(1, 10) :: expected_constituents !< Expected constituent discharge for each layer in flow cell (assuming 10 layers and 1 constituent)
+        real(kind=dp), dimension(1, 10) :: computed_constituents !< Computed constituent discharge for each layer in flow cell (assuming 10 layers and 1 constituent)
 
         ! Setup - inputs
         flow_cell_index = 1
         k_start = 3
         k_stop = 11
         k_max_velocity = 9
-        computed_discharge(1, 1:10) = [0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, 3.0_dp, 3.0_dp]
 
         ! Setup - globals
         kmx = 10
         numconst = 1
         call realloc(zws, 11, fill=0.0_dp)
         call realloc(kbot, 1, fill=2)
-        call realloc(constituents, [1, 11], fill=1.0_dp)
+        call realloc(constituents, [1, 11], fill=0.0_dp)
+        constituents(1, :) = [0.0_dp, 1.0_dp, 2.0_dp, 3.0_dp, 4.0_dp, 5.0_dp, 6.0_dp, 7.0_dp, 8.0_dp, 9.0_dp, 10.0_dp]
         call realloc(vol1, 11, fill=10.0_dp)
-        zws(1:11) = [-10.0_dp, -9.0_dp, -8.0_dp, -7.0_dp, -6.0_dp, -5.0_dp, -4.0_dp, -3.0_dp, -2.0_dp, -1.0_dp, 0.0_dp]
+        zws = [-10.0_dp, -9.0_dp, -8.0_dp, -7.0_dp, -6.0_dp, -5.0_dp, -4.0_dp, -3.0_dp, -2.0_dp, -1.0_dp, 0.0_dp]
 
         ! Setup - expected values
-        expected_discharge(1, 1:10) = [0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, 3.0_dp, 3.0_dp]
-        expected_discharge(2, 1:10) = [0.0_dp, 0.0_dp, -0.1_dp, -0.1_dp, -0.1_dp, -0.1_dp, -0.1_dp, -0.1_dp, 0.3_dp, 0.3_dp]
+        expected_constituents(1, :) = [0.0_dp, 0.0_dp, 3.0_dp, 4.0_dp, 5.0_dp, 6.0_dp, 7.0_dp, 8.0_dp, 16.5_dp, 16.5_dp]
 
         ! Call function to test
-        call compute_constituent_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, computed_discharge)
+        call compute_constituent_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, computed_constituents)
 
         ! Compare results
         do i = 1, 10
             write(str_i, "(I0)") i
-            call f90_expect_true(comparereal(computed_discharge(2, i), expected_discharge(2, i), eps=1.0e-7_dp) == 0, &
+            call f90_expect_true(comparereal(computed_constituents(1, i), expected_constituents(1, i), eps=1.0e-7_dp) == 0, &
                 "Computed constituent discharge for layer "//trim(str_i)//" should match expected value")
         end do
 
