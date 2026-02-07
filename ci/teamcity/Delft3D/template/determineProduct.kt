@@ -19,10 +19,11 @@ object TemplateDetermineProduct : Template({
                 content="""
                     if "%product%" == "auto-select":
                         if "pull" in "%teamcity.build.branch%":
-                            if "%teamcity.pullRequest.source.branch%".startswith("revert-"):
+                            source_branch = "%teamcity.pullRequest.source.branch%"
+                            if source_branch.startswith("revert-") or source_branch.startswith("dependabot/"):
                                 product = "tc"
                             else:
-                                product = "%teamcity.pullRequest.source.branch%".split("/")[0]
+                                product = source_branch.split("/")[0]
                         else:
                             product = "%teamcity.build.branch%".split("/")[0]
                         if "%teamcity.build.branch.is_default%" == "true":

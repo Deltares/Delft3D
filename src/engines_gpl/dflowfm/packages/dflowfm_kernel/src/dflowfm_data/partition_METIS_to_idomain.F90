@@ -32,7 +32,6 @@
 
 submodule(m_partition_METIS_to_idomain) m_partition_METIS_to_idomain_
 
-
    use precision, only: dp
    implicit none
 

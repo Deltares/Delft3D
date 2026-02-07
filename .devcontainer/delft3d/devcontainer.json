@@ -2,6 +2,7 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
+
     "postCreateCommand": "bash .devcontainer/delft3d/scripts/post_create_command.sh",
     "mounts": [
         // Persist the bash history into a Docker volume, so you don't lose your bash history when restarting the container.
@@ -18,6 +19,7 @@
             "target": "/home/dev/.aws",
         },
     ],
+    "runArgs": ["--ulimit", "stack=-1:-1"],
     "customizations": {
         "vscode": {
             "extensions": [

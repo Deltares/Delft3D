@@ -505,6 +505,17 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f004_c133_time_dependent_friction_scatter_points" ref="dflowfm_default">
+      <path version="2026-01-16T11:09:39.787000">e02_dflowfm/f004_bottomfriction/c133_time_dependent_friction_scatter_points</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_cfu" toleranceAbsolute="0.001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f005_c010_waterlevel_tim_constant" ref="dflowfm_default">
       <path version="2025-12-16T12:49:08.878000">e02_dflowfm/f005_boundary_conditions/c010_waterlevel_tim_constant</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -4869,7 +4880,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c067_rain_netcdf_stations" ref="dflowfm_default">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f006_external_forcing/c067_rain_netcdf_stations</path>
+      <path version="2026-01-15T12:34:02.204000">e02_dflowfm/f006_external_forcing/c067_rain_netcdf_stations</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplerain_his.nc" type="netCDF">

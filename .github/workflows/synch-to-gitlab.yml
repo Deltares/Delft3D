@@ -1,0 +1,18 @@
+name: Sync Repository to GitLab
+
+on:
+  push
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+         fetch-depth: 0
+      - name: Sync to GitLab
+        uses: yesolutions/mirror-action@1708f16cdb28634fd3ba10c5c79abc91f5578a14
+        with:
+          REMOTE: https://open-git.deltares.nl/deltares-github-backups/${{ github.event.repository.name }}.git
+          GIT_USERNAME: ${{ secrets.GITLAB_USERNAME }}
+          GIT_PASSWORD: ${{ secrets.GITLAB_PAT }}

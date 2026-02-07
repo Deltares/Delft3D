@@ -2,7 +2,7 @@
 
 from io import StringIO
 
-from ci_tools.dimrset_delivery.step_3_teamcity_test_results import (
+from ci_tools.dimrset_delivery.teamcity_test_results import (
     ExecutiveSummary,
     ResultExecutiveSummary,
     ResultSummary,

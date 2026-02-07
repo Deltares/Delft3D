@@ -825,7 +825,7 @@ contains
       use Messagehandling
       use message_module, only: writemessages, write_error
       use sediment_basics_module
-      use m_flowparameters, only: flowWithoutWaves, jawaveswartdelwaq
+      use m_flowparameters, only: flow_without_waves, jawaveswartdelwaq
       use m_flowgeom, only: wu_mor, ln
       use m_flow, only: u1
       use m_fm_erosed, only: lsedtot, bc_mor_array, cdryb, rhosol, nmudfrac, tratyp, e_sbn
@@ -880,7 +880,7 @@ contains
    !! Execute
    !!
 
-      if (flowWithoutWaves) then
+      if (flow_without_waves) then
          jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
       else
          jawaveswartdelwaq_local = jawaveswartdelwaq

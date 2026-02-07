@@ -72,7 +72,10 @@ class TestSetRunner(ABC):
         start_time = datetime.now()
 
         if len(self.settings.configs_to_run) == 0:
-            logline = f"There are no test cases in '{self.settings.command_line_settings.config_file}' with applied filter '{self.settings.command_line_settings.filter}'."
+            logline = (
+                f"There are no test cases in '{self.settings.command_line_settings.config_file}' "
+                f"with applied filter '{self.settings.command_line_settings.filter}'."
+            )
             self.__logger.error(logline)
             raise ValueError(logline)
 

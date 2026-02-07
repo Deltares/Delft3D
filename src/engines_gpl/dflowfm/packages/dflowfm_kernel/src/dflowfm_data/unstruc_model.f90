@@ -664,7 +664,7 @@ contains
    subroutine readMDUFile(filename, istat)
       use time_module, only: ymd2modified_jul, datetimestring_to_seconds
       use m_flow, notinuse_s => success
-      !,                  only : kmx, layertype, mxlayz, sigmagrowthfactor, iturbulencemodel, &
+      !,                  only : kmx, layertype, mxlayz, z_layer_growth_factor, iturbulencemodel, &
       !                         LAYTP_SIGMA, numtopsig, spirbeta,                              &
       !                         dztopuniabovez, dztop, uniformhu, jahazlayer, Floorlevtoplay,         &
       !                         javakeps,                                                             &
@@ -937,8 +937,9 @@ contains
             call warn_flush()
             numtopsig = 0
          end if
-         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform, success)
-         call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
+         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform)
+         call prop_get(md_ptr, 'geometry', 'sigmaGrowthFactor', z_layer_growth_factor) ! Deprecated, sigmaGrowthFactor is replaced by zLayerGrowthFactor
+         call prop_get(md_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor)
          call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
          call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
@@ -1646,16 +1647,16 @@ contains
       call prop_get(md_ptr, 'waves', 'Hwavuni', Hwavuni)
       call prop_get(md_ptr, 'waves', 'Twavuni', Twavuni)
       call prop_get(md_ptr, 'waves', 'Phiwavuni', Phiwavuni)
-      call prop_get(md_ptr, 'waves', 'flowWithoutWaves', flowWithoutWaves) ! True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
+      call prop_get(md_ptr, 'waves', 'FlowWithoutWaves', flow_without_waves) ! True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
       call prop_get(md_ptr, 'waves', 'Rouwav', rouwav)
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          call setmodind(rouwav, modind)
       end if
       call prop_get(md_ptr, 'waves', 'Gammax', gammax)
       call prop_get(md_ptr, 'waves', 'hminlw', hminlw)
       call prop_get(md_ptr, 'waves', 'uorbfac', jauorb) ! 0=delft3d4, sqrt(pi)/2 included in uorb calculation; >0: FM, factor not included; default: 0
-      ! backward compatibility for hk in tauwavehk:
-      if ((jawave > NO_WAVES .and. jawave < WAVE_SWAN_ONLINE) .or. flowWithoutWaves) then
+      ! backward compatibility for hk in compute_wave_shear_velocity:
+      if (jawave > NO_WAVES .and. (jawave < WAVE_SWAN_ONLINE .or. flow_without_waves)) then
          jauorb = 1
       end if
       call prop_get(md_ptr, 'waves', 'jahissigwav', jahissigwav) ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
@@ -1702,6 +1703,16 @@ contains
          fwavpendep = 0.0_dp
          write (msgbuf, *) 'unstruc_model::readMDUFile: 3Dwaveturbpendepth<0.0, reset to 0.0. Wave breaking switched off as a source for TKE.'
          call warn_flush()
+      end if
+      !
+      ! safety
+      if (jawave > NO_WAVES .and. flow_without_waves) then
+         jawaveStokes = NO_STOKES_DRIFT
+         jawaveforces = WAVE_FORCES_OFF
+         jawavestreaming = WAVE_STREAMING_OFF
+         jawavedelta = WAVE_BOUNDARYLAYER_OFF
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF
+         modind = 0
       end if
 
       call prop_get(md_ptr, 'grw', 'groundwater', jagrw)
@@ -2307,7 +2318,7 @@ contains
 
       call prop_get(md_ptr, 'output', 'EulerVelocities', jaeulervel)
       if (jaeulervel == 1) then
-         if (jawave < WAVE_SWAN_ONLINE .or. flowWithoutWaves) then
+         if (jawave < WAVE_SWAN_ONLINE .or. flow_without_waves) then
             call mess(LEVEL_WARN, '''EulerVelocities'' is not compatible with the selected Wavemodelnr. ''EulerVelocities'' is set to 0.')
             jaeulervel = WAVE_EULER_VELOCITIES_OUTPUT_OFF
          else if (jawavestokes == NO_STOKES_DRIFT) then
@@ -2632,7 +2643,7 @@ contains
 
 !> Write a model definition to a file pointer
    subroutine writeMDUFilepointer(mout, writeall, istat)
-      use m_flow ! ,                !  only : kmx, layertype, mxlayz, sigmagrowthfactor, numtopsig, &
+      use m_flow ! ,                !  only : kmx, layertype, mxlayz, z_layer_growth_factor, numtopsig, &
       !         Iturbulencemodel, spirbeta, dztopuniabovez, dztop, jahazlayer, Floorlevtoplay ,  &
       !         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,         &
       !         Tsigma, jarhoxu, iStrchType, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
@@ -2919,7 +2930,7 @@ contains
             call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform', jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')
          end if
 
-         call prop_set(prop_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor, 'Layer thickness growth factor from bed up')
+         call prop_set(prop_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor, 'z-layer thickness growth factor from DzTopUniAboveZ downwards')
          if (writeall .or. dztop /= dmiss) then
             call prop_set(prop_ptr, 'geometry', 'Dztop', Dztop, 'Z-layer thickness of layers above level Dztopuniabovez')
          end if
@@ -2947,7 +2958,7 @@ contains
          end if
 
          if (writeall .or. dztopuniabovez /= dmiss) then
-            call prop_set(prop_ptr, 'geometry', 'Dztopuniabovez', Dztopuniabovez, 'Above this level layers will have uniform Dztop, below we use SigmaGrowthFactor')
+            call prop_set(prop_ptr, 'geometry', 'Dztopuniabovez', Dztopuniabovez, 'Above this level layers will have uniform Dztop, below we use zLayerGrowthFactor')
          end if
          if (Tsigma /= 100.0_dp) then
             call prop_set(prop_ptr, 'geometry', 'Tsigma', Tsigma, 'Sigma Adaptation period for Layertype==4 (s)')
@@ -3025,7 +3036,7 @@ contains
       end if
       call prop_set(prop_ptr, 'numerics', 'Limtypmom', limtypmom, 'Limiter type for cell center advection velocity (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
       call prop_set(prop_ptr, 'numerics', 'Limtypsa', limtypsa, 'Limiter type for salinity transport (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
-      if (writeall .or. (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. (.not. flowWithoutWaves) .and. swave == 1)) then
+      if (writeall .or. (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. (.not. flow_without_waves) .and. swave == 1)) then
          call prop_set(prop_ptr, 'numerics', 'Limtypw', limtypw, 'Limiter type for wave action transport (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
       end if
 
@@ -3646,7 +3657,7 @@ contains
          call prop_set(prop_ptr, 'waves', 'jahissigwav', jahissigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
          call prop_set(prop_ptr, 'waves', 'jamapsigwav', jamapsigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
          call prop_set(prop_ptr, 'waves', 'hminlw', hminlw, 'Cut-off depth for application of wave forces in momentum balance')
-         if (flowWithoutWaves) then
+         if (flow_without_waves) then
             fww = 1
          else
             fww = 0

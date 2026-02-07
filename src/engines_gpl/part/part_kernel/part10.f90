@@ -200,7 +200,7 @@ contains
 
         real   (sp), pointer :: v_swim(:)         ! horizontal swimming velocity m/s
         real   (sp), pointer :: d_swim(:)         ! horizontal swimming direction (degree)
-
+        real   (dp)          :: vw_net            ! net wind velocity (corrected for wind)
         !**   local parameters
 
         integer(int_wp) :: icounz                  ! count the number of vertical bounces
@@ -320,6 +320,7 @@ contains
         real(sp) :: vznew                   ! particle velocity in z dir. corrected
         real(sp) :: vzs                     ! vertical velocity due to settling
         real(sp) :: wdirr                   ! is wind direction in radians
+        real(sp) :: wdirr_lee               ! wind direction corrected for leeway
         real(sp) :: wstick                  ! used in fraction computation with oil
         real(sp) :: wsum                    ! used to sum the weights of a particle
         real(sp) :: xnew                    ! new x value
@@ -368,6 +369,7 @@ contains
 
         integer(int_wp) :: nboomtry
         integer(int_wp) :: nscreenstry
+        real(sp) :: leeway_ang_sign
         logical :: screensfirsttry
         logical :: leftside
 
@@ -400,12 +402,17 @@ contains
             iboomint = 0
             sq6 = sqrt(6.0)
             twopi = 8.0 * atan(1.0)
-            defang = defang * twopi / 360.0    !  deflection angle oil modelling
+            oilmod = modtyp == model_oil
+            cdrag = drand(3) / 100.0          !  wind drag as a fraction
+            if (oilmod) then
+                defang = defang * twopi / 360.0    !  deflection angle oil modelling
+            elseif (leeway) then
+                defang = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
+                cdrag  = leeway_multiplier          !  windage (leeway), given as a fraction
+            endif
             coriol = abs(defang) >= 1.0e-6   !  deflection from the equator aparently
             twolay = modtyp == model_two_layer_temp
-            oilmod = modtyp == model_oil
             threed = layt > 1
-            cdrag = drand(3) / 100.0          !  wind drag as a fraction
             ptlay = 1.0 - pblay
             dspmin = 1.0e+10
             dspmax = 0.0
@@ -804,6 +811,15 @@ contains
             !**      vertically bouncing particles ?
 
             icounz = 0
+            !   scale dvz dependt on the keyword scale_vdif_depth and particles in the top layer (depth)
+            if (apply_wind_drag .and. scale_vdif_depth <1.0) then
+                if (kp==ktopp) then
+                    zpabs = zp * locdep(n0, kp)
+                    if (zpabs < max_wind_drag_depth) then
+                        dvzt = dvzt * scale_vdif_depth
+                    endif
+                endif
+            endif
             znew = zp + dvzt
             do while (znew > 1.0 .or. znew < 0.0)
 
@@ -1254,15 +1270,21 @@ contains
                     ynew = ynew + (cdrag * (vyw - vyr) / dyp) * itdelt    !
                 endif
             else
+                ! Leeway feature
                 if (apply_wind_drag) then
                     if (kp==ktopp) then
                         zpabs = zp * locdep(n0, kp)
                         if (zpabs < max_wind_drag_depth) then
-                            vxw = - wvelo(n0) * sin(wdirr + sangl)
-                            vyw = - wvelo(n0) * cos(wdirr + sangl)
-                            !                    drag on the difference vector: cd * (wind - flow)
-                            xnew = xnew + (cdrag * (vxw - vxr) / dxp) * itdelt    !
-                            ynew = ynew + (cdrag * (vyw - vyr) / dyp) * itdelt    !
+                            leeway_ang_sign = mod(ipart, 3) - 1
+                            wdirr_lee  = wdirr + leeway_ang_sign * defang + sangl
+                            vxw        = - wvelo(n0) * sin(wdirr_lee)
+                            vyw        = - wvelo(n0) * cos(wdirr_lee)
+                            vw_net     = sqrt((vxw-vxr)**2 + (vyw-vyr)**2)  ! net wind for drag (to accommodate scaling the modifier)
+                            ! drag on the difference vector: cd * (wind - flow)
+                            if ( vw_net > 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
+                                xnew = xnew  + (cdrag*(vxw-vxr) + leeway_modifier * sin(wdirr_lee)) * itdelt    ! This modifier may need to be adjusted to the angle
+                                ynew = ynew  + (cdrag*(vyw-vyr) + leeway_modifier * cos(wdirr_lee)) * itdelt    !
+                            endif
                         end if
                     end if
                 end if

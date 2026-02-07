@@ -10782,7 +10782,7 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "RHOSAND   ","x"," ",   0.260000E+07,"(gDM/m3)            ","bulk density sand                                 ","volume    ","volume    "," ","                              "
 "ThickS2   ","x"," ",   0.500000    ,"(m)                 ","thickness of layer S2 van Rijn pick-up resusp.    ","volume    ","volume    "," ","                              "
 "MaxResPup ","x"," ",   0.100000E+21,"(g/m2/d)            ","Maximum resuspension pick-up                      ","volume    ","volume    "," ","                              "
-"FactResPup","x"," ",   0.100000E-06,"(-)                 ","Factor resuspension pick-up (1.0E-7)              ","volume    ","volume    "," ","                              "
+"FactResPup","x"," ",   0.100000E-06,"(-)                 ","Factor resuspension pick-up                       ","volume    ","volume    "," ","                              "
 "fRIM1S2Pup","x"," ",   -999.000    ,"(g/m2/d)            ","pick-up resuspension flux IM1 from S2             ","volume    ","volume    "," ","                              "
 "fRIM2S2Pup","x"," ",   -999.000    ,"(g/m2/d)            ","pick-up resuspension flux IM2 from S2             ","volume    ","volume    "," ","                              "
 "fRIM3S2Pup","x"," ",   -999.000    ,"(g/m2/d)            ","pick-up resuspension flux IM3 from S2             ","volume    ","volume    "," ","                              "
