@@ -1,0 +1,55 @@
+{% if added or moddified or deleted or renamed %}
+## This PR made the following changes to DVC files:
+{% if added -%}
+<details>
+
+<summary> <h3>Added</h3> </summary>
+
+{% for file in added | sort(attribute='path') -%}
+    - `{{ file.path }}`
+{%endfor%}
+
+</details>
+{%endif%}
+
+{% if deleted %}
+<details>
+
+<summary> <h3>Deleted</h3> </summary>
+
+{% for file in deleted | sort(attribute='path') -%}
+    - `{{ file.path }}`
+{%endfor%}
+
+</details>
+{% endif %}
+
+    
+{% if renamed %}
+
+<details>
+
+<summary> <h3>Renamed</h3> </summary>
+
+{% for rename in renamed -%}
+    - `{{ rename.path.old}}` -> `{{ rename.path.new }}`
+{%endfor-%}
+
+</details>
+
+{% endif %}
+
+{% if moddified -%}
+
+<details>
+
+<summary> <h3>Moddified</h3> </summary>
+
+{% for file in moddified %}
+    - `{{file.path}}`
+{% endfor %}
+
+</details>
+{% endif %}
+
+{%endif%}
