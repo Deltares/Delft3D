@@ -99,7 +99,7 @@ int D3dFlowContextGawsSide::Setup(
     delete cIdBlob;
     if ( incomingBlobID != F2G_Blob_ContextID )
     {
-        throw new Exception (true, "D3dFlowContextGawsSide::Setup: unexpected blobID (%d /= %d)",
+        throw new Exception("D3dFlowContextGawsSide::Setup: unexpected blobID (%d /= %d)",
                     incomingBlobID, F2G_Blob_ContextID);
     }
     FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "GAWS \"%s\" RECEIVED cID from flow \"%s\"",
@@ -107,7 +107,7 @@ int D3dFlowContextGawsSide::Setup(
 
     if ( this->contextID == YET_TO_INIT )
     {
-        throw new Exception (true, "GAWS didn't receive valid contextID from D3dFlow \"%s\"",
+        throw new Exception("GAWS didn't receive valid contextID from D3dFlow \"%s\"",
                         this->flowIterator->name);
     }
 
@@ -151,7 +151,7 @@ int D3dFlowContextGawsSide::Setup(
         delete kcsBlob;
         if ( incomingBlobID != F2G_Blob_KCS_Array )
         {
-            throw new Exception (true, "D3dFlowContextGawsSide::Setup: unexpected blobID (%d /= %d)",
+            throw new Exception("D3dFlowContextGawsSide::Setup: unexpected blobID (%d /= %d)",
                         incomingBlobID, F2G_Blob_KCS_Array);
         }
         FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "GAWS \"%s\" RECEIVED KCS from flow \"%s\"",
@@ -323,7 +323,7 @@ void D3dFlowContextGawsSide::UpdateGawsToFlow(GawsDistribGroup distribGroup)
     {
         if ( this->flowIterator == NULL )
         {
-            throw new Exception (true, "UpdateGawsToFlow: flowIterator not set for Gaws \"%s\"",
+            throw new Exception("UpdateGawsToFlow: flowIterator not set for Gaws \"%s\"",
                 this->gawsIterator == NULL ? "????" : this->gawsIterator->name );
         }
         else
@@ -370,7 +370,7 @@ void D3dFlowContextGawsSide::UpdateGawsFromFlow(GawsDistribGroup distribGroup)
     {
         if ( this->flowIterator == NULL )
         {
-            throw new Exception (true, "UpdateGawsFromFlow: flowIterator not set for Gaws \"%s\"",
+            throw new Exception("UpdateGawsFromFlow: flowIterator not set for Gaws \"%s\"",
                 this->gawsIterator == NULL ? "????" : this->gawsIterator->name );
         }
         else
@@ -391,7 +391,7 @@ void D3dFlowContextGawsSide::UpdateGawsFromFlow(GawsDistribGroup distribGroup)
             delete receiveBlob;
             if ( incomingBlobID != F2G_Blob_Update )
             {
-                throw new Exception (true, "D3dFlowContextGawsSide::UpdateGawsFromFlow: unexpected blobID (%d /= %d)",
+                throw new Exception("D3dFlowContextGawsSide::UpdateGawsFromFlow: unexpected blobID (%d /= %d)",
                             incomingBlobID, F2G_Blob_Update);
             }
 
@@ -495,7 +495,7 @@ void D3dFlowContextGawsSide::ReceiveSizesFromFlow(void)
 
         if ( this->flowIterator == NULL )
     {
-        throw new Exception (true, "ReceiveSizesFromFlow: flowIterator not set for Mapper \"%s\"",
+        throw new Exception("ReceiveSizesFromFlow: flowIterator not set for Mapper \"%s\"",
             this->gawsIterator == NULL ? "????" : this->gawsIterator->name );
     }
     else
@@ -511,7 +511,7 @@ void D3dFlowContextGawsSide::ReceiveSizesFromFlow(void)
         delete sizesBlob;
         if ( incomingBlobID != F2G_Blob_SubdomainSizes )
         {
-            throw new Exception (true, "D3dFlowContextGawsSide::ReceiveSizesFromFlow: unexpected blobID (%d /= %d)",
+            throw new Exception("D3dFlowContextGawsSide::ReceiveSizesFromFlow: unexpected blobID (%d /= %d)",
                         incomingBlobID, F2G_Blob_SubdomainSizes);
         }
 

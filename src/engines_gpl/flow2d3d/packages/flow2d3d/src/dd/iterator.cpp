@@ -53,25 +53,25 @@ Iterator::Iterator (
     // Validate constructor arguments
 
     if (name == NULL || name[0] == '\0')
-        throw new Exception (true, "Iterator does not have a name");
+        throw new Exception("Iterator does not have a name");
     if (strlen (name) >= DD::MAXSTRING)
-        throw new Exception (true, "Iterator name is too long");
+        throw new Exception("Iterator name is too long");
     if (dd->iteratorDict->Lookup (name) != (void *) Dictionary::NOTFOUND)
-        throw new Exception (true, "Duplicate iterator name \"%s\"", name);
+        throw new Exception("Duplicate iterator name \"%s\"", name);
     if (category == NULL)
-        throw new Exception (true, "No category for iterator \"%s\"", name);
+        throw new Exception("No category for iterator \"%s\"", name);
     if (function == NULL)
-        throw new Exception (true, "Null iterator function for \"%s\"", name);
+        throw new Exception("Null iterator function for \"%s\"", name);
 
     char * cname = category->name;
     long catid = (long) dd->categoryDict->Lookup (cname);
     if (catid == Dictionary::NOTFOUND)
-        throw new Exception (true, "Cannot find category \"%s\" for iterator \"%s\"", cname, name);
+        throw new Exception("Cannot find category \"%s\" for iterator \"%s\"", cname, name);
 
     // Allocate new slot in configuration table
 
     if ((this->id = dd->numIterators++) >= DD::MAXITERATORS)
-        throw new Exception (true, "Configuration iterator table is full (> %d entries)", DD::MAXITERATORS);
+        throw new Exception("Configuration iterator table is full (> %d entries)", DD::MAXITERATORS);
 
     // Fill in object members
 
@@ -214,11 +214,11 @@ Iterator::NextNeighbor (
     else {
         catNeigh = (CatNeigh *) this->neighDict->Lookup (category->name);
         if ((long) catNeigh == Dictionary::NOTFOUND)
-            throw new Exception (true, "Iterator \"%s\" does not have neighbors in category \"%s\"", this->name, category->name);
+            throw new Exception("Iterator \"%s\" does not have neighbors in category \"%s\"", this->name, category->name);
         }
 
     if (! catNeigh->rewound)
-        throw new Exception (true, "Neighbor list of \"%s\" not rewound before Next in category \"%s\"", this->name, category->name);
+        throw new Exception("Neighbor list of \"%s\" not rewound before Next in category \"%s\"", this->name, category->name);
 
     return (Iterator *) catNeigh->neighbors->Next ();
     }
@@ -263,7 +263,7 @@ Iterator::FindJoin (
             this->dd->join[jid].iter1 == iter2 && this->dd->join[jid].iter2 == iter1)
             return jid;
 
-    throw new Exception (true, "Internal error: Cannot find (%d,%d) in join table", iter1, iter2);
+    throw new Exception("Internal error: Cannot find (%d,%d) in join table", iter1, iter2);
     return 0;
     }
 
@@ -282,7 +282,7 @@ Iterator::Send (
     this->dd->log->Write (Log::ITER_MINOR, "IteratorSend called");
     int senderid = this->dd->DDGetThreadID ();
     if (this->id == senderid)
-        throw new Exception (true, "Iterator \"%s\" in \"%s\" is trying to send itself a message",
+        throw new Exception("Iterator \"%s\" in \"%s\" is trying to send itself a message",
                         this->name,
                         this->dd->category[this->dd->iterator[senderid].catID].name
                         );
@@ -325,7 +325,7 @@ Iterator::Receive (
     this->dd->log->Write (Log::ITER_MINOR, "IteratorReceive called");
     int senderid = this->dd->DDGetThreadID ();
     if (this->id == senderid)
-        throw new Exception (true, "Iterator \"%s\" in \"%s\" is trying to receive a message from itself",
+        throw new Exception("Iterator \"%s\" in \"%s\" is trying to receive a message from itself",
                         this->name,
                         this->dd->category[this->dd->iterator[senderid].catID].name
                         );
@@ -374,13 +374,13 @@ Iterator::SendMessage (
     ) {
 
     if (pthread_mutex_lock (&channel->mutex) != 0)
-        throw new Exception (true, "Cannot acquire mutex on local message channel for send");
+        throw new Exception("Cannot acquire mutex on local message channel for send");
 
     // Determine slot to use
     if (++channel->head == this->MESGBUFSIZE) channel->head = 0;
     int slot = channel->head;
     if (channel->head == channel->tail)
-        throw new Exception (true, "Message buffer full (%d slots)", this->MESGBUFSIZE);
+        throw new Exception("Message buffer full (%d slots)", this->MESGBUFSIZE);
 
     // Release previous buffer
     if (channel->ring[slot].data != NULL)
@@ -396,7 +396,7 @@ Iterator::SendMessage (
     channel->ring[slot].tag  = tag;
 
     if (pthread_mutex_unlock (&channel->mutex) != 0)
-        throw new Exception (true, "Cannot relinquish mutex on local message channel for send");
+        throw new Exception("Cannot relinquish mutex on local message channel for send");
 
     this->dd->log->Write (Log::DD_SENDRECV, "Put message of size %d in slot %d", message->Size(), slot);
     }
@@ -410,7 +410,7 @@ Iterator::ReceiveMessage (
     ) {
 
      if (pthread_mutex_lock (&channel->mutex) != 0)
-        throw new Exception (true, "Cannot acquire mutex on local message channel for receive");
+        throw new Exception("Cannot acquire mutex on local message channel for receive");
 
     // Determine slot to use
     if (++channel->tail == this->MESGBUFSIZE) channel->tail = 0;
@@ -422,7 +422,7 @@ Iterator::ReceiveMessage (
     *ptag = channel->ring[slot].tag;
 
     if (pthread_mutex_unlock (&channel->mutex) != 0)
-        throw new Exception (true, "Cannot relinquish mutex on local message channel for receive");
+        throw new Exception("Cannot relinquish mutex on local message channel for receive");
 
     this->dd->log->Write (Log::DD_SENDRECV, "Got message of size %d from slot %d", message->Size(), slot);
     }
@@ -492,7 +492,7 @@ IteratorShell (
 
     try {
         if (pthread_setspecific (FLOW2D3D->dd->thiter, (void *) &iid) != 0)
-            throw new Exception (true, "Pthreads error in IteratorShell: Cannot set thread-specific key for iterator thread, errno=%d", errno);
+            throw new Exception("Pthreads error in IteratorShell: Cannot set thread-specific key for iterator thread, errno=%d", errno);
 
         char * hnpid = GetHostnamePID ();
         char *threadName = new char[strlen (hnpid) + 100];
