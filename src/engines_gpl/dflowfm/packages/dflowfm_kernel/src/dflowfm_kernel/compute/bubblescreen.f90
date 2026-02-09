@@ -12,7 +12,7 @@ module m_bubblescreen
 
     private
 
-    public :: update_bubblescreens_discharge
+    public :: update_bubblescreen_discharge_wrapper
     public :: update_bubblescreen_discharge
     public :: convert_discharge_air_to_water
     public :: compute_bubblescreen_area
@@ -23,20 +23,20 @@ module m_bubblescreen
 
 contains
 
-    !> Wrapper subroutine to update discharges for all bubble screens
-    subroutine update_bubblescreens_discharge()
+    !> Wrapper subroutine to update the discharges for all bubble screens; loops over all bubble screens and calls update_bubblescreen_discharge for each of them
+    subroutine update_bubblescreen_discharge_wrapper()
         ! Parameters
 
         ! Local variables
-        integer :: i !< Loop index for bubble screens
+        integer :: i !< Loop index
 
         do i = 1, size(bubblescreens)
             call update_bubblescreen_discharge(bubblescreens(i))
         end do
 
-    end subroutine update_bubblescreens_discharge
+    end subroutine update_bubblescreen_discharge_wrapper
 
-    !> Updates the discharges for a single bubble screen based on user-specified air discharge rates
+    !> Updates the discharges for a single bubble screen object
     subroutine update_bubblescreen_discharge(bubblescreen)       
         ! Parameters
         type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
@@ -46,7 +46,7 @@ contains
         integer :: k_start !< Start active layer index (bottom)
         integer :: k_stop !< Stop active layer index (top) (inclusive)
         integer :: k_max_velocity !< Layer index for maximum downward velocity
-        integer :: n !< 2D cell index
+        integer :: n !< 2D flow cell index; in {network_data::netcell}
         real(kind=dp) :: area_fraction !< Area fraction of the flow cell
         real(kind=dp) :: max_velocity !< Maximum downward vertical velocity for this flow cell
         real(kind=dp) :: total_area !< Total area of the bubble screen
@@ -97,7 +97,7 @@ contains
     end subroutine update_bubblescreen_discharge
 
     !> Converts the air discharge rate to water discharge rate using an empirical formula
-    function convert_discharge_air_to_water(air_discharge, alpha) result(water_discharge)
+    pure function convert_discharge_air_to_water(air_discharge, alpha) result(water_discharge)
         ! Parameters
         real(kind=dp), intent(in) :: air_discharge !< [m3/s] Air discharge rate
         real(kind=dp), intent(in), optional :: alpha !< Empirical coefficient (default 1000)
@@ -119,7 +119,7 @@ contains
     end function convert_discharge_air_to_water
 
     !> Computes the total area of a bubble screen based on its flow cells
-    function compute_bubblescreen_area(bubblescreen) result(area)
+    pure function compute_bubblescreen_area(bubblescreen) result(area)
         ! Parameters
         type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
         real(kind=dp) :: area !< [m2] Area of the bubble screen
@@ -138,12 +138,12 @@ contains
     !> Finds the layer interfaces of the bottom (k_start), top (k_stop) and maximum velocity (k_max_velocity) for a bubble screen in a flow cell
     subroutine find_active_layer_interfaces(flow_cell_index, z_bot, bubblescreen_id, k_start, k_stop, k_max_velocity)
         ! Parameters
-        integer, intent(in) :: flow_cell_index !< 2D flow cell index {in network_data::netcell}
+        integer, intent(in) :: flow_cell_index !< 2D flow cell index; in {network_data::netcell}
         real(kind=dp), intent(in) :: z_bot !< [m] Bottom elevation of the flow cell
         character(len=*), intent(in) :: bubblescreen_id !< Bubble screen id 
-        integer, intent(out) :: k_start !< Layer interface of lowest active source/sink in bubble screen {in m_flow::zws}
-        integer, intent(out) :: k_stop !< Layer interface of highest active source/sink in bubble screen {in m_flow::zws}
-        integer, intent(out) :: k_max_velocity !< Layer interface with maximum downward velocity {in m_flow::zws}
+        integer, intent(out) :: k_start !< Layer interface of lowest active source/sink in bubble screen; in {m_flow::zws}
+        integer, intent(out) :: k_stop !< Layer interface of highest active source/sink in bubble screen; in {m_flow::zws}
+        integer, intent(out) :: k_max_velocity !< Layer interface with maximum downward velocity; in {m_flow::zws}
 
         ! Local variables
         integer :: k !< Layer interface {in m_flow::zws}
@@ -217,7 +217,7 @@ contains
     end subroutine find_active_layer_interfaces
 
     !> Computes the vertical distribution of water discharges for a bubble screen in a flow cell
-    subroutine compute_water_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
+    pure subroutine compute_water_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
         ! Parameters
         integer, intent(in) :: flow_cell_index !< 2D flow cell index; in {network_data::netcell}
         integer, intent(in) :: k_start !< Start active layer index (bottom); in {m_flow::zws}
@@ -227,8 +227,8 @@ contains
         real(kind=dp), dimension(kmx), intent(inout) :: discharge_water !< Water discharge for all layers in 2D flow cell; size={kmx}
 
         ! Local variables
-        integer :: k !< Global layer index
-        integer :: l !< Local layer index within flow cell
+        integer :: k_local !< Local layer index within flow cell
+        integer :: k_global !< Global layer index
         real(kind=dp) :: velocity_gradient !< [1/s] Vertical velocity gradient
         real(kind=dp) :: vertical_fraction !< Fractional vertical position within bubble screen
         real(kind=dp), dimension(kmx+1) :: vertical_velocity !< Vertical velocity array (at layer interfaces) size:{kmx+1}
@@ -284,31 +284,31 @@ contains
         vertical_velocity = 0.0_dp
 
         ! Fill vertical velocity array
-        do l = 1, kmx+1
-            k = kbot(flow_cell_index) + l - 2
-            if (k < k_start .or. k > k_stop) then
-                vertical_velocity(l) = 0.0_dp ! Outside bubble screen active layers
-            else if (k <= k_max_velocity) then
-                vertical_fraction = (zws(k) - zws(k_start)) / (zws(k_max_velocity) - zws(k_start))
-                vertical_velocity(l) = max_velocity * vertical_fraction
+        do k_local = 1, kmx+1
+            k_global = kbot(flow_cell_index) + k_local - 2
+            if (k_global < k_start .or. k_global > k_stop) then
+                vertical_velocity(k_local) = 0.0_dp ! Outside bubble screen active layers
+            else if (k_global <= k_max_velocity) then
+                vertical_fraction = (zws(k_global) - zws(k_start)) / (zws(k_max_velocity) - zws(k_start))
+                vertical_velocity(k_local) = max_velocity * vertical_fraction
             else
-                vertical_fraction = (zws(k_stop) - zws(k)) / (zws(k_stop) - zws(k_max_velocity))
-                vertical_velocity(l) = max_velocity * vertical_fraction
+                vertical_fraction = (zws(k_stop) - zws(k_global)) / (zws(k_stop) - zws(k_max_velocity))
+                vertical_velocity(k_local) = max_velocity * vertical_fraction
             end if
         end do
 
         ! Compute water discharge using vertical velocity profile
-        do l = 1, kmx
-            k = kbot(flow_cell_index) + l - 1 ! Convert local layer index to global layer index
+        do k_local = 1, kmx
+            k_global = kbot(flow_cell_index) + k_local - 1 ! Convert local layer index to global layer index
 
-            velocity_gradient = (vertical_velocity(l+1) - vertical_velocity(l)) / (zws(k) - zws(k-1))
-            discharge_water(l) = velocity_gradient * vol1(k) ! Water discharge = velocity gradient * layer volume
+            velocity_gradient = (vertical_velocity(k_local+1) - vertical_velocity(k_local)) / (zws(k_global) - zws(k_global-1))
+            discharge_water(k_local) = velocity_gradient * vol1(k_global) ! Water discharge = velocity gradient * layer volume
         end do
 
     end subroutine compute_water_discharge
 
     !> Computes the vertical distribution of constituent discharges for a bubble screen in a flow cell
-    subroutine compute_constituent_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, discharge_constituents)
+    pure subroutine compute_constituent_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, discharge_constituents)
         ! Parameters
         integer, intent(in) :: flow_cell_index !< 2D flow cell index; in {network_data::netcell}
         integer, intent(in) :: k_start !< Start active layer index (bottom); in {m_flow::zws}
@@ -318,8 +318,8 @@ contains
 
         ! Local variables
         integer :: i !< Loop index
-        integer :: k !< Global layer index
-        integer :: l !< Local layer index within flow cell
+        integer :: k_local !< Local layer index within flow cell
+        integer :: k_global !< Global layer index
         real(kind=dp), dimension(numconst) :: source_constituents !< [kg/m3, ppt, degC] Constituent concentration/temperature for source layers; size={numconst}
         real(kind=dp), dimension(numconst) :: sum_sink_constituents !< [kg/m3, ppt, degC] Sum of constituent concentrations in sink layers; size={numconst}
 
@@ -328,12 +328,12 @@ contains
         sum_sink_constituents = 0.0_dp
 
         ! First compute constituent discharges for sink layers
-        do k = k_start+1, k_max_velocity
-            l = k - kbot(flow_cell_index) + 1 ! Convert to local layer index in flow cell
+        do k_global = k_start+1, k_max_velocity
+            k_local = k_global - kbot(flow_cell_index) + 1 ! Convert to local layer index in flow cell
 
             do i = 1, numconst
-                discharge_constituents(i, l) = constituents(i, k)
-                sum_sink_constituents(i) = sum_sink_constituents(i) + discharge_constituents(i, l)
+                discharge_constituents(i, k_local) = constituents(i, k_global)
+                sum_sink_constituents(i) = sum_sink_constituents(i) + discharge_constituents(i, k_local)
             end do
         end do
 
@@ -343,11 +343,11 @@ contains
         end do
 
         ! Then compute constituent discharges for source layers
-        do k = k_max_velocity+1, k_stop
-            l = k - kbot(flow_cell_index) + 1 ! Convert to local layer index in flow cell
+        do k_global = k_max_velocity+1, k_stop
+            k_local = k_global - kbot(flow_cell_index) + 1 ! Convert to local layer index in flow cell
 
             do i = 1, numconst
-                discharge_constituents(i, l) = source_constituents(i)
+                discharge_constituents(i, k_local) = source_constituents(i)
             end do
         end do
 
@@ -362,28 +362,28 @@ contains
 
         ! Local variables
         integer :: i !< Constituent index
-        integer :: k !< Global layer index
-        integer :: l !< Local layer index within flow cell
+        integer :: k_local !< Local layer index within flow cell
+        integer :: k_global !< Global layer index
 
-        do l = 1, kmx
-            k = l + kbot(flow_cell%cell_index) - 1 ! Convert local layer index to global layer index
+        do k_local = 1, kmx
+            k_global = k_local + kbot(flow_cell%cell_index) - 1 ! Convert local layer index to global layer index
 
             ! Set source/sink as source or sink depending on the sign of the discharge
-            call set_source_or_sink(discharge_water(l), flow_cell%start_index + l - 1)
+            call set_source_or_sink_for_bubblescreen(discharge_water(k_local), flow_cell%start_index + k_local - 1)
 
             ! Write water discharge to source/sink
-            qstss((1+numconst)*(flow_cell%start_index + l - 2) + 1) = abs(discharge_water(l))
+            qstss((1+numconst)*(flow_cell%start_index + k_local - 2) + 1) = abs(discharge_water(k_local))
 
             ! Write constituent discharges to source/sink
             do i = 1, numconst
-                qstss((1+numconst)*(flow_cell%start_index + l - 2) + i + 1) = discharge_constituents(i, l)
+                qstss((1+numconst)*(flow_cell%start_index + k_local - 2) + i + 1) = discharge_constituents(i, k_local)
             end do
         end do
 
     end subroutine write_discharge_to_source_sinks
 
-    !> Set source/sink as source or sink depending on the sign of the discharge
-    subroutine set_source_or_sink(discharge, source_sink_index)
+    !> Set source/sink for bubble screen as source or sink depending on the sign of the discharge
+    subroutine set_source_or_sink_for_bubblescreen(discharge, source_sink_index)
         ! Parameters
         real(kind=dp), intent(in) :: discharge !< Discharge for this layer; if positive, this layer is a source; if negative, this layer is a sink
         integer, intent(in) :: source_sink_index !< Index in ksrc/qstss arrays corresponding to this layer
@@ -412,6 +412,6 @@ contains
                 end if
             end if
 
-    end subroutine set_source_or_sink
+    end subroutine set_source_or_sink_for_bubblescreen
 
 end module m_bubblescreen

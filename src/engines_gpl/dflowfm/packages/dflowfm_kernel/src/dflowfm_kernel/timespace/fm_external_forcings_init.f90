@@ -1235,8 +1235,6 @@ contains
             bubblescreen%flow_cells(cidx)%num_sources_sinks = bubble_source_count
 
          end do
-
-         call setsorsin() ! Finalize source/sink data structure
       end if
 
       ! Append the initialized bubblescreen to the global array 

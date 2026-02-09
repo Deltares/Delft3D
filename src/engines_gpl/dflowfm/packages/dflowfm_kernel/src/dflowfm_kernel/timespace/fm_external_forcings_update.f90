@@ -99,7 +99,7 @@ contains
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
       use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
-      use m_bubblescreen, only: update_bubblescreens_discharge
+      use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
@@ -277,8 +277,8 @@ contains
       end if
 
       if (allocated(bubblescreens) .and. .not. initialization) then
-         call update_bubblescreens_discharge()
-         call setsorsin()
+         call update_bubblescreen_discharge_wrapper()
+         ! call setsorsin()
       end if
 
       ! Update nudging temperature (and salinity)
