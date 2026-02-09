@@ -108,18 +108,18 @@ InitMinimumBarrier (
 
         Category * barcat = LookupCategory (DD::minBarCategoryName);
         if ((long) barcat == Dictionary::NOTFOUND)
-            throw new Exception (true, "Cannot find the \"%s\" category", DD::minBarCategoryName);
+            throw new Exception("Cannot find the \"%s\" category", DD::minBarCategoryName);
 
         Iterator * self = IteratorSelf ();
         self->RewindNeighbors (barcat);
         MinimumBarrierState.iterator = self->NextNeighbor (barcat);
         if (MinimumBarrierState.iterator == NULL)
-            throw new Exception (true, "Category \"%s\" does not have any neighbors", DD::minBarCategoryName);
+            throw new Exception("Category \"%s\" does not have any neighbors", DD::minBarCategoryName);
 
         if (pthread_mutex_init (&MinimumBarrierState.mutex, NULL) != 0)
-            throw new Exception (true, "Cannot create mutex for minumum barrier");
+            throw new Exception("Cannot create mutex for minumum barrier");
         if (pthread_cond_init (&MinimumBarrierState.sync, NULL) != 0)
-            throw new Exception (true, "Cannot create condition variable for minumum barrier");
+            throw new Exception("Cannot create condition variable for minumum barrier");
 
         MinimumBarrierState.initialized = true;
         }
@@ -134,7 +134,7 @@ SetupMinimumBarrier (
     ) {
 
     if (! MinimumBarrierState.initialized)
-        throw new Exception (true, "MinimumBarrier state not initialized in SetupMinimumBarrier");
+        throw new Exception("MinimumBarrier state not initialized in SetupMinimumBarrier");
 
     // Setup MPI communicator
 
@@ -225,7 +225,7 @@ MinimumBarrier (
 
     else {
         if (pthread_mutex_lock (&MinimumBarrierState.mutex) != 0)
-            throw new Exception (true, "Pthreads error: pthread_mutex_lock fails in MinimumBarrier, errno=%d", errno);
+            throw new Exception("Pthreads error: pthread_mutex_lock fails in MinimumBarrier, errno=%d", errno);
 
         if (value < MinimumBarrierState.localmin)
             MinimumBarrierState.localmin = value;
@@ -233,7 +233,7 @@ MinimumBarrier (
         if (++MinimumBarrierState.curpart < MinimumBarrierState.localpart) {
             // More local participants are coming; wait for them
             if (pthread_cond_wait (&MinimumBarrierState.sync, &MinimumBarrierState.mutex) != 0)
-                throw new Exception (true, "Pthreads error: pthread_cond_wait fails in MinimumBarrier, errno=%d", errno);
+                throw new Exception("Pthreads error: pthread_cond_wait fails in MinimumBarrier, errno=%d", errno);
             }
 
         else {
@@ -258,11 +258,11 @@ MinimumBarrier (
 
             // signal all
             if (pthread_cond_broadcast (&MinimumBarrierState.sync) != 0)
-                throw new Exception (true, "Pthreads error: pthread_cond_broadcast fails in MinimumBarrier, errno=%d", errno);
+                throw new Exception("Pthreads error: pthread_cond_broadcast fails in MinimumBarrier, errno=%d", errno);
             }
 
         if (pthread_mutex_unlock (&MinimumBarrierState.mutex) != 0)
-            throw new Exception (true, "Pthreads error: pthread_mutex_unlock fails in MinimumBarrier, errno=%d", errno);
+            throw new Exception("Pthreads error: pthread_mutex_unlock fails in MinimumBarrier, errno=%d", errno);
 
         return MinimumBarrierState.globalmin;
         }
