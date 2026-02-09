@@ -222,7 +222,7 @@ contains
           !
           ! flag for coarse layer
           !
-          call prop_get_logical(mor_ptr, 'Underlayer', 'CrsLyr', crslyr)
+          call prop_get(mor_ptr, 'Underlayer', 'CrsLyr', crslyr)
           txtput1 = 'Coarse layer'
           if (crslyr) then
              txtput2 = '                 YES'
@@ -610,7 +610,7 @@ contains
          !
          call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr) 
          call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
-         call prop_get_integer(mor_ptr, 'Underlayer', 'IMobility', imobility)
+         call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
          !
          write(lundia,'(a,i2)') 'ISedCrs2Tr: ', isedcrs2tr
          write(lundia,'(a,i2)') 'IHidExpTrCrs:', ihidexptrcrs
@@ -670,7 +670,7 @@ contains
               !
               txtput1 = 'Thickness coarse layer'
               telfil = ''
-              call prop_get_string(mor_ptr, 'Underlayer', 'ThCLyr', telfil)
+              call prop_get(mor_ptr, 'Underlayer', 'ThCLyr', telfil)
               !
               ! Intel 7.0 crashes on an inquire statement when file = ' '
               !
