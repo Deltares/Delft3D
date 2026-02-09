@@ -85,9 +85,11 @@ contains
          ! No cache, so process all requested observation points.
          if (n2 - n1 >= 0) then 
              call find_flownodes_and_links_for_all_observation_stations(n1, n2)
-
-             call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
+            !  call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
          end if
+      end if
+      if (n2 - n1 >= 0) then 
+            call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
       end if
 
       if (loglevel_StdOut == LEVEL_DEBUG) then
