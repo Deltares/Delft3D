@@ -268,7 +268,6 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(hp) :: dim_real
     real(fp) , dimension(:)   , allocatable :: dunelngth  !  Copy of dune length in case of 
     real(fp) , dimension(:,:) , allocatable :: sbot       !  Description and declaration in rjdim.f90
-    real(fp) , dimension(:,:) , allocatable :: sbot       !  Description and declaration in rjdim.f90
 !
 !! executable statements -------------------------------------------------------
 !
