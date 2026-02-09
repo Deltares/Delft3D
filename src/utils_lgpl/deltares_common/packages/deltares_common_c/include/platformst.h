@@ -40,7 +40,7 @@
 //------------------------------------------------------------------------------
 //  Linux
 
-#if defined (linux) || defined (IRIX)
+#if defined (__linux__) || defined (IRIX)
 #   include <arpa/inet.h>
 #   include <netdb.h>
 #   include <netinet/in.h>
