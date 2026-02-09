@@ -11956,8 +11956,8 @@ contains
             n1 = abs(lne(1, L))
             n2 = abs(lne(2, L))
             contacts_2D2D(1:2, i) = [n1, n2]
-            call is_2D2D_longculvertlink(L, is_longculvert_contact, longculvertindex)
-            if (is_longculvert_contact) then
+            call is_2D2D_longculvertlink(L, longculvertindex)
+            if (longculvertindex > 0) then
                contactids_2D2D(i) = longculverts(longculvertindex)%contactID !< reuse branchid for long culvert contacts
             end if
          end do

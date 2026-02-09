@@ -73,21 +73,19 @@ module m_longculverts_data
 contains
 
    !> simple routine which checks if a given flowlink L is part of a 2D-2D longculvert. Lives here to avoid cyclic dependency.
-   elemental subroutine is_2D2D_longculvertlink(L, res, i)
+   elemental subroutine is_2D2D_longculvertlink(L, i)
       integer, intent(in) :: L !< Flowlink number
-      logical, intent(out) :: res !< Result: true if L is part of a 2D-2D longculvert
       integer, intent(out) :: i !< Index of the longculvert in longculverts derived type array
-      res = .false.
       do i = 1, nlongculverts
          if (allocated(longculverts(i)%netlinks)) then
             if (size(longculverts(i)%netlinks) == 1) then
                if ((longculverts(i)%netlinks(1) == L)) then
-                  res = .true.
-                  exit
+                  return
                end if
             end if
          end if
       end do
+      i = 0 !> No early return, no match found, return 0
    end subroutine is_2D2D_longculvertlink
 
 end module m_longculverts_data

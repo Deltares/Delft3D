@@ -115,16 +115,12 @@ contains
       use m_partitioninfo, only: jampi
 
       PetscErrorCode :: ierr = PETSC_OK
-      PetscBool :: isInitialized
 
       if (Icgsolver == 6) then
-         call PetscInitialized(isInitialized, ierr)
-         if (isInitialized) then
-            call killSolverPETSC()
-            call PetscFinalize(ierr)
-            if (jampi > 0) then
-               call mpi_comm_free(PETSC_COMM_WORLD, ierr)
-            end if
+         call killSolverPETSC()
+         call PetscFinalize(ierr)
+         if (jampi > 0) then
+            call mpi_comm_free(PETSC_COMM_WORLD, ierr)
          end if
       end if
 #endif

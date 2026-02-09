@@ -1272,6 +1272,7 @@ contains
       use m_cell_geometry, only: xz, yz
       use m_network
       use m_flowgeom
+      use network_data, only: lne
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       use precision_basics, only: comparereal
       use m_flowparameters, only: eps10
@@ -1287,7 +1288,7 @@ contains
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: numcoords !< number of polyline coordinates
       type(t_longculvert), intent(inout) :: longculvert !< A givin long culvert
-      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net, L_flow
+      integer :: i, j, branch_idx, contact_idx, othernode, nodenum, linknum, linkabs, is, ie, jafounds, jafounde, L_net
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
       integer :: ierror
@@ -1312,9 +1313,8 @@ contains
             inode(2) = network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
          else if (contact_idx > 0) then ! 2D2D contact, read long culvert info directly from contacts array
             L_net = contactnetlinks(contact_idx)
-            L_flow = lne2ln(L_net)
-            inode(1) = ln(2, L_flow) !> reverse direction for 2D2D contact
-            inode(2) = ln(1, L_flow)
+            inode(1) = abs(lne(2, L_net)) !> reverse direction for 2D2D contact
+            inode(2) = abs(lne(1, L_net))
          end if
 
          inodeGlob(1:2) = inode(1:2)
