@@ -31,7 +31,6 @@
 
 using namespace rtctools::timeseries;
 using namespace rtctools::utilities;
-using namespace std;
 
 scenarioTreeGenerator::scenarioTreeGenerator(int iReference, vector<int> iInput, vector<int> iOutput, int iProbability) 
 	: iReference(iReference), iInput(iInput), iOutput(iOutput), iProbability(iProbability)
