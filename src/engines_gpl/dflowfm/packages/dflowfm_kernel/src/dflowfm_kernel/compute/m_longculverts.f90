@@ -1437,26 +1437,6 @@ contains
       call setnewpoint(x2, y2, z, k)
    end subroutine longculvert_create_endpoint
 
-   !> check whether the end point of of the long culvert polyline coincides exactly with a 2D cell center. If so shift its x-coordinate
-   ! subroutine longculvert_check_polyline(j, yplCulv, xplCulv)
-   !    use m_cell_geometry, only: xz, yz
-   !    use m_GlobalParameters, only: flow1d_eps10
-   !    use precision, only: comparereal
-   !    use gridoperations, only: incells
-
-   !    integer, intent(in) :: j !< Index in polyline coordinate arrays for the endpoint that needs to be checked.
-   !    real(kind=dp), intent(inout) :: xplCulv(:) !< x-coordinates of the polyline of one or more culverts.
-   !    real(kind=dp), intent(in) :: yplCulv(:) !< y-coordinates of the polyline of one or more culverts.
-
-   !    integer :: node1d2d
-
-   !    call incells(xplCulv(j), yplCulv(j), node1d2d)
-   !    if (comparereal(xplCulv(j), xz(node1d2d), flow1d_eps10) == 0 .and. comparereal(yplCulv(j), yz(node1d2d), flow1d_eps10) == 0) then
-   !       xplCulv(j) = xplCulv(j) + .1
-   !    end if
-
-   ! end subroutine longculvert_check_polyline
-
    !> Counts the number of long culverts in the structure file, and determine the input type (with crsdef/brid or only polyline)
    subroutine count_long_culverts_in_structure_file(structurefiles)
       use dfm_error
