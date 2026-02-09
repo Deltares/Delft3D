@@ -313,7 +313,6 @@ contains
                end do
                call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
             else 
-                ! TK_Temp: Fill interfaces with surface and bed, centre with average (woulde be nicer to fill zws with correct values)
                 valobs(i,IPNT_ZWS)     = valobs(i,IPNT_BL)
                 valobs(i,IPNT_ZWS + 1) = valobs(i,IPNT_S1)
                 valobs(i,IPNT_ZCS)     =  0.5_dp * (valobs(i,IPNT_BL) + valobs(i,IPNT_S1)) 
