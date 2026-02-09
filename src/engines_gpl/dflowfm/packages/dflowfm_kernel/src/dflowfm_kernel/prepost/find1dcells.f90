@@ -49,7 +49,7 @@ contains
 !>    it is assumed that kc has been allocated
 !>    it is assumed that findcells has already been called (for 2d cells)
    subroutine find1dcells()
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
 
       implicit none
 
@@ -73,7 +73,7 @@ contains
          end if
       end do
       !$OMP END PARALLEL DO
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
 
 !     BEGIN COPY from flow_geominit
       KC = 2 ! ONDERSCHEID 1d EN 2d NETNODES

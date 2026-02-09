@@ -406,7 +406,7 @@ contains
    subroutine test_incells_basic_functionality() bind(C)
       ! Test basic incells functionality: point inside/outside netcells
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: netcell, nump, xk, yk
       use m_alloc, only: realloc
 
@@ -461,7 +461,7 @@ contains
       call f90_expect_eq(kin_old, kin_new, "Point on cell corner")
 
       ! Cleanup
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_basic_functionality
@@ -471,7 +471,7 @@ contains
    subroutine test_incells_complex_geometry() bind(C)
       ! Test incells with more complex netcell geometries (triangles, pentagons, hexagons)
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: netcell, nump, xk, yk
 
       integer :: kin_old, kin_new
@@ -514,7 +514,7 @@ contains
       call f90_expect_eq(kin_old, kin_new, "Point on complex polygon edge")
 
       ! Cleanup
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_complex_geometry
@@ -524,7 +524,7 @@ contains
    subroutine test_incells_large_grid() bind(C)
       ! Test incells with a larger grid (performance sanity check)
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: netcell, nump
 
       integer :: kin_old, kin_new, i, mismatches
@@ -556,7 +556,7 @@ contains
       call f90_expect_eq(mismatches, 0, "No mismatches in large grid test")
 
       ! Cleanup
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_large_grid
@@ -566,7 +566,7 @@ contains
    subroutine test_incells_cache_consistency() bind(C)
       ! Test that cache initialization produces consistent results
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: nump
 
       integer :: kin1, kin2, kin_old
@@ -596,7 +596,7 @@ contains
       call f90_expect_eq(kin1, kin_old, "Cached result should match old implementation")
 
       ! Cleanup and re-initialize
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call init_cell_geom_as_polylines()
 
       ! Query after re-initialization
@@ -604,7 +604,7 @@ contains
       call f90_expect_eq(kin1, kin2, "Re-initialized cache should give same result")
 
       ! Cleanup
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_cache_consistency
@@ -614,7 +614,7 @@ contains
    subroutine test_incells_edge_cases() bind(C)
       ! Test edge cases: empty grid, single cell, point at infinity
       use gridoperations, only: incells
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use network_data, only: netcell, nump
 
       integer :: kin_old, kin_new
@@ -634,7 +634,7 @@ contains
       call f90_expect_eq(kin_old, kin_new, "Empty grid")
       call f90_expect_eq(kin_new, 0, "Should return 0 for empty grid")
 
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
       ! Test 2: Single cell
@@ -654,7 +654,7 @@ contains
       kin_new = point_find_netcell(xa, ya)
       call f90_expect_eq(kin_old, kin_new, "Single cell - outside")
 
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
       ! Test 3: Very large coordinates
@@ -669,7 +669,7 @@ contains
       call f90_expect_eq(kin_old, kin_new, "Very large coordinates")
       call f90_expect_eq(kin_new, 0, "Should be outside")
 
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_incells_edge_cases
@@ -819,7 +819,7 @@ contains
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_simple, test_find_cells_crossed_by_polyline_simple,
    subroutine test_find_cells_crossed_by_polyline_simple() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
       use network_data, only: nump
       use m_alloc, only: realloc
 
@@ -879,7 +879,7 @@ contains
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_simple
@@ -888,7 +888,7 @@ contains
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_edge_cases, test_find_cells_crossed_by_polyline_edge_cases,
    subroutine test_find_cells_crossed_by_polyline_edge_cases() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
       use network_data, only: nump
       use m_alloc, only: realloc
 
@@ -942,7 +942,7 @@ contains
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_edge_cases
@@ -951,7 +951,7 @@ contains
 !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_find_cells_crossed_by_polyline_edge_case2, test_find_cells_crossed_by_polyline_edge_case2,
    subroutine test_find_cells_crossed_by_polyline_edge_case2() bind(C)
       ! Test find_cells_crossed_by_polyline: polyline crosses some cells, misses others
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, find_cells_crossed_by_polyline, cleanup_cell_geom_polylines
       use network_data, only: nump
       use m_alloc, only: realloc
 
@@ -992,7 +992,7 @@ contains
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
       call cleanup_netcells()
 
    end subroutine test_find_cells_crossed_by_polyline_edge_case2

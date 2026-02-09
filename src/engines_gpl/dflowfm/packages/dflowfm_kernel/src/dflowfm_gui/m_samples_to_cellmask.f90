@@ -39,7 +39,7 @@ contains
 
       use network_data, only: cellmask, nump1d2d
       use m_samples, only: ns, xs, ys
-      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cellmask_from_polygon_set_cleanup
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
       use m_alloc, only: realloc
 
       integer :: i, k
@@ -68,7 +68,7 @@ contains
       !$OMP END PARALLEL DO
 
       ! Cleanup spatial index
-      call cellmask_from_polygon_set_cleanup()
+      call cleanup_cell_geom_polylines()
 
       return
    end subroutine samples_to_cellmask
