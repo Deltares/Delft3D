@@ -1926,7 +1926,7 @@ void Dimr::connectLibs(void) {
         }
         //      If GetAttribute is optional in a lib, no need to throw an exception
         //      if (componentsList.components[i].dllGetStartTime == NULL) {
-        //          throw Exception (true,  Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetAttributeEntryPoint, lib, GetLastError());
+        //          throw Exception( Exception::ERR_METHOD_NOT_IMPLEMENTED, "Cannot find function \"%s\" in library \"%s\". Return code: %d", BmiGetAttributeEntryPoint, lib, GetLastError());
         //        }
 
         if (componentsList.components[i].type == COMP_TYPE_DEFAULT_BMI ||
