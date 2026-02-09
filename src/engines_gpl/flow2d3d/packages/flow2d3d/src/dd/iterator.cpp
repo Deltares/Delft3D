@@ -479,7 +479,6 @@ IteratorSelf (
 
 
 #include <typeinfo>
-using namespace std;
 
 
 void *
@@ -532,7 +531,7 @@ IteratorShell (
         return NULL;
         }
 
-    catch (exception& ex) {
+    catch (std::exception& ex) {
         printf ("d_hydro ABORT: C++ Exception in iterator: %s\n", ex.what());
         exit (1);
         }

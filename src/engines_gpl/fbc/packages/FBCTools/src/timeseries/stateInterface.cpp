@@ -42,8 +42,6 @@ const string STATEINTERFACE_CODE = "RTCTools.timeseries.stateInterface";
 using namespace openda;
 using namespace timeseries;
 using namespace utilities;
-using namespace std;
-
 
 stateInterface::stateInterface(boost::filesystem::path schemaDir, boost::filesystem::path workDir, timeSeriesTensorInterface *tsTensor)
 {
