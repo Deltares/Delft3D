@@ -40,7 +40,7 @@ subroutine wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
 !!--declarations----------------------------------------------------------------
     use precision
     use dfparall, only: nproc
-    use wrtarray, only: wrtarray_nml, wrtarray_nml_ptr, wrtarray_nmll, wrtarray_nm, wrtarray_nm_ptr
+    use wrtarray, only: wrtarray_nm, wrtarray_nml
     use morphology_data_module, only: MOR_STAT_MIN, MOR_STAT_MAX, MOR_STAT_MEAN, MOR_STAT_STD
     use datagroups
     use globaldata
@@ -82,11 +82,6 @@ subroutine wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     integer                                        :: iddim_n
     integer                                        :: iddim_m
     integer                                        :: iddim_lsedtot
-!Attention. It seems that in the current main these pointers are nor used. There use to be a pointer to `bodsed`, for instance, which does not exist anymore. Replace the old way with the new one. 
-        real(fp)         , dimension(:)     , pointer :: thtrlyr
-    real(fp)         , dimension(:,:)   , pointer :: thlyr
-    real(fp)         , dimension(:,:)   , pointer :: mobile
-    real(fp)         , dimension(:)   , pointer :: thclyr
     integer                                        :: ierror    ! Local error flag
     integer                                        :: iq
     integer                                        :: lsed
@@ -94,7 +89,6 @@ subroutine wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     integer                                        :: n
     integer                                        :: nm
     real(fp)   , dimension(:,:)     , allocatable  :: rbuff2
-    real(fp)   , dimension(:,:)    , allocatable  :: rbuff2
     real(fp)   , dimension(:,:,:)   , allocatable  :: rbuff3
     character(256)                                 :: errmsg
     character(64)                                  :: name
@@ -102,14 +96,6 @@ subroutine wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
 !! executable statements -------------------------------------------------------
 !
     if (lsedtot == 0) return
-!The lines below should not be in the new form. 
-        if (istat == 0) istat = bedcomp_getpointer_logical(gdp%gdmorlyr, 'CrsLyr', crslyr)
-!The lines below should not be in the new form. 
-              if (crslyr) then
-          if (istat == 0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'ThTrLyr'  ,thtrlyr  )
-          if (istat == 0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'ThCLyr'  ,thclyr  )
-          if (istat == 0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'Mobile'  ,mobile  )
-       endif 
     !
     call getdatagroup(gdp, FILOUT_MAP, grpnam, group)
     celidt              => group%celidt
@@ -143,13 +129,6 @@ subroutine wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
                 call local_def(moroutput%statflg(:,iq),moroutput%statqnt(iq),moroutput%statnam(iq),moroutput%statunt(iq))
             endif
         enddo
-!The lines below should not be in the new form.
-if (crslyr) then
-                    call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'THTRLYR', ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname='Thickness of transport layer')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'THCRSLYR', ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname='Thickness of coarse layer')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'THSED', ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname='Total thickness of sediment')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'MOBILITY', ' ', io_prec   , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Mobility of sediment')
-       endif
     case (REQUESTTYPE_WRITE)
         !
         ! Write data to file
@@ -317,61 +296,6 @@ contains
                       & nf, nl, mf, ml, iarrc, gdp, &
                       & ierror, lundia, rbuff2, var)
         deallocate(rbuff2)
-       endif
-       !
-       !
-       !
-       if (crslyr) then
-          !
-          ! element 'THTRLYR'
-          !
-          call wrtarray_nm_ptr(fds, filename, filetype, grpnam, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, thtrlyr, 'THTRLYR')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'THCRSLYR'
-          !
-          call wrtarray_nm_ptr(fds, filename, filetype, grpnam, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, thclyr, 'THCRSLYR')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'THSED'
-          !
-          allocate( rbuff2(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) )
-          rbuff2 = 0.0_fp
-          do m = 1, mmax
-             do n = 1, nmaxus
-                do k = 1, nlyr
-                    call n_and_m_to_nm(n, m, nm, gdp)
-                    rbuff2(n, m) = rbuff2(n, m) + thlyr(k, nm) 
-                enddo
-             enddo
-          enddo
-          call wrtarray_nm(fds, filename, filetype, grpnam, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, rbuff2, 'THSED')  
-          deallocate(rbuff2)
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'MOBILITY'
-          !
-          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 1:lsedtot) )
-          rbuff3 = 0.0_fp
-          do l = 1, lsedtot
-             do m = 1, mmax
-                do n = 1, nmaxus
-                    call n_and_m_to_nm(n, m, nm, gdp)
-                    rbuff3(n, m, l) = mobile(l, nm) 
-                enddo
-             enddo
-          enddo
-          call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
-                        & nf, nl, mf, ml, iarrc, gdp, lsedtot, &
-                        & ierror, lundia, rbuff3, 'MOBILITY')
-          deallocate(rbuff3)
-          if (ierror /= 0) goto 9999       
     endif
     end subroutine local_write
                      
