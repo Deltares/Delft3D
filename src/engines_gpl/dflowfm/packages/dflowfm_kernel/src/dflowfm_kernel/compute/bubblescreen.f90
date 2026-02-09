@@ -63,9 +63,9 @@ contains
         ! Lookup total discharge air for this bubble screen and compute water discharge
         ! ====================================================================================================
         ! TODO: switch to correct lookup of air discharge for this bubble screen when ready (found qstss array)
+        ! See UNST-9564
 
         air_discharge = 3.0e-1_dp ! Placeholder value
-        ! air_discharge = qstss(flow_cell%start_index) ! Get air discharge from first source/sink in array (all source/sinks are set to the same value by the EC module)
         ! ====================================================================================================
         water_discharge = convert_discharge_air_to_water(air_discharge)
 
@@ -80,16 +80,12 @@ contains
             area_fraction = ba(n) / total_area
             max_velocity = -1.0_dp * water_discharge * area_fraction / ba(n)
 
-            ! Get start and stop indices of active layers in the bubble screen and layer index with maximum downward velocity
             call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
 
-            ! Compute water discharges for this flow cell
             call compute_water_discharge(n, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
 
-            ! Compute constituent discharges for this flow cell
             call compute_constituent_discharge(n, k_start, k_stop, k_max_velocity, discharge_constituents)
 
-            ! Write discharges to source/sink discharge array
             call write_discharge_to_source_sinks(flow_cell, discharge_water, discharge_constituents)
 
         end do
@@ -113,7 +109,6 @@ contains
             alpha0 = 1000.0_dp
         end if
 
-        ! Compute water discharge using empirical formula
         water_discharge = (alpha0 * air_discharge) ** (2.0_dp / 3.0_dp)
 
     end function convert_discharge_air_to_water
@@ -371,10 +366,10 @@ contains
             ! Set source/sink as source or sink depending on the sign of the discharge
             call set_source_or_sink_for_bubblescreen(discharge_water(k_local), flow_cell%start_index + k_local - 1)
 
-            ! Write water discharge to source/sink
+            ! Write water discharge to source/sink discharge array
             qstss((1+numconst)*(flow_cell%start_index + k_local - 2) + 1) = abs(discharge_water(k_local))
 
-            ! Write constituent discharges to source/sink
+            ! Write constituent discharges to source/sink discharge array
             do i = 1, numconst
                 qstss((1+numconst)*(flow_cell%start_index + k_local - 2) + i + 1) = discharge_constituents(i, k_local)
             end do
@@ -389,7 +384,7 @@ contains
         integer, intent(in) :: source_sink_index !< Index in ksrc/qstss arrays corresponding to this layer
 
         if (ksrc(4, source_sink_index) > 0) then ! Check if this layer is a source
-                if (comparereal(discharge, 0.0_dp) == -1) then ! Check if discharge is negative (sink); if so set source to sink
+                if (comparereal(discharge, 0.0_dp) == -1) then ! Check if discharge is negative (sink); if true set source to sink
                     ksrc(1, source_sink_index) = ksrc(4, source_sink_index)
                     ksrc(2, source_sink_index) = ksrc(5, source_sink_index)
                     ksrc(3, source_sink_index) = ksrc(6, source_sink_index)
@@ -401,7 +396,7 @@ contains
             end if
 
             if (ksrc(1, source_sink_index) > 0) then ! Check if this layer is a sink
-                if (comparereal(discharge, 0.0_dp) == 1) then ! Check if discharge is positive (source); if so set sink to source
+                if (comparereal(discharge, 0.0_dp) == 1) then ! Check if discharge is positive (source); if true set sink to source
                     ksrc(4, source_sink_index) = ksrc(1, source_sink_index)
                     ksrc(5, source_sink_index) = ksrc(2, source_sink_index)
                     ksrc(6, source_sink_index) = ksrc(3, source_sink_index)

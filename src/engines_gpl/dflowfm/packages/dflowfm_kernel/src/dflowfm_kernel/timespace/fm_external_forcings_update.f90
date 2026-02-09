@@ -278,7 +278,6 @@ contains
 
       if (allocated(bubblescreens) .and. .not. initialization) then
          call update_bubblescreen_discharge_wrapper()
-         ! call setsorsin()
       end if
 
       ! Update nudging temperature (and salinity)
