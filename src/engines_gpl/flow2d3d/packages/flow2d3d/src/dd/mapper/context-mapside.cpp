@@ -108,7 +108,7 @@ int D3dFlowContextMapSide::Setup(
     delete cIdBlob;
     if ( incomingBlobID != F2M_Blob_ContextID )
     {
-        throw new Exception (true, "D3dFlowContextMapSide::Setup: unexpected blobID (%d /= %d)",
+        throw new Exception("D3dFlowContextMapSide::Setup: unexpected blobID (%d /= %d)",
                     incomingBlobID, F2M_Blob_ContextID);
     }
 
@@ -117,7 +117,7 @@ int D3dFlowContextMapSide::Setup(
 
     if ( this->contextID == YET_TO_INIT )
     {
-        throw new Exception (true, "MAPPER \"%s\" didn't RECEIVE valid contextID from flow \"%s\"",
+        throw new Exception("MAPPER \"%s\" didn't RECEIVE valid contextID from flow \"%s\"",
                         mapper->name, flow->name);
     }
 
@@ -150,7 +150,7 @@ void D3dFlowContextMapSide::UpdateMapperToFlow(
     {
         if ( this->flowIterator == NULL )
         {
-            throw new Exception (true, "UpdateMapperToFlow: mapperIterator not set for Flow \"%s\"",
+            throw new Exception("UpdateMapperToFlow: mapperIterator not set for Flow \"%s\"",
                 this->mapperIterator == NULL ? "????" : this->mapperIterator->name );
         }
         else
@@ -178,7 +178,7 @@ void D3dFlowContextMapSide::UpdateMapperToFlow(
                                         buffer + headerSize, numDataBytesToBeSent);
 
             if ( numBytes != numDataBytesToBeSent )
-                throw new Exception (true, "FLOW \"%s\" to mapper \"%s\": numBytes(%d) != numDataBytesToBeSent(%d)",
+                throw new Exception("FLOW \"%s\" to mapper \"%s\": numBytes(%d) != numDataBytesToBeSent(%d)",
                             this->flowIterator->name, this->mapperIterator->name,
                             numBytes, numDataBytesToBeSent );
 
@@ -209,7 +209,7 @@ void D3dFlowContextMapSide::UpdateMapperFromFlow(
     {
         if ( this->flowIterator == NULL )
         {
-            throw new Exception (true, "UpdateMapperFromFlow: flowIterator not set for Flow \"%s\"",
+            throw new Exception("UpdateMapperFromFlow: flowIterator not set for Flow \"%s\"",
                 this->mapperIterator == NULL ? "????" : this->mapperIterator->name );
         }
         else
@@ -233,7 +233,7 @@ void D3dFlowContextMapSide::UpdateMapperFromFlow(
             delete updateInBlob;
             if ( incomingBlobID != F2M_Blob_Update )
             {
-                throw new Exception (true, "D3dFlowContextMapSide::UpdateMapperFromFlow: unexpected blobID (%d /= %d)",
+                throw new Exception("D3dFlowContextMapSide::UpdateMapperFromFlow: unexpected blobID (%d /= %d)",
                             incomingBlobID, F2M_Blob_Update);
             }
 
@@ -256,7 +256,7 @@ void D3dFlowContextMapSide::UpdateMapperFromFlow(
                                                                         buffer + headerSize, numInBytes);
 
                         if ( numReadBytes != this->varInfoColl->GetNumBytes(distribGroup) )
-                                throw new Exception (true, "FLOW \"%s\" from mapper \"%s\": numReadBytes(%d) != maxNumInBytes(%d)",
+                                throw new Exception("FLOW \"%s\" from mapper \"%s\": numReadBytes(%d) != maxNumInBytes(%d)",
                                                         this->flowIterator->name, this->mapperIterator->name,
                                                         numReadBytes, maxNumInBytes );
 
@@ -277,7 +277,7 @@ void D3dFlowContextMapSide::ReceiveSizesAndFlagsFromFlow(void)
 
     if ( this->flowIterator == NULL )
     {
-        throw new Exception (true, "ReceiveSizesAndFlagsFromFlow: flowIterator not set for Mapper \"%s\"",
+        throw new Exception("ReceiveSizesAndFlagsFromFlow: flowIterator not set for Mapper \"%s\"",
             this->mapperIterator == NULL ? "????" : this->mapperIterator->name );
     }
     else
@@ -293,7 +293,7 @@ void D3dFlowContextMapSide::ReceiveSizesAndFlagsFromFlow(void)
         delete sizesFlagsBlob;
         if ( incomingBlobID != F2M_Blob_SubdomainSizesFlags )
         {
-            throw new Exception (true, "D3dFlowContextMapSide::ReceiveSizesAndFlagsFromFlow: unexpected blobID (%d /= %d)",
+            throw new Exception("D3dFlowContextMapSide::ReceiveSizesAndFlagsFromFlow: unexpected blobID (%d /= %d)",
                         incomingBlobID, F2M_Blob_SubdomainSizesFlags);
         }
 
@@ -332,7 +332,7 @@ void D3dFlowContextMapSide::SendMapperInfoToFlow(void)
 
     if ( this->flowIterator == NULL )
     {
-        throw new Exception (true, "SendMapperInfoToFlow: flowIterator not set for Mapper \"%s\"",
+        throw new Exception("SendMapperInfoToFlow: flowIterator not set for Mapper \"%s\"",
             this->mapperIterator == NULL ? "????" : this->mapperIterator->name );
     }
     else
@@ -381,7 +381,7 @@ void D3dFlowContextMapSide::SendBlobToFlow(
 
     if ( this->flowIterator == NULL )
     {
-        throw new Exception (true, "SendBlobToFlow: flowIterator not set for Mapper \"%s\"",
+        throw new Exception("SendBlobToFlow: flowIterator not set for Mapper \"%s\"",
             this->mapperIterator == NULL ? "????" : this->mapperIterator->name );
     }
     else
@@ -412,7 +412,7 @@ int D3dFlowContextMapSide::ReceiveBlobFromFlow(
 
     if ( this->flowIterator == NULL )
     {
-        throw new Exception (true, "ReceiveFromFlow: flowIterator not set for Mapper \"%s\"",
+        throw new Exception("ReceiveFromFlow: flowIterator not set for Mapper \"%s\"",
             this->mapperIterator == NULL ? "????" : this->mapperIterator->name );
     }
     else
@@ -427,7 +427,7 @@ int D3dFlowContextMapSide::ReceiveBlobFromFlow(
         delete receiveBlob;
         if ( incomingBlobID != blobID )
         {
-            throw new Exception (true, "D3dFlowContextMapSide::ReceiveBlobFromFlow: unexpected blobID (%d /= %d)",
+            throw new Exception("D3dFlowContextMapSide::ReceiveBlobFromFlow: unexpected blobID (%d /= %d)",
                         incomingBlobID, blobID);
         }
         FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "MAPPER \"%s\" RECEIVED blob %d from flow \"%s\"",
