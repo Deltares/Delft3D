@@ -171,7 +171,7 @@ contains
                   IPTOT = IP
                   do lsed = 1, stmpar%lsedtot ! sum of bed load
                      IP = IP + 1
-                     val = sedtra%e_sbn(L, lsed) * wu_mor(L) * real(sign(1, Lf), dp)
+                     val = (sedtra%e_sbn(L, lsed) - sedtra%e_sswn(L, lsed)) * wu_mor(L) * real(sign(1, Lf), dp)
                      crs_values(IPTOT, icrs) = crs_values(IPTOT, icrs) + val ! sum of bed load on crosssections
                      crs_values(IP, icrs) = crs_values(IP, icrs) + val ! bed load on crosssections per fraction
                   end do
@@ -181,7 +181,7 @@ contains
                   IPTOT = IP
                   do lsed = 1, stmpar%lsedsus ! sum of suspended load
                      IP = IP + 1
-                     val = sedtra%e_ssn(L, lsed) * wu(L) * real(sign(1, Lf), dp)
+                     val = (sedtra%e_ssn(L, lsed) + sedtra%e_sswn(L, lsed)) * wu(L) * real(sign(1, Lf), dp)
                      crs_values(IPTOT, icrs) = crs_values(IPTOT, icrs) + val ! sum of suspended load on crosssections
                      crs_values(IP, icrs) = crs_values(IP, icrs) + val ! suspended load on crosssections per fraction
                   end do
