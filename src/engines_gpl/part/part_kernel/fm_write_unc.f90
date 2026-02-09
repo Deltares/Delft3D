@@ -18,7 +18,7 @@ contains
 
     !----- AGPL --------------------------------------------------------------------
     !
-    !  Copyright (C)  Stichting Deltares, 2017-2025.
+    !  Copyright (C)  Stichting Deltares, 2017-2026.
     !
     !  This file is part of Delft3D (D-Flow Flexible Mesh component).
     !
@@ -317,6 +317,7 @@ contains
     end subroutine construct_layer_coords
 
     subroutine get_layer_coords( hyd, layer_zs, interface_zs, error, msg )
+        use partmem, only: accept_sigma_z
         use m_hydmod, only: t_hydrodynamics
         use io_netcdf
 
@@ -338,9 +339,9 @@ contains
         ! The combination (sigma-z-layers) is NOT supported at the moment.
         !
         ierr = nf90_inq_varid( ncid, trim(hyd%waqgeom%meshname) // '_layer_sigma_z', idlay )
-        if ( ierr == nf90_noerr ) then
+        if ( ierr == nf90_noerr .and. .not. accept_sigma_z ) then
             error = .true.
-            msg   = ' ERROR: the sigma-z layers option is currently not supported!'
+            msg   = ' ERROR: the sigma-z layers option is currently not fully supported!'
             return
         endif
 

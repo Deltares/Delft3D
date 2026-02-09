@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2025.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -93,19 +93,9 @@
        shape(1) = ndx
     case("infilt")
        shape(1) = ndx
-    case("infiltcap0")
-       shape(1) = ndx
     case("infiltcap")
        shape(1) = ndx
-    case("HortonMinInfCap")
-       shape(1) = ndx
-    case("HortonMaxInfCap")
-       shape(1) = ndx
-    case("HortonDecreaseRate")
-       shape(1) = ndx
-    case("HortonRecoveryRate")
-       shape(1) = ndx
-    case("HortonState")
+    case("horton_state")
        shape(1) = ndx
     case("shx")
        shape(1) = nshiptxy

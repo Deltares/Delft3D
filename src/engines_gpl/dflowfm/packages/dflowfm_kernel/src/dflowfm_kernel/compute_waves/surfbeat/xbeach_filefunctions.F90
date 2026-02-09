@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,7 @@ module m_xbeach_filefunctions
 !! Merge of logging_module and filefunctions_module
    use m_xbeach_typesandkinds
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    integer, save :: logfileid

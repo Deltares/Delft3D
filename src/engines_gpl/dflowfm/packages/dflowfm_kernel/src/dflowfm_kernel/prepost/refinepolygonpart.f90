@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,7 +50,7 @@ contains
       use precision, only: dp
       use m_averagediff, only: averagediff
       use m_accumulatedistance, only: accumulatedistance
-      use M_POLYGON, only: savepol, npl, xpl, ypl, zpl, dxuni, xph, yph, zph, maxpol
+      use M_POLYGON, only: savepol, npl, xpl, ypl, zpl, dxuni, maxpol
       use M_MISSING, only: dmiss, dxymis
       use m_alloc, only: aerr, realloc
 
@@ -235,9 +235,6 @@ contains
          call REALLOC(XPL, NX)
          call REALLOC(YPL, NX)
          call REALLOC(ZPL, NX)
-         call REALLOC(XPH, NX)
-         call REALLOC(YPH, NX)
-         call REALLOC(ZPH, NX)
          MAXPOL = NX
       end if
       do kk = nplo, i2 + 1, -1

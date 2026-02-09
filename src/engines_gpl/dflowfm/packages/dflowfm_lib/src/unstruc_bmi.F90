@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -1437,6 +1437,7 @@ contains
       use morphology_data_module, only: PARSOURCE_FIELD
       use string_module, only: str_token
       use m_init_openmp, only: init_openmp
+      use messagehandling, only: stringtolevel
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       type(c_ptr), value, intent(in) :: xptr

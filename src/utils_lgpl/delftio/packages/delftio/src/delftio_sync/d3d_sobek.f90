@@ -1,7 +1,7 @@
 module D3D_Sobek
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -33,7 +33,7 @@ module D3D_Sobek
 !!!
 !!! d3d_sobek.F90: D3S - module (*D*elft-*3*D *S*obek)
 !!!
-!!! (c) Deltares, 2025
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl, Herman.Kernkamp@deltares.nl
 !!!

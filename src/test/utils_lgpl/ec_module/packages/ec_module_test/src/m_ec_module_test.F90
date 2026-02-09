@@ -95,6 +95,13 @@ private
 
 contains
 
+    subroutine callback_msg(lvl,msg)
+       implicit none
+       integer, intent(in)              :: lvl
+       character(len=*), intent(in)     :: msg
+       write(lvl,'(A)') trim(msg)       ! intentionally using lvl as a file handle !!
+    end subroutine callback_msg
+
     subroutine do_test(verbose, jacompare, janewref, config_ptr, testname, stop_on_differ)
        implicit none
        logical, intent(in)                 :: verbose, jacompare, janewref
@@ -498,12 +505,6 @@ contains
        success = ecInstanceFree(ecInstancePtr)
 
        contains
-          subroutine callback_msg(lvl,msg)
-             implicit none
-             integer, intent(in)              :: lvl
-             character(len=*), intent(in)     :: msg
-             write(lvl,'(A)') trim(msg)       ! intentionally using lvl as a file handle !!
-          end subroutine callback_msg
 
           function getTestInput(config_ptr, config, testname) result (success)
              implicit none

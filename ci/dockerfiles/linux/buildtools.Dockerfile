@@ -24,10 +24,12 @@ dnf install --assumeyes epel-release
 dnf config-manager --set-enabled powertools
 # gcc and gcc-c++ are dependencies of the intel compilers.
 # For oneAPI 2023, they are not listed as dependencies in dnf, so
-# we have to install them explicitly
+# we have to install them explicitly. We explicitly install a
+# modern version than the standard, since the Intel C++ compiler
+# uses the standard library of gcc/g++.
 dnf install --assumeyes \
-    which binutils patchelf diffutils procps m4 make gcc gcc-c++ \
-    openssl openssl-devel wget perl python3 xz curl-devel
+    which binutils patchelf diffutils procps m4 make gcc-toolset-14 \
+    wget perl python3 xz
 
 # For Intel oneAPI, explicitly list the common-vars version, otherwise some much newer versions of packages will also be installed
 # as dependencies. Furthure, do not use intel 2023.2.1, since the dependencies of mkl 2023.2.0 will then also install the C++
@@ -58,12 +60,18 @@ if [[ $INTEL_ONEAPI_VERSION = "2023" ]]; then
     # For some reason, in oneapi 2023, the latest symlink is not set correctly.
     ln --symbolic --force --no-target-directory /opt/intel/oneapi/mpi/2021.13 /opt/intel/oneapi/mpi/latest
 fi
+
+cat <<EOT >> /etc/bashrc
+source /opt/intel/oneapi/setvars.sh
+source /opt/rh/gcc-toolset-14/enable
+EOT
+
 EOF
 
 # Build autotools, because some libraries require recent versions of it.
 RUN --mount=type=cache,target=/var/cache/src/,id=autotools-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
+source /etc/bashrc
 set -eo pipefail
-source /opt/intel/oneapi/setvars.sh
 
 for URL in \
     'https://mirrors.kernel.org/gnu/autoconf/autoconf-2.72.tar.xz' \
@@ -100,8 +108,8 @@ EOF
 
 # CMake
 RUN --mount=type=cache,target=/var/cache/src/,id=cmake-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
+source /etc/bashrc
 set -eo pipefail
-source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/Kitware/CMake/releases/download/v3.30.3/cmake-3.30.3.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
@@ -115,7 +123,7 @@ fi
 export CC=icx CXX=icpx CFLAGS="-O3" CXXFLAGS="-O3"
 
 pushd /var/cache/src/cmake-3.30.3
-./bootstrap --parallel=$(nproc)
+./bootstrap --parallel=$(nproc) -- -DCMAKE_USE_OPENSSL=OFF
 make --jobs=$(nproc)
 make install
 popd

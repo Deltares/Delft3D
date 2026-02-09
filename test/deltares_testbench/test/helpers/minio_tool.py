@@ -19,7 +19,7 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_path import TestCasePath
 from src.config.types.file_type import FileType
 from src.config.types.path_type import PathType
-from src.suite.test_bench_settings import TestBenchSettings
+from src.suite.command_line_settings import CommandLineSettings
 from src.utils.logging.console_logger import ConsoleLogger
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.log_level import LogLevel
@@ -142,7 +142,7 @@ def make_default_test_case(name: str, max_run_time: float = 1500.0) -> DefaultTe
 
 
 def make_config_parser(
-    settings: TestBenchSettings | None = None,
+    settings: CommandLineSettings | None = None,
     xml_parser: XmlConfigParser | None = None,
     logger: IMainLogger | None = None,
 ) -> ConfigParser:
@@ -150,7 +150,7 @@ def make_config_parser(
     if settings is None:
         credentials = Credentials()
         credentials.name = "commandline"
-        settings = TestBenchSettings()
+        settings = CommandLineSettings()
         settings.server_base_url = ConfigParser.DEFAULT_SERVER_BASE_URL
         settings.credentials = credentials
         settings.override_paths = ""

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -386,21 +386,21 @@ contains
       if (write_converted_files_) then
          call newfil(mout, crsdef_output)
          if (mout == 0) then
-            call SetMessage(LEVEL_ERROR, 'Failed to open file ''' // trim(crsdef_output) // ''' for writing.')
+            call SetMessage(LEVEL_ERROR, 'Failed to open file '''//trim(crsdef_output)//''' for writing.')
          else
             call prop_write_inifile(mout, prop_ptr, ierr)
          end if
       end if
-      
+
       call parseCrossSectionDefinitionFile(prop_ptr, network)
       call tree_destroy(prop_ptr)
       call fill_hashtable(network%CSDefinitions)
-      
+
       ! Write converted structures file.
       if (write_converted_files_) then
          call newfil(mout, structures_output)
          if (mout == 0) then
-            call SetMessage(LEVEL_ERROR, 'Failed to open file ''' // trim(structures_output) // ''' for writing.')
+            call SetMessage(LEVEL_ERROR, 'Failed to open file '''//trim(structures_output)//''' for writing.')
          else
             call prop_write_inifile(mout, strs_ptr, ierr)
          end if

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -93,7 +93,7 @@ contains
          NUMFIL = NUMFIL + 1
          goto 777
 888      allocate (FILIST(NUMFIL))
-filist = ' '
+         filist = ' '
          rewind (MLIST)
          do N = 1, NUMFIL
             read (MLIST, '(A)') FILIST(N)

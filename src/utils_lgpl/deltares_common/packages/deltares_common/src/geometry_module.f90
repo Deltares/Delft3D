@@ -1,7 +1,7 @@
 module geometry_module
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,8 @@ module geometry_module
 !!--declarations----------------------------------------------------------------
    use precision, only: dp
    use MessageHandling, only: msgbox, mess, LEVEL_ERROR
+   use m_missing, only: jins, dmiss
+
    implicit none
 
    private
@@ -47,7 +49,9 @@ module geometry_module
    ! original function of the geometry_module
    public :: clockwise
 
+   public :: pinpok_legacy
    public :: pinpok
+   public :: pinpok_raycast
    public :: dpinpok
    public :: dbdistance
    public :: getdx
@@ -58,7 +62,6 @@ module geometry_module
    public :: dbpinpol
    public :: cross
    public :: dbpinpol_optinside_perpol
-   public :: dbpinpol_optinside_perpol2
    public :: get_startend
    public :: pinpok3D
    public :: cross3D
@@ -249,10 +252,103 @@ contains
       cw = an > ap
    end function clockwise_hp
 
+!> wrapper for optimized ray-casting point-in-polygon test that maintains old interface
+   pure subroutine pinpok(xl, yl, n, x, y, inside, jins_dummy, dmiss_dummy)
+
+      integer, intent(in) :: n !< number of polygon points
+      integer, intent(out) :: inside !> result: 1 if inside, 0 if outside
+      integer, intent(in) :: jins_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
+      real(kind=dp), intent(in) :: dmiss_dummy !> dummy argument to maintain old interface, internal routine will use value from m_missing
+      real(kind=dp), intent(in) :: xl, yl !> point to check if it is inside polygon
+      real(kind=dp), dimension(n), intent(in) :: x, y !> polygon coordinates (n elements)
+
+      logical :: is_inside
+
+      is_inside = pinpok_raycast(xl, yl, x, y, n)
+
+      inside = 1
+      if (.not. is_inside) then
+         inside = 0
+      end if
+
+   end subroutine
+
+!> optimized ray-casting point-in-polygon test.
+!! pure function that works with array slices or full arrays.
+   pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
+
+      real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
+      integer, intent(in) :: n !< number of polygon points
+      real(kind=dp), dimension(n), intent(in) :: x, y !< polygon coordinates (at least n elements)
+      logical :: is_inside !< result: true if inside (respecting jins mode)
+
+      ! locals
+      integer :: i, j, crossings
+      real(kind=dp) :: x_intersect
+
+      is_inside = .false.
+
+      ! degenerate polygon check
+      if (n <= 2) then
+         is_inside = .true.
+         if (jins == 0) then
+            is_inside = .not. is_inside
+         end if
+         return
+      end if
+
+      ! ray-casting algorithm: count crossings of horizontal ray from point to +infinity
+      crossings = 0
+      j = n ! In order to check the entire polygon, start the first link which lies between the last point (n) and the first point
+
+      do i = 1, n
+         ! check for missing value (polygon separator)
+         if (x(i) == dmiss) then
+            exit
+         end if
+
+         ! check if point is exactly on a vertex
+         if (xl == x(j) .and. yl == y(j)) then
+            is_inside = .true.
+            if (jins == 0) then
+               is_inside = .not. is_inside
+            end if
+            return
+         end if
+
+         ! check if ray crosses this edge
+         ! edge crosses horizontal line through test point if one endpoint is above and one below
+         if ((y(j) > yl) .neqv. (y(i) > yl)) then
+            ! compute x-coordinate of edge-ray intersection
+            x_intersect = x(j) + (yl - y(j)) * (x(i) - x(j)) / (y(i) - y(j))
+            if (xl < x_intersect) then
+               ! ray crosses edge to the right of point
+               crossings = crossings + 1
+            else if (xl == x_intersect) then
+               ! point is exactly on the edge
+               is_inside = .true.
+               if (jins == 0) then
+                  is_inside = .not. is_inside
+               end if
+               return
+            end if
+         end if
+         j = i ! current point becomes previous for next iteration
+      end do
+
+      ! odd number of crossings = inside, even = outside
+      is_inside = (mod(crossings, 2) == 1)
+
+      ! respect jins mode
+      if (jins == 0) then
+         is_inside = .not. is_inside
+      end if
+
+   end function pinpok_raycast
    !
    ! PINPOK
    !
-   pure subroutine pinpok(XL, YL, N, X, Y, INSIDE, jins, dmiss) ! basic subroutine
+   pure subroutine pinpok_legacy(XL, YL, N, X, Y, INSIDE, jins, dmiss) ! basic subroutine
 
       implicit none
 
@@ -321,7 +417,7 @@ contains
       end if
       if (jins == 0) INSIDE = 1 - INSIDE
       return
-   end subroutine PINPOK
+   end subroutine PINPOK_legacy
 
    !
    ! DPINPOK
@@ -944,153 +1040,6 @@ contains
 
       return
    end subroutine dbpinpol_optinside_perpol
-
-   ! ==============================================================================================
-   ! ==============================================================================================
-   subroutine dbpinpol_optinside_perpol2(xp, yp, inside_perpol, iselect, in, numselect, dmiss, JINS, NPL, xpl, ypl, zpl) ! ALS JE VOOR VEEL PUNTEN MOET NAGAAN OF ZE IN POLYGON ZITTEN
-
-      use m_alloc
-
-      implicit none
-
-      real(kind=dp), intent(in) :: xp, yp !< point coordinates
-      integer, intent(in) :: inside_perpol !< Specify whether or not (1/0) to use each polygon's first point zpl-value as the jins(ide)-option (only 0 or 1 allowed), or use the global JINS variable.
-      integer, intent(in) :: iselect !< use all polygons (0), only first-zpl<0 polygons (-1), or all but first-zpl<0 polygons (1)
-      integer, intent(inout) :: in !< in(-1): initialization, out(0): outside polygon, out(1): inside polygon
-      integer, intent(inout) :: numselect !< number of polygons of "iselect" type considered
-
-      integer :: MAXPOLY = 1000 ! will grow if needed
-
-      real(kind=dp), allocatable, save :: xpmin(:), ypmin(:), xpmax(:), ypmax(:)
-      integer, save :: Npoly
-      integer, allocatable, save :: iistart(:), iiend(:)
-
-      integer :: ipoint ! points to first part of a polygon-subsection in polygon array
-      integer :: istart, iend ! point to start and and node of a polygon in polygon array respectively
-      integer :: ipoly ! polygon number
-
-      logical :: Linit ! initialization of polygon bounds, and start and end nodes respectively
-
-      integer :: jins_opt !< The actual used jins-mode (either global, or per poly)
-      real(kind=dp), intent(in) :: dmiss
-      integer, intent(in) :: JINS, NPL
-      real(kind=dp), optional, intent(in) :: xpl(NPL), ypl(NPL), zpl(NPL)
-
-      numselect = 0
-
-      if (NPL == 0) then
-         in = 1
-         return
-      end if
-
-      Linit = (in < 0)
-
-      in = 0
-
-      !     initialization
-      if (Linit) then
-         !         write(6,"('dbpinpol: init... ', $)")
-         ipoint = 1
-         ipoly = 0
-         call realloc(xpmin, maxpoly, keepExisting=.false.)
-         call realloc(xpmax, maxpoly, keepExisting=.false.)
-         call realloc(ypmin, maxpoly, keepExisting=.false.)
-         call realloc(ypmax, maxpoly, keepExisting=.false.)
-         call realloc(iistart, maxpoly, keepExisting=.false.)
-         call realloc(iiend, maxpoly, keepExisting=.false.)
-
-         do while (ipoint < NPL)
-            ipoly = ipoly + 1
-            if (ipoly > maxpoly) then
-               maxpoly = ceiling(maxpoly * 1.1)
-               call realloc(xpmin, maxpoly, keepExisting=.true.)
-               call realloc(xpmax, maxpoly, keepExisting=.true.)
-               call realloc(ypmin, maxpoly, keepExisting=.true.)
-               call realloc(ypmax, maxpoly, keepExisting=.true.)
-               call realloc(iistart, maxpoly, keepExisting=.true.)
-               call realloc(iiend, maxpoly, keepExisting=.true.)
-            end if
-
-            !           get polygon start and end pointer respectively
-            call get_startend(NPL - ipoint + 1, xpl(ipoint:NPL), ypl(ipoint:NPL), istart, iend, dmiss)
-            istart = istart + ipoint - 1
-            iend = iend + ipoint - 1
-
-            if (istart >= iend .or. iend > NPL) exit ! done
-
-            xpmin(ipoly) = minval(xpl(istart:iend))
-            xpmax(ipoly) = maxval(xpl(istart:iend))
-            ypmin(ipoly) = minval(ypl(istart:iend))
-            ypmax(ipoly) = maxval(ypl(istart:iend))
-
-            iistart(ipoly) = istart
-            iiend(ipoly) = iend
-
-            !           advance pointer
-            ipoint = iend + 2
-         end do ! do while ( ipoint < NPL .and. ipoly < MAXPOLY )
-         Npoly = ipoly
-
-         !         write(6,"('done, Npoly=', I4)") Npoly
-      end if
-
-      do ipoly = 1, Npoly
-         istart = iistart(ipoly)
-         iend = iiend(ipoly)
-
-         !         write(6,"('dbpinpol: ipoly=', I4, ', istart=', I16, ', iend=', I16)") ipoly, istart, iend
-
-         if (istart >= iend .or. iend > NPL) exit ! done
-
-         if (iselect == -1 .and. (zpl(istart) == DMISS .or. zpl(istart) >= 0)) cycle
-         if (iselect == 1 .and. (zpl(istart) /= DMISS .and. zpl(istart) < 0)) cycle
-
-         numselect = numselect + 1
-
-         if (inside_perpol == 1 .and. zpl(istart) /= dmiss) then ! only if third column was actually supplied
-            jins_opt = int(zpl(istart)) ! Use inside-option per each polygon.
-         else
-            jins_opt = JINS ! Use global inside-option.
-         end if
-
-         if (jins_opt == 1) then ! inside polygon
-            if (xp >= xpmin(ipoly) .and. xp <= xpmax(ipoly) .and. &
-                yp >= ypmin(ipoly) .and. yp <= ypmax(ipoly)) then
-               call PINPOK(Xp, Yp, iend - istart + 1, xpl(istart), ypl(istart), IN, jins, dmiss)
-               if (jins_opt > 0 .neqv. JINS > 0) then ! PINPOK has used global jins, but polygon asked the exact opposite, so negate the result here.
-                  IN = 1 - in ! IN-1
-               end if
-
-               if (in == 1) then
-                  exit
-               end if
-            end if
-         else ! outside polygon
-            if (xp >= xpmin(ipoly) .and. xp <= xpmax(ipoly) .and. &
-                yp >= ypmin(ipoly) .and. yp <= ypmax(ipoly)) then
-               call PINPOK(Xp, Yp, iend - istart + 1, xpl(istart), ypl(istart), IN, jins, dmiss)
-               if (jins_opt > 0 .neqv. JINS > 0) then ! PINPOK has used global jins, but polygon asked the exact opposite, so negate the result here.
-                  IN = 1 - in ! IN-1
-               end if
-
-               if (in == 1) then
-                  exit ! outside check succeeded, return 'true'.
-               end if
-            else
-               in = 1 ! outside check succeeded (completely outside of polygon's bounding box), return 'true'.
-               exit
-            end if
-         end if
-      end do ! do ipoly=1,Npoly
-
-      if (in == 1) then ! and, even more handy:
-         ipolyfound = ipoly
-      else
-         ipolyfound = 0
-      end if
-
-      return
-   end subroutine dbpinpol_optinside_perpol2
 
    !>  get the start and end index of the first enclosed non-DMISS subarray
    subroutine get_startend(num, x, y, jstart, jend, dmiss)

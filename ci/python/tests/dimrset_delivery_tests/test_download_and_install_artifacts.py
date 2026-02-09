@@ -3,12 +3,12 @@
 from unittest.mock import MagicMock, Mock, call, patch
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.download_and_install_artifacts import ArtifactInstaller
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings, TeamcityIds
-from ci_tools.dimrset_delivery.step_1_download_and_install_artifacts import ArtifactInstaller
 from ci_tools.example_utils.logger import LogLevel
 
 
@@ -120,7 +120,7 @@ class TestDownloadAndInstallArtifacts:
         assert not result
         mock_context.log.assert_called_with("SSH client is required but not initialized", severity=LogLevel.ERROR)
 
-    @patch("ci_tools.dimrset_delivery.step_1_download_and_install_artifacts.ArtifactInstaller")
+    @patch("ci_tools.dimrset_delivery.download_and_install_artifacts.ArtifactInstaller")
     @patch("builtins.print")
     def test_download_and_install_artifacts_prints_completion_message(
         self, mock_print: MagicMock, mock_helper_class: MagicMock

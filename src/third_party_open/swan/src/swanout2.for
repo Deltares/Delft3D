@@ -144,6 +144,7 @@
       CHARACTER (LEN=4) :: RTYPE        ! output type                     40.13
       INTEGER   VOQR(*), IPD
       INTEGER   OQI(4), IVTYP(OQI(3))                                     40.31
+      INTEGER   NREF
       REAL*8    OQR(2)                                                    41.40 40.31
       REAL      VOQ(MXK*MYK,*), FAC(OQI(3))                               41.40 40.31
       INTEGER IF, IL                                                      40.41 40.30
@@ -219,7 +220,9 @@
         ! reserve free unit number
         IOSTAT = -1
         INQUIRE(FILE=FILENM, EXIST=EXIST)                                 41.43
-        CALL FOR (NREF, FILENM, 'UU', IOSTAT)
+        ! Avoid file FILENM being opened both by Fortran (in subroutine FOR)
+        ! and by NetCDF (in subroutine swn_outnc_openblockfile)
+        CALL FOR (NREF, 'dummy_fortran_'//FILENM, 'UU', IOSTAT)
         IF (STPNOW()) RETURN
         IF (.NOT.EXIST) CLOSE(NREF, STATUS='DELETE')                      41.43
         OQI(1) = NREF
@@ -349,7 +352,11 @@
 !
       END DO
   900 CONTINUE
-      IF ( NCF ) CALL swn_outnc_close_on_end(OQI(1), IRQ)                 41.40
+      IF ( NCF ) THEN
+        CALL swn_outnc_close_on_end(OQI(1), IRQ)
+        CLOSE(NREF, STATUS='DELETE')
+        OQI(1) = 0
+      ENDIF
       IF (IPD.EQ.1 .AND. NREF.EQ.PRINTF) WRITE (PRINTF, 6030)
  6030 FORMAT (///)
 !

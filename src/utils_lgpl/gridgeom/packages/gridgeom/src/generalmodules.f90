@@ -1,21 +1,4 @@
    !modules from modules.f90
-module m_missing
-   use precision, only: dp
-
-   implicit none
-   real(kind=dp) :: dmiss = -999.0_dp
-   real(kind=dp), parameter :: dmiss_pos = 999.0_dp
-   real(kind=dp), parameter :: dmiss_neg = -999.0_dp
-   real(kind=dp) :: xymis = -999.0_dp
-   real(kind=dp) :: dxymis = -999.0_dp
-   !double precision                 :: ieee_negative_inf = -1.7976931348623158e+308 ! IEEE standard for the maximum negative value
-   integer :: intmiss = -2147483647 ! integer fillvlue
-   integer :: imiss = -999 ! cf_dll missing value
-   integer :: LMOD, KMOD ! TBV READDY, LC gui related variables can go to unstruc_display
-   integer :: jins = 1
-   integer :: jadelnetlinktyp = 0
-end module m_missing
-
 module m_dimens
    implicit none
    integer :: MMAX_old = 3, NMAX_old = 3
@@ -117,20 +100,44 @@ contains
 end module m_sferic
 
 module m_polygon
+   use precision, only: dp
 
    implicit none
 
-   double precision, allocatable :: XPL(:), YPL(:), ZPL(:), XPH(:), YPH(:), ZPH(:), DZL(:), DZR(:), DCREST(:), DTL(:), DTR(:), DVEG(:)
-   integer, allocatable :: IWEIRT(:)
-   integer :: NPL, NPH, MAXPOL, MP, MPS, jakol45 = 0
-   character(len=64), allocatable :: nampli(:) ! Names of polylines, set in reapol,
+   real(kind=dp), allocatable, dimension(:) :: xpl
+   real(kind=dp), allocatable, dimension(:) :: ypl
+   real(kind=dp), allocatable, dimension(:) :: zpl
+   real(kind=dp), allocatable, dimension(:) :: dzl
+   real(kind=dp), allocatable, dimension(:) :: dzr
+   real(kind=dp), allocatable, dimension(:) :: dcrest
+   real(kind=dp), allocatable, dimension(:) :: dtl
+   real(kind=dp), allocatable, dimension(:) :: dtr
+   real(kind=dp), allocatable, dimension(:) :: dveg
+   real(kind=dp), allocatable, dimension(:), private :: xph
+   real(kind=dp), allocatable, dimension(:), private :: yph
+   real(kind=dp), allocatable, dimension(:), private :: zph
+   integer, allocatable, dimension(:) :: iweirt
+   integer :: npl
+   integer :: nph
+   integer :: maxpol
+   integer :: mp
+   integer :: mps
+   integer :: jakol45 = 0
+   character(len=64), allocatable, dimension(:) :: nampli ! Names of polylines, set in reapol,
+
    ! not shifted/updated during editpol.
-   double precision :: dxuni = 40d0 ! uniform spacing
-   integer :: MAXPOLY = 1000 ! will grow if needed
-   double precision, allocatable :: xpmin(:), ypmin(:), xpmax(:), ypmax(:), zpmin(:), zpmax(:)
+   real(kind=dp) :: dxuni = 40d0 ! uniform spacing
+   integer :: maxpoly = 1000 ! will grow if needed
+   real(kind=dp), allocatable, dimension(:) :: xpmin
+   real(kind=dp), allocatable, dimension(:) :: ypmin
+   real(kind=dp), allocatable, dimension(:) :: xpmax
+   real(kind=dp), allocatable, dimension(:) :: ypmax
+   real(kind=dp), allocatable, dimension(:) :: zpmin
+   real(kind=dp), allocatable, dimension(:) :: zpmax
    integer :: Npoly
-   integer, allocatable :: iistart(:), iiend(:)
-   integer, allocatable :: ipsection(:)
+   integer, allocatable, dimension(:) :: iistart
+   integer, allocatable, dimension(:) :: iiend
+   integer, allocatable, dimension(:) :: ipsection
 
 contains
    !> Increase size of global polyline array.
@@ -184,11 +191,10 @@ contains
       use m_missing
       implicit none
 
-      call realloc(xph, maxpol, keepExisting=.false.)
-      call realloc(yph, maxpol, keepExisting=.false.)
-      call realloc(zph, maxpol, keepExisting=.false.)
-
       if (NPL > 0) then
+         call realloc(xph, maxpol, keepExisting=.false.)
+         call realloc(yph, maxpol, keepExisting=.false.)
+         call realloc(zph, maxpol, keepExisting=.false.)
          XPH(1:NPL) = XPL(1:NPL)
          YPH(1:NPL) = YPL(1:NPL)
          ZPH(1:NPL) = ZPL(1:NPL)
@@ -215,8 +221,8 @@ contains
          XPL(1:NPH) = XPH(1:NPH)
          YPL(1:NPH) = YPH(1:NPH)
          ZPL(1:NPH) = ZPH(1:NPH)
+         deallocate(XPH, YPH, ZPH)
       end if
-
       MP = MPS
       NPL = NPH
 

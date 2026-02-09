@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -86,13 +86,13 @@ Dictionary::Insert (
             }
 
         if (strcmp (this->table[i].key, key) == 0)
-            throw new Exception (true, "Duplicate key \"%s\" in %s dictionary", key, this->name);
+            throw new Exception("Duplicate key \"%s\" in %s dictionary", key, this->name);
 
         i = (i+1) % SIZE;
         }
 
     if (i == SIZE)
-        throw new Exception (true, "%s dictionary is full (%d keys)", this->name, SIZE);
+        throw new Exception("%s dictionary is full (%d keys)", this->name, SIZE);
     }
 
 

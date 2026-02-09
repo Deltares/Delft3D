@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,7 +29,6 @@
 
 module fm_external_forcings
    use m_make_mirrorcells, only: make_mirrorcells
-   use m_in2dflowcell, only: in2dflowcell
    use m_count_links, only: count_links
    use m_add_bndtracer, only: add_bndtracer
    use m_addopenbndsection, only: addopenbndsection
@@ -116,7 +115,7 @@ contains
 !> prepare_wind_model_data
    subroutine prepare_wind_model_data(time_in_seconds, iresult)
       use m_wind
-      use m_flowparameters, only: jawave, flowWithoutWaves
+      use m_flowparameters, only: jawave, flow_without_waves
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
@@ -246,7 +245,7 @@ contains
          end do
       end if
 
-      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flow_without_waves) then
          call tauwavefetch(time_in_seconds)
       end if
 
@@ -2510,6 +2509,7 @@ contains
       use m_filez, only: doclose
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: realloc
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2870,15 +2870,19 @@ contains
                end if
             end do
          end if
-
+         call init_cell_geom_as_polylines()
+         !$OMP PARALLEL DO SCHEDULE(GUIDED)
          do n = ndx2D + 1, ndxi
-            if (kcs(n) == 1) then
-               call IN2Dflowcell(Xz(n), Yz(n), ja)
+            if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
+               ja = point_find_netcell(Xz(n), Yz(n))
                if (ja >= 1) then
                   bare(n) = 0.0_dp
                end if
             end if
          end do
+         !$OMP END PARALLEL DO
+         call cleanup_cell_geom_polylines()
+
          a1ini = sum(bare(1:ndxi))
       end if
       deallocate (sah)

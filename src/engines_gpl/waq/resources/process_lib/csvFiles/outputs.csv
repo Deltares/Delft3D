@@ -1300,9 +1300,10 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Sum_Sedim ","fSedTIM   ",   2,"x",1
 "Sum_Sedim ","fSedPOC   ",   3,"x",1
 "Sum_Sedim ","fSedPOCnoa",   4,"x",1
-"Sum_Sedim ","fSedPOMnoa",   5,"x",1
-"Sum_Sedim ","VxSedTIM  ",   6,"x",0
-"Sum_Sedim ","VxSedPOCna",   7,"x",0
+"Sum_Sedim ","fSedPCnaS2",   5,"x",1
+"Sum_Sedim ","fSedPOMnoa",   6,"x",1
+"Sum_Sedim ","VxSedTIM  ",   7,"x",0
+"Sum_Sedim ","VxSedPOCna",   8,"x",0
 "Sed_AAP   ","fSedAAP   ",   1,"x",1
 "Sed_AAP   ","fSedAAPS2 ",   2," ",1
 "Sed_AAP   ","VxSedAAP  ",   3,"x",0
@@ -2647,21 +2648,29 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Sed_Va    ","fSedVaS2  ",   2," ",1
 "Sed_Va    ","VxSedVa   ",   3,"x",0
 "Sed_153   ","fSed153   ",   1,"x",1
-"Sed_153   ","VxSed153  ",   2,"x",0
+"Sed_153   ","fSed153S2 ",   2,"x",1
+"Sed_153   ","VxSed153  ",   3,"x",0
 "Sed_HCB   ","fSedHCB   ",   1,"x",1
-"Sed_HCB   ","VxSedHCB  ",   2,"x",0
+"Sed_HCB   ","fSedHCBS2 ",   2,"x",1
+"Sed_HCB   ","VxSedHCB  ",   3,"x",0
 "Sed_HCH   ","fSedHCH   ",   1,"x",1
-"Sed_HCH   ","VxSedHCH  ",   2,"x",0
+"Sed_HCH   ","fSedHCHS2 ",   2,"x",1
+"Sed_HCH   ","VxSedHCH  ",   3,"x",0
 "Sed_Flu   ","fSedFlu   ",   1,"x",1
-"Sed_Flu   ","VxSedFlu  ",   2,"x",0
+"Sed_Flu   ","fSedFluS2 ",   2,"x",1
+"Sed_Flu   ","VxSedFlu  ",   3,"x",0
 "Sed_Bap   ","fSedBap   ",   1,"x",1
-"Sed_Bap   ","VxSedBap  ",   2,"x",0
+"Sed_Bap   ","fSedBapS2 ",   2,"x",1
+"Sed_Bap   ","VxSedBap  ",   3,"x",0
 "Sed_Atr   ","fSedAtr   ",   1,"x",1
-"Sed_Atr   ","VxSedAtr  ",   2,"x",0
+"Sed_Atr   ","fSedAtrS2 ",   2,"x",1
+"Sed_Atr   ","VxSedAtr  ",   3,"x",0
 "Sed_Mef   ","fSedMef   ",   1,"x",1
-"Sed_Mef   ","VxSedMef  ",   2,"x",0
+"Sed_Mef   ","fSedMefS2 ",   2,"x",1
+"Sed_Mef   ","VxSedMef  ",   3,"x",0
 "Sed_Diu   ","fSedDiu   ",   1,"x",1
-"Sed_Diu   ","VxSedDiu  ",   2,"x",0
+"Sed_Diu   ","fSedDiuS2 ",   2,"x",1
+"Sed_Diu   ","VxSedDiu  ",   3,"x",0
 "S12TraAs  ","fResS1As  ",   1,"x",1
 "S12TraAs  ","fResS2As  ",   2,"x",1
 "S12TraAs  ","fBurS1As  ",   3,"x",1
@@ -2851,7 +2860,8 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Volat_OMP ","kvOMP     ",   1,"x",1
 "Volat_OMP ","cHeOMP    ",   2,"x",1
 "Sed_OMP   ","fSedOMP   ",   1,"x",1
-"Sed_OMP   ","VxSedOMP  ",   2,"x",0
+"Sed_OMP   ","fSedOMPS2 ",   2,"x",1
+"Sed_OMP   ","VxSedOMP  ",   3,"x",0
 "TraSe2_OMP","VxUpwOMP  ",   1,"x",0
 "TraSe2_OMP","VxDownOMP ",   2,"x",0
 "TRSOXY    ","fTRSOXY   ",   1,"x",1

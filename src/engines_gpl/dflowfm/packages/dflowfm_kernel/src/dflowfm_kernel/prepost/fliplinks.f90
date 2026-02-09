@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -252,7 +252,7 @@ contains
                !    delete link from nod(k1)
                kk = 1
                do while (nod(k1)%lin(kk) /= L .and. kk <= nmk(k1))
-               kk = kk + 1
+                  kk = kk + 1
                end do
                if (nod(k1)%lin(kk) /= L) then
                   goto 1234
@@ -263,7 +263,7 @@ contains
                !    delete link from nod(k2)
                kk = 1
                do while (nod(k2)%lin(kk) /= L .and. kk <= nmk(k2))
-               kk = kk + 1
+                  kk = kk + 1
                end do
                if (nod(k2)%lin(kk) /= L) then
                   goto 1234

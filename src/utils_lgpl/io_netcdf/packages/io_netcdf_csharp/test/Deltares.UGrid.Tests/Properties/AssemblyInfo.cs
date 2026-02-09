@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Deltares")]
 [assembly: AssemblyProduct("Deltares.UGrid.TestsD")]
-[assembly: AssemblyCopyright("Copyright © Deltares 2025")]
+[assembly: AssemblyCopyright("Copyright © Deltares 2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
