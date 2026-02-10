@@ -40,13 +40,6 @@ object PublishToGui : BuildType({
             cleanOutputDir = false
             publishPackages = true
         }
-        nuGetPublish {
-            name = "Publish NuGet artifact to Nexus"
-            toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
-            packages = "target/Dimr.Libs.%DIMR_nuget_version%.nupkg"
-            serverUrl = "https://artifacts.deltares.nl/repository/nuget-release/"
-            apiKey = "%nexus_nuget_apikey%"
-        }
         powerShell {
             name = "Set ECModule version"
             formatStderrAsError = true
@@ -98,6 +91,17 @@ object PublishToGui : BuildType({
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
+        }
+        nuGetPublish {
+            name = "Publish NuGet artifacts to Nexus"
+            toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
+            packages = """
+                target/Dimr.Libs.%DIMR_nuget_version%.nupkg
+                target/ECModule.Native.%ec_module_version%.nupkg
+                target/GridGeom.Native.%grid_geom_version%.nupkg
+            """.trimIndent()
+            serverUrl = "https://artifacts.deltares.nl/repository/nuget-release/"
+            apiKey = "%nexus_nuget_apikey%"
         }
     }
 
