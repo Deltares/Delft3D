@@ -986,7 +986,7 @@ contains
             end if
          end if
 
-         call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
+         call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [numerics] block
          if (.not. success) then
             call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
          end if
@@ -1441,6 +1441,7 @@ contains
       if (Jadelvappos /= 0) then
          call mess(LEVEL_WARN, 'Jadelvappos=0 is strongly advised and other values are discouraged.')
       end if
+      call prop_get(md_ptr, 'physics', 'freeConvectionCoefficient', free_convection_coefficient)
 
       call prop_get(md_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity)
       call prop_get(md_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature)
@@ -3481,6 +3482,9 @@ contains
          end if
          if (writeall .or. jaheat_eachstep > 0) then
             call prop_set(prop_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep, '1=heat each timestep, 0=heat each usertimestep')
+         end if
+         if (writeall .or. (free_convection_coefficient /= 0.14_dp)) then
+            call prop_set(prop_ptr, 'physics', 'freeConvectionCoefficient', free_convection_coefficient, 'Free convection turbulence coefficient [-]')
          end if
 
          if (writeall .or. janudge > 0 .or. jainiwithnudge > 0) then
