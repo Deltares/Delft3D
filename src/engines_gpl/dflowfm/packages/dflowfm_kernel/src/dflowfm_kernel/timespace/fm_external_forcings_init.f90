@@ -1231,18 +1231,39 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_transport, only: NUMCONST
-
+      use m_transport, only: numconst
+      use m_bubblescreen
+      use m_setsorsin
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+      ! Local variables
+      logical :: is_successful !< Success flag
+      integer :: file_pointer !< File pointer for reading polygon file
+      integer :: cidx !< Index for crossed cells
+      integer :: i !< Loop indices
+      integer :: ierr !< Error code
+      integer :: npl_tmp !< Temporary variable to store number of polygon points
+      integer :: bubble_source_count
+      integer :: kstart !< Starting vertical index for bubblescreen sources/sinks in a cell
+      integer :: kend !< Ending vertical index for bubblescreen sources/sinks in a cell
+      integer, dimension(:), allocatable :: crossed_cells !< Indices of crossed cells in network_data::netcells
+      real(kind=dp) :: tmsx !< Temporary x-coordinate for bubblescreen source/sink
+      real(kind=dp) :: tmsy !< Temporary y-coordinate for bubblescreen source/sink
+      real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
+      real(kind=dp), dimension(:), allocatable :: xpl_tmp !< Temporary array to store polygon x-coordinates
+      real(kind=dp), dimension(:), allocatable :: ypl_tmp !< Temporary array to store polygon y-coordinates
+      real(kind=dp), dimension(:), allocatable :: zpl_tmp !< Temporary array to store polygon z-coordinates
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      character, dimension(:), allocatable :: error !< Error message
+      type(t_BubbleScreen) :: bubblescreen !< Bubblescreen data structure
 
       logical :: is_successful
       type(tface) :: tmcell
@@ -1253,8 +1274,9 @@ contains
       type(t_Bubblescreen), pointer :: bubblescreen
 
       is_successful = .false.
+      bubble_source_count = 0
 
-      ! Read bubblescreen attributes from the tree node
+      ! Read bubble screen attributes from the tree node
       is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
       if (is_successful) then
          allocate(character(len=len_trim(id)+50) :: srcid)
@@ -1272,9 +1294,8 @@ contains
          
          do cidx = 1, size(bubblescreen%flow_cells)
             ! For each crossed cell, create a bubblescreen source/sink object
-            tmcell = netcell(bubblescreen%flow_cells(cidx)%netcell_index)
-            tmsx = xzw(tmcell%nod(1))
-            tmsy = yzw(tmcell%nod(1))
+            tmsx = xzw(bubblescreen%flow_cells(cidx))
+            tmsy = yzw(bubblescreen%flow_cells(cidx))
 
             bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
             do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
@@ -1290,8 +1311,11 @@ contains
                bubble_source_count = bubble_source_count + 1
             end do
 
+            ! Fill in remaining bubblescreen flow cell data
+            bubblescreen%flow_cells(cidx)%cell_index = crossed_cells(cidx)
+            bubblescreen%flow_cells(cidx)%num_sources_sinks = bubble_source_count
+
          end do
-         bubblescreen%num_source_sinks = bubble_source_count
       end if
 
 

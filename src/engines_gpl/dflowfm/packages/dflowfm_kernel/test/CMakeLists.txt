@@ -34,4 +34,13 @@ f90twtest(test_compute_horton_infiltration
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
+f90twtest(test_bubblescreen
+    CFILES test_bubblescreen.cpp
+    F90FILES test_bubblescreen.f90
+    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_bubblescreen.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES dflowfm_kernel
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)
+
 add_subdirectory(io)
