@@ -97,7 +97,7 @@ BlockInfo * VarInfoCollection::AddBlockInfo(void)
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddBlockInfo(void): max #BlockInfo's exceeded\n");
+        throw new Exception("VarInfoCollection::AddBlockInfo(void): max #BlockInfo's exceeded\n");
     }
 
 
@@ -131,7 +131,7 @@ BlockInfo * VarInfoCollection::AddBlockInfo(
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddBlockInfo(1D): max #BlockInfo's exceeded\n");
+        throw new Exception("VarInfoCollection::AddBlockInfo(1D): max #BlockInfo's exceeded\n");
     }
 
 
@@ -169,7 +169,7 @@ BlockInfo * VarInfoCollection::AddBlockInfo(
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddBlockInfo(2D): max #BlockInfo's exceeded\n");
+        throw new Exception("VarInfoCollection::AddBlockInfo(2D): max #BlockInfo's exceeded\n");
     }
 
     return newBlockInfo;
@@ -210,7 +210,7 @@ BlockInfo * VarInfoCollection::AddBlockInfo(
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddBlockInfo(3D): max #BlockInfo's exceeded\n");
+        throw new Exception("VarInfoCollection::AddBlockInfo(3D): max #BlockInfo's exceeded\n");
     }
 
 
@@ -256,7 +256,7 @@ BlockInfo * VarInfoCollection::AddBlockInfo(
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddBlockInfo(4D): max #BlockInfo's exceeded\n");
+        throw new Exception("VarInfoCollection::AddBlockInfo(4D): max #BlockInfo's exceeded\n");
     }
 
     return newBlockInfo;
@@ -291,7 +291,7 @@ void VarInfoCollection::AddVarInfo(
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddVarInfo(int): max #VarInfo's exceeded\n");
+        throw new Exception("VarInfoCollection::AddVarInfo(int): max #VarInfo's exceeded\n");
     }
 }
 
@@ -323,7 +323,7 @@ void VarInfoCollection::AddVarInfo(
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddVarInfo(float): max #VarInfo's exceeded\n");
+        throw new Exception("VarInfoCollection::AddVarInfo(float): max #VarInfo's exceeded\n");
     }
 }
 
@@ -355,7 +355,7 @@ void VarInfoCollection::AddVarInfo(
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddVarInfo(double): max #VarInfo's exceeded\n");
+        throw new Exception("VarInfoCollection::AddVarInfo(double): max #VarInfo's exceeded\n");
     }
 }
 
@@ -377,7 +377,7 @@ void VarInfoCollection::AddGroup(
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::AddGroup: max #VarGroups exceeded\n");
+        throw new Exception("VarInfoCollection::AddGroup: max #VarGroups exceeded\n");
     }
 }
 
@@ -391,7 +391,7 @@ int VarInfoCollection::GetNumBytes(
 
     if ( varGroup == NULL )
     {
-        throw new Exception (true, "VarInfoCollection::GetNumBytes: group %d not found\n", groupId);
+        throw new Exception("VarInfoCollection::GetNumBytes: group %d not found\n", groupId);
     }
     else
     {
@@ -430,7 +430,7 @@ void VarInfoCollection::AddVarToGroup(
 
     if ( varInfo == NULL )
     {
-        throw new Exception (true, "VarInfoCollection::AddVarToGroup: var %d not found\n", groupId);
+        throw new Exception("VarInfoCollection::AddVarToGroup: var %d not found\n", groupId);
     }
     else
     {
@@ -438,13 +438,13 @@ void VarInfoCollection::AddVarToGroup(
 
         if ( varGroup == NULL )
         {
-            throw new Exception (true, "VarInfoCollection::AddVarToGroup: group %d not found\n", groupId);
+            throw new Exception("VarInfoCollection::AddVarToGroup: group %d not found\n", groupId);
         }
         else
         {
             if ( varGroup->numVars >= MAX_NUM_GROUP_VARS )
             {
-                throw new Exception (true, "VarInfoCollection::AddVarToGroup: max #vars in group %d exceeded\n",
+                throw new Exception("VarInfoCollection::AddVarToGroup: max #vars in group %d exceeded\n",
                         groupId);
             }
             else
@@ -516,7 +516,7 @@ int VarInfoCollection::BufferVar(   // return: #bytes added or read
             nBytesInVarType = sizeof(double);
             break;
         default:
-            throw new Exception (true, "VarInfoCollection::BufferVar: varType not recognized.\n");
+            throw new Exception("VarInfoCollection::BufferVar: varType not recognized.\n");
             break;
     }
 
@@ -633,7 +633,7 @@ int VarInfoCollection::BufferVar(   // return: #bytes added or read
                         }
                         else
                         {
-                            throw new Exception (true, "VarInfoCollection::BufferVar: maxBytes exceed\n");
+                            throw new Exception("VarInfoCollection::BufferVar: maxBytes exceed\n");
                         }
                     }
                 }
@@ -685,7 +685,7 @@ int VarInfoCollection::BufferGroup(   // return: #bytes added or read
     }
     else
     {
-        throw new Exception (true, "VarInfoCollection::BufferGroup: varGroup %d not found\n", groupId);
+        throw new Exception("VarInfoCollection::BufferGroup: varGroup %d not found\n", groupId);
     }
 
     return nAddedOrReadBytes;

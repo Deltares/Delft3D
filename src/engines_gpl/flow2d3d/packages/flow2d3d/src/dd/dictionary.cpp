@@ -86,13 +86,13 @@ Dictionary::Insert (
             }
 
         if (strcmp (this->table[i].key, key) == 0)
-            throw new Exception (true, "Duplicate key \"%s\" in %s dictionary", key, this->name);
+            throw new Exception("Duplicate key \"%s\" in %s dictionary", key, this->name);
 
         i = (i+1) % SIZE;
         }
 
     if (i == SIZE)
-        throw new Exception (true, "%s dictionary is full (%d keys)", this->name, SIZE);
+        throw new Exception("%s dictionary is full (%d keys)", this->name, SIZE);
     }
 
 
