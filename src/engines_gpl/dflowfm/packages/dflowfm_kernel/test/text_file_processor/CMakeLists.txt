@@ -62,11 +62,23 @@ endif()
 message(STATUS "Preparing copying Resources from: ${CMAKE_CURRENT_SOURCE_DIR}  ${${PROJECT_SOURCE_DIR}}")
 file(GLOB_RECURSE test_resources RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/resources" CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 
+# Create OUTPUT-based custom commands for proper dependency tracking
+set(resource_outputs)
 foreach(resource_file IN LISTS test_resources)
+    set(output_file "${CMAKE_CURRENT_BINARY_DIR}/${resource_file}")
     add_custom_command(
-        TARGET  ${NAME} PRE_BUILD
+        OUTPUT "${output_file}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different   
             "${CMAKE_CURRENT_SOURCE_DIR}/resources/${resource_file}"
-            "$<TARGET_FILE_DIR:${NAME}>/${resource_file}"
+            "${output_file}"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/resources/${resource_file}"
+        COMMENT "Copying resource ${resource_file}"
     )
+    list(APPEND resource_outputs "${output_file}")
 endforeach()
+
+# Create a custom target that depends on all resource outputs
+add_custom_target(${NAME}_resources ALL DEPENDS ${resource_outputs})
+
+# Make the test executable depend on the resources target
+add_dependencies(${NAME} ${NAME}_resources)

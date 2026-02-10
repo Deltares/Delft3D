@@ -102,7 +102,9 @@ contains
       class(ChapterPropsVerifier), intent(in) :: this
       type(TextFileProcessor), intent(in) :: processor
       logical :: is_valid
-      integer :: i
+      integer :: i, j
+      integer :: num_items_in_file
+      type(tree_data), pointer :: block_ptr
 
       character(len=:), allocatable :: value
       logical :: found
@@ -110,19 +112,25 @@ contains
       ! Check if processor is valid first
       is_valid = .not. processor%is_error
 
+      num_items_in_file = tree_num_nodes(processor%tree)
+
+
+
       ! If valid, check required strings
       if (is_valid .and. allocated(this%required_props)) then
-         do i = 1, size(this%required_props)
-            ! Add your string verification logic here
-            call prop_get_alloc_string(processor%tree, this%chapter_name, this%required_props(i), value, found)
-            ! print *, 'Verifying presence of string: ', trim(this%required_props(i))
-            if (.not. found) then
-               write (msgbuf, '(a,a,a)') 'Missing required property: ', trim(this%required_props(i)), '.'
-               is_valid = .false.
-            else if (allocated(value)) then
-               DEALLOCATE(value)
-            end if
-            ! For now, just return true
+         do i = 1, num_items_in_file
+            block_ptr => processor%tree%child_nodes(i)%node_ptr
+            do j = 1, size(this%required_props)
+               call prop_get_alloc_string(block_ptr, this%chapter_name, this%required_props(j), value, found)
+               ! print *, 'Verifying presence of string: ', trim(this%required_props(j))
+               if (.not. found) then
+                  write (msgbuf, '(a,a,a)') 'Missing required property: ', trim(this%required_props(j)), '.'
+                  is_valid = .false.
+               else if (allocated(value)) then
+                  DEALLOCATE(value)
+               end if
+               ! For now, just return true
+            end do
          end do
       end if
 

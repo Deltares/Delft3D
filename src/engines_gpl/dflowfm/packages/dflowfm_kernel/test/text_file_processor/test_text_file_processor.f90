@@ -93,4 +93,33 @@ contains
    end subroutine
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_text_file_processor, test_x_y_coord, test_x_y_coord,
+   subroutine test_x_y_coord() bind(C)
+      use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
+      use text_file_processor, only: TextFileProcessor, ChapterPropsVerifier
+
+      type(TextFileProcessor) :: processor
+      type(ChapterPropsVerifier) :: verifier
+      character(len=:), allocatable :: required_strings(:)
+      character(len=1024) :: cwd_string
+
+      required_strings = [ 'xCoordinates' ]
+      verifier = ChapterPropsVerifier('SourceSink', required_strings)
+
+      processor = TextFileProcessor('sorsin3D-new.ext')
+      call processor%init()
+      call msg_flush()
+
+      call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
+
+      call processor%parse()
+
+      ! Verify required strings
+      call f90_assert_eq(verifier%verify(processor), .true., 'All required strings should be present in the file.')
+
+
+      call msg_flush()
+   end subroutine
+   !$f90tw)
+
 end module test_text_file_processor
