@@ -2871,7 +2871,7 @@ contains
             end do
          end if
          call init_cell_geom_as_polylines()
-         !$OMP PARALLEL DO SCHEDULE(GUIDED)
+         !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
             if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
                ja = point_find_netcell(Xz(n), Yz(n))

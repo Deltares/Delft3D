@@ -57,7 +57,7 @@
  * C-functions called from fortran
  */
 
-#if linux
+#if defined(__linux__)
 #   include "config.h"
 #   define STDCALL  /* nothing */
 #   define PSEMINIT   FC_FUNC(pseminit,PSEMINIT)

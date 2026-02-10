@@ -50,11 +50,11 @@ void FlowDD_Mapper (
 
     Category * processes = LookupCategory (DD::processCategoryName);
     if (processes == NULL)
-        throw new Exception (true, "Process category does not exist for mapper \"%s\"", name);
+        throw new Exception("Process category does not exist for mapper \"%s\"", name);
 
     int numNeighbors = self->NeighborCount (processes);
     if (numNeighbors != NR_CNTXTS)
-        throw new Exception (true, "Mapper \"%s\" does not have two neighbor processes", name);
+        throw new Exception("Mapper \"%s\" does not have two neighbor processes", name);
 
     Iterator * neighbors[NR_CNTXTS];
 
