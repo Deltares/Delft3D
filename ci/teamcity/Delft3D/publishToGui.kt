@@ -98,7 +98,7 @@ object PublishToGui : BuildType({
             packages = """
                 target/ECModule.Native.%ec_module_version%.nupkg
                 target/Dimr.Libs.%DIMR_nuget_version%.nupkg
-                target/GridGeom.Native.%grid_geom_version%.nupkg
+                target/GridGeom.Native.1.1.0.nupkg
             """.trimIndent()
             serverUrl = "https://artifacts.deltares.nl/repository/nuget-release/"
             apiKey = "%nexus_nuget_apikey%"
