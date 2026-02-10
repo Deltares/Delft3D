@@ -44,7 +44,7 @@ module unstruc_model
    use properties, only: prop_get, prop_file, tree_create, tree_destroy, max_prop_length
    use m_waveconst
 
-   implicit none
+   implicit none(external)
 
    !> The version number of the MDU File format: d.dd, [config_major].[config_minor], e.g., 1.03
     !!
@@ -258,7 +258,7 @@ module unstruc_model
    integer :: md_fou_step !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
    integer, private :: ifixedweirscheme_input !< input value of ifixedweirscheme in mdu file
-   real(kind=dp), private :: user_provided_charnock_coefficient !< input value of Cdbreakpoints in mdu file
+   real(kind=dp), private :: cdb_user(2) !< User provided Charnock coefficient (and optionally the viscous term)
 
 contains
 
@@ -428,6 +428,7 @@ contains
       use m_realan, only: realan
       use m_filez, only: oldfil
       use unstruc_messages, only: threshold_abort
+      use m_readCrossSections, only: readCrossSectionDefinitions
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
@@ -479,11 +480,19 @@ contains
       network%sferic = jsferic == 1
 
       threshold_abort = LEVEL_FATAL
-      if (istat == 0 .and. jadoorladen == 0 .and. network%numk > 0 .and. network%numl > 0) then
-         timerHandle = 0
-         call timstrt('Read 1d attributes', timerHandle)
-         call read_1d_attributes(md_1dfiles, network)
-         call timstop(timerHandle)
+      if (istat == 0 .and. jadoorladen == 0) then
+         if (network%numk > 0 .and. network%numl > 0) then
+            timerHandle = 0
+            call timstrt('Read 1d attributes', timerHandle)
+            call read_1d_attributes(md_1dfiles, network)
+            call timstop(timerHandle)
+            ! Always read cross section definitions if specified (needed for long culverts)
+         else if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
+            call readCrossSectionDefinitions(network, md_1dfiles%cross_section_definitions)
+            if (network%CSDefinitions%Count < 1) then
+               call SetMessage(LEVEL_WARN, 'No Cross_Section Definitions Found in file '//trim(md_1dfiles%cross_section_definitions))
+            end if
+         end if
       end if
 
       timerHandle = 0
@@ -986,7 +995,7 @@ contains
             end if
          end if
 
-         call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
+         call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [numerics] block
          if (.not. success) then
             call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
          end if
@@ -1441,6 +1450,7 @@ contains
       if (Jadelvappos /= 0) then
          call mess(LEVEL_WARN, 'Jadelvappos=0 is strongly advised and other values are discouraged.')
       end if
+      call prop_get(md_ptr, 'physics', 'freeConvectionCoefficient', free_convection_coefficient)
 
       call prop_get(md_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity)
       call prop_get(md_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature)
@@ -1607,10 +1617,13 @@ contains
          wdb(3) = max(wdb(3), wdb(2) + 0.1_dp)
       else if (wind_drag_type == CD_TYPE_CHARNOCK1955) then
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 1)
-         user_provided_charnock_coefficient = cdb(1)
+         cdb_user(1) = cdb(1)
          cdb(2) = 0.0_dp
-      else if (wind_drag_type == CD_TYPE_GARRATT1977 .or. wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
+      else if (wind_drag_type == CD_TYPE_GARRATT1977) then
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 2)
+      else if (wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 2)
+         cdb_user(1:2) = cdb(1:2)
       end if
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
       call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
@@ -2656,7 +2669,7 @@ contains
       use m_wind, only: jaspacevarcharn, jaheat_eachstep, wind_drag_type, cdb, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, &
                         pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
                         CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
-                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003
+                        CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_CHARNOCK_PLUS_VISCOUS
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
@@ -3485,6 +3498,9 @@ contains
          if (writeall .or. jaheat_eachstep > 0) then
             call prop_set(prop_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep, '1=heat each timestep, 0=heat each usertimestep')
          end if
+         if (writeall .or. (free_convection_coefficient /= 0.14_dp)) then
+            call prop_set(prop_ptr, 'physics', 'freeConvectionCoefficient', free_convection_coefficient, 'Free convection turbulence coefficient [-]')
+         end if
 
          if (writeall .or. janudge > 0 .or. jainiwithnudge > 0) then
             call prop_set(prop_ptr, 'physics', 'Nudgetimeuni', Tnudgeuni, 'Uniform nudge relaxation time')
@@ -3577,21 +3593,24 @@ contains
          end if
       end if
 
-      if (jaspacevarcharn .and. wind_drag_type /= CD_TYPE_CHARNOCK1955) then
-         write (msgbuf, '(a,i0,a)') 'A (time- and space-varying) Charnock coefficient was provided via the .ext file. [wind] ICdtyp has been reset from ', &
-            wind_drag_type, ' to 4 (Charnock).'
-         call mess(LEVEL_WARN, msgbuf)
-         wind_drag_type = CD_TYPE_CHARNOCK1955
+      if (jaspacevarcharn .and. (wind_drag_type /= CD_TYPE_CHARNOCK1955 .and. wind_drag_type /= CD_TYPE_CHARNOCK_PLUS_VISCOUS)) then
+         write (msgbuf, '(a,i0,a)') &
+            'Inconsistent configuration: a time- and space-varying Charnock coefficient was ' // &
+            'specified in the .ext file, but [wind] ICdtyp is set to ', &
+            wind_drag_type, '. Expected ICdtyp = 4 (Charnock) or 8 (Charnock + viscous term).'
+         call mess(LEVEL_ERROR, msgbuf)
       end if
       call prop_set(prop_ptr, 'wind', 'ICdtyp', wind_drag_type, 'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: Charnock+viscous, 9: Garratt 1977).')
       if (wind_drag_type == CD_TYPE_CONST .or. wind_drag_type == CD_TYPE_CHARNOCK1955 .or. wind_drag_type == CD_TYPE_HWANG2005 .or. wind_drag_type == CD_TYPE_WUEST2003) then
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', user_provided_charnock_coefficient, 'Wind drag coefficient (may be overridden by space-varying input)')
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb_user(1), 'Wind drag coefficient (may be overridden by space-varying input)')
       else if (wind_drag_type == CD_TYPE_SMITHBANKE_2PT) then
          call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:2), 'Wind drag coefficient break points')
          call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', wdb(1:2), 'Wind speed break points (m/s)')
       else if (wind_drag_type == CD_TYPE_SMITHBANKE_3PT) then
          call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:3), 'Wind drag coefficient break points')
          call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', wdb(1:3), 'Wind speed break points (m/s)')
+      else if (wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb_user(1:2), 'Wind drag coefficients (may be overridden by space-varying input)')
       else
          call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:2), 'Wind drag coefficients (may be overridden by space-varying input)')
       end if
