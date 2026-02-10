@@ -41,9 +41,19 @@ module text_file_processor
       procedure :: verify => string_array_verifier_verify
    end type ChapterPropsVerifier
 
+   type, extends(TextFileProcessorVerifier) :: AndVerifier
+      class(TextFileProcessorVerifier), allocatable :: verifiers(:)
+   contains
+      procedure :: verify => and_verifier_verify
+   end type AndVerifier 
+
    interface ChapterPropsVerifier
       module procedure :: string_array_verifier_constructor
    end interface ChapterPropsVerifier
+
+   interface AndVerifier
+      module procedure :: and_verifier_constructor
+   end interface AndVerifier
 
 contains
 
@@ -66,6 +76,14 @@ contains
       allocate(verifier%required_props, source=strings)
       verifier%chapter_name = chapter_name
    end function string_array_verifier_constructor
+
+   !> Constructor for AndVerifier
+   function and_verifier_constructor(verifiers) result(verifier)
+      class(TextFileProcessorVerifier), intent(in) :: verifiers(:)
+      type(AndVerifier) :: verifier
+      
+      allocate(verifier%verifiers, source=verifiers)
+   end function and_verifier_constructor
 
    !> Initialize method
    subroutine text_file_processor_init(this)
@@ -105,6 +123,7 @@ contains
       integer :: i, j
       integer :: num_items_in_file
       type(tree_data), pointer :: block_ptr
+      character(len=:), allocatable :: group_name
 
       character(len=:), allocatable :: value
       logical :: found
@@ -120,20 +139,44 @@ contains
       if (is_valid .and. allocated(this%required_props)) then
          do i = 1, num_items_in_file
             block_ptr => processor%tree%child_nodes(i)%node_ptr
-            do j = 1, size(this%required_props)
-               call prop_get_alloc_string(block_ptr, this%chapter_name, this%required_props(j), value, found)
-               ! print *, 'Verifying presence of string: ', trim(this%required_props(j))
-               if (.not. found) then
-                  write (msgbuf, '(a,a,a)') 'Missing required property: ', trim(this%required_props(j)), '.'
-                  is_valid = .false.
-               else if (allocated(value)) then
-                  DEALLOCATE(value)
-               end if
-               ! For now, just return true
-            end do
+            group_name = trim(tree_get_name(block_ptr))
+            if (group_name == trim(this%chapter_name)) then
+               do j = 1, size(this%required_props)
+                  call prop_get_alloc_string(block_ptr, this%chapter_name, this%required_props(j), value, found)
+                  ! print *, 'Verifying presence of string: ', trim(this%required_props(j))
+                  if (.not. found) then
+                     write (msgbuf, '(a,a,a)') 'Missing required property: ', trim(this%required_props(j)), '.'
+                     is_valid = .false.
+                  else if (allocated(value)) then
+                     DEALLOCATE(value)
+                  end if
+                  ! For now, just return true
+               end do
+            end if
          end do
       end if
 
    end function string_array_verifier_verify
+
+   !> AndVerifier implementation - verifies all sub-verifiers
+   function and_verifier_verify(this, processor) result(is_valid)
+      class(AndVerifier), intent(in) :: this
+      type(TextFileProcessor), intent(in) :: processor
+      logical :: is_valid
+      integer :: i
+
+      is_valid = .true.
+
+      ! Call all verifiers and fail if any one fails
+      if (allocated(this%verifiers)) then
+         do i = 1, size(this%verifiers)
+            if (.not. this%verifiers(i)%verify(processor)) then
+               is_valid = .false.
+               exit  ! Stop on first failure
+            end if
+         end do
+      end if
+
+   end function and_verifier_verify
 
 end module text_file_processor

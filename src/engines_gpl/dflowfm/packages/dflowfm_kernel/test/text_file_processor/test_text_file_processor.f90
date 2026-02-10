@@ -93,6 +93,42 @@ contains
    end subroutine
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_text_file_processor, test_and_verifier, test_and_verifier,
+   subroutine test_and_verifier() bind(C)
+      use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
+      use text_file_processor, only: TextFileProcessor, ChapterPropsVerifier, AndVerifier
+      type(TextFileProcessor) :: processor
+      type(ChapterPropsVerifier) :: verifier1, verifier2
+      type(AndVerifier) :: and_verifier
+      character(len=:), allocatable :: required_strings1(:), required_strings2(:)
+
+      required_strings1 = [ 'OutputDir', 'MapFormat' ]
+      required_strings2 = [ 'CrsFile' ]
+      verifier1 = ChapterPropsVerifier('output', required_strings1)
+      verifier2 = ChapterPropsVerifier('output', required_strings2)
+
+      processor = TextFileProcessor('tt3.mdu')
+      call processor%init()
+      call msg_flush()
+
+      call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
+
+      call processor%parse()
+
+      ! Test AndVerifier with all conditions passing
+      and_verifier = AndVerifier([ verifier1, verifier2 ])
+      call f90_assert_eq(and_verifier%verify(processor), .true., 'AndVerifier should pass when all sub-verifiers pass.')
+      call msg_flush()
+
+      ! Test AndVerifier with one condition failing
+      verifier2 = ChapterPropsVerifier('output', [ 'NonExistentProperty' ])
+      and_verifier = AndVerifier([ verifier1, verifier2 ])
+      call f90_assert_eq(and_verifier%verify(processor), .false., 'AndVerifier should fail when any sub-verifier fails.')
+
+      call msg_flush()
+   end subroutine
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_text_file_processor, test_x_y_coord, test_x_y_coord,
    subroutine test_x_y_coord() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
