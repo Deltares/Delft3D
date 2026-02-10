@@ -237,7 +237,7 @@ void D3dFlowMapper::StateMachineAdiOrWang(
                 CopySediment(Seq_Zeta);
                 break;
             default:
-                throw new Exception (true, "D3dFlowMapper::StateMachineAdiOrWang: unexpected map request: %s (%d)",
+                throw new Exception("D3dFlowMapper::StateMachineAdiOrWang: unexpected map request: %s (%d)",
                             PrintNextStepName(nextFlowStep),nextFlowStep);
         }
         if (thisMapperStep == D3dFlowMap_Finish)

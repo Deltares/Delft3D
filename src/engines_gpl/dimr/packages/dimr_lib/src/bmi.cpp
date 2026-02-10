@@ -114,7 +114,7 @@ extern "C" {
 
 					if (!getcwd(thisDimr->redirectFile, MAXSTRING))
 					{
-						throw Exception(true, Exception::ERR_OS, "ERROR obtaining the current working directory (init)");
+						throw Exception(Exception::ERR_OS, "ERROR obtaining the current working directory (init)");
 					}
 
 					strcat(thisDimr->redirectFile, thisDimr->dirSeparator);
@@ -145,7 +145,7 @@ extern "C" {
 				conf = fopen(thisDimr->configfile, "r");
 				if (conf == NULL)
 				{
-					throw Exception(true, Exception::ERR_OS, "Cannot open configuration file \"%s\"", thisDimr->configfile);
+					throw Exception(Exception::ERR_OS, "Cannot open configuration file \"%s\"", thisDimr->configfile);
 				}
 			}
 
@@ -180,7 +180,7 @@ extern "C" {
 				int ierr;
 				ierr = MPI_Comm_group(MPI_COMM_WORLD, &thisDimr->mpiGroupWorld);
 				if (ierr != MPI_SUCCESS) {
-					throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot obtain MPI world group. Code: %d.", ierr);
+					throw Exception(Exception::ERR_MPI, "runParallelInit: cannot obtain MPI world group. Code: %d.", ierr);
 				}
 			}
 
@@ -430,7 +430,7 @@ extern "C" {
 		sourceName = slash + 1;
 		if (strlen(sourceName) < 1)
 		{
-			throw Exception(true, Exception::ERR_INVALID_INPUT, "dimr::get_var: No parameter specified. Expecting \"componentName/parameterName\"\n");
+			throw Exception(Exception::ERR_INVALID_INPUT, "dimr::get_var: No parameter specified. Expecting \"componentName/parameterName\"\n");
 		}
 		// Search componentName in the list of components of thisDimr
 		for (int i = 0; i < thisDimr->componentsList.numComponents; i++) {
@@ -440,7 +440,7 @@ extern "C" {
 			}
 		}
 		if (compPtr == NULL) {
-			throw Exception(true, Exception::ERR_INVALID_INPUT, "dimr::get_var: Unrecognized component \"%s\". Expecting \"componentName/parameterName\"\n", componentName);
+			throw Exception(Exception::ERR_INVALID_INPUT, "dimr::get_var: Unrecognized component \"%s\". Expecting \"componentName/parameterName\"\n", componentName);
 		}
 		// Get the pointer to the variable being asked for and put it in argument "ref"
 		double transfer = -999000.0;
@@ -509,7 +509,7 @@ extern "C" {
 			// Assumption: "key" has the structure "componentName/group/id/parameter"
 			if (slash == NULL) {
 				// No component name specified in "key"
-				throw Exception(true, Exception::ERR_INVALID_INPUT, "dimr::set_var: Unrecognized keyword \"%s\"\n", key);
+				throw Exception(Exception::ERR_INVALID_INPUT, "dimr::set_var: Unrecognized keyword \"%s\"\n", key);
 			}
 			// componentName is everything before the first / in key
 			strncpy(componentName, key, slash - key);
@@ -517,7 +517,7 @@ extern "C" {
 			// targetName is everything behind the first / in key
 			targetName = slash + 1;
 			if (strlen(targetName) < 1) {
-				throw Exception(true, Exception::ERR_INVALID_INPUT, "dimr::set_var: No parameter specified. Expecting \"componentName/parameterName\"\n");
+				throw Exception(Exception::ERR_INVALID_INPUT, "dimr::set_var: No parameter specified. Expecting \"componentName/parameterName\"\n");
 			}
 			// Search componentName in the list of components of thisDimr
 			for (int i = 0; i < thisDimr->componentsList.numComponents; i++) {
@@ -527,7 +527,7 @@ extern "C" {
 				}
 			}
 			if (compPtr == NULL) {
-				throw Exception(true, Exception::ERR_INVALID_INPUT, "dimr::set_var: Unrecognized component \"%s\". Expecting \"componentName/parameterName\"\n", componentName);
+				throw Exception(Exception::ERR_INVALID_INPUT, "dimr::set_var: Unrecognized component \"%s\". Expecting \"componentName/parameterName\"\n", componentName);
 			}
 			// Send value to the receiving component
 			thisDimr->receive(targetName,

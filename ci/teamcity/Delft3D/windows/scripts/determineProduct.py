@@ -8,8 +8,8 @@ pr_source_branch = sys.argv[5] if len(sys.argv) > 5 else ""
 
 if product == "auto-select":
     if "pull" in branch:
-        if pr_source_branch.startswith("revert-"):
-            product = "all"
+        if pr_source_branch.startswith("revert-") or pr_source_branch.startswith("dependabot/"):
+            product = "tc"
         else:
             product = pr_source_branch.split("/")[0]
     else:
