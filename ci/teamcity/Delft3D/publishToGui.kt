@@ -40,17 +40,12 @@ object PublishToGui : BuildType({
             cleanOutputDir = false
             publishPackages = true
         }
-        step {
-            name = "Upload artifact to Nexus"
-            type = "NuGetUploadNexusWindows"
-            executionMode = BuildStep.ExecutionMode.DEFAULT
-            param("file_path", "target/Dimr.Libs.%DIMR_nuget_version%.nupkg")
-            param("nexus_repo", "/nuget-release")
-            param("nuget_api_key", "")
-            param("checkout_dir", "%teamcity.build.checkoutDir%")
-            param("harbor_registry_url", "containers.deltares.nl")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
-            param("docker_image_name", "nexus_lifecycle/windows-nuget:latest")
+        nuGetPublish {
+            name = "Publish NuGet artifact to Nexus"
+            toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
+            packages = "target/Dimr.Libs.%DIMR_nuget_version%.nupkg"
+            serverUrl = "https://artifacts.deltares.nl/repository/nuget-release/"
+            apiKey = "%nexus_nuget_apikey%"
         }
         powerShell {
             name = "Set ECModule version"
