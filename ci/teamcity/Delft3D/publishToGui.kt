@@ -95,11 +95,7 @@ object PublishToGui : BuildType({
         nuGetPublish {
             name = "Publish NuGet artifacts to Nexus"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
-            packages = """
-                target/ECModule.Native.%ec_module_version%.nupkg
-                target/Dimr.Libs.%DIMR_nuget_version%.nupkg
-                target/GridGeom.Native.1.1.0.nupkg
-            """.trimIndent()
+            packages = "target/*.nupkg"
             serverUrl = "https://artifacts.deltares.nl/repository/nuget-release/"
             apiKey = "%nexus_nuget_apikey%"
         }
