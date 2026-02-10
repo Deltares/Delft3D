@@ -50,16 +50,16 @@ Category::Category (
     // Validate constructor arguments
 
     if (name == NULL || name[0] == '\0')
-        throw new Exception (true, "Category does not have a name");
+        throw new Exception("Category does not have a name");
     if (strlen (name) >= DD::MAXSTRING)
-        throw new Exception (true, "Category name is too long");
+        throw new Exception("Category name is too long");
     if (dd->categoryDict->Lookup ((char *) name) != (void *) Dictionary::NOTFOUND)
-        throw new Exception (true, "Duplicate category name \"%s\"", name);
+        throw new Exception("Duplicate category name \"%s\"", name);
 
     // Allocate new slot in configuration table
 
     if ((this->id = (int) dd->numCategories++) >= (int) DD::MAXCATEGORIES)
-        throw new Exception (true, "Configuration category table is full (> %d entries)", DD::MAXCATEGORIES);
+        throw new Exception("Configuration category table is full (> %d entries)", DD::MAXCATEGORIES);
 
     this->dd = dd;
     this->name = new char [strlen (name)+1];

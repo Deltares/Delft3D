@@ -82,7 +82,7 @@ InitBarrier_Function (
         int blobtype;
         part[i]->Receive (initBlob, &blobtype);
         if (blobtype != InitBarrier::F2IB_initFinished)
-            throw new Exception (true, "Unexpected message (%d) from Flow %s to InitBarrier",blobtype,part[i]->name);
+            throw new Exception("Unexpected message (%d) from Flow %s to InitBarrier",blobtype,part[i]->name);
         }
 
     // Communicate dummy integer to all participants so they can continue
@@ -112,7 +112,7 @@ INITFINISHED (
 
     Iterator * self = IteratorSelf ();
     if (self == NULL)
-        throw new Exception (true, "Cannot get iterator self in InitFinished");
+        throw new Exception("Cannot get iterator self in InitFinished");
 
     Iterator * initbarIterator = FLOW2D3D->dd->initbar;
 
@@ -128,7 +128,7 @@ INITFINISHED (
     int blobtype;
     initbarIterator->Receive (initBlob, &blobtype);
     if (blobtype != InitBarrier::IB2F_startSimulation)
-        throw new Exception (true, "Unexpected message (%d) in %s from InitBarrier",blobtype,self->name);
+        throw new Exception("Unexpected message (%d) in %s from InitBarrier",blobtype,self->name);
 
     delete initBlob;
     }

@@ -94,7 +94,7 @@ void D3dFlowMapper::InitKc(
                 cI2D(ctx,m,n,kcs) = 3;
                 break;
             default:
-                throw new Exception (true, "unexpected case (%d) InitKc", eq);
+                throw new Exception("unexpected case (%d) InitKc", eq);
             }
         }
 
@@ -253,7 +253,7 @@ void D3dFlowMapper::CheckDDbounds(
                 KcsRight = cI2D(ctx,m+1, n, kcs);
                 if ( (KcsLeft != 0) || (KcsRight != 1 ) )
                 {
-                    throw new Exception (true, "%s\"%s\": Wrong coupling point at (%2d,%2d) Kcs=%d KcsInside=%d",
+                    throw new Exception("%s\"%s\": Wrong coupling point at (%2d,%2d) Kcs=%d KcsInside=%d",
                                 iniErrorMessage, this->C[ctx]->flowIterator->name,
                                 m, n, KcsLeft, KcsRight);
                 }
@@ -265,7 +265,7 @@ void D3dFlowMapper::CheckDDbounds(
                 KcsRight = cI2D(ctx,m  , n, kcs);
                 if ( (KcsLeft != 1) || (KcsRight != 0 ) )
                 {
-                    throw new Exception (true, "%s\"%s\": Wrong coupling point at (%2d,%2d) Kcs=%d KcsInside=%d",
+                    throw new Exception("%s\"%s\": Wrong coupling point at (%2d,%2d) Kcs=%d KcsInside=%d",
                                 iniErrorMessage,this->C[ctx]->flowIterator->name,
                                 m, n, KcsLeft, KcsRight);
                 }
@@ -277,7 +277,7 @@ void D3dFlowMapper::CheckDDbounds(
                 KcsRight = cI2D(ctx,m, n+1, kcs);
                 if ( (KcsLeft != 0) || (KcsRight != 1 ) )
                 {
-                     throw new Exception (true, "%s\"%s\": Wrong coupling point at (%2d,%2d) Kcs=%d KcsInside=%d",
+                     throw new Exception("%s\"%s\": Wrong coupling point at (%2d,%2d) Kcs=%d KcsInside=%d",
                                 iniErrorMessage, this->C[ctx]->flowIterator->name,
                                 m, n, KcsLeft, KcsRight);
                 }
@@ -289,7 +289,7 @@ void D3dFlowMapper::CheckDDbounds(
                 KcsRight = cI2D(ctx,m, n  , kcs);
                 if ( (KcsLeft != 1) || (KcsRight != 0 ) )
                 {
-                    throw new Exception (true, "%s\"%s\": Wrong coupling point at (%2d,%2d) Kcs=%d KcsInside=%d",
+                    throw new Exception("%s\"%s\": Wrong coupling point at (%2d,%2d) Kcs=%d KcsInside=%d",
                                 iniErrorMessage, this->C[ctx]->flowIterator->name,
                                 m, n, KcsLeft, KcsRight);
                 }
@@ -1454,7 +1454,7 @@ void D3dFlowMapper::Build(
 
         default:
 
-            throw new Exception (true, "unexpected case BuildDdEquations");
+            throw new Exception("unexpected case BuildDdEquations");
             break;
         }
     }
@@ -2708,7 +2708,7 @@ int D3dFlowMapper::CheckForDry()
 
     if ( nMess != 2 )
     {
-        throw new Exception (true, "Didn't receive 2 dry messages");
+        throw new Exception("Didn't receive 2 dry messages");
     }
 
     FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "MAPPER \"%s\" calls minimumbarrier (myWet %d)", IteratorSelf()->name, myWet);
