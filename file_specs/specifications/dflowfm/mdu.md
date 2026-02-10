@@ -569,8 +569,8 @@ This section contains the settings for various output files.
 | `comInterval` | Comfile write times, given as 'interval' 'start period' 'end period' w.r.t. `refDate`. | `300.0` |  | [s] |
 | `mapFormat` | Map file format. | `4` | <ul><li>**`1`**: NetCDF</li><li>**`4`**: NetCDF UGRID</li></ul> |  |
 | `ncFormat` | Format for all NetCDF output files. | `3` | <ul><li>**`3`**: classic</li><li>**`4`**: NetCDF4+HDF5</li></ul> |  |
-| `ncMapDataPrecision` | Precision for NetCDF data in map files (double or single). | `double` | <ul><li>**`double`**: double precision</li><li>**`single`**: single precision</li></ul> |  |
-| `ncHisDataPrecision` | Precision for NetCDF data in his files (double or single). | `double` | <ul><li>**`double`**: double precision</li><li>**`single`**: single precision</li></ul> |  |
+| `ncMapDataPrecision` | Precision for NetCDF data in map files (double or single). | `single` | <ul><li>**`double`**: double precision</li><li>**`single`**: single precision</li></ul> |  |
+| `ncHisDataPrecision` | Precision for NetCDF data in his files (double or single). | `single` | <ul><li>**`double`**: double precision</li><li>**`single`**: single precision</li></ul> |  |
 | `ncCompression` | Apply compression to NetCDF output files. Only works when `ncFormat`=4. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `ncNoUnlimited` | Write full-length time-dimension instead of unlimited dimension. Might require `ncFormat`=4. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `ncNoForcedFlush` | Do not force flushing of map-like files every output timestep. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |

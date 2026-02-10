@@ -3343,7 +3343,7 @@
                 },
                 {
                     "key": "ncMapDataPrecision",
-                    "default_value": "double",
+                    "default_value": "single",
                     "value_type": "enum",
                     "description": "Precision for NetCDF data in map files (double or single).",
                     "enum_values": {
@@ -3353,7 +3353,7 @@
                 },
                 {
                     "key": "ncHisDataPrecision",
-                    "default_value": "double",
+                    "default_value": "single",
                     "value_type": "enum",
                     "description": "Precision for NetCDF data in his files (double or single).",
                     "enum_values": {
