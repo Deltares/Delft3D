@@ -69,7 +69,7 @@ cffi==2.0.0
     #   argon2-cffi-bindings
     #   cryptography
     #   pygit2
-cftime==1.6.4
+cftime==1.6.5
     # via netcdf4
 charset-normalizer==3.3.2
     # via requests
