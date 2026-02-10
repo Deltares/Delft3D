@@ -183,7 +183,7 @@ idna==3.7
     # via
     #   requests
     #   yarl
-iniconfig==2.0.0
+iniconfig==2.3.0
     # via pytest
 iterative-telemetry==0.0.10
     # via dvc
