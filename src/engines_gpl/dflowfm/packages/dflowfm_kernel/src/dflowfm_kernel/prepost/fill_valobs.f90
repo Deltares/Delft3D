@@ -240,7 +240,7 @@ contains
 
             valobs(i, :) = dmiss ! Intended to have dmiss on inactive layers for output.
             ! Fill valobs: Start with interpolateds values of hydrodynamic quantities needed for off-line nesting
-            !              (water levells, velocities, sality and temperature). Treat other quanitities (water quality, morpholgy, turbulence) as before (snapped)
+            !              (water levels, velocities, salinity and temperature). Treat other quantities (water quality, morphology, turbulence) as before (snapped)
             !
             ! Water levels
             
@@ -785,7 +785,7 @@ contains
           oneDown   = 1
       end if
 
-      ! Determine start and stop layer nr for interpolated values
+      ! Determine lowest and highest layer numbers needed for horizontal interpolation.
       kstart = minval(nlayb_tmp)
       kstop  = maxval(nlayb_tmp + nrlay_tmp - 1)
 
