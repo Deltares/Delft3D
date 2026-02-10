@@ -2,6 +2,7 @@ module text_file_processor
    use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARN, LEVEL_INFO
    use properties
    use tree_data_types
+   use string_module, only: str_tolower
 
    implicit none
 
@@ -47,6 +48,15 @@ module text_file_processor
       procedure :: verify => and_verifier_verify
    end type AndVerifier 
 
+   type, extends(TextFileProcessorVerifier) :: ArraysLengthVerifier
+      character(len=:), allocatable :: property_names(:)
+      character(len=:), allocatable :: chapter_name
+      integer :: expected_length
+      logical :: check_specific_length
+   contains
+      procedure :: verify => arrays_length_verifier_verify
+   end type ArraysLengthVerifier
+
    interface ChapterPropsVerifier
       module procedure :: string_array_verifier_constructor
    end interface ChapterPropsVerifier
@@ -54,6 +64,10 @@ module text_file_processor
    interface AndVerifier
       module procedure :: and_verifier_constructor
    end interface AndVerifier
+
+   interface ArraysLengthVerifier
+      module procedure :: arrays_length_verifier_constructor
+   end interface ArraysLengthVerifier
 
 contains
 
@@ -84,6 +98,25 @@ contains
       
       allocate(verifier%verifiers, source=verifiers)
    end function and_verifier_constructor
+
+   !> Constructor for ArraysLengthVerifier
+   function arrays_length_verifier_constructor(chapter_name, property_names, expected_length) result(verifier)
+      character(len=*), intent(in) :: chapter_name
+      character(len=*), intent(in) :: property_names(:)
+      integer, intent(in), optional :: expected_length
+      type(ArraysLengthVerifier) :: verifier
+      
+      allocate(verifier%property_names, source=property_names)
+      verifier%chapter_name = chapter_name
+      
+      if (present(expected_length)) then
+         verifier%expected_length = expected_length
+         verifier%check_specific_length = .true.
+      else
+         verifier%expected_length = -1
+         verifier%check_specific_length = .false.
+      end if
+   end function arrays_length_verifier_constructor
 
    !> Initialize method
    subroutine text_file_processor_init(this)
@@ -178,5 +211,100 @@ contains
       end if
 
    end function and_verifier_verify
+
+   !> ArraysLengthVerifier implementation - verifies all specified arrays have consistent length
+   function arrays_length_verifier_verify(this, processor) result(is_valid)
+      class(ArraysLengthVerifier), intent(in) :: this
+      type(TextFileProcessor), intent(in) :: processor
+      logical :: is_valid
+      integer :: i, j
+      integer :: num_items_in_file
+      integer :: first_length, current_length
+      type(tree_data), pointer :: block_ptr
+      character(len=:), allocatable :: group_name
+      logical :: found
+      integer :: num_values
+      character(len=:), allocatable :: value
+      
+      is_valid = .not. processor%is_error
+      if (.not. is_valid) return
+      
+      num_items_in_file = tree_num_nodes(processor%tree)
+      first_length = -1
+      
+      ! Find the chapter and check array lengths
+      if (allocated(this%property_names)) then
+         do i = 1, num_items_in_file
+            block_ptr => processor%tree%child_nodes(i)%node_ptr
+            group_name = trim(tree_get_name(block_ptr))
+            
+            if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower(this%chapter_name)))) then
+               do j = 1, size(this%property_names)
+                  ! Get the number of values for this property
+                  call prop_get_alloc_string(block_ptr, this%chapter_name, this%property_names(j), value, found)
+                  if (found ) then
+                     num_values = count_string_elements(value)
+                     DEALLOCATE(value)
+
+                     if (num_values <= 0) then
+                        write (msgbuf, '(a,a,a)') 'Property empty: ', trim(this%property_names(j)), '.'
+                        is_valid = .false.
+                        return
+                     end if
+                     
+                     current_length = num_values
+                     
+                     ! Store first length or compare against it
+                     if (first_length == -1) then
+                        first_length = current_length
+                     else if (current_length /= first_length) then
+                        write (msgbuf, '(a,a,a,i0,a,i0,a)') 'Array length mismatch for property: ', &
+                           trim(this%property_names(j)), '. Expected ', first_length, ' but got ', current_length, '.'
+                        is_valid = .false.
+                        return
+                     end if
+
+                  end if
+                  
+               end do
+               
+               ! If checking for specific length, verify it
+               if (this%check_specific_length .and. first_length /= this%expected_length) then
+                  write (msgbuf, '(a,i0,a,i0,a)') 'Array length mismatch. Expected ', &
+                       this%expected_length, ' but got ', first_length, '.'
+                  is_valid = .false.
+                  return
+               end if
+               
+               exit  ! Found the chapter, done checking
+            end if
+         end do
+      end if
+      
+   end function arrays_length_verifier_verify
+
+   !> Count the number of space/tab-separated elements in a string
+   function count_string_elements(input_string) result(count)
+      character(len=*), intent(in) :: input_string
+      integer :: count
+      integer :: i, len_str
+      logical :: in_element
+
+      count = 0
+      in_element = .false.
+      len_str = len_trim(input_string)
+
+      do i = 1, len_str
+         if (input_string(i:i) /= ' ' .and. input_string(i:i) /= char(9)) then
+            if (.not. in_element) then
+               count = count + 1
+               in_element = .true.
+            end if
+         else
+            in_element = .false.
+         end if
+      end do
+
+   end function count_string_elements
 
 end module text_file_processor

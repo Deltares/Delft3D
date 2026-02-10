@@ -1,10 +1,10 @@
 # written by HYDROLIB-core 0.9.2
 
-[SourceSink]
+[BlockXYBad]
 id               = leftsor
 name             = discharge_salinity_temperature_sorsin
 numCoordinates   = 3
-xCoordinates     = 63.350456 45.200344
+xCoordinates     = 63.350456 45.200344 45.200344
 yCoordinates     = 12.950216 6.350155
 zSource          = -4.2
 zSink            = -4.2
@@ -13,7 +13,7 @@ salinityDelta    = leftsor.bc
 temperatureDelta = leftsor.bc
 
 
-[SourceSink]
+[BlockXYMissing]
 id               = leftsor
 name             = discharge_salinity_temperature_sorsin
 numCoordinates   = 3
@@ -24,3 +24,15 @@ discharge        = leftsor.bc
 salinityDelta    = leftsor.bc
 temperatureDelta = leftsor.bc
 
+
+[BlockXYGood]
+id               = leftsor
+name             = discharge_salinity_temperature_sorsin
+numCoordinates   = 3
+yCoordinates     = 12.950216 6.350155
+xCoordinates     = 12.950216 6.350155
+zSource          = -4.2
+zSink            = -4.2
+discharge        = leftsor.bc
+salinityDelta    = leftsor.bc
+temperatureDelta = leftsor.bc

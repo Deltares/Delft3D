@@ -132,15 +132,12 @@ contains
    !$f90tw TESTCODE(TEST, test_text_file_processor, test_x_y_coord, test_x_y_coord,
    subroutine test_x_y_coord() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
-      use text_file_processor, only: TextFileProcessor, ChapterPropsVerifier
+      use text_file_processor
 
       type(TextFileProcessor) :: processor
-      type(ChapterPropsVerifier) :: verifier
+      class(TextFileProcessorVerifier), allocatable :: verifier
       character(len=:), allocatable :: required_strings(:)
       character(len=1024) :: cwd_string
-
-      required_strings = [ 'xCoordinates' ]
-      verifier = ChapterPropsVerifier('SourceSink', required_strings)
 
       processor = TextFileProcessor('sorsin3D-new.ext')
       call processor%init()
@@ -150,9 +147,11 @@ contains
 
       call processor%parse()
 
-      ! Verify required strings
-      call f90_assert_eq(verifier%verify(processor), .true., 'All required strings should be present in the file.')
+      verifier  = ArraysLengthVerifier('BlockXYBad', [ 'xCoordinates', 'yCoordinates' ])
+      call f90_assert_eq(verifier%verify(processor), .false., 'All xCoordinates and yCoordinates have the same length.')
 
+      verifier  = ArraysLengthVerifier('BlockXYGood', [ 'xCoordinates', 'yCoordinates' ])
+      call f90_assert_eq(verifier%verify(processor), .true., 'All xCoordinates and yCoordinates have the same length.')
 
       call msg_flush()
    end subroutine
