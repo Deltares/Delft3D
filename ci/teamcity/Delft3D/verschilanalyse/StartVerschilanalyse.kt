@@ -115,11 +115,6 @@ object StartVerschilanalyse : BuildType({
             commands = """
                 set -eo pipefail
 
-                rm -rf bundle
-                mkdir bundle
-                tar -xzvf bundle.tar.gz -C bundle
-                rm -f bundle.tar.gz
-
                 export TEAMCITY_SERVER_URL='${DslContext.serverUrl.replace(Regex("/+$"), "")}'
                 export VCS_ROOT_ID='${DslContext.settingsRoot.id}'
                 export VCS_REVISION='%build.vcs.number%'
@@ -129,7 +124,15 @@ object StartVerschilanalyse : BuildType({
                 export BRANCH_NAME='%teamcity.build.branch%'
                 export SEND_EMAIL='%send_email%'
 
-                pushd bundle
+                bundle_dir="/p/devops-dsc/verschilanalyse/builds/${'$'}{BUILD_ID}/bundle"
+                echo "${'$'}{bundle_dir}"
+
+                rm -rf bundle_dir
+                mkdir bundle_dir
+                tar -xzvf bundle.tar.gz -C bundle_dir
+                rm -f bundle.tar.gz
+
+                pushd bundle_dir
                 ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
