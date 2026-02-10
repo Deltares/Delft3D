@@ -131,14 +131,14 @@ object StartVerschilanalyse : BuildType({
                 tar -xzvf bundle.tar.gz -C "${'$'}{bundle_dir}"
                 rm -f bundle.tar.gz
 
-                #pushd "${'$'}{bundle_dir}"
-                #./start_verschilanalyse.sh \
-                #    --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
-                #    --current-prefix='%current_prefix%' \
-                #    --reference-prefix='%reference_prefix%' \
-                #    --models-path='%models_path%' \
-                #    --model-filter='%model_filter%'
-                #popd
+                pushd "${'$'}{bundle_dir}"
+                ./start_verschilanalyse.sh \
+                    --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
+                    --current-prefix='%current_prefix%' \
+                    --reference-prefix='%reference_prefix%' \
+                    --models-path='%models_path%' \
+                    --model-filter='%model_filter%'
+                popd
             """.trimIndent()
             targetUrl = "h7.directory.intra"
             authMethod = password {
