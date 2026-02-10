@@ -74,7 +74,7 @@ contains
         ! Compute vertical distribution for each flow cell
         do i_flow_cell = 1, bubblescreen%num_flow_cells
             flow_cell = bubblescreen%flow_cells(i_flow_cell)
-            n = flow_cell%cell_index
+            n = flow_cell%flowcell_start_index
 
             ! Compute maximum downward vertical velocity based on area fraction
             area_fraction = ba(n) / total_area
@@ -125,7 +125,7 @@ contains
         area = 0.0_dp
 
         do i = 1, bubblescreen%num_flow_cells
-            area = area + ba(bubblescreen%flow_cells(i)%cell_index)
+            area = area + ba(bubblescreen%flow_cells(i)%flowcell_start_index)
         end do
 
     end function compute_bubblescreen_area
@@ -361,17 +361,17 @@ contains
         integer :: k_global !< Global layer index
 
         do k_local = 1, kmx
-            k_global = k_local + kbot(flow_cell%cell_index) - 1 ! Convert local layer index to global layer index
+            k_global = k_local + kbot(flow_cell%flowcell_start_index) - 1 ! Convert local layer index to global layer index
 
             ! Set source/sink as source or sink depending on the sign of the discharge
-            call set_source_or_sink_for_bubblescreen(discharge_water(k_local), flow_cell%start_index + k_local - 1)
+            call set_source_or_sink_for_bubblescreen(discharge_water(k_local), flow_cell%flowcell_start_index + k_local - 1)
 
             ! Write water discharge to source/sink discharge array
-            qstss((1+numconst)*(flow_cell%start_index + k_local - 2) + 1) = abs(discharge_water(k_local))
+            qstss((1+numconst)*(flow_cell%flowcell_start_index + k_local - 2) + 1) = abs(discharge_water(k_local))
 
             ! Write constituent discharges to source/sink discharge array
             do i = 1, numconst
-                qstss((1+numconst)*(flow_cell%start_index + k_local - 2) + i + 1) = discharge_constituents(i, k_local)
+                qstss((1+numconst)*(flow_cell%flowcell_start_index + k_local - 2) + i + 1) = discharge_constituents(i, k_local)
             end do
         end do
 

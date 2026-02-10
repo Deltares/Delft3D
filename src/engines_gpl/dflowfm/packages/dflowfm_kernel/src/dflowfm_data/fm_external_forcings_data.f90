@@ -401,7 +401,7 @@ module fm_external_forcings_data
       integer :: npl !< number of polyline points
       real(kind=dp), dimension(:), allocatable :: xpl !< x - polyline points
       real(kind=dp), dimension(:), allocatable :: ypl !< y - polyline points
-      integer :: z !< z - level for bubble screen
+      real(kind=dp) :: z_level !< z - level for bubble screen
 
    end type t_Bubblescreen
    type (t_Bubblescreen), dimension(:), allocatable, target :: bubblescreens !< bubble screen data

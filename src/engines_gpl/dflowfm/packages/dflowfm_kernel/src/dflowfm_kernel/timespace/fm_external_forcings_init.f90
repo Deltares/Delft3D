@@ -1186,7 +1186,7 @@ contains
 
                bubblescreen%xpl = xpl(1:npl_tmp)
                bubblescreen%ypl = ypl(1:npl_tmp)
-               bubblescreen%z = zpl(1)
+               bubblescreen%z_level = zpl(1)
                call restorepol()
 
                call find_cells_crossed_by_polyline(bubblescreen%xpl, bubblescreen%ypl, crossed_cells, error)
@@ -1231,7 +1231,6 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_transport, only: numconst
       use m_bubblescreen
       use m_setsorsin
 
@@ -1243,35 +1242,19 @@ contains
 
       ! Local variables
       logical :: is_successful !< Success flag
-      integer :: file_pointer !< File pointer for reading polygon file
       integer :: cidx !< Index for crossed cells
-      integer :: i !< Loop indices
+      integer :: i, bi !< Loop indices
       integer :: ierr !< Error code
-      integer :: npl_tmp !< Temporary variable to store number of polygon points
       integer :: bubble_source_count
-      integer :: kstart !< Starting vertical index for bubblescreen sources/sinks in a cell
-      integer :: kend !< Ending vertical index for bubblescreen sources/sinks in a cell
-      integer, dimension(:), allocatable :: crossed_cells !< Indices of crossed cells in network_data::netcells
+
       real(kind=dp) :: tmsx !< Temporary x-coordinate for bubblescreen source/sink
       real(kind=dp) :: tmsy !< Temporary y-coordinate for bubblescreen source/sink
-      real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
-      real(kind=dp), dimension(:), allocatable :: xpl_tmp !< Temporary array to store polygon x-coordinates
-      real(kind=dp), dimension(:), allocatable :: ypl_tmp !< Temporary array to store polygon y-coordinates
-      real(kind=dp), dimension(:), allocatable :: zpl_tmp !< Temporary array to store polygon z-coordinates
+
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
-      character, dimension(:), allocatable :: error !< Error message
-      type(t_BubbleScreen) :: bubblescreen !< Bubblescreen data structure
-
-      logical :: is_successful
-      type(tface) :: tmcell
-      integer :: cidx, i, ierr, bi
-      real(kind=dp) :: tmsx, tmsy
-      integer :: bubble_source_count = 0
-
-      type(t_Bubblescreen), pointer :: bubblescreen
+      type(t_BubbleScreen), pointer :: bubblescreen !< Bubblescreen data structure
 
       is_successful = .false.
       bubble_source_count = 0
@@ -1294,8 +1277,8 @@ contains
          
          do cidx = 1, size(bubblescreen%flow_cells)
             ! For each crossed cell, create a bubblescreen source/sink object
-            tmsx = xzw(bubblescreen%flow_cells(cidx))
-            tmsy = yzw(bubblescreen%flow_cells(cidx))
+            tmsx = xzw(bubblescreen%flow_cells(cidx)%netcell_index)
+            tmsy = yzw(bubblescreen%flow_cells(cidx)%netcell_index)
 
             bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
             do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
@@ -1312,8 +1295,7 @@ contains
             end do
 
             ! Fill in remaining bubblescreen flow cell data
-            bubblescreen%flow_cells(cidx)%cell_index = crossed_cells(cidx)
-            bubblescreen%flow_cells(cidx)%num_sources_sinks = bubble_source_count
+            bubblescreen%flow_cells(cidx)%num_source_sinks = bubble_source_count
 
          end do
       end if
