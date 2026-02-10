@@ -127,19 +127,19 @@ object StartVerschilanalyse : BuildType({
                 bundle_dir="/p/devops-dsc/verschilanalyse/builds/${'$'}{BUILD_ID}/bundle"
                 echo "${'$'}{bundle_dir}"
 
-                rm -rf bundle_dir
-                mkdir bundle_dir
-                tar -xzvf bundle.tar.gz -C bundle_dir
-                rm -f bundle.tar.gz
+                // rm -rf bundle_dir
+                // mkdir bundle_dir
+                // tar -xzvf bundle.tar.gz -C bundle_dir
+                // rm -f bundle.tar.gz
 
-                pushd bundle_dir
-                ./start_verschilanalyse.sh \
-                    --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
-                    --current-prefix='%current_prefix%' \
-                    --reference-prefix='%reference_prefix%' \
-                    --models-path='%models_path%' \
-                    --model-filter='%model_filter%'
-                popd
+                // pushd bundle_dir
+                // ./start_verschilanalyse.sh \
+                //     --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
+                //     --current-prefix='%current_prefix%' \
+                //     --reference-prefix='%reference_prefix%' \
+                //     --models-path='%models_path%' \
+                //     --model-filter='%model_filter%'
+                // popd
             """.trimIndent()
             targetUrl = "h7.directory.intra"
             authMethod = password {
