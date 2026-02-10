@@ -125,7 +125,8 @@ object StartVerschilanalyse : BuildType({
                 export SEND_EMAIL='%send_email%'
 
                 bundle_dir="/p/devops-dsc/verschilanalyse/builds/${'$'}{BUILD_ID}/bundle"
-                echo "${'$'}{bundle_dir}"
+                echo "bundle dir: ${'$'}{bundle_dir}"
+                mkdir -p "${'$'}{bundle_dir}"
 
                 // rm -rf bundle_dir
                 // mkdir bundle_dir
