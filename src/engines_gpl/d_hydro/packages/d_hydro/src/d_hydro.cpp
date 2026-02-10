@@ -193,14 +193,14 @@ DeltaresHydro::DeltaresHydro (
         switch (c) {
             case 'd': {
                 if (sscanf (optarg, "%i", &logMask) != 1)
-                    throw new Exception (true, "Invalid log mask (-d option)");
+                    throw new Exception("Invalid log mask (-d option)");
                 break;
                 }
 
             case 'l': {
                 logFile = fopen (optarg, "w");
                 if (logFile == NULL)
-                    throw new Exception (true, "Cannot create log file \"%s\"", optarg);
+                    throw new Exception("Cannot create log file \"%s\"", optarg);
 
                 break;
                 }
@@ -223,13 +223,13 @@ DeltaresHydro::DeltaresHydro (
                 }
 
             default: {
-                throw new Exception (true, "Invalid command-line argument.  Execute \"%s -?\" for command-line syntax", this->exeName);
+                throw new Exception("Invalid command-line argument.  Execute \"%s -?\" for command-line syntax", this->exeName);
                 }
             }
         }
 
     if (argc - optind != 1)
-        throw new Exception (true, "Improper usage.  Execute \"%s -?\" for command-line syntax", this->exeName);
+        throw new Exception("Improper usage.  Execute \"%s -?\" for command-line syntax", this->exeName);
 
     this->clock = new Clock ();
     this->log = new Log (logFile, this->clock, logMask);
@@ -243,7 +243,7 @@ DeltaresHydro::DeltaresHydro (
     else {
         conf = fopen (this->configfile, "r");
         if (conf == NULL)
-            throw new Exception (true, "Cannot open configuration file \"%s\"", this->configfile);
+            throw new Exception("Cannot open configuration file \"%s\"", this->configfile);
         }
 
     this->config = new XmlTree (conf);
@@ -255,14 +255,14 @@ DeltaresHydro::DeltaresHydro (
 
     XmlTree * root = this->config->Lookup ("/deltaresHydro");
     if (root == NULL)
-        throw new Exception (true, "Configuration file \"%s\" does not have a deltaresHydro root element", this->configfile);
+        throw new Exception("Configuration file \"%s\" does not have a deltaresHydro root element", this->configfile);
 
     // ToDo: Process control element
 
     const char * startName = "flow2D3D";
     this->start = root->Lookup (startName);
     if (this->start == NULL)
-        throw new Exception (true, "Configuration element for start component \"%s\" is missing", startName);
+        throw new Exception("Configuration element for start component \"%s\" is missing", startName);
 
 #if defined (MONOLITHIC_FLOW2D3D)
     //  ToDo: make sure the start component is Flow2D3D.
@@ -280,7 +280,7 @@ DeltaresHydro::DeltaresHydro (
 
     XmlTree * libraryElement = this->start->Lookup ("library");
     if (libraryElement == NULL)
-        throw new Exception (true, "The start component \"%s\" does not contain a library element", startName);
+        throw new Exception("The start component \"%s\" does not contain a library element", startName);
 
     const char * library = libraryElement->charData;
 
@@ -291,7 +291,7 @@ DeltaresHydro::DeltaresHydro (
 #if defined (HAVE_CONFIG_H)
 #if defined (OSX)
     // Macintosh:VERY SIMILAR TO LINUX
-    throw new Exception (true, "ABORT: %s has not be ported to Apple Mac OS/X yet", this->exeName);
+    throw new Exception("ABORT: %s has not be ported to Apple Mac OS/X yet", this->exeName);
 
 #else
     // LINUX
@@ -305,11 +305,11 @@ DeltaresHydro::DeltaresHydro (
 
     void * handle = dlopen (library, RTLD_LAZY);
     if (handle == NULL)
-        throw new Exception (true, "Cannot load component library \"%s\": %s", library, dlerror ());
+        throw new Exception("Cannot load component library \"%s\": %s", library, dlerror ());
 
     StartComponentEntry entryPoint = (StartComponentEntry) dlsym (handle, this->startEntry);
     if (entryPoint == NULL)
-        throw new Exception (true, "Cannot find function \"%s\" in library \"%s\"", this->startEntry, library);
+        throw new Exception("Cannot find function \"%s\" in library \"%s\"", this->startEntry, library);
 
     this->log->Write (Log::DETAIL, "Calling entry function in start library");
     this->ready = entryPoint (this);
@@ -325,12 +325,12 @@ DeltaresHydro::DeltaresHydro (
 
     HINSTANCE dllhandle = LoadLibrary (LPCSTR(library));
     if (dllhandle == NULL)
-        throw new Exception (true, "Cannot load component library \"%s\". Return code: %d", library, GetLastError());
+        throw new Exception("Cannot load component library \"%s\". Return code: %d", library, GetLastError());
 
     typedef int (__cdecl *MYPROC)(LPWSTR);
     MYPROC entryPoint = (MYPROC) GetProcAddress (dllhandle, this->startEntry);
     if (entryPoint == NULL)
-        throw new Exception (true, "Cannot find function \"%s\" in library \"%s\". Return code: %d", this->startEntry, library, GetLastError());
+        throw new Exception("Cannot find function \"%s\" in library \"%s\". Return code: %d", this->startEntry, library, GetLastError());
 
     this->log->Write (Log::DETAIL, "Calling entry function in start library");
     this->ready = ((entryPoint) ((LPWSTR) this));
