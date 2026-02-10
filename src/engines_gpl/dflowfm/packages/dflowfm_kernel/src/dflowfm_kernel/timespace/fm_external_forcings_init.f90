@@ -1164,7 +1164,6 @@ contains
       real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
       real(kind=dp), dimension(:), allocatable :: xpl_tmp !< Temporary array to store polygon x-coordinates
       real(kind=dp), dimension(:), allocatable :: ypl_tmp !< Temporary array to store polygon y-coordinates
-      real(kind=dp), dimension(:), allocatable :: zpl_tmp !< Temporary array to store polygon z-coordinates
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
@@ -1177,7 +1176,7 @@ contains
       bubble_source_count = 0
 
       ! Read bubble screen attributes from the tree node
-      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
+      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
       allocate(character(len=len_trim(id)+50) :: srcid)
 
       ! Read and initialize polygon data from location_file
@@ -1188,12 +1187,8 @@ contains
       npl_tmp = npl
       allocate(xpl_tmp(npl_tmp))
       allocate(ypl_tmp(npl_tmp))
-      allocate(zpl_tmp(npl_tmp))
       xpl_tmp = xpl(1:npl_tmp)
       ypl_tmp = ypl(1:npl_tmp)
-      zpl_tmp = zpl(1:npl_tmp)
-
-      bubblescreen%z_level = zpl_tmp(1) ! Assume all polygon points have the same z-coordinate
 
       call find_cells_crossed_by_polyline(xpl_tmp, ypl_tmp, crossed_cells, error)
 
