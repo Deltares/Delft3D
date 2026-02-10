@@ -1044,7 +1044,7 @@ contains
 
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
