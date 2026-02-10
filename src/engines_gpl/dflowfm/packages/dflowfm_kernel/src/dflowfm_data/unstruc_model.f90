@@ -44,7 +44,7 @@ module unstruc_model
    use properties, only: prop_get, prop_file, tree_create, tree_destroy, max_prop_length
    use m_waveconst
 
-   implicit none
+   implicit none(external)
 
    !> The version number of the MDU File format: d.dd, [config_major].[config_minor], e.g., 1.03
     !!
@@ -428,6 +428,7 @@ contains
       use m_realan, only: realan
       use m_filez, only: oldfil
       use unstruc_messages, only: threshold_abort
+      use m_readCrossSections, only: readCrossSectionDefinitions
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
@@ -479,11 +480,19 @@ contains
       network%sferic = jsferic == 1
 
       threshold_abort = LEVEL_FATAL
-      if (istat == 0 .and. jadoorladen == 0 .and. network%numk > 0 .and. network%numl > 0) then
-         timerHandle = 0
-         call timstrt('Read 1d attributes', timerHandle)
-         call read_1d_attributes(md_1dfiles, network)
-         call timstop(timerHandle)
+      if (istat == 0 .and. jadoorladen == 0) then
+         if (network%numk > 0 .and. network%numl > 0) then
+            timerHandle = 0
+            call timstrt('Read 1d attributes', timerHandle)
+            call read_1d_attributes(md_1dfiles, network)
+            call timstop(timerHandle)
+            ! Always read cross section definitions if specified (needed for long culverts)
+         else if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
+            call readCrossSectionDefinitions(network, md_1dfiles%cross_section_definitions)
+            if (network%CSDefinitions%Count < 1) then
+               call SetMessage(LEVEL_WARN, 'No Cross_Section Definitions Found in file '//trim(md_1dfiles%cross_section_definitions))
+            end if
+         end if
       end if
 
       timerHandle = 0
