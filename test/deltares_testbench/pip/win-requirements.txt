@@ -303,7 +303,7 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-dotenv==1.2.1
     # via pydantic-settings
-pytz==2024.1
+pytz==2025.2
     # via pandas
 pywin32==310
     # via
