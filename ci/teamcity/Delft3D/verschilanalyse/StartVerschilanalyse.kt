@@ -127,7 +127,7 @@ object StartVerschilanalyse : BuildType({
                 bundle_dir="/p/devops-dsc/verschilanalyse/builds/${'$'}{BUILD_ID}/bundle"
                 echo "bundle dir: ${'$'}{bundle_dir}"
                 rm -rf "${'$'}{bundle_dir}"
-                mkdir "${'$'}{bundle_dir}"
+                mkdir -p "${'$'}{bundle_dir}"
                 tar -xzvf bundle.tar.gz -C "${'$'}{bundle_dir}"
                 rm -f bundle.tar.gz
 
