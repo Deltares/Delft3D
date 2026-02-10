@@ -51,7 +51,7 @@ module text_file_processor
    type, extends(TextFileProcessorVerifier) :: ArraysLengthVerifier
       character(len=:), allocatable :: property_names(:)
       character(len=:), allocatable :: chapter_name
-      integer :: expected_length
+      character(len=:), allocatable :: expected_length
       logical :: check_specific_length
    contains
       procedure :: verify => arrays_length_verifier_verify
@@ -103,7 +103,7 @@ contains
    function arrays_length_verifier_constructor(chapter_name, property_names, expected_length) result(verifier)
       character(len=*), intent(in) :: chapter_name
       character(len=*), intent(in) :: property_names(:)
-      integer, intent(in), optional :: expected_length
+      character(len=*), intent(in), optional :: expected_length
       type(ArraysLengthVerifier) :: verifier
       
       allocate(verifier%property_names, source=property_names)
@@ -113,7 +113,6 @@ contains
          verifier%expected_length = expected_length
          verifier%check_specific_length = .true.
       else
-         verifier%expected_length = -1
          verifier%check_specific_length = .false.
       end if
    end function arrays_length_verifier_constructor
@@ -223,8 +222,10 @@ contains
       type(tree_data), pointer :: block_ptr
       character(len=:), allocatable :: group_name
       logical :: found
+      logical :: anything_found
       integer :: num_values
       character(len=:), allocatable :: value
+      integer :: read_expected_length
       
       is_valid = .not. processor%is_error
       if (.not. is_valid) return
@@ -239,10 +240,20 @@ contains
             group_name = trim(tree_get_name(block_ptr))
             
             if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower(this%chapter_name)))) then
+               if (this%check_specific_length) then
+                  read_expected_length = 0
+                  call prop_get(block_ptr, '', this%expected_length, read_expected_length, found)
+                  if (.not. found) then
+                     write (msgbuf, '(a,a,a)') 'Expected length property not found: ', trim(this%expected_length), '.'
+                     is_valid = .false.
+                     return
+                  end if
+               end if
                do j = 1, size(this%property_names)
                   ! Get the number of values for this property
-                  call prop_get_alloc_string(block_ptr, this%chapter_name, this%property_names(j), value, found)
+                  call prop_get_alloc_string(block_ptr, '', this%property_names(j), value, found)
                   if (found ) then
+                     anything_found = .true.
                      num_values = count_string_elements(value)
                      DEALLOCATE(value)
 
@@ -269,9 +280,9 @@ contains
                end do
                
                ! If checking for specific length, verify it
-               if (this%check_specific_length .and. first_length /= this%expected_length) then
+               if (anything_found .and. this%check_specific_length .and. first_length /= read_expected_length) then
                   write (msgbuf, '(a,i0,a,i0,a)') 'Array length mismatch. Expected ', &
-                       this%expected_length, ' but got ', first_length, '.'
+                       read_expected_length, ' but got ', first_length, '.'
                   is_valid = .false.
                   return
                end if
