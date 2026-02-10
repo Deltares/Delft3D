@@ -171,6 +171,8 @@ contains
             !
             ! Note: including the horizontal exchanges fails, unclear why.
             ! Hence commented out.
+            ! It may still be useful (when repaired) to refine the estimate of
+            ! how much sediment can be deposited per timestep.
             !
             ! Handle "from" segment
             !
@@ -446,7 +448,6 @@ contains
         IP14 = IPOINT(14)
         IP15 = IPOINT(15)
         IP16 = IPOINT(16)
-        IP17 = IPOINT(17)
         IP17 = IPOINT(17)
         IP18 = IPOINT(18)
         IP19 = IPOINT(19)
