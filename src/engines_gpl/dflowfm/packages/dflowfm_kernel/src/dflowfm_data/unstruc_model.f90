@@ -1945,7 +1945,9 @@ contains
       end if
 
       call prop_get(md_ptr, 'output', 'MapFormat', md_mapformat, success)
-      if (md_mapformat == IFORMAT_TECPLOT) then
+      if (md_mapformat == IFORMAT_NETCDF) then
+         call mess(LEVEL_WARN, 'MapFormat = 1 (NetCDF) does not support single precision output, output will be in double precision. Consider upgrading to MapFormat=4 (UGRID) for single precision output support.')
+      else if (md_mapformat == IFORMAT_TECPLOT) then
          call mess(LEVEL_ERROR, 'MapFormat = 2 (Tecplot) is no longer supported. Please use MapFormat=4 (UGRID).')
       else if (md_mapformat == IFORMAT_NETCDF_AND_TECPLOT) then
          call mess(LEVEL_ERROR, 'MapFormat = 3 (NetCDF and Tecplot) is no longer supported. Please use MapFormat=4 (UGRID).')
