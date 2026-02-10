@@ -34,8 +34,6 @@ module m_map_his_precision
    
    public netcdf_data_type
 
-   ! character(len=128), public :: md_nc_map_precision = 'double' !< NetCDF data precision in map files ('double', 'single' or 'float')
-   ! character(len=128), public :: md_nc_his_precision = 'double' !< NetCDF data precision in his files ('double', 'single' or 'float')
    character(len=128), public :: md_nc_map_precision = 'single' !< NetCDF data precision in map files ('double', 'single' or 'float')
    character(len=128), public :: md_nc_his_precision = 'single' !< NetCDF data precision in his files ('double', 'single' or 'float')
 
