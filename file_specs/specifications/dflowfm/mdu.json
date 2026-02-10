@@ -2343,6 +2343,13 @@
                     "status": "research"
                 },
                 {
+                    "key": "freeConvectionCoefficient",
+                    "default_value": 0.14,
+                    "value_type": "float",
+                    "description": "Free convection turbulence coefficient.",
+                    "status": "research"
+                },
+                {
                     "key": "uniffrictcoef1dgrlay",
                     "value_type": "float",
                     "description": "Uniform ground layer friction coefficient for ocean models.",
