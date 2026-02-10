@@ -551,7 +551,7 @@ contains
         end do
         network%loaded = .true.
         
-        call getprof_1D(1, 3.0_dp, area, width, japerim, calcconv, perim)
+        call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)
 
         call cleanup_network_data()
 
@@ -698,7 +698,7 @@ contains
         newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
         
         ! Act
-        call getprof_1D(1, 3.0_dp, area, width, japerim, calcconv, perim)
+        call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)
 
         call cleanup_network_data()
 
@@ -829,7 +829,7 @@ contains
         network%loaded = .false. ! Trick to skip the branch
         newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
         
-        call getprof_1D(1, 3.0_dp, area, width, japerim, calcconv, perim)
+        call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)
 
         call cleanup_network_data()
 
