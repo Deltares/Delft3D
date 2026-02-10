@@ -712,6 +712,49 @@ contains
     end subroutine test_getprof_1d__prof1d_without_profile__full
     !$f90tw )
 
+    !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_without_profile_noperim__full, test_getprof_1d__prof1d_without_profile_noperim__full,
+    subroutine test_getprof_1d__prof1d_without_profile_noperim__full() bind(C)
+        use m_flow_geominit, only: flow_geominit
+        use unstruc_channel_flow, only: network
+        use m_longculverts_data, only: newculverts
+        implicit none
+
+        integer, parameter :: japerim = 0
+        integer, parameter :: calcconv = 0
+        integer :: new_link, error_code
+        real(kind=dp) :: area, width, perim
+
+        ! Arrange
+        ! Generate mesh
+        call generate_square_grid( &
+            bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
+            rows=1, columns=2, array_size_margin=2 &
+        )
+        call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
+        call f90_assert_eq(error_code, 0, "Failed to place 2D2D link" // c_null_char)
+
+        ! Initialize flow geometry
+        call disable_timers_and_mpi()
+        call flow_geominit(0)
+
+        ! Initialize `prof1d` without `profiles1D`
+        call setup_prof1d_rectangular_cross_section_without_profile(width=2.0_dp, height=1.5_dp)
+        network%loaded = .false. ! Skip the channel_flow branch
+        newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
+        
+        ! Act
+        call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)
+
+        call cleanup_network_data()
+
+        ! We have a rectangular cross section 2m wide. The water is 10m deep, but the cross section is only 1.5m high.
+        ! Surface water width: 2m (Same as rectangular cross section width)
+        ! Water cross section area: 2x1.5 = 3m^2
+        call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result" // c_null_char)
+        call f90_assert_near(area, 20.0_dp, 1e-7_dp, "Unexpected area result" // c_null_char)
+    end subroutine test_getprof_1d__prof1d_without_profile_noperim__full
+    !$f90tw )
+
     !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_with_profile, test_getprof_1d__prof1d_with_profile,
     subroutine test_getprof_1d__prof1d_with_profile() bind(C)
         use m_flow_geominit, only: flow_geominit
