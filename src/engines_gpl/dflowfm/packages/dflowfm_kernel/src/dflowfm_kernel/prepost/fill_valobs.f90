@@ -244,21 +244,21 @@ contains
             !
             ! Water levels
             
-            call interpolate_horizontal (s1,i,IPNT_S1,UNC_LOC_S) 
+            call interpolate_and_fill_valobs (s1,i,IPNT_S1,UNC_LOC_S) 
             
            if (nshiptxy > 0) then
                if (allocated(zsp)) then
                   tmp_interp = s1 + zsp
-                  call interpolate_horizontal (tmp_interp,i,IPNT_S1,UNC_LOC_S)
+                  call interpolate_and_fill_valobs (tmp_interp,i,IPNT_S1,UNC_LOC_S)
                end if
             end if
 
             ! Water Depth
             tmp_interp = s1 - bl
-            call interpolate_horizontal (tmp_interp,i,IPNT_HS,UNC_LOC_S)
+            call interpolate_and_fill_valobs (tmp_interp,i,IPNT_HS,UNC_LOC_S)
 
             ! Bed level
-            call interpolate_horizontal (bl        ,i,IPNT_BL,UNC_LOC_S)
+            call interpolate_and_fill_valobs (bl        ,i,IPNT_BL,UNC_LOC_S)
             valobs(i, IPNT_CMX) = cmxobs(i)
 
             ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
@@ -267,37 +267,37 @@ contains
 
             ! Horizontal velocities (3D)
             if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-               call interpolate_horizontal (ueux,i,IPNT_UCX,UNC_LOC_S3D)
-               call interpolate_horizontal (ueuy,i,IPNT_UCY,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs (ueux,i,IPNT_UCX,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs (ueuy,i,IPNT_UCY,UNC_LOC_S3D)
             end if
 
             ! Vertical velocities (3D)
             if (model_is_3D()) then
-               call interpolate_horizontal (ucz,i,IPNT_UCZ,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs (ucz,i,IPNT_UCZ,UNC_LOC_S3D)
             end if
 
             ! Velocity magnitude (3D)
             if (jahisvelocity > 0) then
-               call interpolate_horizontal (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
             end if
 
             ! Depth averaged velocities (first ndx points of ucx/ucy array)
             if (model_is_3D()) then
-               call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
-               call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
+               call interpolate_and_fill_valobs (ucx,i,IPNT_UCXQ,UNC_LOC_S)
+               call interpolate_and_fill_valobs (ucy,i,IPNT_UCYQ,UNC_LOC_S)
             end if                    
             
             ! Salinity (interpolated)
             if (jasal > 0) then
                tmp_interp = constituents(isalt,:)
-               call interpolate_horizontal (tmp_interp,i,IPNT_SA1,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs (tmp_interp,i,IPNT_SA1,UNC_LOC_S3D)
             end if
             
             ! Temperature
             ! if (jatem > 0) then
             if (temperature_model /= TEMPERATURE_MODEL_NONE) then 
                tmp_interp = constituents(itemp,:)
-               call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
             end if
             
             ! Finally; vertical positions
@@ -306,12 +306,12 @@ contains
             
             if (model_is_3D()) then       
                !       interface
-               call interpolate_horizontal (zws,i,IPNT_ZWS,UNC_LOC_W)
+               call interpolate_and_fill_valobs (zws,i,IPNT_ZWS,UNC_LOC_W)
                !       centre: make temporary array with cellcentres
                do j = 2, ndkx
                   tmp_interp(j) = 0.5_dp * (zws(j) + zws(j - 1))
                end do
-               call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
             else 
                 valobs(i,IPNT_ZWS)     = valobs(i,IPNT_BL)
                 valobs(i,IPNT_ZWS + 1) = valobs(i,IPNT_S1)
@@ -714,21 +714,23 @@ contains
          valobs(i, ipnt) = real(array(k), dp)
       end if
    end subroutine conditional_assign
-   
-   subroutine interpolate_horizontal (rarray,istat,IPNT,locType)
+ 
+   !> Interpolate flow values for a particular observation station using the nearby grid point values.
+   !!
+   !! Interpolation is only horizontally, within each computational layer.
+   !! Interpolation points and weights are supposed to be already available in neighbour_nodes_obs and neighbour_weights_obs.
+   subroutine interpolate_and_fill_valobs (values_on_grid,i_station,ipnt_valobs,loc_type)
 
-      ! Interpolate (horizontally, within a computational layer) to a position from 3 surrounding snapped points
-      ! rarray can be constituents (3D) or water levels (2D)
-      !
       use precision,             only: dp
       use fm_statistical_output, only: model_is_3d
-      use m_observations_data
-      use m_get_kbot_ktop
-      use m_get_layer_indices
-      use fm_location_types
+      use m_observations_data, only: neighbour_nodes_obs, neighbour_weights_obs, valobs
+      use m_get_kbot_ktop, only: getkbotktop
 
-      integer      , intent(in)                       :: istat, IPNT,locType
-      real(kind=dp), intent(in), allocatable          :: rarray (:)
+      use m_get_layer_indices, only: getlayerindices
+      use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_W
+
+      integer      , intent(in)                       :: i_station, ipnt_valobs,loc_type
+      real(kind=dp), intent(in), allocatable          :: values_on_grid (:)
 
       real(kind=dp)                                   :: value
       real(kind=dp)                                   :: weighttot
@@ -738,20 +740,20 @@ contains
       oneDown = 0
 
       do iwght = 1, 3
-          if (model_is_3D() .and. (locType == UNC_LOC_S3D .or. LocType == UNC_LOC_W)) then
-              call getkbotktop    (neighbour_nodes_obs(iwght,istat), kb_tmp(iwght), kt_tmp(iwght))
-              call getlayerindices(neighbour_nodes_obs(iwght,istat), nlayb_tmp(iwght), nrlay_tmp(iwght))
+          if (model_is_3D() .and. (loc_type == UNC_LOC_S3D .or. loc_type == UNC_LOC_W)) then
+              call getkbotktop    (neighbour_nodes_obs(iwght,i_station), kb_tmp(iwght), kt_tmp(iwght))
+              call getlayerindices(neighbour_nodes_obs(iwght,i_station), nlayb_tmp(iwght), nrlay_tmp(iwght))
 
           else
-              kb_tmp   (iwght) = neighbour_nodes_obs(iwght,istat)
-              kt_tmp   (iwght) = neighbour_nodes_obs(iwght,istat)
+              kb_tmp   (iwght) = neighbour_nodes_obs(iwght,i_station)
+              kt_tmp   (iwght) = neighbour_nodes_obs(iwght,i_station)
               nlayb_tmp(iwght) = 1
               nrlay_tmp(iwght) = 1
           end if
       end do
 
       ! Values ar interfaces stored 1 below (interface 1 effectively corresponds with layer 0)
-      if (LocType == UNC_LOC_W) then
+      if (loc_type == UNC_LOC_W) then
           nrlay_tmp = nrlay_tmp + 1
           oneDown   = 1
       end if
@@ -768,12 +770,12 @@ contains
          do iwght = 1, 3
              if ((klay >= nlayb_tmp(iwght)) .and. (klay <= nlayb_tmp(iwght) + nrlay_tmp(iwght) - 1)) then
                pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay - oneDown
-               value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat)
-               weighttot = weighttot + neighbour_weights_obs(iwght,istat)
+               value     = value     + values_on_grid(pntnr)*neighbour_weights_obs(iwght,i_station)
+               weighttot = weighttot + neighbour_weights_obs(iwght,i_station)
              end if
          end do
-         valobs(istat, IPNT + klay - 1) = value/weighttot
+         valobs(i_station, ipnt_valobs + klay - 1) = value/weighttot
       end do
-   end subroutine interpolate_horizontal           
+   end subroutine interpolate_and_fill_valobs           
 
 end module m_fill_valobs
