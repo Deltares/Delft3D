@@ -484,24 +484,8 @@ contains
                end do
             end if
 
-            ! Taken care off by interpolate_horizontal
-!            if (model_is_3D()) then
-!               valobs(i, IPNT_UCXQ) = ucx(k)
-!               valobs(i, IPNT_UCYQ) = ucy(k)
-!            end if
-
             do kk = kb, kt
                klay = kk - kb + nlayb
-               ! Taken care off by interpolate_horizontal
-!               if (model_is_3D()) then
-!                  valobs(i, IPNT_ZCS + klay - 1) = 0.5_dp * (zws(kk) + zws(kk - 1))
-!               end if
-
-               ! Taken care off by interpolate_horizontal
-!               if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-!                  valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
-!                  valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
-!               end if
 
                if (jawave > NO_WAVES .and. .not. flow_without_waves) then
                   if (hs(k) > epshu) then
@@ -518,12 +502,7 @@ contains
                if (model_is_3D()) then
                   valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
                end if
-!               if (jasal > 0) then
-!                  valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
-!               end if
-!               if (jatem > 0) then
-!                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
-!               end if
+
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
@@ -534,15 +513,7 @@ contains
                   end if
                end if
                
-               ! Taken care of by interpolate_horizontal
-               !if (jahisvelocity > 0) then
-               !   valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-               !end if
                valobs(i, IPNT_QMAG + klay - 1) = 0.5_dp * (squ(kk) + sqi(kk))
-
-               if (kmx == 0) then
-                  kmx_const = 1 ! to make numbering below work
-               end if
 
                if (IVAL_TRA1 > 0) then
                   do j = IVAL_TRA1, IVAL_TRAN
