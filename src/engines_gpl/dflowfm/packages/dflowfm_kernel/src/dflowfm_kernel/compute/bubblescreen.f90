@@ -1,6 +1,6 @@
 module m_bubblescreen
     use precision_basics, only: dp, comparereal
-    use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubblescreens, ksrc, qstss
+    use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubblescreens, ksrc, qstss, bubblescreen_air_discharge
     use m_alloc, only: realloc
     use m_cell_geometry, only: ba
     use m_flow, only: kmx, zws, kbot, s1, vol1
@@ -31,15 +31,16 @@ contains
         integer :: i !< Loop index
 
         do i = 1, size(bubblescreens)
-            call update_bubblescreen_discharge(bubblescreens(i))
+            call update_bubblescreen_discharge(bubblescreens(i), bubblescreen_air_discharge(i))
         end do
 
     end subroutine update_bubblescreen_discharge_wrapper
 
     !> Updates the discharges for a single bubble screen object
-    subroutine update_bubblescreen_discharge(bubblescreen)       
+    subroutine update_bubblescreen_discharge(bubblescreen, air_discharge)       
         ! Parameters
         type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
+        real(kind=dp), intent(in) :: air_discharge !< Air discharge for this bubble screen
 
         ! Local variables
         integer :: i_flow_cell !< Bubblescreen flow cell index
@@ -50,7 +51,6 @@ contains
         real(kind=dp) :: area_fraction !< Area fraction of the flow cell
         real(kind=dp) :: max_velocity !< Maximum downward vertical velocity for this flow cell
         real(kind=dp) :: total_area !< Total area of the bubble screen
-        real(kind=dp) :: air_discharge !< Air discharge for this bubble screen
         real(kind=dp) :: water_discharge !< Water discharge for this bubble screen
         real(kind=dp), dimension(kmx) :: discharge_water !< [m3/s] Water discharge for all layers in 2D flow cell; size={kmx}
         real(kind=dp), dimension(numconst, kmx) :: discharge_constituents !< [kg/m3, ppt, degC] Constituent discharge concentration/temperature for all layers in 2D flow cell; size={numconst,kmx}
@@ -60,12 +60,6 @@ contains
         discharge_water = 0.0_dp
         discharge_constituents = 0.0_dp
 
-        ! Lookup total discharge air for this bubble screen and compute water discharge
-        ! ====================================================================================================
-        ! TODO: switch to correct lookup of air discharge for this bubble screen when ready (found qstss array)
-        ! See UNST-9564
-
-        air_discharge = 3.0e-1_dp ! Placeholder value
         ! ====================================================================================================
         water_discharge = convert_discharge_air_to_water(air_discharge)
 
