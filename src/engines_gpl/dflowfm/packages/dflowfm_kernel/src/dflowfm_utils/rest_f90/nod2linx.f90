@@ -37,7 +37,7 @@ module m_nod2linx
 
    private
 
-   public :: nod2linx
+   public :: nod2linx, nod2linx_fast, nod2liny_fast
 
 contains
 
@@ -58,5 +58,27 @@ contains
 
       return
    end function nod2linx
+
+   elemental function nod2linx_fast(csb, snb, ux, uy)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlnode coordinate frame
+      real(kind=dp), intent(in) :: csb, snb  
+      real(kind=dp) :: nod2linx_fast
+
+      nod2linx_fast = csb * ux + snb * uy
+
+   end function nod2linx_fast
+
+   elemental function nod2liny_fast(csb, snb, ux, uy)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flownode coordinate frame
+      real(kind=dp), intent(in) :: csb, snb  
+      real(kind=dp) :: nod2liny_fast
+
+         nod2liny_fast = -snb * ux + csb * uy
+
+   end function nod2liny_fast
 
 end module m_nod2linx
