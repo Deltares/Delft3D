@@ -74,7 +74,7 @@ contains
         bubblescreen%num_flow_cells = n
         allocate(bubblescreen%flow_cells(n))
         do i = 1, n
-            bubblescreen%flow_cells(i)%cell_index = i
+            bubblescreen%flow_cells(i)%flownode_nr = i
         end do
 
         ! Setup - fill cell areas for flow cells in bubble screen
@@ -179,7 +179,7 @@ contains
         expected_discharge = [0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, 3.0_dp, 3.0_dp]
 
         ! Call function to test
-        call compute_water_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, computed_discharge)
+        call compute_water_discharge_across_layers(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, computed_discharge)
 
         ! Compare results
         do i = 1, 10
