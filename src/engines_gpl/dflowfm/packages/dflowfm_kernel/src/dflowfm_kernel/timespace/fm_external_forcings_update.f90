@@ -63,6 +63,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
+   use m_setsorsin, only: setsorsin
 
    implicit none
 
@@ -98,6 +99,8 @@ contains
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
       use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
+      use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
+      use fm_external_forcings_data, only: bubblescreens
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
@@ -271,6 +274,10 @@ contains
             call set_frcu_mor(1) !otherwise frcu_mor is set in getprof_1d()
             call set_frcu_mor(2)
          end if
+      end if
+
+      if (allocated(bubblescreens) .and. .not. initialization) then
+         call update_bubblescreen_discharge_wrapper()
       end if
 
       ! Update nudging temperature (and salinity)

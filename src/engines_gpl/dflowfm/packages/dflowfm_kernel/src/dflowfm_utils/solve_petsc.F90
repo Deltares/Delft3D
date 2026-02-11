@@ -110,7 +110,7 @@ contains
    module subroutine stoppetsc()
 #ifdef HAVE_PETSC
       use mpi, only: mpi_comm_free
-      use m_petsc, only: PETSC_OK, petscfinalize, petsc_comm_world
+      use m_petsc, only: PETSC_OK, petscfinalize, petsc_comm_world, petscinitialized
       use m_flowparameters, only: Icgsolver
       use m_partitioninfo, only: jampi
 

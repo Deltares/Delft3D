@@ -41,8 +41,6 @@
 #include <string>
 #include <cstdlib>
 
-
-using namespace std;
 #include <list>
 #include <vector>
 
@@ -158,12 +156,12 @@ class XmlTree {
             int level
             );
 
-        string 
+        std::string 
         SubstEnvVar(
-            string instr 
+            std::string instr
         );
 
-		static string
+		static std::string
         EnvSubst(
 	       std::string instr
 	    );
@@ -176,10 +174,10 @@ class XmlTree {
         char *      name;
         char *      pathname;
 
-        vector<char *>   attribNames;
-        vector<char *>   attribValues;
+        std::vector<char *>   attribNames;
+        std::vector<char *>   attribValues;
 
-        vector<XmlTree *>   children;
+        std::vector<XmlTree *>   children;
 
         char *      charData;
         int         charDataLen;
