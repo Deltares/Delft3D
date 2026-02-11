@@ -179,7 +179,7 @@ contains
         expected_discharge = [0.0_dp, 0.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, 3.0_dp, 3.0_dp]
 
         ! Call function to test
-        call compute_water_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, computed_discharge)
+        call compute_water_discharge_across_layers(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, computed_discharge)
 
         ! Compare results
         do i = 1, 10
