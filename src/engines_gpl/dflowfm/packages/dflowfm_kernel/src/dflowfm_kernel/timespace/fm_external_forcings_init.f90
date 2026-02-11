@@ -143,7 +143,7 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      max_num_src =  compute_number_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
+      max_num_src =  compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
       
       if (max_num_src > 0) then
@@ -1127,10 +1127,15 @@ contains
 
    end function init_sourcesink_forcings
 
-   !> Compute the number of source/sinks necessary for the bubblescreens
+   !> Compute (and returns) the number of source/sinks necessary for the bubblescreens
    !! this is needed to preallocate the source sinks array (EC Module)
-   !! while doing this fill the BubbleScreen data structure with processed info
-   function compute_number_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
+   !! Snaps all bubblescreens based on their polyline to flow nodes and within a flownode to the proper layers.
+   !! while doing this pre-inits the BubbleScreen data structure with processed info 
+   !! (m_flowexternalforcingsdata::bubblescreens and m_flowexternalforcingsdata::bubblescreens_air_discharge)
+   !!
+   !! Input is a loaded .ext file tree structure.
+   !! Returns the resulting number of source sinks
+   function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
       use fm_external_forcings_data, only: numsrc
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
@@ -1220,7 +1225,7 @@ contains
 
       allocate(bubblescreen_air_discharge(size(bubblescreens)))
       
-   end function compute_number_bubblescreens_sourcesinks
+   end function compute_and_preinit_bubblescreens_sourcesinks
 
 
    !> Finish initialization of bubblescreen object and create the source/sink objects

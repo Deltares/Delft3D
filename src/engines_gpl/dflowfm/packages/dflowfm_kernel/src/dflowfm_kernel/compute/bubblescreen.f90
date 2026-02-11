@@ -17,7 +17,7 @@ module m_bubblescreen
     public :: convert_discharge_air_to_water
     public :: compute_bubblescreen_area
     public :: find_active_layer_interfaces
-    public :: compute_water_discharge
+    public :: compute_water_discharge_across_layers
     public :: compute_constituent_discharge
     public :: write_discharge_to_source_sinks
 
@@ -76,7 +76,7 @@ contains
 
             call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
 
-            call compute_water_discharge(n, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
+            call compute_water_discharge_across_layers(n, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
 
             call compute_constituent_discharge(n, k_start, k_stop, k_max_velocity, discharge_constituents)
 
@@ -206,7 +206,7 @@ contains
     end subroutine find_active_layer_interfaces
 
     !> Computes the vertical distribution of water discharges for a bubble screen in a flow cell
-    pure subroutine compute_water_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
+    pure subroutine compute_water_discharge_across_layers(flow_cell_index, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
         ! Parameters
         integer, intent(in) :: flow_cell_index !< 2D flow cell index; in {network_data::netcell}
         integer, intent(in) :: k_start !< Start active layer index (bottom); in {m_flow::zws}
@@ -294,7 +294,7 @@ contains
             discharge_water(k_local) = velocity_gradient * vol1(k_global) ! Water discharge = velocity gradient * layer volume
         end do
 
-    end subroutine compute_water_discharge
+    end subroutine compute_water_discharge_across_layers
 
     !> Computes the vertical distribution of constituent discharges for a bubble screen in a flow cell
     pure subroutine compute_constituent_discharge(flow_cell_index, k_start, k_stop, k_max_velocity, discharge_constituents)
