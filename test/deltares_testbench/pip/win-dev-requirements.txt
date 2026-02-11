@@ -94,7 +94,7 @@ colorama==0.4.6
     #   tqdm
 configobj==5.0.9
     # via dvc
-contourpy==1.2.1
+contourpy==1.3.3
     # via matplotlib
 coverage==7.8.0
     # via pytest-cov
