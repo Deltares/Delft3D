@@ -74,13 +74,9 @@ while true; do
     esac
 done
 
-if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX VAHOME; then
+if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX VAHOME MODELS_PATH; then
     show_help
     exit 1
-fi
-
-if [[ -z "$MODELS_PATH" ]]; then
-    MODELS_PATH="input"
 fi
 
 if [[ -z "$MODEL_FILTER" ]]; then
@@ -94,6 +90,7 @@ echo "Using MODEL_REGEX: ${MODEL_REGEX}"
 
 export CURRENT_PREFIX
 export REFERENCE_PREFIX
+export MODELS_PATH
 export MODEL_REGEX
 export BUCKET='s3://devops-test-verschilanalyse'
 export VAHOME
