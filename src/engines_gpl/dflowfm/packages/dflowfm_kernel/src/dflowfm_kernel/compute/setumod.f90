@@ -1020,17 +1020,17 @@ contains
          end do
 
       else ! icorio = 5 OR spatially constant corio
-         if (spatial_coriolis) then
-            fcor = fcori(L)
-         else
-            if (fcorio == 0.0_dp) then
-               return ! No Coriolis force to apply
-            else
-               fcor = fcorio
-            end if
+
+         fcor = fcorio
+         if (.not. spatial_coriolis .and. fcorio == 0.0_dp) then
+            return ! No Coriolis force to apply
          end if
+
          !$OMP SIMD
          do L = lnx1D + 1, lnx
+            if (spatial_coriolis) then
+               fcor = fcori(L)
+            end if
             fvcor = calculate_coriolis_force(fcor, fcor, jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
                                              csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
 
@@ -1046,6 +1046,7 @@ contains
             end if
          end do
       end if
+
    end subroutine compute_coriolis_correction_2D_default
 
 !> Apply Coriolis correction for a single link
