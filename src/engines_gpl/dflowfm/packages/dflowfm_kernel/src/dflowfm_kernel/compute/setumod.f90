@@ -52,7 +52,7 @@ contains
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
       use m_setucxucyucxuucyu, only: setucxucyucxuucyu
       use m_setcornervelocities, only: setcornervelocities
-      use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2, prefetch_node_velocities, prefetch_corner_velocities, initialize_coordinate_transform
+      use m_coordinate_transform, only: prefetch_node_velocities, prefetch_corner_velocities, initialize_coordinate_transform
       use timers, only: timstrt, timstop
       use m_flow
       use m_flowgeom
@@ -87,21 +87,15 @@ contains
       integer :: L, LL, k, k1, k2, k3, k4, kb, n, n1, n2 !
       real(kind=dp) :: duxdn, duydn, duxdt, duydt ! normal and tangential global ux,uy gradients
       real(kind=dp) :: vicl, c11, c12, c22
-
       real(kind=dp) :: sf, ac1, ac2, csl, snl, wuw, ustar, suxw, suyw, suxL, suyL
       real(kind=dp) :: cs, sn
       real(kind=dp) :: hmin, hs1, hs2
       real(kind=dp) :: fcor, vcor, fcor1, fcor2, fvcor
       real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty !, vksag6, Cz
-      real(kind=dp) :: huv, ab_correction
+      real(kind=dp) :: huv
       real(kind=dp), allocatable :: u1_tmp(:), vluban(:)
-      real(kind=dp) :: tangential_1, tangential_2
       integer :: nw, L1, L2, kt, Lb, Lt, Lb1, Lt1, Lb2, Lt2, kb1, kb2, ntmp, m
-
-!      real(kind=dp) :: DRL, nuhroller
-
       real(kind=dp) :: dxiAu, vicc, vlban, fcLL
-
       integer :: number_limited_links
       real(kind=dp) :: viscocity_max_limit
 
@@ -221,227 +215,146 @@ contains
          end do
          !$OMP END PARALLEL DO
       end if
+      if (newcorio == 1 .and. icorio > 0) then
+         if (icorio <= 20 .and. kmx == 0) then
 
-      if (newcorio == 1 .and. icorio > 0 .and. icorio <= 20 .and. kmx == 0) then
-         !> very performance sensitive loop, tiny bit of code duplication to avoid conditionals and extra vector loads inside
-         if ((jsferic > 0 .or. jacorioconstant > 0) .and. (icorio < 4 .or. icorio > 6)) then !> zeta based fcor
-            if (.not. allocated(fcor1_)) then
-               allocate (fcor1_(lnkx), fcor2_(lnx))
-            end if
-            do L = lnx1D + 1, lnx
-               k1 = ln(1, L)
-               k2 = ln(2, L)
-               fcor1_(L) = fcori(k1)
-               fcor2_(L) = fcori(k2) ! defined at zeta-points
-            end do
-            !$OMP SIMD
-            do L = lnx1D + 1, lnx
-               if (jasfer3D == 1) then
-                  tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
-                  tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
-               else
-                  tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-                  tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
-               end if
-               fvcor = acL(L) * tangential_1 * fcor1_(L) + (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
+            call compute_coriolis_correction_2D_default(icorio, jsferic, jacorioconstant, jasfer3D, fcorio, trshcorio, Corioadamsbashfordfac)
 
-               if (trshcorio > 0.0_dp .and. hmin_(L) < trshcorio) then
-                  fvcor = fvcor * hmin_(L) / trshcorio
+         else if (icorio < 40) then
+            fcor1 = fcorio
+            fcor2 = fcorio
+            !x$OMP PARALLEL DO                           &
+            !x$OMP PRIVATE(L,LL,Lb,Lt,k1,k2,cs,sn,hs1,hs2,fcor,fcor1,fcor2,fvcor,vcor,volu,hmin)
+            do LL = lnx1D + 1, lnx
+               if (hu(LL) == 0) then
+                  cycle
                end if
-               if (hu(L) > 0.0_dp) then
-                  if (Corioadamsbashfordfac > 0.0_dp) then
-                     ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
-                     adve(L) = adve(L) - fvcor - ab_correction
-                     fvcoro(L) = fvcor
-                  else
-                     adve(L) = adve(L) - fvcor
-                  end if
-               end if
-            end do
-         else ! u-based fcor
-            !!$OMP SIMD
-            do L = lnx1D + 1, lnx
+               n1 = ln(1, LL)
+               n2 = ln(2, LL)
+               hmin = min(hs(n1), hs(n2))
+
+               call getLbotLtop(LL, Lb, Lt)
+               cs = csu(LL)
+               sn = snu(LL)
+
                if (jsferic > 0 .or. jacorioconstant > 0) then
-                  fcor = fcori(L)
-               else
-                  fcor = fcorio
-               end if
-               if (jasfer3D == 1) then
-                  tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
-                  tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
-               else
-                  tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-                  tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
-               end if
-               fvcor = acL(L) * tangential_1 * fcor + (1.0_dp - acL(L)) * tangential_2 * fcor
-
-               if (trshcorio > 0.0_dp .and. hmin_(L) < trshcorio) then
-                  fvcor = fvcor * hmin_(L) / trshcorio
-               end if
-               if (hu(L) > 0.0_dp) then
-                  if (Corioadamsbashfordfac > 0.0_dp) then
-                     ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
-                     adve(L) = adve(L) - fvcor - ab_correction
-                     fvcoro(L) = fvcor
+                  if (icorio >= 4 .and. icorio <= 6) then
+                     fcor1 = fcori(LL)
+                     fcor2 = fcor1 ! defined at u-point
                   else
-                     adve(L) = adve(L) - fvcor
+                     fcor1 = fcori(n1)
+                     fcor2 = fcori(n2) ! defined at zeta-points
                   end if
                end if
-            end do
-         end if
 
-      else if (newcorio == 1 .and. icorio > 0 .and. icorio < 40) then
-         fcor1 = fcorio
-         fcor2 = fcorio
-         !x$OMP PARALLEL DO                           &
-         !x$OMP PRIVATE(L,LL,Lb,Lt,k1,k2,cs,sn,hs1,hs2,fcor,fcor1,fcor2,fvcor,vcor,volu,hmin)
-         do LL = lnx1D + 1, lnx
-            if (hu(LL) == 0) then
-               cycle
-            end if
-            n1 = ln(1, LL)
-            n2 = ln(2, LL)
-            hmin = min(hs(n1), hs(n2))
+               do L = Lb, Lt
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
 
-            call getLbotLtop(LL, Lb, Lt)
-            cs = csu(LL)
-            sn = snu(LL)
-
-            if (jsferic > 0 .or. jacorioconstant > 0) then
-               if (icorio >= 4 .and. icorio <= 6) then
-                  fcor1 = fcori(LL)
-                  fcor2 = fcor1 ! defined at u-point
-               else
-                  fcor1 = fcori(n1)
-                  fcor2 = fcori(n2) ! defined at zeta-points
-               end if
-            end if
-
-            do L = Lb, Lt
-               k1 = ln(1, L)
-               k2 = ln(2, L)
-
-               if (icorio > 0) then
-                  fvcor = 0.0_dp
-                  ! set u tangential
-                  if (icorio <= 20) then ! Olga types
-                     if (jasfer3D == 1) then
-                        fvcor = acL(LL) * (-sn * nod2linx(LL, 1, ucxq(k1), ucyq(k1)) + cs * nod2liny(LL, 1, ucxq(k1), ucyq(k1))) * fcor1 + &
-                                (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucxq(k2), ucyq(k2)) + cs * nod2liny(LL, 2, ucxq(k2), ucyq(k2))) * fcor2
-                     else
-                        fvcor = acl(LL) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 + &
-                                (1.0_dp - acl(LL)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2
-                     end if
-                  else ! David types
-                     if (icorio <= 26) then ! hs/hu
-                        hs1 = hs(n1)
-                        hs2 = hs(n2)
-                        if (kmx > 0) then
-                           if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
-                              hs1 = zws(k1) - zws(k1 - 1)
-                              hs2 = zws(k2) - zws(k2 - 1)
-                           end if
-                        end if
-                        huv = hu(L)
-                     else if (icorio <= 28) then ! ahus/ahu
-                        hs1 = hus(n1)
-                        hs2 = hus(n2)
-                        if (kmx > 0) then
-                           if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
-                              hs1 = hus(k1)
-                              hs2 = hus(k2)
-                           end if
-                        end if
-                        huv = acl(LL) * hs1 + (1.0_dp - acl(LL)) * hs2
-                     else if (icorio <= 30) then ! like advec33
-                        if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
-                           hs1 = vol1(k1)
-                           hs2 = vol1(k2)
-                        else
-                           hs1 = vol1(n1)
-                           hs2 = vol1(n2)
-                        end if
-                        huv = acl(LL) * hs1 + (1.0_dp - acl(LL)) * hs2
-                     end if
-
-                     if (huv > 0) then
+                  if (icorio > 0) then
+                     fvcor = 0.0_dp
+                     ! set u tangential
+                     if (icorio <= 20) then ! Olga types
                         if (jasfer3D == 1) then
-                           fvcor = acL(LL) * (-sn * nod2linx(LL, 1, ucxq(k1), ucyq(k1)) + cs * nod2liny(LL, 1, ucxq(k1), ucyq(k1))) * fcor1 * hs1 + &
-                                   (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucxq(k2), ucyq(k2)) + cs * nod2liny(LL, 2, ucxq(k2), ucyq(k2))) * fcor2 * hs2
+                           fvcor = acL(LL) * (-sn * nod2linx(LL, 1, ucxq(k1), ucyq(k1)) + cs * nod2liny(LL, 1, ucxq(k1), ucyq(k1))) * fcor1 + &
+                                   (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucxq(k2), ucyq(k2)) + cs * nod2liny(LL, 2, ucxq(k2), ucyq(k2))) * fcor2
                         else
-                           fvcor = acl(LL) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 * hs1 + &
-                                   (1.0_dp - acl(LL)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2 * hs2
+                           fvcor = acl(LL) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 + &
+                                   (1.0_dp - acl(LL)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2
                         end if
-                        fvcor = fvcor / huv
+                     else ! David types
+                        if (icorio <= 26) then ! hs/hu
+                           hs1 = hs(n1)
+                           hs2 = hs(n2)
+                           if (kmx > 0) then
+                              if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
+                                 hs1 = zws(k1) - zws(k1 - 1)
+                                 hs2 = zws(k2) - zws(k2 - 1)
+                              end if
+                           end if
+                           huv = hu(L)
+                        else if (icorio <= 28) then ! ahus/ahu
+                           hs1 = hus(n1)
+                           hs2 = hus(n2)
+                           if (kmx > 0) then
+                              if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
+                                 hs1 = hus(k1)
+                                 hs2 = hus(k2)
+                              end if
+                           end if
+                           huv = acl(LL) * hs1 + (1.0_dp - acl(LL)) * hs2
+                        else if (icorio <= 30) then ! like advec33
+                           if (mod(icorio, 2) /= 0) then ! odd nrs get local k-weighting
+                              hs1 = vol1(k1)
+                              hs2 = vol1(k2)
+                           else
+                              hs1 = vol1(n1)
+                              hs2 = vol1(n2)
+                           end if
+                           huv = acl(LL) * hs1 + (1.0_dp - acl(LL)) * hs2
+                        end if
+
+                        if (huv > 0) then
+                           if (jasfer3D == 1) then
+                              fvcor = acL(LL) * (-sn * nod2linx(LL, 1, ucxq(k1), ucyq(k1)) + cs * nod2liny(LL, 1, ucxq(k1), ucyq(k1))) * fcor1 * hs1 + &
+                                      (1.0_dp - acL(LL)) * (-sn * nod2linx(LL, 2, ucxq(k2), ucyq(k2)) + cs * nod2liny(LL, 2, ucxq(k2), ucyq(k2))) * fcor2 * hs2
+                           else
+                              fvcor = acl(LL) * (-sn * ucxq(k1) + cs * ucyq(k1)) * fcor1 * hs1 + &
+                                      (1.0_dp - acl(LL)) * (-sn * ucxq(k2) + cs * ucyq(k2)) * fcor2 * hs2
+                           end if
+                           fvcor = fvcor / huv
+                        end if
                      end if
 
-                  end if
+                     if (trshcorio > 0) then
+                        if (hmin < trshcorio) then
+                           fvcor = fvcor * hmin / trshcorio
+                        end if
+                     end if
+                     adve(L) = adve(L) - fvcor
 
-                  if (trshcorio > 0) then
-                     if (hmin < trshcorio) then
-                        fvcor = fvcor * hmin / trshcorio
+                     if (Corioadamsbashfordfac > 0.0_dp) then
+                        if (fvcoro(L) /= 0.0_dp) then
+                           adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
+                        end if
+                        fvcoro(L) = fvcor
                      end if
                   end if
-                  adve(L) = adve(L) - fvcor
-
-                  if (Corioadamsbashfordfac > 0.0_dp) then
-                     if (fvcoro(L) /= 0.0_dp) then
-                        adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
-                     end if
-                     fvcoro(L) = fvcor
-                  end if
+               end do
+               if (icorio > 0 .and. Corioadamsbashfordfac > 0.0_dp) then
+                  fvcoro(Lt + 1:Lb + kmxL(LL) - 1) = 0.0_dp
                end if
-
             end do
 
-            if (icorio > 0 .and. Corioadamsbashfordfac > 0.0_dp) then
-               fvcoro(Lt + 1:Lb + kmxL(LL) - 1) = 0.0_dp
+         else if (icorio >= 65) then
+
+            if (.not. allocated(vluban)) then
+               allocate (vluban(Lnkx))
             end if
-
-         end do
-
-      else if (newcorio == 1 .and. icorio == 45) then
-
-         !do n = 1, size(LLkkk,2)
-         !   L1  = LLkkk(1,n)
-         !   L2  = LLkkk(2,n)
-         !   k1  = LLkkk(3,n)
-         !   k2  = LLkkk(4,n)
-         !   k3  = LLkkk(5,n)
-         !   fcLL =  fcorio*(-csu(L1)*snu(L2) + snu(L1)*csu(L2))
-         !   adve(L1) = adve(L1) + 0.25*fcLL
-         !   adve(L2) = adve(L2) - 0.25*fcLL
-         !enddo
-
-      else if (newcorio == 1 .and. icorio >= 65) then
-
-         if (.not. allocated(vluban)) then
-            allocate (vluban(Lnkx))
-         end if
-
-         vluban = 0
-         do m = 1, mxban ! bz based on netnodes area
-            k = nban(1, m)
-            n = nban(2, m)
-            L1 = nban(3, m)
-            L2 = nban(4, m)
-            if (L1 > 0 .and. L2 > 0) then
-               vlban = banf(m) * hs(k)
-               if (icorio == 66) then
-                  hs1 = acl(L1) * hs(ln(1, L1)) + (1.0_dp - acl(L1)) * hs(ln(2, L1))
-                  hs2 = acl(L2) * hs(ln(1, L2)) + (1.0_dp - acl(L2)) * hs(ln(2, L2))
-                  vlban = 0.5_dp * (hs1 + hs2)
+            vluban = 0
+            do m = 1, mxban ! bz based on netnodes area
+               k = nban(1, m)
+               n = nban(2, m)
+               L1 = nban(3, m)
+               L2 = nban(4, m)
+               if (L1 > 0 .and. L2 > 0) then
+                  vlban = banf(m) * hs(k)
+                  if (icorio == 66) then
+                     hs1 = acl(L1) * hs(ln(1, L1)) + (1.0_dp - acl(L1)) * hs(ln(2, L1))
+                     hs2 = acl(L2) * hs(ln(1, L2)) + (1.0_dp - acl(L2)) * hs(ln(2, L2))
+                     vlban = 0.5_dp * (hs1 + hs2)
+                  end if
+                  fcLL = vlban * fcorio * (-csu(L1) * snu(L2) + snu(L1) * csu(L2)) ! tangential L1 L2
+                  adve(L1) = adve(L1) + u1(L2) * fcLL
+                  adve(L2) = adve(L2) - u1(L1) * fcLL
+                  vluban(L1) = vluban(L1) + vlban
+                  vluban(L2) = vluban(L2) + vlban
                end if
-               fcLL = vlban * fcorio * (-csu(L1) * snu(L2) + snu(L1) * csu(L2)) ! tangential L1 L2
-               adve(L1) = adve(L1) + u1(L2) * fcLL
-               adve(L2) = adve(L2) - u1(L1) * fcLL
-               vluban(L1) = vluban(L1) + vlban
-               vluban(L2) = vluban(L2) + vlban
-            end if
-         end do
-         do L = 1, Lnx
-            adve(L) = adve(L) / vluban(L)
-         end do
+            end do
+            do L = 1, Lnx
+               adve(L) = adve(L) / vluban(L)
+            end do
+         end if
       end if
 
       !updvertp
@@ -467,112 +380,7 @@ contains
 
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
                call compute_viscosity_and_stress_vectorized()
-
-               !vksag6 = vonkar * sag / 6.0_dp
-               !call transform_velocities_to_links(ucx, ucy, ucnx, ucny)
-               !
-               !do L = lnx1D + 1, lnx
-               !   if (hu(L) > 0) then ! link will flow
-               !
-               !      cs = csu(L)
-               !      sn = snu(L)
-               !      k1 = ln(1, L)
-               !      k2 = ln(2, L)
-               !
-               !      vicL = 0.0_dp
-               !      if (Elder > 0.0_dp) then !  add Elder
-               !         Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
-               !         vicL = vicL + Elder * (vksag6 / Cz) * (hu(L)) * sqrt(u1(L) * u1(L) + v(L) * v(L)) ! vonkar*sag/(6*Cz) = 0.009
-               !      end if
-               !
-               !      k3 = lncn(1, L)
-               !      k4 = lncn(2, L)
-               !
-               !      duxdn = (ucx_link_2(L) - ucx_link_1(L)) * dxi(L)
-               !      duydn = (ucy_link_2(L) - ucy_link_1(L)) * dxi(L)
-               !      duxdt = (ucnx_link_2(L) - ucnx_link_1(L)) * wui(L)
-               !      duydt = (ucny_link_2(L) - ucny_link_1(L)) * wui(L)
-               !
-               !      if (Smagorinsky > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky
-               !         dundn = cs * duxdn + sn * duydn
-               !         dutdn = -sn * duxdn + cs * duydn
-               !         dundt = cs * duxdt + sn * duydt
-               !         dutdt = -sn * duxdt + cs * duydt
-               !         if (NDRAW(29) == 37) then ! plot curl
-               !            plotlin(L) = (dutdn - dundt)
-               !         end if
-               !         if (Smagorinsky > 0) then
-               !            shearvar = 2.0_dp * (dundn * dundn + dutdt * dutdt + dundt * dutdn) + dundt * dundt + dutdn * dutdn
-               !            if (shearvar > 1.0e-15_dp) then ! avoid underflow
-               !               vicL = vicL + Smagorinsky * Smagorinsky * sqrt(shearvar) / (dxi(L) * wui(L))
-               !            end if
-               !         end if
-               !
-               !      end if
-               !
-               !      if (nshiptxy > 0) then
-               !         if (vicuship /= 0.0_dp) then
-               !            vicL = vicL + vicushp(L)
-               !         end if
-               !      end if
-               !
-               !      ! JRE: add roller induced viscosity
-               !      if ((jawave == WAVE_SURFBEAT) .and. (swave == 1) .and. (roller == 1)) then
-               !         DRL = acL(L) * DR(k1) + (1 - acL(L)) * DR(k2)
-               !         nuhroller = nuhfac * hu(L) * (DRL / rhomean)**(1.0_dp / 3.0_dp)
-               !         vicL = max(nuhroller, vicL)
-               !      end if
-               !
-               !      if (javiusp == 1) then ! user specified part
-               !         vicc = viusp(L)
-               !      else
-               !         vicc = vicouv
-               !      end if
-               !      vicL = vicL + vicc
-               !
-               !      if (ja_timestep_auto_visc == 0) then
-               !         dxiAu = dxi(L) * hu(L) * wu(L)
-               !         if (dxiAu > 0.0_dp) then
-               !            viscocity_max_limit = 0.2_dp * dti * min(vol1(k1), vol1(k2)) / dxiAu
-               !            if (vicL > viscocity_max_limit) then
-               !               vicL = viscocity_max_limit ! see Tech Ref.: Limitation of Viscosity Coefficient
-               !               number_limited_links = number_limited_links + 1
-               !            end if
-               !         end if
-               !      end if
-               !
-               !      vicLu(L) = vicL ! horizontal eddy viscosity applied in mom eq.
-               !      viu(L) = max(0.0_dp, vicL - vicc) ! modeled turbulent part
-               !
-               !      c11 = cs * cs
-               !      c12 = cs * sn
-               !      c22 = sn * sn
-               !      suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
-               !      suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
-               !
-               !      suxL = suxL * vicL / wui(L)
-               !      suyL = suyL * vicL / wui(L)
-               !      if (istresstyp == 3) then
-               !         hmin = min(hs(k1), hs(k2))
-               !         suxL = hmin * suxL
-               !         suyL = hmin * suyL
-               !      end if
-               !
-               !      if (jsferic == 1 .and. jasfer3D == 1) then
-               !         dvxc(k1) = dvxc(k1) + lin2nodx(L, 1, suxL, suyL)
-               !         dvyc(k1) = dvyc(k1) + lin2nody(L, 1, suxL, suyL)
-               !         dvxc(k2) = dvxc(k2) - lin2nodx(L, 2, suxL, suyL)
-               !         dvyc(k2) = dvyc(k2) - lin2nody(L, 2, suxL, suyL)
-               !      else
-               !         dvxc(k1) = dvxc(k1) + suxL
-               !         dvyc(k1) = dvyc(k1) + suyL
-               !         dvxc(k2) = dvxc(k2) - suxL
-               !         dvyc(k2) = dvyc(k2) - suyL
-               !      end if
-               !   end if
-               !end do
             else
-
                !$OMP PARALLEL DO                                  &
                !$OMP PRIVATE(L,k1,k2)
                do L = lnx1D + 1, lnx
@@ -587,15 +395,10 @@ contains
                   end if
                end do
                !$OMP END PARALLEL DO
-
             end if
-
          else if (kmx > 0) then
-
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
-
                do LL = lnx1D + 1, lnx
-
                   if (abs(kcu(LL)) /= 2) then
                      cycle
                   end if
@@ -608,11 +411,8 @@ contains
                   else
                      vicc = vicouv
                   end if
-
                   do L = Lb, Lt
-
                      vicL = 0.0_dp
-
                      k1 = ln(1, L)
                      k2 = ln(2, L)
                      k3 = lncn(1, L)
@@ -628,7 +428,6 @@ contains
                         duxdt = (ucnx(k4) - ucnx(k3)) * wui(LL)
                         duydt = (ucny(k4) - ucny(k3)) * wui(LL)
                      end if
-
                      if (Smagorinsky > 0 .or. NDRAW(29) == 37) then ! add Smagorinsky
                         dundn = cs * duxdn + sn * duydn
                         dutdn = -sn * duxdn + cs * duydn
@@ -642,19 +441,15 @@ contains
                            vicL = vicL + Smagorinsky * Smagorinsky * sqrt(shearvar) / (dxi(LL) * wui(LL))
                         end if
                      end if
-
                      vicL = vicL + vicc
-
                      if (javiuplus3D > 0) then
                         vicL = vicL + vicwwu(L)
                      end if
-
                      if (nshiptxy > 0) then
                         if (vicuship /= 0.0_dp) then
                            vicL = vicL + vicushp(LL)
                         end if
                      end if
-
                      if (ja_timestep_auto_visc == 0) then
                         dxiAu = dxi(LL) * Au(L)
                         if (dxiAu > 0.0_dp) then
@@ -665,7 +460,6 @@ contains
                            end if
                         end if
                      end if
-
                      vicLu(L) = vicL ! horizontal eddy viscosity applied in mom eq.
                      viu(L) = max(0.0_dp, vicL - vicc) ! modeled turbulent part
 
@@ -674,7 +468,6 @@ contains
                      c22 = sn * sn
                      suxL = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
                      suyL = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
-
                      suxL = suxL * vicL / wui(LL)
                      suyL = suyL * vicL / wui(LL)
                      if (istresstyp == 3) then
@@ -682,7 +475,6 @@ contains
                         suxL = hmin * suxL
                         suyL = hmin * suyL
                      end if
-
                      if (jsferic == 1 .and. jasfer3D == 1) then
                         dvxc(k1) = dvxc(k1) + lin2nodx(LL, 1, suxL, suyL)
                         dvyc(k1) = dvyc(k1) + lin2nody(LL, 1, suxL, suyL)
@@ -694,11 +486,8 @@ contains
                         dvxc(k2) = dvxc(k2) - suxL
                         dvyc(k2) = dvyc(k2) - suyL
                      end if
-
                   end do
-
                end do
-
             end if
          end if
 
@@ -717,10 +506,8 @@ contains
             if (kmx == 0) then
                call interpolate_stress_to_links_2D()
             else
-
                !$OMP PARALLEL DO                       &
                !$OMP PRIVATE(LL,kb1,kb2,Lb,Lt,L,k1,k2,huv)
-
                do LL = lnx1D + 1, lnx
                   if (hu(LL) > 0.0_dp) then
                      kb1 = ln(1, LL)
@@ -746,11 +533,8 @@ contains
                      end do
                   end if
                end do
-
                !$OMP END PARALLEL DO
-
             end if
-
          end if
 
          do nw = 1, mxwalls
@@ -878,19 +662,14 @@ contains
                   walls(16, nw) = cs * ucx(k1) + sn * ucy(k1)
                end if
             end if
-
          end do
-
          if (izbndpos == 0) then
             do L = lnxi + 1, lnx ! quick fix for open boundaries
                suu(L) = 2.0_dp * suu(L)
             end do
          end if
-
          adve = adve - suu
-
       end if
-
       call timstop(handle_umod)
 
    end subroutine setumod
@@ -1189,38 +968,115 @@ contains
 
    end subroutine interpolate_stress_to_links_2D
 
-   !> Compute Coriolis force with optional depth threshold and Adams-Bashforth correction
-   !! Returns: (adve_correction, fvcoro_new)
-   elemental subroutine compute_coriolis_correction(fvcor_in, fvcoro_prev, hmin, trshcorio, adamsfac, &
-                                                    adve_correction, fvcoro_new)
-      real(dp), intent(in) :: fvcor_in !< Computed Coriolis force
-      real(dp), intent(in) :: fvcoro_prev !< Previous Coriolis force
-      real(dp), intent(in) :: hmin !< Minimum depth at link
-      real(dp), intent(in) :: trshcorio !< Depth threshold for Coriolis ramping
-      real(dp), intent(in) :: adamsfac !< Adams-Bashforth factor
-      real(dp), intent(out) :: adve_correction !< Correction to apply to adve
-      real(dp), intent(out) :: fvcoro_new !< New value for fvcoro
+!> Compute Coriolis correction for 2D links (icorio <= 20, kmx=0)
+!! Applies Coriolis force to adve(:) and updates fvcoro(:)
+!! Module arrays accessed (read-only):
+!!   - hu, acL, csu, snu, ln, fcori
+!!   - ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2
+!!   - hmin_ (module-level cache)
+!!
+!! Module arrays modified:
+!!   - adve, fvcoro
+   subroutine compute_coriolis_correction_2D_default(icorio, jsferic, jacorioconstant, jasfer3D, fcorio, trshcorio, Corioadamsbashfordfac)
 
-      real(dp) :: fvcor, ab_correction
+      use precision, only: dp
+      use m_flowgeom, only: ln, acL, csu, snu, lnx, lnx1D
+      use m_flow, only: hu, adve, fvcoro, fcori
+      use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2
 
-      fvcor = fvcor_in
+      ! Arguments
+      integer, intent(in) :: icorio !< Coriolis formulation type
+      integer, intent(in) :: jsferic !< Spherical coordinates (0/1)
+      integer, intent(in) :: jacorioconstant !< Spatially constant Coriolis
+      integer, intent(in) :: jasfer3D !< 3D spherical transform
+      real(dp), intent(in) :: fcorio !< Constant Coriolis parameter
+      real(dp), intent(in) :: trshcorio !< Depth threshold
+      real(dp), intent(in) :: Corioadamsbashfordfac !< Adams-Bashforth factor
 
-      ! Apply depth threshold ramping
-      if (trshcorio > 0.0_dp) then
-         if (hmin < trshcorio) then
-            fvcor = fvcor * hmin / trshcorio
+      ! Local variables
+      integer :: L, k1, k2
+      real(dp) :: fcor, fvcor, tangential_1, tangential_2, ab_correction
+      logical :: use_fcori_array, do_threshold, do_adamsbash
+
+      ! Hoist invariant decisions
+      use_fcori_array = (jsferic > 0 .or. jacorioconstant > 0) .and. (icorio < 4 .or. icorio > 6)
+      do_threshold = (trshcorio > 0.0_dp)
+      do_adamsbash = (Corioadamsbashfordfac > 0.0_dp)
+
+      if (use_fcori_array) then
+         ! Version 1: node-based fcor (zeta-based)
+         if (.not. allocated(fcor1_)) then
+            allocate (fcor1_(lnx), fcor2_(lnx))
          end if
+         do L = lnx1D + 1, lnx
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            fcor1_(L) = fcori(k1)
+            fcor2_(L) = fcori(k2)
+         end do
+
+         !$OMP SIMD
+         do L = lnx1D + 1, lnx
+            if (jasfer3D == 1) then
+               tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
+               tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
+            else
+               tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
+               tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+            end if
+
+            fvcor = acL(L) * tangential_1 * fcor1_(L) + (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
+
+            if (do_threshold .and. hmin_(L) < trshcorio) then
+               fvcor = fvcor * hmin_(L) / trshcorio
+            end if
+            if (hu(L) > 0.0_dp) then
+               if (do_adamsbash) then
+                  ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
+                                  merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
+                  adve(L) = adve(L) - fvcor - ab_correction
+                  fvcoro(L) = fvcor
+               else
+                  adve(L) = adve(L) - fvcor
+               end if
+            end if
+         end do
+      else
+         ! Version 2: Constant fcor (u-based)
+         !$OMP SIMD
+         do L = lnx1D + 1, lnx
+            if (jsferic > 0 .or. jacorioconstant > 0) then
+               fcor = fcori(L)
+            else
+               fcor = fcorio
+            end if
+
+            if (jasfer3D == 1) then
+               tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
+               tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
+            else
+               tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
+               tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
+            end if
+
+            fvcor = acL(L) * tangential_1 * fcor + (1.0_dp - acL(L)) * tangential_2 * fcor
+
+            if (do_threshold .and. hmin_(L) < trshcorio) then
+               fvcor = fvcor * hmin_(L) / trshcorio
+            end if
+            if (hu(L) > 0.0_dp) then
+               if (do_adamsbash) then
+                  ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
+                                  merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
+                  adve(L) = adve(L) - fvcor - ab_correction
+                  fvcoro(L) = fvcor
+               else
+                  adve(L) = adve(L) - fvcor
+               end if
+            end if
+         end do
       end if
 
-      ! Compute Adams-Bashforth correction if enabled
-      if (adamsfac > 0.0_dp) then
-         ab_correction = adamsfac * (fvcor - fvcoro_prev) * merge(1.0_dp, 0.0_dp, fvcoro_prev /= 0.0_dp)
-         adve_correction = -(fvcor + ab_correction)
-         fvcoro_new = fvcor
-      else
-         adve_correction = -fvcor
-         fvcoro_new = fvcoro_prev ! unchanged
-      end if
-   end subroutine compute_coriolis_correction
+   end subroutine compute_coriolis_correction_2D_default
 
 end module m_setumod
