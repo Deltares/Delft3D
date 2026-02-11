@@ -58,7 +58,7 @@ contains
       use m_flowgeom
       use m_flowtimes, only: handle_umod, ja_timestep_auto_visc, dti
       use m_sferic
-      !use m_xbeach_data, only: DR, roller, swave, nuhfac
+      use m_xbeach_data, only: roller, swave, nuhfac
       use unstruc_model, only: md_restartfile
       use m_setucxcuy_leastsquare, only: reconst2nd
       use MessageHandling
@@ -379,7 +379,7 @@ contains
          if (kmx == 0) then
 
             if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
-               call compute_viscosity_and_stress_vectorized()
+               call compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
             else
                !$OMP PARALLEL DO                                  &
                !$OMP PRIVATE(L,k1,k2)
@@ -698,21 +698,21 @@ contains
 
    !> Compute viscosity and stress for 2D links (vectorized proof of concept)
    !! Computes for ALL links, caller zeros dry links afterward
-   subroutine compute_viscosity_and_stress_vectorized()
+subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: lnx, lnx1d, ln, acl, wui, dx, csu, snu, wu
+      use m_physcoef, only: vonkar, sag
+      use m_flow, only: vol1, hu, u1, v, frcu, ifrcutp, vicushp, viclu, viu, viusp, dvxc, dvyc
       use m_get_chezy, only: get_chezy
       use m_coordinate_transform, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner1, uycorner1, uxcorner2, uycorner2
       use m_coordinate_transform, only: ux1, uy1, ux2, uy2
-      !use m_coordinate_transform, only: ucx_link_1, ucx_link_2, ucy_link_1, ucy_link_2
-      use m_xbeach_data, only: DR, roller, swave, nuhfac
+      use m_xbeach_data, only: DR
       use m_waveconst, only: WAVE_SURFBEAT
-      use m_sferic, only: jsferic, jasfer3D
-      use m_lin2nodx, only: lin2nodx
-      use m_lin2nody, only: lin2nody
-      use m_flowtimes, only: dti, ja_timestep_auto_visc
-      implicit none
+      use m_flowtimes, only: dti
+
+      real(dp), intent(in) :: Smagorinsky, Elder, vicouv, vicuship, nuhfac, rhomean
+      integer, intent(in) :: javiusp, nshiptxy, ja_timestep_auto_visc
+      integer, intent(in) :: jawave, swave, roller, jsferic, jasfer3D
 
       real(kind=dp) :: vksag6
 
@@ -802,9 +802,9 @@ contains
          duydt = (ucny_link_2 - ucny_link_1) * wuiL
 
          if (Smagorinsky > 0) then ! add Smagorinsky
-            dundn = csu(L) * duxdn + snu(L) * duydn
+            dundn = +csu(L) * duxdn + snu(L) * duydn
             dutdn = -snu(L) * duxdn + csu(L) * duydn
-            dundt = csu(L) * duxdt + snu(L) * duydt
+            dundt = +csu(L) * duxdt + snu(L) * duydt
             dutdt = -snu(L) * duxdt + csu(L) * duydt
 
             shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
@@ -820,11 +820,11 @@ contains
             nuhroller = nuhfac * hu(L) * (drl(L) / rhomean)**(1.0_dp / 3.0_dp)
             vicL = max(nuhroller, vicL)
          end if
-
-         if (javiusp) then
-            vicc = viusp(L)
+         vicc = 0.0_dp
+         if (javiusp == 1) then
+            vicc = vicc + viusp(L)
          else
-            vicc = vicouv
+            vicc = vicc + vicouv
          end if
          vicL = vicL + vicc
 
