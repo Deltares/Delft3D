@@ -27,19 +27,14 @@
 
 #include "WALRUS.hh"
 #include <fstream>
-
-//#ifdef WIN32
-#include<algorithm>
-#define max(a,b) std::max(a,b)
-#define min(a,b) std::min(a,b)
-//#endif
+#include <algorithm>
 
 /*! @file
  * @brief implements the try and check of a time step
 */
 
 double WALRUS::fGS_dG(double dG) {
-  return (cD - _dG - _hS) * max(cD - dG, _hS) / cG;
+  return (cD - _dG - _hS) * std::max(cD - dG, _hS) / cG;
 }
 
 
