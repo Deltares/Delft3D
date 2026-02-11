@@ -1260,6 +1260,7 @@ contains
 
       real(kind=dp) :: tmsx !< Temporary x-coordinate for bubblescreen source/sink
       real(kind=dp) :: tmsy !< Temporary y-coordinate for bubblescreen source/sink
+      real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
 
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: srcid !< Source id
@@ -1294,10 +1295,10 @@ contains
                      bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
                write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
 
-               
-               call addsorsin(srcid, [tmsx], [tmsy], [zws(i)], [zws(i)], 0.0_dp, ierr)
+               tmsz = (zws(i) + zws(i-1)) / 2.0_dp
+               call addsorsin(srcid, [tmsx], [tmsy], [tmsz], [tmsz], 0.0_dp, ierr)
                                  
-               write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, zws(i)
+               write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, tmsz
                call msg_flush()
 
                bubble_source_count = bubble_source_count + 1
