@@ -1052,7 +1052,7 @@ contains
    end subroutine saveObservations
 
    !> Reads observation points from a *.pli file.
-   ! Set intobs to 1 as .pli files are interpolated (not snapped to the grid).
+   !! Set intobs to 1 as .pli files are interpolated (not snapped to the grid).
    subroutine loadObservations_from_pli(filename)
       
       use m_filez,   only: oldfil
