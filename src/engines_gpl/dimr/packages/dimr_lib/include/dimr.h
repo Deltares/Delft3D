@@ -188,7 +188,7 @@ class Dimr {
 
         void           char_to_ints       (char *, int **, int *);
 
-        map<string, int> ncfiles;
+        std::map<std::string, int> ncfiles;
 		static void		   _log				  (Level, const char*); /* BMILogger function */
 		Clock::Timestamp  timerStartStamp;
 		Clock::Timestamp  timerSumStamp;
