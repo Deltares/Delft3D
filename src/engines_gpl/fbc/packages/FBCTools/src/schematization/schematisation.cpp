@@ -56,7 +56,6 @@
 #include <iostream>
 #include <map>
 
-using namespace std;
 using namespace timeseries;
 using namespace schematization;
 using namespace fews;
