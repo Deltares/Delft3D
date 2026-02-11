@@ -276,8 +276,8 @@ contains
       
       integer, intent(in) :: n_start !< Start index of observation stations set (typically 1, but allows to restrict to movoing observation points).
       integer, intent(in) :: n_end   !< End index of observation stations set (typically numobs + nummovobs, but allows to restrict to moving observation points).
-      integer, dimension(3,:), intent(inout) :: neighbour_nodes_obs !< Table of nearby flow node numbers for each station.
-      real(kind=dp), dimension(3,:), intent(inout) :: neighbour_weights_obs !< Table of interpolation weights for nearby flow node numbers for each station.
+      integer, dimension(:,:), intent(inout) :: neighbour_nodes_obs !< Table of nearby flow node numbers for each station.
+      real(kind=dp), dimension(:,:), intent(inout) :: neighbour_weights_obs !< Table of interpolation weights for nearby flow node numbers for each station.
       
       integer                                         :: jdla, i, jagetwf_org
       real(kind=dp), allocatable                      :: dummyZ (:)
@@ -298,7 +298,7 @@ contains
       call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
                                  jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
       
-      do i = 1, numobs + nummovobs
+       do i = n_start, n_end
          neighbour_nodes_obs  (:, i) = indxx(:, i)
          neighbour_weights_obs(:, i) = wfxx (:, i)
       end do
