@@ -102,7 +102,7 @@ contains
       it(2 * 18) = 2
       OPTION(19) = 'Layertype                           ( ) '
       it(2 * 19) = 2
-      OPTION(20) = 'Sigmagrowthfactor                   ( ) '
+      OPTION(20) = 'zLayerGrowthFactor                  ( ) '
       it(2 * 20) = 6
       OPTION(21) = 'Sillheightmin                       (m) '
       it(2 * 21) = 6
@@ -240,7 +240,7 @@ contains
       call IFormPutDouble(2 * 17, zkdropstep, '(F8.3)')
       call IFORMPUTINTEGER(2 * 18, ifixedweirscheme)
       call IFORMPUTINTEGER(2 * 19, Layertype)
-      call IFormPutDouble(2 * 20, Sigmagrowthfactor, '(F8.3)')
+      call IFormPutDouble(2 * 20, z_layer_growth_factor, '(F8.3)')
       call IFormPutDouble(2 * 21, Sillheightmin, '(F8.3)')
       call IFORMPUTINTEGER(2 * 22, Mxlayz)
       call IFORMPUTINTEGER(2 * 23, ihuzcsig)
@@ -305,7 +305,7 @@ contains
             call IFormGetDouble(2 * 17, zkdropstep)
             call IFORMgeTINTEGER(2 * 18, ifixedweirscheme)
             call IFORMgeTINTEGER(2 * 19, Layertype)
-            call IFormGetDouble(2 * 20, Sigmagrowthfactor)
+            call IFormGetDouble(2 * 20, z_layer_growth_factor)
             call IFormGetDouble(2 * 21, Sillheightmin)
             call IFORMgetINTEGER(2 * 22, Mxlayz)
             call IFORMgeTINTEGER(2 * 23, ihuzcsig)

@@ -192,7 +192,7 @@ class VerschillentoolOutput:
         }
 
         first_col = maxima_sheet.min_column - 1
-        last_col = maxima_sheet.max_column - 1
+        last_col = maxima_sheet.max_column - 2
 
         maxima_dict = {
             str(maxima_sheet[row][first_col].value).split(maxsplit=1)[0]: float(
