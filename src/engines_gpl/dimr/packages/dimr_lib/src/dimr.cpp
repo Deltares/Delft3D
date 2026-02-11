@@ -131,12 +131,12 @@ bool readComputeTimesFile(const char* fileName, dimr_control_block* controlBlock
         return false;
     }
     double timeRead;
-    controlBlock->computeTimes = new vector<double>();
+    controlBlock->computeTimes = new std::vector<double>();
     while (computeTimesFile >> timeRead)
         controlBlock->computeTimes->push_back(timeRead);
     // Close the file
     computeTimesFile.close();
-    vector<double>& controlblock_timearray = *(controlBlock->computeTimes); // Shortcut to keep the code readable
+    std::vector<double>& controlblock_timearray = *(controlBlock->computeTimes); // Shortcut to keep the code readable
     // Enough data?
     if (controlblock_timearray.size() < MINIMUM_TIME_POINTS)
         throw Exception(Exception::ERR_INVALID_INPUT, "File '%s' must contain at least %d times", fileName, MINIMUM_TIME_POINTS);
@@ -270,7 +270,7 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
         cb->unit.component->result = (cb->unit.component->dllInitialize) (cb->unit.component->inputFile);
         if (cb->unit.component->result != 0)
         {
-            stringstream ss;
+            std::stringstream ss;
             ss << cb->unit.component->result;
             std::string componentName = cb->unit.component->name;
             std::string message = "#### ERROR: dimr initialize ABORT,: " + componentName + " initialize failed, with return value " + ss.str() + " \n";
@@ -288,7 +288,7 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
     int state = (cb->unit.component->dllUpdate) (cb->tStep);
     if (state != 0)
     {
-        stringstream ss, curTime;
+        std::stringstream ss, curTime;
         ss << state;
         curTime << *&cb->tCur;
         std::string componentName = cb->unit.component->name;
@@ -304,7 +304,7 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
         int state = (cb->unit.component->dllFinalize) ();
         if (state != 0)
         {
-            stringstream ss;
+            std::stringstream ss;
             ss << state;
             std::string componentName = cb->unit.component->name;
             std::string message = "#### ERROR: dimr finalize ABORT,: " + componentName + " finalize failed, with return value " + ss.str() + " \n";
@@ -403,7 +403,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
         masterComponent->result = (masterComponent->dllInitialize) (masterComponent->inputFile);
         if (masterComponent->result != 0)
         {
-            stringstream ss;
+            std::stringstream ss;
             ss << masterComponent->result;
             std::string componentName = masterComponent->name;
             std::string message = "#### ERROR: dimr initialize ABORT,: " + componentName + " initialize failed, with return value " + ss.str() + " \n";
@@ -474,7 +474,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                         thisComponent->result = (thisComponent->dllInitialize) (thisComponent->inputFile);
                         if (thisComponent->result != 0)
                         {
-                            stringstream ss;
+                            std::stringstream ss;
                             ss << thisComponent->result;
                             std::string componentName = thisComponent->name;
                             std::string message = "#### ERROR: dimr initialize ABORT,: " + componentName + " initialize failed, with return value " + ss.str() + " \n";
@@ -616,7 +616,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                     {
                         // create netcdf file in workingdir
 
-                        string fileName = thisCoupler->logger->GetLoggerFilename(dimrWorkingDirectory, dirSeparator);
+                        std::string fileName = thisCoupler->logger->GetLoggerFilename(dimrWorkingDirectory, dirSeparator);
 
                         // write NetCDF file
 
@@ -638,11 +638,11 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                         nc_put_att_text(ncid, NC_GLOBAL, "references", strlen(references), references);
                         std::ostringstream source;
                         source << "DIMR " << getfullversionstring_dimr_lib();
-                        string sourcestr(source.str());
+                        std::string sourcestr(source.str());
                         nc_put_att_text(ncid, NC_GLOBAL, "source", sourcestr.size(), sourcestr.c_str());
                         std::ostringstream history;
                         history << "Created on " << buf << ", DIMR.";
-                        string historystr(history.str());
+                        std::string historystr(history.str());
                         nc_put_att_text(ncid, NC_GLOBAL, "history", historystr.size(), historystr.c_str());
                         std::ostringstream title;
                         const char* version = "version";
@@ -662,13 +662,13 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                         if (strlen(targetComponentVersion) == 0) {
                             strcpy(targetComponentVersion, "Unknown");
                         }
-                        const string sourceComponentName(thisCoupler->sourceComponentName);
-                        const string targetComponentName(thisCoupler->targetComponentName);
-                        const string sourceComponentVersionStr(sourceComponentVersion);
-                        const string targetComponentVersionStr(targetComponentVersion);
+                        const std::string sourceComponentName(thisCoupler->sourceComponentName);
+                        const std::string targetComponentName(thisCoupler->targetComponentName);
+                        const std::string sourceComponentVersionStr(sourceComponentVersion);
+                        const std::string targetComponentVersionStr(targetComponentVersion);
                         title << "Data transferred from " << sourceComponentName << " " << sourceComponentVersionStr
                             << " to " << targetComponentName << " " << targetComponentVersionStr;
-                        string titlestr(title.str());
+                        std::string titlestr(title.str());
                         nc_put_att_text(ncid, NC_GLOBAL, "title", titlestr.size(), titlestr.c_str());
                         delete[] sourceComponentVersion;
                         delete[] targetComponentVersion;
@@ -698,7 +698,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                         {
                             std::ostringstream oss;
                             oss << "item" << k + 1 << "_nValues";
-                            const string valuestr(oss.str());
+                            const std::string valuestr(oss.str());
                             int status = nc_def_dim(ncid, valuestr.c_str(), 1, &thisCoupler->logger->netcdfReferences->item_values[k]);
                             if (status != NC_NOERR) {
                                 throw Exception(Exception::ERR_OS, "Could not create dimension \"%s\".", valuestr.c_str());
@@ -708,19 +708,19 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                             int dummyVar;
                             std::ostringstream varName;
                             varName << "item" << k + 1 << "_values";
-                            const string varnamestr(varName.str());
+                            const std::string varnamestr(varName.str());
                             nc_def_var(ncid, varnamestr.c_str(), NC_DOUBLE, 2, dimensions, &thisCoupler->logger->netcdfReferences->item_variables[k]);
 
                             std::ostringstream itemValuesLongName;
-                            const string sourceName = string(thisCoupler->items[k].sourceName);
+                            const std::string sourceName = std::string(thisCoupler->items[k].sourceName);
                             itemValuesLongName << sourceName
-                                << " -> " << string(thisCoupler->items[k].targetName);
-                            const string itemvaluesstr(itemValuesLongName.str());
+                                << " -> " << std::string(thisCoupler->items[k].targetName);
+                            const std::string itemvaluesstr(itemValuesLongName.str());
                             nc_put_att_text(ncid, thisCoupler->logger->netcdfReferences->item_variables[k], "long_name", itemvaluesstr.size(), itemvaluesstr.c_str());
 
                             std::ostringstream itemValuesCoordinates;
                             itemValuesCoordinates << "station_name";
-                            const string itemValuesCoordinatesstr(itemValuesCoordinates.str());
+                            const std::string itemValuesCoordinatesstr(itemValuesCoordinates.str());
                             nc_put_att_text(ncid, thisCoupler->logger->netcdfReferences->item_variables[k], "coordinates", itemValuesCoordinatesstr.size(), itemValuesCoordinatesstr.c_str());
                         }
 
@@ -795,7 +795,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
         masterComponent->tEnd = dbl2_buf[1];
     }
 
-    masterComponent->tNext = min(*currentTime + tStep, masterComponent->tEnd);
+    masterComponent->tNext = std::min(*currentTime + tStep, masterComponent->tEnd);
     if (*currentTime == masterComponent->tStart) {
         // Set the currentTime and nextTime in all other components, relative to currentTime
         for (int i = 0; i < cb->numSubBlocks; i++) {
@@ -844,7 +844,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                     if (i < cb->masterSubBlockId) {
                         // Before MasterComponent:
                         // Check the step size instead of tNext
-                        tStep = min(tStep, cb->subBlocks[i].tStep);
+                        tStep = std::min(tStep, cb->subBlocks[i].tStep);
                     }
                     else {
                         // After MasterComponent:
@@ -855,7 +855,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                 }
                 else {
                     // This follower is not active yet
-                    tStep = min(tStep, tStepFollower);
+                    tStep = std::min(tStep, tStepFollower);
                 }
                 log->Write(INFO, my_rank, "TIME LOOP %15.5f -- %15.5f -- %15.5f -- %15.5f ", tStep, masterComponent->tNext, cb->subBlocks[i].tNext, tStepFollower);
             }
@@ -892,7 +892,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                 }
                 if (state0 != 0 || state != 0)
                 {
-                    stringstream ss, curTime;
+                    std::stringstream ss, curTime;
                     ss << state;
                     curTime << *currentTime;
                     std::string componentName = cb->unit.component->name;
@@ -946,10 +946,10 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             int state = (thisComponent->dllUpdate) (tUpdate);
                             if (state != 0)
                             {
-                                stringstream ss, ss_nr;
+                                std::stringstream ss, ss_nr;
                                 ss << *currentTime;
                                 ss_nr << state;
-                                string message = "Could not update the component " + std::string(thisComponent->name) + " at time " + ss.str() + " because of errnr : " + ss_nr.str() + "\n";
+                                std::string message = "Could not update the component " + std::string(thisComponent->name) + " at time " + ss.str() + " because of errnr : " + ss_nr.str() + "\n";
                                 printf(message.c_str());
                                 log->Write(FATAL, my_rank, message.c_str(), configfile);
 
@@ -968,7 +968,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             int timeIndexCounter = static_cast<int>(floor((*currentTime - cb->subBlocks[cb->masterSubBlockId].tStart) / tStep));
                             log->Write(DEBUG, my_rank, "%10.1f:    %s.communicate (%d -- %15.5f, %15.5f)", *currentTime, thisCoupler->name, timeIndexCounter, cb->subBlocks[cb->masterSubBlockId].tStart, tStep);
                             if (thisCoupler->logger != NULL) {
-                                string fileName = thisCoupler->logger->GetLoggerFilename(dimrWorkingDirectory, dirSeparator);
+                                std::string fileName = thisCoupler->logger->GetLoggerFilename(dimrWorkingDirectory, dirSeparator);
 
                                 int ncid = ncfiles[fileName];
                                 size_t index[] = { static_cast<size_t>(timeIndexCounter) };
@@ -1032,7 +1032,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
 
                                 if (thisCoupler->logger != NULL && my_rank == 0)
                                 {
-                                    string fileName = thisCoupler->logger->GetLoggerFilename(this->dimrWorkingDirectory, this->dirSeparator);
+                                    std::string fileName = thisCoupler->logger->GetLoggerFilename(this->dimrWorkingDirectory, this->dirSeparator);
 
                                     int ncid = ncfiles[fileName];
                                     size_t indices[] = { static_cast<size_t>(timeIndexCounter), 0 };
@@ -1063,7 +1063,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                         }
                     }
                     cb->subBlocks[i].tNext = cb->subBlocks[i].tNext + cb->subBlocks[i].tStep;
-                    vector<double>& subblock_timearray = *(cb->subBlocks[i].computeTimes); // Shortcut to keep the code readable
+                    std::vector<double>& subblock_timearray = *(cb->subBlocks[i].computeTimes); // Shortcut to keep the code readable
                     if (cb->subBlocks[i].tNext > cb->subBlocks[i].tEnd)
                         // This subBlock does not have to be executed anymore
                         // Force this by giving it a nextTime > simulationEndTime
@@ -1314,7 +1314,7 @@ void Dimr::runParallelFinish(dimr_control_block* cb) {
             int state = (cb->subBlocks[i].unit.component->dllFinalize) ();
             if (state != 0)
             {
-                stringstream ss;
+                std::stringstream ss;
                 ss << state;
                 std::string componentName = cb->subBlocks[i].unit.component->name;
                 std::string message = "#### ERROR: dimr finalize ABORT,: " + componentName + " finalize failed, with return value " + ss.str() + " \n";
@@ -1346,7 +1346,7 @@ void Dimr::runParallelFinish(dimr_control_block* cb) {
                     int state = (cb->subBlocks[i].subBlocks[j].unit.component->dllFinalize) ();
                     if (state != 0)
                     {
-                        stringstream ss;
+                        std::stringstream ss;
                         ss << state;
                         std::string componentName = cb->subBlocks[i].unit.component->name;
                         std::string message = "#### ERROR: dimr finalize ABORT,: " + componentName + " finalize failed, with return value " + ss.str() + " \n";
@@ -1360,7 +1360,7 @@ void Dimr::runParallelFinish(dimr_control_block* cb) {
                 else { //coupler
                     dimr_coupler* thisCoupler = cb->subBlocks[i].subBlocks[j].unit.coupler;
                     if (thisCoupler->logger != NULL) {
-                        string fileName = thisCoupler->logger->GetLoggerFilename(dimrWorkingDirectory, dirSeparator);
+                        std::string fileName = thisCoupler->logger->GetLoggerFilename(dimrWorkingDirectory, dirSeparator);
                         int ncid = ncfiles[fileName];
                         if (ncid >= 0) {
                             // todo: what if the computation crashes - can we read the file?
