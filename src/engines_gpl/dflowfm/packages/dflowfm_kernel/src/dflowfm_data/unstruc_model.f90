@@ -44,7 +44,7 @@ module unstruc_model
    use properties, only: prop_get, prop_file, tree_create, tree_destroy, max_prop_length
    use m_waveconst
 
-   implicit none
+   implicit none(external)
 
    !> The version number of the MDU File format: d.dd, [config_major].[config_minor], e.g., 1.03
     !!
@@ -428,6 +428,7 @@ contains
       use m_realan, only: realan
       use m_filez, only: oldfil
       use unstruc_messages, only: threshold_abort
+      use m_readCrossSections, only: readCrossSectionDefinitions
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
@@ -479,11 +480,19 @@ contains
       network%sferic = jsferic == 1
 
       threshold_abort = LEVEL_FATAL
-      if (istat == 0 .and. jadoorladen == 0 .and. network%numk > 0 .and. network%numl > 0) then
-         timerHandle = 0
-         call timstrt('Read 1d attributes', timerHandle)
-         call read_1d_attributes(md_1dfiles, network)
-         call timstop(timerHandle)
+      if (istat == 0 .and. jadoorladen == 0) then
+         if (network%numk > 0 .and. network%numl > 0) then
+            timerHandle = 0
+            call timstrt('Read 1d attributes', timerHandle)
+            call read_1d_attributes(md_1dfiles, network)
+            call timstop(timerHandle)
+            ! Always read cross section definitions if specified (needed for long culverts)
+         else if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
+            call readCrossSectionDefinitions(network, md_1dfiles%cross_section_definitions)
+            if (network%CSDefinitions%Count < 1) then
+               call SetMessage(LEVEL_WARN, 'No Cross_Section Definitions Found in file '//trim(md_1dfiles%cross_section_definitions))
+            end if
+         end if
       end if
 
       timerHandle = 0
@@ -1974,6 +1983,10 @@ contains
       call prop_get(md_ptr, 'output', 'NcFormat', md_ncformat, success)
       call unc_set_ncformat(md_ncformat)
       call prop_get(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+      if (md_mapformat == IFORMAT_NETCDF .and. strcmpi(md_nc_map_precision, 'single')) then
+         call mess(LEVEL_WARN, 'MapFormat = 1 (NetCDF) does not support single precision output, output will be in double precision. Consider upgrading to MapFormat=4 (UGRID) for single precision output support.')
+      end if
+      
       call prop_get(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
       call prop_get(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
       if (success .and. .not. value_parsed) then
@@ -2023,6 +2036,11 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component', jahisww, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment', jahissed, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor', jahiszcor, success)
+      if (.not. success .and. kmx == 0) then
+         ! for 2D we don't write zLayers by default. However zlayers are important for nesting where you can nest 2d=>3d models
+         ! since jahiszcor is by default 1,this will make by default jahiszcor=0 if kmx=0 .and. jahiszcor=1 if kmx > 0
+         jahiszcor = 0
+      end if
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral', jahislateral, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent', jahistaucurrent, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity', jahisvelocity, success)

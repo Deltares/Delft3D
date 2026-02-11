@@ -56,7 +56,6 @@
 
 
 #include <typeinfo>
-using namespace std;
 
 #include <string>
 #include <sstream>
@@ -141,7 +140,7 @@ int main (int     argc,
         delete DHE;
         ireturn = 0;
     }
-    catch (exception& ex) {
+    catch (std::exception& ex) {
         printf ("#### ERROR: dimr ABORT: C++ Exception: %s\n", ex.what());
         if (doFinalize) {
             printf("#### ERROR: dimr ABORT: Trying to finalize...\n");
@@ -439,7 +438,7 @@ void DimrExe::initialize (int     argc,
                 if (sscanf (optarg, "%i", &logLevel) != 1)
                     throw Exception(Exception::ERR_INVALID_INPUT, "Invalid log level (-d option)");
                 else
-                    logLevel = min(max(logLevel,ALL),FATAL);
+                    logLevel = std::min(std::max(logLevel,ALL),FATAL);
                 break;
             }
 
