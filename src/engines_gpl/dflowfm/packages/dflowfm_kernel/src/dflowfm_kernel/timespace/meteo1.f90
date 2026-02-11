@@ -7090,9 +7090,7 @@ contains
          nullify (dataPtr1)
       case ('bubblescreen_discharge')
          itemPtr1 => item_bubblescreen_discharge
-         ! Do not point to array qstss here.
-         ! qstss might be reallocated after initialization (when coupled to Cosumo)
-         ! and must be an argument when calling ec_gettimespacevalue.
+         ! Do not point to an array here as it might be reallocated after initialization
          nullify (dataPtr1)
       case ('sourcesink_constituentdelta')
          if (strcmpi(constituent_name, 'salinity')) then

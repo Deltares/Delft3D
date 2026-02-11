@@ -143,7 +143,6 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      ! max_num_src = compute_no_sourcesinks(bnd_ptr, base_dir, file_name)
       max_num_src =  compute_number_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
       
@@ -1128,6 +1127,9 @@ contains
 
    end function init_sourcesink_forcings
 
+   !> Compute the number of source/sinks necessary for the bubblescreens
+   !! this is needed to preallocate the source sinks array (EC Module)
+   !! while doing this fill the BubbleScreen data structure with processed info
    function compute_number_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
       use fm_external_forcings_data, only: numsrc
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
@@ -1142,14 +1144,15 @@ contains
       use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline      
 
 
-      integer :: no_sourcesinks
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-      character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
 
+
+      character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
       type(tree_data), pointer :: block_ptr
 
+      integer :: no_sourcesinks
       integer :: num_items_in_file
       character(len=:), allocatable :: id !< Bubblescreen id
 
@@ -1218,7 +1221,10 @@ contains
       allocate(bubblescreen_air_discharge(size(bubblescreens)))
       
    end function compute_number_bubblescreens_sourcesinks
-   !> Read and initialize bubblescreen object from new external forcings file.
+
+
+   !> Finish initialization of bubblescreen object and create the source/sink objects
+   !! also connect the EC module to bubblescreen_air_discharge
    function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
