@@ -1,4 +1,4 @@
-!----- AGPL --------------------------------------------------------------------
+﻿ !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2026.
 !
@@ -698,7 +698,7 @@ contains
 
    !> Compute viscosity and stress for 2D links (vectorized proof of concept)
    !! Computes for ALL links, caller zeros dry links afterward
-subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
+   subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, javiusp, nshiptxy, vicuship, ja_timestep_auto_visc, jawave, swave, roller, nuhfac, rhomean, jsferic, jasfer3D)
       use precision, only: dp
       use m_flowgeom, only: lnx, lnx1d, ln, acl, wui, dx, csu, snu, wu
       use m_physcoef, only: vonkar, sag
@@ -984,99 +984,104 @@ subroutine compute_viscosity_and_stress_vectorized(Smagorinsky, Elder, vicouv, j
       use m_flow, only: hu, adve, fvcoro, fcori
       use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2
 
-      ! Arguments
-      integer, intent(in) :: icorio !< Coriolis formulation type
-      integer, intent(in) :: jsferic !< Spherical coordinates (0/1)
-      integer, intent(in) :: jacorioconstant !< Spatially constant Coriolis
-      integer, intent(in) :: jasfer3D !< 3D spherical transform
-      real(dp), intent(in) :: fcorio !< Constant Coriolis parameter
-      real(dp), intent(in) :: trshcorio !< Depth threshold
-      real(dp), intent(in) :: Corioadamsbashfordfac !< Adams-Bashforth factor
+      integer, intent(in) :: icorio, jsferic, jacorioconstant, jasfer3D
+      real(dp), intent(in) :: fcorio, trshcorio, Corioadamsbashfordfac
 
-      ! Local variables
       integer :: L, k1, k2
-      real(dp) :: fcor, fvcor, tangential_1, tangential_2, ab_correction
-      logical :: use_fcori_array, do_threshold, do_adamsbash
+      logical :: spatial_coriolis
+      real(dp) :: fcor, fvcor
 
-      ! Hoist invariant decisions
-      use_fcori_array = (jsferic > 0 .or. jacorioconstant > 0) .and. (icorio < 4 .or. icorio > 6)
-      do_threshold = (trshcorio > 0.0_dp)
-      do_adamsbash = (Corioadamsbashfordfac > 0.0_dp)
+      spatial_coriolis = (jsferic > 0 .or. jacorioconstant > 0)
 
-      if (use_fcori_array) then
-         ! Version 1: node-based fcor (zeta-based)
-         if (.not. allocated(fcor1_)) then
-            allocate (fcor1_(lnx), fcor2_(lnx))
-         end if
+      if (spatial_coriolis .and. (icorio /= 5)) then
+         ! Node-based fcor (zeta-based)
+         if (.not. allocated(fcor1_)) allocate (fcor1_(lnx), fcor2_(lnx))
+
          do L = lnx1D + 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)
             fcor1_(L) = fcori(k1)
             fcor2_(L) = fcori(k2)
          end do
-
          !$OMP SIMD
          do L = lnx1D + 1, lnx
-            if (jasfer3D == 1) then
-               tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
-               tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
-            else
-               tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-               tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
-            end if
-
-            fvcor = acL(L) * tangential_1 * fcor1_(L) + (1.0_dp - acL(L)) * tangential_2 * fcor2_(L)
-
-            if (do_threshold .and. hmin_(L) < trshcorio) then
-               fvcor = fvcor * hmin_(L) / trshcorio
-            end if
+            fvcor = calculate_coriolis_force(fcor1_(L), fcor2_(L), jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
+                                             csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
             if (hu(L) > 0.0_dp) then
-               if (do_adamsbash) then
-                  ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
-                                  merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
-                  adve(L) = adve(L) - fvcor - ab_correction
+               adve(L) = adve(L) - fvcor
+
+               if (Corioadamsbashfordfac > 0.0_dp) then
+                  if (fvcoro(L) /= 0.0_dp) then
+                     adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
+                  end if
                   fvcoro(L) = fvcor
-               else
-                  adve(L) = adve(L) - fvcor
                end if
             end if
          end do
-      else
-         ! Version 2: Constant fcor (u-based)
-         !$OMP SIMD
-         do L = lnx1D + 1, lnx
-            if (jsferic > 0 .or. jacorioconstant > 0) then
-               fcor = fcori(L)
+
+      else ! icorio = 5 OR spatially constant corio
+         if (spatial_coriolis) then
+            fcor = fcori(L)
+         else
+            if (fcorio == 0.0_dp) then
+               return ! No Coriolis force to apply
             else
                fcor = fcorio
             end if
+         end if
+         !$OMP SIMD
+         do L = lnx1D + 1, lnx
+            fvcor = calculate_coriolis_force(fcor, fcor, jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
+                                             csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
 
-            if (jasfer3D == 1) then
-               tangential_1 = compute_tangential_velocity_spherical(ux3(L), uy3(L), csb_1(L), snb_1(L), csu(L), snu(L))
-               tangential_2 = compute_tangential_velocity_spherical(ux4(L), uy4(L), csb_2(L), snb_2(L), csu(L), snu(L))
-            else
-               tangential_1 = -snu(L) * ux3(L) + csu(L) * uy3(L)
-               tangential_2 = -snu(L) * ux4(L) + csu(L) * uy4(L)
-            end if
-
-            fvcor = acL(L) * tangential_1 * fcor + (1.0_dp - acL(L)) * tangential_2 * fcor
-
-            if (do_threshold .and. hmin_(L) < trshcorio) then
-               fvcor = fvcor * hmin_(L) / trshcorio
-            end if
             if (hu(L) > 0.0_dp) then
-               if (do_adamsbash) then
-                  ab_correction = Corioadamsbashfordfac * (fvcor - fvcoro(L)) * &
-                                  merge(1.0_dp, 0.0_dp, fvcoro(L) /= 0.0_dp)
-                  adve(L) = adve(L) - fvcor - ab_correction
+               adve(L) = adve(L) - fvcor
+
+               if (Corioadamsbashfordfac > 0.0_dp) then
+                  if (fvcoro(L) /= 0.0_dp) then
+                     adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
+                  end if
                   fvcoro(L) = fvcor
-               else
-                  adve(L) = adve(L) - fvcor
                end if
             end if
          end do
       end if
-
    end subroutine compute_coriolis_correction_2D_default
+
+!> Apply Coriolis correction for a single link
+!! This elemental function enables vectorization by the compiler
+   elemental function calculate_coriolis_force(fcor_1, fcor_2, jasfer3D, &
+                                               acL_L, csu_L, snu_L, &
+                                               ux3_L, uy3_L, ux4_L, uy4_L, &
+                                               csb_1_L, snb_1_L, csb_2_L, snb_2_L, &
+                                               hmin_L, trshcorio) result(fvcor)
+      integer, intent(in) :: jasfer3D
+      real(dp), intent(in) :: fcor_1, fcor_2
+      real(dp), intent(in) :: acL_L, csu_L, snu_L
+      real(dp), intent(in) :: ux3_L, uy3_L, ux4_L, uy4_L
+      real(dp), intent(in) :: csb_1_L, snb_1_L, csb_2_L, snb_2_L
+      real(dp), intent(in) :: hmin_L, trshcorio
+      real(dp) :: fvcor
+
+      real(dp) :: tangential_1, tangential_2
+
+      ! Compute tangential velocities
+      if (jasfer3D == 1) then
+         tangential_1 = compute_tangential_velocity_spherical(ux3_L, uy3_L, csb_1_L, snb_1_L, csu_L, snu_L)
+         tangential_2 = compute_tangential_velocity_spherical(ux4_L, uy4_L, csb_2_L, snb_2_L, csu_L, snu_L)
+      else
+         tangential_1 = -snu_L * ux3_L + csu_L * uy3_L
+         tangential_2 = -snu_L * ux4_L + csu_L * uy4_L
+      end if
+
+      ! Compute Coriolis force
+      fvcor = acL_L * tangential_1 * fcor_1 + (1.0_dp - acL_L) * tangential_2 * fcor_2
+
+      ! Apply depth threshold
+      if (trshcorio > 0.0_dp .and. hmin_L < trshcorio) then
+         fvcor = fvcor * hmin_L / trshcorio
+      end if
+
+   end function calculate_coriolis_force
 
 end module m_setumod
