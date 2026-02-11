@@ -729,26 +729,28 @@ contains
       use m_get_layer_indices, only: getlayerindices
       use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_W
 
-      integer      , intent(in)                       :: i_station, ipnt_valobs,loc_type
-      real(kind=dp), intent(in), allocatable          :: values_on_grid (:)
+      real(kind=dp), intent(in) :: values_on_grid(:) !< Array containing the actual values to be interpolated. Typically a state array from m_flow.
+      integer, intent(in) :: i_station !< Station index (in all relevant observation arrays, such as xobs, valobs).
+      integer, intent(in) :: ipnt_valobs !< Starting index of this quantity inside the valobs(i_station, :) slice, typically one of the IPNT_* integers from m_observations_data.
+      integer, intent(in) :: loc_type !< Location type, one of the constants from fm_location_types, .e.g., UNC_LOC_S3D.
 
       real(kind=dp)                                   :: value
       real(kind=dp)                                   :: weighttot
 
-      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay, oneDown
+      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), i_point, kstart, kstop, pntnr, klay, oneDown
 
       oneDown = 0
 
-      do iwght = 1, 3
+      do i_point = 1, 3
           if (model_is_3D() .and. (loc_type == UNC_LOC_S3D .or. loc_type == UNC_LOC_W)) then
-              call getkbotktop    (neighbour_nodes_obs(iwght,i_station), kb_tmp(iwght), kt_tmp(iwght))
-              call getlayerindices(neighbour_nodes_obs(iwght,i_station), nlayb_tmp(iwght), nrlay_tmp(iwght))
+              call getkbotktop    (neighbour_nodes_obs(i_point,i_station), kb_tmp(i_point), kt_tmp(i_point))
+              call getlayerindices(neighbour_nodes_obs(i_point,i_station), nlayb_tmp(i_point), nrlay_tmp(i_point))
 
           else
-              kb_tmp   (iwght) = neighbour_nodes_obs(iwght,i_station)
-              kt_tmp   (iwght) = neighbour_nodes_obs(iwght,i_station)
-              nlayb_tmp(iwght) = 1
-              nrlay_tmp(iwght) = 1
+              kb_tmp   (i_point) = neighbour_nodes_obs(i_point,i_station)
+              kt_tmp   (i_point) = neighbour_nodes_obs(i_point,i_station)
+              nlayb_tmp(i_point) = 1
+              nrlay_tmp(i_point) = 1
           end if
       end do
 
@@ -767,11 +769,11 @@ contains
          value     = 0.0_dp
          weighttot = 0.0_dp
 
-         do iwght = 1, 3
-             if ((klay >= nlayb_tmp(iwght)) .and. (klay <= nlayb_tmp(iwght) + nrlay_tmp(iwght) - 1)) then
-               pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay - oneDown
-               value     = value     + values_on_grid(pntnr)*neighbour_weights_obs(iwght,i_station)
-               weighttot = weighttot + neighbour_weights_obs(iwght,i_station)
+         do i_point = 1, 3
+             if ((klay >= nlayb_tmp(i_point)) .and. (klay <= nlayb_tmp(i_point) + nrlay_tmp(i_point) - 1)) then
+               pntnr     = kb_tmp(i_point) - nlayb_tmp(i_point) + klay - oneDown
+               value     = value     + values_on_grid(pntnr)*neighbour_weights_obs(i_point,i_station)
+               weighttot = weighttot + neighbour_weights_obs(i_point,i_station)
              end if
          end do
          valobs(i_station, ipnt_valobs + klay - 1) = value/weighttot

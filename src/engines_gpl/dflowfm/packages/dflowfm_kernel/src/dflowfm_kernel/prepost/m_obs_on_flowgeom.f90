@@ -83,10 +83,7 @@ contains
          end if
       else
          ! No cache, so process all requested observation points.
-         if (n2 - n1 >= 0) then 
-             call find_flownodes_and_links_for_all_observation_stations(n1, n2)
-            !  call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
-         end if
+         call find_flownodes_and_links_for_all_observation_stations(n1, n2)
       end if
       if (n2 - n1 >= 0) then 
             call init_interpolation_data_for_all_observation_stations(n1, n2, neighbour_nodes_obs, neighbour_weights_obs)
@@ -261,7 +258,8 @@ contains
 
    end subroutine find_flownodes_and_links_for_all_observation_stations
 
-  subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs)
+   !> Inits interpolation neighbours and weights for observation stations using 2D triangulation.
+   subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs)
       
       use m_observations_data      , only: xobs, yobs, numobs, nummovobs  
       use m_flowgeom               , only: xz, yz, ndx2d
@@ -274,9 +272,7 @@ contains
       use m_alloc
       
       use m_ec_basic_interpolation, only: triinterp2
-      ! use m_ec_triangle, only: jagetwf
       use m_ec_triangle, only: jagetwf, indxx, wfxx
- 
       
       integer      ,                            intent(in)    :: n_start !< Starting index of obs
       integer      ,                            intent(in)    :: n_end   !< Ending index of obs
@@ -295,12 +291,12 @@ contains
       jagetwf_org = jagetwf
       jdla     = 1
       jagetwf  = 1
-           
+            
       call realloc(indxx, [3, numobs + nummovobs], keepexisting=.false., fill=0)
       call realloc(wfxx, [3, numobs + nummovobs], keepexisting=.false., fill=0.0_dp)
             
       call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
-                                jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
+                                 jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
       
       do i = 1, numobs + nummovobs
          neighbour_nodes_obs  (:, i) = indxx(:, i)
@@ -309,6 +305,6 @@ contains
       
       jagetwf = jagetwf_org
 
-  end subroutine  init_interpolation_data_for_all_observation_stations
-  
+   end subroutine  init_interpolation_data_for_all_observation_stations
+
 end module m_obs_on_flowgeom
