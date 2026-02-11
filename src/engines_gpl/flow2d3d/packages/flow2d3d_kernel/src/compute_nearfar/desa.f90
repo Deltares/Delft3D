@@ -71,7 +71,6 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     real(fp),dimension(:)          , pointer :: q_diff
     real(fp),dimension(:,:)        , pointer :: const_diff
 	logical                        , pointer :: nf_src_mom
-	logical                        , pointer :: nf_src_weight	
     logical , dimension(:)         , pointer :: flbcktemp
     logical                        , pointer :: zmodel
 !
@@ -180,6 +179,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     integer, dimension(:), allocatable   :: m_dis
     integer, dimension(:), allocatable   :: k_dis
     integer, dimension(:), allocatable   :: rowid_dis
+    logical                              :: nf_src_weight      ! TRUE: the weight of a source is read from the last column, FALSE: each source is assumed to have a weight of 1
     logical                              :: inside
     logical                              :: new_cell
     logical                              :: centre_and_width   ! TRUE: >=1 sinks and exactly 1 source point.
