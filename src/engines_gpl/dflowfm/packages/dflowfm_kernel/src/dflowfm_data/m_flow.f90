@@ -331,7 +331,7 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target :: cftrtfac(:) !< array for optional multiplication factor for trachytopes's returned roughness values
    integer :: jacftrtfac !< Whether or not (1/0) a multiplication factor field was specified for trachytopes's Chezy roughness values.
    real(kind=dp), allocatable :: czu(:) !< array for chezy friction at flow links {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable :: frcu0(:) !< array for manning friction at flow links at start of the run {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), allocatable :: frcu0(:) !< array for Manning friction at flow links at start of the run {"location": "edge", "shape": ["lnx"]}
    logical, allocatable :: dynveg(:) !< vegetation present or not {"location": "edge", "shape": ["lnx"]}
    real(kind=dp), allocatable, target :: frculin(:) !< friction coefficient set by initial fields ( todo mag later ook single real worden)
    integer, allocatable :: ifrcutp(:) !< friction coefficient type   initial fields ( todo mag later ook single real worden)

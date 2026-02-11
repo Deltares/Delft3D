@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,13 +44,13 @@ contains
       use m_flow
 
       if (dynroughveg > 0) then
-         where ((dynveg) .and. (cumes > 0_dp)) ! linear function due to deposition ( sedero > 0 )
-            frcu = frcumin + min(max((dstem - cumes) / dstem, 0._dp), 1.0_dp) * (frcu0 - frcumin)
-         elsewhere((dynveg) .and. (cumes < (-1_dp * droot))) ! step function due to erosion larger than root than always minimum ( sedero < -droot )
+         where ((dynveg) .and. (cumes > 0.0_dp)) ! linear function due to deposition ( cumes > 0 )
+            frcu = frcumin + max((dstem - cumes) / dstem, 0.0_dp) * (frcu0 - frcumin)
+         elsewhere((dynveg) .and. (cumes < (-1.0_dp * droot))) ! erosion larger than root then always minimum ( cumes < -droot )
             frcu = frcumin
             dynveg = .false.
-         elsewhere(dynveg) ! linear function due to deposition ( -droot < sedero < 0 )
-            frcu = frcumin + min(max((droot + cumes) / droot, 0._dp), 1.0_dp) * (frcu0 - frcumin)
+         elsewhere(dynveg) ! linear function due to deposition ( -droot < cumes < 0 )
+            frcu = frcumin + min(max((droot + cumes) / droot, 0.0_dp), 1.0_dp) * (frcu0 - frcumin)
          elsewhere
             ! do nothing
             frcu = frcu0

@@ -63,10 +63,10 @@ module m_waves
 
    real(kind=dp) :: ftauw !< Swartfactor, tune bed shear stress
    real(kind=dp) :: fwfac !< Soulsby factor, tune streaming
-   real(kind=dp) :: fbreak !< tune breaking in tke model
-   real(kind=dp) :: fforc !< tune wave forces
-   real(kind=dp) :: fwavpendep !< Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
-   real(kind=dp) :: strlyrfac !< fac*wave boundary layer for streaming
+   real(kind=dp) :: fbreak !< factor for adjusting wave breaking contribution in tke model
+   real(kind=dp) :: fforc !< factor for adjusting wave forces in momentum equation, default 1
+   real(kind=dp) :: fwavpendep !< layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 1.5
+   real(kind=dp) :: strlyrfac !< streaming layer thickness is strlyrfac*wave boundary layer thickness. Default 3.0 
 
    character(len=4) :: rouwav !< Friction model for wave induced shear stress
 

@@ -62,6 +62,7 @@ contains
       real(kind=dp) :: p1, p2, h, z, uusto, fac
 
       real(kind=dp), parameter :: alfaw = 20.0_dp
+      real(kind=dp), parameter :: halfsqpi = 1.0_dp/(2.0_dp * acos(-1.0_dp))
       Dfu = 0.0_dp
       Dfuc = 0.0_dp
       deltau = 0.0_dp
@@ -142,7 +143,7 @@ contains
          deltau = max(deltau, ee * z00) ! alfaw makes wbl at least ~2ks thick
 
          call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
-         Dfu = 0.2821_dp * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
+         Dfu = halfsqpi * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
          Dfu = fwfac * Dfu / strlyrfac / deltau ! divided by 3 deltau    (m2/s3) see van Rijn, streaming layer about 3-5 times wbl
          Dfuc = Dfu * rk / omeg * costu ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
          deltau = alfaw * deltau ! as in delft3d

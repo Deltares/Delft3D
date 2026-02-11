@@ -76,10 +76,10 @@ contains
       use sediment_basics_module
       use m_physcoef, only: ag, vonkar, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
-      use m_sediment, only: difparam, difcal
+      use m_sediment, only: difparam, seddif_cal
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
-                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
+                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -1195,8 +1195,8 @@ contains
                                  &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
                                  &  sinkse(nm, l))
                   !
-                  if (difcal > 0.0_dp) then
-                     seddif(l, kb:kt) = difcal * seddif(l, kb:kt)
+                  if (seddif_cal > 0.0_dp) then
+                     seddif(l, kb:kt) = seddif_cal * seddif(l, kb:kt)
                   end if
                   !
                   ! Impose relatively large vertical diffusion

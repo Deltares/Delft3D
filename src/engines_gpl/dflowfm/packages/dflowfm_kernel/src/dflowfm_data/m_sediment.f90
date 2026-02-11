@@ -109,7 +109,7 @@ module m_sediment
    real(kind=dp) :: upperlimitssc
    integer :: inmorphopol !< value of the update inside morphopol (only 0 or 1 make sense)
    real(kind=dp) :: difparam !< scale diffusion below reference level with settling velocity, Default 10.0
-   real(kind=dp) :: difcal !< scale seddif
+   real(kind=dp) :: seddif_cal !< scale seddif
    !
    !-------------------------------------------------- old sediment transport and morphology
    integer :: mxgrKrone !< mx grainsize index nr that followsKrone. Rest follows v.Rijn
@@ -173,7 +173,7 @@ contains
       upperlimitssc = 1.0e6_dp
       inmorphopol = 1
       difparam = 10.0_dp
-      difcal = 0.0_dp
+      seddif_cal = 0.0_dp
 
    end subroutine default_sediment
 

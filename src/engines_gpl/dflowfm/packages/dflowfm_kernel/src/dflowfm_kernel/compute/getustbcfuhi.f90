@@ -244,7 +244,7 @@ contains
             !
             if (stm_included) wblt(LL) = deltau
             !
-            ! Streaming below strlyrfac*deltau with linear distribution,, see van Rijn 2011 p9.177
+            ! Streaming below strlyrfac*deltau with linear distribution, see van Rijn 2011 p9.177
             if (jawavestreaming > WAVE_STREAMING_OFF .and. deltau > 1.0e-4_dp) then ! weakly turbulent flume cases ~1mm-1cm, real turbulent cases 5-50cm
                slfacdeltau = strlyrfac * deltau
                Dfu0 = Dfuc ! (m/s2)

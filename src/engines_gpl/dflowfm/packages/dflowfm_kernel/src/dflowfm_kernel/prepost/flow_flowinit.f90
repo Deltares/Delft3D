@@ -683,7 +683,7 @@ contains
 
 !> Insert friction coefficient by initial fields
    subroutine set_friction_coefficient_by_initial_fields()
-      use m_flowgeom, only: lnx, lnx1D, kcu, xz, yz, kcs
+      use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp, dynveg, frcu0
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcumin, frcmax, ifrctypuni, dynroughveg
       use m_missing, only: dmiss, imiss
