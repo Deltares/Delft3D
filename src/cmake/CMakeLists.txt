@@ -6,6 +6,12 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with 
+# std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
+if (WIN32)
+    add_compile_definitions(NOMINMAX)
+endif()
+
 message(STATUS "Configuring")
 if (UNIX)
     include(linux_scripts.cmake)
