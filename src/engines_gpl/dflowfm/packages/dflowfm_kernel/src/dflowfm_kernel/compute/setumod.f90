@@ -1018,20 +1018,33 @@ contains
                end if
             end if
          end do
+      else if (spatial_coriolis .and. icorio == 5) then !> separate loop to prevent double memory access for fcor1 & fcor2 in performance sensitive loop
+         !$OMP SIMD
+         do L = lnx1D + 1, lnx
+            fcor = fcori(L)
+            fvcor = calculate_coriolis_force(fcori(L), fcori(L), jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
+                                             csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
 
-      else ! icorio = 5 OR spatially constant corio
+            if (hu(L) > 0.0_dp) then
+               adve(L) = adve(L) - fvcor
 
-         fcor = fcorio
-         if (.not. spatial_coriolis .and. fcorio == 0.0_dp) then
-            return ! No Coriolis force to apply
+               if (Corioadamsbashfordfac > 0.0_dp) then
+                  if (fvcoro(L) /= 0.0_dp) then
+                     adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
+                  end if
+                  fvcoro(L) = fvcor
+               end if
+            end if
+         end do
+
+      else !> non-spatial coriolis
+         if (fcorio == 0.0_dp) then
+            return ! early exit if Coriolis force is zero
          end if
 
          !$OMP SIMD
          do L = lnx1D + 1, lnx
-            if (spatial_coriolis) then
-               fcor = fcori(L)
-            end if
-            fvcor = calculate_coriolis_force(fcor, fcor, jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
+            fvcor = calculate_coriolis_force(fcorio, fcorio, jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
                                              csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
 
             if (hu(L) > 0.0_dp) then
