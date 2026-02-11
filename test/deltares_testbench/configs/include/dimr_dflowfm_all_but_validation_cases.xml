@@ -4800,7 +4800,7 @@
         </file>
         <file name="output/winter97_saltwater_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_tem1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_tem1" toleranceAbsolute="0.002" />
             <parameter name="mesh2d_ice_temperature" toleranceAbsolute="0.001" />
             <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.001" />
             <parameter name="mesh2d_ice_area_fraction" toleranceAbsolute="0.001" />

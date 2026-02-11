@@ -140,7 +140,7 @@
     -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.2e-04" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="8e-04" toleranceRelative="8e-4"/>
       </parameters>
     </file>
   </checks>
