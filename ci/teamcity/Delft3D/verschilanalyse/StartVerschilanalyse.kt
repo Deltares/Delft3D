@@ -115,6 +115,8 @@ object StartVerschilanalyse : BuildType({
             commands = """
                 set -eo pipefail
 
+                set -x
+
                 export TEAMCITY_SERVER_URL='${DslContext.serverUrl.replace(Regex("/+$"), "")}'
                 export VCS_ROOT_ID='${DslContext.settingsRoot.id}'
                 export VCS_REVISION='%build.vcs.number%'
