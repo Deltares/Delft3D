@@ -1398,6 +1398,7 @@ contains
       call prop_get(md_ptr, 'physics', 'irov', irov)
       call prop_get(md_ptr, 'physics', 'wall_ks', wall_ks)
       wall_z0 = wall_ks / 30.0_dp
+      
       call prop_get(md_ptr, 'physics', 'TidalForcing', jatidep)
       call prop_get(md_ptr, 'physics', 'SelfAttractionLoading', jaselfal)
       call prop_get(md_ptr, 'physics', 'SelfAttractionLoading_correct_wl_with_ini', jaSELFALcorrectWLwithIni)
