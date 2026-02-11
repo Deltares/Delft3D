@@ -274,10 +274,10 @@ contains
       use m_ec_basic_interpolation, only: triinterp2
       use m_ec_triangle, only: jagetwf, indxx, wfxx
       
-      integer      ,                            intent(in)    :: n_start !< Starting index of obs
-      integer      ,                            intent(in)    :: n_end   !< Ending index of obs
-      integer      , dimension(3,n_start:n_end),intent(inout) :: neighbour_nodes_obs    ! Table of nearby flow node numbers for each station
-      real(kind=dp), dimension(3,n_start:n_end),intent(inout) :: neighbour_weights_obs  ! Table of interpolation weights for nearby flow node numbers for each station
+      integer, intent(in) :: n_start !< Start index of observation stations set (typically 1, but allows to restrict to movoing observation points).
+      integer, intent(in) :: n_end   !< End index of observation stations set (typically numobs + nummovobs, but allows to restrict to moving observation points).
+      integer, dimension(3,:), intent(inout) :: neighbour_nodes_obs !< Table of nearby flow node numbers for each station.
+      real(kind=dp), dimension(3,:), intent(inout) :: neighbour_weights_obs !< Table of interpolation weights for nearby flow node numbers for each station.
       
       integer                                         :: jdla, i, jagetwf_org
       real(kind=dp), allocatable                      :: dummyZ (:)
