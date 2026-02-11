@@ -1266,7 +1266,6 @@ contains
       character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
-      type(t_BubbleScreen), pointer :: bubblescreen !< Bubblescreen data structure
 
       is_successful = .false.
       bubble_source_count = 0
@@ -1280,34 +1279,35 @@ contains
          do i = 1, size(bubblescreens)
             if (trim(bubblescreens(i)%id) == trim(id)) then
                bi = i
-               bubblescreen => bubblescreens(i)
                exit
             end if
          end do
          
-         do cidx = 1, size(bubblescreen%flow_cells)
-            ! For each crossed cell, create a bubblescreen source/sink object
-            tmsx = xzw(bubblescreen%flow_cells(cidx)%flownode_nr)
-            tmsy = yzw(bubblescreen%flow_cells(cidx)%flownode_nr)
+         associate (bubblescreen => bubblescreens(bi))
+            do cidx = 1, size(bubblescreen%flow_cells)
+               ! For each crossed cell, create a bubblescreen source/sink object
+               tmsx = xzw(bubblescreen%flow_cells(cidx)%flownode_nr)
+               tmsy = yzw(bubblescreen%flow_cells(cidx)%flownode_nr)
 
-            bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
-            do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
-                     bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
-               write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
+               bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
+               do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
+                        bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
+                  write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
 
-               tmsz = (zws(i) + zws(i-1)) / 2.0_dp
-               call addsorsin(srcid, [tmsx], [tmsy], [tmsz], [tmsz], 0.0_dp, ierr)
-                                 
-               write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, tmsz
-               call msg_flush()
+                  tmsz = (zws(i) + zws(i-1)) / 2.0_dp
+                  call addsorsin(srcid, [tmsx], [tmsy], [tmsz], [tmsz], 0.0_dp, ierr)
+                                    
+                  write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, tmsz
+                  call msg_flush()
 
-               bubble_source_count = bubble_source_count + 1
+                  bubble_source_count = bubble_source_count + 1
+               end do
+
+               ! Fill in remaining bubblescreen flow cell data
+               bubblescreen%flow_cells(cidx)%num_source_sinks = bubble_source_count
+
             end do
-
-            ! Fill in remaining bubblescreen flow cell data
-            bubblescreen%flow_cells(cidx)%num_source_sinks = bubble_source_count
-
-         end do
+         end associate
       end if
 
 

@@ -74,7 +74,7 @@ contains
         bubblescreen%num_flow_cells = n
         allocate(bubblescreen%flow_cells(n))
         do i = 1, n
-            bubblescreen%flow_cells(i)%flowcell_start_index = i
+            bubblescreen%flow_cells(i)%flownode_nr = i
         end do
 
         ! Setup - fill cell areas for flow cells in bubble screen
