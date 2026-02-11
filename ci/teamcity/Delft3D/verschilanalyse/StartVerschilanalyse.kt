@@ -115,8 +115,6 @@ object StartVerschilanalyse : BuildType({
             commands = """
                 set -eo pipefail
 
-                set -x
-
                 export TEAMCITY_SERVER_URL='${DslContext.serverUrl.replace(Regex("/+$"), "")}'
                 export VCS_ROOT_ID='${DslContext.settingsRoot.id}'
                 export VCS_REVISION='%build.vcs.number%'
@@ -128,7 +126,7 @@ object StartVerschilanalyse : BuildType({
 
                 # Create the builds dir if it does not exist
                 builds_dir="/p/devops-dsc/verschilanalyse/builds"
-                mkdir -p "${'$'}{va_home}"
+                mkdir -p "${'$'}{builds_dir}"
                 # remove old build directories to clear space
                 find "${'$'}{builds_dir}" -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
 
