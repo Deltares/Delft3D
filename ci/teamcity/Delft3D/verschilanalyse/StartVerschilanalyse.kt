@@ -124,20 +124,33 @@ object StartVerschilanalyse : BuildType({
                 export BRANCH_NAME='%teamcity.build.branch%'
                 export SEND_EMAIL='%send_email%'
 
-                bundle_dir="/p/devops-dsc/verschilanalyse/builds/${'$'}{BUILD_ID}/bundle"
+                # Create the builds dir if it does not exist
+                builds_dir="/p/devops-dsc/verschilanalyse/builds"
+                mkdir -p "${'$'}{va_home}"
+                # remove old build directories to clear space
+                find "${'$'}{builds_dir}" -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
+
+                # Create new build directory
+                va_home="${'$'}{builds_dir}/${'$'}{BUILD_ID}"
+                mkdir -p "${'$'}{va_home}"
+
+                # Extract the bundle to the build dir
+                bundle_dir="${'$'}{va_home}/bundle"
                 echo "bundle dir: ${'$'}{bundle_dir}"
                 rm -rf "${'$'}{bundle_dir}"
-                mkdir -p "${'$'}{bundle_dir}"
+                mkdir "${'$'}{bundle_dir}"
                 tar -xzvf bundle.tar.gz -C "${'$'}{bundle_dir}"
                 rm -f bundle.tar.gz
 
+                # start the VA
                 pushd "${'$'}{bundle_dir}"
                 ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
-                    --model-filter='%model_filter%'
+                    --model-filter='%model_filter%' \
+                    --va-home="${'$'}{va_home}"
                 popd
             """.trimIndent()
             targetUrl = "h7.directory.intra"

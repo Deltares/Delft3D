@@ -23,7 +23,7 @@ EOF
 }
 
 # Parse command line options
-PARSED_OPTIONS=$(getopt -o 'a:c:r:m:f:' -l 'apptainer:,current-prefix:,reference-prefix:,models-path:,model-filter:' -- "$@")
+PARSED_OPTIONS=$(getopt -o 'a:c:r:m:f:d:h' -l 'apptainer:,current-prefix:,reference-prefix:,models-path:,model-filter:,va-home:,help' -- "$@")
 eval set -- "$PARSED_OPTIONS"
 
 APPTAINER=
@@ -31,6 +31,7 @@ REFERENCE_PREFIX=
 CURRENT_PREFIX=
 MODELS_PATH=
 MODEL_FILTER=
+VAHOME=
 
 while true; do
     case "$1" in
@@ -54,6 +55,14 @@ while true; do
         MODEL_FILTER="$2"
         shift 2
         ;;
+    -d | --va-home)
+        VAHOME="$2"
+        shift 2
+        ;;
+    -h | --help)
+        show_help
+        exit 0
+        ;;
     --)
         shift
         break
@@ -65,7 +74,7 @@ while true; do
     esac
 done
 
-if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX; then
+if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX VAHOME; then
     show_help
     exit 1
 fi
@@ -87,15 +96,10 @@ export CURRENT_PREFIX
 export REFERENCE_PREFIX
 export MODEL_REGEX
 export BUCKET='s3://devops-test-verschilanalyse'
-export BUILDS_DIR='/p/devops-dsc/verschilanalyse/builds'
-export VAHOME="${BUILDS_DIR}/${BUILD_ID:-latest}"
+export VAHOME
 export LOG_DIR="${VAHOME}/logs"
 
 DELFT3D_SIF="${HOME}/.cache/verschilanalyse/delft3dfm.sif"
-
-# Create new build directory and remove old build directories to clear space.
-mkdir -p "$VAHOME"
-find "$BUILDS_DIR" -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
 
 module purge
 module load apptainer/1.2.5
