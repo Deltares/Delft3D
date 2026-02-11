@@ -1196,7 +1196,7 @@ contains
                bubblescreen%num_flow_cells = size(crossed_cells)
                allocate(bubblescreen%flow_cells(bubblescreen%num_flow_cells))
                do cidx = 1, size(crossed_cells)
-                  bubblescreen%flow_cells(cidx)%netcell_index = crossed_cells(cidx)
+                  bubblescreen%flow_cells(cidx)%flownode_nr = crossed_cells(cidx)
                   ! TODO: Check if kbot will not change for changing morphology
                   kstart = kbot(crossed_cells(cidx))
                   kend = kstart  + kmxn(crossed_cells(cidx)) - 1
@@ -1278,13 +1278,11 @@ contains
                exit
             end if
          end do
-
-         bubblescreen%start_index = numsrc + 1
          
          do cidx = 1, size(bubblescreen%flow_cells)
             ! For each crossed cell, create a bubblescreen source/sink object
-            tmsx = xzw(bubblescreen%flow_cells(cidx)%netcell_index)
-            tmsy = yzw(bubblescreen%flow_cells(cidx)%netcell_index)
+            tmsx = xzw(bubblescreen%flow_cells(cidx)%flownode_nr)
+            tmsy = yzw(bubblescreen%flow_cells(cidx)%flownode_nr)
 
             bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
             do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &

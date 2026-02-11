@@ -68,7 +68,7 @@ contains
         ! Compute vertical distribution for each flow cell
         do i_flow_cell = 1, bubblescreen%num_flow_cells
             flow_cell = bubblescreen%flow_cells(i_flow_cell)
-            n = flow_cell%netcell_index
+            n = flow_cell%flownode_nr
 
             ! Compute maximum downward vertical velocity based on area fraction
             area_fraction = ba(n) / total_area
@@ -119,7 +119,7 @@ contains
         area = 0.0_dp
 
         do i = 1, bubblescreen%num_flow_cells
-            area = area + ba(bubblescreen%flow_cells(i)%netcell_index)
+            area = area + ba(bubblescreen%flow_cells(i)%flownode_nr)
         end do
 
     end function compute_bubblescreen_area
@@ -355,7 +355,7 @@ contains
         integer :: k_global !< Global layer index
 
         do k_local = 1, kmx
-            k_global = k_local + kbot(flow_cell%netcell_index) - 1 ! Convert local layer index to global layer index
+            k_global = k_local + kbot(flow_cell%flownode_nr) - 1 ! Convert local layer index to global layer index
 
             ! Set source/sink as source or sink depending on the sign of the discharge
             call set_source_or_sink_for_bubblescreen(discharge_water(k_local), flow_cell%start_index + k_local - 1)
