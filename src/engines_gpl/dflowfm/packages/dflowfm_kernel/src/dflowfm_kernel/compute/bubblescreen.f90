@@ -86,11 +86,11 @@ contains
 
     end subroutine update_bubblescreen_discharge
 
-    !> Converts the air discharge rate to water discharge rate using an empirical formula
+    !> Converts the injected air discharge rate to entrained water discharge rate using an empirical formula.
     pure function convert_discharge_air_to_water(air_discharge, alpha) result(water_discharge)
         ! Parameters
         real(kind=dp), intent(in) :: air_discharge !< [m3/s] Air discharge rate
-        real(kind=dp), intent(in), optional :: alpha !< Empirical coefficient (default 1000)
+        real(kind=dp), intent(in), optional :: alpha !< Empirical factor α used in the conversion between the amount of entrained water and the amount of injected air (default 1000).
         real(kind=dp) :: water_discharge !< [m3/s] Resulting water discharge rate
 
         ! Local variables
