@@ -92,9 +92,9 @@ Log::Log( FILE *  output, Clock * clock, Level level, Level feedbackLevel) {
 	this->externalLogger = NULL;
 
 	if (pthread_key_create(&this->thkey, NULL) != 0)
-		throw Exception(true, Exception::ERR_PTHREADS, "Pthreads error in Log: Cannot create thread-specific key: %s", strerror(errno));
+		throw Exception(Exception::ERR_PTHREADS, "Pthreads error in Log: Cannot create thread-specific key: %s", strerror(errno));
 	if (pthread_setspecific(this->thkey, NULL) != 0)
-		throw Exception(true, Exception::ERR_PTHREADS, "Pthreads error in Log constructor: Cannot set thread-specific key: %s", strerror(errno));
+		throw Exception(Exception::ERR_PTHREADS, "Pthreads error in Log constructor: Cannot set thread-specific key: %s", strerror(errno));
 }
 
 
@@ -113,7 +113,7 @@ Level Log::GetLevel( void ) {
 
 
 void Log::SetLevel( Level level ) {
-	this->level = min(max(level,ALL),FATAL);
+	this->level = std::min(std::max(level,ALL),FATAL);
 
     char * levelString = new char[MAXSTRING];
     logLevelToString(this->level, &levelString);
@@ -128,7 +128,7 @@ Level Log::GetFeedbackLevel( void ) {
 
 
 void Log::SetFeedbackLevel( Level feedbackLevel) {
-	this->feedbackLevel = min(max(feedbackLevel,ALL), NONE);
+	this->feedbackLevel = std::min(std::max(feedbackLevel,ALL), NONE);
 
     char * levelString = new char[MAXSTRING];
     logLevelToString(this->feedbackLevel, &levelString);
@@ -140,7 +140,7 @@ void Log::SetFeedbackLevel( Level feedbackLevel) {
 void Log::RegisterThread( const char * id ) {
 	char * idCopy = strdup(id);
 	if (pthread_setspecific(this->thkey, (void *)idCopy) != 0)
-		throw Exception(true, Exception::ERR_PTHREADS, "Pthreads error in Log::RegisterThread: Cannot set thread-specific key: %s", strerror(errno));
+		throw Exception(Exception::ERR_PTHREADS, "Pthreads error in Log::RegisterThread: Cannot set thread-specific key: %s", strerror(errno));
 }
 
 
@@ -153,7 +153,7 @@ void Log::RenameThread( const char * id ) {
 void Log::UnregisterThread( void ) {
 	char * id = (char *)pthread_getspecific(this->thkey);
 	if (id == NULL)
-		throw Exception(true, Exception::ERR_PTHREADS, "Log thread key not set in UnregisterThread");
+		throw Exception(Exception::ERR_PTHREADS, "Log thread key not set in UnregisterThread");
 
 	free(id);
 }

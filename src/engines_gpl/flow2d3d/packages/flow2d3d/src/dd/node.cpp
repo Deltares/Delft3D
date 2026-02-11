@@ -126,7 +126,7 @@ NodeSet::AddNodesFromFile (
 
     FILE * nodeListFile = fopen (nodeListFileName, "r");
     if (nodeListFile == NULL)
-        throw new Exception (true, "Cannot open node list file \"%s\": %s", nodeListFileName, strerror (errno));
+        throw new Exception("Cannot open node list file \"%s\": %s", nodeListFileName, strerror (errno));
 
     char line [DD::MAXSTRING];
     while (fgets (line, sizeof line, nodeListFile) != NULL) {
@@ -206,7 +206,7 @@ NodeSet::CreateNodeTable (
     for (int id = 0 ; id < this->numNodes ; id++) {
         Node * node = (Node *) this->nodeList->Next ();
         if (node == NULL)
-            throw new Exception (true, "Internal error: Premature end of node list in NodeSet::CreateNodeTable!");
+            throw new Exception("Internal error: Premature end of node list in NodeSet::CreateNodeTable!");
 
         this->node[id] = node;
         }

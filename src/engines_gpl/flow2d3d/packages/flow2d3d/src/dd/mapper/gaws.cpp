@@ -185,12 +185,12 @@ int Gaws::Setup(
         }
         else
         {
-            throw new Exception (true, "CreateWangAdministration(Wang_YDir) UNSUCCESFULL");
+            throw new Exception("CreateWangAdministration(Wang_YDir) UNSUCCESFULL");
         }
     }
     else
     {
-        throw new Exception (true, "CreateWangAdministration(Wang_YDir) UNSUCCESFULL");
+        throw new Exception("CreateWangAdministration(Wang_YDir) UNSUCCESFULL");
     }
 
     //
@@ -279,7 +279,7 @@ void Gaws::DoSolving(void)
             delete leftToRightBlob;
             if ( incomingBlobID != F2G_Blob_Left2RightMessage )
             {
-                throw new Exception (true, "Gaws::Setup: DoSolving blobID (%d /= %d)",
+                throw new Exception("Gaws::Setup: DoSolving blobID (%d /= %d)",
                             incomingBlobID, F2G_Blob_Left2RightMessage);
             }
             FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "GAWS received L2R message (%d) from flow \"%s\"",
@@ -290,7 +290,7 @@ void Gaws::DoSolving(void)
         {for ( int p = 0 ; p < this->nProc ;  p++ )
         {
             if ( inMesg[p].intValue != inMesg[0].intValue )
-                throw new Exception (true, "GAWS barrier: flow processes out of L2R/T2B phase");
+                throw new Exception("GAWS barrier: flow processes out of L2R/T2B phase");
         }}
 
         if ( inMesg[0].intValue == FinishGaws )
@@ -471,7 +471,7 @@ int Gaws::FillMapperCells(
                                     firstCell, lastCell,
                                     normalCell, refine, 0) != HY_OK )
     {
-        throw new Exception (true, "Call to configStringParser failed for configString \"%s\"", mapper.configStr);
+        throw new Exception("Call to configStringParser failed for configString \"%s\"", mapper.configStr);
     }
     else
     {
@@ -484,7 +484,7 @@ int Gaws::FillMapperCells(
                  || normalCell[ctx]== YET_TO_INIT
                  || normalCell[ctx]== 0           )
             {
-                throw new Exception (true, "Could not read required info from  configString \"%s\"", mapper.configStr);
+                throw new Exception("Could not read required info from  configString \"%s\"", mapper.configStr);
             }
         }
 
@@ -580,7 +580,7 @@ int Gaws::FillMapperCells(
 
             default:
 
-            throw new Exception (true, "Wrong Edge Type in FillMapperCells");
+            throw new Exception("Wrong Edge Type in FillMapperCells");
             break;
 
         }
@@ -874,7 +874,7 @@ int Gaws::ContinueInNextContext(
 
     if (kcs != 3)
     {
-        throw new Exception (true, "Inconsistent Coupling indices");
+        throw new Exception("Inconsistent Coupling indices");
     }
     else
     {
@@ -1050,7 +1050,7 @@ void Gaws::GawsLog(
             logFile = fopen(name,"w");
             if (logFile == NULL)
             {
-                throw new Exception (true, "Couldn't open logfile %s", name);
+                throw new Exception("Couldn't open logfile %s", name);
             }
         }
         if ( logFile != NULL )
@@ -1181,7 +1181,7 @@ int Gaws::CheckDependents(
 
     if (retVal == -999)
     {
-        throw new Exception (true, "ERROR returned in GAWS::CheckDependents.\n");
+        throw new Exception("ERROR returned in GAWS::CheckDependents.\n");
     }
 
     ON_LOG_VERBOSE(
@@ -1246,7 +1246,7 @@ int Gaws::NewEquationSerie(
         eqSeries = (EqSeries*) realloc( eqSeries, sizeof(EqSeries) * nNewSeries );
         if ( eqSeries == NULL )
         {
-            throw new Exception (true, "NewEquationSerie: could not realloc %d series", nNewSeries);
+            throw new Exception("NewEquationSerie: could not realloc %d series", nNewSeries);
         }
     }
     //
@@ -1288,7 +1288,7 @@ void Gaws::AddEqPoint(
                     sizeof(EqPoint) * nNewPoints );
         if ( eqSeries[eqSerie].pnt == NULL )
         {
-            throw new Exception (true, "AddEqPoint: could not realloc %d points", nNewPoints);
+            throw new Exception("AddEqPoint: could not realloc %d points", nNewPoints);
         }
     }
 
@@ -1519,7 +1519,7 @@ void Gaws::SetDependentLevels(
     }
         if ( success == 0 )
         {
-        throw new Exception (true, "Aborting due to errors in GAWS::SetDependentLevels.\n");
+        throw new Exception("Aborting due to errors in GAWS::SetDependentLevels.\n");
         }
 }
 
@@ -1607,7 +1607,7 @@ int Gaws::ProcessCouplePoint(
 
     if ( retVal != HY_OK )
     {
-        throw new Exception (true, "ERROR returned in GAWS::ProcessCouplePoint on calling FindNeighborPoint.\n");
+        throw new Exception("ERROR returned in GAWS::ProcessCouplePoint on calling FindNeighborPoint.\n");
     }
 
     numDep = CheckDependents(  curCntxt,nbrCntxt,
@@ -1643,7 +1643,7 @@ int Gaws::ProcessCouplePoint(
 
         if ( retVal != HY_OK )
         {
-            throw new Exception (true, "ERROR returned in GAWS::ProcessCouplePoint on calling AddEqPoint.\n");
+            throw new Exception("ERROR returned in GAWS::ProcessCouplePoint on calling AddEqPoint.\n");
         }
     }
     else
@@ -1698,15 +1698,15 @@ void Gaws::InitializeMapperInfo(void)
     Category * mappers      = LookupCategory (DD::mapperCategoryName);
 
     if (mappers == NULL)
-        throw new Exception (true, "\"mapper\" category does not exist (GAWS: \"%s\")", this->gawsIterator->name);
+        throw new Exception("\"mapper\" category does not exist (GAWS: \"%s\")", this->gawsIterator->name);
 
     if (d3dFlowProcs == NULL)
-        throw new Exception (true, "\"process\" category does not exist for (GAWS: \"%s\")", this->gawsIterator->name);
+        throw new Exception("\"process\" category does not exist for (GAWS: \"%s\")", this->gawsIterator->name);
 
     int numD3dFlowProcs = this->gawsIterator->NeighborCount (d3dFlowProcs);
 
     if (numD3dFlowProcs >= MAX_NUM_D3D_FLOW_PROCS)
-        throw new Exception (true, "GAWS iterator \"%s\" has too many d3dflow processes", this->gawsIterator->name);
+        throw new Exception("GAWS iterator \"%s\" has too many d3dflow processes", this->gawsIterator->name);
 
     this->gawsIterator->RewindNeighbors(d3dFlowProcs);
 
@@ -1735,7 +1735,7 @@ void Gaws::InitializeMapperInfo(void)
 
                 if ( this->numMappers >= MAX_GAWS_MAP )
                 {
-                    throw new Exception (true, "GAWS iterator \"%s\" found too many mappers", this->gawsIterator->name);
+                    throw new Exception("GAWS iterator \"%s\" found too many mappers", this->gawsIterator->name);
                 }
                 else
                 {
@@ -1767,7 +1767,7 @@ void Gaws::InitializeMapperInfo(void)
     }
 
     if (this->numMappers < 1)
-        throw new Exception (true, "GAWS iterator \"%s\" did not find any mappers", this->gawsIterator->name);
+        throw new Exception("GAWS iterator \"%s\" did not find any mappers", this->gawsIterator->name);
     else
         FLOW2D3D->dd->log->Write (Log::DDMAPPER_MAJOR, "GAWS \"%s\" found %d mappers", this->gawsIterator->name, this->numMappers);
 }

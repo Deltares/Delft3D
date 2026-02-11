@@ -67,7 +67,7 @@ Component::Run (
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
     }
 
 
@@ -85,7 +85,7 @@ Component::Init (
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
     }
 
 
@@ -103,7 +103,7 @@ Component::Step (
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
     }
 
 
@@ -121,7 +121,7 @@ Component::Finish (
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
     }
 
 
@@ -139,7 +139,7 @@ Component::GetStartTime (
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
 	return -1.0;
     }
 
@@ -158,7 +158,7 @@ Component::GetEndTime (
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
 	return -1.0;
     }
 
@@ -177,7 +177,7 @@ Component::GetCurrentTime (
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
 	return -1.0;
     }
 
@@ -196,6 +196,6 @@ Component::GetTimeStep (
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
 	return -1.0;
     }

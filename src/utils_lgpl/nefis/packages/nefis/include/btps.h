@@ -71,7 +71,7 @@
 #elif defined GNU_PC
   typedef          long long  BInt8    ;     /* long           :  8 bytes */
   typedef unsigned long long  BUInt8   ;     /* long           :  8 bytes */
-#elif defined (linux)
+#elif defined (__linux__)
   typedef          long long  BInt8    ;     /* long           :  8 bytes */
   typedef unsigned long long  BUInt8   ;     /* long           :  8 bytes */
 #elif defined USE_SUN
