@@ -1061,17 +1061,17 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Sed_IM1   ","PSedIM1   ",   1,"x",1
 "Sed_IM1   ","fSedIM1   ",   2,"x",1
 "Sed_IM1   ","fSedIM1S2 ",   3," ",1
-"Sed_IM1   ","WSSedim   ",   4," ",1
+"Sed_IM1   ","WSSedim1  ",   4," ",1
 "Sed_IM1   ","VxSedIM1  ",   5,"x",0
 "Sed_IM2   ","PSedIM2   ",   1,"x",1
 "Sed_IM2   ","fSedIM2   ",   2,"x",1
 "Sed_IM2   ","fSedIM2S2 ",   3," ",1
-"Sed_IM2   ","WSSedim   ",   4," ",1
+"Sed_IM2   ","WSSedim2  ",   4," ",1
 "Sed_IM2   ","VxSedIM2  ",   5,"x",0
 "Sed_IM3   ","PSedIM3   ",   1,"x",1
 "Sed_IM3   ","fSedIM3   ",   2,"x",1
 "Sed_IM3   ","fSedIM3S2 ",   3," ",1
-"Sed_IM3   ","WSSedim   ",   4," ",1
+"Sed_IM3   ","WSSedim3  ",   4," ",1
 "Sed_IM3   ","VxSedIM3  ",   5,"x",0
 "SedDiat   ","PSedDiat  ",   1,"x",1
 "SedDiat   ","fSedDiat  ",   2,"x",1

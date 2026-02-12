@@ -252,7 +252,7 @@ contains
         do iseg = 1,num_cells
             ip  = ipoint(14) + (iseg - 1) * increm(14)
             ipv = ipoint(13) + (iseg - 1) * increm(13)
-            volume = process_space_real(ip13)
+            volume = process_space_real(ipv)
 
             if ( volume > 0.0 ) then
                 process_space_real(ip) = seconds_per_day * process_space_real(ip) / volume
@@ -263,9 +263,22 @@ contains
 
         IFLUX = 0
         IP1   = IPOINT(1)
+        IP2   = IPOINT(2)
         IP3   = IPOINT(3)
+        IP4   = IPOINT(4)
+        IP5   = IPOINT(5)
         IP6   = IPOINT(6)
+        IP7   = IPOINT(7)
+        IP8   = IPOINT(8)
+        IP9   = IPOINT(9)
+        IP10  = IPOINT(10)
+        IP11  = IPOINT(11)
+        IP12  = IPOINT(12)
         IP13  = IPOINT(13)
+        IP14  = IPOINT(14)
+        IP17  = IPOINT(17)
+        IP18  = IPOINT(18)
+        IP19  = IPOINT(19)
         DO ISEG = 1, num_cells
 
             !     zero output
@@ -356,6 +369,7 @@ contains
             IP10 = IP10 + IN10
             IP11 = IP11 + IN11
             IP12 = IP12 + IN12
+            IP13 = IP13 + IN13
             IP14 = IP14 + IN14
             IP15 = IP15 + IN15
             IP16 = IP16 + IN16
@@ -364,10 +378,7 @@ contains
             IP19 = IP19 + IN19
         end do
         !
-        IP1 = IPOINT(1)
-        IP6 = IPOINT(6)
-        IP8 = IPOINT(8)
-        IP18 = IPOINT(18)
+        IP21 = IPOINT(21)
 
         !.....Exchangeloop over de horizontale richting
         DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
@@ -378,7 +389,11 @@ contains
 
         end do
 
-        IP15 = IP15 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN15
+        IP1 = IPOINT(1)
+        IP6 = IPOINT(6)
+        IP8 = IPOINT(8)
+        IP15 = IPOINT(15) + (num_exchanges_u_dir + num_exchanges_v_dir) * IN15
+        IP18 = IPOINT(18)
 
         !.....Exchangeloop over de verticale richting
         DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
@@ -502,6 +517,7 @@ contains
             ENDDO
 
         ENDDO
+
         !
         RETURN
     END

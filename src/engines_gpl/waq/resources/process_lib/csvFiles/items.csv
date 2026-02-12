@@ -14360,4 +14360,6 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "dRS1IM2Buf","x"," ",   -999.000    ,"(g/m3/d)            ","resuspension flux IM2 from layer S1               ","volume    ","volume    "," ","                              "
 "dRS1IM3Buf","x"," ",   -999.000    ,"(g/m3/d)            ","resuspension flux IM3 from layer S1               ","volume    ","volume    "," ","                              "
 "BloomStep ","x"," ",    1.00000    ,"(d)                 ","Time step for BLOOM                               ","volume    ","volume    "," ","                              "
-"WSSedim   ","x"," ",   -999.000    ,"(-)                 ","workspace array for sedimentation                 ","volume    ","volume    "," ","                              "
+"WSSedim1  ","x"," ",   -999.000    ,"(-)                 ","workspace array for sedimentation                 ","volume    ","volume    "," ","                              "
+"WSSedim2  ","x"," ",   -999.000    ,"(-)                 ","workspace array for sedimentation                 ","volume    ","volume    "," ","                              "
+"WSSedim3  ","x"," ",   -999.000    ,"(-)                 ","workspace array for sedimentation                 ","volume    ","volume    "," ","                              "

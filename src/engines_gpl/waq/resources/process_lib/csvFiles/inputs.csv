@@ -3506,7 +3506,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_IM1   ","FrTIMS2Max",  11,"Y","x",1
 "Sed_IM1   ","PsedminIM1",  12,"Y","x",1
 "Sed_IM1   ","Volume    ",  13,"N","x",1
-"Sed_IM1   ","WSSedim   ",  14,"N"," ",1
+"Sed_IM1   ","WSSedim1  ",  14,"N"," ",1
 "Sed_IM1   ","VSedIM1   ",  15,"Y"," ",0
 "Sed_IM1   ","Flow      ",  16,"Y","x",0
 "Sed_IM2   ","IM2       ",   1,"N","x",1
@@ -3522,7 +3522,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_IM2   ","FrTIMS2Max",  11,"Y","x",1
 "Sed_IM2   ","PsedminIM2",  12,"Y","x",1
 "Sed_IM2   ","Volume    ",  13,"N","x",1
-"Sed_IM2   ","WSSedim   ",  14,"N"," ",1
+"Sed_IM2   ","WSSedim2  ",  14,"N"," ",1
 "Sed_IM2   ","VSedIM2   ",  15,"Y"," ",0
 "Sed_IM2   ","Flow      ",  16,"Y","x",0
 "Sed_IM3   ","IM3       ",   1,"N","x",1
@@ -3538,7 +3538,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_IM3   ","FrTIMS2Max",  11,"Y","x",1
 "Sed_IM3   ","PsedminIM3",  12,"Y","x",1
 "Sed_IM3   ","Volume    ",  13,"N","x",1
-"Sed_IM3   ","WSSedim   ",  14,"N"," ",1
+"Sed_IM3   ","WSSedim3  ",  14,"N"," ",1
 "Sed_IM3   ","VSedIM3   ",  15,"Y"," ",0
 "Sed_IM3   ","Flow      ",  16,"Y","x",0
 "SedDiat   ","Diat      ",   1,"N","x",1
