@@ -214,7 +214,7 @@ multidict==6.7.0
     #   aiobotocore
     #   aiohttp
     #   yarl
-mypy==1.11.1
+mypy==1.19.1
     # via deltares-testbench (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
