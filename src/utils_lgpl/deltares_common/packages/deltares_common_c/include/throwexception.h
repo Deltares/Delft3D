@@ -36,7 +36,7 @@
  *  Function names for FORTRAN-C interface.
  */
 
-#if defined(linux)
+#if defined(__linux__)
 #   include "config.h"
 #   define STDCALL  /* nothing */
 #   define THROWEXCEPTION FC_FUNC(throwexception,THROWEXCEPTION)

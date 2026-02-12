@@ -56,7 +56,7 @@ GawsBarrier_Function (
     int numD3dFlowProcesses = self->NeighborCount ();
 
     if (numD3dFlowProcesses > MAX_NUM_D3D_FLOW_PROCS)
-        throw new Exception (true, "GAWS barrier has too many participants");
+        throw new Exception("GAWS barrier has too many participants");
 
     self->RewindNeighbors ();
     for (int i = 0 ; i < numD3dFlowProcesses ; i++ ) {

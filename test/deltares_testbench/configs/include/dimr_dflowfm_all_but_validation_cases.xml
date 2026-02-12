@@ -12,7 +12,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c099_longculvert_on_the_fly" ref="dflowfm_default">
-        <path version="2026-01-05T15:35:14.600000">e02_dflowfm/f002_1D2D/c099_longculvert_on_the_fly</path>
+        <path version="2026-01-26T12:14:32.175000">e02_dflowfm/f002_1D2D/c099_longculvert_on_the_fly</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netcdf">
@@ -29,7 +29,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f002_c100_longculvert" ref="dflowfm_default">
-      <path version="2025-10-30T17:13:00">e02_dflowfm/f002_1D2D/c100_longculvert</path>
+      <path version="2026-01-26T14:18:46.355000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
@@ -73,7 +73,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c102_longculvert_new" ref="dflowfm_default">
-      <path version="2025-10-23T11:30:56.060000">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
+      <path version="2026-01-26T17:05:24.583000">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
       <programs>
           <program ref="dflowfm" seq="1">
             <arguments>
@@ -85,11 +85,14 @@
       <checks>
         <file name="DFM_OUTPUT_converted_tunnel/converted_tunnel_his.nc" type="netCDF">
           <parameters>
+<<<<<<< HEAD
             <parameter name="waterlevel" toleranceAbsolute="0.003" />
             <parameter name="x_velocity" toleranceAbsolute="0.0009" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
             <parameter name="cross_section_discharge" toleranceAbsolute="0.003" />
             <parameter name="cross_section_cumulative_discharge" toleranceRelative="0.01" />
+=======
+>>>>>>> main
             <parameter name="longculvert_discharge" toleranceAbsolute="0.003" />
             <parameter name="longculvert_s1up" toleranceAbsolute="0.002" />
             <parameter name="longculvert_s1dn" toleranceAbsolute="0.002" />

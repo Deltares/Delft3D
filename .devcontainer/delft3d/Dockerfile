@@ -1,5 +1,6 @@
-FROM containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release AS base
+ARG THIRD_PARTY_LIBS_TAG=oneapi-2024-ifx-release
 
+FROM containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:${THIRD_PARTY_LIBS_TAG} AS base
 
 ARG USER_UID=1000
 
@@ -8,19 +9,13 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
 # Install some tools from the almalinux package manager
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<"EOF"
+
 dnf install -y sudo git dos2unix which less tree strace \
     jq java-17-openjdk java-17-openjdk-devel maven 
 update-alternatives --set java java-17-openjdk.x86_64
 EOF
 
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-
-# Remove curl installed in third-party-libs container as this is without SSl support and nothing works anymore
-RUN <<"EOF"
-rm /usr/local/bin/curl
-rm /usr/local/lib/libcurl*
-EOF
-
 
 # Create non-root user and grant it sudo privileges:
 # See: https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user
@@ -29,7 +24,6 @@ useradd --uid $USER_UID -ms /bin/bash dev
 echo "dev ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/dev
 chmod 0440 /etc/sudoers.d/dev
 EOF
-
 
 # Change user from 'root' to 'dev', and set 'dev's home directory as the image workdir.
 USER dev
@@ -40,7 +34,6 @@ RUN <<"EOF"
 mkdir ~/.history ~/.aws
 touch ~/.history/.bash_history
 EOF
-
 
 # Install uv, python, and python tools.
 RUN curl -LsSf https://astral.sh/uv/0.8.4/install.sh | sh

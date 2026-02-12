@@ -33,8 +33,6 @@ object LinuxDevContainer : BuildType({
         param("intel_fortran_compiler", "ifx")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
         param("harbor_repo", "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs")
-
-
     }
 
     if (DslContext.getParameter("enable_third_party_libs_trigger").lowercase() == "true") {
@@ -51,7 +49,6 @@ object LinuxDevContainer : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         exportJiraIssueId {
             paramName = "env.JIRA_ISSUE_ID"
         }
@@ -65,7 +62,8 @@ object LinuxDevContainer : BuildType({
                 contextDir = "."
                 commandArgs = """
                     --pull
-                    """.trimIndent()
+                    --build-arg THIRD_PARTY_LIBS_TAG=%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%
+                """.trimIndent()
             }
         }
     }

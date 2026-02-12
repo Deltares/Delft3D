@@ -38,35 +38,32 @@ contains
       use m_resetfullflowmodel, only: resetFullFlowModel
       character(len=1024) :: tm_md_obsfile = ' '
       character(len=1024) :: tm_md_crsfile = ' '
-      
+
       character(len=256) :: output_file = 'test_output.mdu'
-      
-      
+
       integer :: ierr
       call resetFullFlowModel()
 
       call F90_ASSERT_TRUE(CHANGEDIRQQ('MDUversion'), '')
       call readMDUFile('stretch_example.mdu', ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when reading MDU file.')
-      
+
       tm_md_obsfile = md_obsfile
       tm_md_crsfile = md_crsfile
-   
+
       call f90_expect_gt(len_trim(tm_md_crsfile), 255, 'md_crsfile is maybe truncated.')
-      
+
       call writeMDUFile(output_file, ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')
-      
-      
+
       call resetFullFlowModel()
       call readMDUFile('test_output.mdu', ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')
-      
-      call F90_EXPECT_STREQ(trim(md_obsfile)//C_NULL_CHAR, trim(tm_md_obsfile)//C_NULL_CHAR, 'Difference in md_obsfile after read-write-read cycle.')
-      call F90_EXPECT_STREQ(trim(md_crsfile)//C_NULL_CHAR, trim(tm_md_crsfile)//C_NULL_CHAR, 'Difference in md_crsfile after read-write-read cycle.')
+
+      call F90_EXPECT_STREQ(trim(md_obsfile)//c_null_char, trim(tm_md_obsfile)//c_null_char, 'Difference in md_obsfile after read-write-read cycle.')
+      call F90_EXPECT_STREQ(trim(md_crsfile)//c_null_char, trim(tm_md_crsfile)//c_null_char, 'Difference in md_crsfile after read-write-read cycle.')
       call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
-      
-      
+
    end subroutine
    !$f90tw)
 

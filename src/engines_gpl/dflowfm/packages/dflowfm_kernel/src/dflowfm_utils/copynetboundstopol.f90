@@ -101,9 +101,9 @@ contains
       inhul1 = -1
       inhul2 = -1
       maxpolh = size(xpl)
-      allocate(xtmp(maxpolh))
-      allocate(ytmp(maxpolh))
-      allocate(ztmp(maxpolh))
+      allocate (xtmp(maxpolh))
+      allocate (ytmp(maxpolh))
+      allocate (ztmp(maxpolh))
       xtmp = dmiss
       NPH = 0
       ! maxpolh = size(xtmp)

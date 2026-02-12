@@ -43,7 +43,6 @@
 
 
 Exception::Exception (
-    bool    fatal,
     const char *  format,
     ...
     ) {
@@ -58,7 +57,6 @@ Exception::Exception (
     va_end (arguments);
     buffer[bufsize-1] = '\0';
 
-    this->fatal = fatal;
     this->message = new char [len+1];
     strcpy (this->message, buffer);
 

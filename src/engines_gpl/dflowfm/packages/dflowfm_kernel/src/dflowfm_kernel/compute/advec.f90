@@ -1100,8 +1100,8 @@ contains
                      end do
 
                      do L = Lb, Lt
-                     Ltx0 = Lt - Lb + 1
-                     siguL(0) = 0.0_dp
+                        Ltx0 = Lt - Lb + 1
+                        siguL(0) = 0.0_dp
                         siguL(L - Lb + 1) = hu(L) / hu(LL)
                      end do
 

@@ -133,7 +133,7 @@ contains
          call realloc(u1rm, nbndu, stat=ierr, keepExisting=.false., fill=0.0_dp) ! remember u1 state
          call aerr('u1rm  (nbndu)', ierr, nbndu)
          if (trim(instat) == 'stat' .or. &
-            trim(instat) == 'stat_table') then
+             trim(instat) == 'stat_table') then
             call allocstatsolverarrays(0, ierr)
          end if
          !

@@ -152,10 +152,10 @@ contains
       return
 
 888   call readerror('reading two integers nrows, nkols, but getting ', rec, myzprofs)
-return
+      return
 
 777   call readerror('reading x,y,z , but getting ', rec, myzprofs)
-return
+      return
 
    end subroutine readyzprofnr
 

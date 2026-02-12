@@ -47,7 +47,7 @@ RenumberFlowNodes                 = 1                   # Renumber the flow node
 Kmx                               = 0                   # Maximum number of vertical layers
 Layertype                         = 1                   # 1 = sigma-layers, 2 = z- or z-sigma-layers
 Numtopsig                         = 0                   # Number of sigma layers in top of z-layer model
-SigmaGrowthFactor                 = 1.                  # Layer thickness growth factor from bed up
+zLayerGrowthFactor                = 1.                  # z-layer thickness growth factor from DzTopUniAboveZ downwards
 StretchType                       = 0                   # Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential
 
 [numerics]
