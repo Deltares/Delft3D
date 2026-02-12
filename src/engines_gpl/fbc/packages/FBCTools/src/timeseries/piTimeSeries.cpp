@@ -25,7 +25,6 @@
 #include <sstream>
 #include "piDiagInterface.h"
 
-using namespace std;
 using namespace rtctools::timeseries;
 
 

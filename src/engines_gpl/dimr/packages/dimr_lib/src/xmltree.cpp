@@ -75,7 +75,6 @@
 #include <stdio.h>
 #include <expat.h>
 #include <string.h>
-using namespace std;
 
 #include "exception.h"
 //------------------------------------------------------------------------------
@@ -554,35 +553,35 @@ XmlTree::print (
         this->children[i]->print (level+1);
     }
 
-string 
+std::string
 XmlTree::SubstEnvVar(
-   string instr 
+    std::string instr
    ) {
    size_t pos0 = instr.find("${");
-   string env_key;
+   std::string env_key;
    char*  env_value = NULL;
-   string env_string="";
-   string rest_out="";
+   std::string env_string="";
+   std::string rest_out="";
 
-   if (pos0!=string::npos) {
+   if (pos0 != std::string::npos) {
       size_t pos1 = instr.find("}",pos0+2);
-      if (pos1==string::npos) {
+      if (pos1 == std::string::npos) {
          pos1 = instr.length();
       }
       env_key = instr.substr(pos0+2,pos1-pos0-2);
       size_t first = env_key.find_first_not_of(' ');           // trim spaces from name
       size_t last = env_key.find_last_not_of(' ');
-	  string env_key_trunc = env_key.substr(first, last-first+1);
+      std::string env_key_trunc = env_key.substr(first, last-first+1);
 	  const char* env_name = env_key_trunc.c_str();
       env_value=getenv(env_name);
-      string rest_in = instr.substr(pos1+1);
+      std::string rest_in = instr.substr(pos1+1);
       rest_out = SubstEnvVar(rest_in);
-      if (env_value!=NULL){
-        env_string = string(env_value);
+      if (env_value != NULL){
+        env_string = std::string(env_value);
       }
-      return (string(instr.substr(0,pos0))+env_string+rest_out);
+      return (std::string(instr.substr(0,pos0))+env_string+rest_out);
    } else 
-      return string(instr);
+      return std::string(instr);
 }
 
 void
@@ -597,7 +596,7 @@ XmlTree::ExpandEnvironmentVariables(
 	) {
     XmlTree * node = NULL;
 	char *orgstr;
-	string instr, outstr;
+    std::string instr, outstr;
 	for (int iattrib = 0; iattrib<attribValues.size();iattrib++){
 		orgstr = this->attribValues[iattrib];
 		instr = orgstr;
