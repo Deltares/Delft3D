@@ -4197,7 +4197,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_Opal  ","FrPOMS2   ",  10,"Y","x",1
 "Sed_Opal  ","FrPOMS2Max",  11,"Y","x",1
 "Sed_Opal  ","PsedminOpl",  12,"Y","x",1
-"Sed_Opal  ","VSedOpal  ",  13,"Y"," ",0
+"Sed_Opal  ","Volume    ",  13,"N","x",1
+"Sed_Opal  ","WSSedOpal ",  14,"N"," ",1
+"Sed_Opal  ","VSedOpal  ",  15,"Y"," ",0
+"Sed_Opal  ","Flow      ",  16,"Y","x",0
 "Sed_POC1  ","POC1      ",   1,"N","x",1
 "Sed_POC1  ","ZSedPOC1  ",   2,"Y","x",1
 "Sed_POC1  ","VSedPOC1  ",   3,"Y","x",1
@@ -4210,7 +4213,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_POC1  ","FrPOMS2   ",  10,"Y","x",1
 "Sed_POC1  ","FrPOMS2Max",  11,"Y","x",1
 "Sed_POC1  ","PsedminPO1",  12,"Y","x",1
-"Sed_POC1  ","VSedPOC1  ",  13,"Y"," ",0
+"Sed_POC1  ","Volume    ",  13,"N","x",1
+"Sed_POC1  ","WSSedPOC1 ",  14,"N"," ",1
+"Sed_POC1  ","VSedPOC1  ",  15,"Y"," ",0
+"Sed_POC1  ","Flow      ",  16,"Y","x",0
 "Sed_POC2  ","POC2      ",   1,"N","x",1
 "Sed_POC2  ","ZSedPOC2  ",   2,"Y","x",1
 "Sed_POC2  ","VSedPOC2  ",   3,"Y","x",1
@@ -4223,7 +4229,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_POC2  ","FrPOMS2   ",  10,"Y","x",1
 "Sed_POC2  ","FrPOMS2Max",  11,"Y","x",1
 "Sed_POC2  ","PsedminPO2",  12,"Y","x",1
-"Sed_POC2  ","VSedPOC2  ",  13,"Y"," ",0
+"Sed_POC2  ","Volume    ",  13,"N","x",1
+"Sed_POC2  ","WSSedPOC2 ",  14,"N"," ",1
+"Sed_POC2  ","VSedPOC2  ",  15,"Y"," ",0
+"Sed_POC2  ","Flow      ",  16,"Y","x",0
 "Sed_POC3  ","POC3      ",   1,"N","x",1
 "Sed_POC3  ","ZSedPOC3  ",   2,"Y","x",1
 "Sed_POC3  ","VSedPOC3  ",   3,"Y","x",1
@@ -4236,7 +4245,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_POC3  ","FrPOMS2   ",  10,"Y","x",1
 "Sed_POC3  ","FrPOMS2Max",  11,"Y","x",1
 "Sed_POC3  ","PsedminPO3",  12,"Y","x",1
-"Sed_POC3  ","VSedPOC3  ",  13,"Y"," ",0
+"Sed_POC3  ","Volume    ",  13,"N","x",1
+"Sed_POC3  ","WSSedPOC3 ",  14,"N"," ",1
+"Sed_POC3  ","VSedPOC3  ",  15,"Y"," ",0
+"Sed_POC3  ","Flow      ",  16,"Y","x",0
 "Sed_POC4  ","POC4      ",   1,"N","x",1
 "Sed_POC4  ","ZSedPOC4  ",   2,"Y","x",1
 "Sed_POC4  ","VSedPOC4  ",   3,"Y","x",1
@@ -4249,7 +4261,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_POC4  ","FrPOMS2   ",  10,"Y","x",1
 "Sed_POC4  ","FrPOMS2Max",  11,"Y","x",1
 "Sed_POC4  ","PsedminPO4",  12,"Y","x",1
-"Sed_POC4  ","VSedPOC4  ",  13,"Y"," ",0
+"Sed_POC4  ","Volume    ",  13,"N","x",1
+"Sed_POC4  ","WSSedPOC4 ",  14,"N"," ",1
+"Sed_POC4  ","VSedPOC4  ",  15,"Y"," ",0
+"Sed_POC4  ","Flow      ",  16,"Y","x",0
 "Sed_POC5  ","POC5      ",   1,"N","x",1
 "Sed_POC5  ","ZSedPOC5  ",   2,"Y","x",1
 "Sed_POC5  ","VSedPOC5  ",   3,"Y","x",1
@@ -4262,7 +4277,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Sed_POC5  ","FrPOMS2   ",  10,"Y","x",1
 "Sed_POC5  ","FrPOMS2Max",  11,"Y","x",1
 "Sed_POC5  ","PsedminPO5",  12,"Y","x",1
-"Sed_POC5  ","VSedPOC5  ",  13,"Y"," ",0
+"Sed_POC5  ","Volume    ",  13,"N","x",1
+"Sed_POC5  ","WSSedPOC5 ",  14,"N"," ",1
+"Sed_POC5  ","VSedPOC5  ",  15,"Y"," ",0
+"Sed_POC5  ","Flow      ",  16,"Y","x",0
 "Sed_VivP  ","VIVP      ",   1,"N","x",1
 "Sed_VivP  ","ZSedVIVP  ",   2,"Y","x",1
 "Sed_VivP  ","VSedVIVP  ",   3,"Y","x",1
