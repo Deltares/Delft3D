@@ -80,6 +80,9 @@ module m_flow ! flow arrays-999
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
    real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
    integer :: tur_time_int_method = TURB_LAX_CONNECTED !< Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
+   integer :: testsplit = 0!< test it (1) or not (0)
+   integer :: janettosplit = 1 !< default 0 split each contrib., 1=split on netto sum (for tke) 
+   real(kind=dp) :: splitfac = 1.0_dp !< 0d0 = Patankar , 1d0 = Newton, 10d0 Guus
    real(kind=dp) :: z_layer_growth_factor !< z-layer thickness growth factor from DzTopUniAboveZ downwards
    real(kind=dp) :: dztopuniabovez = -999.0_dp !< bottom level of lowest uniform layer == blmin if not specified
    real(kind=dp) :: Floorlevtoplay = -999.0_dp !< floor  level of top zlayer, == sini if not specified

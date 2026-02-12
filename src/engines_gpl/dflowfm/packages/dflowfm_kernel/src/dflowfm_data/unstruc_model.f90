@@ -1225,6 +1225,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', tur_time_int_factor)
       call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', tur_time_int_method)
 
+      call prop_get(md_ptr, 'numerics', 'testsplit', testsplit)
+      call prop_get(md_ptr, 'numerics', 'Nettosplit', janettosplit)
+      call prop_get(md_ptr, 'numerics', 'Splitfac', splitfac)
+    
       call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
 
@@ -3242,6 +3246,10 @@ contains
          call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', tur_time_int_method, 'Apply turbulenceTimeIntegrationFactor (1: to all cells, 2: only when vertical layers are horizontally connected)')
       end if
 
+      call prop_set(prop_ptr, 'numerics', 'testsplit', testsplit, 'Test Nettosplit and Splitfac (0: no, 1: yes)' )
+      call prop_set(prop_ptr, 'numerics', 'Nettosplit', Janettosplit, '(default 0=split each TKEsink separ., 1=split netto TKEsin)' )
+      call prop_set(prop_ptr, 'numerics', 'Splitfac', splitfac, '(0.0=Patankar, 1.0=Newton, 10.0=Guus) ' )
+      
       if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
          call prop_set(prop_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax, 'Limit eddy viscosity at bed )')
       end if

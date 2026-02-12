@@ -51,7 +51,8 @@ contains
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, eps6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, eps20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
-                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, ktop, kbot, hs, epshu, ucx, ucy, kmxn
+                        rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density, ktop, kbot, hs, epshu, ucx, ucy, kmxn, &
+                        testsplit, janettosplit, splitfac
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi, ndx
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
       use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
@@ -84,6 +85,8 @@ contains
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
       integer :: k1, k2, n1, n2, kup, ierror, kk, kt, kb, kb0
 
+      real(kind=dp) :: sortkebuoy, sortkeshear, sortkeeps, sorsum
+       
       if (iturbulencemodel <= 0 .or. kmx == 0) then
          return
       end if
@@ -373,6 +376,8 @@ contains
                              + difd * (turkin0(L - 1) - turkin0(L)) * tetm1
                   end if
 
+                  sortkebuoy = 0.0_dp
+                  
                   !c Source and sink terms                                                                           k turkin
                   if (use_density()) then
                      k1 = ln(1, L)
@@ -388,6 +393,8 @@ contains
                      end if
                      buoflu(k) = max(vicwwu(L), vicwminb) * bruva(k)
 
+                     sortkebuoy = -buoflu(k)
+                     
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
                      if (iturbulencemodel == 3) then
@@ -432,8 +439,10 @@ contains
 
                   sourtu = max(vicwwu(L), vicwminb) * dijdij(k)
 
+                  sortkeshear = sourtu
                   !
                   if (iturbulencemodel == 3) then
+                     sortkeeps = - tureps0(L)
                      sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
                      bk(k) = bk(k) + sinktu * 2.0_dp
                      dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
@@ -443,6 +452,17 @@ contains
                      dk(k) = dk(k) + sourtu
                   end if
 
+                  if (testsplit == 1) then
+                     if (janettosplit == 1) then         ! splitting on netto 
+                        sorsum = sortkebuoy+sortkeshear+sortkeeps
+                        call addsoursink( splitfac, sorsum  , turkin0(L), bk(k), dk(k) )
+                     else 
+                        sorsum = sortkeshear+sortkebuoy  ! sure positive, so add first
+                        call addsoursink( splitfac, sorsum     , turkin0(L), bk(k), dk(k) )
+                        call addsoursink( splitfac, sortkeeps  , turkin0(L), bk(k), dk(k) )
+                     end if
+                  end if
+        
                   ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
 
                end do ! Lb, Lt-1
@@ -1372,5 +1392,20 @@ contains
       end do
    end subroutine linkstocenters2Donly
 
+   subroutine addsoursink(splitfac,sor,tur,b,d) 
+   ! add sor (or sink if <0) to diag and/or rhs to compute tur 
+   
+   real(kind=dp), intent(in)     :: splitfac,sor,tur
+   real(kind=dp), intent(inout)  :: b,d
+   
+   if (sor > 0) then 
+      d = d + sor 
+   else if (sor < 0) then 
+      b = b - sor*(splitfac + 1.0_dp) / tur   ! splitfac : 0d0=Patankar, 1d0=Newton, 10d0=Guus
+      d = d - sor* splitfac 
+   endif  
+   
+   end subroutine addsoursink
+ 
 end module m_update_verticalprofiles
 
