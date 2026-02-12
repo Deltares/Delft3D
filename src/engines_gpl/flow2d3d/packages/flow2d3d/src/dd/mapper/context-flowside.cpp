@@ -218,7 +218,7 @@ void D3dFlowContextFlowSide::ReceiveAndCreateCommPoints(void)
         delete numCommPointsBlob;
         if ( incomingBlobID != G2F_Blob_NumCommPoints )
         {
-            throw new Exception (true, "D3dFlowContextFlowSide::SetupForGaws: unexpected blobID (%d /= %d)",
+            throw new Exception("D3dFlowContextFlowSide::SetupForGaws: unexpected blobID (%d /= %d)",
                         incomingBlobID, G2F_Blob_NumCommPoints);
         }
 
@@ -239,7 +239,7 @@ void D3dFlowContextFlowSide::ReceiveAndCreateCommPoints(void)
             delete commPointsBlob;
             if ( incomingBlobID != G2F_Blob_CommPoints )
             {
-                throw new Exception (true, "D3dFlowContextFlowSide::SetupForGaws: unexpected blobID (%d /= %d)",
+                throw new Exception("D3dFlowContextFlowSide::SetupForGaws: unexpected blobID (%d /= %d)",
                             incomingBlobID, G2F_Blob_CommPoints);
             }
 
@@ -263,7 +263,7 @@ void D3dFlowContextFlowSide::UpdateFlowToMapper(
     {
         if ( this->mapperIterator == NULL )
         {
-            throw new Exception (true, "UpdateFlowToMapper: mapperIterator not set for Flow \"%s\"",
+            throw new Exception("UpdateFlowToMapper: mapperIterator not set for Flow \"%s\"",
                 this->flowIterator == NULL ? "????" : this->flowIterator->name );
         }
         else
@@ -291,7 +291,7 @@ void D3dFlowContextFlowSide::UpdateFlowToMapper(
                                                                         buffer + headerSize, numDataBytesToBeSent);
 
             if ( numBytes != numDataBytesToBeSent )
-                throw new Exception (true, "FLOW \"%s\" to mapper \"%s\": numBytes(%d) != numDataBytesToBeSent(%d)",
+                throw new Exception("FLOW \"%s\" to mapper \"%s\": numBytes(%d) != numDataBytesToBeSent(%d)",
                             this->flowIterator->name, this->mapperIterator->name,
                             numBytes, numDataBytesToBeSent );
 
@@ -322,7 +322,7 @@ void D3dFlowContextFlowSide::UpdateFlowFromMapper(
     {
         if ( this->mapperIterator == NULL )
         {
-            throw new Exception (true, "UpdateFlowFromMapper: mapperIterator not set for Flow \"%s\"",
+            throw new Exception("UpdateFlowFromMapper: mapperIterator not set for Flow \"%s\"",
                 this->flowIterator == NULL ? "????" : this->flowIterator->name );
         }
         else
@@ -346,7 +346,7 @@ void D3dFlowContextFlowSide::UpdateFlowFromMapper(
             delete updateInBlob;
             if ( incomingBlobID != M2F_Blob_Update )
             {
-                throw new Exception (true, "D3dFlowContextFlowSide::UpdateFlowFromMapper: unexpected blobID (%d /= %d)",
+                throw new Exception("D3dFlowContextFlowSide::UpdateFlowFromMapper: unexpected blobID (%d /= %d)",
                             incomingBlobID, M2F_Blob_Update);
             }
 
@@ -369,7 +369,7 @@ void D3dFlowContextFlowSide::UpdateFlowFromMapper(
                                                                         buffer + headerSize, numInBytes);
 
                         if ( numReadBytes != this->varInfoColl->GetNumBytes(distribGroup) )
-                                throw new Exception (true, "FLOW \"%s\" from mapper \"%s\": numReadBytes(%d) != maxNumInBytes(%d)",
+                                throw new Exception("FLOW \"%s\" from mapper \"%s\": numReadBytes(%d) != maxNumInBytes(%d)",
                                                         this->flowIterator->name, this->mapperIterator->name,
                                                         numReadBytes, maxNumInBytes );
 
@@ -391,7 +391,7 @@ void D3dFlowContextFlowSide::SendBlobToMapper(
 
     if ( this->mapperIterator == NULL )
     {
-        throw new Exception (true, "SendToMapper: mapperIterator not set for Flow \"%s\"",
+        throw new Exception("SendToMapper: mapperIterator not set for Flow \"%s\"",
             this->flowIterator == NULL ? "????" : this->flowIterator->name );
     }
     else
@@ -423,7 +423,7 @@ int D3dFlowContextFlowSide::ReceiveBlobFromMapper(
 
     if ( this->mapperIterator == NULL )
     {
-        throw new Exception (true, "ReceiveFromMapper: mapperIterator not set for Flow \"%s\"",
+        throw new Exception("ReceiveFromMapper: mapperIterator not set for Flow \"%s\"",
             this->flowIterator == NULL ? "????" : this->flowIterator->name );
     }
     else
@@ -437,7 +437,7 @@ int D3dFlowContextFlowSide::ReceiveBlobFromMapper(
         delete receiveBlob;
         if ( incomingBlobID != blobID )
         {
-            throw new Exception (true, "D3dFlowContextFlowSide::ReceiveBlobFromMapper: unexpected blobID (%d /= %d)",
+            throw new Exception("D3dFlowContextFlowSide::ReceiveBlobFromMapper: unexpected blobID (%d /= %d)",
                         incomingBlobID, blobID);
         }
         FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "FLOW \"%s\" RECEIVED blob %d from mapper \"%s\"",
@@ -465,7 +465,7 @@ void D3dFlowContextFlowSide::UpdateFlowToGaws(GawsDistribGroup distribGroup)
     {
         if ( this->gawsIterator == NULL )
         {
-            throw new Exception (true, "UpdateFlowToGaws: gawsIterator not set for Flow \"%s\"",
+            throw new Exception("UpdateFlowToGaws: gawsIterator not set for Flow \"%s\"",
                 this->flowIterator == NULL ? "????" : this->flowIterator->name );
         }
         else
@@ -540,7 +540,7 @@ void D3dFlowContextFlowSide::UpdateFlowFromGaws(bool left_2_right, GawsDistribGr
     {
         if ( this->gawsIterator == NULL )
         {
-            throw new Exception (true, "UpdateFlowFromGaws: flowIterator not set for Gaws \"%s\"",
+            throw new Exception("UpdateFlowFromGaws: flowIterator not set for Gaws \"%s\"",
                 this->flowIterator == NULL ? "????" : this->flowIterator->name );
         }
         else
@@ -561,7 +561,7 @@ void D3dFlowContextFlowSide::UpdateFlowFromGaws(bool left_2_right, GawsDistribGr
             delete receiveBlob;
             if ( incomingBlobID != G2F_Blob_Update )
             {
-                throw new Exception (true, "D3dFlowContextFlowSide::UpdateFlowFromGaws: unexpected blobID (%d /= %d)",
+                throw new Exception("D3dFlowContextFlowSide::UpdateFlowFromGaws: unexpected blobID (%d /= %d)",
                             incomingBlobID, G2F_Blob_Update);
             }
 
@@ -616,7 +616,7 @@ void D3dFlowContextFlowSide::SendSizesAndFlagsToMapper(void)
     {
         if ( this->mapperIterator == NULL )
         {
-            throw new Exception (true, "SendSizesAndFlagsToMapper: mapperIterator not set for Flow \"%s\"",
+            throw new Exception("SendSizesAndFlagsToMapper: mapperIterator not set for Flow \"%s\"",
                 this->flowIterator == NULL ? "????" : this->flowIterator->name );
         }
         else
@@ -662,7 +662,7 @@ void D3dFlowContextFlowSide::ReceiveAndCreateMapperStrips(void)
     {
         if ( this->mapperIterator == NULL )
         {
-            throw new Exception (true, "ReceiveAndCreateMapperStrips: mapperIterator not set for Flow \"%s\"",
+            throw new Exception("ReceiveAndCreateMapperStrips: mapperIterator not set for Flow \"%s\"",
                 this->flowIterator == NULL ? "????" : this->flowIterator->name );
         }
         else
@@ -682,7 +682,7 @@ void D3dFlowContextFlowSide::ReceiveAndCreateMapperStrips(void)
             delete mapperInfoBlob;
             if ( incomingBlobID != M2F_Blob_InfoOnMapperStrips )
             {
-                throw new Exception (true, "D3dFlowContextFlowSide::ReceiveAndCreateMapperStrips: unexpected blobID (%d /= %d)",
+                throw new Exception("D3dFlowContextFlowSide::ReceiveAndCreateMapperStrips: unexpected blobID (%d /= %d)",
                             incomingBlobID, M2F_Blob_InfoOnMapperStrips);
             }
             FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "FLOW \"%s\" RECEIVED mapper strip info from mapper \"%s\"",
@@ -725,7 +725,7 @@ void D3dFlowContextFlowSide::SendSizesToGaws(void)
     {
         if ( this->gawsIterator == NULL )
         {
-            throw new Exception (true, "SendSizesToGaws: gawsIterator not set for Flow \"%s\"",
+            throw new Exception("SendSizesToGaws: gawsIterator not set for Flow \"%s\"",
                 this->flowIterator == NULL ? "????" : this->flowIterator->name );
         }
         else

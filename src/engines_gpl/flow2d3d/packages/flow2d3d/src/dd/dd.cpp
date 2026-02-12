@@ -121,7 +121,7 @@ DD::DD (
                 this->nodeSet->AddNodesFromString (this->multiNode->charData);
                 }
             else
-                throw new Exception (true, "MultiNode DD specified, but no nodes specified");
+                throw new Exception("MultiNode DD specified, but no nodes specified");
             }
 
         this->numNodes = this->nodeSet->numNodes;
@@ -139,7 +139,7 @@ DD::DD (
 
 #if defined (WIN32)
     if (this->multiNode)
-        throw new Exception (true, "Multi-node DD simulations are not yet supported on Microsoft Windows platforms");
+        throw new Exception("Multi-node DD simulations are not yet supported on Microsoft Windows platforms");
 #endif
 
     this->nodeSet->CreateNodeTable ();
@@ -283,26 +283,26 @@ DD::ReadConfig (
 
     const char * ddbfile = this->config->GetElement ("ddbFile");
     if (ddbfile == NULL)
-        throw new Exception (true, "DD-bounds file not specified in configuration file");
+        throw new Exception("DD-bounds file not specified in configuration file");
 
     this->log->Write (Log::CONFIG_MAJOR, "Reading DD-bounds file \"%s\"...", ddbfile);
 
     FILE * input;
     if ((input = fopen (ddbfile, "r")) == NULL)
-        throw new Exception (true, "Cannot open DD-bounds file \"%s\"", ddbfile);
+        throw new Exception("Cannot open DD-bounds file \"%s\"", ddbfile);
 
     char line [DD::MAXSTRING];
     if (fgets (line, DD::MAXSTRING, input) == NULL)
-        throw new Exception (true, "Error reading first line of DD-bounds file");
+        throw new Exception("Error reading first line of DD-bounds file");
 
     rewind (input);
 
     const char * xmlhead = "<?xml ";
     if (strncmp (line, xmlhead, strlen (xmlhead)) == 0) {
 #if defined (WIN32)
-        throw new Exception (true, "XML DD-bounds file is currently not supported on Windows");
+        throw new Exception("XML DD-bounds file is currently not supported on Windows");
 #else
-        throw new Exception (true, "XML DD-bounds file is currently not implemented (WIP)");        // ToDo
+        throw new Exception("XML DD-bounds file is currently not implemented (WIP)");        // ToDo
 #endif
         }
 
@@ -354,7 +354,7 @@ DD::ReadDDBounds (
         // Parse input line and generate process and mapper names
 
         if (sscanf (line, "%s %d %d %d %d %s %d %d %d %d", left, &l1, &l2, &l3, &l4, right, &r1, &r2, &r3, &r4) != 10)
-            throw new Exception (true, "Syntax error in DD-bounds file on line %d", confline);
+            throw new Exception("Syntax error in DD-bounds file on line %d", confline);
 
         check_md_file (left);
         check_md_file (right);
@@ -456,7 +456,7 @@ DD::JoinIterators (
     // Validate function arguments
 
     if (iter1 == NULL || iter2 == NULL)
-        throw new Exception (true, "Null iterator in JoinIterators");
+        throw new Exception("Null iterator in JoinIterators");
 
     // Get IDs of the iterators to join
 
@@ -464,18 +464,18 @@ DD::JoinIterators (
     if (name1 == NULL) name1 = "";
     long id1 = (long) this->iteratorDict->Lookup (name1);
     if (id1 == Dictionary::NOTFOUND)
-        throw new Exception (true, "Unknown iterator \"%s\" in JoinIterators", name1);
+        throw new Exception("Unknown iterator \"%s\" in JoinIterators", name1);
 
     const char * name2 = iter2->name;
     if (name2 == NULL) name2 = "";
     long id2 = (long) this->iteratorDict->Lookup (name2);
     if (id2 == Dictionary::NOTFOUND)
-        throw new Exception (true, "Unknown iterator \"%s\" in JoinIterators", name2);
+        throw new Exception("Unknown iterator \"%s\" in JoinIterators", name2);
 
     // Make sure iterators are in different categories
 
     if (this->iterator[id1].catID == this->iterator[id2].catID)
-        throw new Exception (true, "Iterators \"%s\" and \"%s\" are in the same category (#%d); cannot join", name1, name2, this->iterator[id2].catID);
+        throw new Exception("Iterators \"%s\" and \"%s\" are in the same category (#%d); cannot join", name1, name2, this->iterator[id2].catID);
 
     // Look for preexisting join with the same two iterators.
 
@@ -489,7 +489,7 @@ DD::JoinIterators (
 
     if (jid == this->numJoins) {    // not found, allocate new slot
         if (this->numJoins >= DD::MAXJOINS)
-            throw new Exception (true, "Configuration join table is full (> %d entries)", DD::MAXJOINS);
+            throw new Exception("Configuration join table is full (> %d entries)", DD::MAXJOINS);
 
         this->join[jid].iter1     = id1;
         this->join[jid].iter2     = id2;
@@ -548,19 +548,19 @@ check_md_file (
     int i = strlen (filename);
 
     if (i >= (int) DD::MAXSTRING)
-        throw new Exception (true, "File name in DD-bound file is too long");
+        throw new Exception("File name in DD-bound file is too long");
 
     for ( ; i >= 0 && filename[i] != '.' ; i--);        // find last dot
 
     if (i <= 0)
-        throw new Exception (true, "Improperly formed file name in DD-bound file");
+        throw new Exception("Improperly formed file name in DD-bound file");
     if (i >= (int) DD::MAXSTRING-4)
-        throw new Exception (true, "MD-file name derived from DD-bound file will be too long");
+        throw new Exception("MD-file name derived from DD-bound file will be too long");
 
     strncpy (filename+i, ".mdf", 4);
 
     if (! readable_file (filename))
-        throw new Exception (true, "Cannot find subdomain input file \"%s\"", filename);
+        throw new Exception("Cannot find subdomain input file \"%s\"", filename);
     }
 
 
@@ -658,7 +658,7 @@ DD::InitializeLocalMessageBuffers (
             sprintf (a2b_name, "channel-%d-%d", this->join[jid].iter1, this->join[jid].iter2);
 
             if (pthread_mutex_init (&channel.mutex, NULL) != 0)
-                throw new Exception (true, "Cannot create mutex for local message channel");
+                throw new Exception("Cannot create mutex for local message channel");
 
             channel.sync = new Semaphore (a2b_name, 0, this->log);
 
@@ -668,7 +668,7 @@ DD::InitializeLocalMessageBuffers (
             sprintf (b2a_name, "channel-%d-%d", this->join[jid].iter2, this->join[jid].iter1);
 
             if (pthread_mutex_init (&channel.mutex, NULL) != 0)
-                throw new Exception (true, "Cannot create mutex for local message channel");
+                throw new Exception("Cannot create mutex for local message channel");
 
             channel.sync = new Semaphore (b2a_name, 0, this->log);
             this->join[jid].b2a = channel;
@@ -701,7 +701,7 @@ DD::StartLocalIteratorThreads (
                                     );
 
             if (pthread_create (&this->iterator[iid].thid, &this->thattr, &IteratorShell, (void *) iid) != 0)
-                throw new Exception (true, "Pthreads error: Cannot create shell thread, errno=%d", errno);
+                throw new Exception("Pthreads error: Cannot create shell thread, errno=%d", errno);
 
             this->iterator[iid].thread = true;
             this->iterator[iid].iterator->sync->VSem ();
@@ -738,7 +738,7 @@ DD::RunSimulation (
             if (! this->iterator[iid].detached) {
                 this->log->Write (Log::DETAIL, "Waiting for termination of iterator \"%s\"", this->iterator[iid].name);
                 if (pthread_join (this->iterator[iid].thid, NULL) != 0)
-                    throw new Exception (true, "Pthreads error: Cannot join with thread, errno=%d", errno);
+                    throw new Exception("Pthreads error: Cannot join with thread, errno=%d", errno);
 
                 this->iterator[iid].thread = false;
                 this->log->Write (Log::DETAIL, "Iterator \"%s\" has terminated", this->iterator[iid].name);
@@ -769,7 +769,7 @@ GetHostnamePID (
     gethostname (hostnamePID, bufsize);
 #else
     if (gethostname (hostnamePID, bufsize) != 0)
-        throw new Exception (true, "Cannot get hostname for distributed DD");
+        throw new Exception("Cannot get hostname for distributed DD");
 #endif
 
     // Chop off domain name if it's present
@@ -781,7 +781,7 @@ GetHostnamePID (
 
     int len = strlen (hostnamePID);
     if (len + 16 >= bufsize)
-        throw new Exception (true, "Hostname too long for buffer in distributed DD");
+        throw new Exception("Hostname too long for buffer in distributed DD");
 
     sprintf (hostnamePID + len, ":%d", getpid ());
     return hostnamePID;

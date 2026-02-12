@@ -143,7 +143,9 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      max_num_src = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      max_num_src =  compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
+      max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      
       if (max_num_src > 0) then
          call reallocsrc(max_num_src, 0)
       end if
@@ -279,7 +281,7 @@ contains
       if (is_successful) then
          call resolvePath(location_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+       write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
          call err_flush()
          return
       end if
@@ -288,7 +290,7 @@ contains
       if (is_successful) then
          call resolvePath(forcing_file, base_dir)
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+        write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
@@ -352,7 +354,7 @@ contains
                      is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
                   else
                      is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=NODE_ID, method=method, &
-                                                                     operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
+                                                               operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
                   end if
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
@@ -400,7 +402,7 @@ contains
       character(len=*), intent(out) :: location_file !< The location file of the lateral, only set if loc_spec_type = LOCTP_POLYGON_FILE
       logical, intent(out) :: is_success !< Flag indicating if the reading was successful
 
-      logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
+   logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
       integer :: number_of_discharge_specifications, ierr
       integer, parameter :: maximum_number_of_discharge_specifications = 4
 
@@ -464,7 +466,7 @@ contains
 
       if (has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates) then
          if (.not. (has_num_coordinates .and. has_x_coordinates .and. has_y_coordinates)) then
-            call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
+       call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
             return
          end if
          call prop_get(block_ptr, 'Lateral', 'numCoordinates', num_coordinates)
@@ -567,9 +569,9 @@ contains
       call prepare_lateral_mask(kclat, ilattype)
 
       numlatsg = numlatsg + 1
-      call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
+      call realloc(nnlat, max(2*ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
       call selectelset_internal_nodes(xz, yz, kclat, ndxi, nnLat(nlatnd + 1:), nlat, &
-                                      loc_spec_type, location_file, num_coordinates, x_coordinates, y_coordinates, branch_id, chainage, node_id)
+                          loc_spec_type, location_file, num_coordinates, x_coordinates, y_coordinates, branch_id, chainage, node_id)
 
       n1latsg(numlatsg) = nlatnd + 1
       n2latsg(numlatsg) = nlatnd + nlat
@@ -777,7 +779,7 @@ contains
 
             if (.not. allocated(ec_pwxwy_x)) then
                allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0.0_dp)
-               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
+               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2*ndx)
             end if
 
             if (jaspacevarcharn == 1) then
@@ -1044,7 +1046,7 @@ contains
 
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
@@ -1070,7 +1072,7 @@ contains
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
       is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
-                                                     1, qstss)
+                                                    1, qstss)
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
@@ -1125,58 +1127,200 @@ contains
 
    end function init_sourcesink_forcings
 
-   !> Read and initialize bubblescreen object from new external forcings file.
+   !> Compute (and returns) the number of source/sinks necessary for the bubblescreens
+   !! this is needed to preallocate the source sinks array (EC Module)
+   !! Snaps all bubblescreens based on their polyline to flow nodes and within a flownode to the proper layers.
+   !! while doing this pre-inits the BubbleScreen data structure with processed info 
+   !! (m_flowexternalforcingsdata::bubblescreens and m_flowexternalforcingsdata::bubblescreens_air_discharge)
+   !!
+   !! Input is a loaded .ext file tree structure.
+   !! Returns the resulting number of source sinks
+   function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
+      use fm_external_forcings_data, only: numsrc
+      use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
+      use m_filez, only: oldfil
+      use m_reapol, only: reapol
+      use tree_data_types, only: tree_data
+      use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use string_module, only: str_tolower
+      use m_polygon, only: npl
+      use network_data
+      use m_flow
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline      
+
+
+      type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+
+
+      character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
+      type(tree_data), pointer :: block_ptr
+
+      integer :: no_sourcesinks
+      integer :: num_items_in_file
+      character(len=:), allocatable :: id !< Bubblescreen id
+
+      character(len=:), allocatable :: location_file !< Bubblescreen location file
+      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      integer :: file_pointer
+      integer :: i, kstart, kend, cidx
+      logical :: is_successful
+      integer :: npl_tmp !< Temporary variable to store number of polygon points
+      character, dimension(:), allocatable :: error
+      type(t_Bubblescreen) :: bubblescreen
+      integer, dimension(:), allocatable :: crossed_cells
+
+      no_sourcesinks = 0
+      num_items_in_file = tree_num_nodes(bnd_ptr)     
+      do i = 1, num_items_in_file
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         group_name = trim(tree_get_name(block_ptr))
+
+         select case (str_tolower(group_name))
+         case ('bubblescreen')
+            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
+            bubblescreen%id = id
+
+            if (is_successful) then
+               call savepol()
+               call oldfil(file_pointer, location_file)
+               call reapol(file_pointer, 0)
+               npl_tmp = npl
+               bubblescreen%npl = npl_tmp
+               allocate (bubblescreen%xpl(npl_tmp))
+               allocate (bubblescreen%ypl(npl_tmp))
+
+
+               bubblescreen%xpl = xpl(1:npl_tmp)
+               bubblescreen%ypl = ypl(1:npl_tmp)
+               bubblescreen%z_level = zpl(1)
+               call restorepol()
+
+               call find_cells_crossed_by_polyline(bubblescreen%xpl, bubblescreen%ypl, crossed_cells, error)
+               bubblescreen%num_flow_cells = size(crossed_cells)
+               allocate(bubblescreen%flow_cells(bubblescreen%num_flow_cells))
+               do cidx = 1, size(crossed_cells)
+                  bubblescreen%flow_cells(cidx)%flownode_nr = crossed_cells(cidx)
+                  ! TODO: Check if kbot will not change for changing morphology
+                  kstart = kbot(crossed_cells(cidx))
+                  kend = kstart  + kmxn(crossed_cells(cidx)) - 1
+                  bubblescreen%flow_cells(cidx)%flowcell_start_index = kstart
+                  bubblescreen%flow_cells(cidx)%num_source_sinks = kmxn(crossed_cells(cidx))
+                  no_sourcesinks = no_sourcesinks + bubblescreen%flow_cells(cidx)%num_source_sinks
+               end do
+           
+               ! Append the initialized bubblescreen to the global array 
+               ! (not really caring about performance here, as number of bubblescreens is expected to be low)
+               if (.not. allocated(bubblescreens)) then 
+                  bubblescreens = [bubblescreen]
+               else
+                  bubblescreens = [bubblescreens, bubblescreen]
+               end if
+
+            end if
+         end select
+
+      end do 
+
+      allocate(bubblescreen_air_discharge(size(bubblescreens)))
+      
+   end function compute_and_preinit_bubblescreens_sourcesinks
+
+
+   !> Finish initialization of bubblescreen object and create the source/sink objects
+   !! also connect the EC module to bubblescreen_air_discharge
    function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, msgbuf, msg_flush
       use tree_data_types, only: tree_data
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
+      use network_data
+      use m_flow
+      use fm_external_forcings_data
+      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
+      use m_bubblescreen
+      use m_setsorsin
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+      ! Local variables
+      logical :: is_successful !< Success flag
+      integer :: cidx !< Index for crossed cells
+      integer :: i, bi !< Loop indices
+      integer :: ierr !< Error code
+      integer :: bubble_source_count
+
+      real(kind=dp) :: tmsx !< Temporary x-coordinate for bubblescreen source/sink
+      real(kind=dp) :: tmsy !< Temporary y-coordinate for bubblescreen source/sink
+      real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
+
       character(len=:), allocatable :: id !< Bubblescreen id
+      character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
-      ! Local variables
-      integer :: file_pointer
-      logical :: is_successful
-
       is_successful = .false.
+      bubble_source_count = 0
 
-      ! Read bubblescreen attributes from the tree node
+      ! Read bubble screen attributes from the tree node
       is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
+      if (is_successful) then
+         allocate(character(len=len_trim(id)+50) :: srcid)
 
-      ! Read and initialize polygon data from location_file
-      call oldfil(file_pointer, location_file)
-      call reapol(file_pointer, 0)
+         ! Find the bubblescreen with matching id
+         do i = 1, size(bubblescreens)
+            if (trim(bubblescreens(i)%id) == trim(id)) then
+               bi = i
+               exit
+            end if
+         end do
+         
+         associate (bubblescreen => bubblescreens(bi))
+            do cidx = 1, size(bubblescreen%flow_cells)
+               ! For each crossed cell, create a bubblescreen source/sink object
+               tmsx = xzw(bubblescreen%flow_cells(cidx)%flownode_nr)
+               tmsy = yzw(bubblescreen%flow_cells(cidx)%flownode_nr)
 
-      ! ====================================================================================================
-      ! TODO: Use the polygon data to create the bubblescreen source/sinks objects
-      ! 
-      ! proposed workflow: 
-      ! 1) Use find_cells_crossed_by_polyline subroutine to find all crossed flowed nodes based on polyline (UNST-9561)
-      ! 2) Create source/sink objects, either on their own or as part of a bubblescreen object to keep track of discharge etc. (UNST-9562)
-      ! ====================================================================================================
+               bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
+               do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
+                        bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
+                  write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
 
-      ! ====================================================================================================
-      ! TODO: Readout the .bc file containing the bubblescreen discharge timeseries and connect to EC module
-      ! See: UNST-9562, UNST-9564
-      !
-      ! Maybe start with something like this (copy-paste from init_sourcesink_forcings):
-      ! is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'bubble screen', trim(id), 'discharge', &
-      !                                                trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, 1, qstss)
-      ! if (.not. is_successful) then
-      !    write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-      !       //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
-      !    call err_flush()
-      !    return
-      ! end if
-      ! ====================================================================================================
+                  tmsz = (zws(i) + zws(i-1)) / 2.0_dp
+                  call addsorsin(srcid, [tmsx], [tmsy], [tmsz], [tmsz], 0.0_dp, ierr)
+                                    
+                  write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, tmsz
+                  call msg_flush()
+
+                  bubble_source_count = bubble_source_count + 1
+               end do
+
+               ! Fill in remaining bubblescreen flow cell data
+               bubblescreen%flow_cells(cidx)%num_source_sinks = bubble_source_count
+
+            end do
+         end associate
+      end if
+
+
+      is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
+                        trim(discharge_input), bi, &
+                        1, bubblescreen_air_discharge)
+      
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
+         call err_flush()
+         return
+      end if
 
       is_successful = .true.
 

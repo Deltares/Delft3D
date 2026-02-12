@@ -6,6 +6,12 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with 
+# std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
+if (WIN32)
+    add_compile_definitions(NOMINMAX)
+endif()
+
 message(STATUS "Configuring")
 if (UNIX)
     include(linux_scripts.cmake)
@@ -24,6 +30,11 @@ cmake_path(GET PARENT_DIR PARENT_PATH dir)
 # Set unit and integration test root directory
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
+
+# Specify C++ standard for all targets, disable compiler specific extentions
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(modules.cmake)
 

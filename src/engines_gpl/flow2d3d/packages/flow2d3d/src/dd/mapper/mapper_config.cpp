@@ -71,7 +71,7 @@ ParseMapperConfigString (
                             dumNameLeft , &mStartLeft , &nStartLeft , &mEndLeft , &nEndLeft,
                             dumNameRight, &mStartRight, &nStartRight, &mEndRight, &nEndRight );
     if (numRead != 10)
-        throw new Exception (true, "Cannot parse configString \"%s\" (numRead = %d)", configString, numRead);
+        throw new Exception("Cannot parse configString \"%s\" (numRead = %d)", configString, numRead);
     else
     {
         if ( mStartLeft == mEndLeft )
@@ -83,7 +83,7 @@ ParseMapperConfigString (
             }
             else
             {
-                throw new Exception (true, "Inconstistent Mapper direction configString \"%s\"", configString);
+                throw new Exception("Inconstistent Mapper direction configString \"%s\"", configString);
             }
         }
         else if ( nStartLeft == nEndLeft )
@@ -95,12 +95,12 @@ ParseMapperConfigString (
             }
             else
             {
-                throw new Exception (true, "Inconstistent napper direction configString \"%s\"", configString);
+                throw new Exception("Inconstistent napper direction configString \"%s\"", configString);
             }
         }
         else
         {
-            throw new Exception (true, "M1/M2 or N1/N2 must be equal in configString \"%s\"", configString);
+            throw new Exception("M1/M2 or N1/N2 must be equal in configString \"%s\"", configString);
         }
     }
 
@@ -140,7 +140,7 @@ ParseMapperConfigString (
 
         default:
 
-            throw new Exception (true, "Error: Determined wrong edgeType from configString \"%s\"", configString);
+            throw new Exception("Error: Determined wrong edgeType from configString \"%s\"", configString);
             break;
     }
 
@@ -165,7 +165,7 @@ ParseMapperConfigString (
     }
         if ( echoRefinement == 1) {
         if ((refinementFile = fopen (refFileName, "a")) == NULL) {
-            throw new Exception (true, "Cannot open refinement file \"%s\" for writing.", refFileName);
+            throw new Exception("Cannot open refinement file \"%s\" for writing.", refFileName);
         }
         }
 
@@ -174,7 +174,7 @@ ParseMapperConfigString (
         int oCtx = 1 - ctx;
         if ( lastCell[oCtx] == firstCell[oCtx] )
         {
-            throw new Exception (true, "Error in determining refinements, configString\"%s\"", configString);
+            throw new Exception("Error in determining refinements, configString\"%s\"", configString);
         }
         refine[ctx] = B_MAX ( 1,  ( lastCell[ ctx] - firstCell[ ctx] ) /
                                   ( lastCell[oCtx] - firstCell[oCtx] )   );
@@ -241,7 +241,7 @@ int D3dFlowMapper::InitAndParseConfigString(
 
     if ( retVal != HY_OK )
     {
-        throw new Exception (true, "Call to configStringParser failed for configString \"%s\"", configString);
+        throw new Exception("Call to configStringParser failed for configString \"%s\"", configString);
     }
 
     //
@@ -276,7 +276,7 @@ int D3dFlowMapper::CheckConfig()
          || check[C_1] == HY_ERR
          || checkBoth  == HY_ERR  )
     {
-        throw new Exception (true, "Errors found in config file %s", this->confFile);
+        throw new Exception("Errors found in config file %s", this->confFile);
         retVal = HY_ERR;
     }
 
@@ -303,7 +303,7 @@ int D3dFlowMapper::GetStartCell(
             startCell = FirstCell[aCtx] + 1;
             break;
     default:
-            throw new Exception (true, "Unexpected case (%d) in GetStartCell", orient);
+            throw new Exception("Unexpected case (%d) in GetStartCell", orient);
             break;
     }
 #if LOG_CELLS
@@ -334,7 +334,7 @@ int D3dFlowMapper::GetEndCell(
             endCell = LastCell[aCtx] - 1;
             break;
     default:
-            throw new Exception (true, "Unexpected case (%d) in GetEndCell", orient);
+            throw new Exception("Unexpected case (%d) in GetEndCell", orient);
             break;
     }
 #if LOG_CELLS
@@ -405,7 +405,7 @@ int D3dFlowMapper::GetNormalCell(
 
     if ( normCell == YET_TO_INIT )
     {
-        throw new Exception (true, "Invalid NormalCell in GetNormalCell");
+        throw new Exception("Invalid NormalCell in GetNormalCell");
     }
 
     return normCell;

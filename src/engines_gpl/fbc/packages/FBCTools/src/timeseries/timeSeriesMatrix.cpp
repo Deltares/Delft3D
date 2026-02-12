@@ -27,8 +27,6 @@
 #include <stdexcept>
 
 using namespace rtctools::timeseries;
-using namespace std;
-
 
 timeSeriesMatrix::timeSeriesMatrix(int nTimeStep, vector<long long> time,
 							       int nSeries, vector<string> seriesID, vector<validationEnum> seriesValidation,

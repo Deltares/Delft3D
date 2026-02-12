@@ -36,7 +36,6 @@
 using namespace openda;
 using namespace rtctools::schematization;
 using namespace rtctools::utilities;
-using namespace std;
 using namespace fews;
 using namespace PI;
 

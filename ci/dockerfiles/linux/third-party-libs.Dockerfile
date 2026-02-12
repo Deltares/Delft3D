@@ -691,6 +691,123 @@ cmake --install build
 popd
 EOF-precice
 
+
+FROM base AS vtk
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=precice-${CACHE_ID_SUFFIX} <<"EOF-vtk"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://vtk.org/files/release/9.5/VTK-9.5.2.tar.gz'
+BASEDIR='VTK-9.5.2'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake -S . -B build \
+    -D VTK_WRAP_PYTHON="OFF" \
+    -D VTK_USE_MPI="ON" \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib \
+    -D VTK_GROUP_ENABLE_Imaging=NO \
+    -D VTK_GROUP_ENABLE_Views=NO \
+    -D VTK_GROUP_ENABLE_Web=NO \
+    -D VTK_GROUP_ENABLE_Qt=NO \
+    -D VTK_GROUP_ENABLE_Rendering=DONT_WANT \
+    -D VTK_GROUP_ENABLE_MPI=YES \
+    -D BUILD_TESTING=OFF
+
+cmake --build build --parallel $(nproc)
+cmake --install build
+popd
+EOF-vtk
+
+
+FROM base AS aste
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+COPY --from=libxml2 --link /usr/local/ /usr/local/
+COPY --from=eigen --link /usr/local/ /usr/local/
+COPY --from=boost --link /usr/local/ /usr/local/
+COPY --from=precice --link /usr/local/ /usr/local/
+COPY --from=vtk --link /usr/local/ /usr/local/
+
+RUN --mount=type=cache,target=/var/cache/src/,id=precice-${CACHE_ID_SUFFIX} <<"EOF-aste"
+source /etc/bashrc
+set -eo pipefail
+
+dnf --assumeyes install patch
+
+URL='https://github.com/precice/aste/archive/refs/tags/v3.3.0.tar.gz'
+BASEDIR='aste-3.3.0'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+# Patch aste CmakeList.txt to not look for the system component of boost (it is no longer needed)
+cat << EOF_no_boost_system > no_boost_system.patch
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -28,7 +28,7 @@
+ 
+ find_package(precice 3.0 REQUIRED)
+ 
+-find_package(Boost 1.71.0 CONFIG REQUIRED COMPONENTS log log_setup system program_options unit_test_framework)
++find_package(Boost 1.83.0 CONFIG REQUIRED COMPONENTS log log_setup program_options unit_test_framework)
+ 
+ # Initial attempt to find VTK without specifying components (only supported for VTK9)
+ find_package(VTK QUIET)
+@@ -63,7 +63,6 @@
+   Boost::log
+   Boost::log_setup
+   Boost::program_options
+-  Boost::system
+   Boost::thread
+   Boost::unit_test_framework
+   MPI::MPI_CXX
+@@ -86,7 +85,6 @@
+   Boost::log
+   Boost::log_setup
+   Boost::program_options
+-  Boost::system
+   Boost::thread
+   Boost::unit_test_framework
+   MPI::MPI_CXX
+EOF_no_boost_system
+
+patch -p0 < no_boost_system.patch
+
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake -S . -B build \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib
+
+cmake --build build --parallel $(nproc)
+cmake --install build
+popd
+EOF-aste
+
 FROM base AS all
 
 RUN set -eo pipefail && \
@@ -713,3 +830,5 @@ COPY --from=esmf --link /usr/local/ /usr/local/
 COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=googletest --link /usr/local/ /usr/local/
 COPY --from=precice --link /usr/local/ /usr/local/
+COPY --from=vtk --link /usr/local/ /usr/local/
+COPY --from=aste --link /usr/local/ /usr/local/
