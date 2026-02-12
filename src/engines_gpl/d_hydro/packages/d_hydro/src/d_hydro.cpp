@@ -55,7 +55,6 @@
 
 
 #include <typeinfo>
-using namespace std;
 
 
 #if defined (WIN32)
@@ -122,7 +121,7 @@ main (
         return 0;
         }
 
-    catch (exception& ex) {
+    catch (std::exception& ex) {
         printf ("d_hydro ABORT: C++ Exception: %s\n", ex.what());
         return 1;
         }
