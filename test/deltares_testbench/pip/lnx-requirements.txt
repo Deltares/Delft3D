@@ -364,7 +364,7 @@ tqdm==4.67.1
     #   dvc-data
     #   fsspec
     #   scmrepo
-typer==0.21.0
+typer==0.23.0
     # via gto
 typing-extensions==4.15.0
     # via
