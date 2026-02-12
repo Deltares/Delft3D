@@ -38,7 +38,6 @@ object LinuxCollect : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         exec {
             name = "Run artifacts_cleaner.py"
             path = "/usr/bin/python3"

@@ -18,7 +18,7 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f00_c01" ref="dimr_trunk">
@@ -39,7 +39,7 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f00_c02" ref="dimr_trunk">
@@ -84,7 +84,7 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c01" ref="dimr_trunk">
@@ -105,7 +105,7 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c02" ref="dimr_trunk">
@@ -126,7 +126,7 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c03" ref="dimr_trunk">
@@ -147,7 +147,7 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c05" ref="dimr_trunk">
@@ -168,7 +168,7 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c06" ref="dimr_trunk">
@@ -189,7 +189,7 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c07" ref="dimr_trunk">
@@ -210,7 +210,31 @@
                     <parameter name="distot" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e100_f05_c02" ref="dimr_trunk">
+        <path version="2026-01-23T17:45:00">e100_dflowfm-dwaves/f05_vegetation/c02_FM_veg_to_SWAN</path>
+        <maxRunTime>300.0</maxRunTime> <!-- seconds -->
+        <checks>
+            <file name="fm/DFM_OUTPUT_shallow_wave/shallow_wave_map.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="mesh2d_s1" toleranceAbsolute="0.1" />
+                    <parameter name="mesh2d_u1" toleranceAbsolute="0.1" />
+                    <parameter name="mesh2d_rnveg" toleranceAbsolute="0.1" />
+                    <parameter name="mesh2d_diaveg" toleranceAbsolute="0.1" />
+                    <parameter name="mesh2d_stemheight" toleranceAbsolute="0.1" />
+                </parameters>
+            </file>
+            <file name="fm/DFM_OUTPUT_shallow_wave/shallow_wave_com.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="hrms" toleranceAbsolute="0.01" />
+                    <parameter name="tp" toleranceAbsolute="1.0" />
+                    <parameter name="dir" toleranceAbsolute="400.0" />
+                    <parameter name="distot" toleranceAbsolute="0.1" />
+                </parameters>
+            </file>
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f09_c01" ref="dimr_noconfig">
@@ -225,15 +249,15 @@
                     <parameter name="ucy" toleranceAbsolute="0.01" />
                 </parameters>
             </file>
-			<file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+            <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
                 <parameters>
                     <parameter name="hrms" toleranceAbsolute="0.01" />
                     <parameter name="tp" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
-    <!-- ======================================================================== -->	
+    <!-- ======================================================================== -->
     <testCase name="e100_f09_c02" ref="dimr_noconfig">
         <path version="2025-08-27T12:39:07.757000">e100_dflowfm-dwaves/f09_comwrite_intervals/c02-ti_com_10xdtuser</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
@@ -246,15 +270,15 @@
                     <parameter name="ucy" toleranceAbsolute="0.01" />
                 </parameters>
             </file>
-			<file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+            <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
                 <parameters>
                     <parameter name="hrms" toleranceAbsolute="0.01" />
                     <parameter name="tp" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
-    <!-- ======================================================================== -->	
+    <!-- ======================================================================== -->
     <testCase name="e100_f09_c03" ref="dimr_noconfig">
         <path version="2025-08-27T12:39:09.390000">e100_dflowfm-dwaves/f09_comwrite_intervals/c03-ti_com_10xdtuser_tcoms_tcome</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
@@ -267,13 +291,13 @@
                     <parameter name="ucy" toleranceAbsolute="0.01" />
                 </parameters>
             </file>
-			<file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+            <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
                 <parameters>
                     <parameter name="hrms" toleranceAbsolute="0.01" />
                     <parameter name="tp" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f09_c04" ref="dimr_noconfig">
@@ -288,15 +312,15 @@
                     <parameter name="ucy" toleranceAbsolute="0.01" />
                 </parameters>
             </file>
-			<file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+            <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
                 <parameters>
                     <parameter name="hrms" toleranceAbsolute="0.01" />
                     <parameter name="tp" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
-    <!-- ======================================================================== -->	
+    <!-- ======================================================================== -->
     <testCase name="e100_f09_c05" ref="dimr_noconfig">
         <path version="2025-08-27T12:39:12.558000">e100_dflowfm-dwaves/f09_comwrite_intervals/c05-ti_com_dtuser_in_mdu</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
@@ -309,13 +333,13 @@
                     <parameter name="ucy" toleranceAbsolute="0.01" />
                 </parameters>
             </file>
-			<file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
+            <file name="fm/dflowfmoutput/f34_com.nc" type="NETCDF">
                 <parameters>
                     <parameter name="hrms" toleranceAbsolute="0.01" />
                     <parameter name="tp" toleranceAbsolute="0.1" />
                 </parameters>
             </file>
-        </checks>              
+        </checks>
     </testCase>
-    <!-- ======================================================================== -->	
+    <!-- ======================================================================== -->
 </testCases>
