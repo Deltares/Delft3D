@@ -136,7 +136,6 @@ object StartVerschilanalyse : BuildType({
 
                 # Extract the bundle to the build dir
                 bundle_dir="${'$'}{va_home}/bundle"
-                echo "bundle dir: ${'$'}{bundle_dir}"
                 rm -rf "${'$'}{bundle_dir}"
                 mkdir "${'$'}{bundle_dir}"
                 tar -xzvf bundle.tar.gz -C "${'$'}{bundle_dir}"
