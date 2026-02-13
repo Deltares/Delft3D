@@ -260,7 +260,7 @@ pillow==10.4.0
     # via matplotlib
 platformdirs==4.5.1
     # via dvc
-pluggy==1.5.0
+pluggy==1.6.0
     # via pytest
 prompt-toolkit==3.0.52
     # via click-repl
