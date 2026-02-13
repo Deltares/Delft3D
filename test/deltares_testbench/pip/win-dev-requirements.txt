@@ -250,7 +250,7 @@ packaging==24.1
     #   hydra-core
     #   matplotlib
     #   pytest
-pandas==2.2.2
+pandas==3.0.0
     # via deltares-testbench (pyproject.toml)
 pathspec==0.12.1
     # via
