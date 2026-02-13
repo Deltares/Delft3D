@@ -226,7 +226,7 @@ netcdf4==1.7.2
     # via deltares-testbench (pyproject.toml)
 networkx==3.6.1
     # via dvc
-numpy==1.26.4
+numpy==2.4.2
     # via
     #   deltares-testbench (pyproject.toml)
     #   bmi-python
