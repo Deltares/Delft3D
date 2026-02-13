@@ -27,7 +27,6 @@
 #include <stdexcept>
 #include "utils.h"
 
-using namespace std;
 using namespace rtctools::utilities;
 
 lookup2DTableConverter::lookup2DTableConverter(
