@@ -6,7 +6,7 @@ aiobotocore==2.26.0
     #   s3fs
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.13.2
+aiohttp==3.13.3
     # via
     #   aiobotocore
     #   aiohttp-retry
