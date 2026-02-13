@@ -146,7 +146,7 @@ flatten-dict==0.4.2
     # via
     #   dvc
     #   dvc-s3
-flufl-lock==8.2.0
+flufl-lock==9.0.0
     # via dvc
 fonttools==4.53.1
     # via matplotlib
