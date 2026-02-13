@@ -34,7 +34,7 @@
 
 module m_petsc
 #include <petsc/finclude/petscksp.h>
-
+   use iso_c_binding, only: c_int32_t, c_int64_t, c_double
    use precision, only: dp
    use petsc
    PetscInt :: numrows ! number of rows in this domain
@@ -78,6 +78,7 @@ module m_petsc
 end module m_petsc
 
 submodule(m_solve_petsc) m_solve_petsc_
+   use iso_c_binding, only: c_int32_t, c_int64_t, c_double
    use precision, only: dp
    implicit none
 
@@ -625,7 +626,7 @@ contains
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    subroutine createPETSCPreconditioner(iprecnd)
-      use petsc, only: kspgetpc, pcdestroy, pccreate, petsc_comm_world, pcsetoperators, kspsetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, petsc_null_integer
+      use petsc, only: kspgetpc, pcdestroy, pccreate, petsc_comm_world, pcsetoperators, kspsetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, pcasmrestoresubksp, petsc_null_integer, tKSP
       use m_petsc, only: PETSC_OK, PreconditioningType, Solver, Preconditioner, Amat, SubSolver, SubPrec
       use MessageHandling, only: mess, level_error
 
@@ -636,6 +637,7 @@ contains
       integer, save :: jafirst = 1
 
       PetscErrorCode :: ierr = PETSC_OK
+      KSP, pointer :: SubSolvers(:)
 
       jasucces = 0
 
@@ -643,13 +645,13 @@ contains
 !         call mess(LEVEL_INFO, 'default preconditioner')
       else if (iprecnd == 1) then
 !         call mess(LEVEL_INFO, 'no preconditioner')
-         PreconditioningType = PCNONE
+         PreconditioningType = 'none'
       else if (iprecnd == 2) then
-         PreconditioningType = PCICC
+         PreconditioningType = 'icc'
       else if (iprecnd == 3) then
-         PreconditioningType = PCCHOLESKY
+         PreconditioningType = 'cholesky'
       else if (iprecnd == 4) then ! not supported
-         PreconditioningType = PCGAMG
+         PreconditioningType = 'gamg'
       else
          call mess(LEVEL_ERROR, 'conjugategradientPETSC: unsupported preconditioner')
          goto 1234
@@ -681,9 +683,9 @@ contains
 
       ! Configure the preconditioner
       if (iprecnd /= 0) then
-         if (PreconditioningType == PCCHOLESKY .or. PreconditioningType == PCICC) then
+         if (PreconditioningType == 'cholesky' .or. PreconditioningType == 'icc') then
             if (ierr == PETSC_OK) then
-               call PCSetType(Preconditioner, PCASM, ierr)
+               call PCSetType(Preconditioner, 'asm', ierr)
             end if
             if (ierr == PETSC_OK) then
                call PCASMSetOverlap(Preconditioner, 2, ierr)
@@ -692,7 +694,11 @@ contains
                call KSPSetUp(Solver, ierr)
             end if
             if (ierr == PETSC_OK) then
-               call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolver, ierr)
+               call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolvers, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               SubSolver = SubSolvers(1)
+               call PCASMRestoreSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolvers, ierr)
             end if
             if (ierr == PETSC_OK) then
                call KSPGetPC(SubSolver, SubPrec, ierr)
@@ -723,8 +729,6 @@ contains
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    module subroutine preparePETSCsolver(japipe)
-! fix for missing definition of KSPPIPECG in finclude/petscdef.h:
-#define KSPPIPECG 'pipecg'
       use petsc, only: petsc_default_real, matcreateseqaijwitharrays, petsc_comm_world, matcreatempiaijwithsplitarrays, petsc_determine, matassemblybegin, mat_final_assembly, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances
       use m_reduce, only: dp
       use m_partitioninfo, only: ndomains
@@ -795,12 +799,11 @@ contains
       end if
       if (ierr == PETSC_OK) then
          if (japipe /= 1) then
-            call KSPSetType(Solver, KSPCG, ierr)
+            call KSPSetType(Solver, 'cg', ierr)
          else
-            call KSPSetType(Solver, KSPPIPECG, ierr)
+            call KSPSetType(Solver, 'pipecg', ierr)
          end if
       end if
-!      if (ierr == PETSC_OK) call KSPSetType(Solver, KSPGMRES, ierr)
       if (ierr == PETSC_OK) then
          call KSPSetInitialGuessNonzero(Solver, PETSC_TRUE, ierr)
       end if
@@ -818,7 +821,7 @@ contains
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
-      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm
+      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm, eKSPConvergedReason
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
       use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver
@@ -909,12 +912,12 @@ contains
 
 !     check for convergence
       if (ierr == PETSC_OK) then
-         if (reason == KSP_DIVERGED_INDEFINITE_PC) then
+         if (Reason%v == KSP_DIVERGED_INDEFINITE_PC%v) then
             if (my_rank == 0) then
                call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
             end if
-         else if (Reason < 0) then
-            call mess(LEVEL_WARN, 'Other kind of divergence: this should not happen, reason = ', Reason)
+         else if (Reason%v < 0) then
+            call mess(LEVEL_WARN, 'Other kind of divergence: this should not happen, reason = ', Reason%v)
 !            see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason
          else
             call KSPGetIterationNumber(Solver, its, ierr)
