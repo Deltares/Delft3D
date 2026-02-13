@@ -951,7 +951,8 @@ contains
       end if
 
       call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform, success)
-      call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
+      call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', z_layer_growth_factor) ! Deprecated, sigamGrowthFactor is replaced by zLayerGrowthFactor
+      call prop_get(md_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor)
       call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
       call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
       if (Dztop > 0.0_dp) then ! hk claims back original functionality
