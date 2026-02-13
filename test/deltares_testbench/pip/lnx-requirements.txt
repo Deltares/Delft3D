@@ -238,7 +238,7 @@ packaging==25.0
     #   hydra-core
     #   kombu
     #   matplotlib
-pandas==2.3.3
+pandas==3.0.0
     # via deltares-testbench (pyproject.toml)
 pathspec==0.12.1
     # via
