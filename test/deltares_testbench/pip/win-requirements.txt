@@ -235,7 +235,7 @@ orjson==3.11.5
     # via
     #   dvc-data
     #   sqltrie
-packaging==24.1
+packaging==26.0
     # via
     #   dvc
     #   hydra-core
