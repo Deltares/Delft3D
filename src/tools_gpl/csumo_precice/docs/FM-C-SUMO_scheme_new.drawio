@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.0 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.3.0">
   <diagram name="Page-1" id="0SB5_B-hbEPJCFmBStx3">
-    <mxGraphModel dx="868" dy="602" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="983" dy="663" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -118,11 +118,20 @@
         <mxCell id="adSqwQJqPsxKfs6WgByr-32" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="rounded=0;whiteSpace=wrap;html=1;" value="Compute" vertex="1">
           <mxGeometry height="230" width="70" x="-270" y="50" as="geometry" />
         </mxCell>
-        <mxCell id="adSqwQJqPsxKfs6WgByr-33" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;" value="config" vertex="1">
+        <mxCell id="adSqwQJqPsxKfs6WgByr-33" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;" value="config&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;# z_loc&lt;/font&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="70" width="50" x="180" y="40" as="geometry" />
         </mxCell>
         <mxCell id="adSqwQJqPsxKfs6WgByr-29" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#FF0000;" value="&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;DESA&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;nolump&lt;/font&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="50" width="50" x="30" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="adSqwQJqPsxKfs6WgByr-27" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;Source:&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;x, y,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;id, connected_id,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(255, 0, 0); background-color: transparent;&quot;&gt;z_min, z_max,&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;Q, UMAG, UDIR,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;temperature, salinity,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;A, B, C, ...&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;Sink:&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;x, y,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(255, 0, 0); background-color: transparent;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;id, connected_id,&amp;nbsp;&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(255, 0, 0); background-color: transparent;&quot;&gt;z_min, z_max,&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;Q&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="190" width="133" x="-133" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="adSqwQJqPsxKfs6WgByr-28" edge="1" parent="mrB0PPDz5KPW5tsmy0Pz-11" source="adSqwQJqPsxKfs6WgByr-27" style="endArrow=classic;html=1;rounded=0;exitX=1.016;exitY=0.577;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.954;entryY=0.45;entryDx=0;entryDy=0;entryPerimeter=0;" target="adSqwQJqPsxKfs6WgByr-16" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="-2.8421709430404007e-13" y="320" as="sourcePoint" />
+            <mxPoint x="-159.89999999999992" y="320" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="mrB0PPDz5KPW5tsmy0Pz-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b&gt;&lt;font style=&quot;font-size: 15px;&quot;&gt;New, via preCICE&lt;/font&gt;&lt;/b&gt;" vertex="1">
           <mxGeometry height="30" width="160" x="230" y="10" as="geometry" />
@@ -133,17 +142,8 @@
             <mxPoint x="490" y="180" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="adSqwQJqPsxKfs6WgByr-28" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;exitX=0.708;exitY=0.7;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.954;entryY=0.7;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="319.9999999999997" y="380" as="sourcePoint" />
-            <mxPoint x="160.10000000000008" y="380" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="adSqwQJqPsxKfs6WgByr-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Grid:&lt;br&gt;xcc, ycc, &lt;br&gt;zcs, kbot, ktop&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Quantity:&lt;br&gt;water_depth,&lt;/div&gt;&lt;div&gt;velocity_x,&lt;/div&gt;&lt;div&gt;velocity_y,&lt;/div&gt;&lt;div&gt;rho,&lt;/div&gt;&lt;div&gt;constituents,&lt;/div&gt;&lt;div&gt;namcon&lt;/div&gt;" vertex="1">
+        <mxCell id="adSqwQJqPsxKfs6WgByr-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Grid:&lt;br&gt;xcc, ycc, &lt;br&gt;zcs, kbot, ktop&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Quantity:&lt;br&gt;water_depth,&lt;/div&gt;&lt;div&gt;velocity_x,&lt;/div&gt;&lt;div&gt;velocity_y,&lt;/div&gt;&lt;div&gt;rho,&lt;/div&gt;&lt;div&gt;constituents,&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;&lt;strike&gt;namcon&lt;/strike&gt;&lt;/font&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="160" width="100" x="190" y="100" as="geometry" />
-        </mxCell>
-        <mxCell id="adSqwQJqPsxKfs6WgByr-27" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;x_src, y_src,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;z_min_src, z_max_src,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;x_snk, y_snk, z_min_snk, z_max_snk, Q, UMAG, UDIR,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;TEMP, SAL,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;C3, C4, C5,&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 0, 0);&quot;&gt;...&lt;/font&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="160" width="133" x="187" y="300" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
