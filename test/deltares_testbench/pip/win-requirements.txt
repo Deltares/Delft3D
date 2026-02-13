@@ -113,7 +113,7 @@ docopts==0.6.1
     # via bmi-python
 dpath==2.2.0
     # via dvc
-dulwich==0.25.0
+dulwich==1.0.0
     # via
     #   dvc
     #   dvc-studio-client
