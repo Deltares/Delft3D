@@ -937,52 +937,119 @@ contains
       sl = slotw1D
 
       call prop_get(md_ptr, 'geometry', 'Sillheightmin', sillheightmin)
-      call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
-      if (Layertype /= LAYTP_SIGMA) then
-         mxlayz = kmx
-      end if
+      
+      ! call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
+      ! if (Layertype /= LAYTP_SIGMA) then
+      !    mxlayz = kmx
+      ! end if
 
-      call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig, success)
-      if (success .and. numtopsig > 0 .and. layertype /= LAYTP_Z) then
-         write (msgbuf, '(a,i0,a)'), 'The model definition file sets numtopsig to ', numtopsig, &
-            ', but layertype is not 2 (z-layers or z-sigma-layers). Continuing with numtopsig = 0.'
-         call warn_flush()
-         numtopsig = 0
-      end if
+      ! call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig, success)
+      ! if (success .and. numtopsig > 0 .and. layertype /= LAYTP_Z) then
+      !    write (msgbuf, '(a,i0,a)'), 'The model definition file sets numtopsig to ', numtopsig, &
+      !       ', but layertype is not 2 (z-layers or z-sigma-layers). Continuing with numtopsig = 0.'
+      !    call warn_flush()
+      !    numtopsig = 0
+      ! end if
 
-      call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform, success)
-      call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', z_layer_growth_factor) ! Deprecated, sigamGrowthFactor is replaced by zLayerGrowthFactor
-      call prop_get(md_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor)
-      call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
-      call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
-      if (Dztop > 0.0_dp) then ! hk claims back original functionality
-         iStrchType = -1
-      end if
+      ! call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform, success)
+      ! call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', z_layer_growth_factor) ! Deprecated, sigamGrowthFactor is replaced by zLayerGrowthFactor
+      ! call prop_get(md_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor)
+      ! call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
+      ! call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
+      ! if (Dztop > 0.0_dp) then ! hk claims back original functionality
+      !    iStrchType = -1
+      ! end if
 
-      call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
-      call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
-      call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
-      call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
-      call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
-      call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
+      ! call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
+      ! call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
+      ! call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
+      ! call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
+      ! call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
+      ! call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
 
-      call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
-      end if
+      ! call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
+      ! if (.not. success) then
+      !    call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
+      ! end if
 
-      call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
-      call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
-      call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
-      if (success .and. keepzlay1bedvol == 1 .and. keepzlayeringatbed /= 1) then
-         call mess(LEVEL_WARN, 'Keepzlay1bedvol is set to 1, but keepzlayeringatbed is not set to 1. Keepzlay1bedvol will be set to 0.')
-         keepzlay1bedvol = 0
-      end if
-      call prop_get(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
+      ! call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
+      ! call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
+      ! call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
+      ! if (success .and. keepzlay1bedvol == 1 .and. keepzlayeringatbed /= 1) then
+      !    call mess(LEVEL_WARN, 'Keepzlay1bedvol is set to 1, but keepzlayeringatbed is not set to 1. Keepzlay1bedvol will be set to 0.')
+      !    keepzlay1bedvol = 0
+      ! end if
+      ! call prop_get(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
+
+      ! kmx = 0
+      ! call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
+      ! if (kmx > 0) then
+      !    if (iStrchType == STRCH_USER) then
+      !       call realloc(laycof, kmx)
+      !       call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, kmx)
+      !       sumlaycof = sum(laycof)
+      !       if (comparereal(sumlaycof, 100.0_dp, tolSumLay) /= 0) then
+      !          call realloc(tmpdouble, maxLayers, fill=0.0_dp)
+      !          call prop_get(md_ptr, 'geometry', 'StretchCoef', tmpdouble, maxLayers)
+      !          n = 0
+      !          do i = 1, maxLayers
+      !             if (.not. (tmpdouble(i) > 0)) then
+      !                exit
+      !             end if
+      !             n = n + 1
+      !          end do
+      !          if (kmx /= n) then
+      !             call mess(LEVEL_ERROR, 'The number of values specified in "StretchCoef" is inconsistent with "Kmx"!')
+      !          else
+      !             call mess(LEVEL_ERROR, 'The values specified in "StretchCoef" do not add up to 100! We got: ', sumlaycof)
+      !          end if
+      !       end if
+      !    else if (iStrchType == STRCH_EXPONENT) then
+      !       call realloc(laycof, 3)
+      !       laycof(:) = dmiss
+      !       call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, 3, success)
+      !       if (.not. success) then
+      !          call mess(LEVEL_ERROR, '"StretchCoef" values are absent.')
+      !       else
+      !          if (any(laycof == dmiss)) then
+      !             call mess(LEVEL_ERROR, '"StretchCoef" values are not properly set.')
+      !          end if
+      !       end if
+      !    end if
+      ! end if
+
 
       kmx = 0
       call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
       if (kmx > 0) then
+         call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
+         if (Layertype /= LAYTP_SIGMA) then
+            mxlayz = kmx
+         end if
+
+         call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig, success)
+         if (success .and. numtopsig > 0 .and. layertype /= LAYTP_Z) then
+            write (msgbuf, '(a,i0,a)'), 'The model definition file sets numtopsig to ', numtopsig, &
+               ', but layertype is not 2 (z-layers or z-sigma-layers). Continuing with numtopsig = 0.'
+            call warn_flush()
+            numtopsig = 0
+         end if
+         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform)
+         call prop_get(md_ptr, 'geometry', 'sigmaGrowthFactor', z_layer_growth_factor) ! Deprecated, sigmaGrowthFactor is replaced by zLayerGrowthFactor
+         call prop_get(md_ptr, 'geometry', 'zLayerGrowthFactor', z_layer_growth_factor)
+         call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
+         call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
+         call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
+         call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
+         call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
+         call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
+         call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
+         call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
+
+         if (Dztop > 0.0_dp) then ! hk claims back original functionality
+            iStrchType = -1
+         end if
+
          if (iStrchType == STRCH_USER) then
             call realloc(laycof, kmx)
             call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, kmx)
@@ -1015,7 +1082,22 @@ contains
                end if
             end if
          end if
+
+         call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [numerics] block
+         if (.not. success) then
+            call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
+         end if
+         call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
+         call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
+         call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
+         if (success .and. keepzlay1bedvol == 1 .and. keepzlayeringatbed /= 1) then
+            call mess(LEVEL_WARN, 'Keepzlay1bedvol is set to 1, but keepzlayeringatbed is not set to 1. Keepzlay1bedvol will be set to 0.')
+            keepzlay1bedvol = 0
+         end if
+         call prop_get(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
       end if
+
+
 
       call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
       call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
