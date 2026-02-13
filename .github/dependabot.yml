@@ -1,7 +1,9 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/test/deltares_testbench/pip"
+    directories:
+      - "/test/deltares_testbench/pip"
+      - "/test/deltares_testbench"
     schedule:
       interval: "daily"
       time: "02:00"
