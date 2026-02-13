@@ -32,7 +32,7 @@ appdirs==1.4.4
     # via iterative-telemetry
 argon2-cffi==23.1.0
     # via minio
-argon2-cffi-bindings==21.2.0
+argon2-cffi-bindings==25.1.0
     # via argon2-cffi
 asyncssh==2.22.0
     # via scmrepo
@@ -372,7 +372,7 @@ tqdm==4.67.1
     #   dvc-data
     #   fsspec
     #   scmrepo
-typer==0.20.1
+typer==0.23.0
     # via gto
 typing-extensions==4.12.2
     # via
