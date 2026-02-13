@@ -25,7 +25,6 @@
 #include <limits>
 
 using namespace rtctools::schematization::triggers;
-using namespace std;
 
 condition::condition()
 {

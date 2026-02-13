@@ -83,7 +83,7 @@ masterStreamError (
     char * reason
     ) {
 
-    throw new Exception (true, "MASTER Stream ERROR: %s", reason);
+    throw new Exception("MASTER Stream ERROR: %s", reason);
     }
 
 static void
@@ -91,7 +91,7 @@ slaveStreamError (
     char * reason
     ) {
 
-    throw new Exception (true, "SLAVE Stream ERROR: %s", reason);
+    throw new Exception("SLAVE Stream ERROR: %s", reason);
     }
 
 static void
@@ -99,7 +99,7 @@ joinStreamError (
     char * reason
     ) {
 
-    throw new Exception (true, "Inter-iterator Stream ERROR: %s", reason);
+    throw new Exception("Inter-iterator Stream ERROR: %s", reason);
     }
 
 static void
@@ -136,7 +136,7 @@ DD::MasterProcess (
     ) {
 
 #if defined (WIN32)
-    throw new Exception (true, "Remote execution is not supported on Microsoft Windows");
+    throw new Exception("Remote execution is not supported on Microsoft Windows");
 #else
 
     const char * hnpid = GetHostnamePID ();
@@ -183,7 +183,7 @@ DD::MasterProcess (
                         );
 
         if (len >= maxLen)
-            throw new Exception (true, "Internal error: Remote command line too long in MasterProcess!");
+            throw new Exception("Internal error: Remote command line too long in MasterProcess!");
 
         // Execute command
 
@@ -211,7 +211,7 @@ DD::MasterProcess (
         int status;
         int rc = waitpid (node->remotePID, &status, WNOHANG);
         if (rc != 0 && WIFEXITED (status))
-            throw new Exception (true, "Slave process for node %d on \"%s\" has exited prematurely", id, node->hostname);
+            throw new Exception("Slave process for node %d on \"%s\" has exited prematurely", id, node->hostname);
         }
 
     //  Wait for HELLO messages indicating the nodes are ready.
@@ -227,9 +227,9 @@ DD::MasterProcess (
         node->stream->Receive ((char *) &mesg, sizeof mesg);
 
         if (mesg.magic != MAGIC)
-            throw new Exception (true, "Got malformed message from slave %d", id);
+            throw new Exception("Got malformed message from slave %d", id);
         if (mesg.tag != TAG_HELLO)
-            throw new Exception (true, "Expected HELLO message from slave %d but got something else", id);
+            throw new Exception("Expected HELLO message from slave %d but got something else", id);
 
         this->log->Write (Log::MAJOR, "Master got HELLO message from node %d", id);
         }
@@ -265,16 +265,16 @@ DD::MasterProcess (
         node->stream->Receive ((char *) &joinEx, sizeof joinEx);
 
         if (joinEx.magic != MAGIC)
-            throw new Exception (true, "Got malformed message from slave %d", id);
+            throw new Exception("Got malformed message from slave %d", id);
         if (joinEx.tag != TAG_JOIN_LOCAL)
-            throw new Exception (true, "Expected JOIN_LOCAL message from slave %d but got something else", id);
+            throw new Exception("Expected JOIN_LOCAL message from slave %d but got something else", id);
 
         this->log->Write (Log::MAJOR, "Master got JOIN_LOCAL message from node %d", id);
 
         if (globalJoin.numJoins < 0)
             globalJoin.numJoins = joinEx.numJoins;
         else if (globalJoin.numJoins != joinEx.numJoins)
-            throw new Exception (true, "Inconsistent numJoins values JOIN_LOCAL messages (%d != %d)", globalJoin.numJoins, joinEx.numJoins);
+            throw new Exception("Inconsistent numJoins values JOIN_LOCAL messages (%d != %d)", globalJoin.numJoins, joinEx.numJoins);
 
         for (int jid = 0 ; jid < globalJoin.numJoins ; jid++)
             if (joinEx.join[jid].handle[0] != '\0')
@@ -304,7 +304,7 @@ DD::MasterProcess (
 
         pid_t pid = waitpid (node->remotePID, NULL, 0);
         if (pid != node->remotePID)
-            throw new Exception (true, "Internal error: Unexpected return value from waitpid in MasterProces!");
+            throw new Exception("Internal error: Unexpected return value from waitpid in MasterProces!");
 
         delete node->stream;
         node->stream = NULL;
@@ -329,7 +329,7 @@ DD::SlaveProcess (
     ) {
 
 #if defined (WIN32)
-    throw new Exception (true, "Remote execution is not supported on Microsoft Windows");
+    throw new Exception("Remote execution is not supported on Microsoft Windows");
 #else
 
     char * hnpid = GetHostnamePID ();
@@ -354,9 +354,9 @@ DD::SlaveProcess (
     master->Receive ((char *) &mesg, sizeof mesg);
 
     if (mesg.magic != MAGIC)
-        throw new Exception (true, "Got malformed message from master");
+        throw new Exception("Got malformed message from master");
     if (mesg.tag != TAG_INITIAL)
-        throw new Exception (true, "Expected INITIAL message from master but got something else");
+        throw new Exception("Expected INITIAL message from master but got something else");
 
     this->nodeID = mesg.nodeID;
 
@@ -436,11 +436,11 @@ DD::SlaveProcess (
     master->Receive ((char *) &joinEx, sizeof joinEx);
 
     if (joinEx.magic != MAGIC)
-        throw new Exception (true, "Got malformed message from master");
+        throw new Exception("Got malformed message from master");
     if (joinEx.tag != TAG_JOIN_GLOBAL)
-        throw new Exception (true, "Expected JOIN_GLOBAL message from master but got something else");
+        throw new Exception("Expected JOIN_GLOBAL message from master but got something else");
     if (joinEx.numJoins != this->numJoins)
-        throw new Exception (true, "Inconsistent numJoins value JOIN_GLOBAL message");
+        throw new Exception("Inconsistent numJoins value JOIN_GLOBAL message");
 
     delete master;
 
@@ -451,7 +451,7 @@ DD::SlaveProcess (
     for (int jid = 0 ; jid < this->numJoins ; jid++) {
         if (this->join[jid].leader) {
             if (pthread_create (&this->join[jid].thid, NULL, &leader_thread, (void *) jid) != 0)
-                throw new Exception (true, "Pthreads error: Cannot create leader thread %s", strerror(errno));
+                throw new Exception("Pthreads error: Cannot create leader thread %s", strerror(errno));
 
             this->leadFollow->PSem ();
             }
@@ -462,12 +462,12 @@ DD::SlaveProcess (
     for (int jid = 0 ; jid < this->numJoins ; jid++) {
         if (this->join[jid].follower) {
             if (joinEx.join[jid].handle[0] == '\0')
-                throw new Exception (true, "Slot %d in JOIN_GLOBAL message is empty", jid);
+                throw new Exception("Slot %d in JOIN_GLOBAL message is empty", jid);
 
             strcpy (this->join[jid].handle, joinEx.join[jid].handle);
 
             if (pthread_create (&this->join[jid].thid, NULL, &follower_thread, (void *) jid) != 0)
-                throw new Exception (true, "Pthreads error: Cannot create follower thread %s", strerror(errno));
+                throw new Exception("Pthreads error: Cannot create follower thread %s", strerror(errno));
             }
         }
 
@@ -480,7 +480,7 @@ DD::SlaveProcess (
         if (this->join[jid].leader || this->join[jid].follower) {
             this->log->Write (Log::CONFIG_MINOR, "Waiting for termination of join %d %s thread", jid, this->join[jid].leader ? "leader" : "follower");
             if (pthread_join (this->join[jid].thid, NULL) != 0)
-                throw new Exception (true, "Pthreads error: Cannot join with thread, errno=%d", errno);
+                throw new Exception("Pthreads error: Cannot join with thread, errno=%d", errno);
             }
         }
 

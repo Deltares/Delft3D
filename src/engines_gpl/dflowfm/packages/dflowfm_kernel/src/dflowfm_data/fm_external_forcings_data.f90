@@ -384,14 +384,28 @@ module fm_external_forcings_data
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
    integer :: numsrc !< nr of point sources/sinks
-   type t_BubblescreenData
-      character(len=255) :: id !< name of bubble screen
+
+   type t_BubbleScreenFlowCell
+      integer :: flownode_nr !< Index in 1:m_flowgeom::ndxi
+      integer :: flowcell_start_index !< start index in the flowcell arrays
+      integer :: num_source_sinks !< nr of point sources/sinks in this cell
       integer :: start_index !< start index for bubble sources/sinks
+   end type t_BubbleScreenFlowCell
+   type t_Bubblescreen
+      character(len=255) :: id !< name of bubble screen
       integer :: num_flow_cells !< nr of grid cells in bubble screen
       integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
-   end type t_BubblescreenData
-   ! TODO: add support for multiple bubble screens
-   type (t_BubblescreenData), dimension(:), allocatable :: bubblescreens !< bubble screen data
+      type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< Flow cells data
+
+      integer :: npl !< number of polyline points
+      real(kind=dp), dimension(:), allocatable :: xpl !< x - polyline points
+      real(kind=dp), dimension(:), allocatable :: ypl !< y - polyline points
+      real(kind=dp) :: z_level !< z - level for bubble screen
+
+   end type t_Bubblescreen
+   type (t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
+   real (kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< array to catch bubble screen air discharges
+   
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
