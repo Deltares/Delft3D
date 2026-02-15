@@ -283,7 +283,7 @@ contains
 
       if (jased == 4 .and. stmpar%lsedsus > 0) then
          do j = ISED1, ISEDN
-            fluxhortot(j, :) = fluxhortot(j, :) / dts_store
+            fluxhortot(j, :) = fluxhortot(j, :)
             sinksetot(j, :) = sinksetot(j, :) / dts_store
             sinkftot(j, :) = sinkftot(j, :) / dts_store
          end do
