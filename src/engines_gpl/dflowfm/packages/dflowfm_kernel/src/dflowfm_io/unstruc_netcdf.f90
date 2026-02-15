@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -2953,7 +2953,7 @@ contains
       use precision, only: dp
       use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, & 
          bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, &
-         jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, &
+         jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flow_without_waves, jawaveswartdelwaq, &
          jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
          fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
          thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
@@ -4272,7 +4272,7 @@ contains
          call gettaus(2, 1)
       end if
       !
-      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          call gettauswave(jawaveswartdelwaq)
       end if
       !
@@ -5548,7 +5548,7 @@ contains
             ierr = unc_put_att(mapids%ncid, mapids%id_u0, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
          end if
          if (jamapucvec > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucx, nc_precision, iLocS, 'ucx', 'sea_water_x_eulerian_velocity', 'Flow element center eulerian velocity vector, x-component', 'm s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucy, nc_precision, iLocS, 'ucy', 'sea_water_y_eulerian_velocity', 'Flow element center eulerian velocity vector, y-component', 'm s-1', jabndnd=jabndnd_)
             else
@@ -5579,7 +5579,7 @@ contains
             end if
          end if
          if (jamapucmag > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucmag, nc_precision, iLocS, 'ucmag', 'sea_water_eulerian_speed', 'Flow element center eulerian velocity magnitude', 'm s-1', jabndnd=jabndnd_)
             else
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucmag, nc_precision, iLocS, 'ucmag', 'sea_water_speed', 'Flow element center velocity magnitude', 'm s-1', jabndnd=jabndnd_)
@@ -5593,7 +5593,7 @@ contains
             end if
          end if
          if (jamapucqvec > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucxq, nc_precision, iLocS, 'ucxq', 'ucxq_eulerian_velocity', 'Flow element center eulerian velocity vector based on discharge, x-component', 'm s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucyq, nc_precision, iLocS, 'ucyq', 'ucyq_eulerian_velocity', 'Flow element center eulerian velocity vector based on discharge, y-component', 'm s-1', jabndnd=jabndnd_)
             else
@@ -6277,7 +6277,7 @@ contains
          end if
 
          if (jawave > NO_WAVES .and. jamapwav > 0) then
-            if (flowWithoutWaves) then ! Check the external forcing wave quantities and their associated arrays
+            if (flow_without_waves) then ! Check the external forcing wave quantities and their associated arrays
                if (jamapwav_hwav > 0 .and. allocated(hwav)) then
                   if (jamapsigwav == 0) then
                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_rms_height', 'RMS wave height', 'm', jabndnd=jabndnd_) ! not CF
@@ -7738,7 +7738,7 @@ contains
             wavfac = sqrt(2.0_dp)
          end if
          !
-         if (flowWithoutWaves) then ! Check the external forcing wave quantities and their associated arrays
+         if (flow_without_waves) then ! Check the external forcing wave quantities and their associated arrays
             if (jamapwav_hwav > 0 .and. allocated(hwav)) then
                if (allocated(wa)) then
                   deallocate (wa, stat=ierr)
@@ -7753,7 +7753,7 @@ contains
             if (jamapwav_phiwav > 0 .and. allocated(phiwav)) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_phiwav, UNC_LOC_S, phiwav, jabndnd=jabndnd_)
             end if
-         else ! flowWithoutWaves
+         else ! flow_without_waves
             if (allocated(wa)) then
                deallocate (wa, stat=ierr)
             end if
@@ -7857,7 +7857,7 @@ contains
             end if
             !
          end if
-      end if ! flowWithoutWaves
+      end if ! flow_without_waves
 
       ! Bed shear stress and roughness
       !
@@ -7901,7 +7901,7 @@ contains
             call gettaus(2, 1) ! Only update czs
          end if
 
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             call gettauswave(jawaveswartdelwaq)
          end if
       end if
@@ -10166,7 +10166,7 @@ contains
             else if (jamap_chezy_links > 0) then
                call gettaus(2, 1) ! Only update czs
             end if
-            if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+            if (jawave > NO_WAVES .and. .not. flow_without_waves) then
                call gettauswave(jawaveswartdelwaq)
             end if
          end if
@@ -11885,6 +11885,8 @@ contains
       use m_set_nod_adm
       use m_inquire_link_type, only: is_valid_2d2d_netlink, is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
       use m_cell_geometry, only: blcell
+      use m_longculverts_data, only: longculverts, is_2D2D_longculvertlink
+
       implicit none
 
       integer, intent(in) :: ncid !< NetCDF file id
@@ -11905,6 +11907,7 @@ contains
       integer :: i, k, k1, k2, numl2d, numk2d, L, Lnew, nv, n1, n2, n
       integer :: num_1d_nodes, node_index
       logical :: jaInDefine
+      integer :: longculvertindex
       integer :: id_zf
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
       integer :: n1dedges, n1d2dcontacts, n2d2dcontacts, start_index
@@ -11967,12 +11970,16 @@ contains
       if (n2d2dcontacts > 0) then
          allocate (contacts_2D2D(2, n2d2dcontacts))
          call realloc(contacttype_2D2D, n2d2dcontacts, keepExisting=.false., fill=5)
-
+         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.true., fill='')
          do i = 1, n2d2dcontacts
             L = temp_indices(i)
             n1 = abs(lne(1, L))
             n2 = abs(lne(2, L))
             contacts_2D2D(1:2, i) = [n1, n2]
+            call is_2D2D_longculvertlink(L, longculvertindex)
+            if (longculvertindex > 0) then
+               contactids_2D2D(i) = longculverts(longculvertindex)%contactID !< reuse branchid for long culvert contacts
+            end if
          end do
       end if
 
@@ -12303,8 +12310,9 @@ contains
          if (n2d2dcontacts > 0) then
             ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_2D2D, trim(contactname_2D2D), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
             ierr = nf90_enddef(ncid)
+
             ! Put the contacts
-            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D)
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D, contactsids=contactids_2D2D)
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
 

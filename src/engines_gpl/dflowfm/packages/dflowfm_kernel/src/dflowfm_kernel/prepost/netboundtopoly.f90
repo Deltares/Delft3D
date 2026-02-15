@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -101,7 +101,7 @@ contains
 
             if (inew /= 1) then
                do while (nod(k)%lin(i) /= Lprev .and. i < nmk(k))
-               i = i + 1
+                  i = i + 1
                end do
                if (nod(k)%lin(i) /= Lprev) then ! should not happen
                   continue

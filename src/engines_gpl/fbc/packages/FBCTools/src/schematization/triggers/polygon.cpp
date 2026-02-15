@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,20 +27,18 @@
 #include <stdlib.h>
 
 using namespace rtctools::schematization::triggers;
-using namespace std;
 
-
-polygon::polygon(int nEdges, vector<double>& x, vector<double>& y, double value)
+polygon::polygon(int nEdges, std::vector<double>& x, std::vector<double>& y, double value)
 	: nEdges(nEdges), x(x), y(y), value(value)
 {
 	// check whether the polygon is closed
 	if ((x[nEdges-1]-x[0])>1e-10 || (y[nEdges-1]-y[0])>1e-10) {
-		throw runtime_error("polygon::polygon(int nEdges, double *x, double *y, double value) - polygon not closed.");
+		throw std::runtime_error("polygon::polygon(int nEdges, double *x, double *y, double value) - polygon not closed.");
 	}
 
 	// check whether the polygon is simple
 	if (!this->isSimple()) {
-		throw runtime_error("polygon::polygon(int nEdges, double *x, double *y, double value) - polygon is not simple.");
+		throw std::runtime_error("polygon::polygon(int nEdges, double *x, double *y, double value) - polygon is not simple.");
 	}
 }
 

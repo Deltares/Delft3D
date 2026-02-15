@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -28,7 +28,6 @@
 
 using namespace rtctools::timeseries;
 using namespace rtctools::utilities;
-using namespace std;
 
 scenarioTree_oneToN::scenarioTree_oneToN(int iReference, vector<int> iInput, vector<int> iOutput, int iProbability, scenarioTree_oneToN::PARAMETER par) 
 	: scenarioTreeGenerator(iReference, iInput, iOutput, iProbability), par(par)

@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -42,8 +42,6 @@ const string STATEINTERFACE_CODE = "RTCTools.timeseries.stateInterface";
 using namespace openda;
 using namespace timeseries;
 using namespace utilities;
-using namespace std;
-
 
 stateInterface::stateInterface(boost::filesystem::path schemaDir, boost::filesystem::path workDir, timeSeriesTensorInterface *tsTensor)
 {

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -75,7 +75,7 @@ contains
 !> Update the (time-)integral statistics for all flow nodes, typically after each time step.
    subroutine update_integralstats()
       use m_flowtimes, only: dts
-      use m_flow, only: jawave, flowwithoutwaves, jawaveswartdelwaq, taus, ucx, ucy, hs
+      use m_flow, only: jawave, flow_without_waves, jawaveswartdelwaq, taus, ucx, ucy, hs
       use m_flowgeom, only: ndxi
       use m_gettaus, only: gettaus
       use m_gettauswave, only: gettauswave
@@ -86,7 +86,7 @@ contains
          return
       end if
 
-      if (jawave == 0 .or. flowWithoutWaves) then
+      if (jawave == 0 .or. flow_without_waves) then
          call gettaus(1, 1)
       else
          call gettauswave(jawaveswartdelwaq)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -115,7 +115,7 @@ contains
 !> prepare_wind_model_data
    subroutine prepare_wind_model_data(time_in_seconds, iresult)
       use m_wind
-      use m_flowparameters, only: jawave, flowWithoutWaves
+      use m_flowparameters, only: jawave, flow_without_waves
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
@@ -245,7 +245,7 @@ contains
          end do
       end if
 
-      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flow_without_waves) then
          call tauwavefetch(time_in_seconds)
       end if
 
@@ -2871,7 +2871,7 @@ contains
             end do
          end if
          call init_cell_geom_as_polylines()
-         !$OMP PARALLEL DO SCHEDULE(GUIDED)
+         !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(ja)
          do n = ndx2D + 1, ndxi
             if (kcs(n) == 1 .and. bare(n) > 0.0_dp) then
                ja = point_find_netcell(Xz(n), Yz(n))

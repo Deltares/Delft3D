@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -152,10 +152,10 @@ contains
       return
 
 888   call readerror('reading two integers nrows, nkols, but getting ', rec, myzprofs)
-return
+      return
 
 777   call readerror('reading x,y,z , but getting ', rec, myzprofs)
-return
+      return
 
    end subroutine readyzprofnr
 

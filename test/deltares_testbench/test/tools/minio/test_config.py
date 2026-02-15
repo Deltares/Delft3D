@@ -10,7 +10,7 @@ from s3_path_wrangler.paths import S3Path
 
 from src.config.local_paths import LocalPaths
 from src.config.types.path_type import PathType
-from src.utils.xml_config_parser import XmlConfigParser
+from src.utils.xml_config_parser import XmlConfig, XmlConfigParser
 from test.helpers import minio_tool as helper
 from tools.minio.config import (
     ConfigData,
@@ -330,14 +330,18 @@ class TestConfigParser:
         test_case_config = helper.make_test_case_config("foo", "c999_minio_tool/c01_foo", version=version)
         xml_parser = mocker.Mock(spec=XmlConfigParser)
         xml_parser.default_cases = []
-        xml_parser.load.return_value = (LocalPaths(), [], [test_case_config])
+        xml_config = XmlConfig()
+        xml_config.local_paths = LocalPaths()
+        xml_config.program_configs = []
+        xml_config.testcase_configs = [test_case_config]
+        xml_parser.load.return_value = xml_config
         config_parser = helper.make_config_parser(xml_parser=xml_parser)
 
         # Act
         config_data = config_parser.parse_config(config_path)
         case, *other_cases = config_data.test_cases
-        # Assert
 
+        # Assert
         assert not other_cases
         assert case.name == "foo"
         assert case.case_dir == Path("cases/foo")
@@ -356,7 +360,11 @@ class TestConfigParser:
         default_cases = [helper.make_default_test_case("default")]
 
         xml_parser = mocker.Mock(spec=XmlConfigParser)
-        xml_parser.load.return_value = (LocalPaths(), [], test_cases)
+        xml_config = XmlConfig()
+        xml_config.local_paths = LocalPaths()
+        xml_config.program_configs = []
+        xml_config.testcase_configs = test_cases
+        xml_parser.load.return_value = xml_config
         xml_parser.default_cases = default_cases
         config_parser = helper.make_config_parser(xml_parser=xml_parser)
 

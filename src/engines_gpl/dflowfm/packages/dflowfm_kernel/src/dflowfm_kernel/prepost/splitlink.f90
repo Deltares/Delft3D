@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -159,7 +159,7 @@ contains
 !     find the link in the cell
          kk1 = 1
          do while (netcell(ic1)%lin(kk1) /= L .and. kk1 < N)
-         kk1 = kk1 + 1
+            kk1 = kk1 + 1
          end do
          if (netcell(ic1)%lin(kk1) /= L) then
             call qnerror('splitlink: link not found', ' ', ' ')

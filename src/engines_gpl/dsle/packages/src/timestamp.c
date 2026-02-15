@@ -71,9 +71,10 @@ double time_to_timestamp(time_t t) {
 // Convert timestamp 'YYYYMMDDhhmm' string format to time_t.
 // Returns -1 on error.
 time_t timestamp_string_to_time(const char *str, char **end_ptr) {
+  errno = 0;
   double timestamp = strtod(str, end_ptr);
 
-  if (!errno && ((end_ptr && *end_ptr != str) || !end_ptr)) {
+  if (errno==0 && ((end_ptr && *end_ptr != str) || !end_ptr)) {
     return timestamp_to_time(timestamp);
   }
 

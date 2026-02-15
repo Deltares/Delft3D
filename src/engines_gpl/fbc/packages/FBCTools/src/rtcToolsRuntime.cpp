@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -34,7 +34,6 @@
 #define strncpy strncpy_s
 #endif
 
-using namespace std;
 using namespace PI;
 using namespace boost::posix_time;
 

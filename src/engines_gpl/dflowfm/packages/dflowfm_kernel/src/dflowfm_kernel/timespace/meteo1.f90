@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -3279,7 +3279,7 @@ contains
       !
       ! ====================================================================
       !
-      !     Copyright © 2025, Rijkswaterstaat, All Rights Reserved.
+      !     Copyright © 2026, Rijkswaterstaat, All Rights Reserved.
       !
       !     This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
       !     https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
@@ -6440,6 +6440,7 @@ module m_meteo
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
+   integer, target :: item_bubblescreen_discharge !< Unique Item id of the new ext-file's '[BubbleScreen] air discharge' quantity
    integer, allocatable, dimension(:), target :: item_sourcesink_constituent_delta !< Unique Item id of the new ext-file's '[SourceSink] salinityDelta/temperatureDelta/<other constituents>Delta' quantity
 
    integer, target :: item_hrms !< Unique Item id of the ext-file's 'item_hrms' quantity
@@ -6610,6 +6611,7 @@ contains
       item_nudge_salinity = ec_undef_int
       item_discharge_salinity_temperature_sorsin = ec_undef_int
       item_sourcesink_discharge = ec_undef_int
+      item_bubblescreen_discharge = ec_undef_int
       item_hrms = ec_undef_int
       item_tp = ec_undef_int
       item_dir = ec_undef_int
@@ -6707,6 +6709,7 @@ contains
 
    !> Translate FM's meteo1 'method' enum to EC's 'interpolate' enum.
    subroutine method_fm_to_ec(method, ec_method)
+      use timespace_parameters
       integer, intent(in) :: method
       integer, intent(out) :: ec_method
 
@@ -6748,6 +6751,8 @@ contains
          ec_method = interpolate_unknown ! Not yet supported: only spatial, internal diffusion
       case (10)
          ec_method = interpolate_unknown ! Not yet supported: only initial vertical profiles
+      case (NEAREST_NEIGHBOUR)
+         ec_method = interpolate_nearest_neighbour 
       case (7) ! TODO: EB: FM method 7, where does this come from? ! see hrms method 7
          ec_method = interpolate_time_extrapolation_ok
       case default
@@ -7082,6 +7087,10 @@ contains
          ! Do not point to array qstss here.
          ! qstss might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
+         nullify (dataPtr1)
+      case ('bubblescreen_discharge')
+         itemPtr1 => item_bubblescreen_discharge
+         ! Do not point to an array here as it might be reallocated after initialization
          nullify (dataPtr1)
       case ('sourcesink_constituentdelta')
          if (strcmpi(constituent_name, 'salinity')) then

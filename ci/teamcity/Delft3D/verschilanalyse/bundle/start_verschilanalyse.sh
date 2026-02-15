@@ -3,6 +3,7 @@
 set -eo pipefail
 
 # Import bash utility functions.
+# shellcheck source=ci/teamcity/Delft3D/verschilanalyse/bundle/util.sh
 source util.sh
 
 function show_help {
@@ -33,39 +34,38 @@ MODEL_FILTER=
 
 while true; do
     case "$1" in
-        -a|--apptainer)
-            APPTAINER="$2"
-            shift 2
-            ;;
-        -c|--current-prefix)
-            CURRENT_PREFIX="$2"
-            shift 2
-            ;;
-        -r|--reference-prefix)
-            REFERENCE_PREFIX="$2"
-            shift 2
-            ;;
-        -m|--models-path)
-            MODELS_PATH="$2"
-            shift 2
-            ;;
-        -f|--model-filter)
-            MODEL_FILTER="$2"
-            shift 2
-            ;;
-        --)
-            shift
-            break
-            ;;
-        *)
-            show_help
-            exit 1
-            ;;
+    -a | --apptainer)
+        APPTAINER="$2"
+        shift 2
+        ;;
+    -c | --current-prefix)
+        CURRENT_PREFIX="$2"
+        shift 2
+        ;;
+    -r | --reference-prefix)
+        REFERENCE_PREFIX="$2"
+        shift 2
+        ;;
+    -m | --models-path)
+        MODELS_PATH="$2"
+        shift 2
+        ;;
+    -f | --model-filter)
+        MODEL_FILTER="$2"
+        shift 2
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        show_help
+        exit 1
+        ;;
     esac
 done
 
-
-if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX ; then
+if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX; then
     show_help
     exit 1
 fi
@@ -113,16 +113,16 @@ srun --nodes=1 --ntasks=1 --cpus-per-task=16 --partition=16vcpu_spot \
     s3 sync --delete --no-progress "${BUCKET}/${MODELS_PATH}/" /data
 
 # Download reference output data.
-DOWNLOAD_REFS_JOB_ID=$( \
+DOWNLOAD_REFS_JOB_ID=$(
     sbatch --parsable \
         --output="${LOG_DIR}/va-download-refs-%j.out" \
-        ./jobs/download_references.sh \
+        ./jobs/download_references.sh
 )
 
 # Pull apptainer from Harbor and store it as a `.sif` in the home directory.
 apptainer remote login \
     --username="robot\$delft3d+h7" \
-    --password-stdin oras://containers.deltares.nl < "${HOME}/.harbor/delft3d"
+    --password-stdin oras://containers.deltares.nl <"${HOME}/.harbor/delft3d"
 mkdir -p "$(dirname "$DELFT3D_SIF")"
 apptainer pull --force "$DELFT3D_SIF" "$APPTAINER"
 
@@ -136,32 +136,35 @@ for SCRIPT in $SUBMIT_SCRIPTS; do
     # The model directory is bind-mounted inside the apptainer. It must contain all input files.
     echo "Submitting script ${SCRIPT}"
     echo "Model directory: ${MODEL_DIR}"
-    JOB_ID=$( \
+    JOB_ID=$(
         sbatch --parsable \
             --chdir="$(dirname "$SCRIPT")" \
             --output="${LOG_DIR}/models/$(basename "$MODEL_DIR").out" \
-            "$SCRIPT" --apptainer "$DELFT3D_SIF" --model-dir "$MODEL_DIR" \
+            "$SCRIPT" --apptainer "$DELFT3D_SIF" --model-dir "$MODEL_DIR"
     )
     JOB_IDS+=("$JOB_ID")
 done
 
 # Make colon-separated list of JOB_IDS.
-JOB_ID_LIST=$(IFS=':'; echo "${JOB_IDS[*]}")
+JOB_ID_LIST=$(
+    IFS=':'
+    echo "${JOB_IDS[*]}"
+)
 
 # Archive and upload new output.
-UPLOAD_OUTPUT_JOB_ID=$( \
+UPLOAD_OUTPUT_JOB_ID=$(
     sbatch --parsable \
         --output="${LOG_DIR}/va-upload-output-%j.out" \
         --dependency="afterany:${JOB_ID_LIST}" \
-        ./jobs/upload_output.sh \
+        ./jobs/upload_output.sh
 )
 
 # Generate report.
-RUN_VERSCHILLENTOOL_JOB_ID=$( \
+RUN_VERSCHILLENTOOL_JOB_ID=$(
     sbatch --parsable \
         --output="${LOG_DIR}/va-run-verschillentool-%j.out" \
         --dependency="afterany:${DOWNLOAD_REFS_JOB_ID}:${UPLOAD_OUTPUT_JOB_ID}" \
-        ./jobs/run_verschillentool.sh \
+        ./jobs/run_verschillentool.sh
 )
 
 # Trigger report build on TeamCity

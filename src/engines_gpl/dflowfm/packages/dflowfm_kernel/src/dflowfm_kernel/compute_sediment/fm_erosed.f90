@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -91,7 +91,7 @@ contains
       use m_missing, only: dmiss_neg, dmiss_pos
       use m_turbulence, only: vicwws, turkinws, rhowat
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
-         flowWithoutWaves, epshu
+                                  flow_without_waves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
          kmxsed, taub, uuu, vvv
       use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, &
@@ -288,7 +288,7 @@ contains
          call mess(LEVEL_FATAL, errmsg)
       end if
       !
-      wave = (jawave > NO_WAVES) .and. .not. flowWithoutWaves
+      wave = (jawave > NO_WAVES) .and. .not. flow_without_waves
       !
       ! Mass conservation; s1 is updated before entering fm_erosed
       !
@@ -304,7 +304,7 @@ contains
       !
       u1_tmp = u1 * u_to_umain
 
-      if (jatranspvel > 0 .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (jatranspvel > 0 .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          u1_tmp = u1 - ustokes
          call setucxucy_mor(u1_tmp)
       else
@@ -325,7 +325,7 @@ contains
       call setucxqucyq_mor(u1_tmp, ucxq_tmp, ucyq_tmp)
 
       if (jawave > WAVE_FETCH_YOUNG) then
-         if ((.not. (jawave == WAVE_SURFBEAT .or. jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) .or. flowWithoutWaves) then
+         if ((.not. (jawave == WAVE_SURFBEAT .or. jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) .or. flow_without_waves) then
             ktb = 0.0_dp ! no roller turbulence
          else
             do k = 1, ndx
@@ -748,7 +748,7 @@ contains
             zvelb = h1 / ee
          end if
          !
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             ubot = uorb(nm) ! array uitgespaard
          else
             ubot = 0.0_dp
@@ -756,7 +756,7 @@ contains
          !
          ! Calculate total (possibly wave enhanced) roughness
          !
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             z0rou = max(epsz0, z0rouk(nm))
          else ! currents only
             z0rou = z0curk(nm) ! currents+potentially trachy
@@ -818,8 +818,6 @@ contains
             temperature = backgroundwatertemperature
          end if
          !
-         taks0 = 0.0_dp
-         !
          ! Calculate Van Rijn's reference height
          !
          if (iopkcw == 1) then !  iopkcw: options to calculate curr related roughness height
@@ -829,7 +827,7 @@ contains
          end if
          taks0 = max(aksfac * rc, 0.01_dp * h1)
          !
-         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flow_without_waves) then
             if (twav(nm) > 0.0_dp) then
                delr = 0.025_dp
                taks0 = max(0.5_dp * delr, taks0)
@@ -1143,7 +1141,7 @@ contains
                      klc = klc + 1
                   end do
                end if
-               taks = 0.0_fp
+               taks = taks0
                !
                ! Solve equilibrium concentration vertical and
                ! integrate over vertical
@@ -1343,14 +1341,14 @@ contains
          call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
       end if
       !
-      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          !
          ! Upwind wave-related bed load load transports
          !
          call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
       end if
       !
-      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          !
          ! Upwind wave-related suspended load transports
          !

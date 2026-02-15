@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,14 +45,12 @@ contains
       use m_netw
       use m_flowgeom
       use m_sferic
-      use m_longculverts_data, only: newculverts, nlongculverts, longculverts
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
 
       real(kind=dp) :: wud, wuL1, wuL2, cs, sn
       integer :: L, n, kk, n12, lnxmax
       integer :: k1, k2, LL
-      integer :: ilongc, L1dlink
       real(kind=dp) :: aa1, wcw, alf
 
       wcx1 = 0
@@ -97,80 +95,6 @@ contains
          wcxy(1, k2) = wcxy(1, k2) + abs(wcx2(L))
          wcxy(2, k2) = wcxy(2, k2) + abs(wcy2(L))
       end do
-
-      if (newculverts) then
-         do ilongc = 1, nlongculverts
-            L = abs(longculverts(ilongc)%flowlinks(1))
-            L1Dlink = abs(longculverts(ilongc)%flowlinks(2))
-            if (L > 0 .and. L1Dlink > 0) then
-               k1 = ln(1, L)
-               k2 = ln(2, L) !left and right node
-               wud = wu(L) * dx(L) !flow surface area
-               wuL1 = acl(L) * wud ! 2d center factor
-               wcL(1, L) = wuL1
-               wuL2 = (1.0_dp - acl(L)) * wud
-               wcL(2, L) = wuL2
-
-               !replace last addition of wcx1 etc.
-               wcxy(1, k1) = wcxy(1, k1) - abs(wcx1(L))
-               wcxy(2, k1) = wcxy(2, k1) - abs(wcy1(L))
-
-               wcxy(1, k2) = wcxy(1, k2) - abs(wcx2(L))
-               wcxy(2, k2) = wcxy(2, k2) - abs(wcy2(L))
-
-               cs = lin2nodx(L1Dlink, 1, csu(L1Dlink), snu(L1Dlink)) !L van buur 1D linkje
-               sn = lin2nody(L1Dlink, 1, csu(L1Dlink), snu(L1Dlink)) ! idem
-               wcx1(L) = cs * wuL1
-               wcy1(L) = sn * wuL1
-
-               cs = lin2nodx(L1Dlink, 2, csu(L1Dlink), snu(L1Dlink)) !L van buur 1D linkje
-               sn = lin2nody(L1Dlink, 2, csu(L1Dlink), snu(L1Dlink)) ! idem
-               wcx2(L) = cs * wuL2
-               wcy2(L) = sn * wuL2
-
-               wcxy(1, k1) = wcxy(1, k1) + abs(wcx1(L))
-               wcxy(2, k1) = wcxy(2, k1) + abs(wcy1(L))
-
-               wcxy(1, k2) = wcxy(1, k2) + abs(wcx2(L))
-               wcxy(2, k2) = wcxy(2, k2) + abs(wcy2(L))
-            end if
-
-            L = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
-            L1Dlink = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks - 1))
-            if (L > 0 .and. L1Dlink > 0) then
-               k1 = ln(1, L)
-               k2 = ln(2, L) !left and right node
-               wud = wu(L) * dx(L) !flow surface area
-               wuL1 = acl(L) * wud ! 2d center factor
-               wcL(1, L) = wuL1
-               wuL2 = (1.0_dp - acl(L)) * wud
-               wcL(2, L) = wuL2
-
-               !replace last addition of wcx1 etc.
-               wcxy(1, k1) = wcxy(1, k1) - abs(wcx1(L))
-               wcxy(2, k1) = wcxy(2, k1) - abs(wcy1(L))
-
-               wcxy(1, k2) = wcxy(1, k2) - abs(wcx2(L))
-               wcxy(2, k2) = wcxy(2, k2) - abs(wcy2(L))
-
-               cs = lin2nodx(L1Dlink, 1, csu(L1Dlink), snu(L1Dlink)) !L van buur 1D linkje
-               sn = lin2nody(L1Dlink, 1, csu(L1Dlink), snu(L1Dlink)) ! idem
-               wcx1(L) = cs * wuL1
-               wcy1(L) = sn * wuL1
-
-               cs = lin2nodx(L1Dlink, 2, csu(L1Dlink), snu(L1Dlink)) !L van buur 1D linkje
-               sn = lin2nody(L1Dlink, 2, csu(L1Dlink), snu(L1Dlink)) ! idem
-               wcx2(L) = cs * wuL2
-               wcy2(L) = sn * wuL2
-
-               wcxy(1, k1) = wcxy(1, k1) + abs(wcx1(L))
-               wcxy(2, k1) = wcxy(2, k1) + abs(wcy1(L))
-
-               wcxy(1, k2) = wcxy(1, k2) + abs(wcx2(L))
-               wcxy(2, k2) = wcxy(2, k2) + abs(wcy2(L))
-            end if
-         end do
-      end if
 
       lnxmax = 0
       do n = 1, mxwalls ! wall contribution to scalar linktocenterweights

@@ -11,7 +11,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Package that will make set the DIMR kernels to the correct location.</description>
         <summary>Deltares Integrated Model Runner libraries (DIMR Libs).</summary>
-        <copyright>Deltares 2025</copyright>
+        <copyright>Deltares 2026</copyright>
         <tags>native</tags>
     </metadata>
     <files>

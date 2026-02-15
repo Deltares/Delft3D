@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2025.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -370,7 +370,7 @@ contains
                 if (modtyp == model_two_layer_temp) then     ! .. two layer model use a pointe discharge (as in v3.00)
                     write(*, *) 'Stratified two layer model not supported for unstructured grids'
                     error stop
-                elseif (modtyp == model_oil .and. laypart(i) == 1) then   !   for one layer models (2dh),
+                elseif ((modtyp == model_oil .or. leeway) .and. laypart(i) == 1) then   !   for one layer models (2dh),
                     hpart(i) = 0.0_dp               !      the release will be in the user-defined location
                 else                               !      release randomly distributed over the vertical
                     hpart(i) = rnd(rseed)

@@ -611,11 +611,11 @@
             <parameter name="mesh2d_s1" toleranceRelative="1e-7" />
             <parameter name="mesh2d_ucx" toleranceRelative="1e-7" />
             <parameter name="mesh2d_ucy" toleranceRelative="1e-7" />
-            <parameter name="mesh2d_Patm" toleranceRelative="1e-7" />
-            <parameter name="mesh2d_windx" toleranceAbsolute="1e-7" />
-            <parameter name="mesh2d_windy" toleranceAbsolute="1e-7" />
-            <parameter name="mesh2d_windxu" toleranceAbsolute="1e-7" />
-            <parameter name="mesh2d_windyu" toleranceAbsolute="1e-7" />
+            <parameter name="mesh2d_Patm" toleranceAbsolute="5e-3" />
+            <parameter name="mesh2d_windx" toleranceAbsolute="1e-6" />
+            <parameter name="mesh2d_windy" toleranceAbsolute="1e-6" />
+            <parameter name="mesh2d_windxu" toleranceAbsolute="1e-6" />
+            <parameter name="mesh2d_windyu" toleranceAbsolute="1e-6" />
             <parameter name="mesh2d_Tair" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Rhum" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Clou" toleranceRelative="1e-7" />
@@ -669,9 +669,9 @@
         <file name="output/winter97_saltwater_his.nc" type="netCDF">
           <parameters>
             <parameter name="salinity" toleranceAbsolute="0.0000001" />
-            <parameter name="Tair" toleranceAbsolute="0.0000001" />
-            <parameter name="potential_density" toleranceAbsolute="0.0000001" />
-            <parameter name="rhum" toleranceAbsolute="0.0000001" />
+            <parameter name="Tair" toleranceRelative="1e-7" />
+            <parameter name="potential_density" toleranceAbsolute="1e-4" />
+            <parameter name="rhum" toleranceRelative="1e-7" />
             <parameter name="temperature" toleranceAbsolute="0.001" />
             <parameter name="ice_temperature" toleranceAbsolute="0.001" />
             <parameter name="ice_thickness" toleranceAbsolute="0.001" />

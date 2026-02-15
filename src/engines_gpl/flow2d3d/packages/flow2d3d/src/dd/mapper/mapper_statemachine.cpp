@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -237,7 +237,7 @@ void D3dFlowMapper::StateMachineAdiOrWang(
                 CopySediment(Seq_Zeta);
                 break;
             default:
-                throw new Exception (true, "D3dFlowMapper::StateMachineAdiOrWang: unexpected map request: %s (%d)",
+                throw new Exception("D3dFlowMapper::StateMachineAdiOrWang: unexpected map request: %s (%d)",
                             PrintNextStepName(nextFlowStep),nextFlowStep);
         }
         if (thisMapperStep == D3dFlowMap_Finish)

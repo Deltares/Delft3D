@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -113,6 +113,7 @@ module m_physcoef
    real(kind=dp) :: Soiltempthick = 0.0_dp !< if soil buffer desired make thick > 0, e.g. 0.2 m
 
    integer :: Jadelvappos !< only positive forced evaporation fluxes
+   real(kind=dp) :: free_convection_coefficient !< Free convection turbulence coefficient [-]
 
    real(kind=dp) :: tetav !< vertical teta transport
    real(kind=dp) :: tetavkeps !< vertical teta k-eps
@@ -167,6 +168,7 @@ contains
       Stanton = 0.0013_dp
       Dalton = 0.0013_dp
       Jadelvappos = 0
+      free_convection_coefficient = 0.14_dp
       tetav = 0.55_dp
       tetavkeps = 0.55_dp
       tetavmom = 0.55_dp

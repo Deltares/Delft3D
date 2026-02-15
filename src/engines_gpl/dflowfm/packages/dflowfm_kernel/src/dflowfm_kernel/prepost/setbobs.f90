@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,7 +48,7 @@ contains
       use m_sediment, only: stm_included
       use m_oned_functions, only: setbobs_1d
       use m_structures, only: network
-      use m_longculverts, only: find1d2dculvertlinks, setLongCulvert1D2DLinkAngles, longculvertsToProfs
+      use m_longculverts, only: find1d2dculvertlinks, longculvertsToProfs
       use m_longculverts_data, only: newculverts, nlongculverts, longculverts
       use unstruc_model, only: md_convertlongculverts
 

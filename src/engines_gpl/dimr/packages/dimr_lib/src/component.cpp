@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -58,7 +58,7 @@ void Component::Run(void)
    // This throw is not caught, even though the invocation of Run() is in
    // a try/catch block.  Why?
 
-   throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
 
@@ -75,7 +75,7 @@ Component::Init(void)
    // This throw is not caught, even though the invocation of Run() is in
    // a try/catch block.  Why?
 
-   throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
 
@@ -90,7 +90,7 @@ void Component::Step(double stepSize)
    // This throw is not caught, even though the invocation of Run() is in
    // a try/catch block.  Why?
 
-   throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
 
@@ -105,7 +105,7 @@ void Component::Finish(void)
    // This throw is not caught, even though the invocation of Run() is in
    // a try/catch block.  Why?
 
-   throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
 
@@ -120,7 +120,7 @@ double Component::GetStartTime(void)
    // This throw is not caught, even though the invocation of Run() is in
    // a try/catch block.  Why?
 
-   throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
 
@@ -135,7 +135,7 @@ double Component::GetEndTime(void)
    // This throw is not caught, even though the invocation of Run() is in
    // a try/catch block.  Why?
 
-   throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
 
@@ -150,7 +150,7 @@ double Component::GetCurrTime(void)
    // This throw is not caught, even though the invocation of Run() is in
    // a try/catch block.  Why?
 
-   throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
 
@@ -165,5 +165,5 @@ double Component::GetTimeStep(void)
    // This throw is not caught, even though the invocation of Run() is in
    // a try/catch block.  Why?
 
-   throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }

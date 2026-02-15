@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -120,9 +120,9 @@ module m_flowparameters
    integer :: jasal !< Include salinity set in mdf
 
    integer :: temperature_model !< Temperature model, use one of TEMPERATURE_MODEL_... parameters
-   integer, parameter :: TEMPERATURE_MODEL_NONE = 0      !< No temperature model
+   integer, parameter :: TEMPERATURE_MODEL_NONE = 0 !< No temperature model
    integer, parameter :: TEMPERATURE_MODEL_TRANSPORT = 1 !< Transport only (no heat flux model)
-   integer, parameter :: TEMPERATURE_MODEL_EXCESS = 3    !< Excess heat flux model
+   integer, parameter :: TEMPERATURE_MODEL_EXCESS = 3 !< Excess heat flux model
    integer, parameter :: TEMPERATURE_MODEL_COMPOSITE = 5 !< Composite heat flux model
 
    integer :: janudge !< temperature and salinity nudging
@@ -143,7 +143,7 @@ module m_flowparameters
 
    integer :: waveforcing !< Wave forcing type, 0=no, 1=based on radiation stress gradients, 2=based on dissipation, NOT implemented yet, 3=based on dissipation at free surface and water column, NOT implemented yet
 
-   logical :: flowWithoutWaves = .false. !< True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
+   logical :: flow_without_waves = .false. !< True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
 
    integer :: jawavestreaming !< Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 

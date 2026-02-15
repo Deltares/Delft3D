@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -62,7 +62,6 @@ module m_flowtimes
    integer, parameter :: AUTO_TIMESTEP_3D_INOUT_BAROCLINE = 7 !< RESEARCH/HIDDEN - 3D-model; use in- and outflows (per cell-layer) including barocline effects in CFL timestep limit
    integer, parameter :: AUTO_TIMESTEP_3D_OUT_NOTOP = 8 !< RESEARCH/HIDDEN - 3D-model; use outflows (per cell-layer) excluding the top layer in CFL timestep limit
    integer, parameter :: AUTO_TIMESTEP_3D_HOR_OUT_TOTAL_IN_NOTOP = 10 !< RESEARCH/HIDDEN - 3D-models; use horizontal outflows (per cell-column) and total inflows (per cell-layer), excluding the top layer, in CFL timestep limit
-
 
    integer :: ja_timestep_auto_visc !< Use explicit time step restriction based on viscosity term
    integer :: ja_timestep_nostruct !< Exclude (structure) links without advection from the time step limitation

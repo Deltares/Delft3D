@@ -2634,7 +2634,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_R), valobs(:, IPNT_WAVER))
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UORB), valobs(:, IPNT_WAVEU))
-            if (model_is_3D() .and. .not. flowwithoutwaves) then
+            if (model_is_3D() .and. .not. flow_without_waves) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCXST:IPNT_UCXST + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), temp_pointer)
 
@@ -2780,12 +2780,12 @@ contains
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCY), SSCY)
                end if
-               if (stmpar%morpar%moroutput%sbwuv .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sbwuv .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
                   function_pointer => calculate_sediment_SBW
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWY), SBWY)
                end if
-               if (stmpar%morpar%moroutput%sswuv .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sswuv .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
                   function_pointer => calculate_sediment_SSW
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWX), null(), function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWY), SSWY)

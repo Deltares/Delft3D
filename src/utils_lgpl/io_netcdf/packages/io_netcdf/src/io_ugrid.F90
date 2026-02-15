@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -4286,10 +4286,12 @@ contains
       ierr = nf90_put_var(ncid, contactids%varids(cid_contacttopo), abs(contacts))
 
       if (present(contactsids)) then
-         ierr = nf90_put_var(ncid, contactids%varids(cid_contactids), contactsids)
+         ierr = nf90_put_var(ncid, contactids%varids(cid_contactids), contactsids, &
+                             start=(/1, 1/), count=(/len(contactsids(1)), size(contactsids)/))
       end if
       if (present(contactslongnames)) then
-         ierr = nf90_put_var(ncid, contactids%varids(cid_contactlongnames), contactslongnames)
+         ierr = nf90_put_var(ncid, contactids%varids(cid_contactlongnames), contactslongnames, &
+                             start=(/1, 1/), count=(/len(contactslongnames(1)), size(contactslongnames)/))
       end if
 
       ierr = nf90_put_var(ncid, contactids%varids(cid_contacttype), contacttype)

@@ -5,7 +5,7 @@
 #   Frank.Platzek@deltares.nl
 #   9 jan 2009
 #
-#   Copyright (C)  Stichting Deltares, 2011-2013.
+#   Copyright (C)  Stichting Deltares, 2011-2026.
 #-------------------------------------------------------------------------------
 
 all: plugin_culvert.o

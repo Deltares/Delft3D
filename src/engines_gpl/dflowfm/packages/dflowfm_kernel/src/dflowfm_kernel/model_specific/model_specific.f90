@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -361,7 +361,6 @@ contains
       em = (0.0_dp, 0.5_dp) * ((0.0_dp, 1.0_dp) * fr + Ue0 * k - sqrtc)
       cm = amm * exp(em * t)
 
-      cfree = sqrt(g * h)
       omfree = -imag(em)
       TfreeL = twopi / omfree
       TFreel = time1 / TfreeL

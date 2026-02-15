@@ -1,6 +1,6 @@
 //----- AGPL ---------------------------------------------------------------------
 //
-//  Copyright (C)  Stichting Deltares, 2011-2025.
+//  Copyright (C)  Stichting Deltares, 2011-2026.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Affero General Public License as
@@ -117,7 +117,7 @@ void WALRUS::dosteps(double endtime, double deltime,
                       bool store_deps = true,
                       bool store_usedfluxes = true)
 {
-        ofstream resultfile;
+        std::ofstream resultfile;
         resultfile.open(csvfilename);
         resultfile.precision(9);
         resultfile<<"time";
@@ -147,7 +147,7 @@ void WALRUS::dosteps(double endtime, double deltime,
                 resultfile<<", Q";
                 resultfile<<", Qdischarge";
         }
-        resultfile<<endl;
+        resultfile<<std::endl;
 
         while(_time < endtime) {
                 dostep(deltime);
@@ -178,7 +178,7 @@ void WALRUS::dosteps(double endtime, double deltime,
                         resultfile<<", "<< cur_Q_c;
                         resultfile<<", "<< get(last_Qdischarge);
                 }
-                resultfile<<endl;
+                resultfile<<std::endl;
         }
         resultfile.close();
 }

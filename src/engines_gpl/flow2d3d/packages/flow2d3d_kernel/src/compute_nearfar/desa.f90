@@ -7,7 +7,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
               & linkinf ,error   ,gdp     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -177,6 +177,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     integer, dimension(:), allocatable   :: n_dis
     integer, dimension(:), allocatable   :: m_dis
     integer, dimension(:), allocatable   :: k_dis
+    integer, dimension(:), allocatable   :: rowid_dis
     logical                              :: inside
     logical                              :: new_cell
     logical                              :: centre_and_width   ! TRUE: >=1 sinks and exactly 1 source point.
@@ -457,6 +458,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
           allocate (n_dis (sour_cnt), stat=ierror)
           allocate (m_dis (sour_cnt), stat=ierror)
           allocate (k_dis (sour_cnt), stat=ierror)
+          allocate (rowid_dis (sour_cnt), stat=ierror)
           allocate (weight(sour_cnt), stat=ierror)
           n_dis      = 0
           m_dis      = 0
@@ -481,6 +483,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                 n_dis(ndis_track)  = n_tmp
                 m_dis(ndis_track)  = m_tmp
                 k_dis(ndis_track)  = k_tmp
+                rowid_dis(ndis_track)  = itrack
                 icur               = ndis_track
              else
                 ! Check whether the administration already contains the cell in which this source point resides
@@ -501,6 +504,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                    n_dis(ndis_track)  = n_tmp
                    m_dis(ndis_track)  = m_tmp
                    k_dis(ndis_track)  = k_tmp
+                   rowid_dis(ndis_track)  = itrack
                    icur               = ndis_track
                 endif
              endif
@@ -600,7 +604,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                       else
                          ! Every source point contains momentum information
                          !
-                         src_index = itrack
+                         src_index = rowid_dis(itrack)
                       endif
                       call magdir_to_uv(alfas(n_dis(ndis_track),m_dis(ndis_track)), grdang               , &
                                       & nf_sour(src_index,IUMAG)                     , nf_sour(src_index,IUDIR), momu_tmp, momv_tmp)
@@ -708,7 +712,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                       else
                          ! Every source point contains momentum information
                          !
-                         src_index = itrack
+                         src_index = rowid_dis(itrack)
                       endif
                       call magdir_to_uv(alfas(n_dis(ndis_track),m_dis(ndis_track)), grdang               , &
                                       & nf_sour(src_index,IUMAG)                     , nf_sour(src_index,IUDIR), momu_tmp, momv_tmp)

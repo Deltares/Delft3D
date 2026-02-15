@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -605,10 +605,11 @@ contains
       use messagehandling, only: mess, level_warn
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_polygon, only: npl
-      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
+      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, nump, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
       use m_alloc, only: realloc
       use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
+      use m_save_ugrid_state, only: contactnetlinks, contactids_2D2D, hashlist_contactids
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -619,7 +620,7 @@ contains
 
       integer :: ic1, ic2, L
       logical :: domain_needs_cell_1, domain_needs_cell_2
-      integer :: i
+      integer :: i, icontact, i_valid_contact
       integer, dimension(:, :), allocatable :: lne_org
       integer :: i_old
       character(len=128) :: message
@@ -670,6 +671,23 @@ contains
             lne_org(1, i) = abs(lne(1, i))
             lne_org(2, i) = abs(lne(2, i))
          end do
+      end if
+
+      if (allocated(contactnetlinks) .and. allocated(contactids_2D2D)) then
+         i_valid_contact = 0
+         call realloc(contactids_2D2D, size(contactnetlinks), keepExisting=.false.)
+         do icontact = 1, size(contactnetlinks)
+            L = contactnetlinks(icontact)
+            if (L > 0 .and. L <= numL) then
+               if (Lc(L) == 1) then !> valid link
+                  if (lne_org(1, L) < nump .and. lne_org(2, L) < nump) then !> both cells are real 2D cells
+                     i_valid_contact = i_valid_contact + 1
+                     contactids_2D2D(i_valid_contact) = hashlist_contactids%id_list(icontact)
+                  end if
+               end if
+            end if
+         end do
+         call realloc(contactids_2D2D, i_valid_contact, keepExisting=.true.)
       end if
 
 !     physically remove nodes and links from network

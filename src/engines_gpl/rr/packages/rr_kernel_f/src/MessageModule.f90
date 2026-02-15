@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU Affero General Public License as
@@ -66,7 +66,7 @@ contains
     write(ISCREN, *)
     write(ISCREN, *)
     write(ISCREN, *)
-    write(ISCREN, *) spaties // '    Copyright (c) 2025              DELTARES        '
+    write(ISCREN, *) spaties // '    Copyright (c) 2026              DELTARES        '
     write(ISCREN, *) spaties // "    Rainfall-Runoff Module          Version 3.216.87"
     write(ISCREN, *)
 

@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ GawsBarrier_Function (
     int numD3dFlowProcesses = self->NeighborCount ();
 
     if (numD3dFlowProcesses > MAX_NUM_D3D_FLOW_PROCS)
-        throw new Exception (true, "GAWS barrier has too many participants");
+        throw new Exception("GAWS barrier has too many participants");
 
     self->RewindNeighbors ();
     for (int i = 0 ; i < numD3dFlowProcesses ; i++ ) {

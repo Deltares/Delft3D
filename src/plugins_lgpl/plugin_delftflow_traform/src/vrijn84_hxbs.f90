@@ -7,7 +7,7 @@ subroutine vrijn84_hxbs(dll_integers, max_integers, &
 !DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'VRIJN84_HXBS' :: VRIJN84_HXBS
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public

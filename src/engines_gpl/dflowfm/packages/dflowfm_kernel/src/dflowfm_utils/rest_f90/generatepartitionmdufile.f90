@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,14 +51,14 @@ contains
 
       call newfil(mout, filename_new)
       if (mout == 0) then
-         call mess(LEVEL_FATAL, "Failed to open file " // trim(filename_new))
+         call mess(LEVEL_FATAL, "Failed to open file "//trim(filename_new))
          return
       end if
 
       icgsolver = md_icgsolver ! `writeMDUFilepointer` uses `icgsolver` instead of `md_icgsolver`.
       call writeMDUFilepointer(mout, .false., istat)
       if (istat /= 0) then
-         call mess(LEVEL_FATAL, "Failed to write a partitioned MDU file " // trim(filename_new))
+         call mess(LEVEL_FATAL, "Failed to write a partitioned MDU file "//trim(filename_new))
       end if
 
       call doclose(mout)

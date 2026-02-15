@@ -10,7 +10,7 @@
         <projectUrl>http://oss.deltares.nl/web/delta-shell</projectUrl>
         <description>This package contains the native GridGeom library, which includes functions related to grid operations.</description>
         <summary>Deltares GridGeom library.</summary>
-        <copyright>Deltares 2025</copyright>
+        <copyright>Deltares 2026</copyright>
         <tags>native</tags>
     </metadata>
     <files>

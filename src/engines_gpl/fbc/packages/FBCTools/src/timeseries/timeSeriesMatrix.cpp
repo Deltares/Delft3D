@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,8 +27,6 @@
 #include <stdexcept>
 
 using namespace rtctools::timeseries;
-using namespace std;
-
 
 timeSeriesMatrix::timeSeriesMatrix(int nTimeStep, vector<long long> time,
 							       int nSeries, vector<string> seriesID, vector<validationEnum> seriesValidation,

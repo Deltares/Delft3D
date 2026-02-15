@@ -10,7 +10,7 @@
             <parameter name="mesh2d_cftrt" toleranceAbsolute="0.001"/>
             <parameter name="mesh2d_cfcl" toleranceAbsolute="0.001"/>
             <parameter name="mesh2d_taus" toleranceAbsolute="0.1"/>
-            <parameter name="morft" toleranceAbsolute="0.00001"/>
+            <parameter name="morft" toleranceRelative="1e-7"/>
             <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.001" />
             <parameter name="mesh2d_sbn" toleranceAbsolute="0.00001"/>
             <parameter name="mesh2d_msed" toleranceAbsolute="0.01"/>

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -80,11 +80,11 @@ contains
       call getkbotktop(k1, kbl, ktl)
       call getkbotktop(k2, kbr, ktr)
       call getLbotLtop(L, Lb, Lt)
-      
+
       if (zws(ktl) - zws(kbl - 1) < epshs .or. zws(ktr) - zws(kbr - 1) < epshs) then
          return
       end if
-      
+
       zbed = (bob(1, L) + bob(2, L)) * 0.5_dp ! interpolates the bed level on flow link
       !
       !***position horizontal interfaces left and right
