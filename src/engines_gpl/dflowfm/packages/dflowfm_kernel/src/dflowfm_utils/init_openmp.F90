@@ -56,9 +56,9 @@ contains
 #ifdef _OPENMP
       integer :: openmp_threads
 #endif
-      character(len=20) :: value
-      integer :: env_num_threads
-      integer :: status
+      ! character(len=20) :: value
+      ! integer :: env_num_thread
+      ! integer :: status
 
       iresult = DFM_NOERR
 
