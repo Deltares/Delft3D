@@ -87,21 +87,13 @@ def main() -> None:
     print(f"Found existing DVC repo at: {repo_root}")
     repo = Repo(str(repo_root))
 
-    # First download all cases and references then move doc folders and add to DVC. This will speed up the process.
-    for xml_file in xml_files_with_testcases_to_migrate:
-        xml_file.download_from_minio_in_new_folder_structure(rewinder=rewinder)
-
-    for xml_file in xml_files_with_testcases_to_migrate:
-        xml_file.move_testcases_doc_folder_to_parent()
-
-    dvc_files = []
     for i, xml_file in enumerate(xml_files_with_testcases_to_migrate, start=1):
         print(f"Add testcases {xml_file.xml_file.name} to dvc - {i}/{len(xml_files_with_testcases_to_migrate)} xml's")
+        xml_file.download_from_minio_in_new_folder_structure(rewinder=rewinder)
+        xml_file.move_testcases_doc_folder_to_parent()
+        dvc_files = []
         dvc_files.extend(xml_file.add_to_dvc(repo=repo))
-
-    push_dvc_files_to_remote(repo, dvc_files)
-
-    for xml_file in xml_files_with_testcases_to_migrate:
+        push_dvc_files_to_remote(repo, dvc_files)
         xml_file.migrate_xml_to_dvc()
 
 
