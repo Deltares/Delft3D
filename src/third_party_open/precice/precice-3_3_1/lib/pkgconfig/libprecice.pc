@@ -3,7 +3,7 @@ libdir=C:/Checkouts/precice/install/lib
 
 Name: preCICE
 Description: preCICE coupling library
-Version: 3.3.0
+Version: 3.3.1
 URL: https://www.precice.org
 Libs: -L${libdir} -lprecice
 Cflags: -I${includedir}
