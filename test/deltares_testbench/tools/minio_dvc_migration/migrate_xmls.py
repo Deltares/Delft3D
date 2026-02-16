@@ -117,7 +117,9 @@ def main() -> None:
             repo = Repo(str(repo_root))
 
             for i, xml_file in enumerate(xml_files_with_testcases_to_migrate, start=1):
-                print(f"Add testcases {xml_file.xml_file.name} to dvc - {i}/{len(xml_files_with_testcases_to_migrate)} xml's")
+                print(
+                    f"Add testcases {xml_file.xml_file.name} to dvc - {i}/{len(xml_files_with_testcases_to_migrate)} xml's"
+                )
                 xml_file.download_from_minio_in_new_folder_structure(rewinder=rewinder)
                 xml_file.move_testcases_doc_folder_to_parent()
                 dvc_files = []
