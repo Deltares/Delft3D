@@ -1160,7 +1160,6 @@ contains
       integer :: i !< Loop index
       integer :: k_start !< Bottom active layer index in a flowcell
       integer :: k_end !< Top active layer index in a flowcell
-      integer :: npl_tmp !< Temporary variable to store number of polygon points
       integer :: num_source_sinks
       integer :: num_items_in_file
       integer, dimension(:), allocatable :: crossed_cells
@@ -1191,13 +1190,12 @@ contains
                call oldfil(file_pointer, location_file)
                call reapol(file_pointer, 0)
 
-               npl_tmp = npl
-               bubblescreen%num_polyline = npl_tmp
+               bubblescreen%num_polyline = npl
 
-               allocate (bubblescreen%x_polyline(npl_tmp))
-               allocate (bubblescreen%y_polyline(npl_tmp))
-               bubblescreen%x_polyline = xpl(1:npl_tmp)
-               bubblescreen%y_polyline = ypl(1:npl_tmp)
+               allocate (bubblescreen%x_polyline(npl))
+               allocate (bubblescreen%y_polyline(npl))
+               bubblescreen%x_polyline = xpl(1:npl)
+               bubblescreen%y_polyline = ypl(1:npl)
 
                call restorepol()
 
