@@ -1182,7 +1182,7 @@ contains
 
          select case (str_tolower(group_name))
          case ('bubblescreen')
-            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_source, discharge_input)
+            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
             bubblescreen%id = id
 
             if (is_successful) then
@@ -1263,7 +1263,7 @@ contains
       real(kind=dp) :: tmsx !< Temporary x-coordinate for bubblescreen source/sink
       real(kind=dp) :: tmsy !< Temporary y-coordinate for bubblescreen source/sink
       real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
-      real(kind=dp) :: z_dummy !< Dummy readout variable for z_source
+      real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
 
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: srcid !< Source id

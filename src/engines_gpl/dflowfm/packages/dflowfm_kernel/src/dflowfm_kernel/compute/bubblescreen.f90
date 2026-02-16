@@ -74,7 +74,7 @@ contains
             area_fraction = ba(n) / total_area
             max_velocity = -1.0_dp * water_discharge * area_fraction / ba(n)
 
-            call find_active_layer_interfaces(n, bubblescreen%z_source, bubblescreen%id, k_start, k_stop, k_max_velocity)
+            call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
 
             call compute_water_discharge_across_layers(n, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
 

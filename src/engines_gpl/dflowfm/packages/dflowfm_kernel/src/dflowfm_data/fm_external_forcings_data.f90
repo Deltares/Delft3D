@@ -399,7 +399,7 @@ module fm_external_forcings_data
       integer :: num_polyline !< number of polyline points
       real(kind=dp), dimension(:), allocatable :: x_polyline !< [m] x polyline points
       real(kind=dp), dimension(:), allocatable :: y_polyline !< [m] y polyline points
-      real(kind=dp) :: z_source !< [m] z level of the bubble screen air discharge
+      real(kind=dp) :: z_level !< [m] z level of the bubble screen air discharge
    end type t_Bubblescreen
 
    type (t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
