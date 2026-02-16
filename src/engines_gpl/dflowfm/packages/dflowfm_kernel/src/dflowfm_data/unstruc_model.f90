@@ -1058,13 +1058,16 @@ contains
       ! Numerics
       
       ! Dummy reads to catch deprecated/obsolete keywords
-      call prop_get(md_ptr, 'numerics', 'qhrelax', dummy_real)
+      call prop_get(md_ptr, 'numerics', 'CFLWaveFrac', dummy_real)
+      call prop_get(md_ptr, 'numerics', 'jaembed1d', dummy_int)
       call prop_get(md_ptr, 'numerics', 'jaorgsethu', dummy_int)
+      call prop_get(md_ptr, 'numerics', 'maxitverticalforester', dummy_int)
+      call prop_get(md_ptr, 'numerics', 'noDerivedTypes', dummy_int)
+      call prop_get(md_ptr, 'numerics', 'qhrelax', dummy_real)
 
       call prop_get(md_ptr, 'numerics', 'CFLMax', cflmx)
       call prop_get(md_ptr, 'numerics', 'EpsMaxlev', epsmaxlev)
       call prop_get(md_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm)
-      !call prop_get( md_ptr, 'numerics', 'CFLWaveFrac'     , cflw)
       call prop_get(md_ptr, 'numerics', 'AdvecType', iadvec)
       if (Layertype /= LAYTP_SIGMA) then
          iadvec = 33
@@ -1165,7 +1168,6 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
       call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
-      ! call prop_get(md_ptr, 'numerics', 'Noderivedtypes'  , Noderivedtypes)
       if (icgsolver == 7 .or. icgsolver == 6) then
          Noderivedtypes = min(Noderivedtypes, 4) ! no deallocation of derived types
       end if
@@ -1622,6 +1624,7 @@ contains
 
       ! Dummy reads to catch deprecated/obsolete keywords
       call prop_get(md_ptr, 'wind', 'gapres', dummy_real)
+      call prop_get(md_ptr, 'wind', 'stericCorrection', dummy_int)
 
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
@@ -1920,6 +1923,9 @@ contains
       !if (associated(trtdef_ptr)) call visit_tree(trtdef_ptr,1)
       trtdef_ptr => null()
 
+      ! Dummy read to catch deprecated/obsolete keywords
+      call prop_get(md_ptr, 'trachytopes', 'trtdt', dummy_real)
+
       call prop_get(md_ptr, 'trachytopes', 'TrtRou', md_trtrfile, success)
       if (strcmpi(md_trtrfile, 'Y')) then
          call tree_get_node_by_name(md_ptr, 'trachytopes', trtdef_ptr)
@@ -1942,6 +1948,9 @@ contains
       call prop_get(md_ptr, 'calibration', 'UseCalibration', jacali, success)
       call prop_get(md_ptr, 'calibration', 'DefinitionFile', md_cldfile, success)
       call prop_get(md_ptr, 'calibration', 'AreaFile', md_cllfile, success)
+
+      ! Dummy read to catch deprecated/obsolete keywords
+      call prop_get(md_ptr, 'output', 'wrishp_enc', dummy_int)
 
       call prop_get(md_ptr, 'output', 'ObsFile', md_obsfile, success)
       call prop_get(md_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, success)
@@ -2450,7 +2459,6 @@ contains
          if (size(map_classes_s1) == 0 .and. size(map_classes_hs) == 0 .and. size(map_classes_ucmag) == 0 .and. map_classes_ucdirstep < 0.0_dp) then
             call mess(LEVEL_ERROR, 'ClassMapInterval given, but none of WaterlevelClasses, WaterdepthClasses, VelocityMagnitudeClasses, VelocityDirectionClassesInterval is defined.')
          end if
-
       end if
 
       call prop_get(md_ptr, 'equatorial', 'Ampfreeleft', amm)
@@ -2497,6 +2505,10 @@ contains
       end if
 
 !  processes (WAQ)
+
+      ! Dummy read to catch deprecated/obsolete keywords
+      call prop_get(md_ptr, 'processes', 'processFluxIntegration', dummy_int)
+
       call prop_get(md_ptr, 'processes', 'SubstanceFile', md_subfile, success)
       call prop_get(md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
       call prop_get(md_ptr, 'processes', 'StatisticsFile', md_sttfile, success)
@@ -3049,7 +3061,6 @@ contains
 
 ! Numerics
       call prop_set(prop_ptr, 'numerics', 'CFLMax', cflmx, 'Maximum Courant number')
-      !call prop_set(prop_ptr, 'numerics', 'CFLWaveFrac',  cflw,       'Wave velocity fraction, total courant vel = u + cflw*wavevelocity')
       if (writeall .or. Lincontin /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Lincontin', Lincontin, 'Default 0; Set to 1 for linearizing d(Hu)/dx; link to AdvecType')
       end if
@@ -3150,7 +3161,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
       end if
       if (writeall .or. Noderivedtypes > 0) then
-         !call prop_set(prop_ptr, 'numerics', 'Noderivedtypes', Noderivedtypes,  '0=use der. types. , 1,2,3,4,5 etc = do use them')
+         call prop_set(prop_ptr, 'numerics', 'Noderivedtypes', Noderivedtypes,  '0=use der. types. , 1,2,3,4,5 etc = do use them')
       end if
       if (writeall .or. jposhchk /= 2) then
          call prop_set(prop_ptr, 'numerics', 'jposhchk', jposhchk, 'Check for positive waterdepth (0: no, 1: 0.7*dts, just redo, 2: 1.0*dts, close all links, 3: 0.7*dts, close all links, 4: 1.0*dts, reduce au, 5: 0.7*dts, reduce au, 6: 1.0*dts, close outflowing links, 7: 0.7*dts, close outflowing links)')

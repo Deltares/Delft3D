@@ -25,7 +25,11 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'AutoStart', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'OrgFloorlevtoplaydef', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenter', DEPRECATED, 'Use circumcenterMethod instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'CFLWaveFrac', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaembed1d', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaorgsethu', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForester', DEPRECATED, 'Use maxItVerticalForesterSal instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'noDerivedTypes', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'qhrelax', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'sigmaGrowthFactor', DEPRECATED, 'Use zLayerGrowthFactor instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'Keepzlayeringatbed', DEPRECATED, 'Use [numerics] keepZLayeringAtBed instead.')
@@ -37,7 +41,11 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'flow', DEPRECATED, 'Use [Lateral] discharge instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Wind', 'gapres', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Wind', 'stericCorrection', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Waves', 'WaveNikuradse', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Trachytopes', 'trtdt', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrishp_enc', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'processFluxIntegration', DEPRECATED)
 
       ! Adding OBSOLETE MDU keywords
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bathymetryFile', OBSOLETE)
