@@ -37,7 +37,9 @@ contains
     end subroutine update_bubblescreen_discharge_wrapper
 
     !> Updates the discharges for a single bubble screen object
-    subroutine update_bubblescreen_discharge(bubblescreen, air_discharge)       
+    subroutine update_bubblescreen_discharge(bubblescreen, air_discharge)
+        use m_partitioninfo, only: jampi, reduce_double_sum
+
         ! Parameters
         type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
         real(kind=dp), intent(in) :: air_discharge !< Air discharge for this bubble screen
@@ -49,6 +51,8 @@ contains
         integer :: k_max_velocity !< Layer index for maximum downward velocity
         integer :: n !< 2D flow cell index; in {network_data::netcell}
         real(kind=dp) :: area_fraction !< Area fraction of the flow cell
+        real(kind=dp) :: local_area !< Area of the bubble screen in this partition
+        real(kind=dp), dimension(1) :: area_array !< Array for parallel reduction of bubble screen area across partitions; size={1}
         real(kind=dp) :: max_velocity !< Maximum downward vertical velocity for this flow cell
         real(kind=dp) :: total_area !< Total area of the bubble screen
         real(kind=dp) :: water_discharge !< Water discharge for this bubble screen
@@ -60,10 +64,17 @@ contains
         discharge_water = 0.0_dp
         discharge_constituents = 0.0_dp
 
-        ! ====================================================================================================
         water_discharge = convert_discharge_air_to_water(air_discharge)
 
-        total_area = compute_bubblescreen_area(bubblescreen)
+        local_area = compute_bubblescreen_area(bubblescreen)
+
+        ! Reduce across all partitions if MPI is active
+        if (jampi == 1) then
+            call reduce_double_sum(1, [local_area], area_array)
+            total_area = area_array(1)
+        else
+            total_area = local_area
+        end if
 
         ! Compute vertical distribution for each flow cell
         do i_flow_cell = 1, bubblescreen%num_flow_cells
