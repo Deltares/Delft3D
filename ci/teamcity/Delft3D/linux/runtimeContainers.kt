@@ -46,7 +46,6 @@ object LinuxRuntimeContainers : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         step {
             name = "Download artifact from Nexus"
             type = "RawDownloadNexusLinux"
@@ -143,15 +142,13 @@ object LinuxRuntimeContainers : BuildType({
                 """.trimIndent()
             }
         }
-        artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
-            cleanDestination = true
-            buildRule = lastSuccessful()
-            artifactRules = "Bin64.zip!/Release/Wandadef.dat=>wanda/bin/Wandadef.dat"
-        }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64LinuxAlma8")) {
             cleanDestination = true
-            buildRule = build("904")
-            artifactRules = "build.zip!/lib/*=>wanda/lib"
+            buildRule = build("939")
+            artifactRules = """
+                build.zip!/lib/*.so=>wanda/lib
+                build.zip!/lib/Wandadef.dat=>wanda/bin/Wandadef.dat
+            """.trimIndent()
         }
     }
 })
