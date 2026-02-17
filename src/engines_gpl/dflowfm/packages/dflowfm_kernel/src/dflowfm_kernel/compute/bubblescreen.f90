@@ -5,6 +5,7 @@ module m_bubblescreen
     use m_cell_geometry, only: ba
     use m_flow, only: kmx, zws, kbot, s1, vol1
     use m_get_kbot_ktop, only: getkbotktop
+    use m_partitioninfo, only: jampi, reduce_double_sum, idomain, my_rank
     use m_transport, only: numconst, constituents
     use messageHandling, only: err_flush, msgbuf, msg_flush
 
@@ -38,8 +39,6 @@ contains
 
     !> Updates the discharges for a single bubble screen object
     subroutine update_bubblescreen_discharge(bubblescreen, air_discharge)
-        use m_partitioninfo, only: jampi, reduce_double_sum
-
         ! Parameters
         type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
         real(kind=dp), intent(in) :: air_discharge !< Air discharge for this bubble screen
@@ -81,18 +80,37 @@ contains
             flow_cell = bubblescreen%flow_cells(i_flow_cell)
             n = flow_cell%flownode_nr
 
-            ! Compute maximum downward vertical velocity based on area fraction
-            area_fraction = ba(n) / total_area
-            max_velocity = -1.0_dp * water_discharge * area_fraction / ba(n)
+            if (jampi == 0) then ! If not partitioned, simply compute discharges for each flow cell
 
-            call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
+                ! Compute maximum downward vertical velocity based on area fraction
+                area_fraction = ba(n) / total_area
+                max_velocity = -1.0_dp * water_discharge * area_fraction / ba(n)
 
-            call compute_water_discharge_across_layers(n, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
+                call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
 
-            call compute_constituent_discharge(n, k_start, k_stop, k_max_velocity, discharge_constituents)
+                call compute_water_discharge_across_layers(n, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
 
-            call write_discharge_to_source_sinks(flow_cell, discharge_water, discharge_constituents)
+                call compute_constituent_discharge(n, k_start, k_stop, k_max_velocity, discharge_constituents)
 
+                call write_discharge_to_source_sinks(flow_cell, discharge_water, discharge_constituents)
+
+            else if (jampi == 1 .and. allocated(idomain)) then ! If partitioned, only compute discharges for flow cells that are owned by the current partition
+                if (idomain(n) == my_rank) then ! Check if flow cell is owned by current partition
+
+                    ! Compute maximum downward vertical velocity based on area fraction
+                    area_fraction = ba(n) / total_area
+                    max_velocity = -1.0_dp * water_discharge * area_fraction / ba(n)
+
+                    call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
+
+                    call compute_water_discharge_across_layers(n, k_start, k_stop, k_max_velocity, max_velocity, discharge_water)
+
+                    call compute_constituent_discharge(n, k_start, k_stop, k_max_velocity, discharge_constituents)
+
+                    call write_discharge_to_source_sinks(flow_cell, discharge_water, discharge_constituents)
+
+                end if
+            end if
         end do
 
     end subroutine update_bubblescreen_discharge
@@ -126,12 +144,27 @@ contains
 
         ! Local variables
         integer :: i
+        integer :: flownode_nr !< Flow node number
 
         area = 0.0_dp
 
-        do i = 1, bubblescreen%num_flow_cells
-            area = area + ba(bubblescreen%flow_cells(i)%flownode_nr)
-        end do
+        if (jampi == 0) then ! If not partitioned, simply sum the area of all flow cells in the bubble screen
+            do i = 1, bubblescreen%num_flow_cells
+
+                flownode_nr = bubblescreen%flow_cells(i)%flownode_nr
+                area = area + ba(flownode_nr)
+
+            end do
+        else if (jampi == 1 .and. allocated(idomain)) then ! If partitioned, only sum the area of flow cells that are owned by the current partition
+            do i = 1, bubblescreen%num_flow_cells
+
+                flownode_nr = bubblescreen%flow_cells(i)%flownode_nr
+                if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
+                    area = area + ba(flownode_nr)
+                end if
+
+            end do
+        end if
 
     end function compute_bubblescreen_area
 
