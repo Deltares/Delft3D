@@ -256,7 +256,8 @@ contains
       if (ndim == 0) then
 
          ierr = ug_addglobalatts(wavids%ncid, ug_meta_fm)
-         call unc_write_flowgeom_filepointer_ugrid(wavids%ncid, wavids%id_tsp)
+         call output_mask_full%create_mask_arrays()
+         call unc_write_flowgeom_filepointer_ugrid(wavids%ncid, wavids%id_tsp, output_mask_full)
 
          ! Current time t1
          if (unc_nounlimited > 0) then
@@ -269,114 +270,114 @@ contains
          ierr = unc_def_var_nonspatial(wavids%ncid, wavids%id_time, nf90_double, [wavids%id_tsp%id_timedim], 'time', 'time', '', trim(Tudunitstr))
 
          if (jaavgwriteall > 0 .or. jaavgwriteH > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_mean, nf90_double, UNC_LOC_S, 'H_mean', 'mean rms wave height', 'mean rms wave height', 'm')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_var, nf90_double, UNC_LOC_S, 'H_var', 'variance rms wave height', 'variance rms wave height', 'm2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_max, nf90_double, UNC_LOC_S, 'H_max', 'max rms wave height', 'max rms wave height', 'm')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_min, nf90_double, UNC_LOC_S, 'H_min', 'min rms wave height', 'min rms wave height', 'm')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_mean, nf90_double, UNC_LOC_S, 'H_mean', 'mean rms wave height', 'mean rms wave height', 'm', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_var, nf90_double, UNC_LOC_S, 'H_var', 'variance rms wave height', 'variance rms wave height', 'm2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_max, nf90_double, UNC_LOC_S, 'H_max', 'max rms wave height', 'max rms wave height', 'm', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_min, nf90_double, UNC_LOC_S, 'H_min', 'min rms wave height', 'min rms wave height', 'm', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteE > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_mean, nf90_double, UNC_LOC_S, 'E_mean', 'mean wave energy', 'mean wave energy', 'J m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_var, nf90_double, UNC_LOC_S, 'E_var', 'variance wave energy', 'variance wave energy', 'J2 m-4')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_max, nf90_double, UNC_LOC_S, 'E_max', 'max wave energy', 'max wave energy', 'J m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_min, nf90_double, UNC_LOC_S, 'E_min', 'min wave energy', 'min wave energy', 'J m-2')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_mean, nf90_double, UNC_LOC_S, 'E_mean', 'mean wave energy', 'mean wave energy', 'J m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_var, nf90_double, UNC_LOC_S, 'E_var', 'variance wave energy', 'variance wave energy', 'J2 m-4', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_max, nf90_double, UNC_LOC_S, 'E_max', 'max wave energy', 'max wave energy', 'J m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_min, nf90_double, UNC_LOC_S, 'E_min', 'min wave energy', 'min wave energy', 'J m-2', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteR > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_mean, nf90_double, UNC_LOC_S, 'R_mean', 'mean roller energy', 'mean roller energy', 'J m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_var, nf90_double, UNC_LOC_S, 'R_var', 'variance roller energy', 'variance roller energy', 'J2 m-4')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_max, nf90_double, UNC_LOC_S, 'R_max', 'max roller energy', 'max roller energy', 'J m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_min, nf90_double, UNC_LOC_S, 'R_min', 'min roller energy', 'min roller energy', 'J m-2')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_mean, nf90_double, UNC_LOC_S, 'R_mean', 'mean roller energy', 'mean roller energy', 'J m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_var, nf90_double, UNC_LOC_S, 'R_var', 'variance roller energy', 'variance roller energy', 'J2 m-4', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_max, nf90_double, UNC_LOC_S, 'R_max', 'max roller energy', 'max roller energy', 'J m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_min, nf90_double, UNC_LOC_S, 'R_min', 'min roller energy', 'min roller energy', 'J m-2', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteD > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_mean, nf90_double, UNC_LOC_S, 'D_mean', 'mean wave breaking dissipation', 'mean wave breaking dissipation', 'W m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_var, nf90_double, UNC_LOC_S, 'D_var', 'variance wave breaking dissipation', 'variance wave breaking dissipation', 'W2 m-4')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_max, nf90_double, UNC_LOC_S, 'D_max', 'max wave breaking dissipation', 'max wave breaking dissipation', 'W m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_min, nf90_double, UNC_LOC_S, 'D_min', 'min wave breaking dissipation', 'min wave breaking dissipation', 'W m-2')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_mean, nf90_double, UNC_LOC_S, 'D_mean', 'mean wave breaking dissipation', 'mean wave breaking dissipation', 'W m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_var, nf90_double, UNC_LOC_S, 'D_var', 'variance wave breaking dissipation', 'variance wave breaking dissipation', 'W2 m-4', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_max, nf90_double, UNC_LOC_S, 'D_max', 'max wave breaking dissipation', 'max wave breaking dissipation', 'W m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_min, nf90_double, UNC_LOC_S, 'D_min', 'min wave breaking dissipation', 'min wave breaking dissipation', 'W m-2', output_mask_full)
 
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_mean, nf90_double, UNC_LOC_S, 'DR_mean', 'mean roller breaking dissipation', 'mean roller breaking dissipation', 'W m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_var, nf90_double, UNC_LOC_S, 'DR_var', 'variance roller breaking dissipation', 'variance roller breaking dissipation', 'W2 m-4')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_max, nf90_double, UNC_LOC_S, 'DR_max', 'max roller breaking dissipation', 'max roller breaking dissipation', 'W m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_min, nf90_double, UNC_LOC_S, 'DR_min', 'min roller breaking dissipation', 'min roller breaking dissipation', 'W m-2')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_mean, nf90_double, UNC_LOC_S, 'DR_mean', 'mean roller breaking dissipation', 'mean roller breaking dissipation', 'W m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_var, nf90_double, UNC_LOC_S, 'DR_var', 'variance roller breaking dissipation', 'variance roller breaking dissipation', 'W2 m-4', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_max, nf90_double, UNC_LOC_S, 'DR_max', 'max roller breaking dissipation', 'max roller breaking dissipation', 'W m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_min, nf90_double, UNC_LOC_S, 'DR_min', 'min roller breaking dissipation', 'min roller breaking dissipation', 'W m-2', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteCel > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_mean, nf90_double, UNC_LOC_S, 'cwav_mean', 'mean wave celerity', 'mean wave celerity', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_var, nf90_double, UNC_LOC_S, 'cwav_var', 'variance wave celerity', 'variance wave celerity', 'm2 s-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_max, nf90_double, UNC_LOC_S, 'cwav_max', 'max wave celerity', 'max wave celerity', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_min, nf90_double, UNC_LOC_S, 'cwav_min', 'min wave celerity', 'min wave celerity', 'm s-1')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_mean, nf90_double, UNC_LOC_S, 'cwav_mean', 'mean wave celerity', 'mean wave celerity', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_var, nf90_double, UNC_LOC_S, 'cwav_var', 'variance wave celerity', 'variance wave celerity', 'm2 s-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_max, nf90_double, UNC_LOC_S, 'cwav_max', 'max wave celerity', 'max wave celerity', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_min, nf90_double, UNC_LOC_S, 'cwav_min', 'min wave celerity', 'min wave celerity', 'm s-1', output_mask_full)
 
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_mean, nf90_double, UNC_LOC_S, 'cgwav_mean', 'mean wave group celerity', 'mean wave group celerity', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_var, nf90_double, UNC_LOC_S, 'cgwav_var', 'variance wave group celerity', 'variance wave group celerity', 'm2 s-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_max, nf90_double, UNC_LOC_S, 'cgwav_max', 'max wave group celerity', 'max wave group celerity', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_min, nf90_double, UNC_LOC_S, 'cgwav_min', 'min wave group celerity', 'min wave group celerity', 'm s-1')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_mean, nf90_double, UNC_LOC_S, 'cgwav_mean', 'mean wave group celerity', 'mean wave group celerity', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_var, nf90_double, UNC_LOC_S, 'cgwav_var', 'variance wave group celerity', 'variance wave group celerity', 'm2 s-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_max, nf90_double, UNC_LOC_S, 'cgwav_max', 'max wave group celerity', 'max wave group celerity', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_min, nf90_double, UNC_LOC_S, 'cgwav_min', 'min wave group celerity', 'min wave group celerity', 'm s-1', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteS > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_mean, nf90_double, UNC_LOC_S, 's1_mean', 'mean water level', 'mean water level', 'm')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_var, nf90_double, UNC_LOC_S, 's1_var', 'variance water level', 'variance water level', 'm2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_max, nf90_double, UNC_LOC_S, 's1_max', 'max water level', 'max water level', 'm')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_min, nf90_double, UNC_LOC_S, 's1_min', 'min water level', 'min water level', 'm')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_mean, nf90_double, UNC_LOC_S, 's1_mean', 'mean water level', 'mean water level', 'm', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_var, nf90_double, UNC_LOC_S, 's1_var', 'variance water level', 'variance water level', 'm2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_max, nf90_double, UNC_LOC_S, 's1_max', 'max water level', 'max water level', 'm', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_min, nf90_double, UNC_LOC_S, 's1_min', 'min water level', 'min water level', 'm', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteU > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_mean, nf90_double, UNC_LOC_S, 'ustx_mean', 'mean stokes drift, x-component', 'mean stokes drift, x-component', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_var, nf90_double, UNC_LOC_S, 'ustx_var', 'variance stokes drift, x-component', 'variance stokes drift, x-component', 'm2 s-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_max, nf90_double, UNC_LOC_S, 'ustx_max', 'max stokes drift, x-component', 'max stokes drift, x-component', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_min, nf90_double, UNC_LOC_S, 'ustx_min', 'min stokes drift, x-component', 'min stokes drift, x-component', 'm s-1')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_mean, nf90_double, UNC_LOC_S, 'ustx_mean', 'mean stokes drift, x-component', 'mean stokes drift, x-component', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_var, nf90_double, UNC_LOC_S, 'ustx_var', 'variance stokes drift, x-component', 'variance stokes drift, x-component', 'm2 s-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_max, nf90_double, UNC_LOC_S, 'ustx_max', 'max stokes drift, x-component', 'max stokes drift, x-component', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_min, nf90_double, UNC_LOC_S, 'ustx_min', 'min stokes drift, x-component', 'min stokes drift, x-component', 'm s-1', output_mask_full)
 
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_mean, nf90_double, UNC_LOC_S, 'usty_mean', 'mean stokes drift, y-component', 'mean stokes drift, y-component', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_var, nf90_double, UNC_LOC_S, 'usty_var', 'variance stokes drift, y-component', 'variance stokes drift, y-component', 'm2 s-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_max, nf90_double, UNC_LOC_S, 'usty_max', 'max stokes drift, y-component', 'max stokes drift, y-component', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_min, nf90_double, UNC_LOC_S, 'usty_min', 'min stokes drift, y-component', 'min stokes drift, y-component', 'm s-1')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_mean, nf90_double, UNC_LOC_S, 'usty_mean', 'mean stokes drift, y-component', 'mean stokes drift, y-component', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_var, nf90_double, UNC_LOC_S, 'usty_var', 'variance stokes drift, y-component', 'variance stokes drift, y-component', 'm2 s-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_max, nf90_double, UNC_LOC_S, 'usty_max', 'max stokes drift, y-component', 'max stokes drift, y-component', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_min, nf90_double, UNC_LOC_S, 'usty_min', 'min stokes drift, y-component', 'min stokes drift, y-component', 'm s-1', output_mask_full)
 
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_mean, nf90_double, UNC_LOC_S, 'ucx_mean', 'mean velocity, x-component', 'mean velocity, x-component', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_var, nf90_double, UNC_LOC_S, 'ucx_var', 'variance velocity, x-component', 'variance stokes drift, x-component', 'm2 s-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_max, nf90_double, UNC_LOC_S, 'ucx_max', 'max velocity, x-component', 'max velocity, x-component', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_min, nf90_double, UNC_LOC_S, 'ucx_min', 'min velocity, x-component', 'min velocity, x-component', 'm s-1')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_mean, nf90_double, UNC_LOC_S, 'ucx_mean', 'mean velocity, x-component', 'mean velocity, x-component', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_var, nf90_double, UNC_LOC_S, 'ucx_var', 'variance velocity, x-component', 'variance stokes drift, x-component', 'm2 s-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_max, nf90_double, UNC_LOC_S, 'ucx_max', 'max velocity, x-component', 'max velocity, x-component', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_min, nf90_double, UNC_LOC_S, 'ucx_min', 'min velocity, x-component', 'min velocity, x-component', 'm s-1', output_mask_full)
 
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_mean, nf90_double, UNC_LOC_S, 'ucy_mean', 'mean velocity, y-component', 'mean velocity, y-component', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_var, nf90_double, UNC_LOC_S, 'ucy_var', 'variance velocity, y-component', 'variance stokes drift, y-component', 'm2 s-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_max, nf90_double, UNC_LOC_S, 'ucy_max', 'max velocity, y-component', 'max velocity, y-component', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_min, nf90_double, UNC_LOC_S, 'ucy_min', 'min velocity, y-component', 'min velocity, y-component', 'm s-1')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_mean, nf90_double, UNC_LOC_S, 'ucy_mean', 'mean velocity, y-component', 'mean velocity, y-component', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_var, nf90_double, UNC_LOC_S, 'ucy_var', 'variance velocity, y-component', 'variance stokes drift, y-component', 'm2 s-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_max, nf90_double, UNC_LOC_S, 'ucy_max', 'max velocity, y-component', 'max velocity, y-component', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_min, nf90_double, UNC_LOC_S, 'ucy_min', 'min velocity, y-component', 'min velocity, y-component', 'm s-1', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteF > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_mean, nf90_double, UNC_LOC_S, 'Fx_mean', 'mean wave force, x-component', 'mean wave force, x-component', 'N m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_var, nf90_double, UNC_LOC_S, 'Fx_var', 'variance wave force, x-component', 'variance wave force, x-component', 'N2 m-4')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_max, nf90_double, UNC_LOC_S, 'Fx_max', 'max wave force, x-component', 'max wave force, x-component', 'N m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_min, nf90_double, UNC_LOC_S, 'Fx_min', 'min wave force, x-component', 'min wave force, x-component', 'N m-2')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_mean, nf90_double, UNC_LOC_S, 'Fx_mean', 'mean wave force, x-component', 'mean wave force, x-component', 'N m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_var, nf90_double, UNC_LOC_S, 'Fx_var', 'variance wave force, x-component', 'variance wave force, x-component', 'N2 m-4', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_max, nf90_double, UNC_LOC_S, 'Fx_max', 'max wave force, x-component', 'max wave force, x-component', 'N m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_min, nf90_double, UNC_LOC_S, 'Fx_min', 'min wave force, x-component', 'min wave force, x-component', 'N m-2', output_mask_full)
 
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_mean, nf90_double, UNC_LOC_S, 'Fy_mean', 'mean wave force, y-component', 'mean wave force, y-component', 'N m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_var, nf90_double, UNC_LOC_S, 'Fy_var', 'variance wave force, y-component', 'variance wave force, y-component', 'N2 m-4')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_max, nf90_double, UNC_LOC_S, 'Fy_max', 'max wave force, y-component', 'max wave force, y-component', 'N m-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_min, nf90_double, UNC_LOC_S, 'Fy_min', 'min wave force, y-component', 'min wave force, y-component', 'N m-2')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_mean, nf90_double, UNC_LOC_S, 'Fy_mean', 'mean wave force, y-component', 'mean wave force, y-component', 'N m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_var, nf90_double, UNC_LOC_S, 'Fy_var', 'variance wave force, y-component', 'variance wave force, y-component', 'N2 m-4', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_max, nf90_double, UNC_LOC_S, 'Fy_max', 'max wave force, y-component', 'max wave force, y-component', 'N m-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_min, nf90_double, UNC_LOC_S, 'Fy_min', 'min wave force, y-component', 'min wave force, y-component', 'N m-2', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteUrms > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_mean, nf90_double, UNC_LOC_S, 'urms_mean', 'mean rms orbital velocity', 'mean rms orbital velocity', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_var, nf90_double, UNC_LOC_S, 'urms_var', 'variance rms orbital velocity', 'variance rms orbital velocity', 'm2 s-2')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_max, nf90_double, UNC_LOC_S, 'urms_max', 'max rms orbital velocity', 'max rms orbital velocity', 'm s-1')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_min, nf90_double, UNC_LOC_S, 'urms_min', 'min rms orbital velocity', 'min rms orbital velocity', 'm s-1')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_mean, nf90_double, UNC_LOC_S, 'urms_mean', 'mean rms orbital velocity', 'mean rms orbital velocity', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_var, nf90_double, UNC_LOC_S, 'urms_var', 'variance rms orbital velocity', 'variance rms orbital velocity', 'm2 s-2', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_max, nf90_double, UNC_LOC_S, 'urms_max', 'max rms orbital velocity', 'max rms orbital velocity', 'm s-1', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_min, nf90_double, UNC_LOC_S, 'urms_min', 'min rms orbital velocity', 'min rms orbital velocity', 'm s-1', output_mask_full)
          end if
 
          if (jaavgwriteall > 0 .or. jaavgwriteDir > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_mean, nf90_double, UNC_LOC_S, 'thetamean_mean', 'mean of mean wave angle', 'mean of mean wave angle', 'deg from N')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_var, nf90_double, UNC_LOC_S, 'thetamean_var', 'variance of mean wave angle', 'variance of mean wave angle', 'deg from N')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_max, nf90_double, UNC_LOC_S, 'thetamean_max', 'max of mean wave angle', 'max of mean wave angle', 'deg from N')
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_min, nf90_double, UNC_LOC_S, 'thetamean_min', 'min of mean wave angle', 'min of mean wave angle', 'deg from N')
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_mean, nf90_double, UNC_LOC_S, 'thetamean_mean', 'mean of mean wave angle', 'mean of mean wave angle', 'deg from N', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_var, nf90_double, UNC_LOC_S, 'thetamean_var', 'variance of mean wave angle', 'variance of mean wave angle', 'deg from N', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_max, nf90_double, UNC_LOC_S, 'thetamean_max', 'max of mean wave angle', 'max of mean wave angle', 'deg from N', output_mask_full)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_min, nf90_double, UNC_LOC_S, 'thetamean_min', 'min of mean wave angle', 'min of mean wave angle', 'deg from N', output_mask_full)
          end if
 
          if (jamombal > 0) then
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_dsdx, nf90_double, UNC_LOC_S, 'dsdx', ' ', 'Water level gradient, x-component', 'm m-1', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_dsdy, nf90_double, UNC_LOC_S, 'dsdy', ' ', 'Water level gradient, y-component', 'm m-1', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ududx, nf90_double, UNC_LOC_S, 'ududx', ' ', 'Advection term X vel, x-component', 'm s-1 m-1', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_udvdx, nf90_double, UNC_LOC_S, 'udvdx', ' ', 'Advection term Y vel, x-component', 'm s-1 m-1', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_vdudy, nf90_double, UNC_LOC_S, 'vdudy', ' ', 'Advection term X vel, y-component', 'm s-1 m-1', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_vdvdy, nf90_double, UNC_LOC_S, 'vdvdy', ' ', 'Advection term Y vel, y-component', 'm s-1 m-1', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_visx, nf90_double, UNC_LOC_S, 'visx', ' ', 'Horizontal viscosity, x-component', 'm s-2', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_visy, nf90_double, UNC_LOC_S, 'visy', ' ', 'Horizontal viscosity, y-component', 'm s-2', jabndnd=jabndnd_)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_dsdx, nf90_double, UNC_LOC_S, 'dsdx', ' ', 'Water level gradient, x-component', 'm m-1', output_mask_full, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_dsdy, nf90_double, UNC_LOC_S, 'dsdy', ' ', 'Water level gradient, y-component', 'm m-1', output_mask_full, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ududx, nf90_double, UNC_LOC_S, 'ududx', ' ', 'Advection term X vel, x-component', 'm s-1 m-1', output_mask_full, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_udvdx, nf90_double, UNC_LOC_S, 'udvdx', ' ', 'Advection term Y vel, x-component', 'm s-1 m-1', output_mask_full, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_vdudy, nf90_double, UNC_LOC_S, 'vdudy', ' ', 'Advection term X vel, y-component', 'm s-1 m-1', output_mask_full, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_vdvdy, nf90_double, UNC_LOC_S, 'vdvdy', ' ', 'Advection term Y vel, y-component', 'm s-1 m-1', output_mask_full, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_visx, nf90_double, UNC_LOC_S, 'visx', ' ', 'Horizontal viscosity, x-component', 'm s-2', output_mask_full, jabndnd=jabndnd_)
+            ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_visy, nf90_double, UNC_LOC_S, 'visy', ' ', 'Horizontal viscosity, y-component', 'm s-2', output_mask_full, jabndnd=jabndnd_)
          end if
 
          ierr = nf90_enddef(wavids%ncid)
@@ -391,89 +392,89 @@ contains
          do k = 1, ndx ! stack overflow
             temp(k) = sqrt(H_varsquare(k))
          end do
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_mean, UNC_LOC_S, temp)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_var, UNC_LOC_S, H_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_max, UNC_LOC_S, H_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_min, UNC_LOC_S, H_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_mean, UNC_LOC_S, output_mask_full, temp)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_var, UNC_LOC_S, output_mask_full, H_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_max, UNC_LOC_S, output_mask_full, H_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_min, UNC_LOC_S, output_mask_full, H_min)
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteE > 0) then
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_mean, UNC_LOC_S, E_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_var, UNC_LOC_S, E_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_max, UNC_LOC_S, E_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_min, UNC_LOC_S, E_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_mean, UNC_LOC_S, output_mask_full, E_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_var, UNC_LOC_S, output_mask_full, E_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_max, UNC_LOC_S, output_mask_full, E_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_E_min, UNC_LOC_S, output_mask_full, E_min)
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteR > 0) then
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_mean, UNC_LOC_S, R_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_var, UNC_LOC_S, R_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_max, UNC_LOC_S, R_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_min, UNC_LOC_S, R_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_mean, UNC_LOC_S, output_mask_full, R_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_var, UNC_LOC_S, output_mask_full, R_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_max, UNC_LOC_S, output_mask_full, R_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_R_min, UNC_LOC_S, output_mask_full, R_min)
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteD > 0) then
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_mean, UNC_LOC_S, D_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_var, UNC_LOC_S, D_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_max, UNC_LOC_S, D_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_min, UNC_LOC_S, D_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_mean, UNC_LOC_S, output_mask_full, D_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_var, UNC_LOC_S, output_mask_full, D_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_max, UNC_LOC_S, output_mask_full, D_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_D_min, UNC_LOC_S, output_mask_full, D_min)
 
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_mean, UNC_LOC_S, DR_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_var, UNC_LOC_S, DR_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_max, UNC_LOC_S, DR_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_min, UNC_LOC_S, DR_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_mean, UNC_LOC_S, output_mask_full, DR_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_var, UNC_LOC_S, output_mask_full, DR_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_max, UNC_LOC_S, output_mask_full, DR_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_DR_min, UNC_LOC_S, output_mask_full, DR_min)
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteCel > 0) then
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_mean, UNC_LOC_S, cwav_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_var, UNC_LOC_S, cwav_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_max, UNC_LOC_S, cwav_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_min, UNC_LOC_S, cwav_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_mean, UNC_LOC_S, output_mask_full, cwav_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_var, UNC_LOC_S, output_mask_full, cwav_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_max, UNC_LOC_S, output_mask_full, cwav_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cwav_min, UNC_LOC_S, output_mask_full, cwav_min)
 
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_mean, UNC_LOC_S, cgwav_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_var, UNC_LOC_S, cgwav_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_max, UNC_LOC_S, cgwav_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_min, UNC_LOC_S, cgwav_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_mean, UNC_LOC_S, output_mask_full, cgwav_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_var, UNC_LOC_S, output_mask_full, cgwav_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_max, UNC_LOC_S, output_mask_full, cgwav_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_cgwav_min, UNC_LOC_S, output_mask_full, cgwav_min)
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteS > 0) then
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_mean, UNC_LOC_S, s1_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_var, UNC_LOC_S, s1_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_max, UNC_LOC_S, s1_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_min, UNC_LOC_S, s1_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_mean, UNC_LOC_S, output_mask_full, s1_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_var, UNC_LOC_S, output_mask_full, s1_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_max, UNC_LOC_S, output_mask_full, s1_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_s1_min, UNC_LOC_S, output_mask_full, s1_min)
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteU > 0) then
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_mean, UNC_LOC_S, ust_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_var, UNC_LOC_S, ust_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_max, UNC_LOC_S, ust_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_min, UNC_LOC_S, ust_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_mean, UNC_LOC_S, output_mask_full, ust_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_var, UNC_LOC_S, output_mask_full, ust_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_max, UNC_LOC_S, output_mask_full, ust_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ustx_min, UNC_LOC_S, output_mask_full, ust_min)
 
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_mean, UNC_LOC_S, vst_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_var, UNC_LOC_S, vst_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_max, UNC_LOC_S, vst_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_min, UNC_LOC_S, vst_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_mean, UNC_LOC_S, output_mask_full, vst_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_var, UNC_LOC_S, output_mask_full, vst_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_max, UNC_LOC_S, output_mask_full, vst_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_usty_min, UNC_LOC_S, output_mask_full, vst_min)
 
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_mean, UNC_LOC_S, ucx_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_var, UNC_LOC_S, ucx_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_max, UNC_LOC_S, ucx_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_min, UNC_LOC_S, ucx_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_mean, UNC_LOC_S, output_mask_full, ucx_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_var, UNC_LOC_S, output_mask_full, ucx_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_max, UNC_LOC_S, output_mask_full, ucx_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucx_min, UNC_LOC_S, output_mask_full, ucx_min)
 
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_mean, UNC_LOC_S, ucy_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_var, UNC_LOC_S, ucy_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_max, UNC_LOC_S, ucy_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_min, UNC_LOC_S, ucy_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_mean, UNC_LOC_S, output_mask_full, ucy_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_var, UNC_LOC_S, output_mask_full, ucy_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_max, UNC_LOC_S, output_mask_full, ucy_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ucy_min, UNC_LOC_S, output_mask_full, ucy_min)
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteF > 0) then
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_mean, UNC_LOC_S, Fx_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_var, UNC_LOC_S, Fx_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_max, UNC_LOC_S, Fx_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_min, UNC_LOC_S, Fx_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_mean, UNC_LOC_S, output_mask_full, Fx_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_var, UNC_LOC_S, output_mask_full, Fx_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_max, UNC_LOC_S, output_mask_full, Fx_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fx_min, UNC_LOC_S, output_mask_full, Fx_min)
 
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_mean, UNC_LOC_S, Fy_mean)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_var, UNC_LOC_S, Fy_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_max, UNC_LOC_S, Fy_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_min, UNC_LOC_S, Fy_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_mean, UNC_LOC_S, output_mask_full, Fy_mean)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_var, UNC_LOC_S, output_mask_full, Fy_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_max, UNC_LOC_S, output_mask_full, Fy_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_Fy_min, UNC_LOC_S, output_mask_full, Fy_min)
 
       end if
 
@@ -482,10 +483,10 @@ contains
          do k = 1, ndx
             temp(k) = sqrt(urms_varsquare(k))
          end do
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_mean, UNC_LOC_S, temp)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_var, UNC_LOC_S, urms_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_max, UNC_LOC_S, urms_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_min, UNC_LOC_S, urms_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_mean, UNC_LOC_S, output_mask_full, temp)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_var, UNC_LOC_S, output_mask_full, urms_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_max, UNC_LOC_S, output_mask_full, urms_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_urms_min, UNC_LOC_S, output_mask_full, urms_min)
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteDir > 0) then
@@ -493,21 +494,21 @@ contains
          do k = 1, ndx
             temp(k) = 270.0_dp - mod(atan2(nint(thetamean_mean(k)) / 1.0e7_dp, mod(thetamean_mean(k), 1.0_dp) * 1.0e1_dp), 2.0_dp * pi) / pi * 180.0_dp
          end do
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_mean, UNC_LOC_S, temp)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_var, UNC_LOC_S, thetamean_var)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_max, UNC_LOC_S, thetamean_max)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_min, UNC_LOC_S, thetamean_min)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_mean, UNC_LOC_S, output_mask_full, temp)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_var, UNC_LOC_S, output_mask_full, thetamean_var)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_max, UNC_LOC_S, output_mask_full, thetamean_max)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_min, UNC_LOC_S, output_mask_full, thetamean_min)
       end if
 
       if (jamombal > 0) then
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_dsdx, UNC_LOC_S, xbdsdx, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_dsdy, UNC_LOC_S, xbdsdy, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ududx, UNC_LOC_S, ududx, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_udvdx, UNC_LOC_S, udvdx, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_vdudy, UNC_LOC_S, vdudy, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_vdvdy, UNC_LOC_S, vdvdy, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_visx, UNC_LOC_S, visx, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_visy, UNC_LOC_S, visy, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_dsdx, UNC_LOC_S, output_mask_full, xbdsdx, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_dsdy, UNC_LOC_S, output_mask_full, xbdsdy, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_ududx, UNC_LOC_S, output_mask_full, ududx, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_udvdx, UNC_LOC_S, output_mask_full, udvdx, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_vdudy, UNC_LOC_S, output_mask_full, vdudy, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_vdvdy, UNC_LOC_S, output_mask_full, vdvdy, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_visx, UNC_LOC_S, output_mask_full, visx, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_visy, UNC_LOC_S, output_mask_full, visy, jabndnd=jabndnd_)
       end if
 
    end subroutine unc_write_wav_filepointer_ugrid

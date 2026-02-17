@@ -40,7 +40,7 @@ module unstruc_netcdf_map_class
    use unstruc_files
    use unstruc_netcdf, only: check_error, t_unc_mapids, unc_close, unc_create, ug_meta_fm, unc_def_var_nonspatial, MAX_ID_VAR, &
                              unc_def_var_map, unc_write_flowgeom_filepointer_ugrid, unc_put_var_map_byte, unc_put_var_map_byte_timebuffer, &
-                             unc_nounlimited, unc_noforcedflush, unc_add_time_coverage, unc_meta_add_user_defined
+                             unc_nounlimited, unc_noforcedflush, unc_add_time_coverage, unc_meta_add_user_defined, output_mask_full
    use io_ugrid, only: ug_addglobalatts
    use netcdf
    use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_INFO, LEVEL_FATAL
@@ -113,6 +113,7 @@ contains
       integer :: nclasses_s1, nclasses_hs, nclasses_ucmag, nclasses_ucdir
 
       ierr = nf90_noerr
+      call output_mask_full%create_mask_arrays()
 
       ! Close/reset any previous clm file.
       if (incids%ncid > 0 .and. time_index == 0) then
@@ -159,7 +160,7 @@ contains
 
          ierr = unc_meta_add_user_defined(incids%ncid)
 
-         call unc_write_flowgeom_filepointer_ugrid(incids%ncid, incids%id_tsp, jabndnd_)
+         call unc_write_flowgeom_filepointer_ugrid(incids%ncid, incids%id_tsp, output_mask_full, jabndnd_)
 
          ierr = unc_add_time_coverage(incids%ncid, ti_classmaps, ti_classmape, ti_classmap)
 
@@ -199,16 +200,16 @@ contains
          end if
 
          if (nclasses_s1 > 0 .and. ierr == nf90_noerr) then
-            ierr = def_var_classmap_ugrid('s1', incids%ncid, id_twodim, id_class_s1, id_jumps_s1, incids)
+            ierr = def_var_classmap_ugrid('s1', incids%ncid, output_mask_full, id_twodim, id_class_s1, id_jumps_s1, incids)
          end if
          if (nclasses_hs > 0 .and. ierr == nf90_noerr) then
-            ierr = def_var_classmap_ugrid('hs', incids%ncid, id_twodim, id_class_hs, id_jumps_hs, incids)
+            ierr = def_var_classmap_ugrid('hs', incids%ncid, output_mask_full, id_twodim, id_class_hs, id_jumps_hs, incids)
          end if
          if (nclasses_ucmag > 0 .and. ierr == nf90_noerr .and. kmx == 0) then
-            ierr = def_var_classmap_ugrid('ucmag', incids%ncid, id_twodim, id_class_ucmag, id_jumps_ucmag, incids)
+            ierr = def_var_classmap_ugrid('ucmag', incids%ncid, output_mask_full, id_twodim, id_class_ucmag, id_jumps_ucmag, incids)
          end if
          if (nclasses_ucdir > 0 .and. ierr == nf90_noerr .and. kmx == 0) then
-            ierr = def_var_classmap_ugrid('ucdir', incids%ncid, id_twodim, id_class_ucdir, id_jumps_ucdir, incids)
+            ierr = def_var_classmap_ugrid('ucdir', incids%ncid, output_mask_full, id_twodim, id_class_ucdir, id_jumps_ucdir, incids)
          end if
          if (ierr == nf90_noerr) then
             ierr = nf90_enddef(incids%ncid)
@@ -415,12 +416,15 @@ contains
    end subroutine write_map_classes_ugrid
 
 !> helper routine to define NetCDF variables
-   function def_var_classmap_ugrid(name, ncid, id_twodim, var_id_class_bnds, var_id_jumps, incids) result(ierr)
+   function def_var_classmap_ugrid(name, ncid, output_mask, id_twodim, var_id_class_bnds, var_id_jumps, incids) result(ierr)
+      use m_output_to_polygon, only: t_variables_inside_polygon
+
       use m_missing, only: dmiss
       use fm_location_types
       type(t_unc_mapids), intent(inout) :: incids !< class file and other NetCDF ids.
       character(len=*), intent(in) :: name !< name of the variable
       integer, intent(in) :: ncid !< the NetCDF file Id
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for variables
       integer, intent(in) :: id_twodim !< the NetCDF dimension id for "Two", used in the class bounds table variable.
       integer, intent(out) :: var_id_class_bnds !< variable Id for the class boundaries
       integer, intent(out) :: var_id_jumps !< variable Id for the jumps (only for type 1)
@@ -438,13 +442,13 @@ contains
 
       if (name == 's1') then
          unit = 'm'
-         ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_s1, nf90_byte, UNC_LOC_S, 's1', 'sea_surface_height', 'Water level', unit)
+         ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_s1, nf90_byte, UNC_LOC_S, 's1', 'sea_surface_height', 'Water level', unit, output_mask)
          id_class = id_class_dim_s1
          ids = incids%id_s1
          map_classes => map_classes_s1
       else if (name == 'hs') then
          unit = 'm'
-         ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_hs, nf90_byte, UNC_LOC_S, 'waterdepth', 'sea_floor_depth_below_sea_surface', 'Water depth at pressure points', unit)
+         ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_hs, nf90_byte, UNC_LOC_S, 'waterdepth', 'sea_floor_depth_below_sea_surface', 'Water depth at pressure points', unit, output_mask)
          id_class = id_class_dim_hs
          ids = incids%id_hs
          map_classes => map_classes_hs
@@ -452,9 +456,9 @@ contains
       else if (name == 'ucmag') then
          unit = 'm s-1'
          if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES) then
-            ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucmag, nf90_byte, UNC_LOC_S, 'ucmag', 'sea_water_eulerian_speed', 'Flow element center Eulerian velocity magnitude', unit)
+            ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucmag, nf90_byte, UNC_LOC_S, 'ucmag', 'sea_water_eulerian_speed', 'Flow element center Eulerian velocity magnitude', unit, output_mask)
          else
-            ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucmag, nf90_byte, UNC_LOC_S, 'ucmag', 'sea_water_speed', 'Flow element center velocity magnitude', unit)
+            ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucmag, nf90_byte, UNC_LOC_S, 'ucmag', 'sea_water_speed', 'Flow element center velocity magnitude', unit, output_mask)
          end if
 
          id_class = id_class_dim_ucmag
@@ -464,9 +468,9 @@ contains
       else if (name == 'ucdir') then
          unit = 'degree'
          if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES) then
-            ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucdir, nf90_byte, UNC_LOC_S, 'ucdir', 'sea_water_eulerian_velocity_to_direction', 'Flow element center Eulerian velocity direction', unit)
+            ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucdir, nf90_byte, UNC_LOC_S, 'ucdir', 'sea_water_eulerian_velocity_to_direction', 'Flow element center Eulerian velocity direction', unit, output_mask)
          else
-            ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucdir, nf90_byte, UNC_LOC_S, 'ucdir', 'sea_water_velocity_to_direction', 'Flow element center velocity direction', unit)
+            ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucdir, nf90_byte, UNC_LOC_S, 'ucdir', 'sea_water_velocity_to_direction', 'Flow element center velocity direction', unit, output_mask)
          end if
 
          id_class = id_class_dim_ucdir

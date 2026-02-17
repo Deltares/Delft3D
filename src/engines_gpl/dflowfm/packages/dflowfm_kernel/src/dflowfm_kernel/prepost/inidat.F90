@@ -372,7 +372,7 @@ contains
       use dfm_signals
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
-      use unstruc_netcdf, only: unc_write_net
+      use unstruc_netcdf, only: unc_write_net, output_mask_full
       use m_wripol
       use m_wrisam
       use m_filez, only: newfil
@@ -390,7 +390,8 @@ contains
          call newFIL(MINP, inarg)
          call wriLAN(MINP)
       else if (EXT == '.net' .or. (EXT == '.nc' .and. inarg(max(1, N1 - 4):max(1, N1 - 1)) == '_net')) then
-         call unc_write_net(inarg)
+         call output_mask_full%create_mask_arrays() ! Make sure output_mask_full is up to date with the current network, so that unc_write_net writes the correct variables.
+         call unc_write_net(inarg, output_mask_full)
       else if (EXT == '.bmp' .or. EXT == '.BMP') then
          ! CALL LOADBITMAP(inarg)
       else if (EXT == '.mdu' .or. EXT == '.MDU') then

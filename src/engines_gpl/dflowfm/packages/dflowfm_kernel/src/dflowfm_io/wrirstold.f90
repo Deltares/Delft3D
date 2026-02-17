@@ -46,7 +46,7 @@ contains
       use M_FLOWGEOM
       use unstruc_model
       use m_sediment, only: jaceneqtr
-      use unstruc_netcdf, only: unc_write_net
+      use unstruc_netcdf, only: unc_write_net, output_mask_full
       use m_transport
       use m_get_kbot_ktop
       use m_filez, only: doclose, newfil
@@ -95,7 +95,8 @@ contains
 
       if (jased > 0) then
          if (jaceneqtr /= 1) then
-            call unc_write_net(trim(getoutputdir())//trim(md_ident)//'_'//'_new_net.nc') ! write resulting bathymetry
+            call output_mask_full%create_mask_arrays() ! Ensure mask arrays are created before writing net file
+            call unc_write_net(trim(getoutputdir())//trim(md_ident)//'_'//'_new_net.nc', output_mask_full) ! write resulting bathymetry
          end if
       end if
 

@@ -611,7 +611,8 @@ contains
       if (ndim == 0) then
          !
          ierr = ug_addglobalatts(sedids%ncid, ug_meta_fm)
-         call unc_write_flowgeom_filepointer_ugrid(sedids%ncid, sedids%id_tsp)
+         call output_mask_full%create_mask_arrays()
+         call unc_write_flowgeom_filepointer_ugrid(sedids%ncid, sedids%id_tsp, output_mask_full)
          !
          ierr = nf90_def_dim(sedids%ncid, 'time', nf90_unlimited, sedids%id_tsp%id_timedim)
          call check_error(ierr, 'def time dim')
@@ -622,7 +623,7 @@ contains
          ierr = nf90_def_dim(sedids%ncid, 'nSedTot', stmpar%lsedtot, sedids%id_tsp%id_sedtotdim)
 
          if (stmpar%morpar%moroutput%dmsedcum) then
-            ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, nf90_double, UNC_LOC_S, 'dmsedcum', 'net sedimentation flux over time interval', '', 'kg m-2', dimids=[-2, sedids%id_tsp%id_sedtotdim, -1])
+            ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, nf90_double, UNC_LOC_S, 'dmsedcum', 'net sedimentation flux over time interval', '', 'kg m-2', dimids=[-2, sedids%id_tsp%id_sedtotdim, -1], output_mask=output_mask_full)
          end if
          !
          stmpar%morpar%moroutput%statunt(3) = trim(stmpar%morpar%moroutput%unit_transport_rate) ! bed load
@@ -666,9 +667,9 @@ contains
                      var1 = 'MIN_'//trim(stmpar%morpar%moroutput%statqnt(iq))
                      descr1 = 'minimum '//trim(stmpar%morpar%moroutput%statnam(iq))
                   end if
-                  ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_min_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                  ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_min_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                   if (iq /= 1) then
-                     ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_min_y, nf90_double, UNC_LOC_S, var2, descr2, descr2, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                     ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_min_y, nf90_double, UNC_LOC_S, var2, descr2, descr2, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                   end if
                end if
                !
@@ -682,9 +683,9 @@ contains
                      var1 = 'MAX_'//trim(stmpar%morpar%moroutput%statqnt(iq))
                      descr1 = 'maximum '//trim(stmpar%morpar%moroutput%statnam(iq))
                   end if
-                  ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_max_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                  ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_max_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                   if (iq /= 1) then
-                     ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_max_y, nf90_double, UNC_LOC_S, var2, descr2, descr2, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                     ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_max_y, nf90_double, UNC_LOC_S, var2, descr2, descr2, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                   end if
                end if
                !
@@ -698,16 +699,16 @@ contains
                      var1 = 'MEAN_'//trim(stmpar%morpar%moroutput%statqnt(iq))
                      descr1 = 'mean '//trim(stmpar%morpar%moroutput%statnam(iq))
                   end if
-                  ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                  ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                   if (iq /= 1) then
-                     ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_mean_y, nf90_double, UNC_LOC_S, var2, descr2, descr2, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                     ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_mean_y, nf90_double, UNC_LOC_S, var2, descr2, descr2, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                   end if
                end if
                !
                if (iand(idx, MOR_STAT_STD) > 0) then
                   var1 = 'STD_'//trim(stmpar%morpar%moroutput%statqnt(iq))
                   descr1 = 'standard deviation of the magnitude of '//trim(stmpar%morpar%moroutput%statnam(iq))
-                  ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_std_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                  ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_std_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                end if
                !
                if (iq == 3 .or. iq == 4) then ! does not make much sense for waterlevels and velocities
@@ -718,9 +719,9 @@ contains
                         descr1 = 'net '//trim(stmpar%morpar%moroutput%statnam(iq))//', x-component'
                         descr2 = 'net '//trim(stmpar%morpar%moroutput%statnam(iq))//', y-component'
                      end if
-                     ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_net_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                     ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_net_x, nf90_double, UNC_LOC_S, var1, descr1, descr1, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                      if (iq /= 1) then
-                        ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_net_y, nf90_double, UNC_LOC_S, var2, descr2, descr2, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_)
+                        ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, id_net_y, nf90_double, UNC_LOC_S, var2, descr2, descr2, stmpar%morpar%moroutput%statunt(iq), dimids=dimids_, output_mask=output_mask_full)
                      end if
                   end if
                end if
@@ -795,7 +796,7 @@ contains
                work(k, ll) = morstatqnt(k, 1 + ll) ! has morfac incorporated
             end do
          end do
-         ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, UNC_LOC_S, work)
+         ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, UNC_LOC_S, output_mask_full, work)
          if (ierr /= 0) then
             call mess(LEVEL_FATAL, 'fm_morstatistics::unc_write_sedstat_filepointer_ugrid - Error in subroutine unc_put_var_map (dmsedcum).')
          end if
@@ -863,14 +864,14 @@ contains
                   where (morstatqnt(:, 1) <= 0.0)
                      morstatqnt(:, morstatflg(2, iq)) = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_x, UNC_LOC_S, morstatqnt(:, morstatflg(2, iq)))
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_x, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(2, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_MAX) > 0) then
                   where (morstatqnt(:, 1) <= 0.0)
                      morstatqnt(:, morstatflg(3, iq)) = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_x, UNC_LOC_S, morstatqnt(:, morstatflg(3, iq)))
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_x, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(3, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_MEAN) > 0) then
@@ -878,7 +879,7 @@ contains
                   where (morstatqnt(:, 1) <= 0.0)
                      work2 = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, work2)
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, output_mask_full, work2)
                end if
                !
                if (iand(idx, MOR_STAT_STD) > 0) then
@@ -896,7 +897,7 @@ contains
                      morstatqnt(:, morstatflg(5, iq)) = -999.0_dp
                   end where
 
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, morstatqnt(:, morstatflg(5, iq)))
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(5, iq)))
                end if
             else
                if (iq == 2) then
@@ -912,8 +913,8 @@ contains
                      morstatqnt(:, morstatflg(3, iq)) = -999.0_dp
                   end where
 
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_x, UNC_LOC_S, morstatqnt(:, morstatflg(2, iq)))
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_y, UNC_LOC_S, morstatqnt(:, morstatflg(3, iq)))
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_x, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(2, iq)))
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_y, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(3, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_MAX) > 0) then
@@ -921,8 +922,8 @@ contains
                      morstatqnt(:, morstatflg(4, iq)) = -999.0_dp
                      morstatqnt(:, morstatflg(5, iq)) = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_x, UNC_LOC_S, morstatqnt(:, morstatflg(4, iq)))
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_y, UNC_LOC_S, morstatqnt(:, morstatflg(5, iq)))
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_x, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(4, iq)))
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_y, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(5, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_MEAN) > 0) then
@@ -930,12 +931,12 @@ contains
                   where (morstatqnt(:, 1) <= 0.0)
                      work2 = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, work2)
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, output_mask_full, work2)
                   work2 = morstatqnt(:, morstatflg(7, iq)) * wghtfac * morfc
                   where (morstatqnt(:, 1) <= 0.0)
                      work2 = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_y, UNC_LOC_S, work2)
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_y, UNC_LOC_S, output_mask_full, work2)
                end if
                !
                if (iand(idx, MOR_STAT_STD) > 0) then
@@ -951,18 +952,18 @@ contains
                   where (morstatqnt(:, 1) <= 0.0)
                      morstatqnt(:, morstatflg(8, iq)) = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_std_x, UNC_LOC_S, morstatqnt(:, morstatflg(8, iq)))
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_std_x, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(8, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_CUM) > 0 .and. (iq == 3 .or. iq == 4)) then
                   where (morstatqnt(:, 1) <= 0.0)
                      morstatqnt(:, morstatflg(9, iq)) = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_net_x, UNC_LOC_S, morstatqnt(:, morstatflg(9, iq)) * morfc)
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_net_x, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(9, iq)) * morfc)
                   where (morstatqnt(:, 1) <= 0.0)
                      morstatqnt(:, morstatflg(10, iq)) = -999.0_dp
                   end where
-                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_net_y, UNC_LOC_S, morstatqnt(:, morstatflg(10, iq)) * morfc)
+                  ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_net_y, UNC_LOC_S, output_mask_full, morstatqnt(:, morstatflg(10, iq)) * morfc)
                end if
             end if
          end if

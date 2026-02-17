@@ -1770,7 +1770,8 @@ contains
 
       ierr = unc_meta_add_user_defined(fileids%ncid)
 
-      call unc_write_flowgeom_filepointer_ugrid(fileids%ncid, fileids%id_tsp, jafou=.true.)
+      call output_mask_full%create_mask_arrays()
+      call unc_write_flowgeom_filepointer_ugrid(fileids%ncid, fileids%id_tsp, output_mask_full, jafou=.true.)
 
       call realloc(all_unc_loc, nofou)
       !
@@ -1887,10 +1888,10 @@ contains
          if (index(founam(ifou), 'fb') > 0 .or. index(founam(ifou), 'wdog') > 0 .or. index(founam(ifou), 'vog') > 0) then
             ! Freeboard, waterdepth on ground and volume on ground are only for 1D
             ierr = unc_def_var_map(fileids%ncid, fileids%id_tsp, idvar(:, ivar), NF90_DOUBLE, unc_loc, trim(fouvarnam(ivar)), trim(fouvarnamstd(ivar)), &
-                                   AnalyseTypeShort//namfunlong//', '//trim(fouvarnamlong(ivar)), fouvarunit(ivar), is_timedep=0, which_meshdim=1)
+                                   AnalyseTypeShort//namfunlong//', '//trim(fouvarnamlong(ivar)), fouvarunit(ivar), output_mask_full, is_timedep=0, which_meshdim=1)
          else
             ierr = unc_def_var_map(fileids%ncid, fileids%id_tsp, idvar(:, ivar), NF90_DOUBLE, unc_loc, trim(fouvarnam(ivar)), trim(fouvarnamstd(ivar)), &
-                                   AnalyseTypeShort//namfunlong//', '//trim(fouvarnamlong(ivar)), fouvarunit(ivar), is_timedep=0)
+                                   AnalyseTypeShort//namfunlong//', '//trim(fouvarnamlong(ivar)), fouvarunit(ivar), output_mask_full, is_timedep=0)
          end if
          if (ierr == NF90_NOERR) then
             ierr = unc_put_att(fileids%ncid, idvar(:, ivar), 'long_name', AnalyseTypeLong//namfunlong//', '//trim(fouvarnamlong(ivar)))
@@ -2009,10 +2010,10 @@ contains
                ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, output_mask_full, fousmas)
             if (gdfourier%founam(ifou) == 's1' .or. gdfourier%withTime(ifou)) then
                ! min/max water depth
-               ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar + 1), iloc, fousmbs)
+               ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar + 1), iloc, output_mask_full, fousmbs)
             end if
          end if
 
@@ -2023,7 +2024,7 @@ contains
                ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, output_mask_full, fousma)
          end if
 
       case ('a', 'l')
@@ -2040,7 +2041,7 @@ contains
                ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, output_mask_full, fousma)
          end if
 
       case ('r', 'u')
@@ -2051,7 +2052,7 @@ contains
                ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, output_mask_full, fousmas)
          end if
       case ('R', 'U')
          ! Maximum or Minimum based on running mean including time of maximum
@@ -2064,8 +2065,8 @@ contains
                ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar + 1), iloc, fousmbs)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, output_mask_full, fousmas)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar + 1), iloc, output_mask_full, fousmbs)
          end if
 
       case ('c', 'C')
@@ -2076,7 +2077,7 @@ contains
                ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmbs)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, output_mask_full, fousmbs)
          end if
       case default
          ! Fourier
@@ -2090,8 +2091,8 @@ contains
                ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)
-            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar + 1), iloc, fousmb)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, output_mask_full, fousma)
+            ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar + 1), iloc, output_mask_full, fousmb)
          end if
       end select
    end subroutine wrfous

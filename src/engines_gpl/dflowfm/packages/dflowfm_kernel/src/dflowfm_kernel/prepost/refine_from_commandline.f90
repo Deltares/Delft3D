@@ -45,7 +45,7 @@ contains
       use m_refinecellsandfaces2, only: refinecellsandfaces2
       use network_data
       use m_partitioninfo
-      use unstruc_netcdf, only: unc_write_net
+      use unstruc_netcdf, only: unc_write_net, output_mask_full
       use m_samples_refine
 
       character(len=128) :: filnam
@@ -55,7 +55,8 @@ contains
       filnam = 'outdtmax120dxmin1500_net.nc'
       write (filnam(9:11), '(i3.3)') int(dt_maxcour)
       write (filnam(17:20), '(i4.4)') int(dx_mincour)
-      call unc_write_net(trim(filnam))
+      call output_mask_full%create_mask_arrays()
+      call unc_write_net(trim(filnam), output_mask_full)
 
    end subroutine refine_from_commandline
 
