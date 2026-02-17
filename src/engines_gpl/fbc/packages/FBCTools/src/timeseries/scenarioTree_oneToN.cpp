@@ -28,7 +28,6 @@
 
 using namespace rtctools::timeseries;
 using namespace rtctools::utilities;
-using namespace std;
 
 scenarioTree_oneToN::scenarioTree_oneToN(int iReference, vector<int> iInput, vector<int> iOutput, int iProbability, scenarioTree_oneToN::PARAMETER par) 
 	: scenarioTreeGenerator(iReference, iInput, iOutput, iProbability), par(par)

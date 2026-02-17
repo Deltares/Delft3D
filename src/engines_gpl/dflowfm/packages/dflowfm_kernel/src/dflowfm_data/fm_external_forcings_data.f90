@@ -383,25 +383,30 @@ module fm_external_forcings_data
    integer :: nwbnd !< number of wave-energy boundaries
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
-   integer :: numsrc !< nr of point sources/sinks
-
-   !> Bubble screen data structure
-   type t_BubbleScreen
-      character(len=255) :: id !< name of bubble screen
-      integer :: num_flow_cells !< number of grid cells in bubble screen
-      real(kind=dp) :: z_level !< [m] vertical level of bubble screen
-      type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< flow cell specific bubble screen data
-   end type t_BubbleScreen
-
-   !> Flow cell specific bubble screen data
    type t_BubbleScreenFlowCell
-      integer :: cell_index !< 2D flow cell index; in {network_data::netcell}
-      integer :: start_index !< start index for sources/sinks in this flow cell; in {fm_external_forcings_data::numsrc}
-      integer :: num_sources_sinks !< number of sources/sinks in this flow cell; in {fm_external_forcings_data::numsrc}
+      integer :: flownode_nr !< index in {network_data::netcell}
+      integer :: flowcell_start_index !< start index in the flowcell arrays
+      integer :: num_source_sinks !< nr of point sources/sinks in this cell
+      integer :: start_index !< start index for bubble sources/sinks
    end type t_BubbleScreenFlowCell
 
-   type (t_BubbleScreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
+   type t_Bubblescreen
+      character(len=255) :: id !< name of bubble screen
+      integer :: num_flow_cells !< nr of grid cells in bubble screen
+      integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
+      type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< Flow cells data
 
+      integer :: num_polyline !< number of polyline points
+      real(kind=dp), dimension(:), allocatable :: x_polyline !< [m] x polyline points
+      real(kind=dp), dimension(:), allocatable :: y_polyline !< [m] y polyline points
+      real(kind=dp) :: z_level !< [m] z level of the bubble screen air discharge
+   end type t_Bubblescreen
+
+   type (t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
+   real (kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< array to catch bubble screen air discharges
+
+   integer :: numsrc !< nr of point sources/sinks
+   
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield

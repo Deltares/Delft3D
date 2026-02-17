@@ -11886,7 +11886,7 @@ contains
       integer :: ierr
       integer :: i, k, k1, k2, numl2d, numk2d, L, Lnew, nv, n1, n2, n
       integer :: num_1d_nodes, node_index
-      logical :: jaInDefine, is_longculvert_contact
+      logical :: jaInDefine
       integer :: longculvertindex
       integer :: id_zf
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
