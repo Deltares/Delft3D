@@ -19,14 +19,14 @@ object StartVerschilanalyse : BuildType({
     }
 
     params {
-        param("harbor_webhook.image.tag", "latest")
+        param("harbor_webhook.image.tag", "development")
         param("va_harbor_protocol", "docker")
         param(
             "harbor_webhook.image.url", 
             sequenceOf(
                 "containers.deltares.nl",
                 DslContext.getParameter("va_harbor_project"),
-                "${DslContext.getParameter("va_harbor_repository")}:latest"
+                "${DslContext.getParameter("va_harbor_repository")}:development"
             ).joinToString(separator="/")
         )         
         param("reference_prefix", "output/release/2025.01")
@@ -39,7 +39,7 @@ object StartVerschilanalyse : BuildType({
             checked = "true", 
             unchecked = "false",
         )
-        param("current_prefix", "output/weekly/latest")
+        param("current_prefix", "output/weekly/development")
         param("models_path", "input")
         param("model_filter", "")
         checkbox(
