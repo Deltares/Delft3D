@@ -102,7 +102,7 @@ object StartVerschilanalyse : BuildType({
             name = "Upload bundle"
             transportProtocol = SSHUpload.TransportProtocol.SCP
             sourcePath = """
-                ci/teamcity/Delft3D/verschilanalyse/bundle => bundle.tar.gz
+                ci/teamcity/Delft3D/verschilanalyse/bundle => bundle-%teamcity.build.id%.tar.gz
             """.trimIndent()
             targetUrl = "h7.directory.intra"
             authMethod = password {
@@ -131,7 +131,7 @@ object StartVerschilanalyse : BuildType({
                 find "${'$'}{builds_dir}" -mindepth 1 -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
 
                 # Create new build directory
-                va_home="${'$'}{builds_dir}/${'$'}{BUILD_ID}"
+                va_home="${'$'}{builds_dir}/%teamcity.build.id%"
                 mkdir -p "${'$'}{va_home}"
 
                 # Extract the bundle to the build dir
@@ -139,8 +139,8 @@ object StartVerschilanalyse : BuildType({
                 echo "bundle dir: ${'$'}{bundle_dir}"
                 rm -rf "${'$'}{bundle_dir}"
                 mkdir "${'$'}{bundle_dir}"
-                tar -xzvf bundle.tar.gz -C "${'$'}{bundle_dir}"
-                rm -f bundle.tar.gz
+                tar -xzvf bundle-%teamcity.build.id%.tar.gz -C "${'$'}{bundle_dir}"
+                rm -f bundle-%teamcity.build.id%.tar.gz
 
                 # start the VA
                 pushd "${'$'}{bundle_dir}"
