@@ -19,13 +19,6 @@ VERSCHILLENTOOL_DIR="${VAHOME}/verschillentool"
 rm -rf "$VERSCHILLENTOOL_DIR"
 mkdir "$VERSCHILLENTOOL_DIR"
 
-# Substitute the models path in the json configs
-for json_config in ${VAHOME}/bundle/config/*.json; do
-    json_config_tmp=$(mktemp);
-    envsubst '${MODELS_PATH}' < "${json_config}" > "${json_config_tmp}"
-    mv "${json_config_tmp}" "${json_config}"
-done
-
 docker login \
     --username="robot\$verschillentool+h7" \
     --password-stdin \
