@@ -40,27 +40,27 @@ static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version 
 #endif
 
 
-char * getversionstring_dimr_lib(void)
+const char * getversionstring_dimr_lib(void)
 {
 	return modname_version;
 }
 
-char * getfullversionstring_dimr_lib(void)
+const char * getfullversionstring_dimr_lib(void)
 {
 	return modname_version_full;
 }
 
-char * getshortversionstring_dimr_lib(void)
+const char * getshortversionstring_dimr_lib(void)
 {
 	return modname_version_short;
 }
 
-char * geturlstring_dimr_lib(void)
+const char * geturlstring_dimr_lib(void)
 {
 	return modname_url;
 }
 
-char * getversionidstring_dimr_lib(void)
+const char * getversionidstring_dimr_lib(void)
 {
 	return modname_version_id;
 }

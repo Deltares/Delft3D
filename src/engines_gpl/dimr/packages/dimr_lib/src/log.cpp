@@ -182,7 +182,7 @@ bool Log::Write( Level level, int rank, const char *  format, ... ) {
 	clock[0] = '\0';
 	this->clock->Now(clock);
 
-	char * threadID = (char *)pthread_getspecific(this->thkey);
+	const char * threadID = (const char *)pthread_getspecific(this->thkey);
 	if (threadID == NULL)
 		threadID = "<anonymous>";
 
