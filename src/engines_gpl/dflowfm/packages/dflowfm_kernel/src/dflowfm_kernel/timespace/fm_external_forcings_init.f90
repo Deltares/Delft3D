@@ -1135,7 +1135,7 @@ contains
    !!
    !! Input is a loaded .ext file tree structure.
    !! Returns the resulting number of source sinks
-   function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(no_sourcesinks)
+   function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(num_source_sinks)
       use fm_external_forcings_data, only: numsrc
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
@@ -1148,66 +1148,70 @@ contains
       use m_flow
       use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline      
 
-
+      ! Parameters
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
 
-
-      character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
-      type(tree_data), pointer :: block_ptr
-
-      integer :: no_sourcesinks
-      integer :: num_items_in_file
-      character(len=:), allocatable :: id !< Bubblescreen id
-
-      character(len=:), allocatable :: location_file !< Bubblescreen location file
-      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
-      integer :: file_pointer
-      integer :: i, kstart, kend, cidx
+      ! Local variables
       logical :: is_successful
-      integer :: npl_tmp !< Temporary variable to store number of polygon points
-      character, dimension(:), allocatable :: error
-      type(t_Bubblescreen) :: bubblescreen
+      integer :: cidx
+      integer :: file_pointer
+      integer :: i !< Loop index
+      integer :: k_start !< Bottom active layer index in a flowcell
+      integer :: k_end !< Top active layer index in a flowcell
+      integer :: num_source_sinks
+      integer :: num_items_in_file
       integer, dimension(:), allocatable :: crossed_cells
 
-      no_sourcesinks = 0
-      num_items_in_file = tree_num_nodes(bnd_ptr)     
+      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
+      character(len=:), allocatable :: id !< Bubblescreen id
+      character(len=:), allocatable :: location_file !< Bubblescreen location file
+      character, dimension(:), allocatable :: error
+
+      type(tree_data), pointer :: block_ptr
+      type(t_Bubblescreen) :: bubblescreen
+
+      num_source_sinks = 0
+      num_items_in_file = tree_num_nodes(bnd_ptr)
+         
       do i = 1, num_items_in_file
          block_ptr => bnd_ptr%child_nodes(i)%node_ptr
          group_name = trim(tree_get_name(block_ptr))
 
          select case (str_tolower(group_name))
          case ('bubblescreen')
-            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
+            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
             bubblescreen%id = id
 
             if (is_successful) then
                call savepol()
                call oldfil(file_pointer, location_file)
                call reapol(file_pointer, 0)
-               npl_tmp = npl
-               bubblescreen%npl = npl_tmp
-               allocate (bubblescreen%xpl(npl_tmp))
-               allocate (bubblescreen%ypl(npl_tmp))
 
+               bubblescreen%num_polyline = npl
 
-               bubblescreen%xpl = xpl(1:npl_tmp)
-               bubblescreen%ypl = ypl(1:npl_tmp)
-               bubblescreen%z_level = zpl(1)
+               allocate (bubblescreen%x_polyline(npl))
+               allocate (bubblescreen%y_polyline(npl))
+               bubblescreen%x_polyline = xpl(1:npl)
+               bubblescreen%y_polyline = ypl(1:npl)
+
                call restorepol()
 
-               call find_cells_crossed_by_polyline(bubblescreen%xpl, bubblescreen%ypl, crossed_cells, error)
+               call find_cells_crossed_by_polyline(bubblescreen%x_polyline, bubblescreen%y_polyline, crossed_cells, error)
+
                bubblescreen%num_flow_cells = size(crossed_cells)
                allocate(bubblescreen%flow_cells(bubblescreen%num_flow_cells))
                do cidx = 1, size(crossed_cells)
                   bubblescreen%flow_cells(cidx)%flownode_nr = crossed_cells(cidx)
                   ! TODO: Check if kbot will not change for changing morphology
-                  kstart = kbot(crossed_cells(cidx))
-                  kend = kstart  + kmxn(crossed_cells(cidx)) - 1
-                  bubblescreen%flow_cells(cidx)%flowcell_start_index = kstart
+                  k_start = kbot(crossed_cells(cidx))
+                  k_end = k_start + kmxn(crossed_cells(cidx)) - 1
+
+                  bubblescreen%flow_cells(cidx)%flowcell_start_index = k_start
                   bubblescreen%flow_cells(cidx)%num_source_sinks = kmxn(crossed_cells(cidx))
-                  no_sourcesinks = no_sourcesinks + bubblescreen%flow_cells(cidx)%num_source_sinks
+                  num_source_sinks = num_source_sinks + bubblescreen%flow_cells(cidx)%num_source_sinks
                end do
            
                ! Append the initialized bubblescreen to the global array 
@@ -1217,10 +1221,8 @@ contains
                else
                   bubblescreens = [bubblescreens, bubblescreen]
                end if
-
             end if
          end select
-
       end do 
 
       allocate(bubblescreen_air_discharge(size(bubblescreens)))
@@ -1261,17 +1263,19 @@ contains
       real(kind=dp) :: tmsx !< Temporary x-coordinate for bubblescreen source/sink
       real(kind=dp) :: tmsy !< Temporary y-coordinate for bubblescreen source/sink
       real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
+      real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
 
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
+      ! Initialization
       is_successful = .false.
       bubble_source_count = 0
 
       ! Read bubble screen attributes from the tree node
-      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
+      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
       if (is_successful) then
          allocate(character(len=len_trim(id)+50) :: srcid)
 
@@ -1309,7 +1313,6 @@ contains
             end do
          end associate
       end if
-
 
       is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
                         trim(discharge_input), bi, &

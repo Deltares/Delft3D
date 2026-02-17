@@ -32,7 +32,7 @@ appdirs==1.4.4
     # via iterative-telemetry
 argon2-cffi==23.1.0
     # via minio
-argon2-cffi-bindings==25.1.0
+argon2-cffi-bindings==21.2.0
     # via argon2-cffi
 asyncssh==2.22.0
     # via scmrepo
@@ -69,7 +69,7 @@ cffi==2.0.0
     #   argon2-cffi-bindings
     #   cryptography
     #   pygit2
-cftime==1.6.5
+cftime==1.6.4
     # via netcdf4
 charset-normalizer==3.4.4
     # via requests
@@ -93,7 +93,7 @@ colorama==0.4.6
     #   tqdm
 configobj==5.0.9
     # via dvc
-contourpy==1.3.3
+contourpy==1.2.1
     # via matplotlib
 cryptography==46.0.3
     # via asyncssh
@@ -198,7 +198,7 @@ kombu==5.4.2
     #   celery
     #   dvc
     #   dvc-task
-lxml==6.0.2
+lxml==5.3.0
     # via deltares-testbench (pyproject.toml)
 markdown-it-py==4.0.0
     # via rich
@@ -256,7 +256,7 @@ propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
-psutil==7.2.2
+psutil==7.1.3
     # via
     #   dvc
     #   flufl-lock
@@ -303,7 +303,7 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-dotenv==1.2.1
     # via pydantic-settings
-pytz==2025.2
+pytz==2024.1
     # via pandas
 pywin32==310
     # via
@@ -372,7 +372,7 @@ tqdm==4.67.1
     #   dvc-data
     #   fsspec
     #   scmrepo
-typer==0.23.0
+typer==0.20.1
     # via gto
 typing-extensions==4.12.2
     # via
