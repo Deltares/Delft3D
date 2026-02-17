@@ -225,7 +225,7 @@ void D3dFlowMapper::CheckDDbounds(
 {
     int                 KcsLeft;        // KCS value of left/bottom neighbour
     int                 KcsRight;       // KCS value of right/top neighbour
-    char * iniErrorMessage = "\n1) Error during initialization of subdomains: check tri-diag files.\nOR\n2) ";
+    const char * iniErrorMessage = "\n1) Error during initialization of subdomains: check tri-diag files.\nOR\n2) ";
 
     MAPDBG_FUN("D3dFlowMapper::CheckDDbounds");
 
