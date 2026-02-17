@@ -103,7 +103,7 @@ contains
                if (jamapbnd > 0) then
                   jabndnd = 1
                end if
-               call unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
+               call unc_write_map_filepointer_ugrid(mapids, tim, output_mask_map, jabndnd) ! wrimap
             else
                jabndnd = 0
                if (jamapbnd > 0) then

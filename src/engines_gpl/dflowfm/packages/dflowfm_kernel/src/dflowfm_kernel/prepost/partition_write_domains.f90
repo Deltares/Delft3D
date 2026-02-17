@@ -47,7 +47,7 @@ contains
    subroutine partition_write_domains(netfilename, icgsolver, jacells, japolygon, japartugrid)
 
       use m_partitioninfo
-      use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID, UNC_CONV_CFOLD
+      use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID, UNC_CONV_CFOLD, output_mask_full
       use unstruc_model, only: md_ident
       use m_polygon, only: NPL
       use dfm_error
@@ -72,8 +72,9 @@ contains
       integer :: idmn ! domain number
       integer :: len_basename, mdep, i1, i2, iconv
       integer :: ierror
-
+      
       ierror = 1
+      call output_mask_full%create_mask_arrays() ! Make sure output_mask_full is up to date with the current network, so that unc_write_net writes the correct variables.
 
 !     save network
       call savenet()
@@ -109,7 +110,7 @@ contains
             i2 = len_trim(netfilename)
             partfilename = netfilename(1:i1)//"DFM_interpreted_idomain_ "//netfilename(i1 + 1:i2)
          end if
-         call unc_write_net(partfilename, janetcell=1, janetbnd=1, jaidomain=1, iconventions=iconv, md_ident=md_ident)
+         call unc_write_net(partfilename, output_mask_full, janetcell=1, janetbnd=1, jaidomain=1, iconventions=iconv, md_ident=md_ident)
       end if
 
 !     set ghostlevel parameters
@@ -128,7 +129,7 @@ contains
          end if
 
 !        write partitioning net files, including cell info. and idomain
-         call unc_write_net(filename, janetcell=1, janetbnd=1, jaidomain=jacells, &
+         call unc_write_net(filename, output_mask_full, janetcell=1, janetbnd=1, jaidomain=jacells, &
                             jaiglobal_s=jacells, iconventions=iconv, md_ident=md_ident) ! Save net bnds to prevent unnecessary open bnds
 
 !        restore network

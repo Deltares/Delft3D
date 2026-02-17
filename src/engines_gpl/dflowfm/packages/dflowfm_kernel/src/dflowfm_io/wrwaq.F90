@@ -746,6 +746,7 @@ contains
       real(kind=dp) :: startTime, endTime !< Timers.
 
       ierr = UG_NOERR
+      call output_mask_full%create_mask_arrays()
 
       ! Add global attributes to NetCDF file.
       ierr = ug_addglobalatts(igeomfile, ug_meta_fm)
@@ -804,7 +805,7 @@ contains
       if (numl1d > 0) then
          ! number of 1D links (numl1d) if greater than zero
          ! use the generic routine to write the 1D grid, the 2D grid might need extra data, and contains extra info.
-         call unc_write_flowgeom_filepointer_ugrid(igeomfile, geomids%id_tsp, ja2D=.false.)
+         call unc_write_flowgeom_filepointer_ugrid(igeomfile, geomids%id_tsp, output_mask_full, ja2D=.false.)
       end if
 
    end subroutine waq_write_waqgeom_filepointer_ugrid
@@ -892,7 +893,7 @@ contains
       use m_flow
       use io_ugrid
       use m_flowgeom, only: ndx2d
-      use unstruc_netcdf, only: check_error, get_2d_edge_data
+      use unstruc_netcdf, only: check_error, get_2d_edge_data, output_mask_full
       use m_missing
       use m_alloc
 
@@ -968,7 +969,7 @@ contains
          call reallocP(meshgeom%edgey, meshgeom%numEdge, fill=dmiss)
          call realloc(edge_mapping_table, meshgeom%numEdge, fill=missing_value)
          call realloc(reverse_edge_mapping_table, meshgeom%numEdge, fill=missing_value)
-         call get_2d_edge_data(meshgeom%edge_nodes, null(), edge_type, meshgeom%edgex, meshgeom%edgey, edge_mapping_table, reverse_edge_mapping_table)
+         call get_2d_edge_data(meshgeom%edge_nodes, null(), edge_type, meshgeom%edgex, meshgeom%edgey, output_mask_full, edge_mapping_table, reverse_edge_mapping_table)
          ! shift node numbers by numk1d
          do edge = 1, meshgeom%numEdge
             if (meshgeom%edge_nodes(1, edge) /= missing_value) then

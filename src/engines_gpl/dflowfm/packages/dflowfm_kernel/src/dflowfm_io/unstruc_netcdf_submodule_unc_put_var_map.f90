@@ -34,7 +34,7 @@ submodule (unstruc_netcdf) unstruc_netcdf_submodule_unc_put_var_map
 
 contains
 
-   module function unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
+   module function unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, output_mask, values, default_value, jabndnd) result(ierr)
       use precision, only: dp
       use m_flowgeom, only: lnx1d, lnxi, lnx, lnx1db, ln2lne, lne2ln
       use dfm_error, only: dfm_noerr
@@ -54,6 +54,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for the variable.
       real(kind=dp), intent(in) :: values(:) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
       real(kind=dp), optional, intent(in) :: default_value !< Optional default value, used for writing dummy data on closed edges (i.e. netlinks with no flowlink). NOTE: is not a _FillValue!
       integer, optional, intent(in) :: jabndnd
@@ -338,7 +339,7 @@ contains
       ! Some error occurred
    end function unc_put_var_map_dble
 
-   module function unc_put_var_map_int(ncid, id_tsp, id_var, iloc, integers, default_value, jabndnd) result(ierr)
+   module function unc_put_var_map_int(ncid, id_tsp, id_var, iloc, output_mask, integers, default_value, jabndnd) result(ierr)
       use precision, only: dp
       implicit none
       integer :: ierr
@@ -346,6 +347,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable)
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_S, UNC_LOC_U, UNC_LOC_W).
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for the variable.
       integer, dimension(:), intent(in) :: integers
       real(kind=dp), optional :: default_value
       integer, optional, intent(in) :: jabndnd
@@ -362,14 +364,14 @@ contains
       allocate (values(size(integers)))
       values = integers ! casting an array of integers to an array of doubles
       if (present(default_value)) then
-         ierr = unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd=jabndnd_)
+         ierr = unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, output_mask, values, default_value, jabndnd=jabndnd_)
       else
-         ierr = unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, jabndnd=jabndnd_)
+         ierr = unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, output_mask, values, jabndnd=jabndnd_)
       end if
       deallocate (values)
    end function unc_put_var_map_int
 
-   module function unc_put_var_map_real(ncid, id_tsp, id_var, iloc, reals, default_value, jabndnd) result(ierr)
+   module function unc_put_var_map_real(ncid, id_tsp, id_var, iloc, output_mask, reals, default_value, jabndnd) result(ierr)
       use precision, only: dp
       implicit none
       integer :: ierr
@@ -377,6 +379,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable)
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_S, UNC_LOC_U, UNC_LOC_W).
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for the variable.
       real(kind=4), dimension(:), intent(in) :: reals
       real(kind=dp), optional :: default_value
       integer, optional, intent(in) :: jabndnd
@@ -393,14 +396,14 @@ contains
       allocate (values(size(reals)))
       values = reals ! casting an array of reals to an array of doubles
       if (present(default_value)) then
-         ierr = unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd=jabndnd_)
+         ierr = unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, output_mask, values, default_value, jabndnd=jabndnd_)
       else
-         ierr = unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, jabndnd=jabndnd_)
+         ierr = unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, output_mask, values, jabndnd=jabndnd_)
       end if
       deallocate (values)
    end function unc_put_var_map_real
 
-   module function unc_put_var_map_dble2(ncid, id_tsp, id_var, iloc, values, default_value, locdim, jabndnd) result(ierr)
+   module function unc_put_var_map_dble2(ncid, id_tsp, id_var, iloc, output_mask, values, default_value, locdim, jabndnd) result(ierr)
       use precision, only: dp
       use dfm_error, only: dfm_noerr
       use fm_location_types, only: unc_loc_s, unc_loc_u
@@ -410,6 +413,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for the variable.
       real(kind=dp), intent(in) :: values(:, :) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
       real(kind=dp), optional, intent(in) :: default_value !< Optional default value, used for writing dummy data on closed edges (i.e. netlinks with no flowlink). NOTE: is not a _FillValue!
       integer, optional, intent(in) :: locdim !< Optional index of the location dimension (default = 1)
@@ -1138,7 +1142,7 @@ contains
       ! Some error occurred
    end function unc_put_var_map_byte
 
-   module function unc_put_var_map_nodes(ncid, id_tsp, id_var, values, jabndnd_) result(ierr)
+   module function unc_put_var_map_nodes(ncid, id_tsp, id_var, output_mask, values, jabndnd_) result(ierr)
       use precision, only: dp
       use network_data, only: kc, numk
       use m_missing, only: dmiss
@@ -1147,6 +1151,7 @@ contains
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Mask specifying which nodes are inside the polygon for which values are written.
       real(kind=dp), intent(in) :: values(:) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
       integer, intent(in) :: jabndnd_
 
@@ -1165,7 +1170,7 @@ contains
          end if
       end do
 
-      ierr = unc_put_var_map(ncid, id_tsp, id_var, UNC_LOC_CN, array_on_file, jabndnd=jabndnd_)
+      ierr = unc_put_var_map(ncid, id_tsp, id_var, UNC_LOC_CN, output_mask, array_on_file, jabndnd=jabndnd_)
    end function unc_put_var_map_nodes
 
 end submodule unstruc_netcdf_submodule_unc_put_var_map
