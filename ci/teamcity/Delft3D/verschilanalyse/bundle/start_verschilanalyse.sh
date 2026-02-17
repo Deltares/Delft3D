@@ -16,7 +16,7 @@ Usage: $0 -a <apptainer-image> -r <s3-path-prefix> -o <s3-path-prefix> [-m <mode
 -r|--reference-prefix path/to/references
     The reference output is read from this location in the verschilanalyse bucket.
 -m|--models-path input
-    The S3 path and local directory name for model data (default: input)
+    The S3 path and local directory name for model data
 -f|--model-filter grevelingen,volkerakzoommeer
     Comma-separated list of patterns. Only models with paths matching one of these patterns will be run.
 EOF
