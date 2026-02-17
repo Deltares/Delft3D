@@ -44,26 +44,41 @@ contains
    subroutine links_to_centers(vnod, vlin)
       real(kind=dp), intent(out), contiguous :: vnod(:)
       real(kind=dp), intent(in) :: vlin(lnkx)
-      integer :: L, k1, k2, LL, kk, k_start, k_end, k
+
+      real(kind=dp), allocatable :: weight_sum(:)
+      integer :: L, LL, kk, k
+      integer :: k1, k2
+      integer :: k_start, k_end
 
       vnod = 0.0_dp
+      
+      allocate(weight_sum(size(vnod)))
+      weight_sum = 0.0_dp
 
-      if (kmx == 0) then
+      if (kmx == 0) then ! 2D
          do L = 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)
             vnod(k1) = vnod(k1) + vlin(L) * wcL(1, L)
             vnod(k2) = vnod(k2) + vlin(L) * wcL(2, L)
          end do
-      else
+      else ! 3D
          do LL = 1, lnx
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
                k2 = ln(2, L)
                vnod(k1) = vnod(k1) + vlin(L) * wcL(1, LL)
                vnod(k2) = vnod(k2) + vlin(L) * wcL(2, LL)
+               weight_sum(k1) = weight_sum(k1) + wcL(1, LL)
+               weight_sum(k2) = weight_sum(k2) + wcL(2, LL)
             end do
          end do
+
+         where (weight_sum > 0.0_dp)
+            vnod = vnod / weight_sum
+         elsewhere
+            vnod = 0.0_dp
+         end where
 
          !$OMP PARALLEL DO PRIVATE(kk, k_start, k_end, k)
          do kk = 1, ndx
@@ -79,6 +94,8 @@ contains
          !$OMP END PARALLEL DO
       end if
 
+      deallocate(weight_sum)
+      
    end subroutine links_to_centers
 
 end module m_links_to_centers
