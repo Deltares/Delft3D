@@ -128,7 +128,7 @@ object StartVerschilanalyse : BuildType({
                 builds_dir="/p/devops-dsc/verschilanalyse/builds"
                 mkdir -p "${'$'}{builds_dir}"
                 # remove old build directories to clear space
-                find "${'$'}{builds_dir}" -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
+                find "${'$'}{builds_dir}" -mindepth 1 -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
 
                 # Create new build directory
                 va_home="${'$'}{builds_dir}/${'$'}{BUILD_ID}"
