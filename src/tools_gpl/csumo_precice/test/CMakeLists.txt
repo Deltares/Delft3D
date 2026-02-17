@@ -1,10 +1,16 @@
 enable_testing()
 set(source_files test_csumo_precice_lib.cpp)
-set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
 
 add_executable(test_csumo_precice_lib ${source_files})
 
 target_link_libraries(test_csumo_precice_lib PRIVATE compiler_warnings_settings csumo_precice_lib gtest)
+if(WIN32)
+    # Copy runtime DLLs to test directory for test discovery
+    add_custom_command(TARGET test_csumo_precice_lib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:test_csumo_precice_lib> $<TARGET_RUNTIME_DLLS:test_csumo_precice_lib>
+        COMMAND_EXPAND_LISTS
+    )
+endif()
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
