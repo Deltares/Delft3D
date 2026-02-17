@@ -41,7 +41,7 @@
 #include <string.h>
 
 
-Exception::Exception(bool fatal, ErrorCode errorCode, const char * format, ...) : errorCode(errorCode)
+Exception::Exception(ErrorCode errorCode, const char * format, ...) : errorCode(errorCode)
 {
    const int bufsize = 256 * 1024;
    char * buffer = new char[bufsize]; // really big temporary buffer, just in case
@@ -52,7 +52,6 @@ Exception::Exception(bool fatal, ErrorCode errorCode, const char * format, ...) 
    va_end(arguments);
    buffer[bufsize - 1] = '\0';
 
-   this->fatal = fatal;
    this->message = new char[len + 1];
    strcpy(this->message, buffer);
 
@@ -60,7 +59,7 @@ Exception::Exception(bool fatal, ErrorCode errorCode, const char * format, ...) 
 }
 
 
-Exception::~Exception(void)
+Exception::~Exception()
 {
    delete[] this->message;
 }

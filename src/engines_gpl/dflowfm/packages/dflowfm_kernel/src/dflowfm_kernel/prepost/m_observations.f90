@@ -361,7 +361,7 @@ contains
       if (jased > 0 .and. .not. stm_included) then
          IVAL_SED = next_index(i)
       end if
-      !TK_Temp: Also for KMX = 0
+
       if (kmx >= 0) then
          IVAL_ZCS = next_index(i)
       end if
@@ -378,7 +378,7 @@ contains
 
 !  3D, layer interfaces
       i0 = i
-      ! TK_Temp: also for kmx == 0
+
       if (kmx >= 0) then
          IVAL_ZWS = next_index(i)
          IVAL_ZWU = next_index(i)
@@ -1051,6 +1051,8 @@ contains
 
    end subroutine saveObservations
 
+   !> Reads observation points from a *.pli file.
+   !! Set intobs to 1 as .pli files are interpolated (not snapped to the grid).
    subroutine loadObservations_from_pli(filename)
       
       use m_filez,   only: oldfil

@@ -37,7 +37,6 @@ object WindowsCollect : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         python {
             name = "Run artifacts_cleaner.py"
             command = file {
@@ -95,14 +94,15 @@ object WindowsCollect : BuildType({
         }
         step {
             name = "Upload artifact to Nexus"
-            type = "RawUploadNexusWindows"
+            type = "RawUploadNexusWindows1_1"
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("file_path", "%file_path%")
             param("nexus_username", "%nexus_username%")
             param("nexus_password", "%nexus_password%")
             param("nexus_repo", "/delft3d-dev")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
-            param("target_path", "/07_day_retention/dimrset/%file_path%")
+            param("retention_period", "07_day_retention")
+            param("target_path", "/dimrset/%file_path%")
         }
     }
 

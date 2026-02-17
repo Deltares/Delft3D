@@ -506,7 +506,7 @@ class D3dFlowContext
         );
 
     void CMapLog(
-        char      * format,     // I: 'fprintf-format' for print
+        const char      * format,     // I: 'fprintf-format' for print
         ...             // I: varargs
         );
 

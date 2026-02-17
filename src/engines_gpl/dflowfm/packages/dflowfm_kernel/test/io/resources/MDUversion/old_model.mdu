@@ -52,7 +52,7 @@ RenumberFlowNodes = 1
 Kmx               = 0
 Layertype         = 1
 Numtopsig         = 0
-SigmaGrowthFactor = 1
+zLayerGrowthFactor = 1
 
 [numerics]
 CFLMax            = 0.7
