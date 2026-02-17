@@ -1523,13 +1523,15 @@ contains
          if (.not. ecArcinfoAndT3dReadBlock(fileReaderPtr, fileReaderPtr%fileHandle, 1, numlay * vectormax, 1, valueptr)) return
       case (provFile_bc)
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT0FieldPtr%arr1dPtr, valueptr%sourceT0FieldPtr%timesteps)) return
-         if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
-
-         !TK_temp: Set origin of (vertical) porisions to 'nchis' if origin is netcdf file; fill arrz
+         ! TK_Temp: set origin of vertical coordinates to history file (or not) and initialise for T0 
          if (index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0) then 
              valueptr%elementsetptr%origin     = 'nchis'
-             valueptr%sourceT0FieldPtr%arrzPtr = filereaderPTR%bc%vp
-             valueptr%sourceT1FieldPtr%arrzPtr = filereaderPTR%bc%vp
+             valueptr%sourceT0FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
+         end if
+         if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
+         !TK_temp: Initialise for T1
+         if (strcmpi(valueptr%elementsetptr%origin,'nchis')) then 
+             valueptr%sourceT1FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
          end if
               
          case default
@@ -1897,8 +1899,11 @@ contains
             if (quantityname == 'temperaturebnd') then
                quantityname = 'temperature'
             end if
+            if (quantityname == 'uxuyadvectionvelocitybnd') then
+               quantityname = 'x_velocity'
+            end if
          else
-             if (quantityname == 'waterlevelbnd') then
+            if (quantityname == 'waterlevelbnd') then
                quantityname = 'waterlevelbnd'
             end if
              if (quantityname == 'salinitybnd') then
@@ -1907,6 +1912,10 @@ contains
              
              if (quantityname == 'temperaturebnd') then
                quantityname = 'thetao'
+             end if
+                          
+             if (quantityname == 'uxuyadvectionvelocitybnd') then
+               quantityname = 'ux'
             end if
                 
          end if

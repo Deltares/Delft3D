@@ -146,7 +146,7 @@ contains
       integer :: i_dim, n_dims, iVars, iTims, nVars, nTims, nGlobalAtts, unlimdimid, ierr
       integer :: tslen
       integer :: dimids_tsid(2)
-      integer :: len_vectordef
+      integer :: len_vectordef = 40 
       logical :: isVector
       integer, dimension(:, :), allocatable :: var_dimids
       integer, dimension(:), allocatable :: var_ndims
@@ -206,16 +206,33 @@ contains
       var_ndims = 0
       
       do iVars = 1, nVars ! Inventorize variables
-         ierr = nf90_inquire_attribute(ncptr%ncid, iVars, 'vector', len=len_vectordef) ! Check if this variable is just a reference to vector
-         if (ierr == NF90_NOERR) then
-            isVector = .true.
-            allocate (character(len=len_vectordef) :: ncptr%vector_definitions(iVars)%s, stat=ierr)
-            if (ierr /= 0) return
-            ierr = nf90_get_att(ncptr%ncid, iVars, 'vector', ncptr%vector_definitions(iVars)%s)
-         else
-            isVector = .false.
-         end if
+!          ierr = nf90_inquire_attribute(ncptr%ncid, iVars, 'vector', len=len_vectordef) ! Check if this variable is just a reference to vector
+!          if (ierr == NF90_NOERR) then
+!             isVector = .true.
+!             allocate (character(len=len_vectordef) :: ncptr%vector_definitions(iVars)%s, stat=ierr)
+!             if (ierr /= 0) return
+!             ierr = nf90_get_att(ncptr%ncid, iVars, 'vector', ncptr%vector_definitions(iVars)%s)
+!          else
+!             isVector = .false.
+!          end if
+          
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, name=ncptr%variable_names(iVars)) ! Variable name
+         
+         ! TK_Temp: velocities for existing nc files
+         if (strcmpi(ncptr%variable_names(iVars),'ux') ) then
+!             allocate (character(len=len_vectordef) :: ncptr%vector_definitions(iVars)%s, stat=ierr)
+             allocate (character :: ncptr%vector_definitions(iVars)%s, stat=ierr)
+            if (ierr /= 0) return
+            ncptr%vector_definitions(iVars)%s = 'ux,uy'
+         end if 
+         
+         ! TK_Temp: velocities for nchis files
+         if (strcmpi(ncptr%variable_names(iVars),'x_velocity') ) then
+            allocate (character :: ncptr%vector_definitions(iVars)%s, stat=ierr)
+            if (ierr /= 0) return
+            ncptr%vector_definitions(iVars)%s = 'x_velocity,y_velocity'
+         end if 
+         
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
          if (ierr /= NF90_NOERR) ncptr%fillvalues(iVars) = -huge(dp)
          ierr = nf90_get_att(ncptr%ncid, iVars, 'scale_factor', ncptr%scales(iVars))
@@ -225,7 +242,7 @@ contains
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims=var_ndims(iVars), dimids=var_dimids(:, iVars))
          ncptr%variable_dimension(iVars) = var_ndims(iVars)
                   
-         if (isVector) cycle ! vector placeholder, not a real variable with data in the file
+!         if (isVector) cycle ! vector placeholder, not a real variable with data in the file
 
          ! Check for important var: was it the stations?
          if (strcmpi(ncptr%variable_names(iVars),'station_id') .or. strcmpi(ncptr%variable_names(iVars),'location') ) then        
@@ -334,14 +351,23 @@ contains
          if (allocated(ncptr%vector_definitions(ivar)%s)) then
             call strsplit(ncptr%vector_definitions(ivar)%s, 1, elmnames, 1, sep=",")
             vmax = size(elmnames)
-            if (allocated(q_id)) deallocate (q_id)
-            allocate (q_id(vmax), stat=ierr)
-            if (ierr /= 0) return
-            do iv = vmax, 1, -1
-               if (.not. ecNetCDFScan(ncptr, trim(elmnames(iv)), location, &
-                                      q_id, l_id, dimids)) return
-               q_id(iv) = q_id(1)
-            end do
+!           if (allocated(q_id)) deallocate (q_id)
+            call realloc(q_id, vmax, keepexisting=.true., fill=0)
+!            allocate (q_id(vmax), stat=ierr)
+!            if (ierr /= 0) return
+!            do iv = vmax, 1, -1
+             do iv = 2, vmax
+                 do ivar = 1, ncptr%nVars
+                   ltl = len_trim(quantity)
+                   if (strcmpi(ncptr%variable_names(ivar), elmnames(iv), ltl)) exit
+                 end do
+                  q_id(iv) = ivar
+             end do
+
+ !              if (.not. ecNetCDFScan(ncptr, trim(elmnames(iv)), location, &
+ !                                     q_id, l_id, dimids)) return
+ !              q_id(iv) = q_id(1)
+ !           end do
          end if
       else
          call setECMessage("ec_netcdf_timeseries::ecNetCDFScan: Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")

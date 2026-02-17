@@ -1076,8 +1076,8 @@ contains
       case (convType_uniform)
          success = ecConverterUniform(connection, timesteps%mjd())
          !TK_ Temp interpolate z coordinate (mus be more elegant way of doing this, only if z coordinates are time dependent, i.e. origintae froem his file
-         if (associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) .and.         &
-                strcmpi(connection%targetItemsPtr(1)%ptr%ElementSetPtr%origin,'ncfile') )  then
+         if (success .and.  associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) ) then
+!                strcmpi(connection%targetItemsPtr(1)%ptr%ElementSetPtr%origin,'nchis') )  then
              success = ecConverterUniform(connection, timesteps%mjd(),arr1D = .false.)
          end if
       case (convType_uniform_to_magnitude)
@@ -1211,10 +1211,15 @@ contains
       if (quantityValues) then
          valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPTR
          valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
-      ! TK_Temp: time series inerpolation on depth velues   
+      ! TK_Temp: time series interpolation on depth velues, only if origin is history file   
       else
-         valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arrzPTR
-         valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arrzPTR
+         if (.not. strcmpi(connection%sourceItemsPtr(1)%ptr%ElementSetPtr%origin,'nchis') ) then
+            success = .true.
+            return
+         else    
+            valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arrzPTR
+            valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arrzPTR
+         end if
       end if
       
       n_data = connection%sourceItemsPtr(1)%ptr%quantityPtr%vectorMax
@@ -1346,9 +1351,13 @@ contains
             ! NOTE: No targetMask is checked here
             
             if (quantityValues) then
+               from = (j - 1) * (maxlay * n_data) + 1
+               thru = (j) * (maxlay * n_data)
                targetField%arr1dPtr(from:thru) = valuesT
             else ! Vertical positions
-                connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(from:thru) = valuesT
+                from = (j - 1) * maxlay + 1
+                thru = (j)     * maxlay 
+                connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(from:thru) = valuesT(1:from - thru + 1)
             end if 
                 
             targetField%timesteps = timesteps
