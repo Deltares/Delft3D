@@ -91,7 +91,7 @@ contains
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
       use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz, turkinws0, turkinws, turepsws0, & 
-          turepsws, ustbs, ustws, tke_min, eps_min
+          turepsws, ustbs, ustws, tke_min, eps_min, bruva_u
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
@@ -877,6 +877,8 @@ contains
          call aerr('tureps1(lnkx)', ierr, lnkx)
          call realloc(vicwwu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu(lnkx)', ierr, lnkx)
+         call realloc(bruva_u, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('bruva_u(lnkx)', ierr, lnkx)
          call realloc(vicwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwws(ndkx)', ierr, ndkx)
          call realloc(difwws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)

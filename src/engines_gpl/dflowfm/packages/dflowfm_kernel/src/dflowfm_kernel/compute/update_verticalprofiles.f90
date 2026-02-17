@@ -61,7 +61,7 @@ contains
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
       use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
-                              c3t_stable, c3t_unstable, turkinws, turepsws, turkinws0, turepsws0, ustbs, ustws
+                              c3t_stable, c3t_unstable, turkinws, turepsws, turkinws0, turepsws0, ustbs, ustws, bruva_u
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -392,6 +392,8 @@ contains
                         bruva(k) = (acl(LL) * drhodz(k1) + (1.0_dp - acl(LL)) * drhodz(k2)) * brunt_vaisala_coefficient
                      end if
                      buoflu(k) = max(vicwwu(L), vicwminb) * bruva(k)
+                     
+                     bruva_u(L) = bruva(k)
 
                      sortkebuoy = -buoflu(k)
                      
@@ -1051,6 +1053,10 @@ contains
                   ! observe implicit treatment by Newton linearization.
 
                   dijdij(k) = ((ucx(Lu) - ucx(L))**2 + (ucy(Lu) - ucy(L))**2) / dzws(k)**2
+
+                  if (jarichardsononoutput > 0) then
+                      richs(L) = sigrho * bruva(k) / max(1.0e-8_dp, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
+                  end if
 
                   sourtu = max(vicwws(L), vicwminb) * dijdij(k)
                   if (iturbulencemodel == 5) then

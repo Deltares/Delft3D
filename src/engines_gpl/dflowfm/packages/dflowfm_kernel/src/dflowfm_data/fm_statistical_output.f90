@@ -25,6 +25,7 @@ module fm_statistical_output
 
    type(t_station_nc_dimensions), parameter :: station_nc_dims_2D = t_station_nc_dimensions(statdim=.true., timedim=.true.)
    type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_center = t_station_nc_dimensions(laydim=.true., statdim=.true., timedim=.true.)
+   type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_edge = t_station_nc_dimensions(laydim_edge=.true., statdim=.true., timedim=.true.)
    type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_interface_center = t_station_nc_dimensions(laydim_interface_center=.true., statdim=.true., timedim=.true.)
    type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_interface_edge = t_station_nc_dimensions(laydim_interface_edge=.true., statdim=.true., timedim=.true.)
 
@@ -1379,6 +1380,14 @@ contains
                              'Wrihis_density', 'Brunt_Vaisala_N2', 'Brunt_Vaisala_N2', '', &
                              '1/s2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
+      call add_output_config(config_set_his, IDX_HIS_BRUNT_VAISALA_N2_U, &
+                             'Wrihis_density', 'Brunt_Vaisala_N2_U', 'Brunt_Vaisala_N2 at nearest velocity point', '', &
+                             '1/s2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_3D_interface_edge)
+      call add_output_config(config_set_his, IDX_HIS_U1, &
+                             'Wrihis_velocity', 'U1_velocity', 'Horizontal velocity magnitude at nearest velocity point', '', &
+                             'm/s', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_3D_edge)
 
       ! Wave model
       call add_output_config(config_set_his, IDX_HIS_HWAV, &
@@ -2571,8 +2580,10 @@ contains
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_DIFWWS:IPNT_DIFWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DIFWWS), temp_pointer)
-                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWU:IPNT_VICWWU + kmx)
-                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
+                  if (iturbulencemodel < 5) then
+                     temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWU:IPNT_VICWWU + kmx)
+                     call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
+                  end if
                end if
                if (iturbulencemodel == 4) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPS:IPNT_TEPS + kmx)
@@ -2580,8 +2591,10 @@ contains
                end if
             end if
             if (idensform > 0 .and. jaRichardsononoutput > 0) then
-               temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_RICH:IPNT_RICH + kmx)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RICH), temp_pointer)
+               if (iturbulencemodel < 5) then
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_RICH:IPNT_RICH + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RICH), temp_pointer)
+               end if
                temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_RICHS:IPNT_RICHS + kmx)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RICHS), temp_pointer)
             end if
@@ -2617,6 +2630,13 @@ contains
 
                temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_BRUV:IPNT_BRUV + kmx)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRUNT_VAISALA_N2), temp_pointer)
+               
+               if (iturbulencemodel == 3) then
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_BRUV_U:IPNT_BRUV_U + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRUNT_VAISALA_N2_U), temp_pointer)
+                  temp_pointer(1:kmx * ntot) => valobs(:, IPNT_U1:IPNT_U1 + kmx - 1)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_U1), temp_pointer)
+               end if
             else
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POTENTIAL_DENSITY), valobs(:, IPNT_RHOP))
             end if

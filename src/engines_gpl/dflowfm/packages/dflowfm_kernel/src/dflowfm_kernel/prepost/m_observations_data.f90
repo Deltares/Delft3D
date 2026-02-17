@@ -110,7 +110,10 @@ module m_observations_data
    integer :: IVAL_ZCS
    integer :: IVAL_ZWS ! 3D, layer interfaces after layer centered
    integer :: IVAL_ZWU
+   integer :: IVAL_ZCU
    integer :: IVAL_BRUV
+   integer :: IVAL_BRUV_U
+   integer :: IVAL_U1
    integer :: IVAL_TKIN
    integer :: IVAL_TEPS
    integer :: IVAL_VIU
@@ -229,7 +232,10 @@ module m_observations_data
    integer :: IPNT_ZCS
    integer :: IPNT_ZWS
    integer :: IPNT_ZWU
+   integer :: IPNT_ZCU
    integer :: IPNT_BRUV
+   integer :: IPNT_BRUV_U
+   integer :: IPNT_U1
    integer :: IPNT_TKIN
    integer :: IPNT_TEPS
    integer :: IPNT_VIU

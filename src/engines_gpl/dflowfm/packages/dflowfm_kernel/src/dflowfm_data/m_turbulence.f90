@@ -92,6 +92,7 @@ module m_turbulence
 
    real(kind=dp), allocatable, dimension(:) :: tureps0 ! eps old (1/s)  , at layer interface at u
    real(kind=dp), allocatable, dimension(:) :: tureps1 ! eps new        , at layer interface at u
+   real(kind=dp), allocatable, dimension(:) :: bruva_u ! bruva          , at layer interface at u
 
    real(kind=dp), allocatable, dimension(:) :: vicwwu ! vertical eddy viscosity (m2/s) at layer interface at u point
    real(kind=dp), allocatable, dimension(:), target :: vicwws !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}

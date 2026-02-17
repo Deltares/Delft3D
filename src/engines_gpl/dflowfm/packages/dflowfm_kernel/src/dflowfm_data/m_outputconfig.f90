@@ -225,6 +225,8 @@ module m_output_config
    integer, public :: IDX_HIS_POTENTIAL_DENSITY
    integer, public :: IDX_HIS_DENSITY
    integer, public :: IDX_HIS_BRUNT_VAISALA_N2
+   integer, public :: IDX_HIS_BRUNT_VAISALA_N2_U
+   integer, public :: IDX_HIS_U1
 
    integer, public :: IDX_HIS_HWAV
    integer, public :: IDX_HIS_HWAV_SIG
@@ -513,6 +515,7 @@ module m_output_config
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for observation stations, since they do are not uniform.
    type, public :: t_station_nc_dimensions
       logical :: laydim = .false.
+      logical :: laydim_edge = .false.
       logical :: laydim_interface_center = .false.
       logical :: laydim_interface_edge = .false.
       logical :: nlyrdim = .false.
