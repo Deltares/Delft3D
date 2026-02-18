@@ -4810,7 +4810,7 @@ contains
                   tmpstr = ' '
                   write (tmpstr, "('water_quality_stat_',I0)") noout_statt + j
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqse(:, j), nc_precision, iLocS, tmpstr, &
-                                         '', outputs%names(jj), outputs%units(jj), output_mask, jabndnd=jabndnd_)
+                                         '', outputs%names(jj), outputs%units(jj), output_mask, 0, jabndnd=jabndnd_)
                   tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                   call replace_multiple_spaces_by_single_spaces(tmpstr)
                   ierr = nf90_put_att(mapids%ncid, mapids%id_wqse(2, j), 'description', tmpstr)
