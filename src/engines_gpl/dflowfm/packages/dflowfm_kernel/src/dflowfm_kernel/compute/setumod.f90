@@ -923,7 +923,7 @@ contains
       use precision, only: dp
       use m_flow, only: hu, hs, suu, dvxc, dvyc
       use m_flowgeom, only: lnx, lnx1D, ln, csu, snu, acl
-      use m_flowparameters, only: epshu
+      use m_flowparameters, only: epshu, istresstyp
       use m_sferic, only: jasfer3D
       use m_prefetch, only: csb_1, snb_1, csb_2, snb_2, bai_1, bai_2
 
