@@ -58,7 +58,7 @@ contains
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       ! Loop over samples (much fewer than cells)
-      !$OMP PARALLEL DO SCHEDULE(GUIDED)
+      !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(k)
       do i = 1, ns
          k = point_find_netcell(xs(i), ys(i))
          if (k > 0) then

@@ -25,7 +25,6 @@
 #include "stringContainer.h"
 #include <sstream>
 
-using namespace std;
 using namespace rtctools::timeseries;
 
 

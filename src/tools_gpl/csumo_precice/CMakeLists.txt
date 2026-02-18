@@ -16,3 +16,4 @@ include(cmake/PreventInSourceBuilds.cmake)
 include(cmake/CompilerWarnings.cmake)
 
 add_subdirectory(src)
+add_subdirectory(test)

@@ -31,7 +31,6 @@
 #include "timeSeriesMatrix.h"
 #include "timeSeriesSparseMatrix.h"
 
-using namespace std;
 using namespace rtctools::timeseries;
 
 openMIInterface::openMIInterface()

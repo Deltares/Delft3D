@@ -194,7 +194,7 @@ static int
 SearchForRegion (
     RD      regions[],
     int *   head,
-    char *  name
+    const char *  name
     );
 
 static int
@@ -384,7 +384,7 @@ ESM_Shared_Alloc (
     int     thid,
     int     ci,
     int     contextid,
-    char *  name,
+    const char *  name,
     size_t  size
     ) {
 
@@ -527,7 +527,7 @@ ESM_Shared_Free (
     int thid,
     int ci,
     int contextid,
-    char * name
+    const char * name
     ) {
 
     // If the context is not attached to the current process, attach it
@@ -707,7 +707,7 @@ static int
 SearchForRegion (
     RD      regions[],
     int *   head,
-    char *  name
+    const char *  name
     ) {
 
     // Search for a region with the given name in the ordered list of regions

@@ -185,9 +185,9 @@ Flow2D3D::Flow2D3D (
     const char * ddbFile = this->config->GetElement ("ddbFile");
 
     if (this->mdfFile == NULL && ddbFile == NULL)
-        throw new Exception (true, "Neither MDF file nor DD bounds file specified");
+        throw new Exception("Neither MDF file nor DD bounds file specified");
     if (this->mdfFile != NULL && ddbFile != NULL)
-        throw new Exception (true, "Both MDF file nor DD bounds file specified");
+        throw new Exception("Both MDF file nor DD bounds file specified");
 
     if (ddbFile != NULL)
         this->dd = new DD (this, this->config);
@@ -239,7 +239,7 @@ Flow2D3D::Flow2D3D (
 
     const char *dot = strrchr(configfile, '.');
     if(!dot || dot == configfile) {
-        throw new Exception (true, "ConfigFile is not recognized as mdf file (extension 'mdf') or ddb file (extension 'ddb')");
+        throw new Exception("ConfigFile is not recognized as mdf file (extension 'mdf') or ddb file (extension 'ddb')");
     }
     const char * ddbFile = NULL;
     if(strcmp(dot,".mdf") == 0) {
@@ -252,9 +252,9 @@ Flow2D3D::Flow2D3D (
     this->runid              = NULL;
 
     if (this->mdfFile == NULL && ddbFile == NULL)
-        throw new Exception (true, "ConfigFile is not recognized as mdf file (extension 'mdf') or ddb file (extension 'ddb')");
+        throw new Exception("ConfigFile is not recognized as mdf file (extension 'mdf') or ddb file (extension 'ddb')");
     if (this->mdfFile != NULL && ddbFile != NULL)
-        throw new Exception (true, "Both MDF file nor DD bounds file specified");
+        throw new Exception("Both MDF file nor DD bounds file specified");
 
     if (ddbFile != NULL)
         this->dd = new DD (this, this->config);
@@ -294,7 +294,7 @@ Flow2D3D::Flow2D3D (
 
             int context_id = ESM_Create (0, 0);
             if (context_id == 0)
-                throw new Exception (true, "Cannot create memory context for Flow2D3D");
+                throw new Exception("Cannot create memory context for Flow2D3D");
 
             this->DH->log->Write (Log::MAJOR, "Calling TRISIM (Fortran)");
             TRISIM (&numsubdomains, &nummappers, &context_id, &fsm_flags, runid, &initOnly, &this->gdp, strlen (runid));
@@ -371,7 +371,7 @@ Flow2D3D::Run (
 
             int context_id = ESM_Create (0, 0);
             if (context_id == 0)
-                throw new Exception (true, "Cannot create memory context for Flow2D3D");
+                throw new Exception("Cannot create memory context for Flow2D3D");
 
             this->DH->log->Write (Log::MAJOR, "Calling TRISIM (Fortran)");
             TRISIM (&numsubdomains, &nummappers, &context_id, &fsm_flags, runid, &initOnly, &this->gdp, strlen (runid));

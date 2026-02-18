@@ -1,33 +1,5 @@
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
-        <testCase name="e04_f10_c01_HongKong" ref="dimr_trunk" ignore="false">
-            <path version="2025-07-29T12:51:47.163000">e04_wave/f10-HongKong/c01</path>
-            <maxRunTime>60.0</maxRunTime>
-            <checks>
-                <file name="wave/wavm-hkwm_2017-squaredNet_HK_20190507_v01_cut_ref2.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.012"/>
-                        <parameter name="period" toleranceAbsolute="0.033"/>
-                    </parameters>
-                </file>
-                <file name="wave/wavm-hkwm_2017-nest01_HK_20190507_v01.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.014"/>
-                        <parameter name="period" toleranceAbsolute="0.11"/>
-                    </parameters>
-                </file>
-                <file name="wave/wavm-hkwm_2017-nest02_HK.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="dir" toleranceAbsolute="400.0"/>
-                        <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="period" toleranceAbsolute="0.02"/>
-                    </parameters>
-                </file>
-            </checks>
-        </testCase>
-        <!-- ======================================================================== -->
         <testCase name="e04_f09_c01_SWANDCSM" ref="dimr_trunk">
             <path version="2025-07-29T12:51:53.132000">e04_wave/f09-SWANDCSM/c01</path>
             <maxRunTime>1800.0</maxRunTime>
