@@ -217,7 +217,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f019_c013_tracer_channel3D" ref="dflowfm_default">
-     <path version="2025-10-20T19:09">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
+     <path version="2026-02-07T13:29:28.708000">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tracer3D_his.nc" type="netCDF">
@@ -1922,7 +1922,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f210_c001_basic_thermobaricity_densities" ref="dflowfm_default">
-      <path version="2025-10-07T07:06:42.111000">e02_dflowfm/f210_3D_thermobaricity/c001_basic_thermobaricity_densities</path>
+      <path version="2026-02-17T15:10:00.000000">e02_dflowfm/f210_3D_thermobaricity/c001_basic_thermobaricity_densities</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfm/output/thermobaricity_his.nc" type="netCDF">

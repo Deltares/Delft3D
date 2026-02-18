@@ -5,7 +5,6 @@
 #include <float.h>
 #include <fstream>
 #include <vector>
-using namespace std;
 
 #include <string>
 
@@ -224,11 +223,11 @@ public:
    *   relation between the wetness index W and the deficit dV
    *   by a linearly interpolating in a table
    *   provided by the user
-   *   @param dV,W : vector<double>tors defining the values
+   *   @param dV,W : std::vector<double>tors defining the values
    *   between which will be interpolated
    *   @sa W_dV
    */
-  void set_W_dV_bytable(const vector<double> &dV, const vector<double> &W);
+  void set_W_dV_bytable(const std::vector<double> &dV, const std::vector<double> &W);
   /**
    *   @brief  the function that gives the equilibrium storage deficit
    *   as function of dG \n
@@ -239,13 +238,13 @@ public:
    *   @sa set_dVeq_dG_bytable
    */
   double dVeq_dG(double dG);
-  void set_dVeq_dG_bytable(const vector<double> &dG,
-                           const vector<double> &dVeq);
+  void set_dVeq_dG_bytable(const std::vector<double> &dG,
+                           const std::vector<double> &dVeq);
   double beta_dV(double dV);
-  void set_beta_dV_bytable(const vector<double> &dV,
-                           const vector<double> &beta);
+  void set_beta_dV_bytable(const std::vector<double> &dV,
+                           const std::vector<double> &beta);
   double Q_hS(double hS);
-  void set_Q_hS_bytable(const vector<double> &hS, const vector<double> &Q);
+  void set_Q_hS_bytable(const std::vector<double> &hS, const std::vector<double> &Q);
   //
   // flux forcings
   //
@@ -265,14 +264,14 @@ public:
    *   (linearly interpolated) values of this series are used until
    *   a new rainfall value is set
    *   @param  times: an increasing series of times in sec
-   *   @param fcvector<double>: corresponding accumlated fc values in mm
+   *   @param fcstd::vector<double>: corresponding accumlated fc values in mm
    */
-  void set_seq_Cbyname(const char* name, const vector<double> times,
-                 const vector<double> fc_vec);
-  void set_seq_C(unsigned int idnum, const vector<double> times,
-                 const vector<double> fc_vec, double timestepsize);
-  void set_seq_C(enum WALRUS_FORCING fc, const vector<double> times,
-                 const vector<double> fc_vec, double timestepsize);
+  void set_seq_Cbyname(const char* name, const std::vector<double> times,
+                 const std::vector<double> fc_vec);
+  void set_seq_C(unsigned int idnum, const std::vector<double> times,
+                 const std::vector<double> fc_vec, double timestepsize);
+  void set_seq_C(enum WALRUS_FORCING fc, const std::vector<double> times,
+                 const std::vector<double> fc_vec, double timestepsize);
   /**
    *   @brief  sets an external forcing flux by series of
    *   regularly measured intensities
@@ -280,14 +279,14 @@ public:
    *   a new rainfall value is set
    *   @param  tstart: starting time (s)
    *   @param timestep: constant time between two intensities (s)
-   *   @param fcvector<double>: rainfall intensities in mm/h
+   *   @param fcstd::vector<double>: rainfall intensities in mm/h
    */
    void set_seq_Ibyname(const char* name, double tstart, double timestep,
-                  const vector<double> fc_vec);
+                  const std::vector<double> fc_vec);
   void set_seq_I(unsigned int idnum, double tstart, double timestep,
-                 const vector<double> fc_vec);
+                 const std::vector<double> fc_vec);
   void set_seq_I(enum WALRUS_FORCING fc, double tstart, double timestep,
-                 const vector<double> fc_vec);
+                 const std::vector<double> fc_vec);
   /**
    *   @brief  gets the total external flxu between two times
    *   @param  from_time: starting time in sec
@@ -300,7 +299,7 @@ public:
 
   // level forcings
   void set_hSmin(double value);
-  void set_hSminseries(vector<double> times, vector<double> hSmin);
+  void set_hSminseries(std::vector<double> times, std::vector<double> hSmin);
   double get_hSmin(double attime);
 
   // set get states

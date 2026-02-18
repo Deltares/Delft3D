@@ -113,7 +113,7 @@ Level Log::GetLevel( void ) {
 
 
 void Log::SetLevel( Level level ) {
-	this->level = min(max(level,ALL),FATAL);
+	this->level = std::min(std::max(level,ALL),FATAL);
 
     char * levelString = new char[MAXSTRING];
     logLevelToString(this->level, &levelString);
@@ -128,7 +128,7 @@ Level Log::GetFeedbackLevel( void ) {
 
 
 void Log::SetFeedbackLevel( Level feedbackLevel) {
-	this->feedbackLevel = min(max(feedbackLevel,ALL), NONE);
+	this->feedbackLevel = std::min(std::max(feedbackLevel,ALL), NONE);
 
     char * levelString = new char[MAXSTRING];
     logLevelToString(this->feedbackLevel, &levelString);
@@ -182,7 +182,7 @@ bool Log::Write( Level level, int rank, const char *  format, ... ) {
 	clock[0] = '\0';
 	this->clock->Now(clock);
 
-	char * threadID = (char *)pthread_getspecific(this->thkey);
+	const char * threadID = (const char *)pthread_getspecific(this->thkey);
 	if (threadID == NULL)
 		threadID = "<anonymous>";
 

@@ -55,7 +55,6 @@
 
 
 #include <typeinfo>
-using namespace std;
 
 
 #if defined (WIN32)
@@ -122,7 +121,7 @@ main (
         return 0;
         }
 
-    catch (exception& ex) {
+    catch (std::exception& ex) {
         printf ("d_hydro ABORT: C++ Exception: %s\n", ex.what());
         return 1;
         }
@@ -396,13 +395,13 @@ static void
 printAbout (
     char * exeName
     ) {
-    char * fullversion = getfullversionstring_d_hydro ();
+    const char * fullversion = getfullversionstring_d_hydro ();
     printf ("\n\
 %s \n\
 Copyright (C)  Stichting Deltares, 2011-2026. \n\
 GNU General Public License, see <http://www.gnu.org/licenses/>. \n\n\
 delft3d.support@deltares.nl \n", fullversion);
-    char* urlstr = geturlstring_d_hydro ();
+    const char* urlstr = geturlstring_d_hydro ();
     printf ("%s\n\n", urlstr);
     }
 

@@ -186,9 +186,9 @@ class Dimr {
 
         bool           IsCouplerItemTypePTR(int couplerItem);
 
-        void           char_to_ints       (char *, int **, int *);
+        void           char_to_ints       (const char *, int **, int *);
 
-        map<string, int> ncfiles;
+        std::map<std::string, int> ncfiles;
 		static void		   _log				  (Level, const char*); /* BMILogger function */
 		Clock::Timestamp  timerStartStamp;
 		Clock::Timestamp  timerSumStamp;
