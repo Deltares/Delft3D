@@ -212,7 +212,6 @@ program unstruc
    call resetFullFlowModel()
    call INIDAT()
    call RESETB(0)
-   call output_mask_full%create_mask_arrays()
 
 #ifdef HAVE_PETSC
    call startpetsc()

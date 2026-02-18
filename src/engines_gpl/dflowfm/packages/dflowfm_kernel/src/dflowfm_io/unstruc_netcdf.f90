@@ -10168,7 +10168,7 @@ contains
 !! If file exists, it will be overwritten.
    subroutine unc_write_net(filename, output_mask, janetcell, janetbnd, jaidomain, jaiglobal_s, iconventions, md_ident)
       character(len=*), intent(in) :: filename !< output filename
-      type(t_variables_inside_polygon), intent(in) :: output_mask !< Mask for output variables
+      type(t_variables_inside_polygon), intent(inout) :: output_mask !< Mask for output variables
       integer, optional, intent(in) :: janetcell !< write additional network cell information (1) or not (0). Default: 0.
       integer, optional, intent(in) :: janetbnd !< write additional network boundary information (1) or not (0). Default: 0.
       integer, optional, intent(in) :: jaidomain !< write subdomain numbers (1) or not (0, default)
@@ -10895,7 +10895,7 @@ contains
 
       integer, intent(in) :: ncid !< NetCDF file id
       type(t_unc_timespace_id), intent(inout) :: id_tsp !< struct holding NetCDF ids
-      type(t_variables_inside_polygon), intent(in) :: output_mask !< Mask for output variables
+      type(t_variables_inside_polygon), intent(inout) :: output_mask !< Mask for output variables
       integer, optional, intent(in) :: janetcell !< write net cell (1) or not (0, default)
       integer, optional, intent(in) :: jaidomain !< write subdomain numbers (1) or not (0, default)
       integer, optional, intent(in) :: jaiglobal_s !< write global netcell numbers (1) or not (0, default)
@@ -11349,6 +11349,9 @@ contains
       ! Define partitioned model variables:
       ndx2d = nump ! Needed to use helper routine unc_def_var_map below.
       ndxi = nump1d2d
+      call output_mask%reset()
+      call output_mask%create_mask_arrays()
+      
       if (jaidomain_ > 0) then
          ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemdomain(:), nf90_int, UNC_LOC_S, 'netelem_domain', '', 'domain number of netcell', '', output_mask, 0, cell_method='point', jabndnd=0, ivalid_max=ndomains)
       end if
