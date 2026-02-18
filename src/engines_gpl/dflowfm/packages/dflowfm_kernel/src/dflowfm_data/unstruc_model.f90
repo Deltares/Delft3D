@@ -757,10 +757,6 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
 
-      ! Dummy readout variables to read out deprecated/obsolete keywords for messages to appear
-      integer :: dummy_int
-      real(kind=dp) :: dummy_real
-
       istat = 0 ! Success
 
       ! Put .mdu file into a property tree
@@ -1056,14 +1052,6 @@ contains
       call prop_get(md_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile)
 
       ! Numerics
-      
-      ! Dummy reads to catch deprecated/obsolete keywords
-      call prop_get(md_ptr, 'numerics', 'CFLWaveFrac', dummy_real)
-      call prop_get(md_ptr, 'numerics', 'jaembed1d', dummy_int)
-      call prop_get(md_ptr, 'numerics', 'jaorgsethu', dummy_int)
-      call prop_get(md_ptr, 'numerics', 'maxitverticalforester', dummy_int)
-      call prop_get(md_ptr, 'numerics', 'noDerivedTypes', dummy_int)
-      call prop_get(md_ptr, 'numerics', 'qhrelax', dummy_real)
 
       call prop_get(md_ptr, 'numerics', 'CFLMax', cflmx)
       call prop_get(md_ptr, 'numerics', 'EpsMaxlev', epsmaxlev)
@@ -1360,9 +1348,6 @@ contains
 
       ! Physics
 
-      ! Dummy reads to catch deprecated/obsolete keywords
-      call prop_get(md_ptr, 'physics', 'effectspiral', dummy_real)
-
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef', frcuni)
       call prop_get(md_ptr, 'physics', 'UnifFrictType', ifrctypuni)
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D) ! TODO: LUMBRICUS: HK: ook UnifFrictType1D? EN/OF prof1d type --> frcutp(LF) zetten?
@@ -1622,10 +1607,6 @@ contains
          end if
       end if
 
-      ! Dummy reads to catch deprecated/obsolete keywords
-      call prop_get(md_ptr, 'wind', 'gapres', dummy_real)
-      call prop_get(md_ptr, 'wind', 'stericCorrection', dummy_int)
-
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 1)
@@ -1661,9 +1642,6 @@ contains
       call prop_get(md_ptr, 'wind', 'Wind_eachstep', update_wind_stress_each_time_step)
       call prop_get(md_ptr, 'wind', 'computedAirdensity', ja_computed_airdensity)
       call prop_get(md_ptr, 'Wind', 'rhoWaterInWindStress', rho_water_in_wind_stress)
-
-      ! Dummy reads to catch deprecated/obsolete keywords
-      call prop_get(md_ptr, 'waves', 'wavenikuradse', dummy_real)
 
       call prop_get(md_ptr, 'waves', 'Wavemodelnr', jawave)
       call prop_get(md_ptr, 'waves', 'Waveforcing', waveforcing)
@@ -1923,9 +1901,6 @@ contains
       !if (associated(trtdef_ptr)) call visit_tree(trtdef_ptr,1)
       trtdef_ptr => null()
 
-      ! Dummy read to catch deprecated/obsolete keywords
-      call prop_get(md_ptr, 'trachytopes', 'trtdt', dummy_real)
-
       call prop_get(md_ptr, 'trachytopes', 'TrtRou', md_trtrfile, success)
       if (strcmpi(md_trtrfile, 'Y')) then
          call tree_get_node_by_name(md_ptr, 'trachytopes', trtdef_ptr)
@@ -1948,9 +1923,6 @@ contains
       call prop_get(md_ptr, 'calibration', 'UseCalibration', jacali, success)
       call prop_get(md_ptr, 'calibration', 'DefinitionFile', md_cldfile, success)
       call prop_get(md_ptr, 'calibration', 'AreaFile', md_cllfile, success)
-
-      ! Dummy read to catch deprecated/obsolete keywords
-      call prop_get(md_ptr, 'output', 'wrishp_enc', dummy_int)
 
       call prop_get(md_ptr, 'output', 'ObsFile', md_obsfile, success)
       call prop_get(md_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, success)
@@ -2505,9 +2477,6 @@ contains
       end if
 
 !  processes (WAQ)
-
-      ! Dummy read to catch deprecated/obsolete keywords
-      call prop_get(md_ptr, 'processes', 'processFluxIntegration', dummy_int)
 
       call prop_get(md_ptr, 'processes', 'SubstanceFile', md_subfile, success)
       call prop_get(md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
