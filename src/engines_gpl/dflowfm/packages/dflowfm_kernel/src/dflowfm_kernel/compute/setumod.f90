@@ -36,7 +36,7 @@ module m_setumod
 
    private
 
-   public :: setumod
+   public :: setumod, compute_tangential_velocity_spherical
 
    real(kind=dp), dimension(:), allocatable :: hmin_, fcor1_, fcor2_
 
@@ -842,7 +842,7 @@ contains
          c12 = csu(L) * snu(L)
          c22 = snu(L)**2
 
-         suxL = (duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt) * vicL * hmin_(L) * wuL
+         suxL = (duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt) * vicL * hmin_(L) * wuL !> hmin multiplication if istresstyp = 3 (always!)
          suyL = (duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn) * vicL * hmin_(L) * wuL
          if (jsferic == 1 .and. jasfer3D == 1) then
             dvx1_ = +(csb_1(L) * suxL - snb_1(L) * suyL)

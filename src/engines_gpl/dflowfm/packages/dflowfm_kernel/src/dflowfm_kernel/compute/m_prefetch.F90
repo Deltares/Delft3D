@@ -108,10 +108,15 @@ contains
 
    end subroutine allocate_prefetch_arrays
 
+   !> prefetch ucx, ucy, ucxq and ucyq into link-based arrays for contiguous access in link-based loops.
    subroutine prefetch_node_velocities(ucx, ucy, ucxq, ucyq)
-      use m_flowgeom, only: lnx, lnx1D !, csu, snu
+      use m_flowgeom, only: lnx, lnx1D
 
-      real(dp), intent(in), contiguous :: ucx(:), ucy(:), ucxq(:), ucyq(:)
+      real(dp), intent(in), dimension(:), contiguous :: ucx !< ucx from m_flow
+      real(dp), intent(in), dimension(:), contiguous :: ucy !< ucy from m_flow
+      real(dp), intent(in), dimension(:), contiguous :: ucxq !< ucxq from m_flow
+      real(dp), intent(in), dimension(:), contiguous :: ucyq !< ucyq from m_flow
+
       integer :: L1, L2, L
 
       L1 = lnx1D + 1
@@ -133,12 +138,12 @@ contains
 
    end subroutine prefetch_node_velocities
 
-!> Transform corner velocities (ucnx/ucny)
+   !> prefetch corner velocities (ucnx/ucny) into link-based arrays for contiguous access in link-based loops.
    subroutine prefetch_corner_velocities(ucnx, ucny)
       use m_flowgeom, only: lnx1D, lnx
 
-      real(dp), intent(in), contiguous :: ucnx(:) ! Corner x-velocities (global frame)
-      real(dp), intent(in), contiguous :: ucny(:) ! Corner y-velocities (global frame)
+      real(dp), intent(in), dimension(:), contiguous :: ucnx !< ucnx from m_flow
+      real(dp), intent(in), dimension(:), contiguous :: ucny !< ucny from m_flow
 
       integer :: L1, L2, L
 
@@ -148,7 +153,6 @@ contains
       if (.not. is_initialized) return
 
       do L = L1, L2
-         ! In prefetch_corner_velocities, populate them:
          uxcorner_1(L) = ucnx(corner_map_1(L))
          uycorner_1(L) = ucny(corner_map_1(L))
          uxcorner_2(L) = ucnx(corner_map_2(L))
