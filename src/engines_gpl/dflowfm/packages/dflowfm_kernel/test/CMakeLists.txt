@@ -104,6 +104,7 @@ f90twtest(test_coordinate_transform
     LIBRARIES dflowfm_kernel
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
+copy_dflowfm_test_dependencies(test_coordinate_transform)
 
 f90twtest(test_bubblescreen
     CFILES test_bubblescreen.cpp

@@ -122,4 +122,85 @@ subroutine test_tangential_velocity_equivalence() bind(C)
 end subroutine test_tangential_velocity_equivalence
 !$f90tw)
 
+!$f90tw TESTCODE(TEST, test_coordinate_transform, test_compute_tangential_velocity_spherical, test_compute_tangential_velocity_spherical,
+subroutine test_compute_tangential_velocity_spherical() bind(C)
+   ! Test the compute_tangential_velocity_spherical function directly
+   use m_setumod, only: compute_tangential_velocity_spherical
+   use mathconsts, only: pi
+
+   real(kind=dp), parameter :: tolerance = 1e-12_dp
+   real(kind=dp) :: ux_node, uy_node, csb_node, snb_node, csu_link, snu_link
+   real(kind=dp) :: tangential, expected
+   real(kind=dp) :: angle_node, angle_link
+   real(kind=dp) :: ux_link, uy_link
+
+   ! Test 1: Simple case - velocities aligned with axes
+   ux_node = 1.0_dp
+   uy_node = 0.0_dp
+   csb_node = 1.0_dp  ! No rotation
+   snb_node = 0.0_dp
+   csu_link = 0.0_dp  ! Link at 90 degrees
+   snu_link = 1.0_dp
+   
+   tangential = compute_tangential_velocity_spherical(ux_node, uy_node, csb_node, snb_node, csu_link, snu_link)
+   expected = -1.0_dp  ! -snu * ux_link + csu * uy_link = -1*1 + 0*0 = -1
+   
+   call f90_expect_near(tangential, expected, tolerance, &
+                        "Test 1: Simple aligned case failed!")
+
+   ! Test 2: 45-degree node rotation, 30-degree link
+   angle_node = PI / 4.0_dp  ! 45 degrees
+   csb_node = cos(angle_node)
+   snb_node = sin(angle_node)
+   
+   angle_link = PI / 6.0_dp  ! 30 degrees
+   csu_link = cos(angle_link)
+   snu_link = sin(angle_link)
+   
+   ux_node = 1.5_dp
+   uy_node = 0.8_dp
+   
+   ! Manual calculation:
+   ! Step 1: Transform to link frame
+   ux_link = csb_node * ux_node + snb_node * uy_node
+   uy_link = -snb_node * ux_node + csb_node * uy_node
+   ! Step 2: Project to tangential
+   expected = -snu_link * ux_link + csu_link * uy_link
+   
+   tangential = compute_tangential_velocity_spherical(ux_node, uy_node, csb_node, snb_node, csu_link, snu_link)
+   
+   call f90_expect_near(tangential, expected, tolerance, &
+                        "Test 2: 45/30 degree case failed!")
+
+   ! Test 3: Zero velocity
+   ux_node = 0.0_dp
+   uy_node = 0.0_dp
+   tangential = compute_tangential_velocity_spherical(ux_node, uy_node, csb_node, snb_node, csu_link, snu_link)
+   expected = 0.0_dp
+   
+   call f90_expect_near(tangential, expected, tolerance, &
+                        "Test 3: Zero velocity case failed!")
+
+   ! Test 4: 90-degree rotation test
+   angle_node = PI / 2.0_dp  ! 90 degrees
+   csb_node = cos(angle_node)
+   snb_node = sin(angle_node)
+   csu_link = 1.0_dp  ! Link aligned with x
+   snu_link = 0.0_dp
+   
+   ux_node = 2.0_dp
+   uy_node = 3.0_dp
+   
+   ux_link = csb_node * ux_node + snb_node * uy_node
+   uy_link = -snb_node * ux_node + csb_node * uy_node
+   expected = -snu_link * ux_link + csu_link * uy_link
+   
+   tangential = compute_tangential_velocity_spherical(ux_node, uy_node, csb_node, snb_node, csu_link, snu_link)
+   
+   call f90_expect_near(tangential, expected, tolerance, &
+                        "Test 4: 90-degree rotation failed!")
+
+end subroutine test_compute_tangential_velocity_spherical
+!$f90tw)
+
 end module test_coordinate_transform
