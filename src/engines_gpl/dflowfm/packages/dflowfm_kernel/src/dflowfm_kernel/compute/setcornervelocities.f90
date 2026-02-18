@@ -47,8 +47,8 @@ contains
       use m_flowgeom, only: ucnx, ucny, lnx1d, lnx, ln, lncn, wcnx3, wcny3, wcnx4, wcny4, mxban, nban, banf, ban, nrcnw, cscnw, sncnw, kcnw, kcu, wcln, csb, snb
       use m_sferic, only: jasfer3d
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_nod2linx, only: nod2linx, nod2linx_fast, nod2liny_fast
-      use m_nod2liny, only: nod2liny
+      use m_nod2linx, only: nod2linx, nod2linx_fast
+      use m_nod2liny, only: nod2liny, nod2liny_fast
 
       integer :: L, k1, k2, k3, k4, k, kk, LL, Lb, Lt, kw
       integer :: m, n

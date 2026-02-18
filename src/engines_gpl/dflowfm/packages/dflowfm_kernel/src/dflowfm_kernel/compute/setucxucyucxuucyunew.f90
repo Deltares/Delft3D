@@ -54,8 +54,8 @@ contains
       use m_get_Lbot_Ltop
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
-      use m_nod2linx, only: nod2linx, nod2linx_fast, nod2liny_fast
-      use m_nod2liny, only: nod2liny
+      use m_nod2linx, only: nod2linx, nod2linx_fast
+      use m_nod2liny, only: nod2liny, nod2liny_fast
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
       implicit none
 
