@@ -91,6 +91,13 @@ class TestSetRunner(ABC):
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
 
+        # Prepare cases (download input and reference data, validate etc.)
+        # Parallel download is not supported by DVC.
+        for config in self.__settings.configs_to_run:
+            log_sub_header(f"Preparing test case name = '{config.name}'", self.__logger)
+            self.prepare_test_case(config, self.__logger)
+            log_separator(self.__logger, char="-")
+
         results = (
             self.run_tests_in_parallel()
             if self.__settings.command_line_settings.parallel
@@ -224,10 +231,6 @@ class TestSetRunner(ABC):
         )
 
         try:
-            log_sub_header(f"Preparing test case name = '{config.name}'", logger)
-            self.__prepare_test_case(config, logger)
-            log_separator(logger, char="-")
-
             # Run testcase
             testcase = TestCase(config, logger)
 
@@ -522,7 +525,7 @@ class TestSetRunner(ABC):
             yield Program(program_configuration, self.settings)
         log_separator(self.__logger, char="-", with_new_line=True)
 
-    def __prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
+    def prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Prepare test case based on provided config (download input & reference data).
 
         Parameters
