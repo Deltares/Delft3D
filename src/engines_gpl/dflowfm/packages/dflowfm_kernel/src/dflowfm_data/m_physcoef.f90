@@ -1,11 +1,45 @@
+!----- AGPL --------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
+!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
+!> @file modules.f90
+!! Modules with global data.
+!! call default_*() routines upon program startup and when loading a new MDU.
+!! call only reset_*() routines when reinitialising an active flow model.
+
 module m_physcoef
    use precision, only: dp
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
    use m_array_or_scalar, only: t_array_or_scalar
    implicit none
 
-   real(kind=dp) :: ag = 9.81_dp !< gravitational acceleration (m/s2)
-   real(kind=dp) :: sag = sqrt(9.81_dp) !< sqrt(ag)
+   real(kind=dp) :: ag !< gravitational acceleration (m/s2)
+   real(kind=dp) :: sag !< sqrt(ag)
    integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
    real(kind=dp), parameter :: vonkar = 0.41_dp !< von Karman constant ()
    real(kind=dp), parameter :: vonkarw = 0.40_dp !< von Karman constant used in wind formulations
@@ -16,13 +50,13 @@ module m_physcoef
    real(kind=dp), parameter :: frcuniroofgutterpipe = 0.035
    real(kind=dp), parameter :: frcuniroof = 0.030
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
-   real(kind=dp) :: frcmax = 0.0_dp !< max friction coeff in frcu
+   real(kind=dp) :: frcmax !< max friction coeff in frcu
 
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
    real(kind=dp) :: frcunilin !< uniform friction coeff
    real(kind=dp) :: umodlin !< linear friction umod, friction type 4,5,6
 
-   real(kind=dp) :: wall_ks = 0.0_dp !< vertical wall Nikuradse roughness (m)
+   real(kind=dp) :: wall_ks !< vertical wall Nikuradse roughness (m)
    real(kind=dp) :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
                             !! z0 for bottom follows from friction type R_WHITE_COLEBROOK and z0=frcuni
    real(kind=dp) :: z0 !< z0
@@ -30,23 +64,23 @@ module m_physcoef
    real(kind=dp) :: vicouv !< constant horizontal eddy viscosity   (m2/s) mom
    real(kind=dp) :: dicouv !< constant horizontal eddy diffusivity (m2/s) sal, sed
 
-   real(kind=dp)  :: Elder = 0.0_dp !< add Elder viscosity
-   real(kind=dp) :: Smagorinsky = 0.2_dp !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
+   real(kind=dp) :: Elder !< add Elder viscosity
+   real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
    real(kind=dp), parameter :: viuchk = 0.24_dp !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
    real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity (m2/s)
    real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
    class(t_array_or_scalar), allocatable, target :: dicoww !< abstract class instance for dicoww, either scalar or array depending on user input
 
-   real(kind=dp) :: rhomean = 1000.0_dp !< mean ambient density (kg/m3)
-   real(kind=dp) :: rhog = 9.81_dp * 1000.0_dp !< rhomean*g
+   real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
+   real(kind=dp) :: rhog !< rhomean*g
    real(kind=dp), parameter :: c9of1 = 9.0_dp !< vonkar/log(c9of1 + dzb / z0)
 
    !< Molecular diffusivity coefficients (m2/s):
    real(kind=dp), parameter :: viskin = 1e-6_dp !< kinematic  viscosity water in keps model
-   real(kind=dp) :: vismol = 4.0_dp / (20.0_dp + 20.0_dp) * 1e-5_dp !< molecular viscosity (m2/s), calculated at backgroundwatertemperature=20
-   real(kind=dp) :: difmolsal = 1e-6_dp / 700.0_dp !< molecular diffusivity of salinity, viskin/700
-   real(kind=dp) :: difmoltem = 1e-6_dp / 6.7_dp !< diffusivity of temperature, viskin/6.7
+   real(kind=dp) :: vismol !< molecular viscosity (m2/s)
+   real(kind=dp) :: difmolsal !< molecular diffusivity of salinity
+   real(kind=dp) :: difmoltem !<           diffusivity of temperature
    real(kind=dp), parameter :: difmolsed = 0.0_dp !< diffusivity of sediment
    real(kind=dp), parameter :: difmoltracer = 0.0_dp !< diffusivity of tracers
 
@@ -100,6 +134,7 @@ contains
       frcuni1D = 0.023_dp
       frcuni1D2D = 0.023_dp
       frcuni1Dgrounlay = 0.05_dp
+      frcmax = 0.0_dp
       ifrctypuni = 1
       frcunilin = 0.0_dp
       umodlin = 1.0_dp
