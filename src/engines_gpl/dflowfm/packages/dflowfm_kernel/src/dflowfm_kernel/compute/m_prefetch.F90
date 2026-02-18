@@ -59,6 +59,7 @@ module m_prefetch
 
 contains
 
+   !> allocate all prefetch arrays, called once during model initialization.
    subroutine allocate_prefetch_arrays()
       use m_flowgeom, only: lnx, ln, lncn
       use m_sferic, only: jsferic, jasfer3D
@@ -161,6 +162,7 @@ contains
 
    end subroutine prefetch_corner_velocities
 
+   !> deallocate all prefetch arrays, mostly for unit testability
    subroutine cleanup_prefetch_arrays()
 
       if (is_initialized) then

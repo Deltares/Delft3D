@@ -91,7 +91,7 @@ contains
       real(kind=dp) :: cs, sn
       real(kind=dp) :: hmin, hs1, hs2
       real(kind=dp) :: fcor, vcor, fcor1, fcor2, fvcor
-      real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty !, vksag6, Cz
+      real(kind=dp) :: dundn, dutdn, dundt, dutdt, shearvar, delty
       real(kind=dp) :: huv
       real(kind=dp), allocatable :: u1_tmp(:), vluban(:)
       integer :: nw, L1, L2, kt, Lb, Lt, Lb1, Lt1, Lb2, Lt2, kb1, kb2, ntmp, m
@@ -218,7 +218,7 @@ contains
       if (newcorio == 1 .and. icorio > 0) then
          if (icorio <= 20 .and. kmx == 0) then
 
-            call compute_coriolis_correction_2D_default(icorio, jsferic, jacorioconstant, jasfer3D, fcorio, trshcorio, Corioadamsbashfordfac)
+            call compute_coriolis_correction_2D_default(icorio, jsferic, jasfer3D, jacorioconstant, fcorio, trshcorio, Corioadamsbashfordfac)
 
          else if (icorio < 40) then
             fcor1 = fcorio
@@ -759,16 +759,16 @@ contains
       end if
       if (Elder > 0.0_dp) then !  add Elder
          chezy_elder = get_chezy(hu, frcu, u1, v, ifrcutp)
-         chezy_elder = Elder * (vksag6 / chezy_elder) * (hu) * sqrt(u1 * u1 + v**2)
+         chezy_elder = Elder * (vksag6 / chezy_elder) * (hu) * sqrt(u1**2 + v**2)
       end if
 
       !$OMP SIMD
       do L = L1, L2
          vicL = 0.0_dp
          wuiL = wui(L)
-         wuL = 1 / wuiL
+         wuL = 1.0_dp / wuiL
          dxL = dx(L)
-         dxiL = 1 / dxL
+         dxiL = 1.0_dp / dxL
          if (Elder > 0.0_dp) then !  add Elder
             vicL = vicL + chezy_elder(L)
          end if
@@ -894,10 +894,6 @@ contains
 
       !$OMP SIMD
       do L = lnx1D + 1, lnx
-         cs = csu(L)
-         sn = snu(L)
-         acL_LL = acL(L)
-         acL_iv = 1.0_dp - acL_LL
          if (jasfer3D) then
             ucx_link_1 = +csb_1(L) * ucx_1(L) + snb_1(L) * ucy_1(L)
             ucy_link_1 = -snb_1(L) * ucx_1(L) + csb_1(L) * ucy_1(L)
@@ -909,6 +905,10 @@ contains
             ucx_link_2 = ucx_2(L)
             ucy_link_2 = ucy_2(L)
          end if
+         acL_LL = acL(L)
+         acL_iv = 1.0_dp - acL_LL
+         cs = csu(L)
+         sn = snu(L)
          v_ = acL_LL * (-sn * ucx_link_1 + cs * ucy_link_1) + &
               acL_iv * (-sn * ucx_link_2 + cs * ucy_link_2)
          if (hu(L) > 0.0_dp) then
@@ -923,7 +923,7 @@ contains
       use precision, only: dp
       use m_flow, only: hu, hs, suu, dvxc, dvyc
       use m_flowgeom, only: lnx, lnx1D, ln, csu, snu, acl
-      use m_flowparameters, only: epshu, istresstyp
+      use m_flowparameters, only: epshu
       use m_sferic, only: jasfer3D
       use m_prefetch, only: csb_1, snb_1, csb_2, snb_2, bai_1, bai_2
 
@@ -957,9 +957,9 @@ contains
 
                suu(L) = acl_L * bai_1(L) * suu_1 + acl_iv * bai_2(L) * suu_2
 
-               if (istresstyp == 3) then
-                  suu(L) = suu(L) / huv
-               end if
+               !if (istresstyp == 3) then
+               suu(L) = suu(L) / huv
+               !end if
             end if
          end if
       end do
