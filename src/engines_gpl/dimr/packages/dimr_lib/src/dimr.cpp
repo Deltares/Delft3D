@@ -118,8 +118,8 @@ Dimr::Dimr(void) {
     dirSeparator = "\\";
 #endif
     // Do not remove the next two lines; they ensure that the version numbers are added to the binary
-    char* dimrlibversion = getversionidstring_dimr_lib();
-    char* dimrurl = geturlstring_dimr_lib();
+    const char* dimrlibversion = getversionidstring_dimr_lib();
+    const char* dimrurl = geturlstring_dimr_lib();
     this->timerStartStamp = clock->Epoch();
     this->timerSumStamp = 0;
 }
@@ -1566,7 +1566,7 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
         // No <process> specified, default: only run on rank #0.
         log->Write(ALL, my_rank, "INFO: \"<process>\" not specified for component \"%s\". Assuming it only runs on rank #0.", newComp->name);
         newComp->numProcesses = 1;
-        char* defaultProc = "0";
+        const char* defaultProc = "0";
         char_to_ints(defaultProc, &(newComp->processes), &(newComp->numProcesses));
 
         newComp->onThisRank = (my_rank == 0);
@@ -2150,7 +2150,7 @@ void Dimr::timerFinish(void)
 
 
 //------------------------------------------------------------------------------
-void Dimr::char_to_ints(char* line, int** iarr, int* count) {
+void Dimr::char_to_ints(const char* line, int** iarr, int* count) {
     std::stringstream stream(line);
     // TODO: support also:
     // The processes may be specified as a space separated list with series compressed using colons

@@ -195,7 +195,7 @@ kombu==5.6.2
     #   celery
     #   dvc
     #   dvc-task
-lxml==6.0.2
+lxml==5.4.0
     # via deltares-testbench (pyproject.toml)
 markdown-it-py==4.0.0
     # via rich
@@ -254,7 +254,7 @@ propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
-psutil==7.2.2
+psutil==7.2.1
     # via
     #   dvc
     #   flufl-lock

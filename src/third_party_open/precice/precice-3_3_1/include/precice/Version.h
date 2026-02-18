@@ -4,9 +4,9 @@
 
 #define PRECICE_VERSION_MAJOR 3
 #define PRECICE_VERSION_MINOR 3
-#define PRECICE_VERSION_PATCH 0
+#define PRECICE_VERSION_PATCH 1
 
-#define PRECICE_VERSION "3.3.0"
+#define PRECICE_VERSION "3.3.1"
 
 // clang-format on
 

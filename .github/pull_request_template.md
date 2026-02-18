@@ -4,7 +4,7 @@
 
 - e.g. Restarts are made more robust 
 - e.g. Fixes a bug related to the writing of water depth on the map file 
-- e.g. Introduces a new functionality on energy losses at bridge peirs 
+- e.g. Introduces a new functionality on energy losses at bridge piers
 - e.g. … 
  
 

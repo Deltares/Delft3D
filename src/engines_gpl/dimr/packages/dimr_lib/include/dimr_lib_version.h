@@ -30,11 +30,11 @@
 
 /*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE ===================================================================== */
 
-char * getversionstring_dimr_lib(void);
-char * getfullversionstring_dimr_lib(void);
-char * getshortversionstring_dimr_lib(void);
-char * geturlstring_dimr_lib(void);
-char * getversionidstring_dimr_lib(void);
+const char * getversionstring_dimr_lib(void);
+const char * getfullversionstring_dimr_lib(void);
+const char * getshortversionstring_dimr_lib(void);
+const char * geturlstring_dimr_lib(void);
+const char * getversionidstring_dimr_lib(void);
 
 #endif /* DIMR_LIB_VERSION */
 

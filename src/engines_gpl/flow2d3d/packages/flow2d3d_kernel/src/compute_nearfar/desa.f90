@@ -137,6 +137,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     integer                              :: n
     integer                              :: m
     integer                              :: ndis_track
+    integer                              :: iweight
     integer                              :: sink_cnt
     integer                              :: sour_cnt
     integer                              :: src_index
@@ -178,6 +179,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     integer, dimension(:), allocatable   :: m_dis
     integer, dimension(:), allocatable   :: k_dis
     integer, dimension(:), allocatable   :: rowid_dis
+    logical                              :: nf_src_weight      ! TRUE: the weight of a source is read from the last column, FALSE: each source is assumed to have a weight of 1
     logical                              :: inside
     logical                              :: new_cell
     logical                              :: centre_and_width   ! TRUE: >=1 sinks and exactly 1 source point.
@@ -466,6 +468,20 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
           ndis_track = 0
           weight     = 0.0_fp
           wght_tot   = 0.0_fp
+          
+          !
+          ! Check whether the last column of the source table represents the weight of each source
+          !          
+          iweight = size(nf_sour,2)
+          if (iweight == 6 .or. iweight == 8)  then
+             nf_src_weight = .false.
+             ! Do not use iweight:
+             iweight = -1
+          else
+             nf_src_weight = .true.
+             ! and iweight can be used
+          endif
+
           do itrack = 1, sour_cnt
              ! Combine source points that are in the same cell. This is needed because of the ugly "disnf>0" test later on.
              !
@@ -508,8 +524,16 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                    icur               = ndis_track
                 endif
              endif
-             weight(icur) = weight(icur) + 1.0_fp
-             wght_tot     = wght_tot     + 1.0_fp
+             
+             ! Calculate source weight (per cell and total)
+             if (nf_src_weight) then
+                weight(icur) = weight(icur) + nf_sour(itrack,iweight)
+                wght_tot     = wght_tot     + nf_sour(itrack,iweight)
+             else
+                weight(icur) = weight(icur) + 1.0_fp
+                wght_tot     = wght_tot     + 1.0_fp
+             endif		 
+	   
           enddo
        endif
        !

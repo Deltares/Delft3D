@@ -32,7 +32,7 @@ set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
 
 # Specify C++ standard for all targets, disable compiler specific extentions
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

@@ -201,5 +201,52 @@
           </parameters>
         </file>
       </checks>              
-  </testCase>
+    </testCase>
+    <testCase name="e02_f030_c301_dllso_Apptainer" ref="dimr_trunk"> <!-- dflowfm + dwaq -->	
+		<path version="2026-02-03T14:00:00.00000">e02_dflowfm/f030_water_quality_processes/c301_dllso_Apptainer</path>
+		<checks>
+		  <file name="FlowFM_map.nc" type="netCDF">
+			  <parameters>
+				<parameter name="Foo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+				<parameter name="Boo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+			  </parameters>
+		  </file>
+		  <file name="FlowFM_his.nc" type="netCDF">
+			  <parameters>
+				<parameter name="Foo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+				<parameter name="Boo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+			  </parameters>
+		  </file>
+		</checks>
+    </testCase>
+    <testCase name="e02_f030_c302_dllso_parallel_Apptainer" ref="dimr_trunk"> <!-- dflowfm + dwaq -->
+		<path version="2026-02-03T14:00:00.00000">e02_dflowfm/f030_water_quality_processes/c302_dllso_parallel_Apptainer</path>
+		<checks>
+		  <file name="output/FlowFM_0000_map.nc" type="netCDF">
+			  <parameters>
+				<parameter name="mesh2d_Foo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+				<parameter name="mesh2d_Boo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+			  </parameters>
+		  </file>
+		  <file name="output/FlowFM_0001_map.nc" type="netCDF">
+			  <parameters>
+				<parameter name="mesh2d_Foo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+				<parameter name="mesh2d_Boo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+			  </parameters>
+		  </file>
+		  <file name="output/FlowFM_0002_map.nc" type="netCDF">
+			  <parameters>
+				<parameter name="mesh2d_Foo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+				<parameter name="mesh2d_Boo" toleranceAbsolute="0.1" toleranceRelative="0.1"/>
+			  </parameters>
+		  </file>
+		</checks>
+    </testCase>
+
+
+
+  
+  
+  
+  
 </testCases>
