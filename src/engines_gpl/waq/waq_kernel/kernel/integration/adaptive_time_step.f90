@@ -2281,8 +2281,21 @@ contains
 
                 source_is_bc = is_bc_cell(i_source)
                 target_is_bc = is_bc_cell(i_target)
-                source_has_cfl_risk = (dt_box_cell(i_source) == count_boxes + 1) ! cell with risk not to be CFl compliant, previously named wetting == partially filled cell
-                target_has_cfl_risk = (dt_box_cell(i_target) == count_boxes + 1) ! cell with risk not to be CFl compliant, previously named wetting == partially filled cell
+
+                if (source_is_bc) then
+                    source_has_cfl_risk = .false. ! boundary condition cell is assumed to have enough water not to go dry
+                else if (dt_box_cell(i_source) == count_boxes + 1) then
+                    source_has_cfl_risk = .true. ! cell with risk not to be CFL compliant, previously named wetting == partially filled cell
+                end if
+
+                if (target_is_bc) then
+                    target_has_cfl_risk = .false. ! boundary condition cell is assumed to have enough water not to go dry
+                else if (dt_box_cell(i_target) == count_boxes + 1) then
+                    target_has_cfl_risk = .true. ! cell with risk not to be CFL compliant, previously named wetting == partially filled cell
+                end if
+
+                !!source_has_cfl_risk = (dt_box_cell(i_source) == count_boxes + 1) ! cell with risk not to be CFl compliant, previously named wetting == partially filled cell
+                !!target_has_cfl_risk = (dt_box_cell(i_target) == count_boxes + 1) ! cell with risk not to be CFl compliant, previously named wetting == partially filled cell
 
                 if (source_has_cfl_risk) then
                     i_source = get_top_cell_index(i_source, nvert, ivert)
