@@ -66,7 +66,6 @@ contains
       integer :: L_mask, n_mask
 !TODO remove save and deallocate?
       real(kind=dp), allocatable, save :: workL(:)
-      real(kind=dp), pointer, dimension(:) :: p_data
       real(kind=dp), allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
 ! temporary UGRID fix
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
@@ -97,7 +96,7 @@ contains
          end if
          ! Internal 2d netnodes. Horizontal position: nodes in 2d mesh.
          if (id_var(2) > 0 .and. output_mask%ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
-            ierr = nf90_put_var(ncid, id_var(2), p_data(output_mask%remap(values, 1, output_mask%numk, UNC_LOC_CN)), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), output_mask%remap(values, 1, output_mask%numk, UNC_LOC_CN), start=[1, id_tsp%idx_curtime])
          end if
 
       case (UNC_LOC_S) ! Pressure point location
