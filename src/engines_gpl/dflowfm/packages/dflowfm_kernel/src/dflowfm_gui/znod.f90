@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -75,7 +75,9 @@ contains
       if (kmx > 0) then
          if (kplotordepthaveraged == 1) then
             call getktoplot(kk, k)
-            if (k < 0) return
+            if (k < 0) then
+               return
+            end if
          end if
       end if
 
@@ -111,13 +113,15 @@ contains
             znod = ucyq_mor(k)
          end if
       else if (nodval == 11) then
-         if (jasal > 0) znod = constituents(isalt, k)
+         if (jasal > 0) then
+            znod = constituents(isalt, k)
+         end if
       else if (nodval == 12) then
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (jafahrenheit == 0) then
                znod = constituents(itemp, k)
             else
-               znod = 32d0 + (9d0 / 5d0) * constituents(itemp, k)
+               znod = 32.0_dp + (9.0_dp / 5.0_dp) * constituents(itemp, k)
             end if
          end if
       else if (nodval == 13) then
@@ -130,7 +134,7 @@ contains
          if (hs(kk) > 0) then
             znod = sqrt(ucx(k) * ucx(k) + ucy(k) * ucy(k)) / sqrt(ag * hs(kk)) ! Froude
          else
-            znod = 0d0
+            znod = 0.0_dp
          end if
       else if (nodval == 15) then
          znod = kk
@@ -152,17 +156,21 @@ contains
             znod = seq(jgrtek)
          end if
       else if (nodval == 23) then
-         znod = qin(k) ! turkinepsws(1,k)
+         znod = qin(k)
       else if (nodval == 24) then
-         if (mxgr > 1 .and. jaceneqtr == 1) znod = grainlay(jgrtek, kk)
+         if (mxgr > 1 .and. jaceneqtr == 1) then
+            znod = grainlay(jgrtek, kk)
+         end if
       else if (nodval == 25 .and. kmx > 0) then
          znod = ktop(kk) - kbot(kk) + 1
       else if (nodval == 26) then
-         if (squ(k) > 0d0 .and. vol1(k) > 0d0) then
+         if (squ(k) > 0.0_dp .and. vol1(k) > 0.0_dp) then
             znod = vol1(k) / squ(k)
          end if
       else if (nodval == 27) then
-         if (kmx > 1) znod = vicwws(k)
+         if (kmx > 1) then
+            znod = vicwws(k)
+         end if
          ! 28 = substi/cg
       else if (nodval == 29) then
          if (allocated(tidep)) then
@@ -179,12 +187,16 @@ contains
             znod = min(znod, vol1(k) / max(squ(k), eps10))
          end do
       else if (nodval == 31) then
-         if (air_pressure_available) znod = air_pressure(kk)
+         if (air_pressure_available) then
+            znod = air_pressure(kk)
+         end if
       else if (nodval == 32) then
-         if (numlimdt(kk) > 0) znod = numlimdt(kk)
+         if (numlimdt(kk) > 0) then
+            znod = numlimdt(kk)
+         end if
       else if (nodval == 33) then
-         ZNOD = (ucx(k) * ucx(k) + ucy(k) * ucy(k)) / (2d0 * ag)
-         znod = u1(min(k, lnx)) * u1(min(k, lnx)) / (2d0 * ag)
+         ZNOD = (ucx(k) * ucx(k) + ucy(k) * ucy(k)) / (2.0_dp * ag)
+         znod = u1(min(k, lnx)) * u1(min(k, lnx)) / (2.0_dp * ag)
          znod = znod + s1(kk)
 
          plotlin(kk) = znod
@@ -206,7 +218,7 @@ contains
 
       else if (nodval == 37) then
 
-         if (Soiltempthick > 0 .and. jatem > 0) then
+         if (Soiltempthick > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
             znod = tbed(kk)
          else
             znod = same(k)
@@ -218,7 +230,7 @@ contains
 
       else if (nodval == 39) then
 
-         if (flowWithoutWaves) then
+         if (flow_without_waves) then
             jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
          else
             jawaveswartdelwaq_local = jawaveswartdelwaq
@@ -229,13 +241,13 @@ contains
 
          znod = rain(kk)
 
-      else if (nodval == 41 .and. jatem > 0) then
+      else if (nodval == 41 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = relative_humidity(kk)
-      else if (nodval == 42 .and. jatem > 0) then
+      else if (nodval == 42 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = air_temperature(kk)
-      else if (nodval == 43 .and. jatem > 0) then
+      else if (nodval == 43 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = cloudiness(kk)
-      else if (nodval == 44 .and. jatem > 0 .and. allocated(solar_radiation)) then
+      else if (nodval == 44 .and. temperature_model /= TEMPERATURE_MODEL_NONE .and. allocated(solar_radiation)) then
          znod = solar_radiation(kk)
       else if (nodval == 45 .and. NUMCONST > 0) then
          if (iconst_cur > 0 .and. iconst_cur <= NUMCONST) then
@@ -245,7 +257,7 @@ contains
          if (allocated(FrcInternalTides2D)) then
             znod = FrcInternalTides2D(kk)
          else
-            znod = turkinepsws(1, k)
+            znod = turkinws(k)
          end if
       else if (nodval == 47 .and. (jagrw > 0 .or. jadhyd > 0)) then
          select case (grwhydopt)
@@ -259,7 +271,7 @@ contains
             end if
          case (4) ! Infiltration capacity
             if (infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) then
-               znod = infiltcap(kk) * 1d3 * 3600d0 ! m/s -> mm/hr
+               znod = infiltcap(kk) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
             end if
          case (6) ! Interception layer thickness
             if (interceptionmodel == DFM_HYD_INTERCEPT_LAYER) then
@@ -271,11 +283,11 @@ contains
             end if
          case (8) ! Potential evaporation            (mm/hr)
             if (jadhyd == 1) then
-               znod = PotEvap(kk) * 1d3 * 3600d0 ! m/s -> mm/hr
+               znod = PotEvap(kk) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
             end if
          case (9) ! Actual evaporation open water    (mm/hr)
             if (jadhyd == 1) then
-               znod = ActEvap(kk) * 1d3 * 3600d0 ! m/s -> mm/hr
+               znod = ActEvap(kk) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
             end if
          end select
 
@@ -293,15 +305,15 @@ contains
          end if
       else if (nodval == 50) then
          if (janudge > 0) then
-            znod = 0d0
-            if (nudge_rate(kk) > 0d0) then
-               znod = 1d0 / nudge_rate(kk)
+            znod = 0.0_dp
+            if (nudge_rate(kk) > 0.0_dp) then
+               znod = 1.0_dp / nudge_rate(kk)
             end if
          else if (nshiptxy > 0) then
             znod = s1(kk) + zsp(kk)
          end if
 
-      else if (nodval == numoptwav .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      else if (nodval == numoptwav .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
          if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
             select case (waveparopt)
             case (1)
@@ -350,12 +362,12 @@ contains
             case (5)
                znod = ust_mag(k)
             case (6)
-               if (twav(kk) > 0d0) then
+               if (twav(kk) > 0.0_dp) then
                   call wavenr(hs(kk), twav(kk), rkk, ag)
                   znod = rkk
                end if
             case (7)
-               if (twav(kk) > 0d0) then
+               if (twav(kk) > 0.0_dp) then
                   call wavenr(hs(kk), twav(kk), rkk, ag)
                   shs = sinhsafei(rkk * hs(kk))
                   znod = shs
@@ -411,7 +423,7 @@ contains
                   znod = kwav(kk)
                end if
             case (22)
-               znod = mod(270d0 - phiwav(kk), 360d0)
+               znod = mod(270.0_dp - phiwav(kk), 360.0_dp)
 
             case (23)
                if (jawave == WAVE_SURFBEAT) then
@@ -495,19 +507,19 @@ contains
          case (1)
             znod = mtd%blchg(kk)
          case (2)
-            dum = 0d0
+            dum = 0.0_dp
             do l = 1, stmpar%lsedsus
                dum = dum + sedtra%sourse(kk, l)
             end do
             znod = dum
          case (3)
-            dum = 0d0
+            dum = 0.0_dp
             do l = 1, stmpar%lsedsus
                dum = dum + sedtra%sinkse(kk, l)
             end do
             znod = dum
          case (4)
-            dum = 0d0
+            dum = 0.0_dp
             do l = 1, stmpar%lsedtot
                dum = dum + hypot(sedtra%sxtot(kk, l), sedtra%sytot(kk, l))
             end do

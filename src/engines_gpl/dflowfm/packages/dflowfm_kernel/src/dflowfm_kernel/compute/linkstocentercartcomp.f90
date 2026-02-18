@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,11 +50,12 @@ contains
 
       integer :: L, k1, k2, k3, LL, LLL, Lb, Lt
 
-      vnod = 0d0
+      vnod = 0.0_dp
       if (kmx == 0) then
          do L = 1, nd(knod)%lnx
             LL = abs(L)
-            k1 = ln(1, LL); k2 = ln(2, LL)
+            k1 = ln(1, LL)
+            k2 = ln(2, LL)
             if (k1 == knod) then
                vnod(1, 1) = vnod(1, 1) + vlin(LL) * wcx1(LL)
                vnod(2, 1) = vnod(2, 1) + vlin(LL) * wcy1(LL)
@@ -68,10 +69,13 @@ contains
       else
          do L = 1, nd(knod)%lnx
             LL = abs(nd(knod)%ln(L))
-            k1 = ln(1, LL); k2 = ln(2, LL)
+            k1 = ln(1, LL)
+            k2 = ln(2, LL)
             if (k1 == knod) then
                call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do LLL = Lb, Lt
                   k3 = LLL - Lb + 1
                   vnod(1, k3) = vnod(1, k3) + vlin(LLL) * wcx1(LL)
@@ -81,7 +85,9 @@ contains
             !
             if (k2 == knod) then
                call getLbotLtop(LL, Lb, Lt)
-               if (Lt < Lb) cycle
+               if (Lt < Lb) then
+                  cycle
+               end if
                do LLL = Lb, Lt
                   k3 = LLL - Lb + 1
                   vnod(1, k3) = vnod(1, k3) + vlin(LLL) * wcx2(LL)

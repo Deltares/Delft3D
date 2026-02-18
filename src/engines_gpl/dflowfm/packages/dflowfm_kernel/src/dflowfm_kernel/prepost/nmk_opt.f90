@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,8 +49,12 @@ contains
 !  default value
       nmk_opt = 6
 
-      if (nb(k) == 2) nmk_opt = 4
-      if (nb(k) == 3) nmk_opt = 3
+      if (nb(k) == 2) then
+         nmk_opt = 4
+      end if
+      if (nb(k) == 3) then
+         nmk_opt = 3
+      end if
 
       return
    end function nmk_opt

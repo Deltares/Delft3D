@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -71,7 +71,9 @@ contains
 
       linkmode = ndraw(11)
       if (LINKMODE > 1 .and. ndraw(29) >= 2) then ! show VALUES AT links
-         if (NDRAW(7) == 1) call minmxlns() ! ONLY ADAPT VERTICAL LIMITS FOR FLOW links IF NO NET links ASKED
+         if (NDRAW(7) == 1) then
+            call minmxlns() ! ONLY ADAPT VERTICAL LIMITS FOR FLOW links IF NO NET links ASKED
+         end if
 
          call setisoscale2is1()
 
@@ -81,7 +83,9 @@ contains
             do k = 1, ndx2d
                if (mod(k, 200) == 0) then
                   call halt2(ja)
-                  if (ja == 1) return
+                  if (ja == 1) then
+                     return
+                  end if
                end if
                if (inview(xz(k), yz(k))) then
                   call ISOSMOOTHflownode2(k)
@@ -92,19 +96,23 @@ contains
             do L = 1, lnx
                if (mod(L, 200) == 0) then
                   call halt2(ja)
-                  if (ja == 1) return
+                  if (ja == 1) then
+                     return
+                  end if
                end if
 
                if (inview(xu(L), yu(L))) then
-                  ZZ1 = 0d0 !Bob(1,L)
-                  ZZ2 = 0d0 !Bob(2,L)
+                  ZZ1 = 0.0_dp !Bob(1,L)
+                  ZZ2 = 0.0_dp !Bob(2,L)
 
                   xcl = xu(L)
                   ycl = yu(L)
                   zcl = 0.5 * (ZZ1 + ZZ2)
 
                   zl = zlin(L)
-                  if (zL == DMISS) cycle
+                  if (zL == DMISS) then
+                     cycle
+                  end if
                   call ISOCOL2(zl, NCOL)
 
                   k1 = ln(1, L)
@@ -135,10 +143,10 @@ contains
                         call PFILLERCORE(Xr, Yr, 4)
                      else
 !                     hw    = 0.25d0*( a1(k1) + a1(k2) )/dx(L)
-                        if (hu(L) > 0d0) then
-                           hw = 0.5d0 * Au(L) / hu(L) ! flat bed, half width
+                        if (hu(L) > 0.0_dp) then
+                           hw = 0.5_dp * Au(L) / hu(L) ! flat bed, half width
                         else
-                           hw = 1d-3
+                           hw = 1.0e-3_dp
                         end if
                         if (jsferic == 1) then
                            hw = hw * rd2dg / ra

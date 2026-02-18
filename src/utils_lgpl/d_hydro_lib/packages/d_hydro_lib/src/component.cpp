@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -61,13 +61,13 @@ Component::Run (
     void
     ) {
 
-    char * message = "A DeltaresHydro component's Run method was not overridden";
+    const char * message = "A DeltaresHydro component's Run method was not overridden";
     printf ("ERROR: %s\n", message);
 
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
     }
 
 
@@ -79,13 +79,13 @@ Component::Init (
     void
     ) {
 
-    char * message = "A DeltaresHydro component's Init method was not overridden";
+    const char * message = "A DeltaresHydro component's Init method was not overridden";
     printf ("ERROR: %s\n", message);
 
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
     }
 
 
@@ -97,13 +97,13 @@ Component::Step (
     double stepSize
     ) {
 
-    char * message = "A DeltaresHydro component's Step method was not overridden";
+    const char * message = "A DeltaresHydro component's Step method was not overridden";
     printf ("ERROR: %s\n", message);
 
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
     }
 
 
@@ -115,13 +115,13 @@ Component::Finish (
     void
     ) {
 
-    char * message = "A DeltaresHydro component's Finish method was not overridden";
+    const char * message = "A DeltaresHydro component's Finish method was not overridden";
     printf ("ERROR: %s\n", message);
 
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
     }
 
 
@@ -133,13 +133,13 @@ Component::GetStartTime (
     void
     ) {
 
-    char * message = "A DeltaresHydro component's GetStartTime method was not overridden";
+    const char * message = "A DeltaresHydro component's GetStartTime method was not overridden";
     printf ("ERROR: %s\n", message);
 
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
 	return -1.0;
     }
 
@@ -152,13 +152,13 @@ Component::GetEndTime (
     void
     ) {
 
-    char * message = "A DeltaresHydro component's GetEndTime method was not overridden";
+    const char * message = "A DeltaresHydro component's GetEndTime method was not overridden";
     printf ("ERROR: %s\n", message);
 
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
 	return -1.0;
     }
 
@@ -171,13 +171,13 @@ Component::GetCurrentTime (
     void
     ) {
 
-    char * message = "A DeltaresHydro component's GetCurrentTime method was not overridden";
+    const char * message = "A DeltaresHydro component's GetCurrentTime method was not overridden";
     printf ("ERROR: %s\n", message);
 
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
 	return -1.0;
     }
 
@@ -190,12 +190,12 @@ Component::GetTimeStep (
     void
     ) {
 
-    char * message = "A DeltaresHydro component's GetTimeStep method was not overridden";
+    const char * message = "A DeltaresHydro component's GetTimeStep method was not overridden";
     printf ("ERROR: %s\n", message);
 
     // This throw is not caught, even though the invocation of Run() is in
     // a try/catch block.  Why?
 
-    throw new Exception (true, message);
+    throw new Exception(message);
 	return -1.0;
     }

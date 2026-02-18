@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -93,9 +93,13 @@ contains
          L = L_
       end if
 
-      if (L == 0) goto 1234
+      if (L == 0) then
+         goto 1234
+      end if
 
-      if (jatek == 1) call teklink(L, 0)
+      if (jatek == 1) then
+         call teklink(L, 0)
+      end if
       k1 = kn(1, L)
       k2 = kn(2, L)
       k3 = kn(3, L)
@@ -116,21 +120,25 @@ contains
       if (N2Dcells == 0) then
          !  add node
          !call setnewpoint(0.5d0*(xk(k1)+xk(k2)), 0.5d0*(yk(k1)+yk(k2)), zp, kp)
-         call dsetnewpoint(0.5d0 * (xk(k1) + xk(k2)), 0.5d0 * (yk(k1) + yk(k2)), kp)
+         call dsetnewpoint(0.5_dp * (xk(k1) + xk(k2)), 0.5_dp * (yk(k1) + yk(k2)), kp)
 
          call connectdbn(k1, kp, LnL)
-         if (jatek == 1) call teklink(LnL, ncoldn)
+         if (jatek == 1) then
+            call teklink(LnL, ncoldn)
+         end if
          kn(3, LnL) = k3
          call connectdbn(kp, k2, LnR)
-         if (jatek == 1) call teklink(LnR, ncoldn)
+         if (jatek == 1) then
+            call teklink(LnR, ncoldn)
+         end if
          kn(3, LnR) = k3
 
          !     set lnn and lne for new links
          !     reallocate if necessary
          if (numL > ubound(lnn, 1)) then
-            numnew = ceiling(1.2d0 * dble(numL))
+            numnew = ceiling(1.2_dp * real(numL, kind=dp))
             call realloc(lnn, numnew, keepExisting=.true.)
-            call realloc(lne, (/2, numnew/), keepExisting=.true.)
+            call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
          lnn(LnL) = 0
          lnn(LnR) = 0
@@ -138,7 +146,9 @@ contains
          lne(2, LnL) = 0
          lne(1, LnR) = 0
          lne(2, LnR) = 0
-         if (jatek == 1) call dcirr(xk(kp), yk(kp), zk(kp), ncoldn)
+         if (jatek == 1) then
+            call dcirr(xk(kp), yk(kp), zk(kp), ncoldn)
+         end if
       end if
 
 !  insert and connect new node
@@ -148,21 +158,33 @@ contains
 
 !     find the link in the cell
          kk1 = 1
-         do while (netcell(ic1)%lin(kk1) /= L .and. kk1 < N); kk1 = kk1 + 1; end do
+         do while (netcell(ic1)%lin(kk1) /= L .and. kk1 < N)
+            kk1 = kk1 + 1
+         end do
          if (netcell(ic1)%lin(kk1) /= L) then
             call qnerror('splitlink: link not found', ' ', ' ')
             goto 1234
          end if
 
 !     find the left and right connected links and cells
-         kkL = kk1 - 1; if (kkL < 1) kkL = kkL + N
-         kkR = kk1 + 1; if (kkR > N) kkR = kkR - N
+         kkL = kk1 - 1
+         if (kkL < 1) then
+            kkL = kkL + N
+         end if
+         kkR = kk1 + 1
+         if (kkR > N) then
+            kkR = kkR - N
+         end if
          LL = netcell(ic1)%lin(kkL)
          LR = netcell(ic1)%lin(kkR)
          icL = 0
-         if (lnn(LL) > 1) icL = lne(1, LL) + lne(2, LL) - ic1
+         if (lnn(LL) > 1) then
+            icL = lne(1, LL) + lne(2, LL) - ic1
+         end if
          icR = 0
-         if (lnn(LR) > 1) icR = lne(1, LR) + lne(2, LR) - ic1
+         if (lnn(LR) > 1) then
+            icR = lne(1, LR) + lne(2, LR) - ic1
+         end if
 
 !     find the left and right original nodes (either k1 or k2)
          if (kn(1, LL) == k1 .or. kn(2, LL) == k1) then
@@ -176,14 +198,20 @@ contains
 !     add node and make new links (once)
          if (i == 1) then
             !  add node
-            call dsetnewpoint(0.5d0 * (xk(kL) + xk(kR)), 0.5d0 * (yk(kL) + yk(kR)), kp)
+            call dsetnewpoint(0.5_dp * (xk(kL) + xk(kR)), 0.5_dp * (yk(kL) + yk(kR)), kp)
             call connectdbn(kL, kp, LnL)
-            if (jatek == 1) call teklink(LnL, ncoldn)
+            if (jatek == 1) then
+               call teklink(LnL, ncoldn)
+            end if
             kn(3, LnL) = k3
             call connectdbn(kp, kR, LnR)
-            if (jatek == 1) call teklink(LnR, ncoldn)
+            if (jatek == 1) then
+               call teklink(LnR, ncoldn)
+            end if
             kn(3, LnR) = k3
-            if (jatek == 1) call dcirr(xk(kp), yk(kp), zk(kp), ncoldn)
+            if (jatek == 1) then
+               call dcirr(xk(kp), yk(kp), zk(kp), ncoldn)
+            end if
          else ! swap orientation: switch new links LnL and LnR
             idum = LnL
             LnL = LnR
@@ -196,12 +224,16 @@ contains
 
          call connectdbn(kLL, kp, LnLL)
          kn(3, LnLL) = kn(3, L)
-         if (jatek == 1) call teklink(LnLL, ncoldn)
+         if (jatek == 1) then
+            call teklink(LnLL, ncoldn)
+         end if
 
          if (kLL /= kRR) then
             call connectdbn(kRR, kp, LnRR)
             kn(3, LnRR) = kn(3, L)
-            if (jatek == 1) call teklink(LnRR, ncoldn)
+            if (jatek == 1) then
+               call teklink(LnRR, ncoldn)
+            end if
          else
             LnRR = LnLL
          end if
@@ -209,22 +241,24 @@ contains
 !     remove link from original cell, delete two nodes, add one new node and replace two links
          call del_intarrayelem(netcell(ic1)%N, netcell(ic1)%lin, L)
          call del_intarrayelem(netcell(ic1)%N, netcell(ic1)%nod, kL)
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%nod, kR, 1, (/kp/))
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LL, 1, (/LnLL/))
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LR, 1, (/LnRR/))
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%nod, kR, 1, [kp])
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LL, 1, [LnLL])
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LR, 1, [LnRR])
          netcell(ic1)%N = netcell(ic1)%N - 1
 
 !     make new cells
-         call makecell(3, (/kLL, kL, kp/), (/LL, LnL, LnLL/), icLL, ierror)
-         call makecell(3, (/kR, kRR, kp/), (/LnR, LR, LnRR/), icRR, ierror)
-         if (ierror /= 0) goto 1234
+         call makecell(3, [kLL, kL, kp], [LL, LnL, LnLL], icLL, ierror)
+         call makecell(3, [kR, kRR, kp], [LnR, LR, LnRR], icRR, ierror)
+         if (ierror /= 0) then
+            goto 1234
+         end if
 
 !     set lnn and lne for new links
 !     reallocate if necessary
          if (numL > ubound(lnn, 1)) then
-            numnew = ceiling(1.2d0 * dble(numL))
+            numnew = ceiling(1.2_dp * real(numL, kind=dp))
             call realloc(lnn, numnew, keepExisting=.true.)
-            call realloc(lne, (/2, numnew/), keepExisting=.true.)
+            call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
          if (i == 1) then
             lnn(LnL) = lnn(L)
@@ -366,7 +400,7 @@ contains
                                   xk(kL), yk(kL), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
                   dcos3 = dcosphi(xk(kLLL), yk(kLLL), xk(kLL), yk(kLL), &
                                   xk(kLL), yk(kLL), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
-                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9d0) then
+                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9_dp) then
                      call mergecells(icL, icLL, jatek)
                   end if
                end if
@@ -380,7 +414,7 @@ contains
                                   xk(kR), yk(kR), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
                   dcos3 = dcosphi(xk(kRRR), yk(kRRR), xk(kRR), yk(kRR), &
                                   xk(kRR), yk(kRR), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
-                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9d0) then
+                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9_dp) then
                      call mergecells(icR, icRR, jatek)
                   end if
                end if

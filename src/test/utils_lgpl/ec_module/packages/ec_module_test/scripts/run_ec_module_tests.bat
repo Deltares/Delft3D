@@ -4,20 +4,10 @@ title run_dflowfm
     rem This script runs dflowfm on Windows
     rem Adapt and use it for your own purpose
     rem
-    rem When using intelMPI for the first time on a machine:
-    rem Execute "hydra_service.exe -install" as administrator:
-    rem     Preparation: Check that your Delft3D installation contains "...\x64\share\bin\hydra_service.exe". Optionally copy it to a local directory (it will run as a service).
-    rem     "Windows Start button" -> type "cmd", right-click "Command Prompt" App, "Run as Administrator"
-    rem     In this command box:
-    rem         cd ...\x64\share\bin (or your local copy)
-    rem         hydra_service.exe -install
-    rem         mpiexec.exe -register -username <user> -password <password> -noprompt
-    rem     When there is an hydra_service/smpd already running on the machine, it must be ended first, using the Microsoft Task Manager,
-    rem     or in the command  box: hydra_service.exe -uninstall (smpd -uninstall)
-    rem
-    rem
-    rem This script runs dimr in parallel mode on Windows
-    rem Adapt and use it for your own purpose
+    rem When using Intel MPI for parallel execution:
+    rem 
+    rem For local parallel execution on Windows. No special setup is required. The -localonly flag allows MPI to run
+    rem without the hydra service.
     rem
     rem Usage example:
     rem Execute in the working directory:
@@ -47,7 +37,7 @@ if defined OMP_NUM_THREADS (
 echo OMP_NUM_THREADS is already defined
 ) else (
    rem Getting and setting the number of physical cores
-   for /F "tokens=2 delims==" %%C in ('wmic cpu get NumberOfCores /value ^| findstr NumberOfCores') do set NumberOfPhysicalCores=%%C
+   for /F "tokens=*" %%C in ('powershell -Command "Get-CimInstance -ClassName Win32_Processor | Select-Object -ExpandProperty NumberOfCores | Measure-Object -Sum | Select-Object -ExpandProperty Sum"') do set NumberOfPhysicalCores=%%C
    set /A OMP_NUM_THREADS=!NumberOfPhysicalCores! - 2
    if /I OMP_NUM_THREADS LEQ 2 ( set OMP_NUM_THREADS=2 )
 )

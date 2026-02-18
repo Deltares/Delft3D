@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,15 +58,16 @@ contains
    subroutine extract_constituents()
       use precision, only: dp, fp
       use m_doforester, only: doforester
-      use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, jatem, &
-                                  maxitverticalforestersal, maxitverticalforestertem
+      use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, temperature_model, &
+                                  TEMPERATURE_MODEL_NONE, maxitverticalforestersal, maxitverticalforestertem
       use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
       use m_flowgeom, only: ndx, ndxi, bai_mor
-      use m_flowtimes, only: dts, tfac, time1, tstart_user
+      use m_flowtimes, only: dts
       use m_fm_icecover, only: freezing_temperature
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
-      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, temperature_max, temperature_min
+      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, &
+                            temperature_min
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
       use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed
@@ -76,6 +77,7 @@ contains
       integer :: iconst, grain, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
       real(kind=dp) :: minimum_salinity_value
       real(kind=dp) :: freezing_point_temperature ! freezing point temperature [degC]
+      real(kind=dp) :: salinity ! salinity [psu]
       integer(4) :: ithndl = 0
 
       integer, parameter :: IDX_SSC_MIN = 1 ! index of suspended sediment concentration messages for min limits
@@ -110,7 +112,9 @@ contains
                   maserrsed = maserrsed + vol1(k) * (constituents(iconst, k) - upperlimitssc)
                   constituents(iconst, k) = upperlimitssc
                end if
-               sed(grain, k) = constituents(iconst, k)
+               if (.not. stm_included) then
+                  sed(grain, k) = constituents(iconst, k)
+               end if
             end do
          end do
 
@@ -120,7 +124,7 @@ contains
          end if
       end if
 
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          if (temperature_max /= dmiss) then
             cells_with_max_limit = 0
             do k = 1, ndkx
@@ -129,19 +133,34 @@ contains
                   cells_with_max_limit = cells_with_max_limit + 1
                end if
             end do
-            call print_message(IDX_TEMP_MAX, 'Max. temperature', cells_with_max_limit)
+            call print_message(IDX_TEMP_MAX, 'Maximum temperature', cells_with_max_limit)
          end if
 
          cells_with_min_limit = 0
-         if (isalt > 0 .and. use_salinity_freezing_point) then ! only at surface limit to freezing point
+
+         if (use_salinity_freezing_point) then
+
             do kk = 1, ndx
-               k = ktop(kk)
-               freezing_point_temperature = real(freezing_temperature(real(constituents(isalt, k), fp)), dp)
+
+               k = ktop(kk) ! Only the top layer is checked for freezing point
+
+               ! Choose salinity source
+               if (isalt > 0) then
+                  salinity = real(constituents(isalt, k), fp)
+               else
+                  salinity = backgroundsalinity
+               end if
+
+               ! Compute freezing point temperature
+               freezing_point_temperature = real(freezing_temperature(salinity), dp)
+
+               ! Apply limit
                if (constituents(itemp, k) < freezing_point_temperature) then
                   constituents(itemp, k) = freezing_point_temperature
                   cells_with_min_limit = cells_with_min_limit + 1
                end if
             end do
+
          end if
 
          if (temperature_min /= dmiss) then
@@ -153,7 +172,7 @@ contains
             end do
          end if
 
-         call print_message(IDX_TEMP_MIN, 'Min. temperature', cells_with_min_limit)
+         call print_message(IDX_TEMP_MIN, 'Minimum temperature', cells_with_min_limit)
       end if
 
       if (jasal > 0) then
@@ -168,7 +187,7 @@ contains
                   end if
                end do
             end do
-            call print_message(IDX_SAL_MAX, 'max. salinity', cells_with_max_limit)
+            call print_message(IDX_SAL_MAX, 'Maximum salinity', cells_with_max_limit)
          end if
 
          cells_with_min_limit = 0
@@ -182,29 +201,28 @@ contains
                end if
             end do
          end do
-         call print_message(IDX_SAL_MIN, 'Min. salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
+         call print_message(IDX_SAL_MIN, 'Minimum salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
-      if (jasal > 0 .and. maxitverticalforestersal > 0 .or. jatem > 0 .and. maxitverticalforestertem > 0) then
+      if (jasal > 0 .and. maxitverticalforestersal > 0 .or. temperature_model /= TEMPERATURE_MODEL_NONE .and. maxitverticalforestertem > 0) then
          call doforester()
       end if
       !
-      ! When a cell become dries, keep track of the mass in the water column in sscum array. This will be accounted
+      ! When a cell become dry, keep track of the mass in the water column in ssccum array. This will be accounted
       ! for in the bottom update when the cell becomes wet again. This prevents large concentration gradients and
       ! exploding bed levels.
       if (stm_included .and. ised1 > 0) then
-         if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
-            do grain = 1, mxgr
-               do k = 1, ndx
-                  if (hs(k) < stmpar%morpar%sedthr) then
-                     call getkbotktop(k, kb, kt)
-                     ssccum(grain, k) = ssccum(grain, k) + sum(constituents(ised1 + grain - 1, kb:kt)) / &
-                                        dts * bai_mor(k) * vol1(k)
-                     constituents(ised1 + grain - 1, kb:kt) = 0.0_dp
-                  end if
-               end do
+         do grain = 1, mxgr
+            do k = 1, ndx
+               if (hs(k) <= stmpar%morpar%sedthr) then
+                  call getkbotktop(k, kb, kt)
+                  ssccum(grain, k) = ssccum(grain, k) + sum(constituents(ISED1 + grain - 1, kb:kt) * vol1(kb:kt)) / &
+                                     dts * bai_mor(k)
+                  constituents(ISED1 + grain - 1, kb:kt) = 0.0_dp
+                  constituents(ISED1 + grain - 1, k) = 0.0_dp
+               end if
             end do
-         end if
+         end do
       end if
 
       if (timon) then
@@ -232,7 +250,7 @@ contains
             write (msgbuf, *) text, ' encountered and limited in ', cells_with_limit, ' cell(s).'
             if (present(minimum_salinity_value)) then
                call msg_flush()
-               write (msgbuf, *) 'Min. salinity encountered = ', minimum_salinity_value
+               write (msgbuf, *) 'Minimum salinity encountered = ', minimum_salinity_value
             end if
          end if
          call msg_flush()

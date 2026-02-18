@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("get_ndeltasteps", ithndl)
+      if (timon) then
+         call timstrt("get_ndeltasteps", ithndl)
+      end if
 
       numnonglobal = 0
 
@@ -66,8 +68,8 @@ contains
          nsubsteps = 1
          ndeltasteps = 1
       else
-         logtwo = log(2d0)
-         nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999d0))
+         logtwo = log(2.0_dp)
+         nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999_dp))
          dtmin = dts / nsubsteps
 
 !     get number of substeps
@@ -92,7 +94,9 @@ contains
 
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine get_ndeltasteps
 

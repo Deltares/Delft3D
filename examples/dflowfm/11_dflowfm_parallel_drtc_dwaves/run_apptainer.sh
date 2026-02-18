@@ -35,4 +35,3 @@ run_cmd="apptainer run --bind \"${model_dir}:/data\" --pwd \"/data/${work_dir}\"
 echo "[INFO] $run_cmd"
 
 eval "$run_cmd"
-

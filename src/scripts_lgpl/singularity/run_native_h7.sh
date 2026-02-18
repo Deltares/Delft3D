@@ -3,7 +3,7 @@
 # Usage:
 #   - Copy this script into your working folder, next to the dimr config file.
 #   - Modify this script where needed (e.g. number of nodes, number of tasks per node).
-#   - Execute this script from the command line of H7 using: ./run_native_h7.sh
+#   - Execute this script from the command line using: ./run_native_h7.sh
 #
 # This is an h7 specific script for single or multi-node simulations.
 
@@ -19,7 +19,7 @@ export JOB_NAME="test_model"
 export PARTITION="test"
 export TIME_LIMIT_PARTITIONING="00:15:00"
 export TIME_LIMIT_SIMULATION="00:15:00"
-export DIMR_FOLDER="/p/d-hydro/dimrset/latest"
+export DIMR_FOLDER="/path/to/dimrset/latest"
 export DIMR_FILE="${PWD}/dimr_config.xml"
 
 # This setting might help to prevent errors due to temporary locking of NetCDF files. 

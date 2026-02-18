@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -110,17 +110,11 @@ module fm_external_forcings_data
                                                         !! 1,* = index in s1 boundary point
                                                         !! 2,* = index in s1 first point on the inside
                                                         !! 3,* = index in u1 of their connecting link (always positive to the inside)
-                                                        !! 4,* = type indicator :
-                                                        !!                        1 = waterlevel boundary
-                                                        !!                        2 = waterlevel neumann
-                                                        !!                        3 = velocity   normal ingoing component
-                                                        !!                        4 = velocity   flux boundary
-                                                        !!                        5 = velocity   Riemann boundary
-                                                        !!                        6 = waterlevel outflow
+                                                        !! 4,* = type indicator (see m_boundary_condition_type)
                                                         !! 5,* = member of boundary number somuch of this type
                                                         !! 6,* = riemann relaxation time for this point (s)
    real(kind=dp), allocatable :: zkbndz(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
-   real(kind=dp) :: zbndzval1 = -999d0, zbndzval2 = -999d0
+   real(kind=dp) :: zbndzval1 = -999.0_dp, zbndzval2 = -999.0_dp
    integer, allocatable :: kbanz(:, :) !< ban pointer 2,*
 
    integer :: nubnd !< number of velocity boundary segments
@@ -142,7 +136,7 @@ module fm_external_forcings_data
    integer :: japartqbnd !< one or more of the discharge boundaries is partitioned (1) or not (0)
    real(kind=dp), allocatable :: huqbnd(:) !< hu used in normalised Manning discharge boundary condition, based on average water-level
    integer :: nqbnd !<
-   real(kind=dp) :: qbndhutrs = 0.1d0 !< only discharge bnd here if hu>qbndhutrs
+   real(kind=dp) :: qbndhutrs = 0.1_dp !< only discharge bnd here if hu>qbndhutrs
    real(kind=dp), allocatable :: zkbndu(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
    integer, allocatable :: kbanu(:, :) !< ban pointer 2,*
 
@@ -229,7 +223,7 @@ module fm_external_forcings_data
    real(kind=dp), allocatable :: xy2bnduxy(:, :) !< uxuyadvectionvelocity boundary 'external tolerance point'
    integer, allocatable :: kduxy(:) !< uxuyadvectionvelocity boundary points temp array
    integer, allocatable :: kbnduxy(:, :) !< uxuyadvectionvelocity boundary points index array, see lines above
-   real(kind=dp) :: zbnduxyval = -999d0
+   real(kind=dp) :: zbnduxyval = -999.0_dp
 
    integer :: nbndn !< norm.velocity boundary points dimension
    real(kind=dp), allocatable :: xbndn(:) !< norm.velocity boundary points xcor
@@ -389,7 +383,30 @@ module fm_external_forcings_data
    integer :: nwbnd !< number of wave-energy boundaries
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
+   type t_BubbleScreenFlowCell
+      integer :: flownode_nr !< index in {network_data::netcell}
+      integer :: flowcell_start_index !< start index in the flowcell arrays
+      integer :: num_source_sinks !< nr of point sources/sinks in this cell
+      integer :: start_index !< start index for bubble sources/sinks
+   end type t_BubbleScreenFlowCell
+
+   type t_Bubblescreen
+      character(len=255) :: id !< name of bubble screen
+      integer :: num_flow_cells !< nr of grid cells in bubble screen
+      integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
+      type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< Flow cells data
+
+      integer :: num_polyline !< number of polyline points
+      real(kind=dp), dimension(:), allocatable :: x_polyline !< [m] x polyline points
+      real(kind=dp), dimension(:), allocatable :: y_polyline !< [m] y polyline points
+      real(kind=dp) :: z_level !< [m] z level of the bubble screen air discharge
+   end type t_Bubblescreen
+
+   type (t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
+   real (kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< array to catch bubble screen air discharges
+
    integer :: numsrc !< nr of point sources/sinks
+   
    integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
@@ -421,7 +438,7 @@ module fm_external_forcings_data
    real(kind=dp), allocatable :: qsrcwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
    real(kind=dp), allocatable :: qlatwaq(:) !< Cumulative qsrc within current waq-timestep
    real(kind=dp), allocatable :: qlatwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   real(kind=dp) :: addksources = 0d0 !< Add k of sources to turkin 1/0
+   real(kind=dp) :: addksources = 0.0_dp !< Add k of sources to turkin 1/0
 
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness

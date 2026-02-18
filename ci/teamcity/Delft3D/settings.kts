@@ -4,24 +4,29 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Delft3D.*
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
+import Delft3D.linux.container_smoketest.*
 import Delft3D.windows.*
 import Delft3D.template.*
 
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2025.03"
+version = "2025.07"
 
 project {
 
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     params {
-        param("delft3d-user", "robot${'$'}delft3d")
-        password("delft3d-secret", "credentialsJSON:1dee1a48-252e-42fd-b600-6bf52d940513")
+        param("delft3d-user", DslContext.getParameter("delft3d-user"))
+        password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
+
+        param("nexus_username", DslContext.getParameter("nexus_username"))
+        password("nexus_password", DslContext.getParameter("nexus_password"))
+        password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
 
         param("product", "dummy_value")
 
@@ -45,9 +50,21 @@ project {
             name = "Build-environment Containers"
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
+            buildType(LinuxDevContainer)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
+                LinuxDevContainer,
+            )
+        }        
+        subProject {
+            id("SmokeTestsContainerH7")
+            name = "Smoke tests container on H7"
+            buildType(LinuxSubmitH7ContainerSmokeTest)
+            buildType(LinuxReceiveH7ContainerSmokeTest)
+            buildTypesOrder = listOf(
+                LinuxSubmitH7ContainerSmokeTest,
+                LinuxReceiveH7ContainerSmokeTest,
             )
         }        
         buildType(LinuxBuild)
@@ -55,7 +72,6 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxRuntimeContainers)
         buildType(LinuxRunAllContainerExamples)
-        buildType(LinuxLegacyDockerTest)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
@@ -64,7 +80,6 @@ project {
             LinuxCollect,
             LinuxRuntimeContainers,
             LinuxRunAllContainerExamples,
-            LinuxLegacyDockerTest,
             LinuxUnitTest,
             LinuxTest
         )
@@ -74,8 +89,8 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironment)
         buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsTestEnvironment)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -83,8 +98,8 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironment,
             WindowsBuildEnvironmentI24,
+            WindowsTestEnvironment,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,
@@ -115,10 +130,13 @@ project {
 
         buildType(TestPythonCiTools)
         buildType(TestBenchValidation)
+        buildType(TestFortranStyler)
         buildType(CopyExamples)
+        buildType(SigCi)
+        buildType(RunBashBatonUtilities)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, CopyExamples
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities
         )
     }
 
@@ -136,13 +154,15 @@ project {
     buildType(PublishToGui)
     buildType(DIMRbak)
     buildType(Publish)
+    buildType(PinAndTag)
     buildTypesOrder = arrayListOf(
         Trigger,
         PublishToGui,
         DIMRbak,
-        Publish
+        Publish,
+        PinAndTag
     )
-
+        
     features {
         dockerRegistry {
             id = "DOCKER_REGISTRY_DELFT3D"
@@ -161,6 +181,12 @@ project {
             }
             allowInSubProjects = true
             allowInBuilds = true
+        }
+        feature {
+            type = "OAuthProvider"
+            param("displayName", "Keeper Vault Delft3d")
+            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
+            param("providerType", "teamcity-ksm")
         }
     }
 }

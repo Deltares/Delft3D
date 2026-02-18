@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -160,8 +160,9 @@ contains
    end subroutine set_pressure_dependent_density
 
    pure subroutine salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
-      use m_flow, only: jasal, jatem, backgroundsalinity, backgroundwatertemperature
+      use m_flow, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, backgroundsalinity, backgroundwatertemperature
       use m_transportdata, only: isalt, itemp, constituents
+      use m_physcoef, only: temperature_min
 
       integer, intent(in) :: cell_index_3d !< cell index
       real(kind=dp), intent(out) :: salinity !< salinity at cell
@@ -173,8 +174,8 @@ contains
          salinity = backgroundsalinity
       end if
 
-      if (jatem > 0) then
-         temperature = max(-5.0_dp, constituents(itemp, cell_index_3d))
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+         temperature = max(temperature_min, constituents(itemp, cell_index_3d))
       else
          temperature = backgroundwatertemperature
       end if
@@ -230,7 +231,7 @@ contains
          end if
          rhom = rho
          do i = itra1, itran
-            rho = rho + (1d-3) * constituents(i, cell) * (SEDIMENT_DENSITY - rhom) / SEDIMENT_DENSITY
+            rho = rho + (1.0e-3_dp) * constituents(i, cell) * (SEDIMENT_DENSITY - rhom) / SEDIMENT_DENSITY
          end do
       else if (jaseddenscoupling > 0) then ! jased < 4
          rhom = rho

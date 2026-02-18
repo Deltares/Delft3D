@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ program waqpb_export
    itmswi = .false.
    open (newunit=lu_mes, file=(settings%process_definition_folder_path//'waqpb_export.log'))
 
-   write (*, '('' Reading data......'')')
+   write (*, '('' Reading data...'')')
 
 !----------------------------------------------------------------------c
 !     READ DATABASE
@@ -119,7 +119,7 @@ program waqpb_export
 !      write (*,'('' Writing TRM tables......'')')
 !      call writrm
    if (settings%generate_latex_tables) then
-      write (*, '('' Writing TRM tables for LaTeX......'')')
+      write (*, '('' Writing TRM tables for LaTeX...'')')
       call writex
    end if
 
@@ -139,7 +139,7 @@ program waqpb_export
 !     LOOP OVER PROCESSES
 !----------------------------------------------------------------------c
 
-   write (*, '('' Making PROCES.ASC......'')')
+   write (*, '(A)') 'Creating processes overview file: ' // settings%processes_overview_file_path
    write (*, *)
    open (newunit=lunfil, file=settings%processes_overview_file_path)
 
@@ -187,7 +187,10 @@ program waqpb_export
 !             Lookup item in items table
          iinpu = ioffse + naanta - 1
          iitem = index_in_array(inpuit(iinpu), itemid(:nitem))
-         if (iitem <= 0) stop 'unknown ITEM'
+         if (iitem <= 0) then
+            write(*,*) 'Error: unknown input item ', inpuit(iinpu)
+            stop 'unknown ITEM'
+         endif
 
          !             Documented items are marked for COEFEDIT.DAT
          if (inpudo(iinpu) == 'x') itmswi(iitem) = .true.
@@ -249,7 +252,10 @@ program waqpb_export
          !             Lookup item in items table
          ioutp = ioffse + naanta - 1
          iitem = index_in_array(outpit(ioutp), itemid(:nitem))
-         if (iitem <= 0) stop 'unknown ITEM'
+         if (iitem <= 0) then
+            write(*,*) 'Error: unknown output item ', outpit(ioutp)
+            stop 'unknown ITEM'
+         endif
 
          !             Find item properties and store in PDF structure
          if (outpsx(ioutp) == 1) then
@@ -354,7 +360,10 @@ program waqpb_export
          ioutf = ioffse + flu - 1
          !             write (lu_mes,*) ' flu ',flu,' ioutf ', ioutf
          iitem = index_in_array(outffl(ioutf), itemid(:nitem))
-         if (iitem <= 0) stop 'unknown FLUX'
+         if (iitem <= 0) then
+            write(*,*) 'Error: unknown flux ', outffl(ioutf)
+            stop 'unknown FLUX'
+         endif
 
          !             Find and store flux properties
          flu_id(flu) = itemid(iitem)
@@ -414,7 +423,18 @@ program waqpb_export
 900 continue
    close (lu_mes)
 
-   stop 'Normal end'
+   write (*,*)
+   if (settings%wrong_version) then
+      write (*, '(A, f0.1)') 'WARNING: no or not a valid version was specified (see above). Used generated default version instead: ', settings%version
+   end if
+
+   if (settings%wrong_serial) then
+      write (*, '(A, I0)') 'WARNING: no or not a valid serial number was specified (see above). Used generated default serial instead: ', settings%serial
+   end if
+
+   write (*, *)
+   write (*, '(A)') 'Export completed successfully.'
+   stop 'Normal end.'
 end program waqpb_export
 
 function adduni(name, unit)

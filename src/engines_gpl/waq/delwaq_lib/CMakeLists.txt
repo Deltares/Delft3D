@@ -64,8 +64,3 @@ set_target_properties(${library_name} PROPERTIES OUTPUT_NAME delwaq)
 install(TARGETS ${library_name} RUNTIME DESTINATION lib
                                 LIBRARY DESTINATION lib
 )
-install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/bloom.spe DESTINATION share/delft3d)
-install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.dat DESTINATION share/delft3d)
-install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.def DESTINATION share/delft3d)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/delft3d)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/subFiles DESTINATION share/delft3d)

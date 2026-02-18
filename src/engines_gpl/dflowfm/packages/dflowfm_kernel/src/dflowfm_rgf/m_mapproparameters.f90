@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,6 +34,6 @@ module M_MAPPROPARAMETERS
    use precision, only: dp
    implicit none
    real(kind=dp) :: XCE, YCE, DELTX, DELTY, XF, YF, FI, XCSTEREO, YCSTEREO
-   real(kind=dp) :: CSE = 1d0, SNE = 0d0
+   real(kind=dp) :: CSE = 1.0_dp, SNE = 0.0_dp
    integer :: ITYPE = 0, IZONE = 0, NZONE = 0, IHEM = 1
 end module M_MAPPROPARAMETERS

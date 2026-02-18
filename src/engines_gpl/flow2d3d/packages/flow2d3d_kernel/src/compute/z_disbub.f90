@@ -7,7 +7,7 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
                   & s1      ,dps       ,ifirst    ,gdp      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -53,44 +53,38 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
     real(fp), dimension(:)   , pointer :: hsour
     real(fp), dimension(:)   , pointer :: xlbub
     real(fp), dimension(:)   , pointer :: zbubl
-    real(fp), dimension(:)   , pointer :: zvelo
+    real(fp), dimension(:)   , pointer :: zvelo !< Vertical velocity due to bubble screen
     logical , dimension(:)   , pointer :: flbub
     integer                  , pointer :: lundia
     character(256)           , pointer :: restid
 !
 ! Global variables
 !
-    integer                                                 , intent(in)  :: icx    ! Increment in the X-dir., if ICX= NMAX
-                                                                                    ! then computation proceeds in the X-
-                                                                                    ! dir. If icx=1 then computation pro-
-                                                                                    ! ceeds in the Y-dir. 
-    integer                                                 , intent(in)  :: icy    ! Increment in the Y-dir. (see ICX)
-                                                                                    ! been transformed into 1D arrays.
-                                                                                    ! Due to the shift in the 2nd (M-)
-                                                                                    ! index, J = -2*NMAX + 1                                                     
-    integer                                                 , intent(in)  :: ifirst ! ifirst = 1 when first time in z_disbub                                                                                    
-    integer                                                 , intent(in)  :: kmax
-    integer                                                 , intent(in)  :: lstsc  ! Description and declaration in dimens.igs
-    integer                                                 , intent(in)  :: lstsci ! Description and declaration in esm_alloc_int.f90
-    integer                                                 , intent(in)  :: nsrc   ! Description and declaration in dimens.igs
-    integer                                                 , intent(in)  :: nsrcd  ! Description and declaration in dimens.igs
-    integer                                                 , intent(in)  :: nxbub  ! Description and declaration in dimens.igs
-    integer , dimension(7, nsrc)                            , intent(in)  :: mnksrc !  Description and declaration in esm_alloc_int.f90
-    integer , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfsmin !  Description and declaration in esm_alloc_int.f90
-    integer , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfsmax !  Description and declaration in esm_alloc_int.f90
-    real(fp), dimension(nsrc)                                             :: disch  ! Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(nsrc)                               , intent(out) :: disinp ! Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: gsqs   !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci), intent(in)  :: r1     ! Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(lstsc, nsrc)                        , intent(out) :: rint   ! Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                            :: s1     !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sink   ! Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sour   ! Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: xcor   !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: ycor   !  Description and declaration in esm_alloc_real.f90
+    integer                                                 , intent(in)  :: icx    !< Increment in the X-dir., if ICX= NMAX then computation proceeds in the X-dir. If icx=1 then computation proceeds in the Y-dir. 
+    integer                                                 , intent(in)  :: icy    !< Increment in the Y-dir. (see ICX) been transformed into 1D arrays. Due to the shift in the 2nd (M-)index, J = -2*NMAX + 1                                                     
+    integer                                                 , intent(in)  :: ifirst !< ifirst = 1 when first time in z_disbub                                                                                    
+    integer                                                 , intent(in)  :: kmax   !< Number of veritcal layers
+    integer                                                 , intent(in)  :: lstsc  !< Description and declaration in dimens.igs
+    integer                                                 , intent(in)  :: lstsci !< List of substances including temperature and salinity
+    integer                                                 , intent(in)  :: nsrc   !< Total number of discharges including artificial discharges for bubble screens
+    integer                                                 , intent(in)  :: nsrcd  !< Number of (ordinary) discharge points plus the number of bubble screens
+    integer                                                 , intent(in)  :: nxbub  !< Number of bubble screens
+    integer , dimension(7, nsrc)                            , intent(in)  :: mnksrc !< Description and declaration in esm_alloc_int.f90
+    integer , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfsmin !< Bottom-most active layer index at grid cell nm
+    integer , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kfsmax !< Top-most active layer index at grid cell nm
+    real(fp), dimension(nsrc)                                             :: disch  !< Discharge per vertical layer [m3/s]
+    real(fp), dimension(nsrc)                               , intent(out) :: disinp !< Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: gsqs   !< Grid cell square area
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci), intent(in)  :: r1     !< Concentrations at new time level
+    real(fp), dimension(lstsc, nsrc)                        , intent(out) :: rint   !< Concentration at discharge points (as obtained from BCC file)
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                            :: s1     !< Waterlevel (free surface elevation) at grid cell nm
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sink   !< Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sour   !< Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: xcor   !< Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: ycor   !< Description and declaration in esm_alloc_real.f90
     real(fp), dimension(0:kmax)                             , intent(in)  :: zk
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)            , intent(in)  :: dps
-    character(20), dimension(nsrc)                          , intent(in)  :: namsrc !  Description and declaration in esm_alloc_char.f90
+    character(20), dimension(nsrc)                          , intent(in)  :: namsrc !< Description and declaration in esm_alloc_char.f90
 !
 ! Local variables
 !
@@ -101,8 +95,8 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
     integer        :: ibub
     integer        :: inam
     integer        :: k
-    integer        :: kbub
-    integer        :: kbubx
+    integer        :: kbub !< Layer of air injection (start of bubble screen)
+    integer        :: kbubx !< Layer of maximum downward vertical velocity
     integer        :: kk
     integer        :: l
     integer        :: nm
@@ -115,8 +109,8 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
     real(fp)       :: yend
     real(fp)       :: xlen
     real(fp)       :: ylen
-    real(fp)       :: wrecmx
-    real(fp)       :: recflx
+    real(fp)       :: wrecmx !< Maximum downward vertical velocity
+    real(fp)       :: recflx !< Recirculated flux
     real(fp)       :: volum
     real(fp)       :: zb
     real(fp)       :: zincr
@@ -124,7 +118,7 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
     real(fp)       :: zkd
     real(fp)       :: hsum
     real(fp)       :: zku
-    real(fp)       :: zsurf
+    real(fp)       :: zsurf !< Free surface elevation
     real(fp)       :: zloc
     logical        :: stopOnError
     character(20)  :: chulp   ! Help charatcter string
@@ -321,7 +315,8 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
              kbubx = kbubx - 1
           endif
        endif       
-       !
+       
+       ! Compute zvelo for all layers between kfsmax and kbub following the triangular distribution
        do k = kfsmax(nm), kbubx, -1
           zincr    = zk(kfsmax(nm)) - zk(k)
           zmax     = zk(kfsmax(nm)) - zk(kbubx)

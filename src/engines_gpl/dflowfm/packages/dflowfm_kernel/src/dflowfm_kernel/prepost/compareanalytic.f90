@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -61,7 +61,9 @@ contains
       call setcol(221)
       do n = 1, ndx
 
-         if (.not. inview(xz(n), yz(n))) cycle
+         if (.not. inview(xz(n), yz(n))) then
+            cycle
+         end if
 
          i = 0
          do ii = 1, mmax - 1
@@ -73,7 +75,7 @@ contains
          !i = (xz(n) + 0.5*dxw) / dxw
          if (i > 2 .and. i < mmax - 1) then
             alf = (xz(n) - x(i)) / (x(i + 1) - x(i))
-            if (alf < 0d0 .or. alf > 1d0) then
+            if (alf < 0.0_dp .or. alf > 1.0_dp) then
                si = 0
             else
                si = (1 - alf) * s(i) + alf * s(i + 1)

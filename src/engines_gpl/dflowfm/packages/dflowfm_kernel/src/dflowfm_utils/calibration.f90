@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -174,27 +174,69 @@ contains
       i_q = 0
       i_zs = 0
       if (phase == FILL_DATA) then
-         if (istat == 0) allocate (clddata%ittdef(ncld), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef(ncld), stat=istat)
-         if (istat == 0) allocate (clddata%def2icld(CLD_MAXDEF), stat=istat)
-         if (istat == 0) allocate (clddata%crs(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%obs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%cldtable_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%cldtable_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%start_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%end_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%slope_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%cross_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%ittdef_zs(n_zs), stat=istat)
-         if (istat == 0) allocate (clddata%icld_zs(ncldobs), stat=istat)
-         if (istat == 0) allocate (clddata%rttdef_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%slope_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%cross_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%start_q(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%end_q(ncldcrs), stat=istat)
-         if (istat == 0) allocate (clddata%ittdef_q(n_q), stat=istat)
-         if (istat == 0) allocate (clddata%icld_q(ncldcrs), stat=istat)
+         if (istat == 0) then
+            allocate (clddata%ittdef(ncld), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef(ncld), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%def2icld(CLD_MAXDEF), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%crs(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%obs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cldtable_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cldtable_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%start_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%end_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%slope_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cross_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%ittdef_zs(n_zs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%icld_zs(ncldobs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttdef_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%slope_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%cross_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%start_q(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%end_q(ncldcrs), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%ittdef_q(n_q), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%icld_q(ncldcrs), stat=istat)
+         end if
          if (istat /= 0) then
             errmsg = 'read_cldfile: memory alloc error'
             call mess(LEVEL_ERROR, errmsg)
@@ -261,7 +303,9 @@ contains
          !
          ! End-of-file ?
          !
-         if (iocond < 0) goto 199
+         if (iocond < 0) then
+            goto 199
+         end if
          !
          ! Reading error
          !
@@ -292,7 +336,9 @@ contains
       !
       ! Comment line
       !
-      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) goto 110
+      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) then
+         goto 110
+      end if
       ibeg = 1
       iend = 132
       ! Comment at end of line
@@ -517,7 +563,7 @@ contains
       character(132) :: rec132
       character(10) :: ltmp
 
-      real(kind=dp) :: dtol_cl = 1d-4
+      real(kind=dp) :: dtol_cl = 1.0e-4_dp
       real(kind=dp) :: x
       real(kind=dp) :: y
       real(kind=dp) :: dist
@@ -532,11 +578,19 @@ contains
          call mess(LEVEL_INFO, '*** Start of calibration area definition input: '//trim(md_cllfile))
       end if
       if (phase == FILL_DATA) then
-         if (istat == 0) allocate (clddata%ittar(ncll, 2), stat=istat) ! net link number, definition number
-         if (istat == 0) allocate (clddata%rttar(ncll), stat=istat) ! area fraction
-         if (istat == 0) allocate (clddata%sumar(numl), stat=istat)
-         if (istat == 0) allocate (clddata%linar(ncll), stat=istat) ! line numbers in file
-         clddata%sumar = 0.d0
+         if (istat == 0) then
+            allocate (clddata%ittar(ncll, 2), stat=istat) ! net link number, definition number
+         end if
+         if (istat == 0) then
+            allocate (clddata%rttar(ncll), stat=istat) ! area fraction
+         end if
+         if (istat == 0) then
+            allocate (clddata%sumar(numl), stat=istat)
+         end if
+         if (istat == 0) then
+            allocate (clddata%linar(ncll), stat=istat) ! line numbers in file
+         end if
+         clddata%sumar = 0.0_dp
          clddata%linar = intmiss
       end if
 !
@@ -620,7 +674,9 @@ contains
       !
       ! Comment line
       !
-      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) goto 210
+      if ((rec132(1:1) == '*') .or. (rec132(1:1) == '#')) then
+         goto 210
+      end if
       !
       ! Scan the record
       !
@@ -632,7 +688,9 @@ contains
       !
       ! When no sub-fields are found, record appears to be empty
       !
-      if (nrflds == 0) goto 210
+      if (nrflds == 0) then
+         goto 210
+      end if
       !
       ! Check the contents
       !
@@ -703,7 +761,7 @@ contains
             clddata%rttar(icll) = rfield(5)
             clddata%linar(icll) = mcurec
             clddata%sumar(L) = clddata%sumar(L) + clddata%rttar(icll)
-            if (clddata%sumar(L) > 1d0) then
+            if (clddata%sumar(L) > 1.0_dp) then
                ! check that sum of areas per link <= 1
                errmsg = 'Areal sum larger than 1 in file: '//trim(filnam)
                errmsg = trim(errmsg)//'. See line numbers: '
@@ -790,7 +848,7 @@ contains
       integer :: L
       integer :: icld
 
-      cfclval = 0.d0
+      cfclval = 0.0_dp
       do icll = 1, ncll
          L = clddata%ittar(icll, 1)
          if (L /= CL_NOT_IN_SUBDOMAIN) then
@@ -801,7 +859,7 @@ contains
 
       ! add background calibration factor == 1 for parts missing areal definition
       do L = 1, numl
-         cfclval(L) = cfclval(L) + (1.d0 - clddata%sumar(L)) !*1.d0
+         cfclval(L) = cfclval(L) + (1.0_dp - clddata%sumar(L)) !*1.d0
       end do
 
    end subroutine update_clldata

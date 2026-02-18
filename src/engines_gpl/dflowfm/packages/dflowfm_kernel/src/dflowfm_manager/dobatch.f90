@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -66,23 +66,65 @@ contains
 
       do k = 2, 12
 
-         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 0; if (k > 10) dt_max = 1d0
-         ierr = flow(); q30 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu')
+         kmx = km(k)
+         iturbulencemodel = 3
+         jaustarint = 0
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
+         ierr = flow()
+         q30 = q1(1) / 47.434
 
-         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 0; if (k > 10) dt_max = 1d0
-         ierr = flow(); q40 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu')
+         kmx = km(k)
+         iturbulencemodel = 4
+         jaustarint = 0
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
+         ierr = flow()
+         q40 = q1(1) / 47.434
 
-         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 1; if (k > 10) dt_max = 1d0
-         ierr = flow(); q31 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu')
+         kmx = km(k)
+         iturbulencemodel = 3
+         jaustarint = 1
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
+         ierr = flow()
+         q31 = q1(1) / 47.434
 
-         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 1; if (k > 10) dt_max = 1d0
-         ierr = flow(); q41 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu')
+         kmx = km(k)
+         iturbulencemodel = 4
+         jaustarint = 1
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
+         ierr = flow()
+         q41 = q1(1) / 47.434
 
-         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 3; jaustarint = 2; if (k > 10) dt_max = 1d0
-         ierr = flow(); q32 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu')
+         kmx = km(k)
+         iturbulencemodel = 3
+         jaustarint = 2
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
+         ierr = flow()
+         q32 = q1(1) / 47.434
 
-         call api_loadmodel('tst.mdu'); kmx = km(k); iturbulencemodel = 4; jaustarint = 2; if (k > 10) dt_max = 1d0
-         ierr = flow(); q42 = q1(1) / 47.434
+         call api_loadmodel('tst.mdu')
+         kmx = km(k)
+         iturbulencemodel = 4
+         jaustarint = 2
+         if (k > 10) then
+            dt_max = 1.0_dp
+         end if
+         ierr = flow()
+         q42 = q1(1) / 47.434
 
          write (mout, '(i8,6F8.3)') kmx, q30, q40, q31, q41, q32, q42
       end do

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -71,7 +71,9 @@ contains
       type(t_observCrossSection), pointer :: pCrs
       logical :: success
 
-      if (ncrs < 1) return
+      if (ncrs < 1) then
+         return
+      end if
 
       intersection_count = 0
 
@@ -125,7 +127,7 @@ contains
             allocate (polygon_nodes(Lnx))
             polygon_nodes = 0
             allocate (polygon_segment_weights(Lnx))
-            polygon_segment_weights = 0d0
+            polygon_segment_weights = 0.0_dp
             call find_crossed_links_kdtree2(treeglob, num, xx, yy, ITYPE_FLOWLINK, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
 
             call save_link_list(intersection_count, crossed_links, polygon_nodes)
@@ -174,7 +176,9 @@ contains
          if (allocated(istartcrs)) then
             deallocate (istartcrs)
          end if
-         if (allocated(xx)) deallocate (xx, yy)
+         if (allocated(xx)) then
+            deallocate (xx, yy)
+         end if
 
          call wall_clock_time(t1)
          write (mesg, "('cross sections with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
@@ -184,14 +188,14 @@ contains
       icMOD = max(1, ncrs / 100)
 
       call realloc(numlist, ncrs, keepExisting=.true., fill=0) ! In case pli-based cross sections have not allocated this yet.
-      call realloc(linklist, (/max(intersection_count, 1), ncrs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
+      call realloc(linklist, [max(intersection_count, 1), ncrs], keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
       call copy_cached_cross_sections(crossed_links, polygon_nodes, success)
 
-      call READYY('Enabling cross sections on grid', 0d0)
+      call READYY('Enabling cross sections on grid', 0.0_dp)
       do ic = 1, ncrs
          if (mod(ic, icMOD) == 0) then
-            call READYY('Enabling cross sections on grid', dble(ic) / dble(ncrs))
+            call READYY('Enabling cross sections on grid', real(ic, kind=dp) / real(ncrs, kind=dp))
          end if
          if (crs(ic)%loc2OC == 0) then
             if (.not. success) then
@@ -227,7 +231,7 @@ contains
          end if
       end do
 
-      call READYY('Enabling cross sections on grid', -1d0)
+      call READYY('Enabling cross sections on grid', -1.0_dp)
 
 1234  continue
 

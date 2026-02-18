@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -155,7 +155,7 @@ InitProcess (
 void
 SetError (
     int     thid,
-    char *  message,
+    const char *  message,
     ...
     ) {
 
@@ -327,7 +327,7 @@ ESM_Delete (
 void *
 ESM_Alloc (
     int     contextid,
-    char *  name,
+    const char *  name,
     size_t  size
     ) {
 
@@ -367,7 +367,7 @@ ESM_Alloc (
 int
 ESM_Free (
     int     contextid,
-    char *  name
+    const char *  name
     ) {
 
     int return_value = -999;
@@ -477,12 +477,12 @@ ESM_ListRegions (
     }
 
 
-char *
+const char *
 ESM_Error (
     void
     ) {
 
-    char *  return_value = "ESM Error";
+    const char *  return_value = "ESM Error";
     int *   thidp;
 
     if ((thidp = (int *) pthread_getspecific (Self)) == NULL)
@@ -494,7 +494,7 @@ ESM_Error (
 
 int
 ESM_TraceFile (
-    char *  filename
+    const char *  filename
     ) {
 
     int return_value = -999;

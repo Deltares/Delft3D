@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -81,10 +81,10 @@ contains
       TI = -1
       TJ = -1
 
-      TI0 = 0d0
-      TJ0 = 0d0
+      TI0 = 0.0_dp
+      TJ0 = 0.0_dp
 
-      sdistmin = 1d99 ! used for selecting middle intersection in case of multiple intersections
+      sdistmin = 1.0e99_dp ! used for selecting middle intersection in case of multiple intersections
 
       do I = 1, NUMPI - 1 ! SNIJDEN RECHTE LIJNSTUKKEN?
          do J = 1, NUMPJ - 1
@@ -96,14 +96,14 @@ contains
             YC(2) = YI(I + 1)
             YC(3) = YJ(J)
             YC(4) = YJ(J + 1)
-            CRP = -1234d0
+            CRP = -1234.0_dp
             call CROSS(XC(1), YC(1), XC(2), YC(2), XC(3), YC(3), XC(4), YC(4), &
                        JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
             if (JACROS == 1) then
                if (numpi == 2) then
-                  sdist = min(sdistmin, abs(SL - 0.5d0))
+                  sdist = min(sdistmin, abs(SL - 0.5_dp))
                else if (numpj == 2) then
-                  sdist = abs(SM - 0.5d0)
+                  sdist = abs(SM - 0.5_dp)
                else
                   sdist = sdistmin
                end if
@@ -144,7 +144,8 @@ contains
                   YC(2) = YI(I + 1)
                   YC(3) = YJ(J)
                   YC(4) = YJ(J + 1)
-                  SL = dmiss; SM = dmiss
+                  SL = dmiss
+                  SM = dmiss
                   call CROSS(XC(1), YC(1), XC(2), YC(2), XC(3), YC(3), XC(4), YC(4), &
                              JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
@@ -164,7 +165,9 @@ contains
       TIO = TI0 ! SPvdP: TIO and TJO uninitialized, may be typing error
       TJO = TJ0
 
-      if (NUMCRO == 0) return
+      if (NUMCRO == 0) then
+         return
+      end if
 
       NUMCRO = 0
 
@@ -174,8 +177,8 @@ contains
       SL = TI - TIO
       SM = TJ - TJO
 
-      TI = max(0.0d0, min(TIMX, TI))
-      TJ = max(0.0d0, min(TJMX, TJ))
+      TI = max(0.0_dp, min(TIMX, TI))
+      TJ = max(0.0_dp, min(TJMX, TJ))
 
       call SPLINE(XI, NUMPI, XI2)
       call SPLINE(YI, NUMPI, YI2)
@@ -195,10 +198,10 @@ contains
       if (SM > 0. .and. SM < 1.) then
          TJJ = 0.5 * TJJ
       end if
-      TI1 = max(0.0d0, min(TIMX, TI - TII / 2))
-      TI2 = max(0.0d0, min(TIMX, TI + TII / 2))
-      TJ1 = max(0.0d0, min(TJMX, TJ - TJJ / 2))
-      TJ2 = max(0.0d0, min(TJMX, TJ + TJJ / 2))
+      TI1 = max(0.0_dp, min(TIMX, TI - TII / 2))
+      TI2 = max(0.0_dp, min(TIMX, TI + TII / 2))
+      TJ1 = max(0.0_dp, min(TJMX, TJ - TJJ / 2))
+      TJ2 = max(0.0_dp, min(TJMX, TJ + TJJ / 2))
       TII = TI2 - TI1
       TJJ = TJ2 - TJ1
 
@@ -225,8 +228,9 @@ contains
 
       XO = XCR
       YO = YCR
-      SL = dmiss; SM = dmiss
-      CRS = -1234d0
+      SL = dmiss
+      SM = dmiss
+      CRS = -1234.0_dp
       call CROSS(XC(1), YC(1), XC(2), YC(2), XC(3), YC(3), XC(4), YC(4), &
                  JACROS, SL, SM, XCR, YCR, CRS, jsferic, dmiss)
       if (SL > -2. .and. SL < 3.0 .and. SM > -2. .and. SM < 3.0) then
@@ -236,8 +240,8 @@ contains
          TI = TI1 + SL * TII
          TJ = TJ1 + SM * TJJ
 
-         TI = max(0.0d0, min(TIMX, TI))
-         TJ = max(0.0d0, min(TJMX, TJ))
+         TI = max(0.0_dp, min(TIMX, TI))
+         TJ = max(0.0_dp, min(TJMX, TJ))
 
          if (JACROS == 1) then !ZOLANG IE NOG KRUIST WORDT UITPRODUCT BEPAALD
             NUMCRO = 1
@@ -248,7 +252,9 @@ contains
             if (abs(TI - TIO) > EPS .or. abs(TJ - TJO) > EPS) then
 !                DIS = SQRT((XCR-XO)*(XCR-XO)+(YCR-YO)*(YCR-YO))
                dis = dbdistance(xo, yo, xcr, ycr, jsferic, jasfer3D, dmiss)
-               if (DIS > EPS2) goto 20 ! NIET VERDER VERKLEINEN ALS PUNTEN AL BIJNA IDENTIEK
+               if (DIS > EPS2) then
+                  goto 20 ! NIET VERDER VERKLEINEN ALS PUNTEN AL BIJNA IDENTIEK
+               end if
             end if
          end if
       end if

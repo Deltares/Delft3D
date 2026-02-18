@@ -92,6 +92,13 @@ object PublishToGui : BuildType({
             cleanOutputDir = false
             publishPackages = true
         }
+        nuGetPublish {
+            name = "Publish NuGet artifacts to Nexus"
+            toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
+            packages = "target/*.nupkg"
+            serverUrl = "https://artifacts.deltares.nl/repository/nuget-release/"
+            apiKey = "%nexus_nuget_apikey%"
+        }
     }
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
@@ -99,8 +106,13 @@ object PublishToGui : BuildType({
             dependency(LinuxCollect) {
                 snapshot {
                 }
+                
                 artifacts {
-                    artifactRules = "dimrset_lnx64_*.tar.gz!**=>source"
+                    artifactRules = """
+                        dimrset_lnx64_*.tar.gz!lnx64/bin/** => source/bin
+                        dimrset_lnx64_*.tar.gz!lnx64/lib/** => source/lib
+                        ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => source/share
+                    """.trimIndent()
                 }
             }
             dependency(WindowsCollect) {
@@ -135,12 +147,6 @@ object PublishToGui : BuildType({
                 }
             }
             dependency(LinuxRunAllContainerExamples) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-            }
-            dependency(LinuxLegacyDockerTest) {
                 snapshot {
                     onDependencyFailure = FailureAction.FAIL_TO_START
                     onDependencyCancel = FailureAction.CANCEL

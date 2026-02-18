@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -60,7 +60,9 @@ contains
       real(kind=dp), allocatable :: zp_copy(:)
 
       if (size(NP) < NUMP) then
-         if (allocated(NP)) deallocate (NP, ZP)
+         if (allocated(NP)) then
+            deallocate (NP, ZP)
+         end if
          allocate (NP(NUMP), ZP(NUMP), STAT=IERR)
       end if
 

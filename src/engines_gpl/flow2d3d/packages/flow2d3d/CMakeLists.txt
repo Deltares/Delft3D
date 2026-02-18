@@ -88,7 +88,6 @@ set_source_files_properties(${fortran_version_files}
 # WARNING: the order is important: first the call, then the definition
 set(oss_dependencies_general flow2d3d_manager
                              flow2d3d_io
-                             flow2d3d_io_dol_f
                              flow2d3d_kernel
                              flow2d3d_kernel_dd_f
                              flow2d3d_plugin_culvert_c

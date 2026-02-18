@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,7 @@
 module m_physcoef
    use precision, only: dp
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
-
+   use m_array_or_scalar, only: t_array_or_scalar
    implicit none
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
@@ -68,8 +68,9 @@ module m_physcoef
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
    real(kind=dp) :: viuchk !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
-   real(kind=dp) :: vicoww !< user specified constant vertical   eddy viscosity  (m2/s)
-   real(kind=dp) :: dicoww !< user specified constant vertical   eddy diffusivity(m2/s)
+   real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity (m2/s)
+   real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
+   class(t_array_or_scalar), allocatable, target :: dicoww !< abstract class instance for dicoww, either scalar or array depending on user input
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
@@ -112,6 +113,7 @@ module m_physcoef
    real(kind=dp) :: Soiltempthick = 0.0_dp !< if soil buffer desired make thick > 0, e.g. 0.2 m
 
    integer :: Jadelvappos !< only positive forced evaporation fluxes
+   real(kind=dp) :: free_convection_coefficient !< Free convection turbulence coefficient [-]
 
    real(kind=dp) :: tetav !< vertical teta transport
    real(kind=dp) :: tetavkeps !< vertical teta k-eps
@@ -122,7 +124,9 @@ module m_physcoef
    real(kind=dp) :: locsaltmax !< maximum salinity for case of lock exchange
 
    integer :: NFEntrainmentMomentum = 0 !< 1: switched on: Momentum transfer in NearField related entrainment
+
 contains
+
 !> Sets all variables in this module to their default values.
    subroutine default_physcoef()
       ag = 9.81_dp
@@ -143,7 +147,7 @@ contains
       Smagorinsky = 0.2_dp
       viuchk = 0.24_dp
       vicoww = 1e-6_dp
-      dicoww = 1e-6_dp
+      constant_dicoww = 1e-6_dp
       rhomean = 1000.0_dp
       c9of1 = 9.0_dp
       backgroundwatertemperature = 20.0_dp
@@ -164,6 +168,7 @@ contains
       Stanton = 0.0013_dp
       Dalton = 0.0013_dp
       Jadelvappos = 0
+      free_convection_coefficient = 0.14_dp
       tetav = 0.55_dp
       tetavkeps = 0.55_dp
       tetavmom = 0.55_dp

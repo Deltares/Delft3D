@@ -82,9 +82,7 @@ character(len=256) fresid, ffroud,                                              
 character(len=256) nefmda  , nefmdf
 character(len=256) nefwda  , nefwdf
 character(len=256) errtem
-character(len=256) gaprinam, gawlev,                                            &
-&              gadisch , gaveloc ,                                               &
-&              gaconcen
+character(len=256) gaprinam
 common /simfls/                                                                 &
 &             rtncod  ,                                                          &
 &             flwmap  , flwhis  , fstrhs  , fqlths  ,                            &
@@ -103,5 +101,4 @@ common /simfls/                                                                 
 &             fdmprs  , fdmpst  , fdmpsl  , nefmda  ,                            &
 &             nefmdf  , nefwda  , nefwdf  ,                                      &
 &             errtem  ,                                                          &
-&             gaprinam, gawlev  , gadisch , gaveloc ,                            &
-&             gaconcen
+&             gaprinam

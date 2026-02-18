@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -85,12 +85,16 @@ contains
       ND = N2 - N1
       MFAA = MFAC
       NFAA = NFAC
-      if (MD == 0) MFAA = 1
-      if (ND == 0) NFAA = 1
+      if (MD == 0) then
+         MFAA = 1
+      end if
+      if (ND == 0) then
+         NFAA = 1
+      end if
 
       KI1 = 0
       do I1 = 1, MC - 1
-         AF = 0.20d0 + 0.70d0 * dble(I1 - 1) / (MC - 1)
+         AF = 0.20_dp + 0.70_dp * real(I1 - 1, kind=dp) / (MC - 1)
          call READYY(' ', AF)
          if (I1 >= M1 .and. I1 < M2) then
             MFA = MFAA
@@ -125,14 +129,14 @@ contains
             if (IJYES(I1, J1) == 1) then
 
                do K = 1, MFA + 1
-                  TI = (I1 - 1) + dble(K - 1) / dble(MFA)
+                  TI = (I1 - 1) + real(K - 1, kind=dp) / real(MFA, kind=dp)
                   call SPLINT(XH3, XH23, MC, TI, X3(K))
                   call SPLINT(XH4, XH24, MC, TI, X4(K))
                   call SPLINT(YH3, YH23, MC, TI, Y3(K))
                   call SPLINT(YH4, YH24, MC, TI, Y4(K))
                end do
                do L = 1, NFA + 1
-                  TJ = (J1 - 1) + dble(L - 1) / dble(NFA)
+                  TJ = (J1 - 1) + real(L - 1, kind=dp) / real(NFA, kind=dp)
                   call SPLINT(XH1, XH21, NC, TJ, X1(L))
                   call SPLINT(XH2, XH22, NC, TJ, X2(L))
                   call SPLINT(YH1, YH21, NC, TJ, Y1(L))

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,10 +31,12 @@
 !
 
 module m_flow_externaloutput
+
    use m_step_to_screen, only: step_to_screen
    use m_inctime_split, only: inctime_split
    use m_waveconst
 
+   use precision, only: dp
    implicit none
 
    private
@@ -109,7 +111,7 @@ contains
                time_his = tstop_user + 1
             else
                tem_dif = (tim - ti_hiss) / ti_his
-               time_his = max(ti_hiss + (floor(tem_dif + 0.001d0) + 1) * ti_his, ti_hiss)
+               time_his = max(ti_hiss + (floor(tem_dif + 0.001_dp) + 1) * ti_his, ti_hiss)
                if (comparereal(time_his, ti_hise, eps10) == 1) then
                   ! next time_his would be beyond end of his-window, write one last his exactly at that end.
                   time_his = ti_hise
@@ -119,11 +121,13 @@ contains
       end if
 
       if (.not. allocated(ti_mpt)) then
-         allocate (ti_mpt(1), ti_mpt_rel(1)); ti_mpt(1) = 0; ti_mpt_rel(1) = 0
+         allocate (ti_mpt(1), ti_mpt_rel(1))
+         ti_mpt(1) = 0
+         ti_mpt_rel(1) = 0
       end if
 
       call timstrt('call wrimap', handle_extra(77))
-      if (ti_map > 0d0 .or. ti_mpt(1) > 0) then
+      if (ti_map > 0.0_dp .or. ti_mpt(1) > 0) then
          if (comparereal(tim, time_map, eps10) >= 0) then
             ! update for output, only for 1D
             if (network%loaded) then
@@ -159,14 +163,14 @@ contains
                   negativeDepths = 0
                   noiterations = 0
                   limitingTimestepEstimation = 0
-                  flowCourantNumber = 0d0
+                  flowCourantNumber = 0.0_dp
                end if
             end if
             if (comparereal(time_map, ti_mape, eps10) == 0) then
                time_map = tstop_user + 1
             else
                tem_dif = (tim - ti_maps) / ti_map
-               time_map = max(ti_maps + (floor(tem_dif + 0.001d0) + 1) * ti_map, ti_maps)
+               time_map = max(ti_maps + (floor(tem_dif + 0.001_dp) + 1) * ti_map, ti_maps)
                ti_mpt_rel = ti_mpt - tim
                time_map_mpt = tim + minval(ti_mpt_rel, mask=ti_mpt_rel > 0)
                if (comparereal(time_map, time_map_mpt, eps10) == 1 .and. comparereal(tim, time_map_mpt, eps10) == -1) then
@@ -191,7 +195,7 @@ contains
                time_classmap = tstop_user + 1
             else
                tem_dif = (tim - ti_classmaps) / ti_classmap
-               time_classmap = max(ti_classmaps + (floor(tem_dif + 0.001d0) + 1) * ti_classmap, ti_classmaps)
+               time_classmap = max(ti_classmaps + (floor(tem_dif + 0.001_dp) + 1) * ti_classmap, ti_classmaps)
 
                if (comparereal(time_classmap, ti_classmape, eps10) == 1) then
                   ! next time_classmap would be beyond end of incr-window, write one last incr exactly at that end.
@@ -217,8 +221,10 @@ contains
                   time_com = tstop_user + 1
                else
                   tem_dif = (tim - ti_coms) / ti_com
-                  if (isnan(tem_dif)) tem_dif = 0.0_hp
-                  time_com = max(ti_coms + (floor(tem_dif + 0.001d0) + 1) * ti_com, ti_coms)
+                  if (isnan(tem_dif)) then
+                     tem_dif = 0.0_hp
+                  end if
+                  time_com = max(ti_coms + (floor(tem_dif + 0.001_dp) + 1) * ti_com, ti_coms)
                   ti_ctv_rel = ti_ctv - tim
                   time_com_ctv = tim + minval(ti_ctv_rel, mask=ti_ctv_rel > 0)
                   if (comparereal(time_com, time_com_ctv, eps10) == 1 .and. comparereal(tim, time_com_ctv, eps10) == -1) then
@@ -255,7 +261,7 @@ contains
                time_rst = tstop_user + 1
             else
                tem_dif = (tim - ti_rsts) / ti_rst
-               time_rst = max(ti_rsts + (floor(tem_dif + 0.001d0) + 1) * ti_rst, ti_rsts)
+               time_rst = max(ti_rsts + (floor(tem_dif + 0.001_dp) + 1) * ti_rst, ti_rsts)
                if (comparereal(time_rst, ti_rste, eps10) == 1) then
                   ! We've come beyond the end time of restart window.
                   ! Write just a last one exactly on that end time (i.e. not at tstop_user).
@@ -273,7 +279,7 @@ contains
             wrwaqon = .true.
          end if
 
-         if (tim >= ti_waqs .and. tim <= ti_waqe + 0.1d0 .and. tim >= time_waq - 0.1d0) then
+         if (tim >= ti_waqs .and. tim <= ti_waqe + 0.1_dp .and. tim >= time_waq - 0.1_dp) then
             call waq_wri_couple_files(tim)
             time_waq = time_waq + ti_waq
          end if
@@ -282,9 +288,10 @@ contains
 
       if (ti_stat > 0) then
          if (tim >= time_stat) then
-            call step_to_screen(); time_stat = tim + ti_stat
+            call step_to_screen()
+            time_stat = tim + ti_stat
          end if
-      else if (ti_stat < 0d0) then
+      else if (ti_stat < 0.0_dp) then
 !     base statistics output on wallclock time, if available
          if (jatimer > 0) then
             runtime = gettimer(1, ITOTAL)
@@ -296,7 +303,7 @@ contains
       end if
 
    !! Write shape files at the initialization
-      if (abs(tim - tstart_user) < 1d-10) then
+      if (abs(tim - tstart_user) < 1.0e-10_dp) then
 #ifdef HAVE_SHAPELIB
          call unc_write_shp()
 #else

@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -124,6 +124,7 @@ module m_ec_parameters
    integer, parameter :: interpolate_intdiffusion = 12 !< Not yet supported: only spatial, internal diffusion
    integer, parameter :: interpolate_vertprofile = 13 !< Not yet supported: only initial vertical profiles
    integer, parameter :: extrapolate_spacetimeSaveWeightFactors = 14 !< inter/extra-polate in space, save the space weight factors, then interpolate in time
+   integer, parameter :: interpolate_nearest_neighbour = 15 !< interpolate in space by nearest-neighbour
 
    ! enumeration for time interpolation types
    integer, parameter :: timeint_lin = 1   !< linear

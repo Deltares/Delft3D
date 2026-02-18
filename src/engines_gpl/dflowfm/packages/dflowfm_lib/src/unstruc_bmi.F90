@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -41,6 +41,7 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+
    use m_cosphiunetcheck, only: cosphiunetcheck
    use m_flow_run_usertimestep, only: flow_run_usertimestep
    use m_flow_run_sometimesteps, only: flow_run_sometimesteps
@@ -87,6 +88,7 @@ module bmi
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
    use m_update_land_nodes
    use m_find_name, only: find_name
+   use precision, only: dp
 
    implicit none
 
@@ -237,6 +239,7 @@ contains
       use unstruc_files
       use m_partitioninfo
       use check_mpi_env
+      use m_init_openmp, only: init_openmp
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -287,6 +290,9 @@ contains
          jampi = 0
       end if
 
+#ifdef _OPENMP
+      ierr = init_openmp(md_numthreads, jampi)
+#endif
       !   make domain number string as soon as possible
       write (sdmn, '(I4.4)') my_rank
 
@@ -624,7 +630,7 @@ contains
       att_name = char_array_to_string(c_att_name, strlen(c_att_name))
 
       ! Look up the value of att_name
-      value = -1.0d0
+      value = -1.0_dp
    end subroutine get_double_attribute
 
    subroutine get_int_attribute(c_att_name, value) bind(C, name="get_int_attribute")
@@ -682,7 +688,7 @@ contains
 
    !>  \brief
    !! This function gets the variable name from the component.
-   !! \param[in] var_index : The integer index 
+   !! \param[in] var_index : The integer index
    !! \param[out] c_var_name : The variable name in ISO C character format
    !!
    !! Var ordering:
@@ -776,7 +782,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_type
 
       use string_module, only: str_split
-      
+
       character(kind=c_char), intent(in) :: c_var_name(*)
       character(kind=c_char), intent(out) :: c_type(MAXSTRLEN)
       character(len=MAXSTRLEN) :: type_name, var_name
@@ -785,7 +791,7 @@ contains
       integer :: last_token
       character(:), dimension(:), allocatable :: words
       integer :: i
-      
+
       ! Use one of the following types
       ! BMI datatype        C datatype        NumPy datatype
       ! BMI_STRING          char*             S<
@@ -796,58 +802,58 @@ contains
 
       type_name = "" !initially the type name is empty
 
-      !We are not returning if it is found because at the end we convert to a c-type string. 
-      !We cannot 
-      
+      !We are not returning if it is found because at the end we convert to a c-type string.
+      !We cannot
+
       !First we check if the type is captured by the automatically generated include file.
-      !Ideally we would `return` if the type is found. 
+      !Ideally we would `return` if the type is found.
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_type.inc"
 
-     !Second we check if it is of a special case. It can be a compound name (e.g., 'weirs/weir1/crestlevel').
-     !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type. 
-      
-     !Split the variable name. 
-     !E.g., var_name='weirs/weir1/crestlevel' -> words(1)='weirs', words(2)='weir1', words(3)='crestlevel'; last_token=3
-     !E.g., var_name='frcu' -> words(1)='frcu', words(2)='', words(3)=''; last_token=1
-     call str_split(words, last_token, var_name, varset_name, DELIMS='/')
-  
-     !Case on the last token of the variable name.
-     select case (trim(words(last_token)))
-        case ("netelemnode")
-           type_name = "int"
-        case ("flowelemnode", "flowelemnbs", "flowelemlns")
-           type_name = "int"
-        case ("flowelemcontour_x", "flowelemcontour_y")
-           type_name = "double"
-        case ("TcrEro", "TcrSed", "tem1Surf")
-           type_name = "double"
-        case ('vltb')
-           type_name = "type(t_voltable)"
-        case ('vltbOnLinks')
-           type_name = "type(t_voltable)"
-        case ('network')
-           type_name = "type(t_network)"
-     end select          
+      !Second we check if it is of a special case. It can be a compound name (e.g., 'weirs/weir1/crestlevel').
+      !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type.
 
-     !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double. 
-     !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
-     if (last_token > 1) then
+      !Split the variable name.
+      !E.g., var_name='weirs/weir1/crestlevel' -> words(1)='weirs', words(2)='weir1', words(3)='crestlevel'; last_token=3
+      !E.g., var_name='frcu' -> words(1)='frcu', words(2)='', words(3)=''; last_token=1
+      call str_split(words, last_token, var_name, varset_name, DELIMS='/')
+
+      !Case on the last token of the variable name.
+      select case (trim(words(last_token)))
+      case ("netelemnode")
+         type_name = "int"
+      case ("flowelemnode", "flowelemnbs", "flowelemlns")
+         type_name = "int"
+      case ("flowelemcontour_x", "flowelemcontour_y")
          type_name = "double"
-     end if
-        
-     !Third we check if it a constituent name (e.g., 'salt', 'tracer1', etc.)
-     if (numconst > 0) then
-        iconst = find_name(const_names, var_name)
-     end if
-     if (iconst /= 0) then
-        type_name = "double"
-     end if
-      
-     c_type = string_to_char_array(trim(type_name), len(trim(type_name)))
+      case ("TcrEro", "TcrSed", "tem1Surf")
+         type_name = "double"
+      case ('vltb')
+         type_name = "type(t_voltable)"
+      case ('vltbOnLinks')
+         type_name = "type(t_voltable)"
+      case ('network')
+         type_name = "type(t_network)"
+      end select
 
-      if(allocated(words)) then
-          deallocate(words)
+      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double.
+      !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
+      if (last_token > 1) then
+         type_name = "double"
+      end if
+
+      !Third we check if it a constituent name (e.g., 'salt', 'tracer1', etc.)
+      if (numconst > 0) then
+         iconst = find_name(const_names, var_name)
+      end if
+      if (iconst /= 0) then
+         type_name = "double"
+      end if
+
+      c_type = string_to_char_array(trim(type_name), len(trim(type_name)))
+
+      if (allocated(words)) then
+         deallocate (words)
       end if
 
    end subroutine get_var_type
@@ -891,56 +897,56 @@ contains
 
       use iso_c_binding, only: c_int, c_char
       use string_module, only: str_split
-      
+
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(out) :: rank
-      
+
       ! The fortran name of the attribute name
       character(len=strlen(c_var_name)) :: var_name
       character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
       integer :: last_token
       character(:), dimension(:), allocatable :: words
-      
+
       rank = 0 !initially 0
 
       !First we check if the rank is captured by the automatically generated include file.
-      !Ideally we would `return` if the rank is found. 
+      !Ideally we would `return` if the rank is found.
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_rank.inc"
-          
+
       !Second we check if it is of a special case. It can be a compound name (e.g., 'weirs/weir1/crestlevel').
-      !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type. 
-       
-      !Split the variable name. 
+      !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type.
+
+      !Split the variable name.
       !E.g., var_name='weirs/weir1/crestlevel' -> words(1)='weirs', words(2)='weir1', words(3)='crestlevel'; last_token=3
       !E.g., var_name='frcu' -> words(1)='frcu', words(2)='', words(3)=''; last_token=1
       call str_split(words, last_token, var_name, varset_name, DELIMS='/')
-      
+
       select case (trim(words(last_token)))
-         case ("netelemnode")
-            rank = 2
-            return
-         case ("flowelemnode", "flowelemnbs", "flowelemlns", "flowelemcontour_x", "flowelemcontour_y")
-            rank = 2
-            return
-         case ("pumps", "weirs", "orifices", "gates", "generalstructures", "culverts", "sourcesinks", "dambreak", "observations", "crosssections", "laterals") ! Compound vars: shape = [numobj, numfields_per_obj]
-            rank = 2
-            return
-         case ("TcrEro", "TcrSed")
-            rank = 2
-            return
-         case ("tem1Surf")
-            rank = 1
-            return
+      case ("netelemnode")
+         rank = 2
+         return
+      case ("flowelemnode", "flowelemnbs", "flowelemlns", "flowelemcontour_x", "flowelemcontour_y")
+         rank = 2
+         return
+      case ("pumps", "weirs", "orifices", "gates", "generalstructures", "culverts", "sourcesinks", "dambreak", "observations", "crosssections", "laterals") ! Compound vars: shape = [numobj, numfields_per_obj]
+         rank = 2
+         return
+      case ("TcrEro", "TcrSed")
+         rank = 2
+         return
+      case ("tem1Surf")
+         rank = 1
+         return
       end select
-      
-      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double. 
+
+      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double.
       !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
       if (last_token > 1) then
-         rank = 1    
+         rank = 1
          return
       end if
-     
+
       !Third we check if it a constituent name (e.g., 'salt', 'tracer1', etc.)
       if (numconst > 0) then
          iconst = find_name(const_names, var_name)
@@ -949,7 +955,7 @@ contains
          rank = 1
          return
       end if
-      
+
    end subroutine get_var_rank
 
 !> Returns the shape of a variable, i.e., an array with length equal to this variables's rank.
@@ -971,7 +977,7 @@ contains
       use m_transport, only: NAMLEN, NUMCONST
       use m_laterals, only: numlatsg, nlatnd
       use string_module, only: str_split
-      
+
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(inout) :: shape(MAXDIMS)
 
@@ -979,22 +985,22 @@ contains
       character(len=strlen(c_var_name)) :: varset_name !< For parsing compound variable names.
       integer :: last_token
       character(:), dimension(:), allocatable :: words
-      
+
       shape = [0, 0, 0, 0, 0, 0] !initialize
-      
+
       !First we check if the shape is captured by the automatically generated include file.
-      !Ideally we would `return` if the shape is found. 
+      !Ideally we would `return` if the shape is found.
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
       include "bmi_get_var_shape.inc"
-  
+
       !Second we check if it is of a special case. It can be a compound name (e.g., 'weirs/weir1/crestlevel').
-      !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type. 
-       
-      !Split the variable name. 
+      !If it is a compound name, we check on the last token (e.g., 'crestlevel'), as this has the information of the type.
+
+      !Split the variable name.
       !E.g., var_name='weirs/weir1/crestlevel' -> words(1)='weirs', words(2)='weir1', words(3)='crestlevel'; last_token=3
       !E.g., var_name='frcu' -> words(1)='frcu', words(2)='', words(3)=''; last_token=1
       call str_split(words, last_token, var_name, varset_name, DELIMS='/')
-      
+
       ! NOTE: report the shape below in row-major order (so, C-style, not FORTRAN-style)
       select case (trim(words(last_token)))
       case ("netelemnode")
@@ -1021,7 +1027,7 @@ contains
          shape(1) = ndx
          return
 
-      ! Compounds:
+         ! Compounds:
       case ("pumps")
          shape(1) = npumpsg
          shape(2) = 1
@@ -1068,7 +1074,7 @@ contains
       case ('network')
          shape(1) = 1
 
-      ! Array pointers:
+         ! Array pointers:
       case ("xcc", "ycc", "water_depth", "kbot", "ktop")
          shape(1) = ndx
          return
@@ -1088,14 +1094,14 @@ contains
          shape(2) = len_trim(md_ident)
          return
       end select
-      
-      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double. 
+
+      !For now, if it is a compound name (i.e., it has more than one token), we assume it is a double.
       !It cannot be as `case default` because otherwise whatever result from the `include` will be overwritten.
-      if (last_token > 1) then 
+      if (last_token > 1) then
          shape(1) = 1
          return
       end if
-      
+
       if (numconst > 0) then
          iconst = find_name(const_names, var_name)
       end if
@@ -1431,6 +1437,7 @@ contains
       use morphology_data_module, only: PARSOURCE_FIELD
       use string_module, only: str_token
       use m_init_openmp, only: init_openmp
+      use messagehandling, only: stringtolevel
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       type(c_ptr), value, intent(in) :: xptr
@@ -2015,6 +2022,7 @@ contains
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
+      use m_longculverts_data, only: longculverts
       use m_structures, only: valdambreak
       use m_1d_structures
       use m_wind
@@ -2108,16 +2116,28 @@ contains
          end if
          select case (field_name)
          case ("crestlevel")
-            x = c_loc(zcgen((item_index - 1) * 3 + 1))
+            if (is_in_network) then
+               x = get_crest_level_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+            end if
             return
          case ("gateheight")
             x = c_loc(generalstruc(item_index)%gatedoorheight)
             return
          case ("gateloweredgelevel")
-            x = c_loc(zcgen((item_index - 1) * 3 + 2))
+            if (is_in_network) then
+               x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+            end if
             return
          case ("gateopeningwidth")
-            x = c_loc(zcgen((item_index - 1) * 3 + 3))
+            if (is_in_network) then
+               x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+            end if
             return
          case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
@@ -2420,8 +2440,8 @@ contains
 
    !> Returns the c_ptr for a variable on a lateral location
    function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
-      use m_laterals, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
-                            lateral_volume_per_layer, num_layers
+      use m_laterals, only: qplat, nnlat, n1latsg, n2latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
+                            lateral_volume_per_layer, num_layers, average_waterlevels_per_lateral, numlatsg
       use m_flow, only: s1
       use string_module, only: str_token
 
@@ -2446,10 +2466,19 @@ contains
          end if
          return
       case ("water_level")
-         ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
-         k1 = nnlat(n1latsg(item_index))
-         if (k1 > 0) then
-            c_lateral_pointer = c_loc(s1(k1))
+         if (.not. average_waterlevels_per_lateral%is_used) then
+            ! Just in time initialization, update will be called at the end of flow_run_some_timesteps.
+            call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
+                                                            input_variable=s1, &
+                                                            weighing_variable=a1, &
+                                                            index_start=n1latsg, &
+                                                            index_end=n2latsg, &
+                                                            index_to_node=nnlat)
+            call average_waterlevels_per_lateral%update()
+         end if
+
+         if (item_index > 0) then
+            c_lateral_pointer = c_loc(average_waterlevels_per_lateral%values(item_index))
          else
             c_lateral_pointer = c_null_ptr
          end if

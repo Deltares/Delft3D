@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -62,12 +62,16 @@ contains
                   end if
                end do
                if (jaweg == nmk(k)) then
-                  xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
+                  xk(k) = dmiss
+                  yk(k) = dmiss
+                  zk(k) = dmiss
                end if
 
             end if
          else if (zk(k) == dmiss) then
-            xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
+            xk(k) = dmiss
+            yk(k) = dmiss
+            zk(k) = dmiss
          end if
       end do
 

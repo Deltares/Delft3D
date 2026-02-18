@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -29,7 +29,6 @@
 #define isnan(a) ((a)!=(a))
 
 using namespace rtctools::schematization::rules;
-using namespace std;
 
 /**
  * This method is available for backwards compatibility with Positional. It is obsolete and will

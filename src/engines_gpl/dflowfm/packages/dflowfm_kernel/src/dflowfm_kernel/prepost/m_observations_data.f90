@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,6 +45,12 @@ module m_observations_data
    real(kind=dp), allocatable :: cmxobs(:) !< maximum 2D flow velocity of observation points, 3D: maximum over all layers and time
    integer, allocatable :: kobs(:) !< node nrs of ACTIVE observation points
    integer, allocatable :: lobs(:) !< flowlink nrs of active observation points
+   integer, allocatable :: intobs(:) !< interpolated station or not
+! For storing number and weights of stations wher you want to get interpolated values
+  
+   integer, allocatable       :: neighbour_nodes_obs(:,:) !< [3, numobs+nummovobs] List of nearby flow node numbers for each observation point
+   real(kind=dp), allocatable :: neighbour_weights_obs(:,:) !< [3, numobs+nummovobs] List of weights for the  nearby flow node numbers for each observation point
+   
    ! NOTE: kobs is not maintained here (so also not after deleteObservation, etc.) All done once by obs_on_flowgrid.
    character(len=IdLen), allocatable :: namobs(:) ! names of observation points
    integer, allocatable :: locTpObs(:) !< location type of observation points, determining to which flownodes to snap to (0=1d2d, 1=1d, 2=2d, 3=1d defined by branchID+chainage)
@@ -129,6 +135,17 @@ module m_observations_data
    integer :: IVAL_QFRE
    integer :: IVAL_QFRC
    integer :: IVAL_QTOT
+
+   integer :: IVAL_ICE_S1
+   integer :: IVAL_ICE_ZMIN
+   integer :: IVAL_ICE_ZMAX
+   integer :: IVAL_ICE_AREA_FRACTION
+   integer :: IVAL_ICE_THICKNESS
+   integer :: IVAL_ICE_PRESSURE
+   integer :: IVAL_ICE_TEMPERATURE
+   integer :: IVAL_SNOW_THICKNESS
+   integer :: IVAL_SNOW_TEMPERATURE
+
    integer :: IVAL_RHOP
    integer :: IVAL_RHO
    integer :: IVAL_SBCX1
@@ -236,6 +253,17 @@ module m_observations_data
    integer :: IPNT_QFRE
    integer :: IPNT_QFRC
    integer :: IPNT_QTOT
+
+   integer :: IPNT_ICE_S1
+   integer :: IPNT_ICE_ZMIN
+   integer :: IPNT_ICE_ZMAX
+   integer :: IPNT_ICE_AREA_FRACTION
+   integer :: IPNT_ICE_THICKNESS
+   integer :: IPNT_ICE_PRESSURE
+   integer :: IPNT_ICE_TEMPERATURE
+   integer :: IPNT_SNOW_THICKNESS
+   integer :: IPNT_SNOW_TEMPERATURE
+
    integer :: IPNT_NUM
    integer :: IPNT_RHOP
    integer :: IPNT_RHO

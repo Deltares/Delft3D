@@ -3,7 +3,7 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
                 & bubble    ,kmax      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -186,7 +186,7 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
        call flhnew(lunbcq    ,lundia    ,error     ,record(:lrec - 1)    ,access    , &
                  & irecrd    ,nambnd(ito)          ,cntent    ,dumchr    ,idummy    , &
                  & tdummy    ,nqhrd     ,parnam    ,npara     ,nparrd    , &
-                 & bubble    ,gdp       )
+                 & bubble    ,''        ,gdp       )
        if (error) then
           exit
        endif

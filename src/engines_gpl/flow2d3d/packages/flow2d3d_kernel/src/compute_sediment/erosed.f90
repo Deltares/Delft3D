@@ -15,7 +15,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                 & icall     ,deltau    ,deltav    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -878,8 +878,6 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           temperature = temeqs
        endif
        !
-       taks0 = 0.0_fp
-       !
        ! Calculate Van Rijn's reference height
        !
        if (iopkcw==1) then
@@ -889,9 +887,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        endif
        taks0 = max(aksfac*rc, 0.01_fp*h1)
        !
-       if (wave .and. tp(nm)>0.0_fp) then
-          delr  = 0.025_fp
-          taks0 = max(0.5_fp*delr, taks0)
+       if (wave) then
+          if (tp(nm)>0.0_fp) then
+             delr  = 0.025_fp
+             taks0 = max(0.5_fp*delr, taks0)
+          endif
        endif
        !
        ! Limit maximum aks to 20% of water depth
@@ -1048,10 +1048,16 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                    sinkse(nm,l) = 0.0_fp
                 endif
                 !
-                sourf(l,nm)  = sourfluff
+                ! prevent fluff layer source exceeding available mass
+                !
+                if (mfltot <= 0.0_fp) then
+                   sourf(l,nm) = 0.0_fp
+                else
+                   sourf(l,nm) = min(sourfluff, mfltot/dt)
+                end if
              else
                 sinkse(nm,l) = sinktot
-                sourse(nm,l) = sourse(nm,l) + sourfluff ! sourfluff should actually always be 0 already
+                ! sourse(nm,l) already set (sourfluff = 0)
              endif
              !
              if (kmax > 1) then 

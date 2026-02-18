@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,7 +45,7 @@ contains
 
    subroutine vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)
       use precision, only: dp
-      use m_flow, only: kmxx, jafilter, u0, zws, javau, javau3onbnd, vicwwu, vicoww, jarhoxu, rhou, jawave, no_waves, jawavestokes, stokes_drift_2ndorder_visc_adve, flowwithoutwaves, ag, jahelmert, rhomean, s0, drop3d, hu, advi, adve, ru, fu
+      use m_flow, only: kmxx, jafilter, u0, zws, javau, javau3onbnd, vicwwu, vicoww, jarhoxu, rhou, jawave, no_waves, jawavestokes, stokes_drift_2ndorder_visc_adve, flow_without_waves, ag, jahelmert, rhomean, s0, drop3d, hu, advi, adve, ru, fu
       use m_flowgeom, only: acl, ln, lnxi, iadv, yu, dxi, iadv_subgrid_weir, iadv_rajaratnam_weir, iadv_villemonte_weir, bob, teta
       use m_flowtimes, only: dti
       use m_waves, only: ustokes
@@ -58,14 +58,16 @@ contains
       integer :: L, k, k1, k2
       real(kind=dp) :: dzLw, vstress, adv, adv1, tt, ustv, st2, agp, dzurho
 
-      real(kind=dp) :: gdxi, gdxids, du, cu, ac1, ac2, hup, twot = 0.666666666666d0, slopec
+      real(kind=dp) :: gdxi, gdxids, du, cu, ac1, ac2, hup, twot = 0.666666666666_dp, slopec
 
       real(kind=dp) :: aa(kmxx), cc(kmxx) ! for five-diaginal matrix
       ! aa(i)*u(i-2)+a(i)*u(i-1)+b(i)*u(i)+c(i)*u(i+1)+cc(i)*u(i+2)=d(i)
 
       integer :: jav3
 
-      a(1:kxL) = 0d0; b(1:kxL) = dti; c(1:kxL) = 0d0
+      a(1:kxL) = 0.0_dp
+      b(1:kxL) = dti
+      c(1:kxL) = 0.0_dp
 
       if (jafilter /= 0) then
          d(1:kxL) = ustar(Lb:Lt) * dti
@@ -73,15 +75,19 @@ contains
          d(1:kxL) = u0(Lb:Lt) * dti ! put u1 in ddk
       end if
 
-      aa(1:kxL) = 0d0; cc(1:kxL) = 0d0
+      aa(1:kxL) = 0.0_dp
+      cc(1:kxL) = 0.0_dp
 
-      adv = 0d0; adv1 = 0d0
+      adv = 0.0_dp
+      adv1 = 0.0_dp
 
-      ac1 = acL(LL); ac2 = 1d0 - ac1
+      ac1 = acL(LL)
+      ac2 = 1.0_dp - ac1
 
       do L = Lb, 0 ! Lt
          k = L - Lb + 1
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          dzv(k) = ac1 * (zws(k1) - zws(k1 - 1)) + ac2 * (zws(k2) - zws(k2 - 1)) ! volume weighted dzu , ok for pillar
       end do
 
@@ -89,14 +95,18 @@ contains
       if (javau == 3) then
          jav3 = 1
       else if (javau3onbnd == 1) then
-         if (LL > lnxi) jav3 = 1
+         if (LL > lnxi) then
+            jav3 = 1
+         end if
       else if (javau3onbnd == 2) then
-         if (iadv(LL) == 6) jav3 = 1
+         if (iadv(LL) == 6) then
+            jav3 = 1
+         end if
       end if
 
       do L = Lb, Lt - 1
          k = L - Lb + 1
-         dzLw = 0.5d0 * (dzu(k + 1) + dzu(k))
+         dzLw = 0.5_dp * (dzu(k + 1) + dzu(k))
 
          vstress = (vicwwu(L) + vicoww) / dzLw ! long time default like DPM,  finite volume weights, dim = (m/s)
 
@@ -105,17 +115,21 @@ contains
          ! vstress  = ( max(vicwwu(L), vicoww) + viskin ) / dzLw                 ! 23-12-14 : D3D like
 
          if (jav3 == 1) then ! vertical advection upwind implicit
-            if (womegu(k) > 0d0) then
+            if (womegu(k) > 0.0_dp) then
                if (jarhoxu > 0) then
-                  adv1 = womegu(k) * rhou(L) / rhou(L + 1); adv = 0d0
+                  adv1 = womegu(k) * rhou(L) / rhou(L + 1)
+                  adv = 0.0_dp
                else
-                  adv1 = womegu(k); adv = 0d0 ! here, omegu(k) lies above u point of same index
+                  adv1 = womegu(k)
+                  adv = 0.0_dp ! here, omegu(k) lies above u point of same index
                end if
-            else if (womegu(k) < 0d0) then
+            else if (womegu(k) < 0.0_dp) then
                if (jarhoxu > 0) then
-                  adv = -womegu(k) * rhou(L + 1) / rhou(L); adv1 = 0d0
+                  adv = -womegu(k) * rhou(L + 1) / rhou(L)
+                  adv1 = 0.0_dp
                else
-                  adv = -womegu(k); adv1 = 0d0
+                  adv = -womegu(k)
+                  adv1 = 0.0_dp
                end if
             end if
 
@@ -142,7 +156,7 @@ contains
 
          else if (javau == 4) then ! vertical advection central implicit
 
-            adv = 0.5d0 * womegu(k) ! here, omegu(k) lies above u point of same index
+            adv = 0.5_dp * womegu(k) ! here, omegu(k) lies above u point of same index
 
             b(k + 1) = b(k + 1) + (vstress - adv) / dzu(k + 1)
             a(k + 1) = a(k + 1) - (vstress + adv) / dzu(k + 1)
@@ -159,7 +173,7 @@ contains
                b(k) = b(k) + vstress / dzu(k)
                c(k) = c(k) - vstress / dzu(k)
             else if (jarhoxu == 3) then
-               vstress = vstress * (rhou(L) * dzu(k) + rhou(L + 1) * dzu(k + 1)) / (2d0 * dzLw)
+               vstress = vstress * (rhou(L) * dzu(k) + rhou(L + 1) * dzu(k + 1)) / (2.0_dp * dzLw)
                dzurho = dzu(k + 1) * rhou(L + 1)
                b(k + 1) = b(k + 1) + vstress / dzurho
                a(k + 1) = a(k + 1) - vstress / dzurho
@@ -179,9 +193,11 @@ contains
          else if (javau == 5) then
             if (womegu(k) > 0) then
                if (jarhoxu > 0) then
-                  adv1 = womegu(k) * rhou(L) / rhou(L + 1); adv = 0d0
+                  adv1 = womegu(k) * rhou(L) / rhou(L + 1)
+                  adv = 0.0_dp
                else
-                  adv1 = womegu(k); adv = 0d0
+                  adv1 = womegu(k)
+                  adv = 0.0_dp
                end if
                if (L == Lb) then
                   tt = adv1 / dzu(k + 1)
@@ -189,19 +205,21 @@ contains
                   a(k + 1) = a(k + 1) - tt
                else
                   tt = adv1 / dzu(k)
-                  a(k) = a(k) - tt * 0.125d0
-                  b(k) = b(k) + tt * 0.750d0 - tt
-                  c(k) = c(k) + tt * 0.375d0
+                  a(k) = a(k) - tt * 0.125_dp
+                  b(k) = b(k) + tt * 0.750_dp - tt
+                  c(k) = c(k) + tt * 0.375_dp
                   tt = adv1 / dzu(k + 1)
-                  aa(k + 1) = aa(k + 1) + tt * 0.125d0
-                  a(k + 1) = a(k + 1) - tt * 0.750d0
-                  b(k + 1) = b(k + 1) - tt * 0.375d0 + tt
+                  aa(k + 1) = aa(k + 1) + tt * 0.125_dp
+                  a(k + 1) = a(k + 1) - tt * 0.750_dp
+                  b(k + 1) = b(k + 1) - tt * 0.375_dp + tt
                end if
             else
                if (jarhoxu > 0) then
-                  adv = -womegu(k) * rhou(L + 1) / rhou(L); adv1 = 0d0
+                  adv = -womegu(k) * rhou(L + 1) / rhou(L)
+                  adv1 = 0.0_dp
                else
-                  adv = -womegu(k); adv1 = 0d0
+                  adv = -womegu(k)
+                  adv1 = 0.0_dp
                end if
                if (L == Lt - 1) then
                   tt = adv / dzu(k)
@@ -209,12 +227,12 @@ contains
                   c(k) = c(k) - tt
                else
                   tt = -adv / dzu(k)
-                  b(k) = b(k) + tt * 0.375d0 - tt
-                  c(k) = c(k) + tt * 0.750d0
-                  cc(k) = cc(k) - tt * 0.125d0
+                  b(k) = b(k) + tt * 0.375_dp - tt
+                  c(k) = c(k) + tt * 0.750_dp
+                  cc(k) = cc(k) - tt * 0.125_dp
                   tt = -adv / dzu(k + 1)
-                  a(k + 1) = a(k + 1) - tt * 0.375d0
-                  b(k + 1) = b(k + 1) - tt * 0.750d0 + tt
+                  a(k + 1) = a(k + 1) - tt * 0.375_dp
+                  b(k + 1) = b(k + 1) - tt * 0.750_dp + tt
                   c(k + 1) = c(k + 1) + tt * 0.125
                end if
             end if
@@ -226,10 +244,11 @@ contains
             b(k) = b(k) + tt
             c(k) = c(k) - tt
          else
-            adv = 0d0; adv1 = 0d0
+            adv = 0.0_dp
+            adv1 = 0.0_dp
          end if
 
-         if (jawave > NO_WAVES .and. jawaveStokes == STOKES_DRIFT_2NDORDER_VISC_ADVE .and. .not. flowWithoutWaves) then ! ustokes correction in vertical viscosity
+         if (jawave > NO_WAVES .and. jawaveStokes == STOKES_DRIFT_2NDORDER_VISC_ADVE .and. .not. flow_without_waves) then ! ustokes correction in vertical viscosity
             ustv = vstress * (ustokes(L) - ustokes(L - 1))
             d(k + 1) = d(k + 1) + ustv / dzu(k + 1)
             d(k) = d(k) - ustv / dzu(k)
@@ -240,7 +259,7 @@ contains
       agp = ag
       if (jahelmert > 0 .and. jsferic > 0) then ! possibly operationalise later for now avoid the checks
          st2 = sin(dg2rd * yu(L))**2
-         agp = 9.7803253359 * (1d0 + 0.00193185265241 * st2) / sqrt(1d0 - 0.00669437999013 * st2)
+         agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
       end if
       gdxi = agp * dxi(LL)
 
@@ -248,11 +267,12 @@ contains
          gdxi = gdxi * rhomean / rhou(L)
       end if
 
-      k1 = ln(1, LL); k2 = ln(2, LL)
+      k1 = ln(1, LL)
+      k2 = ln(2, LL)
       gdxids = gdxi * (s0(k2) - s0(k1))
 
-      slopec = 0d0
-      if (drop3D > 0d0) then
+      slopec = 0.0_dp
+      if (drop3D > 0.0_dp) then
          if (.not. (iadv(LL) == IADV_SUBGRID_WEIR .or. iadv(LL) >= IADV_RAJARATNAM_WEIR .and. iadv(LL) <= IADV_VILLEMONTE_WEIR)) then ! don't do this for weirs
             hup = s0(k2) - (min(bob(1, LL), bob(2, LL)) + drop3D * twot * hu(LL))
             if (hup < 0) then
@@ -267,7 +287,7 @@ contains
       end if
 
       cu = gdxi * teta(LL)
-      du = gdxids * (1d0 - teta(LL)) - gdxi * slopec
+      du = gdxids * (1.0_dp - teta(LL)) - gdxi * slopec
 
       if (jafilter /= 0 .and. itype == 3) then
          do L = Lb, Lt

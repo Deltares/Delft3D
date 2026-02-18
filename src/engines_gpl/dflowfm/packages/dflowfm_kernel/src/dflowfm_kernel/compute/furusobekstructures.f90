@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_furusobekstructures
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -56,12 +57,12 @@ contains
                Ls = L
             end if
 
-            if (hu(L) > 0d0) then ! hu is above lowest sill
+            if (hu(L) > 0.0_dp) then ! hu is above lowest sill
                call flgsfm(n, ng, Ls, jarea)
             else ! after discussion with Jan, this should be done to prevent any non zero in sub velocities u1(1:3) after re-wetting
-               fusav(:, n) = 0d0
-               rusav(:, n) = 0d0
-               ausav(:, n) = 0d0
+               fusav(:, n) = 0.0_dp
+               rusav(:, n) = 0.0_dp
+               ausav(:, n) = 0.0_dp
             end if
          end do
 

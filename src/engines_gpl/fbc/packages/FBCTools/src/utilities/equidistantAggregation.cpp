@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -26,7 +26,6 @@
 #include <cmath>
 #include <stdexcept>
 
-using namespace std;
 using namespace rtctools::utilities;
 
 equidistantAggregation::equidistantAggregation(
@@ -42,7 +41,7 @@ void equidistantAggregation::deaggregate(std::vector<double> &smallArray, double
 	int nSmall = (int)smallArray.size();
 
 	if (nLarge != nSmall*nStep) {
-		throw runtime_error("inconsistent array lenths in equidistantAggregation::deaggregate");
+		throw std::runtime_error("inconsistent array lenths in equidistantAggregation::deaggregate");
 	}
 
 	if (intOpt==BLOCK) {
@@ -62,7 +61,7 @@ void equidistantAggregation::deaggregate(std::vector<double> &smallArray, double
 			}
 		}
 	} else {
-		throw runtime_error("interpolation option not implemented in equidistantAggregation::deaggregate");
+		throw std::runtime_error("interpolation option not implemented in equidistantAggregation::deaggregate");
 	}
 }
 
@@ -72,7 +71,7 @@ void equidistantAggregation::aggregate(std::vector<double> &largeArray, std::vec
 	int nSmall = (int)smallArray.size();
 
 	if (nLarge != nSmall*nStep) {
-		throw runtime_error("inconsistent array lengths in equidistantAggregation::aggregate");
+		throw std::runtime_error("inconsistent array lengths in equidistantAggregation::aggregate");
 	}
 
 	if (intOpt==BLOCK) {
@@ -96,6 +95,6 @@ void equidistantAggregation::aggregate(std::vector<double> &largeArray, std::vec
 			}
 		}*/
 	} else {
-		throw runtime_error("interpolation option not implemented in equidistantAggregation::aggregate");
+		throw std::runtime_error("interpolation option not implemented in equidistantAggregation::aggregate");
 	}
 }

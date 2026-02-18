@@ -12,6 +12,7 @@ import java.io.File
 object TestBenchValidation : BuildType({
     id("TestBenchValidation")
     name = "TestBench validation"
+    buildNumberPattern = "%build.vcs.number%"
     description = """
         Runs the TestBench validation. 
         This includes the pytest test-suite, the formatter check, the linter and the type checker.
@@ -26,7 +27,7 @@ object TestBenchValidation : BuildType({
     """.trimIndent()
 
     params {
-        param("env.IMAGE_NAME", "containers.deltares.nl/delft3d/testbench")
+        param("env.IMAGE_NAME", "containers.deltares.nl/delft3d-dev/testbench-validation")
         param("env.BUILD_BRANCH", "%teamcity.build.branch%")
         param("env.PULL_REQUEST_SOURCE_BRANCH", "%teamcity.pullRequest.source.branch%")
     }
@@ -69,7 +70,6 @@ object TestBenchValidation : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         dockerCommand {
             name = "Run validation"
             commandType = other {

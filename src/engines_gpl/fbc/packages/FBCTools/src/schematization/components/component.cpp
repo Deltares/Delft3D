@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -23,7 +23,6 @@
 
 #include <schematization/components/component.h>
 
-using namespace std;
 using namespace rtctools::schematization::components;
 
 component::component(string id, string name) : element(id, name)

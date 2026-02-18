@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,9 +52,10 @@ contains
 
       integer :: n, kk, k, kb, kt, kk2, ku, numvals, L
       real(kind=dp) :: qsrck, qsrckk, dzss
-      real(kind=dp) :: frac = 0.5d0 ! cell volume fraction that can at most be extracted in one step
+      real(kind=dp) :: frac = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
-      srsn = 0d0; vcsrc = 0d0
+      srsn = 0.0_dp
+      vcsrc = 0.0_dp
       do n = 1, numsrc
          kk = ksrc(1, n) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
          kk2 = ksrc(4, n) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
@@ -63,7 +64,8 @@ contains
             if (kmx > 0) then
                call getkbotktop(kk, kb, kt)
                if (zsrc(1, n) == dmiss) then
-                  k = kb; ku = kt
+                  k = kb
+                  ku = kt
                else
                   do k = kb, kt
                      if (zws(k) > zsrc(1, n) .or. k == kt) then
@@ -81,7 +83,9 @@ contains
                   end if
                end if
             else
-               k = kk; kt = kk; ku = kk ! in 2D, volume cell nr = pressure cell nr
+               k = kk
+               kt = kk
+               ku = kk ! in 2D, volume cell nr = pressure cell nr
             end if
             ksrc(2, n) = k ! store kb of src
             ksrc(3, n) = ku !
@@ -97,14 +101,14 @@ contains
                      exit
                   end if
                end do
-               if (srsn(1, n) > 0d0) then
+               if (srsn(1, n) > 0.0_dp) then
                   do L = 1, numconst
                      srsn(1 + L, n) = srsn(1 + L, n) / srsn(1, n)
                   end do
                end if
                do k = ksrc(2, n), ksrc(3, n)
                   !if (jasal > 0) constituents(isalt,k) = srsn(1+isalt,n)
-                  !if (jatem > 0) constituents(itemp,k) = srsn(1+itemp,n)
+                  !if (temperature_model /= TEMPERATURE_MODEL_NONE) constituents(itemp,k) = srsn(1+itemp,n)
                   do L = 1, numconst
                      constituents(L, k) = srsn(L + 1, n)
                   end do
@@ -117,7 +121,8 @@ contains
             if (kmx > 0) then
                call getkbotktop(kk2, kb, kt)
                if (zsrc(2, n) == dmiss) then
-                  k = kb; ku = kt
+                  k = kb
+                  ku = kt
                else
                   do k = kb, kt
                      if (zws(k) > zsrc(2, n) .or. k == kt) then
@@ -135,7 +140,9 @@ contains
                   end if
                end if
             else
-               k = kk2; kt = kk2; ku = kk2 ! in 2D, volume cell nr = pressure cell nr
+               k = kk2
+               kt = kk2
+               ku = kk2 ! in 2D, volume cell nr = pressure cell nr
             end if
             ksrc(5, n) = k
             ksrc(6, n) = ku
@@ -151,14 +158,14 @@ contains
                      exit
                   end if
                end do
-               if (srsn(1 + numconst + 1, n) > 0d0) then
+               if (srsn(1 + numconst + 1, n) > 0.0_dp) then
                   do L = 1, numconst
                      srsn(1 + numconst + 1 + L, n) = srsn(1 + numconst + 1 + L, n) / srsn(1 + numconst + 1, n)
                   end do
                end if
                do k = ksrc(5, n), ksrc(6, n)
                   !if (jasal > 0) constituents(isalt,k) = srsn(1+numconst+1+isalt,n)
-                  !if (jatem > 0) constituents(itemp,k) = srsn(1+numconst+1+itemp,n)
+                  !if (temperature_model /= TEMPERATURE_MODEL_NONE) constituents(itemp,k) = srsn(1+numconst+1+itemp,n)
                   do L = 1, numconst
                      constituents(L, k) = srsn(1 + numconst + 1 + L, n)
                   end do
@@ -185,14 +192,16 @@ contains
          qsrck = qsrc(n)
          if (kk /= 0 .and. qsrck > 0) then ! Extract FROM 1
             if (frac * srsn(1, n) / dts < abs(qsrck)) then
-               qsrck = frac * srsn(1, n) / dts; jamess(n) = 1
+               qsrck = frac * srsn(1, n) / dts
+               jamess(n) = 1
             end if
          end if
 
          kk2 = ksrc(4, n) ! 2D pressure cell nr
          if (kk2 /= 0 .and. qsrck < 0) then ! Extract From 2
             if (frac * srsn(1 + numconst + 1, n) / dts < abs(qsrck)) then
-               qsrck = -frac * srsn(1 + numconst + 1, n) / dts; jamess(n) = 2
+               qsrck = -frac * srsn(1 + numconst + 1, n) / dts
+               jamess(n) = 2
             end if
          end if
 

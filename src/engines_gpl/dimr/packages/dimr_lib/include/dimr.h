@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -113,7 +113,7 @@ class Dimr {
 
         void           freeLibs(void);
         void           processWaitFile(void);
-        void           createDistributeMPISubGroupCommunicator(dimr_component *, bool);
+        void           createDistributeMPISubGroupCommunicator(dimr_component *);
         void           runControlBlock  (dimr_control_block *, double, int);
         void           runParallelInit  (dimr_control_block *);
         void           runParallelFinish(dimr_control_block *);
@@ -186,9 +186,9 @@ class Dimr {
 
         bool           IsCouplerItemTypePTR(int couplerItem);
 
-        void           char_to_ints       (char *, int **, int *);
+        void           char_to_ints       (const char *, int **, int *);
 
-        map<string, int> ncfiles;
+        std::map<std::string, int> ncfiles;
 		static void		   _log				  (Level, const char*); /* BMILogger function */
 		Clock::Timestamp  timerStartStamp;
 		Clock::Timestamp  timerSumStamp;

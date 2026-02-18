@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2025.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,7 +28,6 @@ program test_dflowfm_kernel
     use test_roughness
     use test_obserCrossSections
     use test_ini_Field_1dField
-    use test_MDU_File_Version
     use test_storage_nodes
     use test_1d_grid
     use test_read_property
@@ -48,7 +47,6 @@ program test_dflowfm_kernel
     call tests_cross_sections()
     call tests_observations()
     call tests_observCrossSections()
-    call tests_MDU_fileversion()
     call tests_1d_grid()
     call tests_storageNodes()
     call tests_iniField_1dField()

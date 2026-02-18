@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,7 +47,9 @@ contains
       else
          k = kbot(kk) + kmxn(kk) - kplot
          !k = max(k, kbot(kk) )
-         if (k < kbot(kk)) k = -1 ! no plot
+         if (k < kbot(kk)) then
+            k = -1 ! no plot
+         end if
       end if
    end subroutine getktoplot
 

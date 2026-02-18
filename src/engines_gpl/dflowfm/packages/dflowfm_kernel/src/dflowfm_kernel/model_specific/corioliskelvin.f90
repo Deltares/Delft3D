@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,17 +54,17 @@ contains
       integer :: k, L, k1, k2
       real(kind=dp) :: s1k, xx, yy, samp, dif, cs, sn, aer, dep, r0, x0, y0, Rossby, rr, sgh
 
-      if (tim == 0d0) then
+      if (tim == 0.0_dp) then
          call inisferic()
       end if
 
       dep = sini - zkuni
       sgh = sqrt(ag / dep)
       Rossby = sqrt(ag * dep) / fcorio
-      r0 = 0.5d0 * (xkmax - xkmin)
-      x0 = 0.5d0 * (xkmax + xkmin)
-      y0 = 0.5d0 * (ykmax + ykmin)
-      samp = 0.05d0
+      r0 = 0.5_dp * (xkmax - xkmin)
+      x0 = 0.5_dp * (xkmax + xkmin)
+      y0 = 0.5_dp * (ykmax + ykmin)
+      samp = 0.05_dp
 
       call statisticsnewstep()
 
@@ -79,7 +79,8 @@ contains
          s1k = aer * cs
 
          if (tim == 0) then
-            s1(k) = max(bl(k), s1k); s0(k) = s1(k)
+            s1(k) = max(bl(k), s1k)
+            s0(k) = s1(k)
             ucx(k) = -s1k * sgh * sn
             ucy(k) = s1k * sgh * cs
          end if
@@ -90,8 +91,9 @@ contains
 
       if (tim == 0) then
          do L = 1, Lnx
-            k1 = ln(1, L); k2 = ln(2, L)
-            u1(L) = 0.5d0 * (ucx(k1) + ucx(k2)) * csu(L) + 0.5d0 * (ucy(k1) + ucy(k2)) * snu(L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            u1(L) = 0.5_dp * (ucx(k1) + ucx(k2)) * csu(L) + 0.5_dp * (ucy(k1) + ucy(k2)) * snu(L)
             u0(L) = u1(L)
          end do
       end if
@@ -112,9 +114,9 @@ contains
 
       integer :: k, L, k1, k2, LL, i, j, imx, jmx
       real(kind=dp) :: tim, s1k, xx, yy, samp, cs, sn, dep, rs
-      real(kind=dp) :: x0, y0, Rossby, rr, sgh, uv, uvr, xff = 0.1d0, yff = 0.1d0
+      real(kind=dp) :: x0, y0, Rossby, rr, sgh, uv, uvr, xff = 0.1_dp, yff = 0.1_dp
 
-      if (tim == 0d0) then
+      if (tim == 0.0_dp) then
          call inisferic()
       end if
 
@@ -123,20 +125,27 @@ contains
       Rossby = sqrt(ag * dep) / fcorio
       call dbdistancehk(xkmin, ykmin, xkmax, ykmax, rs)
       rs = oceaneddysizefrac * rs
-      if (oceaneddysize /= 0d0) rs = oceaneddysize
-      samp = oceaneddyamp
-      if (oceaneddyvel > 0d0) then
-         samp = oceaneddyvel * 2d0 * fcorio * rs / ag
+      if (oceaneddysize /= 0.0_dp) then
+         rs = oceaneddysize
       end if
-      uv = ag / (2d0 * fcorio * rs * rs)
+      samp = oceaneddyamp
+      if (oceaneddyvel > 0.0_dp) then
+         samp = oceaneddyvel * 2.0_dp * fcorio * rs / ag
+      end if
+      uv = ag / (2.0_dp * fcorio * rs * rs)
 
       !call statisticsnewstep()
 
       xff = oceaneddyxoff
       yff = oceaneddyyoff
-      imx = 1; jmx = 1
-      if (oceaneddyxoff /= 0d0) imx = 2
-      if (oceaneddyyoff /= 0d0) jmx = 2
+      imx = 1
+      jmx = 1
+      if (oceaneddyxoff /= 0.0_dp) then
+         imx = 2
+      end if
+      if (oceaneddyyoff /= 0.0_dp) then
+         jmx = 2
+      end if
 
       do i = 1, imx
          if (i == 2) then
@@ -151,22 +160,29 @@ contains
                samp = -samp
             end if
 
-            x0 = (0.5d0 + xff) * xkmax + (0.5d0 - xff) * xkmin
-            y0 = (0.5d0 + yff) * ykmax + (0.5d0 - yff) * ykmin
+            x0 = (0.5_dp + xff) * xkmax + (0.5_dp - xff) * xkmin
+            y0 = (0.5_dp + yff) * ykmax + (0.5_dp - yff) * ykmin
 
             do k = 1, ndx
                call dbdistancehk(xz(k), yz(k), x0, y0, rr)
-               call dbdistancehk(x0, yz(k), xz(k), yz(k), xx); if (xz(k) < x0) xx = -xx
-               call dbdistancehk(xz(k), y0, xz(k), yz(k), yy); if (yz(k) < y0) yy = -yy
+               call dbdistancehk(x0, yz(k), xz(k), yz(k), xx)
+               if (xz(k) < x0) then
+                  xx = -xx
+               end if
+               call dbdistancehk(xz(k), y0, xz(k), yz(k), yy)
+               if (yz(k) < y0) then
+                  yy = -yy
+               end if
 
                cs = xx / rr
                sn = yy / rr
 
-               s1k = samp * exp(-rr * rr / (2d0 * rs * rs))
+               s1k = samp * exp(-rr * rr / (2.0_dp * rs * rs))
                uvr = s1k * uv * rr
 
                if (tim == 0) then
-                  s1(k) = s1(k) + max(bl(k), s1k); s0(k) = s1(k)
+                  s1(k) = s1(k) + max(bl(k), s1k)
+                  s0(k) = s1(k)
                   ucx(k) = ucx(k) + uvr * sn
                   ucy(k) = ucy(k) - uvr * cs
                end if
@@ -179,14 +195,16 @@ contains
       end do
 
       if (tim == 0) then
-         call setkbotktop(1)
+         call set_kbot_ktop(jazws0=1)
          do L = 1, Lnx
-            k1 = ln(1, L); k2 = ln(2, L)
-            u1(L) = 0.5d0 * (ucx(k1) + ucx(k2)) * csu(L) + 0.5d0 * (ucy(k1) + ucy(k2)) * snu(L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            u1(L) = 0.5_dp * (ucx(k1) + ucx(k2)) * csu(L) + 0.5_dp * (ucy(k1) + ucy(k2)) * snu(L)
             u0(L) = u1(L)
             Ltop(L) = Lbot(L) + kmx - 1
             do LL = Lbot(L), Ltop(L)
-               u1(LL) = u1(L); u0(LL) = u1(L)
+               u1(LL) = u1(L)
+               u0(LL) = u1(L)
             end do
          end do
       end if

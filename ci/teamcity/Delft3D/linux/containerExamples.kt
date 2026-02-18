@@ -12,7 +12,7 @@ import Trigger
 object LinuxRunAllContainerExamples : BuildType({
     name = "Run all container examples (Matrix)"
     description = "Run all container example cases for fm/ and all/ pull-requests using Docker and Apptainer."
-    buildNumberPattern = "%dep.${LinuxRuntimeContainers.id}.product%: %build.vcs.number%"
+    buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     templates(
         TemplateMergeRequest,
@@ -27,7 +27,7 @@ object LinuxRunAllContainerExamples : BuildType({
     }
 
     params {
-        param("container_runtime", "")
+        param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:%distribution%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
     }
 
     steps {
@@ -35,7 +35,7 @@ object LinuxRunAllContainerExamples : BuildType({
             name = "Execute run_all_examples_container.sh with %container_runtime%"
             scriptContent = """
                 cd ./examples/dflowfm/
-                ./run-all-examples-container.sh --%container_runtime% --image "%dep.${LinuxRuntimeContainers.id}.runtime_container_image%"
+                ./run-all-examples-container.sh --%container_runtime% --image "%testbench_container_image%"
             """.trimIndent()
         }
     }
@@ -43,7 +43,15 @@ object LinuxRunAllContainerExamples : BuildType({
     features {
         matrix {
             id = "container_matrix"
-            param("container_runtime", listOf(value("docker"), value("apptainer")))
+            param("container_runtime", listOf(
+                value("docker", label = "Docker"),
+                value("apptainer", label = "Apptainer"))
+            )
+            param("distribution", listOf(
+                value("alma8", label = "AlmaLinux 8"),
+                value("alma9", label = "AlmaLinux 9"),
+                value("alma10", label = "AlmaLinux 10")
+            ))
         }
     }
 

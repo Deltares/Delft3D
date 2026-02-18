@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,13 +29,20 @@
 
 !> Utilities module with functions for initializing and updating external forcings.
 module fm_external_forcings_utils
-   use precision_basics, only: hp
+   use precision_basics, only: dp
+
    implicit none
+
    private
+
    public :: split_qid
    public :: get_tracername
    public :: get_sedfracname
    public :: get_constituent_name
+   public :: read_tracer_properties
+   public :: read_bubblescreen_forcing_attributes
+
+   integer, parameter :: INI_VALUE_LEN = 256
 
 contains
 
@@ -187,4 +194,101 @@ contains
       return
    end subroutine get_constituent_name
 
+   !> Read tracer properties from an ini file node.
+   subroutine read_tracer_properties(node_ptr, transformcoef)
+      use properties
+      use tree_data_types, only: tree_data
+
+      type(tree_data), pointer :: node_ptr !< The tree structure containing a single ini-file chapter/block.
+      real(kind=dp), intent(inout) :: transformcoef(:) !< Transformation coefficients
+
+      real(kind=dp) :: tracer_fall_velocity ! Tracer fall velocity
+      real(kind=dp) :: tracer_decay_time ! Tracer decay time
+
+      tracer_fall_velocity = 0.0_dp
+      call prop_get(node_ptr, '', 'tracerFallVelocity', tracer_fall_velocity)
+      transformcoef(24) = tracer_fall_velocity
+
+      tracer_decay_time = 0.0_dp
+      call prop_get(node_ptr, '', 'tracerDecayTime', tracer_decay_time)
+      transformcoef(25) = tracer_decay_time
+   end subroutine
+
+   !> Read bubblescreen forcing attributes from block pointer
+   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_level, discharge_input) result(success)
+      use MessageHandling, only: err_flush, msgbuf
+      use properties, only: prop_get
+      use tree_data_types, only: tree_data
+      use unstruc_files, only: resolvePath
+
+      ! Parameters
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file
+      character(len=*), intent(in) :: group_name !< Name of the group in the ext file
+      character(len=:), allocatable, intent(out) :: id !< Bubblescreen id
+      character(len=:), allocatable, intent(out) :: location_file !< Bubblescreen location file name
+      real(kind=dp), intent(out) :: z_level !< [m] Bubblescreen z level
+      character(len=:), allocatable, intent(out) :: discharge_input !< Bubblescreen discharge input file
+      logical :: success !< Error code
+
+      ! Local variables
+      character(len=INI_VALUE_LEN) :: readout_id
+      character(len=INI_VALUE_LEN) :: readout_location_file
+      character(len=INI_VALUE_LEN) :: readout_discharge_input
+      integer :: len
+      logical :: is_read
+      logical :: have_location_file
+
+      success = .false.
+
+      ! (required) Read out 'id' keyword
+      call prop_get(block_ptr, '', 'id', readout_id, is_read)
+      if (.not. is_read .or. len_trim(readout_id) == 0) then ! Check if id is present
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
+         call err_flush()
+         return
+      else ! If id is present, store it
+         id = trim(readout_id(1:len_trim(readout_id)))
+      end if
+
+      ! (required) Read out 'locationFile' keyword
+      call prop_get(block_ptr, '', 'locationFile', readout_location_file, have_location_file)
+      len = len_trim(readout_location_file)
+      if (.not. have_location_file .or. len == 0) then ! Check if locationFile is present
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file is incomplete or missing.'
+         call err_flush()
+         return
+      else ! If locationFile is present, check if it has correct extension
+         call resolvePath(readout_location_file, base_dir)
+         if (readout_location_file(len-3:len) /= '.pli') then ! Check if locationFile has .pli extension
+            write (msgbuf, '(5a)') 'Incorrect locationFile specified in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file should have ".pli" extension.'
+            call err_flush()
+            return
+         else ! If locationFile is valid, store it
+            location_file = trim(readout_location_file(1:len_trim(readout_location_file)))
+         end if
+      end if
+
+      ! (required) Read out 'zLevel' keyword
+      call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
+      if (.not. is_read) then ! Check if zLevel is present
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''zLevel'' is missing or is invalid value.'
+         call err_flush()
+         return
+      end if
+
+      ! (required) Read out 'discharge' keyword
+      call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
+      if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         call err_flush()
+         return
+      else ! If discharge is present, store it
+         discharge_input = trim(readout_discharge_input(1:len_trim(readout_discharge_input)))
+      end if
+
+      success = .true.
+
+   end function read_bubblescreen_forcing_attributes
 end module fm_external_forcings_utils

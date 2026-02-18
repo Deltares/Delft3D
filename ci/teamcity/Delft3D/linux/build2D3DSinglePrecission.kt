@@ -45,7 +45,6 @@ object LinuxBuild2D3DSP : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         script {
             name = "Add version attributes"
             workingDir = "./src/version_includes"
@@ -63,19 +62,25 @@ object LinuxBuild2D3DSP : BuildType({
                 ./singleprecision.sh
             """.trimIndent()
         }
-        exec {
+        script {
             name = "Build"
             conditions {
                 matches("product", """^(d3d4-(suite|testbench))|(all-testbench)$""")
             }
-            path = "ci/teamcity/Delft3D/linux/scripts/build.sh"
-            arguments = """
-                --generator %generator%
-                --product flow2d3d
-                --build-type %build_type%
+            scriptContent = """
+                #!/usr/bin/env bash
+                source /etc/bashrc
+                set -eo pipefail
+                export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${'$'}PKG_CONFIG_PATH
+                export LD_LIBRARY_PATH=/usr/local/lib:${'$'}LD_LIBRARY_PATH
+                export CMAKE_PREFIX_PATH=/usr/local:${'$'}CMAKE_PREFIX_PATH
+                export CMAKE_INCLUDE_PATH=/usr/local/include:${'$'}CMAKE_INCLUDE_PATH
+                export CMAKE_LIBRARY_PATH=/usr/local/lib:${'$'}CMAKE_LIBRARY_PATH
+                cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=flow2d3d -D CMAKE_BUILD_TYPE=%build_type% -B build_flow2d3d -D CMAKE_INSTALL_PREFIX=build_flow2d3d/install
+                cmake --build build_flow2d3d --parallel --config %build_type%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
-            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
         }

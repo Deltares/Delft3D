@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -210,7 +210,7 @@ contains
          call make_queryvector_kdtree(treeinst, xz(k), yz(k), jsferic)
 
          ! compute maximum flowcell dimension
-         dmaxsize = 0d0
+         dmaxsize = 0.0_dp
          N = size(nd(k)%x)
          do i = 1, N
             ip1 = i + 1
@@ -221,10 +221,10 @@ contains
          end do
 
          ! determine square search radius
-         R2search = 1.1d0 * dmaxsize**2 ! 1.1d0: safety
+         R2search = 1.1_dp * dmaxsize**2 ! 1.1d0: safety
 
          ! get the cell polygon that is safe for periodic, spherical coordinates, inluding poles
-         call get_cellpolygon(k, Msize, N, 1d0, xloc, yloc, LnnL, Lorg, zz)
+         call get_cellpolygon(k, Msize, N, 1.0_dp, xloc, yloc, LnnL, Lorg, zz)
 
          if (N < 1) then
             if (k <= Ndxi) then
@@ -236,7 +236,9 @@ contains
          ! count number of points in search area
          NN = kdtree2_r_count(treeinst%tree, treeinst%qv, R2search)
 
-         if (NN == 0) cycle ! no links found
+         if (NN == 0) then
+            cycle ! no links found
+         end if
 
          ! reallocate if necessary
          call realloc_results_kdtree(treeinst, NN)
@@ -283,7 +285,9 @@ contains
 1234  continue
 
       ! deallocate
-      if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
+      if (treeinst%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeinst)
+      end if
 
    end subroutine find_nearest_flownodes_kdtree
 

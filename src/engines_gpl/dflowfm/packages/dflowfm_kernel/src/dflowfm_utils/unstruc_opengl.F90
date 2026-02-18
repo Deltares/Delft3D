@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -241,13 +241,13 @@ contains
       ! CALL fglClearColor(.4, .4, .4, 0) ! gray background
 
       if (ndraw(10) == 0) then
-         r = nreds / 255d0
-         g = ngreens / 255d0
-         b = nblues / 255d0
+         r = nreds / 255.0_dp
+         g = ngreens / 255.0_dp
+         b = nblues / 255.0_dp
       else
-         r = nredp / 255d0
-         g = ngreenp / 255d0
-         b = nbluep / 255d0
+         r = nredp / 255.0_dp
+         g = ngreenp / 255.0_dp
+         b = nbluep / 255.0_dp
       end if
 
       call fglClearColor(real(r, sp), real(g, sp), real(b, sp), real(0, sp)) ! screen background
@@ -370,6 +370,8 @@ contains
 #ifdef HAVE_OPENGL
       use IFWINA ! renamed symbols to avoid conflicts
 #endif
+      use, intrinsic :: ieee_exceptions
+
       implicit none
 
       integer, intent(in) :: height
@@ -390,11 +392,13 @@ contains
                         ANTIALIASED_QUALITY, &
                         ior(FF_DONTCARE, DEFAULT_PITCH), &
                         'Arial') !font name
-
-!    prevFont = SelectObject (hdc, font)
+      ! Disable invalid operation exceptions temporarily
+      call ieee_set_halting_mode(ieee_invalid, .false.)
+      
+      ! This call generates FP invalid exceptions in opengl32.dll
       res = fwglUseFontBitmaps(hdc, 0, 255, 0) ! create the bitmap display lists, we're making images of glyphs 0 thru 254
-!    res = SelectObject(hdc, prevFont) ! select old font again
-      res = DeleteObject(font) ! delete temporary font
+
+res = DeleteObject(font) ! delete temporary font
 
 #endif
    end subroutine

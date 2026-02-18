@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -80,7 +80,9 @@ contains
 
       if (ja == 1) then
          call confrm('Are you satisfied?', ja)
-         if (ja /= 1) call restore()
+         if (ja /= 1) then
+            call restore()
+         end if
       end if
 
       return

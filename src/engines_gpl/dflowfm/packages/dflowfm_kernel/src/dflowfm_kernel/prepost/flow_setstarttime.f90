@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_flow_setstarttime
 
+   use precision, only: dp
    implicit none
 
    private
@@ -47,7 +48,7 @@ contains
       time0 = tstart_user
       time1 = tstart_user
       dts = dt_init
-      dti = 1d0 / dts
+      dti = 1.0_dp / dts
       dtprev = dts
       dnt = 0
       dnt_user = 1

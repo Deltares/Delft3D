@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -59,14 +59,16 @@ contains
       real(kind=dp) :: sum
       real(kind=dp) :: tiny
       real(kind=dp) :: vv
-      parameter(NX=4, TINY=1d-20)
+      parameter(NX=4, TINY=1.0e-20_dp)
       dimension A(NP, NP), INDX(N), VV(NX)
       JAPARALLEL = 0
       D = 1.
       do I = 1, N
          AAMAX = 0.
          do J = 1, N
-            if (abs(A(I, J)) > AAMAX) AAMAX = abs(A(I, J))
+            if (abs(A(I, J)) > AAMAX) then
+               AAMAX = abs(A(I, J))
+            end if
          end do
          if (AAMAX == 0) then
             JAPARALLEL = 1
@@ -112,14 +114,18 @@ contains
          end if
          INDX(J) = IMAX
          if (J /= N) then
-            if (A(J, J) == 0d0) A(J, J) = TINY
+            if (A(J, J) == 0.0_dp) then
+               A(J, J) = TINY
+            end if
             DUM = 1./A(J, J)
             do I = J + 1, N
                A(I, J) = A(I, J) * DUM
             end do
          end if
       end do
-      if (A(N, N) == 0d0) A(N, N) = TINY
+      if (A(N, N) == 0.0_dp) then
+         A(N, N) = TINY
+      end if
       return
    end
 

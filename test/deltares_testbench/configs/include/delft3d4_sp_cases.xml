@@ -577,7 +577,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f04_c23-spiderweb_missingdata_with_eye" ref="flow2d3d_default">
-			<path version="2024-01-08T09:50:00">e01_d3dflow/f04_coarsewind/c23-spiderweb_missingdata_with_eye</path>
+			<path version="2025-10-02T12:00:00">e01_d3dflow/f04_coarsewind/c23-spiderweb_missingdata_with_eye</path>
 			<checks>
 				<file name="trim-simple_spider.dat" type="NEFIS">
 					<parameters name="map-series">

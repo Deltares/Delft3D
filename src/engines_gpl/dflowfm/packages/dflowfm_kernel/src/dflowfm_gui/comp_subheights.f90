@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,8 +57,8 @@ contains
 
       real(kind=dp), dimension(Nsubmax) :: hdum
 
-      hL = 0d0
-      hR = 0d0
+      hL = 0.0_dp
+      hR = 0.0_dp
 
 !  for this cross spline, find the left and right neighboring splines w.r.t. the center spline
       kL = 0
@@ -66,8 +66,12 @@ contains
       do k = 1, ncs
          ks = ics(k)
          if (ks == is) then
-            if (k > 1) kL = ics(k - 1)
-            if (k < ncs) kR = ics(k + 1)
+            if (k > 1) then
+               kL = ics(k - 1)
+            end if
+            if (k < ncs) then
+               kR = ics(k + 1)
+            end if
             exit
          end if
       end do
@@ -76,8 +80,12 @@ contains
       NsubR = 0
       kkR = k
       do kk = k, ncs - 1
-         if (NsubR >= Nsubmax - 1) exit
-         if (splineprops(ics(kk + 1))%id /= -is) cycle
+         if (NsubR >= Nsubmax - 1) then
+            exit
+         end if
+         if (splineprops(ics(kk + 1))%id /= -is) then
+            cycle
+         end if
          kkL = kkR
          kkR = kk + 1
          NsubR = NsubR + 1
@@ -89,19 +97,25 @@ contains
 
       end do
       NsubR = NsubR + 1
-      hR(NsubR) = splinelength_int(num, xs, ys, t(kkR), dble(num - 1))
+      hR(NsubR) = splinelength_int(num, xs, ys, t(kkR), real(num - 1, kind=dp))
 
 !     begin test
 !         hR(NsubR) = cosphi(ncs)*hR(NsubR)
 !     end test
 
-      if (NsubR < Nsubmax) hR(NsubR + 1:Nsubmax) = 0d0
+      if (NsubR < Nsubmax) then
+         hR(NsubR + 1:Nsubmax) = 0.0_dp
+      end if
 
       NsubL = 0
       kkL = k
       do kk = k, 2, -1
-         if (NsubL >= Nsubmax - 1) exit
-         if (splineprops(ics(kk - 1))%id /= -is) cycle
+         if (NsubL >= Nsubmax - 1) then
+            exit
+         end if
+         if (splineprops(ics(kk - 1))%id /= -is) then
+            cycle
+         end if
          kkR = kkL
          kkL = kk - 1
          NsubL = NsubL + 1
@@ -113,13 +127,15 @@ contains
 
       end do
       NsubL = NsubL + 1
-      hL(NsubL) = splinelength_int(num, xs, ys, 0d0, t(kkL))
+      hL(NsubL) = splinelength_int(num, xs, ys, 0.0_dp, t(kkL))
 
 !     begin test
 !         hL(NsubL) = cosphi(1)*hL(NsubL)
 !     end test
 
-      if (NsubL < Nsubmax) hL(NsubL + 1:Nsubmax) = 0d0
+      if (NsubL < Nsubmax) then
+         hL(NsubL + 1:Nsubmax) = 0.0_dp
+      end if
 
 !  check orientation
       if (.not. Lorient) then

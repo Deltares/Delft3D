@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -32,7 +32,7 @@
 !    Program:    GREGOR.FOR
 !    Version:    1.01
 !    Programmer: Andre Hendriks
-!    (c) Copyright 2025 Deltares
+!    (c) Copyright 2026 Deltares
 !    Previous version(s):
 !    1.00 -- 29 Apr 1993 -- 09:23 -- Operating System: DOS
 !    0.0 -- 29 Apr 1993 --  9:22 -- Operating System: DOS

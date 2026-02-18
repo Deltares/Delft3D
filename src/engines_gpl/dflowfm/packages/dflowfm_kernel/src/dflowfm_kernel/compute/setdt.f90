@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -65,7 +65,7 @@ contains
       integer :: nsteps
       integer :: jareduced
 
-!  compute CFL-based maximum time step and limiting flownode/time step, per subomdain
+      ! compute CFL-based maximum time step and limiting flownode/time step, per subomdain
       call setdtorg(jareduced) ! 7.1 2031
 
       ! morphological timestep reduction
@@ -89,31 +89,35 @@ contains
 
       dtsc_loc = dtsc
 
-      !  globally reduce time step
+      ! globally reduce time step
       if (jampi == 1 .and. jareduced == 0) then
-         !     globally reduce dts (dtsc may now be larger)
-         if (jatimer == 1) call starttimer(IMPIREDUCE)
+         ! globally reduce dts (dtsc may now be larger)
+         if (jatimer == 1) then
+            call starttimer(IMPIREDUCE)
+         end if
          call reduce_double_min(dts)
-         if (jatimer == 1) call stoptimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call stoptimer(IMPIREDUCE)
+         end if
       end if
 
       dtsc = dts
 
-!  account for user time step
-      if (ja_timestep_auto >= 1) then
+      ! account for user time step
+      if (autotimestep /= AUTO_TIMESTEP_OFF) then
          if (dts > dt_fac_max * dtprev) then
             dts = dt_fac_max * dtprev
             nsteps = ceiling((time_user - time0) / dts)
-            ! New timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
+            ! new timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
             if (1000 * dtprev > time_user - time0) then
                nsteps = ceiling((time_user - time0) / dts)
                if (nsteps == ceiling((time_user - time0) / dtprev)) then
                   nsteps = max(1, nsteps - 1)
                end if
-               dts = (time_user - time0) / dble(nsteps)
+               dts = (time_user - time0) / real(nsteps, kind=dp)
                ! dtmax is always leading.
                if (dts > dt_max .or. dts > dtsc) then ! Fall back to smaller step anyway.
-                  dts = (time_user - time0) / dble(nsteps + 1)
+                  dts = (time_user - time0) / real(nsteps + 1, kind=dp)
                end if
             end if
 
@@ -127,12 +131,12 @@ contains
             ! NOTE: when the model has an extremely small timestep, nsteps gets an integer overflow,
             ! then becomes negative, so the max below sets nsteps=1, violating the dtmax requirement. (UNST-1926)
             nsteps = max(1, ceiling((time_user - time0) / dts))
-            dts = (time_user - time0) / dble(nsteps)
+            dts = (time_user - time0) / real(nsteps, kind=dp)
             !end if
          end if
       else
          dts = dt_max
-         dtsc = 0d0 ! SPvdP: safety, was undefined but could be used later
+         dtsc = 0.0_dp ! SPvdP: safety, was undefined but could be used later
          kkcflmx = 0 ! SPvdP: safety, was undefined but could be used later
       end if
 
@@ -156,7 +160,7 @@ contains
 
       call timestepanalysis(dtsc_loc)
 
-      dti = 1d0 / dts
+      dti = 1.0_dp / dts
 
       if (jaGUI == 1) then
          call tekcflmx()

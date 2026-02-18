@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,7 @@ contains
       integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum
       real(kind=dp) :: EPS, X0, Y0, XN, YN, DIS, RL
 !     TO LAND
-      data EPS/0.00001d0/
+      data EPS/0.00001_dp/
       if (LANDORSPLINE == 1) then
          if (MXLAN == 0) then
             call QNERROR('FIRST LOAD A LANDBOUNDARY', ' ', ' ')

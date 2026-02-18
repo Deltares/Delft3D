@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -128,8 +128,8 @@ contains
          !     maxlinks check
          if (size(iL_st) < maxlinks) then
             call realloc(lnn_st, maxlinks)
-            call realloc(lne_st, (/2, maxlinks/))
-            call realloc(kn_st, (/3, maxlinks/))
+            call realloc(lne_st, [2, maxlinks])
+            call realloc(kn_st, [3, maxlinks])
             call realloc(iL_st, maxlinks)
          end if
 
@@ -297,15 +297,21 @@ contains
 
       if (allocated(netcell_st)) then
          do i = 1, ubound(netcell_st, 1)
-            if (allocated(netcell_st(i)%lin)) deallocate (netcell_st(i)%lin)
-            if (allocated(netcell_st(i)%nod)) deallocate (netcell_st(i)%nod)
+            if (allocated(netcell_st(i)%lin)) then
+               deallocate (netcell_st(i)%lin)
+            end if
+            if (allocated(netcell_st(i)%nod)) then
+               deallocate (netcell_st(i)%nod)
+            end if
          end do
          deallocate (netcell_st)
       end if
 
       if (allocated(nod_st)) then
          do i = 1, ubound(nod_st, 1)
-            if (allocated(nod_st(i)%lin)) deallocate (nod_st(i)%lin)
+            if (allocated(nod_st(i)%lin)) then
+               deallocate (nod_st(i)%lin)
+            end if
          end do
          deallocate (nod_st)
       end if

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,7 +57,7 @@ contains
       if (LL > 0) then
          call getLbotLtop(LL, Lb, Lt)
          do L = Lb - 1, Lt
-            turkin0(L) = turkin0(L) + 1d0
+            turkin0(L) = turkin0(L) + 1.0_dp
             turkin1(L) = turkin0(L)
          end do
       end if

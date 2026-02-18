@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,10 +53,12 @@ contains
       real(kind=dp) :: xlen
       real(kind=dp) :: y0
       real(kind=dp) :: X(3), Y(3), XR(3), YR(3)
-      data X(1)/0.8d0/, X(2)/1d0/, X(3)/0.8d0/, &
-         Y(1)/-0.1d0/, Y(2)/0d0/, Y(3)/0.1d0/
+      data X(1)/0.8_dp/, X(2)/1.0_dp/, X(3)/0.8_dp/, &
+         Y(1)/-0.1_dp/, Y(2)/0.0_dp/, Y(3)/0.1_dp/
 
-      if (UR == 0 .and. VR == 0) return
+      if (UR == 0 .and. VR == 0) then
+         return
+      end if
       ALFA = atan2(VR, UR) + PSI0
       CSA = cos(ALFA)
       SNA = sin(ALFA)

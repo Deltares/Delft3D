@@ -55,7 +55,6 @@ if (WIN32)
     target_include_directories(${library_name} PRIVATE  include
                                                         ${mpi_module_path}
                                                         ${petsc_libdir}
-                                                        ${tecplot_path}
     )
 
     # Set linker properties
@@ -65,12 +64,10 @@ if (WIN32)
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${petsc_libdir}"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-                            "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
+                            "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name} PRIVATE
                           "pthreadVC2.lib"
-                          "tecio.lib"
                           "${mpi_fortran_library}"
     )
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -90,7 +90,9 @@ contains
       integer :: kn3now
 
       if (jampi /= 1) then
-         if (lnx1D == 0) return
+         if (lnx1D == 0) then
+            return
+         end if
       end if
 
       fnam = trim(md_proflocfile)
@@ -138,22 +140,25 @@ contains
                call aerr('iconnsam(Nproflocs)', ierr, Nproflocs)
             end if
 
-            xlsam = 0d0
-            distsam = 1d99
+            xlsam = 0.0_dp
+            distsam = 1.0e99_dp
             iconnsam = 0
             if (Lnx1D > 0) then
                do ibr = 1, mxnetbr ! SET UP BRANCH DISTANCE COORDINATE
                   if (jampi == 0) then
-                     XLB = 0d0
+                     XLB = 0.0_dp
                   else
                      XLB = netbr(ibr)%doff
                   end if
                   do LL = 1, netbr(ibr)%NX
-                     L = netbr(ibr)%ln(LL); LA = abs(L)
+                     L = netbr(ibr)%ln(LL)
+                     LA = abs(L)
                      if (L > 0) then
-                        k1 = kn(1, La); k2 = kn(2, LA)
+                        k1 = kn(1, La)
+                        k2 = kn(2, LA)
                      else
-                        k2 = kn(1, La); k1 = kn(2, LA)
+                        k2 = kn(1, La)
+                        k1 = kn(2, LA)
                      end if
                      dxB = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
                      XLB = XLB + dxB
@@ -210,24 +215,28 @@ contains
             if (Lnx1D > 0) then
                do ibr = 1, mxnetbr ! SET UP BRANCH AGAIN, NOW WITH LINK POSITIONS
                   if (jampi == 0) then
-                     XLB = 0d0
+                     XLB = 0.0_dp
                   else
                      XLB = netbr(ibr)%doff
                   end if
                   do LL = 1, netbr(ibr)%NX
-                     L = netbr(ibr)%ln(LL); LA = abs(L)
+                     L = netbr(ibr)%ln(LL)
+                     LA = abs(L)
                      if (L > 0) then
-                        k1 = kn(1, La); k2 = kn(2, LA)
+                        k1 = kn(1, La)
+                        k2 = kn(2, LA)
                      else
-                        k2 = kn(1, La); k1 = kn(2, LA)
+                        k2 = kn(1, La)
+                        k1 = kn(2, LA)
                      end if
                      dxB = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
                      XLB = XLB + dxB
-                     XLLIN(LA) = xLB - 0.5d0 * DXB
+                     XLLIN(LA) = xLB - 0.5_dp * DXB
                   end do
                end do
 
-               allocate (NSBR(MXNETBR), STAT=IERR); NSBR = 0
+               allocate (NSBR(MXNETBR), STAT=IERR)
+               NSBR = 0
                call AERR('NSBR (MXNETBR)', IERR, MXNETBR)
                allocate (KBSAM(MXNETBR), STAT=IERR)
                call AERR('KBSAM(MXNETBR)', IERR, MXNETBR)
@@ -253,7 +262,8 @@ contains
                   end if
                end do
 
-               NSBR = 0; NSBRMX = 0
+               NSBR = 0
+               NSBRMX = 0
                do K = 1, Nproflocs ! REFER BACK TO SAMPLES ON BRANCH
                   L = LSAM(K)
                   IBR = LC(L)
@@ -289,14 +299,16 @@ contains
                         KLHH(KK) = KLH(IDX(KK))
                      end do
 
-                     K1 = 0; K2 = 1
+                     K1 = 0
+                     K2 = 1
                      do LL = 1, netbr(ibr)%NX
                         ! NOTE: vulnerability: netbr(:)%ln(:) contains NETlinks (see SETBRANCH_LC()), but it is used below as FLOWlinks
                         !       Not a problem as long as *no* netlinks are discarded during geominit. (Then: numl1d == lnx1d.)
                         LA = abs(NETBR(IBR)%LN(LL))
                         XL = XLLIN(LA)
                         do while (XL > XLH(K2) .and. K2 < NSBR(IBR))
-                           K2 = K2 + 1; K1 = K1 + 1
+                           K2 = K2 + 1
+                           K1 = K1 + 1
                         end do
 
                         if (XL > XLH(K2)) then
@@ -304,9 +316,9 @@ contains
                         end if
 
                         if (K1 == 0) then ! IN FIRST SEGMENT, VALUE IS THAT OF K1
-                           ALFA = 0d0
+                           ALFA = 0.0_dp
                         else if (K1 == NSBR(IBR)) then ! IN LAST  SEGMENT, VALUE IS THAT OF K2
-                           ALFA = 1d0
+                           ALFA = 1.0_dp
                         else ! IN BETWEEN, REGULAR INTERPOLATION
                            ALFA = (XL - XLH(K1)) / (XLH(K2) - XLH(K1))
                         end if
@@ -320,10 +332,11 @@ contains
                         else
                            KB = KLHH(K2)
                         end if
-                        KA = NPR(KA); KB = NPR(KB)
+                        KA = NPR(KA)
+                        KB = NPR(KB)
                         if (profiles1D(ka)%ityp <= 3 .and. profiles1D(ka)%ityp == profiles1D(kb)%ityp) then ! identical simple profs are interpolated immediately
-                           PROF1D(1, LA) = (1d0 - alfa) * profiles1D(ka)%width + alfa * profiles1D(kb)%width
-                           PROF1D(2, LA) = (1d0 - alfa) * profiles1D(ka)%height + alfa * profiles1D(kb)%height
+                           PROF1D(1, LA) = (1.0_dp - alfa) * profiles1D(ka)%width + alfa * profiles1D(kb)%width
+                           PROF1D(2, LA) = (1.0_dp - alfa) * profiles1D(ka)%height + alfa * profiles1D(kb)%height
                            PROF1D(3, LA) = PROFILES1D(KA)%ITYP
                         else ! POINTEREN VOOR YZPROF OR MIXED PROFILE TYPES
                            PROF1D(1, LA) = -KA
@@ -345,7 +358,8 @@ contains
 
                   allocate (zkk(numk), wkk(numk))
                   do kn3now = 6, 1, -5
-                     wkk = 0d0; zkk = 0d0
+                     wkk = 0.0_dp
+                     zkk = 0.0_dp
                      do L = 1, lnx1D
                         if (abs(kcu(L)) == 1 .and. kn(3, ln2lne(L)) == kn3now) then ! regular 1D links
                            KA = PROF1D(1, L)
@@ -356,8 +370,8 @@ contains
                               ZB = profiles1D(-KB)%ZMIN
                               WA = profiles1D(-KA)%width
                               WB = profiles1D(-KB)%width
-                              zuL = (1d0 - ALFA) * ZA + ALFA * ZB ! z on these links
-                              wuL = 1d0 ! (1d0-ALFA)*WA + ALFA*WB  ! z on these links
+                              zuL = (1.0_dp - ALFA) * ZA + ALFA * ZB ! z on these links
+                              wuL = 1.0_dp ! (1d0-ALFA)*WA + ALFA*WB  ! z on these links
                               LL = abs(ln2lne(L))
                               k = kn(1, LL)
                               zkk(k) = zkk(k) + zul * wuL

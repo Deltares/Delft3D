@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,10 +48,10 @@ contains
       real(kind=dp) :: xx
       if (xx /= dmiss) then
          do while (xx < xwleft)
-            xx = xx + 360d0
+            xx = xx + 360.0_dp
          end do
-         do while (xx > xwleft + 360d0)
-            xx = xx - 360d0
+         do while (xx > xwleft + 360.0_dp)
+            xx = xx - 360.0_dp
          end do
       end if
    end subroutine inworld

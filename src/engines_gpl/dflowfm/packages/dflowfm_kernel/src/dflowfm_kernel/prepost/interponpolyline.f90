@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,8 @@ contains
       end if
 
       do n = 1, npl
-         f = dpl(n) / dpl(npl); f1 = 1 - f
+         f = dpl(n) / dpl(npl)
+         f1 = 1 - f
          dxs(n) = f1 * dxs1 + f * dxs2
       end do
    end subroutine interpOnPolyline

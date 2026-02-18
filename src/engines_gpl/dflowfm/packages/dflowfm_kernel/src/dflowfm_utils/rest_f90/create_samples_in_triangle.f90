@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,7 +63,9 @@ contains
       integer :: i, j
       integer :: jL, jR
 
-      if (NPL < 2) return
+      if (NPL < 2) then
+         return
+      end if
 
 !  delete samples
       call delsam(-1)
@@ -71,31 +73,45 @@ contains
 !  find startpoint of triangle in polygon
       n1 = 1
       do while (xpl(n1) == DMISS)
-         if (n1 == NPL) exit
+         if (n1 == NPL) then
+            exit
+         end if
          n1 = n1 + 1
       end do
-      if (xpl(n1) == DMISS) goto 1234
+      if (xpl(n1) == DMISS) then
+         goto 1234
+      end if
 
 !  find first corner
       n2 = n1 + 1
-      if (n2 >= NPL) goto 1234
+      if (n2 >= NPL) then
+         goto 1234
+      end if
 
       dcos = dcosphi(xpl(n2 - 1), ypl(n2 - 1), xpl(n2), ypl(n2), xpl(n2), ypl(n2), xpl(n2 + 1), ypl(n2 + 1), jsferic, jasfer3D, dxymis)
       do while (dcos > cornercos)
          n2 = n2 + 1
-         if (n2 == NPL) goto 1234
+         if (n2 == NPL) then
+            goto 1234
+         end if
          dcos = dcosphi(xpl(n2 - 1), ypl(n2 - 1), xpl(n2), ypl(n2), xpl(n2), ypl(n2), xpl(n2 + 1), ypl(n2 + 1), jsferic, jasfer3D, dxymis)
       end do
-      if (dcos > cornercos) goto 1234
+      if (dcos > cornercos) then
+         goto 1234
+      end if
 
 !  find third corner
       n3 = n2 + 1
-      if (n3 >= NPL) goto 1234
+      if (n3 >= NPL) then
+         goto 1234
+      end if
 
       dcos = dcosphi(xpl(n3 - 1), ypl(n3 - 1), xpl(n3), ypl(n3), xpl(n3), ypl(n3), xpl(n3 + 1), ypl(n3 + 1), jsferic, jasfer3D, dxymis)
       do while (dcos > cornercos)
          n3 = n3 + 1
-         if (n3 == NPL) exit
+         if (n3 == NPL) then
+            exit
+         end if
          dcos = dcosphi(xpl(n3 - 1), ypl(n3 - 1), xpl(n3), ypl(n3), xpl(n3), ypl(n3), xpl(n3 + 1), ypl(n3 + 1), jsferic, jasfer3D, dxymis)
       end do
 
@@ -103,13 +119,15 @@ contains
       M = n2 - n1 + 1
       N = n3 - n2 + 1
 
-      if (n3 + M - 1 > NPL) goto 1234
+      if (n3 + M - 1 > NPL) then
+         goto 1234
+      end if
 
       Msize = max(M, N)
       allocate (xx(Msize, 3))
-      xx = 0d0
+      xx = 0.0_dp
       allocate (yy(Msize, 3))
-      yy = 0d0
+      yy = 0.0_dp
       do i = 1, M
          xx(i, 1) = xpl(n1 + i - 1) - xpl(n1)
          yy(i, 1) = ypl(n1 + i - 1) - ypl(n1)
@@ -133,20 +151,22 @@ contains
 
       do i = 2, M - 1
 
-         xi = dble(i - 1) / dble(M - 1)
+         xi = real(i - 1, kind=dp) / real(M - 1, kind=dp)
          Nxi = floor(xi * (N - 1) + 1)
 
          dfacL = dbdistance(xpl(n1), ypl(n1), xpl(n1) + xx(i, 1), ypl(n1) + yy(i, 1), jsferic, jasfer3D, dmiss) / RL
          dfacR = dbdistance(xpl(n1), ypl(n1), xpl(n1) + xx(i, 3), ypl(n1) + yy(i, 3), jsferic, jasfer3D, dmiss) / RR
 
          do j = 2, Nxi - 1
-            eta = dble(j - 1) / dble(Nxi - 1)
+            eta = real(j - 1, kind=dp) / real(Nxi - 1, kind=dp)
 
             jL = 1 + floor(eta * (N - 1))
-            if (jL >= N) jL = N - 1
+            if (jL >= N) then
+               jL = N - 1
+            end if
             jR = jL + 1
 
-            dfac = 1d0 + eta * (N - 1) - jL
+            dfac = 1.0_dp + eta * (N - 1) - jL
 
             Ns = Ns + 1
 !         xs(Ns) = (1d0-xi)*xpl(n1) + xi*( (1-eta)*xpl(n2) + eta*xpl(n3) )
@@ -180,7 +200,7 @@ contains
       end do
 
       do i = 1, Ns
-         zs = 0d0
+         zs = 0.0_dp
       end do
 
 1234  continue

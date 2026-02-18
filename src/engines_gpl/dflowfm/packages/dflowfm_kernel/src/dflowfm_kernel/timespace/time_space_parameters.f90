@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -90,6 +90,7 @@ module timespace_parameters
    integer, parameter :: METHOD_CONSTANT = 4
    integer, parameter :: METHOD_TRIANGULATION = 5
    integer, parameter :: METHOD_AVERAGING = 6
+   integer, parameter :: NEAREST_NEIGHBOUR = 11
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
 contains
@@ -146,7 +147,7 @@ contains
          method = WEIGHTFACTORS
       case ('nearestnb')
          ! Nearest neighbour is currently automatically selected by ec_converter under standard method "weightfactors".
-         method = WEIGHTFACTORS
+         method = NEAREST_NEIGHBOUR
       case ('triangulation')
          method = METHOD_TRIANGULATION
       case default
@@ -210,7 +211,9 @@ contains
       integer, intent(inout) :: method !< method integer
       logical, intent(in) :: is_extrapolation_allowed !< is extrapolation allowed
 
-      if (.not. is_extrapolation_allowed) return
+      if (.not. is_extrapolation_allowed) then
+         return
+      end if
 
       if (method == WEIGHTFACTORS) then
          method = WEIGHTFACTORS_EXTRAPOLATION

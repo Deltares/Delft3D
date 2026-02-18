@@ -35,8 +35,10 @@ object WindowsUnitTest : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         python {
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
             name = "EC Module: run_all_tests.py"
             workingDir = "x64/test"
             command = file {
@@ -44,6 +46,9 @@ object WindowsUnitTest : BuildType({
             }
         }
         script {
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
             name = "EC Module: ec_module_test -c internal"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             workingDir = "x64/test"
@@ -52,6 +57,9 @@ object WindowsUnitTest : BuildType({
             """.trimIndent()
         }
         script {
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
             name = "Deltares Common: test_deltares_common"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             workingDir = "x64/test/test_data"
@@ -61,6 +69,9 @@ object WindowsUnitTest : BuildType({
             """.trimIndent()
         }
         script {
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
             name = "IO NetCDF: test_io_netcdf"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             workingDir = "x64/test"
@@ -70,6 +81,9 @@ object WindowsUnitTest : BuildType({
             """.trimIndent()
         }
         script {
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
             name = "D-Flow FM: dflowfm_kernel_test"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             workingDir = "x64/test/test_data"
@@ -79,6 +93,9 @@ object WindowsUnitTest : BuildType({
             """.trimIndent()
         }
         script {
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
             name = "D-Flow FM (version string): dflowfm --version > screen.log"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             workingDir = "src/test/engines_gpl/dflowfm/packages/test_dflowfm/test_data"
@@ -87,6 +104,9 @@ object WindowsUnitTest : BuildType({
             """.trimIndent()
         }
         python {
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
             name = "D-Flow FM (version string): dflowfm_compare_version_output.py"
             executionMode = BuildStep.ExecutionMode.ALWAYS
             workingDir = "src/test/engines_gpl/dflowfm/packages/test_dflowfm/test_data"

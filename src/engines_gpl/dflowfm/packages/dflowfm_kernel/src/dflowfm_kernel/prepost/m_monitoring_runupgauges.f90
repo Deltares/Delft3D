@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -113,7 +113,9 @@ contains
 
       integer :: i
 
-      if (.not. allocated(rug)) return
+      if (.not. allocated(rug)) then
+         return
+      end if
 
       do i = 1, size(rug)
          call deallocCrossSectionPath(rug(i)%path)
@@ -130,7 +132,9 @@ contains
       integer :: i, size_source_rug
 
       size_source_rug = size(source_rug)
-      if (size_source_rug > size(target_rug) .or. size_source_rug == 0) return
+      if (size_source_rug > size(target_rug) .or. size_source_rug == 0) then
+         return
+      end if
 
       do i = 1, size_source_rug
          target_rug(i) = source_rug(i)
@@ -254,15 +258,15 @@ contains
          rug(num_rugs)%name = ' '
          rug(num_rugs)%name(1:name_length) = name(1:name_length)
       else ! No name given, generate one.
-         write (runup_gauge_digits, '(i1)') max(2, int(floor(log10(dble(runup_gauge_id)) + 1)))
+         write (runup_gauge_digits, '(i1)') max(2, int(floor(log10(real(runup_gauge_id, kind=dp)) + 1)))
          write (rug(num_rugs)%name, '(a,i'//runup_gauge_digits//'.'//runup_gauge_digits//')') trim(defaultName_), runup_gauge_id
          runup_gauge_id = runup_gauge_id + 1
       end if
 
       ! Set default values
-      rug(num_rugs)%max_x = 0d0
-      rug(num_rugs)%max_y = 0d0
-      rug(num_rugs)%max_rug_height = -huge(0d0)
+      rug(num_rugs)%max_x = 0.0_dp
+      rug(num_rugs)%max_y = 0.0_dp
+      rug(num_rugs)%max_rug_height = -huge(0.0_dp)
 
    end subroutine add_runup_gauges
 
@@ -270,9 +274,9 @@ contains
       integer :: i
       ! Reset data for next iteration
       do i = 1, num_rugs
-         rug(i)%max_rug_height = -huge(0d0)
-         rug(i)%max_x = 0d0
-         rug(i)%max_y = 0d0
+         rug(i)%max_rug_height = -huge(0.0_dp)
+         rug(i)%max_x = 0.0_dp
+         rug(i)%max_y = 0.0_dp
       end do
    end subroutine
 

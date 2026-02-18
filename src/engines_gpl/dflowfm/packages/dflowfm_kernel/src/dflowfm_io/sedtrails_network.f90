@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,7 +64,9 @@ contains
 
       integer :: ierr
 
-      if (k0 < kmax) return
+      if (k0 < kmax) then
+         return
+      end if
 
       call sedtrails_savenet()
 
@@ -76,7 +78,8 @@ contains
          allocate (xk(kmax), yk(kmax), stat=ierr)
          call aerr('xk (kmax), yk (kmax)', ierr, 2 * kmax)
 
-         xk = xymis; yk = xymis
+         xk = xymis
+         yk = xymis
       end if
 
       call sedtrails_restore()
@@ -89,7 +92,9 @@ contains
       implicit none
       integer :: kx
 
-      if (.not. allocated(xk0)) return
+      if (.not. allocated(xk0)) then
+         return
+      end if
 
       kx = size(xk0) ! restore everything present (in case numk/numk0 has not yet been increased)
 
@@ -107,11 +112,15 @@ contains
       integer :: ierr
       integer :: kx
 
-      if (.not. allocated(xk)) return
+      if (.not. allocated(xk)) then
+         return
+      end if
 
       kx = kmax ! backup everything present (in case numk has not yet been increased) ! kx = numk
 
-      if (allocated(xk0)) deallocate (xk0, yk0, zk0)
+      if (allocated(xk0)) then
+         deallocate (xk0, yk0, zk0)
+      end if
       allocate (xk0(kx), yk0(kx), zk0(kx), stat=ierr)
 
       xk0(1:kx) = xk(1:kx)
@@ -155,7 +164,7 @@ contains
       type(tpoly), dimension(:), allocatable :: pli
       real(kind=dp), dimension(6) :: transformcoef ! don't override externalforcing setting
 
-      transformcoef = 0d0
+      transformcoef = 0.0_dp
 
       ! detect grid enclosure for this partition/overlapping part of grids
       call savepol()
@@ -185,7 +194,9 @@ contains
          istart = istart + ipoint - 1
          iend = iend + ipoint - 1
 
-         if (istart >= iend .or. iend > npl) exit ! done
+         if (istart >= iend .or. iend > npl) then
+            exit ! done
+         end if
 
          iistart(ipoly) = istart
          iiend(ipoly) = iend
@@ -224,8 +235,8 @@ contains
       numk = size(indices)
       !
       ! reallocate nodes arrays and copy values
-      call realloc(xk1, size(xk), keepexisting=.false., fill=0d0)
-      call realloc(yk1, size(xk), keepexisting=.false., fill=0d0)
+      call realloc(xk1, size(xk), keepexisting=.false., fill=0.0_dp)
+      call realloc(yk1, size(xk), keepexisting=.false., fill=0.0_dp)
       xk1 = xk
       yk1 = yk
       if (jampi > 0) then
@@ -236,8 +247,8 @@ contains
          deallocate (iwork)
       end if
 
-      call realloc(xk, numk, keepexisting=.false., fill=0d0)
-      call realloc(yk, numk, keepexisting=.false., fill=0d0)
+      call realloc(xk, numk, keepexisting=.false., fill=0.0_dp)
+      call realloc(yk, numk, keepexisting=.false., fill=0.0_dp)
       xk = xk1(indices)
       yk = yk1(indices)
       deallocate (xk1, yk1)
@@ -248,16 +259,16 @@ contains
       jagetwf = 1
       jakdtree = 1
       jdla = 1
-      call realloc(indxx, (/3, numk/), keepexisting=.false., fill=0)
-      call realloc(wfxx, (/3, numk/), keepexisting=.false., fill=0d0)
+      call realloc(indxx, [3, numk], keepexisting=.false., fill=0)
+      call realloc(wfxx, [3, numk], keepexisting=.false., fill=0.0_dp)
       call realloc(dumout, numk, keepexisting=.false., fill=dmiss)
 
-      transformcoef(6) = 1.1d0
+      transformcoef(6) = 1.1_dp
       call triinterp2(xk, yk, dumout, numk, jdla, &
                       xz, yz, bl, ndx, dmiss, jsferic, jins, jasfer3d, npl, 0, 0, xpl, ypl, zpl, transformcoef)
       !
-      call realloc(st_ind, (/3, numk/), keepexisting=.false., fill=0)
-      call realloc(st_wf, (/3, numk/), keepexisting=.false., fill=0d0)
+      call realloc(st_ind, [3, numk], keepexisting=.false., fill=0)
+      call realloc(st_wf, [3, numk], keepexisting=.false., fill=0.0_dp)
       do k = 1, numk
          st_ind(:, k) = indxx(:, k)
          st_wf(:, k) = wfxx(:, k)

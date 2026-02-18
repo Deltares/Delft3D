@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,20 +63,25 @@ contains
       real(kind=dp) :: TRIAREA, SAFESIZE
       real(kind=dp) :: AREPOL, DLENPOL, DLENAV, DLENMX, XP, YP, xplmin, xplmax, yplmin, yplmax
 
-      if (NPL <= 2) return
+      if (NPL <= 2) then
+         return
+      end if
 
       call DAREAN(XPL, YPL, NPL, AREPOL, DLENPOL, DLENMX)
 
       DLENAV = DLENPOL / NPL ! AVERAGE SIZE ON POLBND
 !   TRIAREA  = 0.5d0*DLENAV*DLENAV  ! AVERAGE TRIANGLE SIZE
-      TRIAREA = 0.25d0 * sqrt(3d0) * DLENAV * DLENAV ! AVERAGE TRIANGLE SIZE
+      TRIAREA = 0.25_dp * sqrt(3.0_dp) * DLENAV * DLENAV ! AVERAGE TRIANGLE SIZE
 
       SAFESIZE = 11 ! SAFETY FACTOR
 
       if (jsferic == 1) then
          ! DLENPOL and AREPOL are in metres, whereas Triangle gets spherical
          ! coordinates, so first scale desired TRIAREA back to spherical.
-         xplmin = 0d0; xplmax = dlenpol / 4d0; yplmin = 0d0; yplmax = dlenpol / 4d0
+         xplmin = 0.0_dp
+         xplmax = dlenpol / 4.0_dp
+         yplmin = 0.0_dp
+         yplmax = dlenpol / 4.0_dp
          call get_startend(NPL, XPL, YPL, n, nn, dmiss)
          if (nn > n) then
             xplmin = minval(xpl(n:nn))
@@ -105,15 +110,16 @@ contains
          if (allocated(INDX)) then
             deallocate (INDX)
          end if
-         allocate (INDX(3, NTX), STAT=IERR); INDX = 0
+         allocate (INDX(3, NTX), STAT=IERR)
+         INDX = 0
          call AERR('INDX(3,NTX)', IERR, int(3 * NTX))
 
-         call realloc(EDGEINDX, (/2, Ntx/), keepExisting=.false., fill=0, stat=ierr)
-         call realloc(TRIEDGE, (/3, Ntx/), keepExisting=.false., fill=0, stat=ierr)
+         call realloc(EDGEINDX, [2, Ntx], keepExisting=.false., fill=0, stat=ierr)
+         call realloc(TRIEDGE, [3, Ntx], keepExisting=.false., fill=0, stat=ierr)
 
          NN = NTX
          call increasesam(NS1 + NN)
-         zs(ns1:ubound(zs, 1)) = 0d0 ! zkuni ! SPvdP: used to be DMISS, but then the samples are not plotted
+         zs(ns1:ubound(zs, 1)) = 0.0_dp ! zkuni ! SPvdP: used to be DMISS, but then the samples are not plotted
 
          TRIAREA = TRIANGLESIZEFAC * TRIANGLESIZEFAC * TRIAREA
          NPL1 = NPL
@@ -127,17 +133,23 @@ contains
          numtri = ntx ! Input value should specify max nr of triangles in indx.
          NN = ntx ! used to check array size of xs, ys in tricall
          call TRICALL(2, XPL, YPL, NPL1, INDX, NUMTRI, EDGEINDX, NUMEDGE, TRIEDGE, XS(NS1), YS(NS1), NN, TRIAREA)
-         if (numtri < 0) ntx = -numtri
-         if (nn < 0) ntx = max(ntx, -nn)
+         if (numtri < 0) then
+            ntx = -numtri
+         end if
+         if (nn < 0) then
+            ntx = max(ntx, -nn)
+         end if
       end do
 
       IN = -1 ! EN BIJPLUGGEN
       do N = NS1, NS1 + NN
-         XP = XS(N); YP = YS(N)
+         XP = XS(N)
+         YP = YS(N)
          call DBPINPOL(XP, YP, IN, dmiss, JINS, NPL, xpl, ypl, ypl)
          if (IN == 1) then
             NS = NS + 1
-            XS(NS) = XP; YS(NS) = YP
+            XS(NS) = XP
+            YS(NS) = YP
          end if
       end do
 

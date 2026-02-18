@@ -65,6 +65,7 @@ if(UNIX)
     message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${executable_name} PRIVATE "HAVE_DISPLAY=0;HAVE_MPI;HAVE_PETSC")
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
+    set_target_properties(${executable_name} PROPERTIES OUTPUT_NAME dflowfm)
 endif(UNIX)
 
 
@@ -80,7 +81,6 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/net_main.F90
 if (WIN32)
     target_link_libraries(${executable_name} PRIVATE netcdf)
     include_directories(${mpi_module_path}
-                        ${tecplot_path}
                         ${version_include_dir}
     )
 
@@ -91,12 +91,10 @@ if (WIN32)
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-                            "${checkout_src_root}/third_party_open/Tecplot/lib/x64"
     )
 
     target_link_libraries(${executable_name} PRIVATE
                           "pthreadVC2.lib"
-                          "tecio.lib"
                           "${mpi_fortran_library}"
     )
 
@@ -146,7 +144,7 @@ if(WIN32)
 endif()
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/parallel/generate_parallel_mdu.sh  DESTINATION bin)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/submit_dflowfm_h7.sh     DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/submit_dflowfm_h7.sh    DESTINATION bin)
 endif(UNIX)
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/runscripts/run_dflowfm.${platform_extension} DESTINATION bin)

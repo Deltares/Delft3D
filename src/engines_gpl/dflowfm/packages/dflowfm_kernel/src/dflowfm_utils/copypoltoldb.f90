@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,9 @@ contains
 
       call INCREASELAN(L + NPL)
       if (L > 0) then
-         XLAN(L) = XYMIS; YLAN(L) = XYMIS; ZLAN(L) = XYMIS
+         XLAN(L) = XYMIS
+         YLAN(L) = XYMIS
+         ZLAN(L) = XYMIS
       end if
       do K = 1, NPL
          L = L + 1

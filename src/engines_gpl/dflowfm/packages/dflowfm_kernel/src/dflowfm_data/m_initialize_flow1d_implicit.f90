@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,16 +35,16 @@ module m_initialize_flow1d_implicit
    use m_flow_sedmorinit, only: flow_sedmorinit
    use m_init_1dinfo, only: init_1dinfo
 
-   contains
+contains
 
-   !> Subroutine to initialize the 1D flow model.  
-   !! This subroutine serves as the main entry point for initializing the 1D flow model.  
-   !! It sequentially calls other subroutines to perform specific initialization tasks,  
-   !! such as allocating arrays, setting up grid points, initializing boundary conditions,  
-   !! and validating the setup. Each step ensures that the model is properly configured  
-   !! before simulation begins.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.  
+   !> Subroutine to initialize the 1D flow model.
+   !! This subroutine serves as the main entry point for initializing the 1D flow model.
+   !! It sequentially calls other subroutines to perform specific initialization tasks,
+   !! such as allocating arrays, setting up grid points, initializing boundary conditions,
+   !! and validating the setup. Each step ensures that the model is properly configured
+   !! before simulation begins.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine initialize_flow1d_implicit(iresult)
 
       implicit none
@@ -62,7 +62,7 @@ module m_initialize_flow1d_implicit
       call inifm1dimp_fic(iresult) !Fill Initial Condition
       call inifm1dimp_fbrp(iresult) !Fill Branch PRoperties
       call inifm1dimp_fbc(iresult) !Fill Boundary Conditions
-      call inifm1dimp_fstruc(iresult) !Fill STRUCtures      
+      call inifm1dimp_fstruc(iresult) !Fill STRUCtures
       call inifm1dimp_fnod(iresult) !Fill NODes
       call inifm1dimp_chk(iresult) !CHecK
 
@@ -72,15 +72,15 @@ module m_initialize_flow1d_implicit
 !BEGIN inifm1dimp_ini
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   !> Subroutine to initialize arrays for the 1D flow model.  
-   !! This subroutine handles the allocation and initialization of various arrays  
-   !! required for the 1D flow model. It sets up pointers, allocates memory for  
-   !! arrays, and initializes parameters such as boundary conditions, grid points,  
-   !! and morphodynamic variables. It also performs error handling and ensures  
-   !! that all necessary data structures are properly initialized before further  
-   !! computations.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.  
+   !> Subroutine to initialize arrays for the 1D flow model.
+   !! This subroutine handles the allocation and initialization of various arrays
+   !! required for the 1D flow model. It sets up pointers, allocates memory for
+   !! arrays, and initializes parameters such as boundary conditions, grid points,
+   !! and morphodynamic variables. It also performs error handling and ensures
+   !! that all necessary data structures are properly initialized before further
+   !! computations.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_ini(iresult)
 
       use m_f1dimp
@@ -93,6 +93,7 @@ module m_initialize_flow1d_implicit
       use m_sediment, only: stmpar, jased, stm_included
       use m_fm_erosed, only: link1sign, link1sign2
       use m_oned_functions, only: gridpoint2cross, t_gridp2cs
+      use m_alloc, only: realloc
 
       implicit none
 
@@ -193,7 +194,7 @@ module m_initialize_flow1d_implicit
 
       ngrid = 0
       ngridm = 0
-      nstru = network%sts%count 
+      nstru = network%sts%count
       nbrnod = network%nds%maxnumberofconnections
       dmstrpar = 21 !size of structure parameters
 !nlink
@@ -214,14 +215,14 @@ module m_initialize_flow1d_implicit
       nnode = network%nds%count
       nhstat = nzbnd
       nqstat = nqbnd
-      number_bc_tables=nhstat+nqstat
+      number_bc_tables = nhstat + nqstat
 !if (comparereal(nzbnd+nqbnd,ndx-ndxi,1d-10)/=0) then !FM1DIMP2DO: why does the compiler complain when using <comparereal>?
       if ((nzbnd + nqbnd) /= (ndx - ndxi)) then
          write (msgbuf, '(a)') 'Number of open boundaries is different than number of water level + discharge boundaries'
          call err_flush()
          iresult = 1
       end if
-      
+
 !table
       !BC
       table_length = 2 !length of each boundary conditions table. All have only 2 times.
@@ -229,78 +230,28 @@ module m_initialize_flow1d_implicit
       ntabm = maxtab * table_length * 2 !last 2 is for <time> and <values>
 
       !structures
-      table_length_stru=8 
-      maxtab=maxtab+1
-      ntabm=ntabm+table_length_stru*2  
-      
+      table_length_stru = 8
+      maxtab = maxtab + 1
+      ntabm = ntabm + table_length_stru * 2
+
 !allocate
-      if (allocated(f1dimppar%grd_sre_fm)) then
-         deallocate (f1dimppar%grd_sre_fm)
-      end if
-      allocate (f1dimppar%grd_sre_fm(ngrid))
-
-      if (allocated(f1dimppar%grd_fm_sre)) then
-         deallocate (f1dimppar%grd_fm_sre)
-      end if
-      allocate (f1dimppar%grd_fm_sre(ndx_max)) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
+      call realloc(f1dimppar%grd_sre_fm, ngrid)
+      call realloc(f1dimppar%grd_fm_sre, ndx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
       f1dimppar%grd_fm_sre = 0
-
-      if (allocated(f1dimppar%grd_fm_sre2)) then
-         deallocate (f1dimppar%grd_fm_sre2)
-      end if
-      allocate (f1dimppar%grd_fm_sre2(ndx_max)) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
+      call realloc(f1dimppar%grd_fm_sre2, ndx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
       f1dimppar%grd_fm_sre2 = 0
-
-      if (allocated(f1dimppar%grd_fmL_sre)) then
-         deallocate (f1dimppar%grd_fmL_sre)
-      end if
-      allocate (f1dimppar%grd_fmL_sre(lnx1D, 2))
-
-      if (allocated(f1dimppar%branch)) then
-         deallocate (f1dimppar%branch)
-      end if
-      allocate (f1dimppar%branch(4, nbran))
-
-      if (allocated(f1dimppar%x)) then
-         deallocate (f1dimppar%x)
-      end if
-      allocate (f1dimppar%x(ngrid))
-
-      if (allocated(f1dimppar%grid)) then
-         deallocate (f1dimppar%grid)
-      end if
-      allocate (f1dimppar%grid(ngrid))
-      
-      if (allocated(f1dimppar%grd_sre_cs)) then
-         deallocate (f1dimppar%grd_sre_cs)
-      end if
-      allocate (f1dimppar%grd_sre_cs(ngrid))
-
-      if (allocated(f1dimppar%hpack)) then
-         deallocate (f1dimppar%hpack)
-      end if
-      allocate (f1dimppar%hpack(ngrid, 3))
-
-      if (allocated(f1dimppar%qpack)) then
-         deallocate (f1dimppar%qpack)
-      end if
-      allocate (f1dimppar%qpack(ngrid, 3))
-
-      if (allocated(f1dimppar%grd_fmLb_sre)) then
-         deallocate (f1dimppar%grd_fmLb_sre)
-      end if
-      allocate (f1dimppar%grd_fmLb_sre(lnx1Db - lnxi, 2))
-
-      if (allocated(f1dimppar%waoft)) then
-         deallocate (f1dimppar%waoft)
-      end if
-      allocate (f1dimppar%waoft(ngrid, 18))
-
-      if (allocated(f1dimppar%bfrict)) then
-         deallocate (f1dimppar%bfrict)
-      end if
-      allocate (f1dimppar%bfrict(3, nbran))
-
+      call realloc(f1dimppar%grd_fmL_sre, lnx1D, 2)
+      call realloc(f1dimppar%branch, 4, nbran)
+      call realloc(f1dimppar%x, ngrid)
+      call realloc(f1dimppar%grid, ngrid)
+      call realloc(f1dimppar%grd_sre_cs, ngrid)
+      call realloc(f1dimppar%hpack, ngrid, 3)
+      call realloc(f1dimppar%qpack, ngrid, 3)
+      call realloc(f1dimppar%grd_fmLb_sre, lnx1Db - lnxi, 2)
+      call realloc(f1dimppar%waoft, ngrid, 18)
+      call realloc(f1dimppar%bfrict, 3, nbran)
+      call realloc(f1dimppar%sectv, ngrid, 8)
+      !`nd_mor` is a derived type. We cannot use `realloc` here.
       if (allocated(nd_mor)) then
          deallocate (nd_mor)
       end if
@@ -308,42 +259,21 @@ module m_initialize_flow1d_implicit
       do kd = 1, ndx
          nd_mor(kd) = nd(kd)
       end do
-
-      if (allocated(f1dimppar%grd_fmmv_fmsv)) then
-         deallocate (f1dimppar%grd_fmmv_fmsv)
-      end if
-      allocate (f1dimppar%grd_fmmv_fmsv(ndx_max)) !more than we need
+      call realloc(f1dimppar%grd_fmmv_fmsv, ndx_max) !more than we need
       grd_fmmv_fmsv => f1dimppar%grd_fmmv_fmsv
-      
-      if (allocated(f1dimppar%strtyp)) then
-          deallocate (f1dimppar%strtyp)
-      end if
-      allocate (f1dimppar%strtyp(10, nstru))
-      
-      if (allocated(f1dimppar%strpar)) then
-          deallocate (f1dimppar%strpar)
-      end if
-      allocate (f1dimppar%strpar(dmstrpar,nstru))
-      
-!allocate every node with itself
+      !allocate every node with itself
       do kd = 1, ndx_max
          grd_fmmv_fmsv(kd) = kd
       end do
-
-      if (allocated(ln_mor)) then
-         deallocate (ln_mor)
-      end if
-      allocate (ln_mor(2, lnx_max))
+      call realloc(f1dimppar%strtyp, 10, nstru)
+      call realloc(f1dimppar%strpar, dmstrpar, nstru)
+      call realloc(ln_mor, 2, lnx_max)
       do kl = 1, lnx
          do kd = 1, 2
             ln_mor(kd, kl) = ln(kd, kl)
          end do
       end do
-
-      if (allocated(f1dimppar%grd_ghost_link_closest)) then
-         deallocate (f1dimppar%grd_ghost_link_closest)
-      end if
-      allocate (f1dimppar%grd_ghost_link_closest(lnx_max)) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
+      call realloc(f1dimppar%grd_ghost_link_closest, lnx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
       grd_ghost_link_closest => f1dimppar%grd_ghost_link_closest
       do kl = 1, lnx
          grd_ghost_link_closest(kl) = kl
@@ -367,6 +297,7 @@ module m_initialize_flow1d_implicit
       end do
 
 !copy to <gridpoint2cross_o>
+      !`gridpoint2cross_o` is a derived type. No `realloc` possible.
       if (allocated(gridpoint2cross_o)) then
          deallocate (gridpoint2cross_o)
       end if
@@ -392,6 +323,7 @@ module m_initialize_flow1d_implicit
          return
       end if
 
+      !`gridpoint2cross` is a derived type. No `realloc` possible.
       if (allocated(gridpoint2cross)) then
          deallocate (gridpoint2cross)
       end if
@@ -409,103 +341,49 @@ module m_initialize_flow1d_implicit
 !gridpoints
 !
 
-      if (allocated(f1dimppar%bfricp)) then
-         deallocate (f1dimppar%bfricp)
-      end if
-      allocate (f1dimppar%bfricp(6, ngrid)) !needs the part with FP1, FP2
-
-      if (allocated(f1dimppar%nlev)) then
-         deallocate (f1dimppar%nlev)
-      end if
-      allocate (f1dimppar%nlev(ngrid))
-
-      if (allocated(f1dimppar%bedlevel)) then
-         deallocate (f1dimppar%bedlevel)
-      end if
-      allocate (f1dimppar%bedlevel(ngrid))
-
+      call realloc(f1dimppar%bfricp, 6, ngrid)
+      call realloc(f1dimppar%nlev, ngrid)
+      call realloc(f1dimppar%bedlevel, ngrid)
+      call realloc(f1dimppar%sectc, ngrid, 3)
 !
 !cross-section (gridpoint,level)
 !
 
-      if (allocated(f1dimppar%wft)) then
-         deallocate (f1dimppar%wft)
-      end if
-      allocate (f1dimppar%wft(ngrid, maxlev))
-
-      if (allocated(f1dimppar%aft)) then
-         deallocate (f1dimppar%aft)
-      end if
-      allocate (f1dimppar%aft(ngrid, maxlev))
-
-      if (allocated(f1dimppar%wtt)) then
-         deallocate (f1dimppar%wtt)
-      end if
-      allocate (f1dimppar%wtt(ngrid, maxlev))
-
-      if (allocated(f1dimppar%att)) then
-         deallocate (f1dimppar%att)
-      end if
-      allocate (f1dimppar%att(ngrid, maxlev))
-
-      if (allocated(f1dimppar%of)) then
-         deallocate (f1dimppar%of)
-      end if
-      allocate (f1dimppar%of(ngrid, maxlev))
-
-      if (allocated(f1dimppar%hlev)) then
-         deallocate (f1dimppar%hlev)
-      end if
-      allocate (f1dimppar%hlev(ngrid, maxlev))
+      call realloc(f1dimppar%wft, ngrid, maxlev)
+      call realloc(f1dimppar%aft, ngrid, maxlev)
+      call realloc(f1dimppar%wtt, ngrid, maxlev)
+      call realloc(f1dimppar%att, ngrid, maxlev)
+      call realloc(f1dimppar%of, ngrid, maxlev)
+      call realloc(f1dimppar%hlev, ngrid, maxlev)
 
 !
 !table information
 !
 
-      if (allocated(f1dimppar%ntab)) then
-         deallocate (f1dimppar%ntab)
-      end if
-      allocate (f1dimppar%ntab(4, maxtab))
+      call realloc(f1dimppar%ntab, 4, maxtab)
 
 !
 !BC
 !
 
-      if (allocated(f1dimppar%hbdpar)) then
-         deallocate (f1dimppar%hbdpar)
-      end if
-      allocate (f1dimppar%hbdpar(3, nhstat))
-
-      if (allocated(f1dimppar%qbdpar)) then
-         deallocate (f1dimppar%qbdpar)
-      end if
-      allocate (f1dimppar%qbdpar(3, nqstat))
-
-      if (allocated(f1dimppar%table)) then
-         deallocate (f1dimppar%table)
-      end if
-      allocate (f1dimppar%table(ntabm))
+      call realloc(f1dimppar%hbdpar, 3, nhstat)
+      call realloc(f1dimppar%qbdpar, 3, nqstat)
+      call realloc(f1dimppar%table, ntabm)
 
 !
 !node
 !
 
-      if (allocated(f1dimppar%node)) then
-         deallocate (f1dimppar%node)
-      end if
-      allocate (f1dimppar%node(4, nnode))
+      call realloc(f1dimppar%node, 4, nnode)
       node => f1dimppar%node
       node = -999 !we use this value to check that it has not been filled.
+      call realloc(f1dimppar%numnod, nnode)
+      call realloc(f1dimppar%nodnod, nnode, nbrnod + 1)
 
-      if (allocated(f1dimppar%numnod)) then
-         deallocate (f1dimppar%numnod)
-      end if
-      allocate (f1dimppar%numnod(nnode))
-
-      if (allocated(f1dimppar%nodnod)) then
-         deallocate (f1dimppar%nodnod)
-      end if
-      allocate (f1dimppar%nodnod(nnode, nbrnod + 1))
+!
+!network
+!
+      f1dimppar%network => network
 
 !
 !debug
@@ -527,13 +405,13 @@ module m_initialize_flow1d_implicit
 !BEGIN inifm1dimp_lob
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   !> Subroutine to loop over branches and initialize grid points and links for the 1D flow model.  
-   !! This subroutine processes each branch in the 1D flow model, assigning grid points, links, and  
-   !! cross-sections to the respective branches. It handles bifurcations, boundaries, and ghost links  
-   !! to ensure proper connectivity and initialization of the model. The subroutine also updates  
-   !! the dimensions of links and nodes to account for ghost links and multivalued nodes.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful. 
+   !> Subroutine to loop over branches and initialize grid points and links for the 1D flow model.
+   !! This subroutine processes each branch in the 1D flow model, assigning grid points, links, and
+   !! cross-sections to the respective branches. It handles bifurcations, boundaries, and ghost links
+   !! to ensure proper connectivity and initialization of the model. The subroutine also updates
+   !! the dimensions of links and nodes to account for ghost links and multivalued nodes.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_lob(iresult)
 
       use m_f1dimp
@@ -630,7 +508,7 @@ module m_initialize_flow1d_implicit
          nl = network%brs%branch(kbr)%upointscount !only internal
          do kl = 1, nl
             L = network%brs%branch(kbr)%LIN(kl)
-            grd_fmL_sre(L, :) = (/idx_i + kl - 1, idx_i + kl/)
+            grd_fmL_sre(L, :) = [idx_i + kl - 1, idx_i + kl]
 
             !FM1DIMP2DO: Do we need this?
             !search for the GRD with <n1>?
@@ -845,14 +723,14 @@ module m_initialize_flow1d_implicit
 !BEGIN inifm1dimp_faap
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   !> Subroutine to fill arrays that need additional points in the 1D flow model.  
-   !! This subroutine handles the allocation and initialization of various arrays  
-   !! required for the 1D flow model, including those related to nodes, links,  
-   !! and morphodynamic variables. It ensures that the arrays are properly  
-   !! resized and filled with appropriate values, taking into account ghost links  
-   !! and nodes for bifurcations and boundaries.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.  
+   !> Subroutine to fill arrays that need additional points in the 1D flow model.
+   !! This subroutine handles the allocation and initialization of various arrays
+   !! required for the 1D flow model, including those related to nodes, links,
+   !! and morphodynamic variables. It ensures that the arrays are properly
+   !! resized and filled with appropriate values, taking into account ghost links
+   !! and nodes for bifurcations and boundaries.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_faap(iresult)
       use precision, only: dp
 
@@ -1134,13 +1012,13 @@ module m_initialize_flow1d_implicit
 !BEGIN inifm1dimp_fic
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   !> Subroutine to fill initial conditions for the 1D flow model.  
-   !! This subroutine initializes the water levels and discharges at each grid point  
-   !! in the 1D flow model. It ensures that the initial conditions are properly set  
-   !! for both internal nodes and boundary nodes, including handling special cases  
-   !! such as junctions of two branches and junctions with more than two branches.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful. 
+   !> Subroutine to fill initial conditions for the 1D flow model.
+   !! This subroutine initializes the water levels and discharges at each grid point
+   !! in the 1D flow model. It ensures that the initial conditions are properly set
+   !! for both internal nodes and boundary nodes, including handling special cases
+   !! such as junctions of two branches and junctions with more than two branches.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_fic(iresult)
       use precision, only: dp
 
@@ -1271,7 +1149,9 @@ module m_initialize_flow1d_implicit
 !at junctions of more than 2 branches we set the same water level for
 !all SRE nodes.
       do kn = 1, network%nds%count
-         if (network%nds%node(kn)%numberofconnections < 3) cycle
+         if (network%nds%node(kn)%numberofconnections < 3) then
+            cycle
+         end if
          idx_fm = network%nds%node(kn)%gridnumber ! TODO: Not safe in parallel models (check gridpointsseq as introduced in UNST-5013)
          !we search for the SRE gridpoint associated to the FM ghost flownode.
          !the FM ghostflownode is found in <ln_mor> which is found in <nd>
@@ -1293,13 +1173,13 @@ module m_initialize_flow1d_implicit
 !BEGIN inifm1dimp_fbrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   !> Subroutine to fill branch properties for the 1D flow model.  
-   !! This subroutine initializes the branch properties for the 1D flow model by  
-   !! assigning friction parameters to each branch and grid point. It ensures that  
-   !! the friction values are properly set for both positive and negative flow  
-   !! directions in the main channel and floodplains.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.  
+   !> Subroutine to fill branch properties for the 1D flow model.
+   !! This subroutine initializes the branch properties for the 1D flow model by
+   !! assigning friction parameters to each branch and grid point. It ensures that
+   !! the friction values are properly set for both positive and negative flow
+   !! directions in the main channel and floodplains.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_fbrp(iresult)
 
       use m_f1dimp
@@ -1321,6 +1201,8 @@ module m_initialize_flow1d_implicit
       integer, dimension(:, :), pointer :: bfrict
 
       real, dimension(:, :), pointer :: bfricp
+      real, dimension(:, :), pointer :: sectc
+      real, dimension(:, :), pointer :: sectv
 
 !
 !output
@@ -1332,7 +1214,19 @@ module m_initialize_flow1d_implicit
 !local
 !
 
-      integer :: kbr, ksre, k2, idx_fm, idx_crs
+      integer :: ksre, k2, idx_fm, idx_crs, idx_h
+      integer :: last_friction_type !< to check that friction type is the same in all sections
+
+      !Defined in <sobcon.i>, but not accessible here.
+      !
+      !cfrchc (1) : Chezy constant
+      !cfrchq (2) : Chezy function of discharge
+      !cfrchh (3) : Chezy function of water level
+      !cfrman (4) : Manning constant
+      !cfrskn (5) : Strickler 1 constant ( k n )
+      !cfrsks (6) : Strickler 2 constant ( k s )
+      !cfrnik (7) : Nikuradze constant
+      !cfreng (8) : Engelund predictor
 
 !----------------------------------------
 !BEGIN POINT
@@ -1344,6 +1238,8 @@ module m_initialize_flow1d_implicit
       grd_sre_fm => f1dimppar%grd_sre_fm
       bfrict => f1dimppar%bfrict
       bfricp => f1dimppar%bfricp
+      sectc => f1dimppar%sectc
+      sectv => f1dimppar%sectv
 
 !----------------------------------------
 !BEGIN CALC
@@ -1351,30 +1247,7 @@ module m_initialize_flow1d_implicit
 
       iresult = 0 !no error
 
-      do kbr = 1, nbran
-
-         !bfrict
-         do k2 = 1, 3 !< main channel, floodplain 1, floodplain 2
-            select case (network%rgs%rough(k2)%frictiontype) !< where is the information per branch? add when several branches!
-            case (0)
-               bfrict(k2, kbr) = 1
-            case default
-               write (msgbuf, '(a)') 'Only constant Chezy friction is supported at the moment.'
-               call err_flush()
-               iresult = 1
-            end select
-         end do
-!
-!bfrict(1,i)=cfrchc (1) : Chezy constant
-!bfrict(1,i)=cfrchq (2) : Chezy function of discharge
-!bfrict(1,i)=cfrchh (3) : Chezy function of water level
-!bfrict(1,i)=cfrman (4) : Manning constant
-!bfrict(1,i)=cfrskn (5) : Strickler 1 constant ( k n )
-!bfrict(1,i)=cfrsks (6) : Strickler 2 constant ( k s )
-!bfrict(1,i)=cfrnik (7) : Nikuradze constant
-!bfrict(1,i)=cfreng (8) : Engelund predicto
-
-      end do !kbr
+      last_friction_type = network%rgs%rough(1)%frictiontype !initially the overall value. It has already been checked it is the same for all section.
 
       do ksre = 1, ngrid
 
@@ -1383,47 +1256,118 @@ module m_initialize_flow1d_implicit
          !bfrictp
          idx_crs = grd_sre_cs(ksre)
 
-         bfricp(1, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
-         bfricp(2, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
-         !deal properly with the values below when friction per section varies.
-         bfricp(3, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
-         bfricp(4, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
-         bfricp(5, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
-         bfricp(6, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
-!bfricp(6,ngrid)   I  Bed friction parameters:
-!                     (1,i) = Parameter for positive flow direction
-!                             in main section (depending on friction
-!                             type):
-!                             =     Chezy constant value
-!                             =     Table pointer (Q or h table)
-!                             =     Nikuradse parameter kn for Ni-
-!                                   kuradse formula
-!                             =     Manning parameter nm for Manning
-!                                   formula
-!                             =     Strickler coefficient ks for
-!                                   Strickler formula
-!                     (2,i) = Parameter for negative flow direction
-!                             in main section (depending on friction
-!                             type) Same definitions as bfricp(1,i).
-!                     (3,i) = Parameter for positive flow direction
-!                             in sub sec 1 (depending on friction
-!                             type):
-!                             =     Chezy constant value
-!                             =     Nikuradse parameter kn for Niku-
-!                                   radse formula
-!                             =     Manning parameter nm for Manning
-!                                   formula
-!                             =     Strickler coefficient ks for
-!                                   Strickler formula
-!                     (4,i) = Parameter for negative flow direction
-!                             in sub sec 1 (depending on friction
-!                             type) Same definition as bfricp (3,i):
-!                     (5,i) = Parameter for positive flow direction
-!                             in sub sec 2 (depending on friction
-!                             type) Same definition as bfricp (3,i).
-!                     (6,i) = Parameter for negative flow direction
-!                             in sub sec 2 (depending on friction
-!                             type) Same definition as bfricp (3,i).
+         !In FM it is possible that the friction type is different in the main channel than in the
+         !floodplains. This is not possible in SOBEK-RE. Here we check that all are equal.
+         !
+         !Is this really true? Also when calling `getFrictionValue` rather than `FLCHZT`?
+         do k2 = 1, network%crs%cross(idx_crs)%frictionsectionscount
+            if (last_friction_type /= network%crs%cross(idx_crs)%frictiontypepos(k2)) then
+               write (msgbuf, '(a)') 'The same type of friction must be applied to all sections (i.e., main channel, floodplain 1, floodplain 2, ...) at all cross-sections.'
+               call err_flush()
+               iresult = 1
+            end if
+            last_friction_type = network%crs%cross(idx_crs)%frictiontypepos(k2)
+         end do
+
+         !`sectc(:,1)` = `subsec`
+         ! subsec(ngrid)     I  Defines the number of sub sections for every
+         !                      cross section:
+         !                      c1sec (0) : Main section only (0 sub sections)
+         !                      c2sec (1) : 1 sub section
+         !                      c3sec (2) : 2 sub sections
+         !                      (For a circle cross section   : 0 ;
+         !                       For a sedredge cross section : 1 )
+         sectc(ksre, 1) = network%crs%cross(idx_crs)%frictionsectionscount - 1
+
+         if (network%crs%cross(idx_crs)%frictionsectionscount > 1) then
+         !!!
+         !!!SUBSECTION 1
+         !!!
+            idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(1)
+
+            !`sectv(1,2)` = `secth0`
+            ! secth0(ngrid)     I  H0-value (for 1 or 2 sub sections) for every
+            !                         grid point.
+            sectv(ksre, 2) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
+            !`sectv(1,4)` = `afh0`
+            ! afh0(ngrid)       I  Flow area Af at water level h=h0 for every
+            !                      grid point.
+            sectv(ksre, 4) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
+            ! `sectv(1,6)` = `oh0`
+            ! oh0(ngrid)        I  Wetted perimeter Ot at water level h=h0 for
+            !                      every grid point.
+            sectv(ksre, 6) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
+
+            !
+            !`sectc(:,2)` = `wfh0`
+            ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
+            !                      grid point.
+            sectc(ksre, 2) = network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
+
+         end if
+
+         if (network%crs%cross(idx_crs)%frictionsectionscount > 2) then
+         !!!
+         !!!SUBSECTION 2
+         !!!
+            idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(2)
+
+            !`sectv(1,3)` = `secth1`
+            ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
+            !                         point.
+            sectv(ksre, 3) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
+            !`sectv(1,5)` = `afh1`
+            ! afh1(ngrid)       I  Flow area Af at water level h=h1 for every
+            !                      grid point.
+            sectv(ksre, 5) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
+            ! `sectv(1,7)` = `oh1`
+            ! oh1(ngrid)        I  Wetted perimeter Ot at water level h=h1 for
+            !                      every grid point.
+            sectv(ksre, 7) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
+
+            !
+            !`sectc(:,3)` = `wfh1`
+            ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
+            !                      grid point.
+            sectc(ksre, 3) = network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
+
+         end if
+
+         !`bfricp` is not used anymore. We directly use `network` inside Sobek-RE.
+         !bfricp(6,ngrid)   I  Bed friction parameters:
+         !                     (1,i) = Parameter for positive flow direction
+         !                             in main section (depending on friction
+         !                             type):
+         !                             =     Chezy constant value
+         !                             =     Table pointer (Q or h table)
+         !                             =     Nikuradse parameter kn for Ni-
+         !                                   kuradse formula
+         !                             =     Manning parameter nm for Manning
+         !                                   formula
+         !                             =     Strickler coefficient ks for
+         !                                   Strickler formula
+         !                     (2,i) = Parameter for negative flow direction
+         !                             in main section (depending on friction
+         !                             type) Same definitions as bfricp(1,i).
+         !                     (3,i) = Parameter for positive flow direction
+         !                             in sub sec 1 (depending on friction
+         !                             type):
+         !                             =     Chezy constant value
+         !                             =     Nikuradse parameter kn for Niku-
+         !                                   radse formula
+         !                             =     Manning parameter nm for Manning
+         !                                   formula
+         !                             =     Strickler coefficient ks for
+         !                                   Strickler formula
+         !                     (4,i) = Parameter for negative flow direction
+         !                             in sub sec 1 (depending on friction
+         !                             type) Same definition as bfricp (3,i):
+         !                     (5,i) = Parameter for positive flow direction
+         !                             in sub sec 2 (depending on friction
+         !                             type) Same definition as bfricp (3,i).
+         !                     (6,i) = Parameter for negative flow direction
+         !                             in sub sec 2 (depending on friction
+         !                             type) Same definition as bfricp (3,i).
 
       end do !ksre
 
@@ -1433,14 +1377,14 @@ module m_initialize_flow1d_implicit
 !BEGIN inifm1dimp_fbc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   !> Subroutine to initialize boundary conditions for the 1D flow model.  
-   !! This subroutine sets up the boundary conditions for the 1D flow model by  
-   !! mapping boundary nodes to their respective grid points and assigning  
-   !! boundary condition parameters. It handles both water level (H) and  
-   !! discharge (Q) boundaries, ensuring that the boundary condition tables  
-   !! are properly initialized and linked to the corresponding grid points.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful. 
+   !> Subroutine to initialize boundary conditions for the 1D flow model.
+   !! This subroutine sets up the boundary conditions for the 1D flow model by
+   !! mapping boundary nodes to their respective grid points and assigning
+   !! boundary condition parameters. It handles both water level (H) and
+   !! discharge (Q) boundaries, ensuring that the boundary condition tables
+   !! are properly initialized and linked to the corresponding grid points.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_fbc(iresult)
 
       use m_f1dimp
@@ -1504,7 +1448,7 @@ module m_initialize_flow1d_implicit
 !   -H-boundaries
 !   -Q-boundaires
 
-      table_number = 0  
+      table_number = 0
 
 !h
       do k1 = 1, nhstat
@@ -1551,15 +1495,15 @@ module m_initialize_flow1d_implicit
 !BEGIN inifm1dimp_fnod
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   !> Subroutine to initialize nodes for the 1D flow model.  
-   !! This subroutine sets up the node properties for the 1D flow model by  
-   !! determining the type of each node (internal, boundary, or connection),  
-   !! mapping nodes to their respective grid points, and establishing  
-   !! connectivity between nodes. It ensures that boundary nodes are properly  
-   !! linked to their respective boundary conditions and that internal nodes  
-   !! are correctly connected to other nodes via branches.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful. 
+   !> Subroutine to initialize nodes for the 1D flow model.
+   !! This subroutine sets up the node properties for the 1D flow model by
+   !! determining the type of each node (internal, boundary, or connection),
+   !! mapping nodes to their respective grid points, and establishing
+   !! connectivity between nodes. It ensures that boundary nodes are properly
+   !! linked to their respective boundary conditions and that internal nodes
+   !! are correctly connected to other nodes via branches.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_fnod(iresult)
 
       use m_f1dimp
@@ -1713,14 +1657,14 @@ module m_initialize_flow1d_implicit
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !BEGIN inifm1dimp_chk
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   
-   !> Subroutine to perform checks on the initialization of the 1D flow model.  
-   !! This subroutine validates the initialization of the 1D flow model by ensuring that all  
-   !! cross-sections are mapped to SRE grid points and that sediment fractions are within  
-   !! acceptable limits. It also handles error reporting for any inconsistencies found during  
-   !! the validation process.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.   
+
+   !> Subroutine to perform checks on the initialization of the 1D flow model.
+   !! This subroutine validates the initialization of the 1D flow model by ensuring that all
+   !! cross-sections are mapped to SRE grid points and that sediment fractions are within
+   !! acceptable limits. It also handles error reporting for any inconsistencies found during
+   !! the validation process.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_chk(iresult)
 
       use m_f1dimp
@@ -1794,13 +1738,13 @@ module m_initialize_flow1d_implicit
 
    end subroutine inifm1dimp_chk
 
-   !> Subroutine to initialize structures in the 1D flow model.  
-   !! This subroutine sets up the necessary parameters and configurations for hydraulic structures  
-   !! in the 1D flow model. It assigns grid points, initializes tables for structure properties,  
-   !! and validates the structure types. Only structures converted to General Structure in Delft3D FM  
-   !! are supported.  
-   !!  
-   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.  
+   !> Subroutine to initialize structures in the 1D flow model.
+   !! This subroutine sets up the necessary parameters and configurations for hydraulic structures
+   !! in the 1D flow model. It assigns grid points, initializes tables for structure properties,
+   !! and validates the structure types. Only structures converted to General Structure in Delft3D FM
+   !! are supported.
+   !!
+   !! @param iresult [out] Error status, DFM_NOERR==0 if successful.
    subroutine inifm1dimp_fstruc(iresult)
 
       use m_f1dimp
@@ -1812,7 +1756,7 @@ module m_initialize_flow1d_implicit
 
       integer, dimension(:), pointer :: grid
       integer, dimension(:, :), pointer :: ntab
-      real, dimension(:)                       , pointer :: table
+      real, dimension(:), pointer :: table
       integer, pointer :: table_length
       integer, pointer :: number_bc_tables
       integer, pointer :: table_length_stru
@@ -1844,134 +1788,132 @@ module m_initialize_flow1d_implicit
 !----------------------------------------
 !BEGIN CALC
 !----------------------------------------
-      
+
       !All gridpoints as normal ones
-      grid=1
-      
+      grid = 1
+
       !TABLES
-      
+
       flg_structure = 2 !1=Simple weir, 2=General structure. In FM, all structures are treated as general structures.
       iresult = 0 !no error
-      
-      table_number=number_bc_tables+1 !structure after the BC
-      
-      idx_start_x=2*(number_bc_tables * table_length)+1
-      idx_start_y=idx_start_x+table_length_stru
-      
+
+      table_number = number_bc_tables + 1 !structure after the BC
+
+      idx_start_x = 2 * (number_bc_tables * table_length) + 1
+      idx_start_y = idx_start_x + table_length_stru
+
       ntab(1, table_number) = table_length_stru !length of table
       ntab(2, table_number) = idx_start_x !start address X
       ntab(3, table_number) = ntab(2, table_number) + table_length_stru !start address Y
       ntab(4, table_number) = 0 !access method (0=continuous interpolation)
-      
-      !Table for simple weir losses. 
+
+      !Table for simple weir losses.
       !<SOBEK_flow_2012.pdf>, page 73, Figure 2 "drowned flow reduction curves".
-      table(idx_start_x)=1.00
-      table(idx_start_y)=0.00
+      table(idx_start_x) = 1.00
+      table(idx_start_y) = 0.00
 
-      table(idx_start_x+1)=0.99_dp
-      table(idx_start_y+1)=0.20_dp
-      
-      table(idx_start_x+2)=0.97_dp
-      table(idx_start_y+2)=0.40_dp
-      
-      table(idx_start_x+3)=0.96_dp
-      table(idx_start_y+3)=0.60_dp
+      table(idx_start_x + 1) = 0.99_dp
+      table(idx_start_y + 1) = 0.20_dp
 
-      table(idx_start_x+4)=0.95_dp
-      table(idx_start_y+4)=0.80_dp
+      table(idx_start_x + 2) = 0.97_dp
+      table(idx_start_y + 2) = 0.40_dp
 
-      table(idx_start_x+5)=0.90_dp
-      table(idx_start_y+5)=0.90_dp
-      
-      table(idx_start_x+6)=0.85_dp
-      table(idx_start_y+6)=0.95_dp
-      
-      table(idx_start_x+7)=0.82_dp
-      table(idx_start_y+7)=1.00_dp
+      table(idx_start_x + 3) = 0.96_dp
+      table(idx_start_y + 3) = 0.60_dp
+
+      table(idx_start_x + 4) = 0.95_dp
+      table(idx_start_y + 4) = 0.80_dp
+
+      table(idx_start_x + 5) = 0.90_dp
+      table(idx_start_y + 5) = 0.90_dp
+
+      table(idx_start_x + 6) = 0.85_dp
+      table(idx_start_y + 6) = 0.95_dp
+
+      table(idx_start_x + 7) = 0.82_dp
+      table(idx_start_y + 7) = 1.00_dp
       !FLABC
-        !FLSTRU
-            !FLSW
-                !FLQHSW -> use of the table 
-   
+      !FLSTRU
+      !FLSW
+      !FLQHSW -> use of the table
+
       !STRUCTURE
-      associate(&
-          nstru => f1dimppar%nstru, &
-          strtyp => f1dimppar%strtyp, &
-          grd_fmL_sre => f1dimppar%grd_fmL_sre, &
-          strpar => f1dimppar%strpar &
-          )
-         do k=1,nstru
+      associate ( &
+         nstru => f1dimppar%nstru, &
+         strtyp => f1dimppar%strtyp, &
+         grd_fmL_sre => f1dimppar%grd_fmL_sre, &
+         strpar => f1dimppar%strpar &
+         )
+         do k = 1, nstru
             associate (struct_fm => network%sts%struct(k))
 
                if (struct_fm%type == 6) then
-                   
-               else
-                   write (msgbuf, '(a)') 'Only structures that are converted to General Structure in Delft3D FM are accepted.'
-                   call err_flush()
-                   iresult = 1
-               endif
 
-               strtyp(2,k)=1
-               
-               strtyp(3,k)=grd_fmL_sre(struct_fm%linknumbers(1),1)
-               strtyp(4,k)=grd_fmL_sre(struct_fm%linknumbers(1),2)
-               
-               !<SOBEK_flow_2012.pdf>, page 37.               
+               else
+                  write (msgbuf, '(a)') 'Only structures that are converted to General Structure in Delft3D FM are accepted.'
+                  call err_flush()
+                  iresult = 1
+               end if
+
+               strtyp(2, k) = 1
+
+               strtyp(3, k) = grd_fmL_sre(struct_fm%linknumbers(1), 1)
+               strtyp(4, k) = grd_fmL_sre(struct_fm%linknumbers(1), 2)
+
+               !<SOBEK_flow_2012.pdf>, page 37.
                !Hydraulic structures are located al grid points. So when the user specifies the position of the
                !grid points, he should specify only one grid point per hydraulic structure. Internally, SOBEK
                !makes a copy of this grid point, since two equal grid points (one at each side of a hydrautic
                !structure) are used for the application of structure formulas.
                !
                !When I create a model using the SRE GUI, I only see one cross-section added 1 m after the structure.
-               grid(strtyp(3,k))=2 
-               
+               grid(strtyp(3, k)) = 2
+
                if (flg_structure == 1) then !Treat structure as simple weir
-                  strtyp(1,k)=1 !simple weir
-                  
+                  strtyp(1, k) = 1 !simple weir
+
                   !<SOBEK_flow_2012.pdf>, page 73, Table 1 "Crest shape and coefficients for simple weir structure (default values)".
-                  strpar(1,k)=struct_fm%generalst%zs_actual
-                  strpar(2,k)=struct_fm%generalst%ws_actual
-                  strpar(3,k)=1.0_dp
-                  strpar(4,k)=0.82_dp
-                  strpar(5,k)=number_bc_tables+1
-                  strpar(6,k)=1.0_dp
-                  strpar(7,k)=0.82_dp
-                  strpar(8,k)=number_bc_tables+1
+                  strpar(1, k) = struct_fm%generalst%zs_actual
+                  strpar(2, k) = struct_fm%generalst%ws_actual
+                  strpar(3, k) = 1.0_dp
+                  strpar(4, k) = 0.82_dp
+                  strpar(5, k) = number_bc_tables + 1
+                  strpar(6, k) = 1.0_dp
+                  strpar(7, k) = 0.82_dp
+                  strpar(8, k) = number_bc_tables + 1
                else !Treat structure as general structure
-                  strtyp(1,k)=5 !general structure type
-                   
-                  strpar(1,k)=struct_fm%generalst%wu1 !(1,j) = Width left side of structure W1.
-                  strpar(2,k)=struct_fm%generalst%zu1 !(2,j) = Bed level left side of structure Zb1.
-                  strpar(3,k)=struct_fm%generalst%wu2 !(3,j) = Width structure left side Wsdl.
-                  strpar(4,k)=struct_fm%generalst%zu2 !(4,j) = Bed left side of structure Zbsl.
-                  strpar(5,k)=struct_fm%generalst%ws_actual !(5,j) = Width structure centre Ws.
-                  strpar(6,k)=struct_fm%generalst%zs_actual !(6,j) = Bed level centre Zs.
-                  strpar(7,k)=struct_fm%generalst%wd2 !(7,j) = Width structure right side Wsdr.
-                  strpar(8,k)=struct_fm%generalst%zd2 !(8,j) = Bed right side of structure Zbsr.
-                  strpar(9,k)=struct_fm%generalst%wd1 !(9,j) = Width right side of structure W2.
-                  strpar(10,k)=struct_fm%generalst%zd1 !(10,j)= Bed level right side of structure Zb2.
-                  strpar(11,k)=struct_fm%generalst%gateloweredgelevel_actual-struct_fm%generalst%zs_actual !(11,j)= Gate opening heigth dg.
+                  strtyp(1, k) = 5 !general structure type
+
+                  strpar(1, k) = struct_fm%generalst%wu1 !(1,j) = Width left side of structure W1.
+                  strpar(2, k) = struct_fm%generalst%zu1 !(2,j) = Bed level left side of structure Zb1.
+                  strpar(3, k) = struct_fm%generalst%wu2 !(3,j) = Width structure left side Wsdl.
+                  strpar(4, k) = struct_fm%generalst%zu2 !(4,j) = Bed left side of structure Zbsl.
+                  strpar(5, k) = struct_fm%generalst%ws_actual !(5,j) = Width structure centre Ws.
+                  strpar(6, k) = struct_fm%generalst%zs_actual !(6,j) = Bed level centre Zs.
+                  strpar(7, k) = struct_fm%generalst%wd2 !(7,j) = Width structure right side Wsdr.
+                  strpar(8, k) = struct_fm%generalst%zd2 !(8,j) = Bed right side of structure Zbsr.
+                  strpar(9, k) = struct_fm%generalst%wd1 !(9,j) = Width right side of structure W2.
+                  strpar(10, k) = struct_fm%generalst%zd1 !(10,j)= Bed level right side of structure Zb2.
+                  strpar(11, k) = struct_fm%generalst%gateloweredgelevel_actual - struct_fm%generalst%zs_actual !(11,j)= Gate opening heigth dg.
 !                              Positive flow:
-                  strpar(12,k)=struct_fm%generalst%cgf_pos !(12,j)= Correction coefficient for free gate flow cgf.
-                  strpar(13,k)=struct_fm%generalst%cgd_pos !(13,j)= Correction coefficient for drowned gate flow cgd.
-                  strpar(14,k)=struct_fm%generalst%cwf_pos !(14,j)= Correction coefficient for free weir flow cwf.
-                  strpar(15,k)=struct_fm%generalst%cwd_pos !(15,j)= Correction coefficient for drowned weir flow cwd.
-                  strpar(16,k)=struct_fm%generalst%mugf_pos !(16,j)= Contraction coefficient for free gate flow MU-gf.
+                  strpar(12, k) = struct_fm%generalst%cgf_pos !(12,j)= Correction coefficient for free gate flow cgf.
+                  strpar(13, k) = struct_fm%generalst%cgd_pos !(13,j)= Correction coefficient for drowned gate flow cgd.
+                  strpar(14, k) = struct_fm%generalst%cwf_pos !(14,j)= Correction coefficient for free weir flow cwf.
+                  strpar(15, k) = struct_fm%generalst%cwd_pos !(15,j)= Correction coefficient for drowned weir flow cwd.
+                  strpar(16, k) = struct_fm%generalst%mugf_pos !(16,j)= Contraction coefficient for free gate flow MU-gf.
 !                              Negative flow:
-                  strpar(17,k)=struct_fm%generalst%cgf_pos !(17,j)= Correction coefficient for free gate flow cgf.
-                  strpar(18,k)=struct_fm%generalst%cgd_pos !(18,j)= Correction coefficient for drowned gate flow cgd.
-                  strpar(19,k)=struct_fm%generalst%cwf_pos !(19,j)= Correction coefficient for free weir flow cwf.
-                  strpar(20,k)=struct_fm%generalst%cwd_pos !(20,j)= Correction coefficient for drowned weir flow cwd.
-                  strpar(21,k)=struct_fm%generalst%mugf_pos !(21,j)= Contraction coefficient for free gate flow MU-gf.
-               endif
-               
-   
+                  strpar(17, k) = struct_fm%generalst%cgf_pos !(17,j)= Correction coefficient for free gate flow cgf.
+                  strpar(18, k) = struct_fm%generalst%cgd_pos !(18,j)= Correction coefficient for drowned gate flow cgd.
+                  strpar(19, k) = struct_fm%generalst%cwf_pos !(19,j)= Correction coefficient for free weir flow cwf.
+                  strpar(20, k) = struct_fm%generalst%cwd_pos !(20,j)= Correction coefficient for drowned weir flow cwd.
+                  strpar(21, k) = struct_fm%generalst%mugf_pos !(21,j)= Contraction coefficient for free gate flow MU-gf.
+               end if
+
             end associate
          end do
       end associate
-   
+
    end subroutine inifm1dimp_fstruc
-    
-    
-    end module m_initialize_flow1d_implicit
+
+end module m_initialize_flow1d_implicit
 

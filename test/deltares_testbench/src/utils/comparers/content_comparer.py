@@ -1,6 +1,6 @@
 """Raw File Content comparer.
 
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import filecmp

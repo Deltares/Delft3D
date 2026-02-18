@@ -35,6 +35,7 @@ if(UNIX)
    add_definitions(-DD3D_PLUGIN_EXT=".so")
 
    set(oss_dependencies    deltares_common_c
+                           getopt
                            dimr_lib
                            expat)
 
@@ -43,6 +44,7 @@ if(UNIX)
                                PRIVATE  
                                ${header_path}
                               "${dimr_lib_path}/include"
+                              "${getopt_include_path}"
                               "${expat_include_path}")
 
     target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS})
@@ -57,6 +59,7 @@ endif(UNIX)
 if (WIN32)
 
    set(oss_dependencies    deltares_common_c
+                           getopt
                            dimr_lib) 
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
@@ -66,6 +69,7 @@ if (WIN32)
                                 PRIVATE  
                                 ${header_path}
                                 "${dimr_lib_path}/include"
+                                "${getopt_include_path}"
                                 "${expat_include_path}"
                                 "${mpi_include_path}"
                                 "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
@@ -75,6 +79,7 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${getopt_library_path_win}"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")

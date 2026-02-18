@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -77,7 +77,9 @@ contains
          end do
       end if
 
-      if (KC(KP) == -1) call DCIRR(XK(KP), YK(KP), ZK(KP), NCOL)
+      if (KC(KP) == -1) then
+         call DCIRR(XK(KP), YK(KP), ZK(KP), NCOL)
+      end if
       return
    end subroutine TEKNODE
 

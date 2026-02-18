@@ -2,7 +2,7 @@ module m_structures
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -38,6 +38,7 @@ module m_structures
    use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
    use m_structures_indices ! all of these indices are used in the module
 
+   use precision, only: dp
    implicit none
 
    type(tree_data), pointer, public :: strs_ptr !< A property list with all input structure specifications of the current model. Not the actual structure set.
@@ -173,7 +174,7 @@ contains
       use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen
 
       use m_flowtimes, only: ti_rst
-      use m_longculverts, only: nlongculverts
+      use m_longculverts_data, only: nlongculverts
       use m_dambreak_breach, only: n_db_signals
       implicit none
 
@@ -189,7 +190,8 @@ contains
             if (allocated(valcgen)) then
                deallocate (valcgen)
             end if
-            allocate (valcgen(NUMVALS_CGEN, ncgensg)); valcgen = 0.0_dp
+            allocate (valcgen(NUMVALS_CGEN, ncgensg))
+            valcgen = 0.0_dp
          end if
 
          if (ngenstru == 0) then ! If it is new general structure, then it is stored in the network type
@@ -199,7 +201,8 @@ contains
             if (allocated(valgenstru)) then
                deallocate (valgenstru)
             end if
-            allocate (valgenstru(NUMVALS_GENSTRU, ngenstru)); valgenstru = 0.0_dp
+            allocate (valgenstru(NUMVALS_GENSTRU, ngenstru))
+            valgenstru = 0.0_dp
          end if
       end if
       if (jahisgate > 0) then
@@ -207,20 +210,23 @@ contains
             if (allocated(valgate)) then
                deallocate (valgate)
             end if
-            allocate (valgate(NUMVALS_CGEN, ngatesg)); valgate = 0.0_dp
+            allocate (valgate(NUMVALS_CGEN, ngatesg))
+            valgate = 0.0_dp
          end if
          if (ngategen > 0) then
             if (allocated(valgategen)) then
                deallocate (valgategen)
             end if
-            allocate (valgategen(NUMVALS_GATEGEN, ngategen)); valgategen = 0.0_dp
+            allocate (valgategen(NUMVALS_GATEGEN, ngategen))
+            valgategen = 0.0_dp
          end if
       end if
       if (jahiscdam > 0 .and. ncdamsg > 0) then
          if (allocated(valcdam)) then
             deallocate (valcdam)
          end if
-         allocate (valcdam(NUMVALS_CDAM, ncdamsg)); valcdam = 0.0_dp
+         allocate (valcdam(NUMVALS_CDAM, ncdamsg))
+         valcdam = 0.0_dp
       end if
       if (nweirgen == 0) then ! If it is new 1D weir, the weir is stored in the network type
          nweirgen = network%sts%numWeirs
@@ -230,7 +236,8 @@ contains
          if (allocated(valweirgen)) then
             deallocate (valweirgen)
          end if
-         allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen)); valweirgen = 0.0_dp
+         allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen))
+         valweirgen = 0.0_dp
       end if
       if (jahisdambreak > 0 .and. n_db_signals > 0) then
          if (allocated(valdambreak)) then
@@ -242,37 +249,43 @@ contains
          if (allocated(valorifgen)) then
             deallocate (valorifgen)
          end if
-         allocate (valorifgen(NUMVALS_ORIFGEN, network%sts%numOrifices)); valorifgen = 0.0_dp
+         allocate (valorifgen(NUMVALS_ORIFGEN, network%sts%numOrifices))
+         valorifgen = 0.0_dp
       end if
       if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
          if (allocated(valbridge)) then
             deallocate (valbridge)
          end if
-         allocate (valbridge(NUMVALS_BRIDGE, network%sts%numBridges)); valbridge = 0.0_dp
+         allocate (valbridge(NUMVALS_BRIDGE, network%sts%numBridges))
+         valbridge = 0.0_dp
       end if
       if ((ti_rst > 0 .or. jahisculv > 0) .and. network%sts%numCulverts > 0) then
          if (allocated(valculvert)) then
             deallocate (valculvert)
          end if
-         allocate (valculvert(NUMVALS_CULVERT, network%sts%numCulverts)); valculvert = 0.0_dp
+         allocate (valculvert(NUMVALS_CULVERT, network%sts%numCulverts))
+         valculvert = 0.0_dp
       end if
       if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
          if (allocated(valuniweir)) then
             deallocate (valuniweir)
          end if
-         allocate (valuniweir(NUMVALS_UNIWEIR, network%sts%numUniWeirs)); valuniweir = 0.0_dp
+         allocate (valuniweir(NUMVALS_UNIWEIR, network%sts%numUniWeirs))
+         valuniweir = 0.0_dp
       end if
       if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
          if (allocated(valcmpstru)) then
             deallocate (valcmpstru)
          end if
-         allocate (valcmpstru(NUMVALS_CMPSTRU, network%cmps%count)); valcmpstru = 0.0_dp
+         allocate (valcmpstru(NUMVALS_CMPSTRU, network%cmps%count))
+         valcmpstru = 0.0_dp
       end if
       if (jahislongculv > 0 .and. nlongculverts > 0) then
          if (allocated(vallongculvert)) then
             deallocate (vallongculvert)
          end if
-         allocate (vallongculvert(NUMVALS_LONGCULVERT, nlongculverts)); vallongculvert = 0.0_dp
+         allocate (vallongculvert(NUMVALS_LONGCULVERT, nlongculverts))
+         vallongculvert = 0.0_dp
       end if
 
 ! TIDAL TURBINES: Insert init_turbines here
@@ -321,7 +334,7 @@ contains
       use m_flowgeom, only: wu, ln, teta, bl
       use m_1d_structures, only: get_discharge_under_compound_struc
       use m_GlobalParameters, only: st_longculvert, st_pump, st_general_st, st_weir, st_orifice, st_bridge
-      use m_longculverts, only: longculverts
+      use m_longculverts_data, only: longculverts
       use m_flowparameters, only: epshs, epshu
       use m_general_structure, only: t_generalstructure
       implicit none
@@ -429,13 +442,13 @@ contains
          ! 2. More specific valus that apply to certain structure types only
 
          ! 2a. General structure-based structures with a crest.
-         if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+         if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
             valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0) * wu(L)
             valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L) * wu(L)
          end if
 
          ! 2b. General structure-based structures with a (gate) door.
-         if (any(istrtypein == (/ST_GENERAL_ST/))) then ! TODO: ST_GATE
+         if (any(istrtypein == [ST_GENERAL_ST])) then ! TODO: ST_GATE
             k1 = ln(1, L)
             k2 = ln(2, L)
             genstr => network%sts%struct(istru)%generalst
@@ -529,7 +542,7 @@ contains
          valstruct(IVAL_HEAD) = dmiss
       end if
       ! 1b. other generic variables
-      if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+      if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
          if (valstruct(IVAL_WIDTH) == 0.0_dp) then
             valstruct(IVAL_CRESTL) = dmiss ! crest level
             valstruct(IVAL_CRESTW) = dmiss ! crest width
@@ -543,7 +556,7 @@ contains
             valstruct(IVAL_VEL) = dmiss ! velocity
          end if
 
-         if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+         if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
             valstruct(IVAL_S1ONCREST) = dmiss ! water level on crest
             valstruct(IVAL_STATE) = dmiss ! state
             valstruct(IVAL_FORCEDIF) = dmiss ! force difference per unit width
@@ -558,7 +571,7 @@ contains
             end if
          end if
 
-         if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+         if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
             pstru => network%sts%struct(istru)
             valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) / valstruct(IVAL_WIDTHWET) ! water level on crest
             valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) / valstruct(IVAL_WIDTHWET) ! force difference per unit width
@@ -567,7 +580,7 @@ contains
 
       ! 2. More specific valus that apply to certain structure types only
       ! General structure-based structures with a (gate) door.
-      if (any(istrtypein == (/ST_GENERAL_ST, ST_ORIFICE/))) then ! TODO: ST_GATE
+      if (any(istrtypein == [ST_GENERAL_ST, ST_ORIFICE])) then ! TODO: ST_GATE
          if (valstruct(IVAL_WIDTH) == 0.0_dp) then ! zero width
             valstruct(IVAL_OPENW:) = dmiss
          end if
@@ -830,7 +843,7 @@ contains
 !! of a structure on flow links.
    integer function get_number_of_geom_nodes(istrtypein, i)
       use m_1d_structures
-      use m_longculverts
+      use m_longculverts_data, only: longculverts
       use m_GlobalParameters, only: ST_LONGCULVERT
       use m_partitioninfo, only: my_rank, jampi, idomain
       use m_link_ghostdata, only: link_ghostdata
@@ -917,7 +930,7 @@ contains
       use m_alloc
       use m_flowgeom, only: lncn
       use network_data, only: xk, yk
-      use m_longculverts
+      use m_longculverts_data, only: longculverts
       use m_GlobalParameters, only: ST_LONGCULVERT
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_link_ghostdata, only: link_ghostdata
@@ -1410,7 +1423,7 @@ contains
       type(t_structure), pointer :: pstru
       type(t_GeneralStructure), pointer :: genstr
 
-      if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+      if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
          pstru => network%sts%struct(istru)
          valstruct(IVAL_CRESTL) = get_crest_level(pstru) ! crest level
          valstruct(IVAL_CRESTW) = get_width(pstru) ! crest width
@@ -1425,13 +1438,13 @@ contains
             end if
          end do
          if (jadif == 0) then
-            valstruct(IVAL_STATE) = dble(tmp)
+            valstruct(IVAL_STATE) = real(tmp, kind=dp)
          else
             valstruct(IVAL_STATE) = dmiss
          end if
       end if
 
-      if (any(istrtypein == (/ST_GENERAL_ST, ST_ORIFICE/))) then ! TODO: ST_GATE
+      if (any(istrtypein == [ST_GENERAL_ST, ST_ORIFICE])) then ! TODO: ST_GATE
          if (nlinks > 0) then ! If it is a new general structure, and there are links
             genstr => network%sts%struct(istru)%generalst
             valstruct(IVAL_OPENW) = genstr%gateopeningwidth_actual ! gate opening width
@@ -1464,28 +1477,44 @@ contains
       select case (structuretype)
       case (ST_WEIR)
          numstructs = network%sts%numweirs
-         if (numstructs > 0) structindex => network%sts%WEIRINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%WEIRINDICES
+         end if
       case (ST_UNI_WEIR)
          numstructs = network%sts%numuniweirs
-         if (numstructs > 0) structindex => network%sts%uniWEIRINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%uniWEIRINDICES
+         end if
       case (ST_CULVERT)
          numstructs = network%sts%numculverts
-         if (numstructs > 0) structindex => network%sts%culvertINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%culvertINDICES
+         end if
       case (ST_BRIDGE)
          numstructs = network%sts%numBRIDGEs
-         if (numstructs > 0) structindex => network%sts%BRIDGEINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%BRIDGEINDICES
+         end if
       case (ST_PUMP)
          numstructs = network%sts%numPUMPs
-         if (numstructs > 0) structindex => network%sts%PUMPINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%PUMPINDICES
+         end if
       case (ST_ORIFICE)
          numstructs = network%sts%numORIFICEs
-         if (numstructs > 0) structindex => network%sts%ORIFICEINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%ORIFICEINDICES
+         end if
       case (ST_GATE)
          numstructs = network%sts%numGATEs
-         if (numstructs > 0) structindex => network%sts%GATEINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%GATEINDICES
+         end if
       case (ST_GENERAL_ST)
          numstructs = network%sts%numgeneralstructures
-         if (numstructs > 0) structindex => network%sts%generalstructureINDICES
+         if (numstructs > 0) then
+            structindex => network%sts%generalstructureINDICES
+         end if
       case default
          return
       end select
@@ -1531,11 +1560,11 @@ contains
 
                associate (branch => network%brs%branch(network%sts%struct(j)%IBRAN))
                   if (branch%GRIDPOINTSCOUNT > 0) then
-                     ierr = odu_get_xy_coordinates((/1/), network%sts%struct(j:j)%CHAINAGE, branch%xs, branch%ys, &
-                                                   (/branch%gridpointscount/), (/branch%length/), jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
+                     ierr = odu_get_xy_coordinates([1], network%sts%struct(j:j)%CHAINAGE, branch%xs, branch%ys, &
+                                                   [branch%gridpointscount], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
                   else
-                     ierr = odu_get_xy_coordinates((/1/), network%sts%struct(j:j)%CHAINAGE, (/branch%FROMNODE%X, branch%TONODE%X/), (/branch%FROMNODE%Y, branch%TONODE%Y/), &
-                                                   (/2/), (/branch%length/), jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
+                     ierr = odu_get_xy_coordinates([1], network%sts%struct(j:j)%CHAINAGE, [branch%FROMNODE%X, branch%TONODE%X], [branch%FROMNODE%Y, branch%TONODE%Y], &
+                                                   [2], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
                   end if
                   nNodesStructInput(n) = 1
                   i = i + 1

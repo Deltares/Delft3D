@@ -21,16 +21,23 @@ object LinuxRuntimeContainers : BuildType({
     name = "Runtime Containers"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
-    outputParams {
-        exposeAllParameters = false
-        param("product", "%dep.${LinuxBuild.id}.product%")
-        param("runtime_container_image", "%runtime_container_image%")
-        param("testbench_container_image", "%testbench_container_image%")
+    params {
+        param("runtime_container_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma%almalinux_version%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+        param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma%almalinux_version%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+    }
+
+    features {
+        matrix {
+           param("almalinux_version", listOf(
+              value("8", label = "AlmaLinux 8"),
+              value("9", label = "AlmaLinux 9"),
+              value("10", label = "AlmaLinux 10")
+           ))
+        }
     }
 
     params {
-        param("runtime_container_image", "containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
-        param("testbench_container_image", "containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+        param("file_path", "dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
     }
 
     vcs {
@@ -39,7 +46,34 @@ object LinuxRuntimeContainers : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
+        step {
+            name = "Download artifact from Nexus"
+            type = "RawDownloadNexusLinux"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_username", "%nexus_username%")
+            param("download_to", ".")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+        }
+        script {
+            name = "Extract artifact"
+            enabled = false
+            scriptContent = """
+                echo "Extracting %file_path%..."
+
+                tar -xzf %file_path%
+
+                mkdir dimrset
+
+                cp -r lnx64/bin dimrset/bin
+
+                cp -r lnx64/lib dimrset/lib
+
+                cp -r lnx64/share dimrset/share
+            """.trimIndent()
+        }
         exec {
             name = "Copy example and readme.txt"
             path = "ci/teamcity/Delft3D/linux/scripts/copyExampleAndReadMe.sh"
@@ -60,6 +94,7 @@ object LinuxRuntimeContainers : BuildType({
                     --provenance=false
                     --pull
                     --no-cache
+                    --build-arg BASE_IMAGE=containers.deltares.nl/docker-proxy/library/almalinux:%almalinux_version%
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
                     --build-arg BUILDTOOLS_IMAGE_TAG=%dep.${LinuxBuild.id}.build_tools_image_tag%
@@ -86,8 +121,8 @@ object LinuxRuntimeContainers : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%dep.${LinuxBuild.id}.product%-%build.vcs.number%
-                    containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%dep.${LinuxBuild.id}.product%-%build.vcs.number%
+                    %runtime_container_image%
+                    %testbench_container_image%
                 """.trimIndent()
             }
         }
@@ -100,18 +135,20 @@ object LinuxRuntimeContainers : BuildType({
             }
 
             artifacts {
-                artifactRules = "dimrset_lnx64_*.tar.gz!/lnx64 => dimrset"
+                artifactRules = """
+                    dimrset_lnx64_*.tar.gz!lnx64/bin/** => dimrset/bin
+                    dimrset_lnx64_*.tar.gz!lnx64/lib/** => dimrset/lib
+                    ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => dimrset/share
+                """.trimIndent()
             }
-        }
-        artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
-            cleanDestination = true
-            buildRule = lastSuccessful()
-            artifactRules = "Bin64.zip!/Release/Wandadef.dat=>wanda/bin/Wandadef.dat"
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64LinuxAlma8")) {
             cleanDestination = true
-            buildRule = lastSuccessful()
-            artifactRules = "build.zip!/lib/*=>wanda/lib"
+            buildRule = build("939")
+            artifactRules = """
+                build.zip!/lib/*.so=>wanda/lib
+                build.zip!/lib/Wandadef.dat=>wanda/bin/Wandadef.dat
+            """.trimIndent()
         }
     }
 })

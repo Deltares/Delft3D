@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,7 +49,9 @@ contains
       integer :: k
       real(kind=dp), intent(in) :: deltat ! dt of current timestep
 
-      if (jaQext == 0) return
+      if (jaQext == 0) then
+         return
+      end if
 
       do k = 1, ndx
          vextcum(k) = vextcum(k) + qextreal(k) * deltat

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -60,7 +60,9 @@ contains
 
       type(tpoly), dimension(:), allocatable :: pli
 
-      if (NPL < 3) return
+      if (NPL < 3) then
+         return
+      end if
 
 !   copy to tpoly-type polygons
       call pol_to_tpoly(numpols, pli, keepExisting=.false.)
@@ -81,7 +83,10 @@ contains
          numadd = 0
          do i = 1, num
             Lprev = L
-            ip1 = i + 1; if (ip1 > num) ip1 = ip1 - num
+            ip1 = i + 1
+            if (ip1 > num) then
+               ip1 = ip1 - num
+            end if
             L = isleft(pli(ipol)%x(ip1), pli(ipol)%y(ip1))
             if (L .and. Lprev) then
 !            segment is internal
@@ -146,7 +151,7 @@ contains
          isleft = .false.
 
          if (x /= DMISS .and. y /= DMISS) then
-            if ((x - xa) * sx + (y - ya) * sy >= 0d0) then
+            if ((x - xa) * sx + (y - ya) * sy >= 0.0_dp) then
                isleft = .true.
             end if
          end if

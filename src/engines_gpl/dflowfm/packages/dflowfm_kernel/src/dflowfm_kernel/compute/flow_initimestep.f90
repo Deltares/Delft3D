@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -77,13 +77,15 @@ contains
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
       integer :: ierror
-      real(kind=dp), parameter :: MMPHR_TO_MPS = 1d-3 / 3600d0
+      real(kind=dp), parameter :: MMPHR_TO_MPS = 1.0e-3_dp / 3600.0_dp
 
       iresult = DFM_GENERICERROR
 
       call timstrt('Initialise timestep', handle_inistep)
 
-      if (jazws0 == 0) s0 = s1 ! progress water levels
+      if (jazws0 == 0) then
+         s0 = s1 ! progress water levels
+      end if
 
       call bathyupdate() ! only if jamorf == 1
 
@@ -96,7 +98,7 @@ contains
       end if
 
 ! due to tolerance in poshcheck, hs may be smaller than 0 (but larger than -1e-10)
-      hs = max(hs, 0d0)
+      hs = max(hs, 0.0_dp)
 
       if (nshiptxy > 0) then ! quick fix only for ships
          call setdt()
@@ -109,9 +111,10 @@ contains
       call timstop(handle_extra(38)) ! End bnd
 
       if (iresult /= DFM_NOERR) then
-         write (msgbuf, *) ' Error found in EC-module '; call err_flush()
+         write (msgbuf, *) ' Error found in EC-module '
+         call err_flush()
          if (jampi == 1) then
-            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd; 
+            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd
             call err_flush()
             ! Terminate all MPI processes
             call abort_all()
@@ -119,7 +122,7 @@ contains
          goto 888
       end if
 
-      if (tlfsmo > 0d0) then
+      if (tlfsmo > 0.0_dp) then
          alfsmo = (tim1bnd - tstart_tlfsmo_user) / tlfsmo
       end if
 
@@ -130,8 +133,8 @@ contains
       end if
       call timstop(handle_extra(42)) ! End u0u1
 
-      advi = 0d0
-      adve = 0d0
+      advi = 0.0_dp
+      adve = 0.0_dp
 
       call timstrt('Sethuau     ', handle_extra(39)) ! Start huau
       call calculate_hu_au_and_advection_for_dams_weirs(jazws0, set_hu)
@@ -165,7 +168,7 @@ contains
 
       ! Set wave parameters, adapted for present water depth/velocity fields
       if (jawave > NO_WAVES) then
-         taubxu = 0d0
+         taubxu = 0.0_dp
          call compute_wave_parameters()
       end if
 
@@ -187,7 +190,7 @@ contains
 
       ! Add wave model dependent wave force in RHS
       ! After setdt because surfbeat needs updated dts
-      if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
+      if (jawave > NO_WAVES .and. .not. flow_without_waves) then
          call compute_wave_forcing_RHS()
       end if
 
@@ -212,17 +215,17 @@ contains
 
       if (jaimplicit == 1) then
          call fillsystem_advec(ierror)
-         if (ierror /= 0) goto 888
+         if (ierror /= 0) then
+            goto 888
+         end if
       end if
 
-      if (jatem > 1 .and. jaheat_eachstep == 1) then
-         call heatu(tim1bnd / 3600d0) ! from externalforcings
+      if (jaheat_eachstep == 1) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call heatu(tim1bnd / 3600.0_dp) ! from externalforcings
+         end if
       end if
       call update_icecover()
-
-      if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
-         infiltcap0 = infiltcap / mmphr_to_mps
-      end if
 
       call timstop(handle_inistep)
 

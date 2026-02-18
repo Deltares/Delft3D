@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,13 +52,15 @@ contains
       real(kind=dp) :: avdiffm, avdifwq, fm, wq
       integer :: k, kk, num
 
-      avdiffm = 0d0; avdifwq = 0d0; num = 0
+      avdiffm = 0.0_dp
+      avdifwq = 0.0_dp
+      num = 0
       do k = 1, ns
          call in_flowcell(xs(k), ys(k), KK)
          if (kk > 0) then
             fm = znod(kk)
             wq = plotlin(kk)
-            if (fm > 0d0 .and. wq > 0d0) then
+            if (fm > 0.0_dp .and. wq > 0.0_dp) then
                write (mdiag, *) zs(k), fm, wq
                avdiffm = avdiffm + abs(fm - zs(k))
                avdifwq = avdifwq + abs(wq - zs(k))

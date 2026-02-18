@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -61,11 +61,15 @@ contains
       call set_water_level_and_hu_for_dry_cells(s1, hu)
 
       if (jampi == 1) then
-         reduced_data = (/key, nodneg/)
+         reduced_data = [key, nodneg]
 
-         if (jatimer == 1) call starttimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call starttimer(IMPIREDUCE)
+         end if
          call reduce_int_max(2, reduced_data)
-         if (jatimer == 1) call stoptimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call stoptimer(IMPIREDUCE)
+         end if
 
          key = reduced_data(1)
          nodneg = reduced_data(2)
@@ -73,7 +77,7 @@ contains
 
       if (nodneg /= 0 .and. jposhchk /= -1) then
          if (jposhchk == 1 .or. jposhchk == 3 .or. jposhchk == 5 .or. jposhchk == 7) then
-            dts = 0.7d0 * dts
+            dts = 0.7_dp * dts
          end if
          dsetb = dsetb + 1 ! total nr of setbacks
          s1 = s0
@@ -100,24 +104,26 @@ contains
 
          integer :: node, link, link_index
          real(kind=dp) :: threshold
-         real(kind=dp), parameter :: WATER_LEVEL_TOLERANCE = 1d-10
-         real(kind=dp), parameter :: DELFT3D_MIN = 1d-9
-         real(kind=dp), parameter :: DELFT3D_MAX = 1d-3
-         real(kind=dp), parameter :: REDUCTION_FACTOR = 0.2d0
+         real(kind=dp), parameter :: WATER_LEVEL_TOLERANCE = 1.0e-10_dp
+         real(kind=dp), parameter :: DELFT3D_MIN = 1.0e-9_dp
+         real(kind=dp), parameter :: DELFT3D_MAX = 1.0e-3_dp
+         real(kind=dp), parameter :: REDUCTION_FACTOR = 0.2_dp
          integer, parameter :: FLAG_REDO_TIMESTEP = 2
-         real(kind=dp), parameter :: SET_VALUE = 0d0
+         real(kind=dp), parameter :: SET_VALUE = 0.0_dp
          integer, parameter :: DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS = 1
 
          Nodneg = 0
          key = 0
          is_hu_changed = .false.
 
-         if (jposhchk == 0) return
+         if (jposhchk == 0) then
+            return
+         end if
 
          if (testdryflood == DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS) then
             threshold = max(DELFT3D_MIN, min(epshu, DELFT3D_MAX))
          else
-            threshold = 0d-0
+            threshold = 0.0e-0_dp
          end if
 
          do node = 1, ndxi

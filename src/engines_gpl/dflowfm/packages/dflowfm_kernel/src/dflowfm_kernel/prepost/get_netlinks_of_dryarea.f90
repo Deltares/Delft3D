@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,13 +51,19 @@ contains
       if (allocated(kdryarea)) then
          deallocate (kdryarea)
       end if
-      allocate (kdryarea(numl)); kdryarea = 0
+      allocate (kdryarea(numl))
+      kdryarea = 0
 
       nDryLinks = 0
       do L = 1, numl
-         k1 = lne(1, L); k2 = lne(2, L)
-         if (k1 > 0 .and. k2 > 0) cycle
-         if (k1 <= 0 .and. k2 <= 0) cycle
+         k1 = lne(1, L)
+         k2 = lne(2, L)
+         if (k1 > 0 .and. k2 > 0) then
+            cycle
+         end if
+         if (k1 <= 0 .and. k2 <= 0) then
+            cycle
+         end if
          nDryLinks = nDryLinks + 1
          kdryarea(nDryLinks) = L
       end do

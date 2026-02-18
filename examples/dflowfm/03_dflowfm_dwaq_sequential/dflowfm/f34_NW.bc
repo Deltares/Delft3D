@@ -1,0 +1,28 @@
+[General]
+fileVersion           = 1.01                
+fileType              = boundConds          
+
+[Forcing]
+name                  = L1_0001             
+function              = harmonic            
+quantity              = harmonic component  
+unit                  = minutes             
+quantity              = waterlevelbnd amplitude
+unit                  = m                   
+quantity              = waterlevelbnd phase 
+unit                  = deg
+0    0    0
+750  1.5  0
+
+[Forcing]
+name                  = L1_0005             
+function              = harmonic            
+quantity              = harmonic component  
+unit                  = minutes             
+quantity              = waterlevelbnd amplitude
+unit                  = m                   
+quantity              = waterlevelbnd phase 
+unit                  = deg
+0    0    0     
+750  1.5  -17.13
+

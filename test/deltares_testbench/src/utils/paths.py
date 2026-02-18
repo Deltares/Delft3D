@@ -1,6 +1,6 @@
 """Path helper.
 
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import os
@@ -9,7 +9,7 @@ from typing import List
 
 
 # Path helpers
-class Paths(object):
+class Paths:
     # split network path in server, folder and rest with os.sep
     # input: path
     # output: server part, folder part, left over part
@@ -69,7 +69,7 @@ class Paths(object):
         else:
             result = ""
         # split in windows paths
-        wpes = self.convertAbsoluteToLiteral(path).split("\\")
+        wpes = self.__convertAbsoluteToLiteral(path).split("\\")
         for wpe in wpes:
             # split in linux path elements
             lpes = wpe.split("/")
@@ -80,7 +80,7 @@ class Paths(object):
         return result
 
     # convert a path string containing \ -> \\
-    def convertAbsoluteToLiteral(self, path):
+    def __convertAbsoluteToLiteral(self, path):
         # convert double backslash to single
         conv = re.sub(r"(\\\\)", r"\\", path)
         return re.sub(r"(?<!\\)+\\(?!\\)+", r"\\", conv)
@@ -92,8 +92,18 @@ class Paths(object):
         fws = "/"
         bws = "\\"
 
+        if left in (None, ""):
+            return right or ""
+        if right in (None, ""):
+            return left
+
         # Make sure that the handlers can accept URIs that contain spaces.
         if "://" in left:
+            # XML pretty-printing can introduce newlines/indentation in text nodes.
+            # Strip control whitespace so URL segments don't turn into '%20%20%20...' or contain newlines.
+            left = left.replace("\r", "").replace("\n", "").replace("\t", "").strip()
+            right = right.replace("\r", "").replace("\n", "").replace("\t", "").strip()
+
             left = left.replace(" ", "%20")
             right = right.replace(" ", "%20")
 
@@ -133,8 +143,12 @@ class Paths(object):
     # input: left and rest (variable args)
     # output: string formatted on left as origin
     def mergeFullPath(self, left, *args):
-        result = left
-        for a in args:
+        parts = [p for p in (left, *args) if p not in (None, "")]
+        if not parts:
+            return ""
+
+        result = parts[0]
+        for a in parts[1:]:
             result = self.mergePathElements(result, a)
         return result
 

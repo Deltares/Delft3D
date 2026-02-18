@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,8 +49,10 @@ contains
       integer :: k
 
       do k = 1, ndx
-         spirucm(k) = 0d0
-         if (hs(k) < epshu) cycle
+         spirucm(k) = 0.0_dp
+         if (hs(k) < epshu) then
+            cycle
+         end if
          spirucm(k) = sqrt(ucx(k) * ucx(k) + ucy(k) * ucy(k))
       end do
 
@@ -70,17 +72,17 @@ contains
       call get_spirucm()
 
       do k = 1, ndxi
-         if (spirucm(k) < 1.0d-3 .or. hs(k) < epshu) then
-            spircrv(k) = 0.0d0
+         if (spirucm(k) < 1.0e-3_dp .or. hs(k) < epshu) then
+            spircrv(k) = 0.0_dp
             cycle
          end if
-         cofa = 0.0d0
-         cofb = 0.0d0
-         cofc = 0.0d0
-         cofd = 0.0d0
-         cofe = 0.0d0
-         coff = 0.0d0
-         cofg = 0.0d0
+         cofa = 0.0_dp
+         cofb = 0.0_dp
+         cofc = 0.0_dp
+         cofd = 0.0_dp
+         cofe = 0.0_dp
+         coff = 0.0_dp
+         cofg = 0.0_dp
          n = 0
          do LL = 1, nd(k)%lnx
             L = abs(nd(k)%ln(LL))
@@ -96,8 +98,10 @@ contains
                cofv = -ucy(k)
             end if
             cof0 = sqrt(cofx * cofx + cofy * cofy)
-            cofw = 1.0d0 / cof0
-            if (cof0 < 1.0d-6) cofw = 1.0d6
+            cofw = 1.0_dp / cof0
+            if (cof0 < 1.0e-6_dp) then
+               cofw = 1.0e6_dp
+            end if
             cofx = cofw * cofx
             cofy = cofw * cofy
             cofu = cofw * cofu
@@ -111,8 +115,10 @@ contains
             cofg = cofg + cofv * cofy
          end do
          cof0 = cofa * cofc - cofb * cofb
-         spircrv(k) = 0.0d0
-         if (cof0 < 1d-6 .or. n < 2) cycle
+         spircrv(k) = 0.0_dp
+         if (cof0 < 1.0e-6_dp .or. n < 2) then
+            cycle
+         end if
          dudx = (cofd * cofc - cofb * cofe) / cof0
          dudy = (cofa * cofe - cofd * cofb) / cof0
          dvdx = (coff * cofc - cofb * cofg) / cof0
@@ -122,7 +128,8 @@ contains
       end do
 
       do L = lnxi + 1, lnx ! Boundary condtions as Neumann for the curvature
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          spircrv(k1) = spircrv(k2)
       end do
 

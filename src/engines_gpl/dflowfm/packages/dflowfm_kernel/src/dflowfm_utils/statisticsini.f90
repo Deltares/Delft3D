@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,8 +31,10 @@
 !
 
 module m_statisticsini
+
    use m_statisticsnewstep, only: statisticsnewstep
 
+   use precision, only: dp
    implicit none
 
    private
@@ -45,9 +47,9 @@ contains
       use m_statistics, only: cumavedif, cumrmsdif, cumdmxdif, numcum
 
       call statisticsnewstep()
-      cumavedif = 0d0 ! for now only, cum dif with analytic sol
-      cumrmsdif = 0d0 ! for now only, cum dif with analytic sol
-      cumdmxdif = 0d0 ! for now only, cum dif with analytic sol
+      cumavedif = 0.0_dp ! for now only, cum dif with analytic sol
+      cumrmsdif = 0.0_dp ! for now only, cum dif with analytic sol
+      cumdmxdif = 0.0_dp ! for now only, cum dif with analytic sol
       numcum = 0
    end subroutine statisticsini
 

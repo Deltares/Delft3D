@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,8 @@
 !
 !
 module m_comp_roots4
+
+   use precision, only: dp
    implicit none
 contains
 !> solves the quartic equation Ax^4+Bx^3+Cx^2+Dx+E=0
@@ -44,7 +46,7 @@ contains
 
       logical :: Lfail
 
-      real(kind=dp_14_60) :: dtol = 1d-12
+      real(kind=dp_14_60) :: dtol = 1.0e-12_dp
 
       integer :: i, ndegree
 
@@ -64,7 +66,9 @@ contains
 
       do i = 4, 1, -1
          ndegree = i
-         if (abs(coeffs(5 - ndegree)) < dtol) cycle
+         if (abs(coeffs(5 - ndegree)) < dtol) then
+            cycle
+         end if
          call rpoly(coeffs(5 - ndegree:5), ndegree, re(1:ndegree), im(1:ndegree), Lfail)
          exit
 !      if ( .not.Lfail ) exit
@@ -92,7 +96,7 @@ contains
 !    end do
 
       do i = 1, ndegree
-         if (abs(im(i)) < 1d-4) then
+         if (abs(im(i)) < 1.0e-4_dp) then
             x(i) = re(i)
          end if
       end do

@@ -1,5 +1,4 @@
 # Specify the modules to be included
-
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
@@ -79,6 +78,9 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_base.cma
 if(NOT TARGET nefis)
     add_subdirectory(${checkout_src_root}/${nefis_module} nefis)
 endif()
+if(NOT TARGET test_nefis)
+    add_subdirectory(${checkout_src_root}/${test_nefis} test_nefis)
+endif()
 if(NOT TARGET trim2dep)
     add_subdirectory(${checkout_src_root}/${trim2dep} trim2dep)
 endif()
@@ -104,7 +106,6 @@ endif()
 add_subdirectory(${checkout_src_root}/${flow2d3d_data_module} flow2d3d_data)
 add_subdirectory(${checkout_src_root}/${flow2d3d_plugin_culvert_c_module} flow2d3d_plugin_culvert_c)
 add_subdirectory(${checkout_src_root}/${flow2d3d_plugin_user_module} flow2d3d_plugin_user)
-add_subdirectory(${checkout_src_root}/${flow2d3d_io_dol_f_module} flow2d3d_io_dol_f)
 add_subdirectory(${checkout_src_root}/${flow2d3d_io_module} flow2d3d_io)
 add_subdirectory(${checkout_src_root}/${flow2d3d_kernel_dd_f_module} flow2d3d_kernel_dd_f)
 add_subdirectory(${checkout_src_root}/${flow2d3d_kernel_module} flow2d3d_kernel)

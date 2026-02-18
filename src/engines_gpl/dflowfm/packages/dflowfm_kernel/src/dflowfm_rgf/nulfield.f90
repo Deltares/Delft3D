@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,7 +52,7 @@ contains
       do I = MB(3), MB(4)
          do J = NB(3), NB(4)
             X(I, J) = XYMIS
-            Y(I, J) = 0d0
+            Y(I, J) = 0.0_dp
          end do
       end do
       return

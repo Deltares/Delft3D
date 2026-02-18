@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -61,7 +61,7 @@ contains
       integer :: MFILE
 
       integer, parameter :: Ntvarlist = 13
-      integer, dimension(Ntvarlist), parameter :: itvarlist = (/1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17/)
+      integer, dimension(Ntvarlist), parameter :: itvarlist = [1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
 
       real(kind=dp), dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
       integer :: itsol_max
@@ -76,10 +76,10 @@ contains
 #ifdef HAVE_MPI
          call mpi_reduce(t, t_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
          call mpi_reduce(t, t_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
-         t_ave = t_ave / dble(ndomains)
+         t_ave = t_ave / real(ndomains, kind=dp)
          call mpi_reduce(tcpu, tcpu_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
          call mpi_reduce(tcpu, tcpu_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
-         tcpu_ave = tcpu_ave / dble(ndomains)
+         tcpu_ave = tcpu_ave / real(ndomains, kind=dp)
 #endif
       else
          t_ave = t
@@ -94,7 +94,9 @@ contains
          call mpi_reduce(numcgits, itsol_max, 1, MPI_INTEGER, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
 #endif
          jadoit = 0
-         if (my_rank == 0) jadoit = 1
+         if (my_rank == 0) then
+            jadoit = 1
+         end if
       else
          itsol_max = numcgits
          jadoit = 1
@@ -176,10 +178,18 @@ contains
          close (MFILE)
       end if
 
-      if (allocated(t_max)) deallocate (t_max)
-      if (allocated(t_ave)) deallocate (t_ave)
-      if (allocated(tcpu_max)) deallocate (tcpu_max)
-      if (allocated(tcpu_ave)) deallocate (tcpu_ave)
+      if (allocated(t_max)) then
+         deallocate (t_max)
+      end if
+      if (allocated(t_ave)) then
+         deallocate (t_ave)
+      end if
+      if (allocated(tcpu_max)) then
+         deallocate (tcpu_max)
+      end if
+      if (allocated(tcpu_ave)) then
+         deallocate (tcpu_ave)
+      end if
 
    end subroutine print_timings
 

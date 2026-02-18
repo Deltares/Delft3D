@@ -2,7 +2,7 @@
 module m_branch
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU Affero General Public License as
@@ -363,7 +363,7 @@ contains
                   pbr%grd_input(i) = ngrid_input
                end if
             end if
-
+ 
             ! Administer grid points sequences:
             if (iUCandidate <= pbr%uPointsCount) then
                ! When next u-point does not lie between current gridpoint #i and next #i+1,

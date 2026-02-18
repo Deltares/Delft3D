@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_setsigmabnds
 
+   use precision, only: dp
    implicit none
 
    private
@@ -50,23 +51,29 @@ contains
 
       integer :: i, k, ki, kb, kt, itrac, isf
 
-      !   if (layertype == 2) return
+      !   if (layertype == LAYTP_Z) return
 
       if (kmx == 0) then ! 2D, set dummy values
-         if (allocated(sigmabnds)) sigmabnds = 0.5d0
-         if (allocated(sigmabndTM)) sigmabndTM = 0.5d0
+         if (allocated(sigmabnds)) then
+            sigmabnds = 0.5_dp
+         end if
+         if (allocated(sigmabndTM)) then
+            sigmabndTM = 0.5_dp
+         end if
 !      if ( allocated(sigmabndtr) ) sigmabndtr = 0.5d0
-         if (allocated(sigmabndu)) sigmabndu = 0.5d0
+         if (allocated(sigmabndu)) then
+            sigmabndu = 0.5_dp
+         end if
       else ! 3D
          do i = 1, nbnds
             ki = kbnds(2, i)
             call getkbotktop(ki, kb, kt)
             do k = kb, kt
-               sigmabnds(kmx * (i - 1) + k - kb + 1) = (0.5d0 * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
+               sigmabnds(kmx * (i - 1) + k - kb + 1) = (0.5_dp * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
             end do
 !            SPvdP: fill remainder
             do k = kt + 1, kb + kmx - 1
-               sigmabnds(kmx * (i - 1) + k - kb + 1) = 1d0
+               sigmabnds(kmx * (i - 1) + k - kb + 1) = 1.0_dp
             end do
 
             ! if ( zws(kt)-zws(kb-1) .gt. epshs ) then
@@ -85,11 +92,11 @@ contains
             ki = kbndTM(2, i)
             call getkbotktop(ki, kb, kt)
             do k = kb, kt
-               sigmabndTM(kmx * (i - 1) + k - kb + 1) = (0.5d0 * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
+               sigmabndTM(kmx * (i - 1) + k - kb + 1) = (0.5_dp * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
             end do
 !            SPvdP: fill remainder
             do k = kt + 1, kb + kmx - 1
-               sigmabndTM(kmx * (i - 1) + k - kb + 1) = 1d0
+               sigmabndTM(kmx * (i - 1) + k - kb + 1) = 1.0_dp
             end do
 
             ! if ( zws(kt)-zws(kb-1) .gt. epshs ) then
@@ -107,10 +114,10 @@ contains
             ki = kbndu(2, i)
             call getkbotktop(ki, kb, kt)
             do k = kb, kt
-               sigmabndu(kmx * (i - 1) + k - kb + 1) = (0.5d0 * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
+               sigmabndu(kmx * (i - 1) + k - kb + 1) = (0.5_dp * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
             end do
             do k = kt + 1, kb + kmx - 1
-               sigmabndu(kmx * (i - 1) + k - kb + 1) = 1d0
+               sigmabndu(kmx * (i - 1) + k - kb + 1) = 1.0_dp
             end do
          end do
 
@@ -118,11 +125,11 @@ contains
             ki = kbnduxy(2, i)
             call getkbotktop(ki, kb, kt)
             do k = kb, kt
-               sigmabnduxy(kmx * (i - 1) + k - kb + 1) = (0.5d0 * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
+               sigmabnduxy(kmx * (i - 1) + k - kb + 1) = (0.5_dp * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
             end do
 !            SPvdP: fill remainder
             do k = kt + 1, kb + kmx - 1
-               sigmabnduxy(kmx * (i - 1) + k - kb + 1) = 1d0
+               sigmabnduxy(kmx * (i - 1) + k - kb + 1) = 1.0_dp
             end do
 
             ! if ( zws(kt)-zws(kb-1) .gt. epshs ) then
@@ -141,11 +148,11 @@ contains
                ki = bndtr(itrac)%k(2, i)
                call getkbotktop(ki, kb, kt)
                do k = kb, kt
-                  bndtr(itrac)%sigma(kmx * (i - 1) + k - kb + 1) = (0.5d0 * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
+                  bndtr(itrac)%sigma(kmx * (i - 1) + k - kb + 1) = (0.5_dp * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
                end do
 !            SPvdP: fill remainder
                do k = kt + 1, kb + kmx - 1
-                  bndtr(itrac)%sigma(kmx * (i - 1) + k - kb + 1) = 1d0
+                  bndtr(itrac)%sigma(kmx * (i - 1) + k - kb + 1) = 1.0_dp
                end do
             end do
          end do
@@ -154,10 +161,10 @@ contains
             ki = kbndsd(2, i)
             call getkbotktop(ki, kb, kt)
             do k = kb, kt
-               sigmabndsd(kmx * (i - 1) + k - kb + 1) = (0.5d0 * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
+               sigmabndsd(kmx * (i - 1) + k - kb + 1) = (0.5_dp * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
             end do
             do k = kt + 1, kb + kmx - 1
-               sigmabndsd(kmx * (i - 1) + k - kb + 1) = 1d0
+               sigmabndsd(kmx * (i - 1) + k - kb + 1) = 1.0_dp
             end do
          end do
 
@@ -168,11 +175,11 @@ contains
                   ki = bndsf(isf)%k(2, i)
                   call getkbotktop(ki, kb, kt)
                   do k = kb, kt
-                     bndsf(isf)%sigma(kmx * (i - 1) + k - kb + 1) = (0.5d0 * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
+                     bndsf(isf)%sigma(kmx * (i - 1) + k - kb + 1) = (0.5_dp * (zws(k - 1) + zws(k)) - zws(kb - 1)) / max(epshs, (zws(kt) - zws(kb - 1)))
                   end do
                   !            SPvdP: fill remainder
                   do k = kt + 1, kb + kmx - 1
-                     bndsf(isf)%sigma(kmx * (i - 1) + k - kb + 1) = 1d0
+                     bndsf(isf)%sigma(kmx * (i - 1) + k - kb + 1) = 1.0_dp
                   end do
                end do
             end do

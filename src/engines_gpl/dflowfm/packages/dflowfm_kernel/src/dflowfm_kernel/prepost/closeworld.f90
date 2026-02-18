@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,18 +48,20 @@ contains
       integer :: K1, K2, ja
       real(kind=dp) :: xmn, xmx
 
-      if (jsferic == 0) return
+      if (jsferic == 0) then
+         return
+      end if
 
       XMN = minval(XK(1:numk))
       XMX = maxval(XK(1:numk))
 
-      if (abs(XMN) < 1d-10 .and. abs(XMX - 360d0) < 1d-10) then !MAKE YOUR OWN 0-360 CONNECTIONS, only once
+      if (abs(XMN) < 1.0e-10_dp .and. abs(XMX - 360.0_dp) < 1.0e-10_dp) then !MAKE YOUR OWN 0-360 CONNECTIONS, only once
 
          do K1 = 1, NUMK
             if (real(XK(K1)) == 0.0) then
                do K2 = 1, NUMK
                   if (real(XK(K2)) == 360.0) then
-                     if (abs(YK(K1) - YK(K2)) < 1d-10) then
+                     if (abs(YK(K1) - YK(K2)) < 1.0e-10_dp) then
                         call mergenodes(K2, K1, JA)
                         exit
                      end if

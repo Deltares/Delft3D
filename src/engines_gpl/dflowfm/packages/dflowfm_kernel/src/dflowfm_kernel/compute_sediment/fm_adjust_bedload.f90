@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -76,7 +76,7 @@ contains
       real(kind=dp) :: di50, phi, tphi, sbedm, depth, dzdp, dzds, bagnol, alfas
       real(kind=dp) :: delta, dmloc, ftheta, hidexploc, shield, sina, cosa, tnorm, frc, fixf
       real(kind=dp) :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux
-      real(kind=dp) :: eps = 1.0d-6
+      real(kind=dp) :: eps = 1.0e-6_dp
       !
    !! executable statements -------------------------------------------------------
       !
@@ -87,33 +87,41 @@ contains
       !
       ! Make assumptions for friction angle
       !
-      phi = 30d0 / 180d0 * pi
+      phi = 30.0_dp / 180.0_dp * pi
       tphi = tan(phi)
 
       do Lf = 1, Lnx
          ! for cutcell
-         if (wu_mor(Lf) == 0d0) cycle
+         if (wu_mor(Lf) == 0.0_dp) then
+            cycle
+         end if
          !
          ! no bed slope effects on links with bermslope adjustments
          ! fixfac and frac applied in bermslopenudging()
          if (stmpar%morpar%bermslopetransport) then
-            if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) cycle
+            if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) then
+               cycle
+            end if
          end if
          !
-         if (hu(Lf) > 0d0) then
+         if (hu(Lf) > 0.0_dp) then
             k1 = ln(1, Lf)
             k2 = ln(2, Lf)
             call getLbotLtop(Lf, Lb, Lt)
-            if (Lt < Lb) cycle
+            if (Lt < Lb) then
+               cycle
+            end if
             do l = 1, lsedtot
                if (has_bedload(tratyp(l))) then
                   di50 = sedd50(l)
                   di50spatial = .false.
-                  if (di50 < 0.0_fp .and. lsedtot == 1) di50spatial = .true.
+                  if (di50 < 0.0_fp .and. lsedtot == 1) then
+                     di50spatial = .true.
+                  end if
                   !
                   ! Initialize variables
                   !
-                  sbedcorr = 0d0
+                  sbedcorr = 0.0_dp
                   !
                   ! calculate bed gradient parallel and perpendicular to BED LOAD
                   ! TRANSPORT vector. This exists in the links: e_dzdn, e_dzdt.
@@ -179,7 +187,7 @@ contains
                         !
                         ! 4: Formulation according Parker & Andrews (1985)
                         !
-                        ust2avg = (ust2(k1) + ust2(k2)) / 2d0
+                        ust2avg = (ust2(k1) + ust2(k2)) / 2.0_dp
                         if (di50spatial) then
                            di50 = sqrt(sedd50fld(k1) * sedd50fld(k2))
                         end if
@@ -189,7 +197,7 @@ contains
                         if (shield /= 0.0_fp) then
                            if (islope == 3) then
                               dmloc = sqrt(dm(k1) * dm(k2))
-                              if (comparereal(dmloc, 0d0) == 0) then
+                              if (comparereal(dmloc, 0.0_dp) == 0) then
                                  if (kcs(k1) > 0) then
                                     dmloc = dm(k1)
                                  elseif (kcs(k2) > 0) then
@@ -228,7 +236,7 @@ contains
                      end select ! islope
                   end if ! sbedm
                   !               !
-                  if (avalan .and. (.not. duneavalan) .and. wetslope < 9.99d0) then
+                  if (avalan .and. (.not. duneavalan) .and. wetslope < 9.99_dp) then
                      ! Uses a maximum wet slope (keyword WetSlope in the mor file).
                      ! The default for Wetslope is 10.0 (i.e. 10:1, extremely steep, so no avalanching).
                      !
@@ -241,7 +249,7 @@ contains
                      slp = sqrt(e_dzdn(Lf) * e_dzdn(Lf) + e_dzdt(Lf) * e_dzdt(Lf))
 
                      if (slp > wetslope) then
-                        avflux = ba(k1) * ba(k2) / (ba(k1) + ba(k2)) * (bl(k2) - bl(k1) + wetslope * (e_dzdn(Lf) / slp) * Dx(Lf)) / avaltime / max(morfac, 1d0)
+                        avflux = ba(k1) * ba(k2) / (ba(k1) + ba(k2)) * (bl(k2) - bl(k1) + wetslope * (e_dzdn(Lf) / slp) * Dx(Lf)) / avaltime / max(morfac, 1.0_dp)
                         sbncor(Lf) = sbncor(Lf) - avflux * rhosol(l) / wu_mor(Lf)
                      end if
                   end if ! avalan

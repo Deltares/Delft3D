@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -52,9 +52,9 @@ contains
       real(kind=dp) :: rmin
 
       if (JAAUTO > 0) then
-         RMIN = 1.0d30
+         RMIN = 1.0e30_dp
          NODMIN = 0
-         RMAX = -1.0d30
+         RMAX = -1.0e30_dp
          NODMAX = 0
          do K = 1, max(NUMP, nump1d2d)
             if (INVIEW(XZ(K), YZ(K))) then

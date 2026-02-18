@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -88,8 +88,8 @@ contains
       real(kind=dp) :: dt_loc, dt_tot
       real(kind=dp) :: dtolLR_bak, dhmax
       integer :: i, ii, iL, iR, ja3
-      real(kind=dp), parameter :: dtol = 1d-8
-      real(kind=dp), parameter :: dclearance = 5d2
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp), parameter :: dclearance = 5.0e2_dp
       logical :: Lalllines = .false. ! all gridlines (.true.) or not (.false.)
 
       integer, save :: numgrow = 0
@@ -105,20 +105,24 @@ contains
          continue
       end if
 
-      if (j - 1 == 1) numgrow = 0
+      if (j - 1 == 1) then
+         numgrow = 0
+      end if
 
 !   dheight = 1d0
 
       ifrontold = ifront
 
-      dt_tot = 0d0
+      dt_tot = 0.0_dp
       xc1 = xc(:, j - idir)
       yc1 = yc(:, j - idir)
 
 !  compute maximum mesh width and get dtolLR in the proper dimension
-      dhmax = 0d0
+      dhmax = 0.0_dp
       do i = 1, mc - 1
-         if (xc(i, 1) == DMISS .or. xc(i + 1, 1) == DMISS) cycle
+         if (xc(i, 1) == DMISS .or. xc(i + 1, 1) == DMISS) then
+            cycle
+         end if
          dhmax = max(dhmax, dbdistance(xc(i, 1), yc(i, 1), xc(i + 1, 1), yc(i + 1, 1), jsferic, jasfer3D, dmiss))
       end do
       dtolLR = dtolLR * dhmax
@@ -159,7 +163,9 @@ contains
             if (xf(i) /= DMISS) then
                call lnabs(xf(i), yf(i))
             else
-               if (i < nf) call movabs(xf(i + 1), yf(i + 1))
+               if (i < nf) then
+                  call movabs(xf(i + 1), yf(i + 1))
+               end if
             end if
          end do
 !      call qnerror(' ', ' ', ' ')
@@ -171,32 +177,38 @@ contains
 
 !     compute maximum allowable growth time; node merger in grid layer
          istop = 0
-         dt_other = 1d99
-         dtmax_self = 1d99
+         dt_other = 1.0e99_dp
+         dtmax_self = 1.0e99_dp
          call comp_tmax_self(mc, xc1, yc1, vel, dtmax_self)
          dt_loc = min(dt - dt_tot, minval(dtmax_self))
 
          if (jaCheckFrontCollision == 1) then
             !     collision with front
-            dtmax = dt_loc + 1d0 ! a bit larger, for safety
-            dtmax2 = 1d99 ! not used
+            dtmax = dt_loc + 1.0_dp ! a bit larger, for safety
+            dtmax2 = 1.0e99_dp ! not used
             call comp_tmax_other(mc, j, xc1, yc1, vel, nf, xf, yf, velf, idxf, dtmax)
 
             dt_other = minval(dtmax)
          else
-            dt_other = 1d99
+            dt_other = 1.0e99_dp
          end if
 
 !     update new frontmask
          if (dt_other < dt_loc) then
             do i = 1, mc
-               if (dtmax(i) - dt_other <= dtol .and. (dt_loc - dtmax(i)) > dtol) ifrontnew(i) = 0
+               if (dtmax(i) - dt_other <= dtol .and. (dt_loc - dtmax(i)) > dtol) then
+                  ifrontnew(i) = 0
+               end if
             end do
          end if
 
 !     remove isolated points from frontmask
-         if (ifrontnew(1) == 1 .and. ifrontnew(2) == 0) ifrontnew(1) = 0
-         if (ifrontnew(mc) == 1 .and. ifrontnew(mc - 1) == 0) ifrontnew(mc) = 0
+         if (ifrontnew(1) == 1 .and. ifrontnew(2) == 0) then
+            ifrontnew(1) = 0
+         end if
+         if (ifrontnew(mc) == 1 .and. ifrontnew(mc - 1) == 0) then
+            ifrontnew(mc) = 0
+         end if
          where (ifrontnew(2:mc - 1) == 1 .and. ifrontnew(1:mc - 2) == 0 .and. ifrontnew(3:mc) == 0) ifrontnew(2:mc - 1) = 0
 
          write (6, *) numgrow, j, dt_loc, dt_other
@@ -225,7 +237,7 @@ contains
 !     update new grid layer coordinates
          do i = 1, mc
             if (ifrontold(i) == 1 .and. vel(1, i) /= DMISS) then
-               if (vel(1, i) == 0d0 .and. vel(2, i) == 0d0) then
+               if (vel(1, i) == 0.0_dp .and. vel(2, i) == 0.0_dp) then
                   continue
                end if
                xc1(i) = xc1(i) + dt_loc * vel(1, i)
@@ -265,7 +277,9 @@ contains
             if (xf(i) /= dmiss) then
                call lnabs(xf(i), yf(i))
             else
-               if (i < nf) call movabs(xf(i + 1), yf(i + 1))
+               if (i < nf) then
+                  call movabs(xf(i + 1), yf(i + 1))
+               end if
             end if
          end do
 !      end if
@@ -311,7 +325,9 @@ contains
 !    the gridline connecting two layers will cross
       if (.not. Lalllines .and. j > 2) then
          do i = 2, mc - 1
-            if (xc1(i) == DMISS) cycle
+            if (xc1(i) == DMISS) then
+               cycle
+            end if
             if (dcosphi(xc(i, j - 2), yc(i, j - 2), xc(i, j - 1), yc(i, j - 1), xc(i, j - 1), yc(i, j - 1), xc1(i), yc1(i), jsferic, jasfer3D, dxymis) < -0.5) then
                call get_LR(mc, xc1, yc1, i, iL, iR)
                do ii = iL + 1, iR - 1
@@ -338,7 +354,7 @@ contains
       ifront = ifrontnew
 
       if (Lalllines) then
-         dt = min(dt, 5d2)
+         dt = min(dt, 5.0e2_dp)
       end if
 
 !  deallocate

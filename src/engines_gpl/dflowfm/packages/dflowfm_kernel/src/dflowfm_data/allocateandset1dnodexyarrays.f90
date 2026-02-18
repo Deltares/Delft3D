@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -65,7 +65,9 @@ contains
       jausedualnetcell = 0
 
       m = 3 * nd(n)%lnx + 1
-      if (nd(n)%lnx == 1) m = m + 1
+      if (nd(n)%lnx == 1) then
+         m = m + 1
+      end if
 
       allocate (nd(n)%x(m), nd(n)%y(m), stat=ierr)
       call aerr('nd(n)%x(m), nd(n)%y(m)', ierr, m * 2)
@@ -73,14 +75,15 @@ contains
       ! Sort nd%ln in counterclockwise order
       allocate (linnrs(nd(n)%lnx), arglins(nd(n)%lnx), arglin(nd(n)%lnx))
       do L = 1, nd(n)%lnx
-         K1 = LN(1, abs(nd(n)%ln(L))); K2 = LN(2, abs(nd(n)%ln(L)))
+         K1 = LN(1, abs(nd(n)%ln(L)))
+         K2 = LN(2, abs(nd(n)%ln(L)))
          if (K2 == n) then
             K2 = K1
             K1 = n
          end if
          dxt = getdx(xz(k1), yz(k1), xz(k2), yz(k2), jsferic)
          dyt = getdy(xz(k1), yz(k1), xz(k2), yz(k2), jsferic)
-         if (abs(dxt) < 1d-14 .and. abs(dyt) < 1d-14) then
+         if (abs(dxt) < 1.0e-14_dp .and. abs(dyt) < 1.0e-14_dp) then
             if (dyt < 0) then
                phi = -pi / 2
             else
@@ -117,8 +120,9 @@ contains
 
 ! Use last link to prepare connection for 1st link in following loop:
       La = abs(linnrs(nd(n)%lnx))
-      cs = csu(La); sn = snu(La)
-      hwu = 0.5d0 * wu(La)
+      cs = csu(La)
+      sn = snu(La)
+      hwu = 0.5_dp * wu(La)
       if (jsferic == 1) then
          hwu = rd2dg * hwu / ra
       end if
@@ -141,9 +145,11 @@ contains
             cycle ! Only use real 1D links in the flow node contour, no 1d2d links
          end if
 
-         n1 = ln(1, La); n2 = ln(2, La)
-         cs = csu(La); sn = snu(La)
-         hwu = 0.5d0 * wu(La)
+         n1 = ln(1, La)
+         n2 = ln(2, La)
+         cs = csu(La)
+         sn = snu(La)
+         hwu = 0.5_dp * wu(La)
          if (jsferic == 1) then
             hwu = rd2dg * hwu / ra
          end if
@@ -161,7 +167,8 @@ contains
          x2a = x2 + sn * hwu
          y2a = y2 - cs * hwu
 
-         SL = dmiss; SM = dmiss
+         SL = dmiss
+         SM = dmiss
          call dCROSS(x1b, y1b, x2b, y2b, x1a, y1a, x2a, y2a, JACROS, SL, SM, XCR, YCR, CRP)
          !if (SL /= dmiss .and. SM /= dmiss) then
          if (JACROS == 1) then
@@ -209,13 +216,13 @@ contains
          call realloc(xx, m, keepExisting=.false.)
          call realloc(yy, m, keepExisting=.false.)
 
-         call make_dual_cell(k, m, 1d0, xx, yy, num, Wu1Duni)
+         call make_dual_cell(k, m, 1.0_dp, xx, yy, num, Wu1Duni)
 
          call realloc(nd(n)%x, num + 1, keepExisting=.true.)
          call realloc(nd(n)%y, num + 1, keepExisting=.true.)
 
-         nd(n)%x = (/xx(1:num), xx(1)/)
-         nd(n)%y = (/yy(1:num), yy(1)/)
+         nd(n)%x = [xx(1:num), xx(1)]
+         nd(n)%y = [yy(1:num), yy(1)]
       end if
 
       !------------------------------------------------------

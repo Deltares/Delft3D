@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -76,18 +76,20 @@ contains
       if (init == 1) then
          L = Lstart
 !     find first node
-         if (lnn(L) /= 1 .or. kn(1, L) < 1 .or. kn(2, l) < 1) return
+         if (lnn(L) /= 1 .or. kn(1, L) < 1 .or. kn(2, l) < 1) then
+            return
+         end if
          k1 = kn(1, L)
          k2 = kn(2, L)
          if (lanseg_map(k1) >= 1 .and. lanseg_map(k2) < 1 .and. nodemask(k1) > 0 .and. nodemask(k2) > 0) then
 !        allocate
             allocate (nodelist_loc(3))
-            nodelist_loc(1:2) = (/k1, k2/)
+            nodelist_loc(1:2) = [k1, k2]
             numnodes_loc = 2
          else if (lanseg_map(k1) < 1 .and. lanseg_map(k2) >= 1 .and. nodemask(k1) > 0 .and. nodemask(k2) > 0) then
 !        allocate
             allocate (nodelist_loc(3))
-            nodelist_loc(1:2) = (/k2, k1/)
+            nodelist_loc(1:2) = [k2, k1]
             numnodes_loc = 2
          else ! not a valid link
             return
@@ -109,16 +111,22 @@ contains
 !  loop over all connected links and check if a valid path exists
       kklp: do kk = 1, nmk(k)
          L = nod(k)%lin(kk)
-         if (lnn(L) /= 1) cycle kklp ! boundary links only
+         if (lnn(L) /= 1) then
+            cycle kklp ! boundary links only
+         end if
 
          kother = kn(1, L) + kn(2, L) - k
 
 !     check if next node is already in nodelist
          do i = numnodes_loc, 1, -1
-            if (kother == nodelist_loc(i)) cycle kklp
+            if (kother == nodelist_loc(i)) then
+               cycle kklp
+            end if
          end do
 
-         if (nodemask(kother) < 1) cycle kklp ! path stopped
+         if (nodemask(kother) < 1) then
+            cycle kklp ! path stopped
+         end if
 
          if (numnodes_loc >= MAXNODES) then
             call qnerror('connect_boundary_paths: numnodes > MAXNODES', ' ', ' ')
@@ -152,7 +160,7 @@ contains
                   goto 1234
                end if
 
-               if ((j == jstart .and. rL < 0d0) .or. (j == jend - 1 .and. rL > 1d0)) then
+               if ((j == jstart .and. rL < 0.0_dp) .or. (j == jend - 1 .and. rL > 1.0_dp)) then
 !              prevent projection to end points of land boundary segments:
                   if (Ladd_land) then
 !                 add new land boundary segment that connects the two others and project
@@ -245,13 +253,17 @@ contains
 !     add to landboundary
          if (xlan(MXLAN) /= DMISS) then
             MXLAN = MXLAN + 1
-            if (MXLAN > ubound(xlan, 1)) call increaselan(MXLAN + 2)
+            if (MXLAN > ubound(xlan, 1)) then
+               call increaselan(MXLAN + 2)
+            end if
             xlan(MXLAN) = dmiss
             ylan(MXLAN) = dmiss
          end if
          MXLAN = MXLAN + 2
 
-         if (MXLAN > ubound(xlan, 1)) call increaselan(MXLAN)
+         if (MXLAN > ubound(xlan, 1)) then
+            call increaselan(MXLAN)
+         end if
 
          xlan(MXLAN - 1) = xL1
          ylan(MXLAN - 1) = yL1
@@ -262,10 +274,10 @@ contains
          Nlanseg = Nlanseg + 1
 
          if (Nlanseg > ubound(lanseg_startend, 2)) then
-            call realloc(lanseg_startend, (/2, Nlanseg/))
+            call realloc(lanseg_startend, [2, Nlanseg])
          end if
 
-         lanseg_startend(:, Nlanseg) = (/MXLAN - 1, MXLAN/)
+         lanseg_startend(:, Nlanseg) = [MXLAN - 1, MXLAN]
          numseg = Nlanseg
          return
       end subroutine add_land

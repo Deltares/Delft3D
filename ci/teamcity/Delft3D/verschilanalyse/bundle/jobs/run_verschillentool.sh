@@ -10,7 +10,7 @@
 
 set -eo pipefail
 
-if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX ; then
+if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -20,9 +20,9 @@ rm -rf "$VERSCHILLENTOOL_DIR"
 mkdir "$VERSCHILLENTOOL_DIR"
 
 docker login \
-    --username="robot\$delft3d+h7"  \
+    --username="robot\$verschillentool+h7" \
     --password-stdin \
-    containers.deltares.nl < "${HOME}/.harbor/delft3d"
+    containers.deltares.nl <"${HOME}/.harbor/verschillentool"
 
 # Run verschillentool (all configs).
 find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
@@ -30,7 +30,7 @@ find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
     --volume="${VAHOME}/reference:/data/reference:ro" \
     --volume="${PWD}/{}:/data/{}:ro" \
     --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
-    containers.deltares.nl/delft3d/verschillentool:release_v1.0.2 --config "/data/{}" ';'
+    containers.deltares.nl/verschillentool/verschillentool:release_v1.1.1 --config "/data/{}" ';'
 
 # Use the last part of the REFERENCE_PREFIX as the REFERENCE_TAG
 REFERENCE_TAG="${REFERENCE_PREFIX##*/}"
@@ -45,6 +45,7 @@ popd
 # Upload verschillen archive to MinIO.
 docker run --rm \
     --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VERSCHILLENTOOL_DIR}:/data:ro" \
-    docker.io/amazon/aws-cli:2.22.7 \
+    -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" \
+    docker.io/amazon/aws-cli:2.32.14 \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
     s3 sync --delete --no-progress /data "${BUCKET}/${CURRENT_PREFIX}/verschillentool/${REFERENCE_TAG}"

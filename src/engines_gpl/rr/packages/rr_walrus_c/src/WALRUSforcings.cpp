@@ -1,6 +1,6 @@
 //----- AGPL ---------------------------------------------------------------------
 //                                                                               
-//  Copyright (C)  Stichting Deltares, 2011-2025.                                
+//  Copyright (C)  Stichting Deltares, 2011-2026.                                
 //                                                                               
 //  This program is free software: you can redistribute it and/or modify         
 //  it under the terms of the GNU Affero General Public License as               
@@ -71,8 +71,8 @@ void WALRUS::set_I(enum WALRUS_FORCING fc, double intensity) {
   }
 }
 
-void WALRUS::set_seq_Cbyname(const char* name, const vector<double> times,
-                             const vector<double> fc_vec) {
+void WALRUS::set_seq_Cbyname(const char* name, const std::vector<double> times,
+                             const std::vector<double> fc_vec) {
         double timestepsize = 3600. ;
         if(strcmp(name,"fc_P")==0) {
                 set_seq_C(fc_P, times, fc_vec, timestepsize);
@@ -88,16 +88,16 @@ void WALRUS::set_seq_Cbyname(const char* name, const vector<double> times,
         }
 }
 
-void WALRUS::set_seq_C(unsigned int idnum, const vector<double> times,
-                        const vector<double> fc_vec, double timestepsize) {
+void WALRUS::set_seq_C(unsigned int idnum, const std::vector<double> times,
+                        const std::vector<double> fc_vec, double timestepsize) {
      set_seq_C((WALRUS_FORCING)idnum, times, fc_vec, timestepsize);
 }
 
-void WALRUS::set_seq_C(enum WALRUS_FORCING fc, const vector<double> times,
-                  const vector<double> fcvec, double timestepsize) {
+void WALRUS::set_seq_C(enum WALRUS_FORCING fc, const std::vector<double> times,
+                  const std::vector<double> fcvec, double timestepsize) {
   // first number corresponds to period between times[1] and times[0]
   unsigned int N = times.size();
-  vector<double> ctimes = times;
+  std::vector<double> ctimes = times;
   if (N == 1)
   {
      ctimes.push_back(ctimes[N - 1] + timestepsize);
@@ -106,7 +106,7 @@ void WALRUS::set_seq_C(enum WALRUS_FORCING fc, const vector<double> times,
   {
      ctimes.push_back(2 * ctimes[N - 1] - ctimes[N - 2]);
   }
-  vector<double> cfcvec = fcvec;
+  std::vector<double> cfcvec = fcvec;
   cfcvec.insert(cfcvec.begin(), 0);
   for (unsigned int i = 1; i < N + 1; i++) {
     cfcvec[i] += cfcvec[i - 1];
@@ -132,7 +132,7 @@ void WALRUS::set_seq_C(enum WALRUS_FORCING fc, const vector<double> times,
 }
 
 void WALRUS::set_seq_Ibyname(const char* name, double tstart, double timestep,
-                             const vector<double> fc_vec) {
+                             const std::vector<double> fc_vec) {
         if(strcmp(name,"fc_P")==0) {
                 set_seq_I(fc_P, tstart, timestep, fc_vec);
         } else if(strcmp(name,"fc_ETpot")==0) {
@@ -147,14 +147,14 @@ void WALRUS::set_seq_Ibyname(const char* name, double tstart, double timestep,
         }
 }
 void WALRUS::set_seq_I(unsigned int idnum, double tstart, double timestep,
-                        const vector<double> fc_vec) {
+                        const std::vector<double> fc_vec) {
      set_seq_I((WALRUS_FORCING)idnum, tstart, timestep, fc_vec);
 }
 
 void WALRUS::set_seq_I(enum WALRUS_FORCING fc, double tstart, double timestep,
-                  const vector<double> fcvec) {
-  vector<double> times;
-  vector<double> fccum;
+                  const std::vector<double> fcvec) {
+  std::vector<double> times;
+  std::vector<double> fccum;
   times.push_back(tstart);
   fccum.push_back(fcvec[0] / 3600); // time in s, fc in mm/h
   for (unsigned int i = 1; i < fcvec.size(); i++) {
@@ -242,7 +242,7 @@ void WALRUS::set_hSmin(double value) {
   this->hSmin = value;
   this->hSminfromseries = false;
 }
-void WALRUS::set_hSminseries(vector<double> times, vector<double> hSmin) {
+void WALRUS::set_hSminseries(std::vector<double> times, std::vector<double> hSmin) {
   this->hSminfun = new approxfun(times, hSmin);
   this->hSminfromseries = true;
 }

@@ -1,6 +1,6 @@
 //----- AGPL ---------------------------------------------------------------------
 //                                                                               
-//  Copyright (C)  Stichting Deltares, 2011-2025.                                
+//  Copyright (C)  Stichting Deltares, 2011-2026.                                
 //                                                                               
 //  This program is free software: you can redistribute it and/or modify         
 //  it under the terms of the GNU Affero General Public License as               
@@ -29,14 +29,7 @@
 #include "WALRUS.hh"
 #include <cmath>
 
-//#ifdef _WIN32
-#include<algorithm>
-#define max(a,b) std::max(a,b)
-#define min(a,b) std::min(a,b)
-//#endif
-
-
-using namespace std;
+#include <algorithm>
 
 /*! @file
  * @brief Implementation of the system functions
@@ -44,13 +37,13 @@ using namespace std;
 
 double WALRUS::W_dV(double dV) {
   if (W_dV_analytical) {
-    return cos(max(min(dV, cW), 0.0) * 3.1415926535897 / cW) / 2 + 0.5;
+    return cos(std::max(std::min(dV, cW), 0.0) * 3.1415926535897 / cW) / 2 + 0.5;
   } else {
     return (*(W_dV_table))(dV);
   }
 }
-void WALRUS::set_W_dV_bytable(const vector<double> &dV,
-                              const vector<double> &W) {
+void WALRUS::set_W_dV_bytable(const std::vector<double> &dV,
+                              const std::vector<double> &W) {
   W_dV_analytical = false;
   W_dV_table = new approxfun(dV, W);
 }
@@ -71,8 +64,8 @@ double WALRUS::dVeq_dG(double dG) {
   }
 }
 
-void WALRUS::set_dVeq_dG_bytable(const vector<double> &dG,
-                                 const vector<double> &dVeq) {
+void WALRUS::set_dVeq_dG_bytable(const std::vector<double> &dG,
+                                 const std::vector<double> &dVeq) {
   dVeq_dG_analytical = false;
   dVeq_dG_table = new approxfun(dG, dVeq);
 }
@@ -86,8 +79,8 @@ double WALRUS::beta_dV(double dV) {
   }
 }
 
-void WALRUS::set_beta_dV_bytable(const vector<double> &dV,
-                                 const vector<double> &beta) {
+void WALRUS::set_beta_dV_bytable(const std::vector<double> &dV,
+                                 const std::vector<double> &beta) {
   beta_dV_analytical = false;
   beta_dV_table = new approxfun(dV, beta);
 }
@@ -135,8 +128,8 @@ double WALRUS::hS_Q(double Q) {
   }
 }
 
-void WALRUS::set_Q_hS_bytable(const vector<double> &hS,
-                              const vector<double> &Q) {
+void WALRUS::set_Q_hS_bytable(const std::vector<double> &hS,
+                              const std::vector<double> &Q) {
   Q_hS_analytical = false;
   Q_hS_table = new approxfun(hS, Q);
   hS_Q_table = new approxfun(Q, hS);

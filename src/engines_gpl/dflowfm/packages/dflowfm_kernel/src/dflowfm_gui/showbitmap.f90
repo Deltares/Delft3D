@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -71,7 +71,9 @@ contains
       XX = 2
       YY = 2
       call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
-      if (INI == -1) return
+      if (INI == -1) then
+         return
+      end if
       INI = 0
 
       XD = (XP(2) - XP(1)) / (XB(2) - XB(1))
@@ -88,8 +90,8 @@ contains
          NKO = -1
          do I = 1, MXP
             K = (NXP - J) * MXP + I
-            XX = dble(I - 1)
-            YY = dble(J - 1)
+            XX = real(I - 1, kind=dp)
+            YY = real(J - 1, kind=dp)
             call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
 
             if (jainterpolate == 1) then

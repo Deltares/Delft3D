@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,10 +45,10 @@ module m_delete_drypoints_from_netgeom
 
 contains
 
-   subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
+   subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside, update_blcell)
       use precision, only: dp
       use m_cutcell_list, only: cutcell_list
-      use m_samples_to_cellmask2
+      use m_samples_to_cellmask
       use m_confrm
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_sferic, only: jsferic
@@ -66,6 +66,7 @@ contains
       character(*), intent(inout) :: dryptsfilelist !< List of file names to process for deleting dry parts. (Supported formats: .xyz, .pol)
       integer, intent(in) :: jaconfirm !< Whether (1) or not (0) to interactively prompt for inclusion of each individual file from the list.
       integer, intent(in) :: jinside !< Override the inside check of polygon files. 0: use ZPL polygon (no override), 1: Always delete inside polygon, -1: always delete outside polygon.
+      logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
       character(len=128) :: ext
 
       character(len=255) :: dryptsfile
@@ -162,13 +163,13 @@ contains
                   call oldfil(minp, dryptsfile)
                   call savesam()
                   call reasam(minp, 0)
-                  call samples_to_cellmask2()
+                  call samples_to_cellmask()
                   call delsam(0)
 
                   ierror = 0
                end if
 
-               call remove_masked_netcells()
+               call remove_masked_netcells(update_blcell)
 
             end if
          else

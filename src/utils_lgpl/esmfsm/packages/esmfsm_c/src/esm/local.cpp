@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -146,7 +146,7 @@ ESM_Local_Alloc (
     int thid,
     int ci,
     int contextid,
-    char * name,
+    const char * name,
     size_t size
     ) {
 
@@ -225,7 +225,7 @@ ESM_Local_Free (
     int thid,
     int ci,
     int contextid,
-    char * name
+    const char * name
     ) {
 
     if (ci == -1) {

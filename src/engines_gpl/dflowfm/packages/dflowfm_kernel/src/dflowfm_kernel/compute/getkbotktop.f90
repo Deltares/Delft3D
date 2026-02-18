@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,9 +38,11 @@ contains
       integer, intent(out) :: kb, kt
 
       if (kmx == 0) then
-         kb = n; kt = n
+         kb = n
+         kt = n
       else
-         kb = kbot(n); kt = ktop(n)
+         kb = kbot(n)
+         kt = ktop(n)
       end if
    end subroutine getkbotktop
 end module m_get_kbot_ktop

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -28,8 +28,10 @@
 !-------------------------------------------------------------------------------
 
 module m_structure_parameters
+
    use precision_basics, only: dp
 
+   use precision, only: dp
    implicit none
    private
    public :: structure_parameters
@@ -43,7 +45,7 @@ contains
       use m_1d_structures, only: get_crest_level, get_culvert_state, get_gle, get_opening_height, getpumpcapacity, getpumpstage, getpumpreductionfactor
       use m_GlobalParameters, only: st_pump, st_weir, st_unset, st_orifice, st_bridge, st_culvert, st_uni_weir, st_general_st, st_compound, st_longculvert
       use m_partitioninfo, only: jampi, reducebuf, nreducebuf, my_rank, idomain, reduce_crs
-      use m_longculverts, only: nlongculverts, longculverts, newculverts
+      use m_longculverts_data, only: nlongculverts, longculverts
       use m_dambreak_breach, only: fill_dambreak_values, n_db_signals
       use m_link_ghostdata, only: link_ghostdata
       use m_1d_structures, only: t_structure
@@ -65,11 +67,14 @@ contains
                          + network%sts%numCulverts * NUMVALS_CULVERT + network%sts%numBridges * NUMVALS_BRIDGE + network%cmps%count * NUMVALS_CMPSTRU &
                          + nlongculverts * NUMVALS_LONGCULVERT
             allocate (reducebuf(nreducebuf), stat=ierr)
-            call aerr('reducebuf  ( nreducebuf )', ierr, nreducebuf); reducebuf = 0.0_dp
+            call aerr('reducebuf  ( nreducebuf )', ierr, nreducebuf)
+            reducebuf = 0.0_dp
          end if
       end if
 
-      if (ti_his <= 0) return
+      if (ti_his <= 0) then
+         return
+      end if
       ! in order to compute the cumulative discharge, we have to compute the time step (see update_values_on_cross_sections)
       if (timprev == -1.0_dp) then
          timstep = 0.0_dp
@@ -94,7 +99,9 @@ contains
                La = abs(Lf)
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                  if (jaghost == 1) cycle
+                  if (jaghost == 1) then
+                     cycle
+                  end if
                end if
                dir = 1.0_dp
                if (Ln(1, La) /= kpump(1, L)) then
@@ -115,7 +122,9 @@ contains
                La = abs(Lf)
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                  if (jaghost == 1) cycle
+                  if (jaghost == 1) then
+                     cycle
+                  end if
                end if
                dir = 1.0_dp
                ku = ln(1, La)
@@ -153,7 +162,9 @@ contains
                La = abs(Lf)
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                  if (jaghost == 1) cycle
+                  if (jaghost == 1) then
+                     cycle
+                  end if
                end if
                dir = 1.0_dp
                ku = ln(1, La)
@@ -192,7 +203,9 @@ contains
                La = abs(Lf)
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                  if (jaghost == 1) cycle
+                  if (jaghost == 1) then
+                     cycle
+                  end if
                end if
                dir = 1.0_dp
                ku = ln(1, La)
@@ -231,9 +244,11 @@ contains
                      La = abs(pstru%linknumbers(i))
                      if (jampi > 0) then
                         call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                        if (jaghost == 1) cycle
+                        if (jaghost == 1) then
+                           cycle
+                        end if
                      end if
-                     dir = sign(1.0_dp, dble(pstru%linknumbers(i)))
+                     dir = sign(1.0_dp, real(pstru%linknumbers(i), kind=dp))
                      if (dir > 0) then
                         ku = ln(1, La)
                         kd = ln(2, La)
@@ -306,7 +321,9 @@ contains
                   La = abs(Lf)
                   if (jampi > 0) then
                      call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                     if (jaghost == 1) cycle
+                     if (jaghost == 1) then
+                        cycle
+                     end if
                   end if
                   dir = 1.0_dp
                   ku = ln(1, La)
@@ -335,7 +352,10 @@ contains
                      valgategen(IVAL_HEAD, n) = valgategen(IVAL_HEAD, n) + (s1(ku) - s1(kd)) * wu(L)
                   end if
 
-                  k = kcgen(1, L); if (q1(La) < 0.0_dp) k = kcgen(2, L)
+                  k = kcgen(1, L)
+                  if (q1(La) < 0.0_dp) then
+                     k = kcgen(2, L)
+                  end if
                   if (hs(k) > epshs) then
                      valgategen(IVAL_GATE_WIDTHWET, n) = valgategen(IVAL_GATE_WIDTHWET, n) + wu(La)
                      valgategen(IVAL_GATE_FLOWH, n) = valgategen(IVAL_GATE_FLOWH, n) + s1(k) * wu(La)
@@ -386,9 +406,11 @@ contains
                   La = abs(Lf)
                   if (jampi > 0) then
                      call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                     if (jaghost == 1) cycle
+                     if (jaghost == 1) then
+                        cycle
+                     end if
                   end if
-                  dir = sign(1.0_dp, dble(Lf))
+                  dir = sign(1.0_dp, real(Lf, kind=dp))
                   call fill_valstruct_perlink(valweirgen(:, n), La, dir, ST_WEIR, istru, L)
                end do
                if (nlinks > 0 .and. jaghost == 0) then ! This assumes that each weir has only 1 link
@@ -405,7 +427,9 @@ contains
                   La = abs(Lf)
                   if (jampi > 0) then
                      call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                     if (jaghost == 1) cycle
+                     if (jaghost == 1) then
+                        cycle
+                     end if
                   end if
                   dir = 1.0_dp
                   if (Ln(1, La) /= kcgen(1, L)) then
@@ -432,9 +456,11 @@ contains
                La = abs(Lf)
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                  if (jaghost == 1) cycle
+                  if (jaghost == 1) then
+                     cycle
+                  end if
                end if
-               dir = sign(1.0_dp, dble(Lf))
+               dir = sign(1.0_dp, real(Lf, kind=dp))
                call fill_valstruct_perlink(valorifgen(:, n), La, dir, ST_ORIFICE, istru, L)
             end do
             if (nlinks > 0 .and. jaghost == 0) then ! This assumes that each orifice has only 1 link
@@ -457,9 +483,11 @@ contains
                La = abs(Lf)
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                  if (jaghost == 1) cycle
+                  if (jaghost == 1) then
+                     cycle
+                  end if
                end if
-               dir = sign(1.0_dp, dble(Lf))
+               dir = sign(1.0_dp, real(Lf, kind=dp))
                call fill_valstruct_perlink(valbridge(:, n), La, dir, ST_BRIDGE, istru, L)
             end do
          end do
@@ -480,15 +508,17 @@ contains
                La = abs(Lf)
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                  if (jaghost == 1) cycle
+                  if (jaghost == 1) then
+                     cycle
+                  end if
                end if
-               dir = sign(1.0_dp, dble(Lf))
+               dir = sign(1.0_dp, real(Lf, kind=dp))
                call fill_valstruct_perlink(valculvert(:, n), La, dir, ST_CULVERT, istru, L)
             end do
 
             if (nLinks > 0 .and. jaghost == 0) then ! This assumes that each culvert has only 1 link
                valculvert(IVAL_CL_CRESTL, n) = get_crest_level(pstru)
-               valculvert(IVAL_CL_STATE, n) = dble(get_culvert_state(pstru))
+               valculvert(IVAL_CL_STATE, n) = real(get_culvert_state(pstru), kind=dp)
                valculvert(IVAL_CL_EDGEL, n) = get_gle(pstru)
                valculvert(IVAL_CL_OPENH, n) = get_opening_height(pstru)
             end if
@@ -510,9 +540,11 @@ contains
                La = abs(Lf)
                if (jampi > 0) then
                   call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                  if (jaghost == 1) cycle
+                  if (jaghost == 1) then
+                     cycle
+                  end if
                end if
-               dir = sign(1.0_dp, dble(Lf))
+               dir = sign(1.0_dp, real(Lf, kind=dp))
                call fill_valstruct_perlink(valuniweir(:, n), La, dir, ST_UNI_WEIR, istru, L)
             end do
             if (nLinks > 0 .and. jaghost == 0) then ! This assumes that each universal weir has only 1 link
@@ -543,9 +575,11 @@ contains
                   La = abs(Lf)
                   if (jampi > 0) then
                      call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                     if (jaghost == 1) cycle
+                     if (jaghost == 1) then
+                        cycle
+                     end if
                   end if
-                  dir = sign(1.0_dp, dble(Lf))
+                  dir = sign(1.0_dp, real(Lf, kind=dp))
                   call fill_valstruct_perlink(valgenstru(:, n), La, dir, ST_GENERAL_ST, istru, L)
                end do
                if (nlinks > 0 .and. jaghost == 0) then ! This assumes that each general structure has only 1 link
@@ -562,7 +596,9 @@ contains
                   La = abs(Lf)
                   if (jampi > 0) then
                      call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                     if (jaghost == 1) cycle
+                     if (jaghost == 1) then
+                        cycle
+                     end if
                   end if
                   dir = 1.0_dp
                   if (Ln(1, La) /= kcgen(1, L)) then
@@ -595,9 +631,11 @@ contains
                   La = abs(Lf)
                   if (jampi > 0) then
                      call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                     if (jaghost == 1) cycle
+                     if (jaghost == 1) then
+                        cycle
+                     end if
                   end if
-                  dir = sign(1.0_dp, dble(Lf))
+                  dir = sign(1.0_dp, real(Lf, kind=dp))
                   call fill_valstruct_perlink(valcmpstru(:, n), La, dir, ST_COMPOUND, 0, L)
                end do
             end do
@@ -609,20 +647,20 @@ contains
       if (allocated(vallongculvert)) then
          do n = 1, nlongculverts
             vallongculvert(1:NUMVALS_LONGCULVERT, n) = 0.0_dp
-            if (longculverts(n)%numlinks > 0) then ! This long culvert is valid on the current domain/subdomain
-               ! fill in for the representative flow ilnk
-               if (newculverts) then
-                  La = abs(longculverts(n)%flowlinks(2)) ! We use the 2st link as a representative flow link
-                  dir = sign(1.0_dp, dble(longculverts(n)%flowlinks(2)))
-               else
-                  La = abs(longculverts(n)%flowlinks(1))
-                  dir = sign(1.0_dp, dble(longculverts(n)%flowlinks(1)))
-               end if
-
+            if (longculverts(n)%numlinks > 0) then ! True even if on other domain
+               La = abs(longculverts(n)%flowlinks(1))
                if (La > 0) then
+                  ! fill in for the representative flow ilnk
+                  if (longculverts(n)%flownode_up == ln(1, La)) then
+                     dir = 1.0_dp
+                  else
+                     dir = -1.0_dp
+                  end if
                   if (jampi > 0) then
                      call link_ghostdata(my_rank, idomain(ln(1, La)), idomain(ln(2, La)), jaghost, idmn_ghost)
-                     if (jaghost == 1) cycle
+                     if (jaghost == 1) then
+                        cycle
+                     end if
                   end if
 
                   call fill_valstruct_perlink(vallongculvert(:, n), La, dir, ST_LONGCULVERT, n, 0)

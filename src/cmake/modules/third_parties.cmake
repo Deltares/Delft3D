@@ -17,6 +17,9 @@ if(WIN32)
     set(petsc_module ${third_party_open_path}/petsc/${cmake_directory})
 endif(WIN32)
 
+# precice
+set(precice_module ${third_party_open_path}/precice)
+
 # triangle_c
 set(triangle_c_module ${third_party_open_path}/triangle/${cmake_directory})
 
@@ -62,11 +65,11 @@ set(zlib_module ${third_party_open_path}/zlib)
 set(curl_module ${third_party_open_path}/curl)
 set(hdf5_module ${third_party_open_path}/hdf5)
 set(microsoftredist_module ${third_party_open_path}/microsoftredist)
-set(googletest_module ${third_party_open_path}/googletest)
-set(f90tw_module ${third_party_open_path}/f90tw)
+
+# getopt
+set(getopt_module ${third_party_open_path}/getopt/${cmake_directory})
 
 if(WIN32)
-    set(Tecplot_module ${third_party_open_path}/Tecplot)
     set(pthreads_module ${third_party_open_path}/pthreads)
     set(expat_module ${third_party_open_path}/expat)
 endif(WIN32)

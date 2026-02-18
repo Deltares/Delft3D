@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -122,7 +122,9 @@ contains
                x4 = xpl(j + 1)
                y4 = ypl(j + 1)
 
-               if (x3 == DMISS .or. x4 == DMISS) cycle
+               if (x3 == DMISS .or. x4 == DMISS) then
+                  cycle
+               end if
 
                dlinklength = dbdistance(x3, y3, x4, y4, jsferic, jasfer3D, dmiss)
 
@@ -155,28 +157,38 @@ contains
 
 !     find jstart and jend
          jstart = jend
-         if (xlan(jstart + 1) == DMISS) jstart = jstart + 1
-         if (jstart >= MXLAN) exit
+         if (xlan(jstart + 1) == DMISS) then
+            jstart = jstart + 1
+         end if
+         if (jstart >= MXLAN) then
+            exit
+         end if
          do while (xlan(jstart) == DMISS)
             jstart = jstart + 1
-            if (jstart == MXLAN) exit
+            if (jstart == MXLAN) then
+               exit
+            end if
          end do
-         if (xlan(jstart) == DMISS) exit
+         if (xlan(jstart) == DMISS) then
+            exit
+         end if
 
          i = lanmask(jstart)
          jend = jstart + 1
          if (jend < MXLAN) then
             do while ((xlan(jend + 1) /= DMISS .and. lanmask(jend) == i))
                jend = jend + 1
-               if (jend == MXLAN) exit
+               if (jend == MXLAN) then
+                  exit
+               end if
             end do
          end if
 
 !     only store landboundary segments that are inside the selecting polygon
          if (lanmask(jstart) /= 0) then
             !     allocate and administer
-            call realloc(lanseg_startend, (/2, Nlanseg/))
-            lanseg_startend(:, Nlanseg) = (/jstart, jend/)
+            call realloc(lanseg_startend, [2, Nlanseg])
+            lanseg_startend(:, Nlanseg) = [jstart, jend]
          else
             Nlanseg = Nlanseg - 1
          end if
@@ -203,7 +215,7 @@ contains
 !            call darean(xlan(jstart:jend), ylan(jstart:jend), jend-jstart+1, darea, dlength, dlenmx)
 !            if ( dbdistance(xlan(jstart),ylan(jstart),xlan(jend),ylan(jend)).lt.0.1d0*dlength ) then
                Nnew = Nnew + 1
-               call realloc(lanseg_startend, (/2, Nnew/))
+               call realloc(lanseg_startend, [2, Nnew])
                jbreak = jstart + (jend - jstart) / 2
                lanseg_startend(2, i) = jbreak
                lanseg_startend(1, Nnew) = jbreak

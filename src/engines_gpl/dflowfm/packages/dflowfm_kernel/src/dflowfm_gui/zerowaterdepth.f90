@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_zerowaterdepth
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -63,8 +64,8 @@ contains
       implicit none
       s0 = bl
       s1 = bl
-      u0 = 0d0
-      u1 = 0d0
+      u0 = 0.0_dp
+      u1 = 0.0_dp
    end subroutine zerowaterdepth
 
 end module m_zerowaterdepth

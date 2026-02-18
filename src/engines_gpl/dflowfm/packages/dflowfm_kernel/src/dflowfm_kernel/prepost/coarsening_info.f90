@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -61,7 +61,7 @@ contains
       real(kind=dp) :: area, area_tot, Darea
       real(kind=dp) :: funct
 
-      real(kind=dp) :: area_opt = 1d5
+      real(kind=dp) :: area_opt = 1.0e5_dp
 
       integer :: kk
 
@@ -69,10 +69,12 @@ contains
 
       call find_surrounding_cells(k, NMAX, ndirect, nindirect, kdirect, kindirect, kne)
 
-      if (ndirect < 1 .or. nindirect < 1) return
+      if (ndirect < 1 .or. nindirect < 1) then
+         return
+      end if
 
-      area_tot = 0d0
-      funct = 0d0
+      area_tot = 0.0_dp
+      funct = 0.0_dp
 
       call getcellsurface(k, area, xc, yc)
       area_tot = area_tot + area
@@ -84,7 +86,7 @@ contains
       end do
 
 !  compute the area increase of the indirectly connected cells
-      Darea = area_tot / dble(nindirect)
+      Darea = area_tot / real(nindirect, kind=dp)
 
 !  compute the change in the functional
       do kk = 1, nindirect
@@ -95,7 +97,9 @@ contains
       end do
 
       coarsening_info = -funct
-      if (coarsening_info <= 0d0) coarsening_info = DMISS
+      if (coarsening_info <= 0.0_dp) then
+         coarsening_info = DMISS
+      end if
 
       return
    end function

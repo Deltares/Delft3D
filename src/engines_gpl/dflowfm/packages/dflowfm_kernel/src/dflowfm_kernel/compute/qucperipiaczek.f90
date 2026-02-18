@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,7 +64,8 @@ contains
 
       integer :: nn12
 
-      ai = 0d0; ae = 0d0
+      ai = 0.0_dp
+      ae = 0.0_dp
       cs = csu(L)
       sn = snu(L)
 
@@ -73,12 +74,12 @@ contains
          LLL = nd(k12)%ln(LL)
          LLLL = abs(LLL)
 
-         if (qa(LLLL) /= 0d0) then !
+         if (qa(LLLL) /= 0.0_dp) then !
 
             ja = 0
             if (iad == 3) then
                ja = 1 ! all in odd schemes
-            else if (LLL * qa(LLLL) > 0d0) then
+            else if (LLL * qa(LLLL) > 0.0_dp) then
                ja = 1 ! incoming only otherwise
             end if
 
@@ -86,7 +87,10 @@ contains
                if (jasfer3D == 0) then
                   ucin = ucxu(LLLL) * cs + ucyu(LLLL) * sn
                else
-                  nn12 = 1; if (LLL > 0) nn12 = 2
+                  nn12 = 1
+                  if (LLL > 0) then
+                     nn12 = 2
+                  end if
                   ucinx = lin2nodx(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
                   uciny = lin2nody(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
                   ucin = nod2linx(L, n12, ucinx, uciny) * cs + nod2liny(L, n12, ucinx, uciny) * sn

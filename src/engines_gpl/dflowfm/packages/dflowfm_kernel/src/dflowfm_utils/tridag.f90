@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ contains
       use precision, only: dp
 
       integer :: n, j
-      real(kind=dp) :: a(n), b(n), c(n), d(n), e(n), u(n), bet, accur = 1d-15
+      real(kind=dp) :: a(n), b(n), c(n), d(n), e(n), u(n), bet, accur = 1.0e-15_dp
 
       bet = b(1)
       u(1) = d(1) / bet

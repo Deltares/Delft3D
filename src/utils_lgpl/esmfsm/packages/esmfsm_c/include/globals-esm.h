@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -153,7 +153,7 @@ InitProcess (
 void
 SetError (
     int     thid,
-    char *  message,
+    const char *  message,
     ...
     );
 
@@ -179,7 +179,7 @@ ESM_Local_Alloc (
     int thid,
     int ci,
     int contextid,
-    char * name,
+    const char * name,
     size_t size
     );
 
@@ -188,7 +188,7 @@ ESM_Local_Free (
     int thid,
     int ci,
     int contextid,
-    char * name
+    const char * name
     );
 
 int
@@ -217,7 +217,7 @@ ESM_Shared_Alloc (
     int thid,
     int ci,
     int contextid,
-    char * name,
+    const char * name,
     size_t size
     );
 
@@ -226,7 +226,7 @@ ESM_Shared_Free (
     int thid,
     int ci,
     int contextid,
-    char * name
+    const char * name
     );
 
 int

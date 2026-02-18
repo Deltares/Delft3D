@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -110,7 +110,9 @@ contains
       integer, allocatable :: crossed_links(:), polygon_nodes(:)
       real(kind=dp), allocatable :: polygon_segment_weights(:)
 
-      if (ndx < 1) return
+      if (ndx < 1) then
+         return
+      end if
 
       if (npl > 1) then
          if (japol == 0) then
@@ -119,7 +121,8 @@ contains
             call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK_1D_DUAL, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
             do LL = 1, intersection_count
                L = crossed_links(LL)
-               kc(ln(1, L)) = 1; kc(ln(2, L)) = 1
+               kc(ln(1, L)) = 1
+               kc(ln(2, L)) = 1
             end do
             deallocate (crossed_links, polygon_nodes, polygon_segment_weights)
             japol = 1
@@ -144,17 +147,27 @@ contains
       zmx = -zmn
       do k = 1, ndx
          if (japol == 1) then
-            if (kc(k) == 0) cycle
+            if (kc(k) == 0) then
+               cycle
+            end if
          end if
 
          xx = xz(k)
          yy = yz(k)
          if (inview(xx, yy)) then
-            if (xz(k) < xmn) xmn = xz(k)
-            if (xz(k) > xmx) xmx = xz(k)
+            if (xz(k) < xmn) then
+               xmn = xz(k)
+            end if
+            if (xz(k) > xmx) then
+               xmx = xz(k)
+            end if
 
-            if (yz(k) < ymn) ymn = yz(k)
-            if (yz(k) > ymx) ymx = yz(k)
+            if (yz(k) < ymn) then
+               ymn = yz(k)
+            end if
+            if (yz(k) > ymx) then
+               ymx = yz(k)
+            end if
 
             bot = bl(k)
 
@@ -167,7 +180,7 @@ contains
       end do
 
       if (jased == 1 .or. jased == 2 .and. zminrai == dmiss) then
-         dlay = 0d0
+         dlay = 0.0_dp
          if (jaceneqtr == 1) then
             mx = ndxi
          else
@@ -195,26 +208,26 @@ contains
       end if
 
       if (zmn == zmx) then
-         zmn = zmn - 1d-3
-         zmx = zmx + 1d-3
+         zmn = zmn - 1.0e-3_dp
+         zmx = zmx + 1.0e-3_dp
       else
-         zmn = zmn - 1d-2 * (zmx - zmn)
+         zmn = zmn - 1.0e-2_dp * (zmx - zmn)
       end if
 
       if (xmn == xmx) then
-         xmn = xmn - 1d-3
-         xmx = xmx + 1d-3
+         xmn = xmn - 1.0e-3_dp
+         xmx = xmx + 1.0e-3_dp
       end if
 
       if (nsiz == 1) then
-         zmx = zmn + 1.2d0 * (zmx - zmn)
+         zmx = zmn + 1.2_dp * (zmx - zmn)
       else
-         zmx = zmn + 1.5d0 * (zmx - zmn)
+         zmx = zmn + 1.5_dp * (zmx - zmn)
       end if
 
       if (zminrai /= -999) then
          zmn = zminrai
-         zmx = max(zmn + 1d-2, zmaxrai)
+         zmx = max(zmn + 1.0e-2_dp, zmaxrai)
       end if
 
       if (md_ident == 'transport1d') then
@@ -226,12 +239,14 @@ contains
          if (ymx /= ymn) then
             yfac = (zmx - zmn) / (ymx - ymn)
          else
-            yfac = 0d-4
+            yfac = 0.0e-4_dp
          end if
       end if
 
       zmx2 = zmx + yfac * (ymx - ymn)
-      if (zmx2 == zmn) zmx2 = zmn + 1
+      if (zmx2 == zmn) then
+         zmx2 = zmn + 1
+      end if
 
       if (nsiz == 1) then
          call setwor_rai(0.0, 0.77, 1.0, 0.92, x1, zmn, x2, zmx2)
@@ -253,15 +268,17 @@ contains
                if (.not. allocated(plotlin2)) then
                   allocate (plotlin2(lnkx), ip(lnkx), ip2(lnkx))
                end if
-               plotlin = 0d0
-               plotlin2 = 0d0
+               plotlin = 0.0_dp
+               plotlin2 = 0.0_dp
                ip = 0
                ip2 = 0
                do LL = 1, lnx
                   k1 = ln(1, LL)
                   k2 = ln(2, LL)
                   if (japol == 1) then
-                     if (kc(k1) * kc(k2) == 0) cycle
+                     if (kc(k1) * kc(k2) == 0) then
+                        cycle
+                     end if
                   end if
 
                   call getLbotLtop(LL, Lb, Lt)
@@ -285,8 +302,11 @@ contains
 
                do LL = 1, lnx
                   if (japol == 1) then
-                     k1 = ln(1, LL); k2 = ln(2, LL)
-                     if (kc(k1) * kc(k2) == 0) cycle
+                     k1 = ln(1, LL)
+                     k2 = ln(2, LL)
+                     if (kc(k1) * kc(k2) == 0) then
+                        cycle
+                     end if
                   end if
 
                   call getLbotLtop(LL, Lb, Lt)
@@ -304,7 +324,9 @@ contains
                   k1 = ln(1, LL)
                   k2 = ln(2, LL)
                   if (japol == 1) then
-                     if (kc(k1) * kc(k2) == 0) cycle
+                     if (kc(k1) * kc(k2) == 0) then
+                        cycle
+                     end if
                   end if
 
                   xp(1) = xz(k1)
@@ -333,7 +355,9 @@ contains
 
                do n = 1, ndxi
                   if (japol == 1) then
-                     if (kc(n) == 0) cycle
+                     if (kc(n) == 0) then
+                        cycle
+                     end if
                   end if
                   xxmn = minval(nd(n)%x)
                   xxmx = maxval(nd(n)%x)
@@ -355,7 +379,7 @@ contains
                      call isocol(zn, ncol)
 
                      if (ndraw(19) == 2) then
-                        call dhtext(zn, xz(N), 0.5d0 * (YP(1) + YP(3)), 0.5d0 * (YP(1) + YP(3)))
+                        call dhtext(zn, xz(N), 0.5_dp * (YP(1) + YP(3)), 0.5_dp * (YP(1) + YP(3)))
                      else
                         call PFILLER(xp, yp, 4, ncol, ncol)
                      end if
@@ -371,7 +395,9 @@ contains
                n1 = ln(1, LL)
                n2 = ln(2, LL)
                if (japol == 1) then
-                  if (kc(n1) * kc(n2) == 0) cycle
+                  if (kc(n1) * kc(n2) == 0) then
+                     cycle
+                  end if
                end if
 
                xp(1) = xz(n1)
@@ -394,8 +420,8 @@ contains
                   call isocol2(zn, ncol)
 
                   if (ndraw(11) == 2) then
-                     xp1 = 0.25d0 * (xp(1) + xp(2) + xp(3) + xp(4))
-                     yp1 = 0.25d0 * (yp(1) + yp(2) + yp(3) + yp(4))
+                     xp1 = 0.25_dp * (xp(1) + xp(2) + xp(3) + xp(4))
+                     yp1 = 0.25_dp * (yp(1) + yp(2) + yp(3) + yp(4))
                      call dhtext(zn, xp1, yp1, yp1)
                   else
                      call PFILLER(xp, yp, 4, ncol, ncol)
@@ -411,7 +437,9 @@ contains
                n1 = ln(1, LL)
                n2 = ln(2, LL)
                if (japol == 1) then
-                  if (kc(n1) * kc(n2) == 0) cycle
+                  if (kc(n1) * kc(n2) == 0) then
+                     cycle
+                  end if
                end if
 
                xx = xz(n1)
@@ -446,14 +474,19 @@ contains
          k = max(k, kbot(n))
          xxmn = minval(nd(n)%x)
          xxmx = maxval(nd(n)%x)
-         xp(1) = 0.5d0 * (xxmx + xxmn)
-         yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
+         xp(1) = 0.5_dp * (xxmx + xxmn)
+         yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
          if (kmx == 0) then
             call cirr(xp(1), yp(1), ncolblack)
          else
-            xp(1) = xxmn; xp(2) = xxmx; xp(3) = xxmx; xp(4) = xxmn
-            yp(1) = zws(k - 1); yp(2) = yp(1)
-            yp(3) = zws(k); yp(4) = yp(3)
+            xp(1) = xxmn
+            xp(2) = xxmx
+            xp(3) = xxmx
+            xp(4) = xxmn
+            yp(1) = zws(k - 1)
+            yp(2) = yp(1)
+            yp(3) = zws(k)
+            yp(4) = yp(3)
             call PFILLER(xp, yp, 4, ncolblack, ncolblack)
          end if
 
@@ -466,7 +499,9 @@ contains
                   n1 = ln(1, LL)
                   n2 = ln(2, LL)
                   if (japol == 1) then
-                     if (kc(n1) * kc(n2) == 0) cycle
+                     if (kc(n1) * kc(n2) == 0) then
+                        cycle
+                     end if
                   end if
 
                   xx = xz(n1)
@@ -483,7 +518,9 @@ contains
                n1 = ln(1, LL)
                n2 = ln(2, LL)
                if (japol == 1) then
-                  if (kc(n1) * kc(n2) == 0) cycle
+                  if (kc(n1) * kc(n2) == 0) then
+                     cycle
+                  end if
                end if
 
                xx = xz(n1)
@@ -500,15 +537,17 @@ contains
             zfac = (zmx2 - zmn) / (x2 - x1)
             do n = 1, ndxi
                if (japol == 1) then
-                  if (kc(n) == 0) cycle
+                  if (kc(n) == 0) then
+                     cycle
+                  end if
                end if
 
                xp(1) = xz(n)
                do k = kbot(n), ktop(n)
 
                   uu = ucx(k)
-                  ww = 0.5d0 * (ww1(k) + ww1(k - 1))
-                  yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
+                  ww = 0.5_dp * (ww1(k) + ww1(k - 1))
+                  yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
                   call arrowsxyzfac(xp(1), yp(1), uu, ww, VFAC, zfac)
 
                end do
@@ -551,16 +590,21 @@ contains
       if (ndraw(30) == 5) then
          call setcol(2)
          do LL = 1, lnx
-            n1 = ln(1, LL); n2 = ln(2, LL)
+            n1 = ln(1, LL)
+            n2 = ln(2, LL)
             if (japol == 1) then
-               if (kc(n1) * kc(n2) == 0) cycle
+               if (kc(n1) * kc(n2) == 0) then
+                  cycle
+               end if
             end if
 
-            xz1 = xz(n1); xz2 = xz(n2)
+            xz1 = xz(n1)
+            xz2 = xz(n2)
             do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
-               zz1 = 0.5d0 * (zws(k1) + zws(k1 - 1))
-               zz2 = 0.5d0 * (zws(k2) + zws(k2 - 1))
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               zz1 = 0.5_dp * (zws(k1) + zws(k1 - 1))
+               zz2 = 0.5_dp * (zws(k2) + zws(k2 - 1))
                call movabs(xz1, zz1)
                call lnabs(xz2, zz2)
             end do
@@ -573,8 +617,8 @@ contains
       if (md_IDENT == 'transport1d') then
          call tektransport1D(time1 - tstart_user)
          call setcol(3)
-         call movabs(xmn, 0d0)
-         call lnabs(xmx, 0d0)
+         call movabs(xmn, 0.0_dp)
+         call lnabs(xmx, 0.0_dp)
          !call htext( 1d0, xmx, 1d0)
       else if (md_IDENT == 'carrier') then
          call carrier(time1 - tstart_user)
@@ -599,13 +643,17 @@ contains
       do ng = 1, ngatesg ! loop over gate signals, tekrai
          zgaten = zgate(ng)
          do n = L1gatesg(ng), L2gatesg(ng)
-            L = kgate(3, n); k1 = ln(1, L); k2 = ln(2, L)
+            L = kgate(3, n)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (japol == 1) then
-               if (kc(k1) * kc(k2) == 0) cycle
+               if (kc(k1) * kc(k2) == 0) then
+                  cycle
+               end if
             end if
 
             bup = min(bob(1, L), bob(2, L))
-            call fbox(xz(k1), zgaten, xz(k2), zgaten + 20d0)
+            call fbox(xz(k1), zgaten, xz(k2), zgaten + 20.0_dp)
             ! call fbox(xz(k1),bup   ,xz(k2),bup-10d0)
          end do
       end do
@@ -617,13 +665,17 @@ contains
             k2 = kcgen(2, n)
             L = kcgen(3, n)
             if (japol == 1) then
-               if (kc(k1) * kc(k2) == 0) cycle
+               if (kc(k1) * kc(k2) == 0) then
+                  cycle
+               end if
             end if
 
             bup = min(bob(1, L), bob(2, L))
-            doorh = 10d0
-            if (generalstruc(ng)%gatedoorheight < 1d10 .and. generalstruc(ng)%gatedoorheight < 1d10) then
-               if (generalstruc(ng)%gatedoorheight > 0d0) doorh = generalstruc(ng)%gatedoorheight
+            doorh = 10.0_dp
+            if (generalstruc(ng)%gatedoorheight < 1.0e10_dp .and. generalstruc(ng)%gatedoorheight < 1.0e10_dp) then
+               if (generalstruc(ng)%gatedoorheight > 0.0_dp) then
+                  doorh = generalstruc(ng)%gatedoorheight
+               end if
                call fbox(xz(k1), zgaten, xz(k2), zgaten + doorh)
             end if
 
@@ -633,13 +685,17 @@ contains
 
       do ng = 1, ncdamsg ! loop over gate signals, tekrai
          do n = L1cdamsg(ng), L2cdamsg(ng)
-            L = kcdam(3, n); k1 = ln(1, L); k2 = ln(2, L)
+            L = kcdam(3, n)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (japol == 1) then
-               if (kc(k1) * kc(k2) == 0) cycle
+               if (kc(k1) * kc(k2) == 0) then
+                  cycle
+               end if
             end if
 
             bup = bob(2, L) ! min( bob(1,L), bob(2,L) )
-            call fbox(xz(k1), bup, xz(k2), bup - 10d0)
+            call fbox(xz(k1), bup, xz(k2), bup - 10.0_dp)
          end do
       end do
 
@@ -649,14 +705,16 @@ contains
             qsrck = qsrc(n)
             kk = ksrc(1, n) ! 2D pressure cell nr from
             if (japol == 1) then
-               if (kc(kk) == 0) cycle
+               if (kc(kk) == 0) then
+                  cycle
+               end if
             end if
 
             if (kk /= 0 .and. ksrc(2, n) > 0) then
                xp(1) = xz(kk)
-               bup = 0.1d0 * sqrt(ba(kk))
+               bup = 0.1_dp * sqrt(ba(kk))
                do k = ksrc(2, n), ksrc(3, n)
-                  yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
+                  yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
                   ! CALL KCIR(XP(1),YP(1),qsrck)
                   call fbox(xz(kk) - bup, zws(k - 1), xz(kk) + bup, zws(k))
                end do
@@ -664,14 +722,16 @@ contains
 
             kk = ksrc(4, n) ! 2D pressure cell nr to
             if (japol == 1) then
-               if (kc(kk) == 0) cycle
+               if (kc(kk) == 0) then
+                  cycle
+               end if
             end if
 
             if (kk /= 0 .and. ksrc(5, n) > 0) then
                xp(1) = xz(kk)
-               bup = 0.1d0 * sqrt(ba(kk))
+               bup = 0.1_dp * sqrt(ba(kk))
                do k = ksrc(5, n), ksrc(6, n)
-                  yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
+                  yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
                   ! CALL KCIR(XP(1),YP(1),qsrck)
                   call fbox(xz(kk) - bup, zws(k - 1), xz(kk) + bup, zws(k))
                end do
@@ -683,10 +743,12 @@ contains
          call setcol(221)
          do k = 1, ndxi
             if (japol == 1) then
-               if (kc(kk) == 0) cycle
+               if (kc(kk) == 0) then
+                  cycle
+               end if
             end if
 
-            if (stemheight(k) > 0d0) then
+            if (stemheight(k) > 0.0_dp) then
                call movabs(xz(k), zws(kbot(k) - 1))
                xx = stemheight(k) * sin(phiv(k))
                yy = stemheight(k) * cos(phiv(k))
@@ -700,14 +762,14 @@ contains
       if (nsiz > 1 .and. jtextflow > 0) then
          ! assen in 'gewone' aspect=1 wereld coordinaten, anders wordt de text plat afgedrukt in interacter
          !   CALL IGrUnits (0.0,0.0,1.0,1.0)
-         call setwor(0d0, 0d0, 1d0, 1d0)
+         call setwor(0.0_dp, 0.0_dp, 1.0_dp, 1.0_dp)
 
          call setcol(3) ! zwart
          zz = 0.05 * (zmx - zmn) / nsiz
-         call htext_rai(zmn, x1 + 12d0 * rcir, zmn - 2d0 * zz, rcir, zz, 1)
-         call htext_rai(zmx, x1 + 12d0 * rcir, zmx, rcir, zz, 1)
-         call htext_rai(x1 + 10d0 * rcir, x1 + 12d0 * rcir, zmn - 2d0 * zz, rcir, zz, 2)
-         call htext_rai(x2 - 10d0 * rcir, x2 - 12d0 * rcir, zmn - 2d0 * zz, rcir, zz, 2)
+         call htext_rai(zmn, x1 + 12.0_dp * rcir, zmn - 2.0_dp * zz, rcir, zz, 1)
+         call htext_rai(zmx, x1 + 12.0_dp * rcir, zmx, rcir, zz, 1)
+         call htext_rai(x1 + 10.0_dp * rcir, x1 + 12.0_dp * rcir, zmn - 2.0_dp * zz, rcir, zz, 2)
+         call htext_rai(x2 - 10.0_dp * rcir, x2 - 12.0_dp * rcir, zmn - 2.0_dp * zz, rcir, zz, 2)
       end if
       kplotfrombedorsurface = kplotfrombedorsurfacesav
       call setwor(x1, y1, x2, y2)
