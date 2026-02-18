@@ -52,7 +52,7 @@ contains
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
       use m_setucxucyucxuucyu, only: setucxucyucxuucyu
       use m_setcornervelocities, only: setcornervelocities
-      use m_coordinate_transform, only: prefetch_node_velocities, prefetch_corner_velocities, allocate_prefetch_arrays
+      use m_prefetch, only: prefetch_node_velocities, prefetch_corner_velocities, allocate_prefetch_arrays
       use timers, only: timstrt, timstop
       use m_flow
       use m_flowgeom
@@ -704,8 +704,8 @@ contains
       use m_physcoef, only: vonkar, sag
       use m_flow, only: vol1, hu, u1, v, frcu, ifrcutp, vicushp, viclu, viu, viusp, dvxc, dvyc
       use m_get_chezy, only: get_chezy
-      use m_coordinate_transform, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner_1, uycorner_1, uxcorner_2, uycorner_2
-      use m_coordinate_transform, only: ucx_1, ucy_1, ucx_2, ucy_2
+      use m_prefetch, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner_1, uycorner_1, uxcorner_2, uycorner_2
+      use m_prefetch, only: ucx_1, ucy_1, ucx_2, ucy_2
       use m_xbeach_data, only: DR
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: dti
@@ -883,7 +883,7 @@ contains
       use precision, only: dp
       use m_flow, only: hu, v
       use m_flowgeom, only: lnx, lnx1D, csu, snu, acL
-      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, ucx_1, ucy_1, ucx_2, ucy_2
+      use m_prefetch, only: csb_1, snb_1, csb_2, snb_2, ucx_1, ucy_1, ucx_2, ucy_2
 
       integer, intent(in) :: jasfer3D !> jasfer3D flag for coordinate transformation, should match m_sferic jasfer3D
 
@@ -925,7 +925,7 @@ contains
       use m_flowgeom, only: lnx, lnx1D, ln, csu, snu, acl
       use m_flowparameters, only: epshu
       use m_sferic, only: jasfer3D
-      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, bai_1, bai_2
+      use m_prefetch, only: csb_1, snb_1, csb_2, snb_2, bai_1, bai_2
 
       integer :: L, k1, k2
       real(kind=dp) :: huv, acl_L, acl_iv
@@ -981,7 +981,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ln, acL, csu, snu, lnx, lnx1D
       use m_flow, only: hu, adve, fvcoro, fcori
-      use m_coordinate_transform, only: ucxq_1, ucyq_1, ucxq_2, ucyq_2, csb_1, snb_1, csb_2, snb_2
+      use m_prefetch, only: ucxq_1, ucyq_1, ucxq_2, ucyq_2, csb_1, snb_1, csb_2, snb_2
 
       !> intent in conditionals so that compiler can assume constants and optimize accordingly
       integer, intent(in) :: icorio !< coriolis type, should match m_flowparameters icorio

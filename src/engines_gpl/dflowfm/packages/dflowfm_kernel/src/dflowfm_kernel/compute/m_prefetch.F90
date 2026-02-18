@@ -2,13 +2,13 @@
 !
 !  Copyright (C)  Stichting Deltares, 2017-2026.
 !
-!  Module: m_coordinate_transform
+!  Module: m_prefetch
 !  Purpose: Store velocities in link-local coordinates for perfect vectorization
 !           Uses pre-flattened index maps for vectorizable gather operations
 !
 !------------------------------------------------------------------------------
 
-module m_coordinate_transform
+module m_prefetch
    use precision, only: dp
 
    implicit none(type, external)
@@ -173,4 +173,4 @@ contains
       end if
    end subroutine cleanup_prefetch_arrays
 
-end module m_coordinate_transform
+end module m_prefetch
