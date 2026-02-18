@@ -766,9 +766,9 @@ contains
       do L = L1, L2
          vicL = 0.0_dp
          wuiL = wui(L)
-         wuL = 1.0_dp / wuiL
+         wuL = 1 / wuiL
          dxL = dx(L)
-         dxiL = 1.0_dp / dxL
+         dxiL = 1 / dxL
          if (Elder > 0.0_dp) then !  add Elder
             vicL = vicL + chezy_elder(L)
          end if
@@ -894,6 +894,8 @@ contains
 
       !$OMP SIMD
       do L = lnx1D + 1, lnx
+         cs = csu(L)
+         sn = snu(L)
          acL_LL = acL(L)
          acL_iv = 1.0_dp - acL_LL
          if (jasfer3D) then
@@ -907,8 +909,6 @@ contains
             ucx_link_2 = ucx_2(L)
             ucy_link_2 = ucy_2(L)
          end if
-         cs = csu(L)
-         sn = snu(L)
          v_ = acL_LL * (-sn * ucx_link_1 + cs * ucy_link_1) + &
               acL_iv * (-sn * ucx_link_2 + cs * ucy_link_2)
          if (hu(L) > 0.0_dp) then
@@ -957,9 +957,9 @@ contains
 
                suu(L) = acl_L * bai_1(L) * suu_1 + acl_iv * bai_2(L) * suu_2
 
-               !if (istresstyp == 3) then (istresstyp is always 3, but might change in the future)
-               suu(L) = suu(L) / huv
-               !end if
+               if (istresstyp == 3) then
+                  suu(L) = suu(L) / huv
+               end if
             end if
          end if
       end do
