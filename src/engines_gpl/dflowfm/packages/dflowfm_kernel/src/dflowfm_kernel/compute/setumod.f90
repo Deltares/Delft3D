@@ -52,7 +52,7 @@ contains
       use m_setucxucyucxuucyunew, only: setucxucyucxuucyunew
       use m_setucxucyucxuucyu, only: setucxucyucxuucyu
       use m_setcornervelocities, only: setcornervelocities
-      use m_coordinate_transform, only: prefetch_node_velocities, prefetch_corner_velocities, initialize_coordinate_transform
+      use m_coordinate_transform, only: prefetch_node_velocities, prefetch_corner_velocities, allocate_prefetch_arrays
       use timers, only: timstrt, timstop
       use m_flow
       use m_flowgeom
@@ -129,7 +129,7 @@ contains
          end if
       end if
 
-      call initialize_coordinate_transform()
+      call allocate_prefetch_arrays()
       call prefetch_node_velocities(ucx, ucy, ucxq, ucyq)
       if (kmx == 0) then
          ! pre compute hmin as it is reused a lot
@@ -704,8 +704,8 @@ contains
       use m_physcoef, only: vonkar, sag
       use m_flow, only: vol1, hu, u1, v, frcu, ifrcutp, vicushp, viclu, viu, viusp, dvxc, dvyc
       use m_get_chezy, only: get_chezy
-      use m_coordinate_transform, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner1, uycorner1, uxcorner2, uycorner2
-      use m_coordinate_transform, only: ux1, uy1, ux2, uy2
+      use m_coordinate_transform, only: csbn_1, snbn_1, csbn_2, snbn_2, csb_1, csb_2, snb_1, snb_2, uxcorner_1, uycorner_1, uxcorner_2, uycorner_2
+      use m_coordinate_transform, only: ucx_1, ucy_1, ucx_2, ucy_2
       use m_xbeach_data, only: DR
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: dti
@@ -774,29 +774,29 @@ contains
          end if
 
          if (jsferic == 1 .and. jasfer3D == 1) then
-            ucx_link_1 = +csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
-            ucy_link_1 = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
-            ucx_link_2 = +csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
-            ucy_link_2 = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
+            ucx_link_1 = +csb_1(L) * ucx_1(L) + snb_1(L) * ucy_1(L)
+            ucy_link_1 = -snb_1(L) * ucx_1(L) + csb_1(L) * ucy_1(L)
+            ucx_link_2 = +csb_2(L) * ucx_2(L) + snb_2(L) * ucy_2(L)
+            ucy_link_2 = -snb_2(L) * ucx_2(L) + csb_2(L) * ucy_2(L)
          else
-            ucx_link_1 = ux1(L)
-            ucy_link_1 = uy1(L)
-            ucx_link_2 = ux2(L)
-            ucy_link_2 = uy2(L)
+            ucx_link_1 = ucx_1(L)
+            ucy_link_1 = ucy_1(L)
+            ucx_link_2 = ucx_2(L)
+            ucy_link_2 = ucy_2(L)
          end if
          duxdn = (ucx_link_2 - ucx_link_1) * dxiL
          duydn = (ucy_link_2 - ucy_link_1) * dxiL
 
          if (jsferic == 1 .and. jasfer3D == 1) then
-            ucnx_link_1 = +csbn_1(L) * uxcorner1(L) + snbn_1(L) * uycorner1(L)
-            ucny_link_1 = -snbn_1(L) * uxcorner1(L) + csbn_1(L) * uycorner1(L)
-            ucnx_link_2 = +csbn_2(L) * uxcorner2(L) + snbn_2(L) * uycorner2(L)
-            ucny_link_2 = -snbn_2(L) * uxcorner2(L) + csbn_2(L) * uycorner2(L)
+            ucnx_link_1 = +csbn_1(L) * uxcorner_1(L) + snbn_1(L) * uycorner_1(L)
+            ucny_link_1 = -snbn_1(L) * uxcorner_1(L) + csbn_1(L) * uycorner_1(L)
+            ucnx_link_2 = +csbn_2(L) * uxcorner_2(L) + snbn_2(L) * uycorner_2(L)
+            ucny_link_2 = -snbn_2(L) * uxcorner_2(L) + csbn_2(L) * uycorner_2(L)
          else
-            ucnx_link_1 = uxcorner1(L)
-            ucny_link_1 = uycorner1(L)
-            ucnx_link_2 = uxcorner2(L)
-            ucny_link_2 = uycorner2(L)
+            ucnx_link_1 = uxcorner_1(L)
+            ucny_link_1 = uycorner_1(L)
+            ucnx_link_2 = uxcorner_2(L)
+            ucny_link_2 = uycorner_2(L)
          end if
          duxdt = (ucnx_link_2 - ucnx_link_1) * wuiL
          duydt = (ucny_link_2 - ucny_link_1) * wuiL
@@ -883,7 +883,7 @@ contains
       use precision, only: dp
       use m_flow, only: hu, v
       use m_flowgeom, only: lnx, lnx1D, csu, snu, acL
-      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, ux1, uy1, ux2, uy2
+      use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, ucx_1, ucy_1, ucx_2, ucy_2
       integer, intent(in) :: jasfer3D
 
       integer :: L
@@ -898,15 +898,15 @@ contains
          acL_LL = acL(L)
          acL_iv = 1.0_dp - acL_LL
          if (jasfer3D) then
-            ucx_link_1 = +csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
-            ucy_link_1 = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
-            ucx_link_2 = +csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
-            ucy_link_2 = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
+            ucx_link_1 = +csb_1(L) * ucx_1(L) + snb_1(L) * ucy_1(L)
+            ucy_link_1 = -snb_1(L) * ucx_1(L) + csb_1(L) * ucy_1(L)
+            ucx_link_2 = +csb_2(L) * ucx_2(L) + snb_2(L) * ucy_2(L)
+            ucy_link_2 = -snb_2(L) * ucx_2(L) + csb_2(L) * ucy_2(L)
          else
-            ucx_link_1 = ux1(L)
-            ucy_link_1 = uy1(L)
-            ucx_link_2 = ux2(L)
-            ucy_link_2 = uy2(L)
+            ucx_link_1 = ucx_1(L)
+            ucy_link_1 = ucy_1(L)
+            ucx_link_2 = ucx_2(L)
+            ucy_link_2 = ucy_2(L)
          end if
          v_ = acL_LL * (-sn * ucx_link_1 + cs * ucy_link_1) + &
               acL_iv * (-sn * ucx_link_2 + cs * ucy_link_2)
@@ -972,7 +972,7 @@ contains
 !! Applies Coriolis force to adve(:) and updates fvcoro(:)
 !! Module arrays accessed (read-only):
 !!   - hu, acL, csu, snu, ln, fcori
-!!   - ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2
+!!   - ucxq_1, ucyq_1, ucxq_2, ucyq_2, csb_1, snb_1, csb_2, snb_2
 !!   - hmin_ (module-level cache)
 !!
 !! Module arrays modified:
@@ -982,7 +982,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ln, acL, csu, snu, lnx, lnx1D
       use m_flow, only: hu, adve, fvcoro, fcori
-      use m_coordinate_transform, only: ux3, uy3, ux4, uy4, csb_1, snb_1, csb_2, snb_2
+      use m_coordinate_transform, only: ucxq_1, ucyq_1, ucxq_2, ucyq_2, csb_1, snb_1, csb_2, snb_2
 
       integer, intent(in) :: icorio, jsferic, jacorioconstant, jasfer3D
       real(dp), intent(in) :: fcorio, trshcorio, Corioadamsbashfordfac
@@ -1005,7 +1005,7 @@ contains
          end do
          !$OMP SIMD
          do L = lnx1D + 1, lnx
-            fvcor = calculate_coriolis_force(fcor1_(L), fcor2_(L), jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
+            fvcor = calculate_coriolis_force(fcor1_(L), fcor2_(L), jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), &
                                              csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
             if (hu(L) > 0.0_dp) then
                adve(L) = adve(L) - fvcor
@@ -1022,7 +1022,7 @@ contains
          !$OMP SIMD
          do L = lnx1D + 1, lnx
             fcor = fcori(L)
-            fvcor = calculate_coriolis_force(fcori(L), fcori(L), jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
+            fvcor = calculate_coriolis_force(fcori(L), fcori(L), jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), &
                                              csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
 
             if (hu(L) > 0.0_dp) then
@@ -1044,7 +1044,7 @@ contains
 
          !$OMP SIMD
          do L = lnx1D + 1, lnx
-            fvcor = calculate_coriolis_force(fcorio, fcorio, jasfer3D, acL(L), csu(L), snu(L), ux3(L), uy3(L), ux4(L), uy4(L), &
+            fvcor = calculate_coriolis_force(fcorio, fcorio, jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), &
                                              csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
 
             if (hu(L) > 0.0_dp) then

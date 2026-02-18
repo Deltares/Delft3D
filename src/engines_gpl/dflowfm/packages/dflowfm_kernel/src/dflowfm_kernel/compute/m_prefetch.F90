@@ -11,47 +11,55 @@
 module m_coordinate_transform
    use precision, only: dp
 
-   implicit none(external)
+   implicit none(type, external)
 
    private
 
-! node related, dim = ndkx
-   real(kind=dp), allocatable, public :: ucx_link_1(:) !< pre-transformed ucx for link side 1 (stress/viscosity optimization)
-   real(kind=dp), allocatable, public :: ucy_link_1(:) !< pre-transformed ucy for link side 1 (stress/viscosity optimization)
-   real(kind=dp), allocatable, public :: ucx_link_2(:) !< pre-transformed ucx for link side 2 (stress/viscosity optimization)
-   real(kind=dp), allocatable, public :: ucy_link_2(:) !< pre-transformed ucy for link side 2 (stress/viscosity optimization)
-
-   real(kind=dp), allocatable, public :: csb_1(:), csb_2(:) !< cosine of link angle at node 1/2
-   real(kind=dp), allocatable, public :: snb_1(:), snb_2(:) !< sine of link angle at node 1/2
-   real(kind=dp), allocatable, public :: csbn_1(:), csbn_2(:) !< cosine of link angle at corner 1/2
-   real(kind=dp), allocatable, public :: snbn_1(:), snbn_2(:) !< sine of link angle at corner 1/2
-
-   real(kind=dp), allocatable :: ucx_global(:) !< transformed ucx back to global frame
    ! Public interface
-   public :: initialize_coordinate_transform
+   public :: allocate_prefetch_arrays
    public :: prefetch_node_velocities, prefetch_corner_velocities
-   public :: cleanup_coordinate_transform
+   public :: cleanup_prefetch_arrays
 
-   ! Pre-flattened index maps (enables vectorizable gather: ux1 = ucx(node_map_1))
-   integer, allocatable :: node_map_1(:), node_map_2(:) ! ln(1:2, lnx1D+1:lnx) flattened
-   integer, allocatable :: corner_map_1(:), corner_map_2(:) ! lncn(1:2, lnx1D+1:lnx) flattened
+   ! Pre-flattened index maps (enables vectorizable gather: ucx_1 = ucx(node_map_1))
+   integer, allocatable, dimension(:) :: node_map_1 !< ln(1, lnx1D+1:lnx) flattened
+   integer, allocatable, dimension(:) :: node_map_2 !< ln(2, lnx1D+1:lnx) flattened
+   integer, allocatable, dimension(:) :: corner_map_1 !< lncn(1, lnx1D+1:lnx) flattened
+   integer, allocatable, dimension(:) :: corner_map_2 !< lncn(2, lnx1D+1:lnx) flattened
 
-   ! Temporary gather buffers (flat arrays for vectorization)
-   real(dp), allocatable, public :: ux1(:), uy1(:), ux2(:), uy2(:) ! Node velocities
-   real(dp), allocatable, public :: ux3(:), uy3(:), ux4(:), uy4(:) ! Corner velocities
-! In m_coordinate_transform, add:
-   real(kind=dp), allocatable, public :: uxcorner1(:), uycorner1(:)
-   real(kind=dp), allocatable, public :: uxcorner2(:), uycorner2(:)
+   ! pre-fetched, link-based velocity arrays. ucx_1(L) = ucx(node_map_1(L)) = ucx(ln(1, L)). Allows vectorized, contiguous memory access in link-based loops. Similarly for corner velocities.
+   ! these arrays are prefetched at every time step in prefetch_node_velocities
+   real(kind=dp), allocatable, dimension(:), public :: ucx_1
+   real(kind=dp), allocatable, dimension(:), public :: ucy_1
+   real(kind=dp), allocatable, dimension(:), public :: ucx_2
+   real(kind=dp), allocatable, dimension(:), public :: ucy_2
+   real(kind=dp), allocatable, dimension(:), public :: ucxq_1
+   real(kind=dp), allocatable, dimension(:), public :: ucyq_1
+   real(kind=dp), allocatable, dimension(:), public :: ucxq_2
+   real(kind=dp), allocatable, dimension(:), public :: ucyq_2
+   !> these arrays are prefetched only at model initialization
+   real(kind=dp), allocatable, dimension(:), public :: bai_1
+   real(kind=dp), allocatable, dimension(:), public :: bai_2
+   real(kind=dp), allocatable, dimension(:), public :: csb_1
+   real(kind=dp), allocatable, dimension(:), public :: csb_2
+   real(kind=dp), allocatable, dimension(:), public :: snb_1
+   real(kind=dp), allocatable, dimension(:), public :: snb_2
+   real(kind=dp), allocatable, dimension(:), public :: csbn_1
+   real(kind=dp), allocatable, dimension(:), public :: csbn_2
+   real(kind=dp), allocatable, dimension(:), public :: snbn_1
+   real(kind=dp), allocatable, dimension(:), public :: snbn_2
+   ! pre-fetched, link-based corner velocity arrays. uxcorner_1 (L) = ucnx(corner_map_1(L)) = ucnx(lncn(1, L)).
+   ! these arrays are prefetched at every time step in prefetch_corner_velocities
+   real(kind=dp), allocatable, dimension(:), public :: uxcorner_1
+   real(kind=dp), allocatable, dimension(:), public :: uycorner_1
+   real(kind=dp), allocatable, dimension(:), public :: uxcorner_2
+   real(kind=dp), allocatable, dimension(:), public :: uycorner_2
 
-   real(kind=dp), allocatable, public :: bai_1(:), bai_2(:) !<inverse bottom area at link node 1/2
-
-   logical :: use_spherical_transform = .false.
    logical :: is_initialized = .false.
    integer :: lnx = 0
 
 contains
 
-   subroutine initialize_coordinate_transform()
+   subroutine allocate_prefetch_arrays()
       use m_flowgeom, only: lnx, ln, lncn
       use m_sferic, only: jsferic, jasfer3D
       use m_flowgeom, only: csb, snb, csbn, snbn, bai
@@ -61,22 +69,22 @@ contains
 
       if (is_initialized) return
 
-      use_spherical_transform = (jsferic == 1 .and. jasfer3D == 1)
-
       ! Allocate pre-flattened index maps
       allocate (node_map_1(ndkx), node_map_2(ndkx))
       allocate (corner_map_1(ndkx), corner_map_2(ndkx))
 
       ! Allocate temporary gather buffers
-      allocate (ux1(lnx), uy1(lnx), stat=ierr)
-      allocate (ux2(lnx), uy2(lnx), stat=ierr)
-      allocate (ux3(lnx), uy3(lnx), stat=ierr)
-      allocate (ux4(lnx), uy4(lnx), stat=ierr)
-      allocate (uxcorner1(lnx), uycorner1(lnx))
-      allocate (uxcorner2(lnx), uycorner2(lnx))
+      allocate (ucx_1(lnx), ucy_1(lnx), stat=ierr)
+      allocate (ucx_2(lnx), ucy_2(lnx), stat=ierr)
+      allocate (ucxq_1(lnx), ucyq_1(lnx), stat=ierr)
+      allocate (ucxq_2(lnx), ucyq_2(lnx), stat=ierr)
+      allocate (uxcorner_1(lnx), uycorner_1(lnx))
+      allocate (uxcorner_2(lnx), uycorner_2(lnx))
       allocate (bai_1(lnx), bai_2(lnx))
 
-      if (use_spherical_transform) then
+      ! unfortunately, these prefetch of the sines is necessary despite csb etc already being link-based, but since Fortran is column-major,
+      ! csb(1, L) is not contiguous in memory and thus not vectorizable
+      if (jsferic == 1 .or. jasfer3D == 1) then
          csb_1 = csb(1, :)
          csb_2 = csb(2, :)
          snb_1 = snb(1, :)
@@ -98,7 +106,7 @@ contains
 
       is_initialized = .true.
 
-   end subroutine initialize_coordinate_transform
+   end subroutine allocate_prefetch_arrays
 
    subroutine prefetch_node_velocities(ucx, ucy, ucxq, ucyq)
       use m_flowgeom, only: lnx, lnx1D !, csu, snu
@@ -112,46 +120,16 @@ contains
       if (.not. is_initialized) return
 
       do L = L1, L2
-         ux1(L) = ucx(node_map_1(L))
-         uy1(L) = ucy(node_map_1(L))
-         ux2(L) = ucx(node_map_2(L))
-         uy2(L) = ucy(node_map_2(L))
+         ucx_1(L) = ucx(node_map_1(L))
+         ucy_1(L) = ucy(node_map_1(L))
+         ucx_2(L) = ucx(node_map_2(L))
+         ucy_2(L) = ucy(node_map_2(L))
 
-         ux3(L) = ucxq(node_map_1(L))
-         uy3(L) = ucyq(node_map_1(L))
-         ux4(L) = ucxq(node_map_2(L))
-         uy4(L) = ucyq(node_map_2(L))
+         ucxq_1(L) = ucxq(node_map_1(L))
+         ucyq_1(L) = ucyq(node_map_1(L))
+         ucxq_2(L) = ucxq(node_map_2(L))
+         ucyq_2(L) = ucyq(node_map_2(L))
       end do
-
-      !if (use_spherical_transform) then
-      !   !$OMP SIMD
-      !   do L = L1, L2
-      !      ! Node 1: Rotate BOTH velocity types with same coefficients
-      !      ucx_link_1(L) = csb_1(L) * ux1(L) + snb_1(L) * uy1(L)
-      !      ucy_link_1(L) = -snb_1(L) * ux1(L) + csb_1(L) * uy1(L)
-      !      ucx_link_2(L) = csb_2(L) * ux2(L) + snb_2(L) * uy2(L)
-      !      ucy_link_2(L) = -snb_2(L) * ux2(L) + csb_2(L) * uy2(L)
-      !
-      !      !! Node 2: Rotate BOTH velocity types with same coefficients
-      !      !ucyq_link_1(L) = -snb_1(L) * ux3(L) + csb_1(L) * uy3(L)
-      !      !ucxq_link_1(L) = csb_1(L) * ux3(L) + snb_1(L) * uy3(L)
-      !      !ucxq_link_2(L) = csb_2(L) * ux4(L) + snb_2(L) * uy4(L)
-      !      !ucyq_link_2(L) = -snb_2(L) * ux4(L) + csb_2(L) * uy4(L)
-      !   end do
-      !else
-      !   !$OMP SIMD
-      !   do L = L1, L2
-      !      ucx_link_1(L) = ux1(L)
-      !      ucy_link_1(L) = uy1(L)
-      !      ucx_link_2(L) = ux2(L)
-      !      ucy_link_2(L) = uy2(L)
-      !
-      !      !ucxq_link_1(L) = csu(L) * ux3(L) + snu(L) * uy3(L)
-      !      !ucyq_link_1(L) = -snu(L) * ux3(L) + csu(L) * uy3(L)
-      !      !ucxq_link_2(L) = csu(L) * ux4(L) + snu(L) * uy4(L)
-      !      !ucyq_link_2(L) = -snu(L) * ux4(L) + csu(L) * uy4(L)
-      !   end do
-      !end if
 
    end subroutine prefetch_node_velocities
 
@@ -171,42 +149,24 @@ contains
 
       do L = L1, L2
          ! In prefetch_corner_velocities, populate them:
-         uxcorner1(L) = ucnx(corner_map_1(L))
-         uycorner1(L) = ucny(corner_map_1(L))
-         uxcorner2(L) = ucnx(corner_map_2(L))
-         uycorner2(L) = ucny(corner_map_2(L))
+         uxcorner_1(L) = ucnx(corner_map_1(L))
+         uycorner_1(L) = ucny(corner_map_1(L))
+         uxcorner_2(L) = ucnx(corner_map_2(L))
+         uycorner_2(L) = ucny(corner_map_2(L))
       end do
-
-      !if (use_spherical_transform) then
-      !   !$OMP SIMD
-      !   do L = L1, L2
-      !      ucnx_link_1(L) = csbn_1(L) * ux1(L) + snbn_1(L) * uy1(L)
-      !      ucny_link_1(L) = -snbn_1(L) * ux1(L) + csbn_1(L) * uy1(L)
-      !      ucnx_link_2(L) = csbn_2(L) * ux2(L) + snbn_2(L) * uy2(L)
-      !      ucny_link_2(L) = -snbn_2(L) * ux2(L) + csbn_2(L) * uy2(L)
-      !   end do
-      !else
-      !   !$OMP SIMD
-      !   do L = L1, L2
-      !      ucnx_link_1(L) = ux1(L)
-      !      ucny_link_1(L) = uy1(L)
-      !      ucnx_link_2(L) = ux2(L)
-      !      ucny_link_2(L) = uy2(L)
-      !   end do
-      !end if
 
    end subroutine prefetch_corner_velocities
 
-   subroutine cleanup_coordinate_transform()
+   subroutine cleanup_prefetch_arrays()
 
       if (is_initialized) then
          deallocate (node_map_1, node_map_2, corner_map_1, corner_map_2)
-         deallocate (ux1, uy1, ux2, uy2, ux3, uy3, ux4, uy4)
-         deallocate (uxcorner1, uycorner1)
-         deallocate (uxcorner2, uycorner2)
+         deallocate (ucx_1, ucy_1, ucx_2, ucy_2, ucxq_1, ucyq_1, ucxq_2, ucyq_2)
+         deallocate (uxcorner_1, uycorner_1)
+         deallocate (uxcorner_2, uycorner_2)
          deallocate (bai_1, bai_2)
          is_initialized = .false.
       end if
-   end subroutine cleanup_coordinate_transform
+   end subroutine cleanup_prefetch_arrays
 
 end module m_coordinate_transform
