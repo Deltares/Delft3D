@@ -192,7 +192,7 @@ module m_flowparameters
    integer :: iuvfield !< intialise this velocityfield: 0 = no
                                                         !! 1:u=y**2, 2:idem, 60 deg, 3:rotation, 4=lin, 5=lin 60 deg
 
-   integer :: istresstyp !< 1 : full stress tensor, semi  link oriented horvic2
+   integer, parameter :: istresstyp = 3!< 1 : full stress tensor, semi  link oriented horvic2
                                                         !! 2 : full stress tensor, fully link oriented dvxc = ok and fast
                                                         !! 3 : 2, volume weighted
                                                         !! 4 : full node oriented
@@ -787,7 +787,7 @@ contains
       iuvfield = 0 ! intialise this velocityfield: 0 = no
       ! 1:u=y**2, 2:idem, 60 deg, 3:rotation, 4=lin, 5=lin 60 deg
 
-      istresstyp = 3 ! 1 : full stress tensor, semi  link oriented horvic2
+      !istresstyp = 3 ! 1 : full stress tensor, semi  link oriented horvic2
       ! 2 : full stress tensor, fully link oriented dvxc = ok and fast
       ! 3 : 2, volume weighted
       ! 4 : full node oriented
