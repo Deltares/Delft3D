@@ -38,7 +38,7 @@ module m_setumod
 
    public :: setumod, compute_tangential_velocity_spherical
 
-   real(kind=dp), dimension(:), allocatable :: hmin_, fcor1_, fcor2_
+   real(kind=dp), dimension(:), allocatable :: hmin_
 
 contains
 
@@ -144,7 +144,7 @@ contains
       end if
 
       if (kmx == 0 .and. newcorio == 1 .and. Perot_type /= NOT_DEFINED) then
-         call set_V(jasfer3D)
+         call set_V_2D_default(jasfer3D)
       else
          !$OMP PARALLEL DO                           &
          !$OMP PRIVATE(L,LL,Lb,Lt,k1,k2,cs,sn,hmin,fcor,vcor)
@@ -766,9 +766,9 @@ contains
       do L = L1, L2
          vicL = 0.0_dp
          wuiL = wui(L)
-         wuL = 1 / wuiL
+         wuL = 1.0_dp / wuiL
          dxL = dx(L)
-         dxiL = 1 / dxL
+         dxiL = 1.0_dp / dxL
          if (Elder > 0.0_dp) then !  add Elder
             vicL = vicL + chezy_elder(L)
          end if
@@ -801,7 +801,7 @@ contains
          duxdt = (ucnx_link_2 - ucnx_link_1) * wuiL
          duydt = (ucny_link_2 - ucny_link_1) * wuiL
 
-         if (Smagorinsky > 0) then ! add Smagorinsky
+         if (Smagorinsky > 0) then
             dundn = +csu(L) * duxdn + snu(L) * duydn
             dutdn = -snu(L) * duxdn + csu(L) * duydn
             dundt = +csu(L) * duxdt + snu(L) * duydt
@@ -867,7 +867,7 @@ contains
       end do
       dvxc = 0.0_dp
       dvyc = 0.0_dp
-      do L = L1, L2
+      do L = L1, L2 !> accumulate link stress at nodes
          k1 = ln(1, L)
          k2 = ln(2, L)
 
@@ -879,12 +879,13 @@ contains
    end subroutine compute_viscosity_and_stress_vectorized
 
    !> Set tangential velocity v(L) for newcorio=1, kmx=0 case
-   subroutine set_V(jasfer3D)
+   subroutine set_V_2D_default(jasfer3D)
       use precision, only: dp
       use m_flow, only: hu, v
       use m_flowgeom, only: lnx, lnx1D, csu, snu, acL
       use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, ucx_1, ucy_1, ucx_2, ucy_2
-      integer, intent(in) :: jasfer3D
+
+      integer, intent(in) :: jasfer3D !> jasfer3D flag for coordinate transformation, should match m_sferic jasfer3D
 
       integer :: L
       real(kind=dp) :: cs, sn, acL_LL, acL_iv
@@ -893,8 +894,6 @@ contains
 
       !$OMP SIMD
       do L = lnx1D + 1, lnx
-         cs = csu(L)
-         sn = snu(L)
          acL_LL = acL(L)
          acL_iv = 1.0_dp - acL_LL
          if (jasfer3D) then
@@ -908,42 +907,42 @@ contains
             ucx_link_2 = ucx_2(L)
             ucy_link_2 = ucy_2(L)
          end if
+         cs = csu(L)
+         sn = snu(L)
          v_ = acL_LL * (-sn * ucx_link_1 + cs * ucy_link_1) + &
               acL_iv * (-sn * ucx_link_2 + cs * ucy_link_2)
          if (hu(L) > 0.0_dp) then
             v(L) = v_
          end if
       end do
-   end subroutine set_V
+   end subroutine set_V_2D_default
 
    !> Interpolate accumulated node stresses back to link centers for 2D case
    !! Projects dvxc/dvyc (stress at nodes) to suu (stress at links)
    subroutine interpolate_stress_to_links_2D()
       use precision, only: dp
-      use m_flow, only: hu, hs, suu, istresstyp, dvxc, dvyc
+      use m_flow, only: hu, hs, suu, dvxc, dvyc
       use m_flowgeom, only: lnx, lnx1D, ln, csu, snu, acl
       use m_flowparameters, only: epshu
       use m_sferic, only: jasfer3D
       use m_coordinate_transform, only: csb_1, snb_1, csb_2, snb_2, bai_1, bai_2
-      implicit none
 
       integer :: L, k1, k2
       real(kind=dp) :: huv, acl_L, acl_iv
       real(kind=dp) :: dvx_link_1, dvy_link_1, dvx_link_2, dvy_link_2
       real(kind=dp) :: suu_1, suu_2
 
+      ! no pre-gather for vectorisation 8 loads & stores & loads is not worth it!
       do L = lnx1D + 1, lnx
          if (hu(L) > 0) then
-            ! no pre-gather, 8 loads & stores & loads is not worth it!
             k1 = ln(1, L)
             k2 = ln(2, L)
-            huv = 0.5_dp * (hs(k1) + hs(k2)) ! *huvli(L)
+            huv = 0.5_dp * (hs(k1) + hs(k2))
             if (huv > epshu) then
                acl_L = acl(L)
                acl_iv = 1.0_dp - acl_L
 
                if (jasfer3D == 1) then
-                  ! Transform node stresses to link frame
                   dvx_link_1 = csb_1(L) * dvxc(k1) - snb_1(L) * dvyc(k1)
                   dvy_link_1 = snb_1(L) * dvxc(k1) + csb_1(L) * dvyc(k1)
                   dvx_link_2 = csb_2(L) * dvxc(k2) - snb_2(L) * dvyc(k2)
@@ -956,19 +955,18 @@ contains
                   suu_2 = csu(L) * dvxc(k2) + snu(L) * dvyc(k2)
                end if
 
-               ! Use pre-gathered bai constants (bai_1_, bai_2_ from module)
                suu(L) = acl_L * bai_1(L) * suu_1 + acl_iv * bai_2(L) * suu_2
 
-               if (istresstyp == 3) then
-                  suu(L) = suu(L) / huv
-               end if
+               !if (istresstyp == 3) then (istresstyp is always 3, but might change in the future)
+               suu(L) = suu(L) / huv
+               !end if
             end if
          end if
       end do
 
    end subroutine interpolate_stress_to_links_2D
 
-!> Compute Coriolis correction for 2D links (icorio <= 20, kmx=0)
+!> Compute Coriolis correction for 2D links in the default case (icorio <= 20, kmx=0)
 !! Applies Coriolis force to adve(:) and updates fvcoro(:)
 !! Module arrays accessed (read-only):
 !!   - hu, acL, csu, snu, ln, fcori
@@ -977,36 +975,46 @@ contains
 !!
 !! Module arrays modified:
 !!   - adve, fvcoro
-   subroutine compute_coriolis_correction_2D_default(icorio, jsferic, jacorioconstant, jasfer3D, fcorio, trshcorio, Corioadamsbashfordfac)
+!! Adams Bashford is copied 3x as a compromise
+   subroutine compute_coriolis_correction_2D_default(icorio, jsferic, jasfer3D, jacorioconstant, fcorio, trshcorio, Corioadamsbashfordfac)
 
       use precision, only: dp
       use m_flowgeom, only: ln, acL, csu, snu, lnx, lnx1D
       use m_flow, only: hu, adve, fvcoro, fcori
       use m_coordinate_transform, only: ucxq_1, ucyq_1, ucxq_2, ucyq_2, csb_1, snb_1, csb_2, snb_2
 
-      integer, intent(in) :: icorio, jsferic, jacorioconstant, jasfer3D
-      real(dp), intent(in) :: fcorio, trshcorio, Corioadamsbashfordfac
+      !> intent in conditionals so that compiler can assume constants and optimize accordingly
+      integer, intent(in) :: icorio !< coriolis type, should match m_flowparameters icorio
+      integer, intent(in) :: jsferic !< sferic type, should match m_sferic jsferic
+      integer, intent(in) :: jasfer3D !< 3D sferic coordinates flag, should match m_sferic jasfer3D
+      integer, intent(in) :: jacorioconstant !< is coriolis constnant in space? should match m_flow jacorioconstant
+      real(dp), intent(in) :: fcorio !< Coriolis parameter, should match m_sferic fcorio
+      real(dp), intent(in) :: trshcorio !< Coriolis threshold, should match m_flowparameters trshcorio
+      real(dp), intent(in) :: Corioadamsbashfordfac !< Coriolis Adams-Bashford factor, should match m_flowparameters Corioadamsbashfordfac
 
       integer :: L, k1, k2
       logical :: spatial_coriolis
       real(dp) :: fcor, fvcor
 
+      real(dp), allocatable, dimension(:), save :: fcor1_, fcor2_
+
       spatial_coriolis = (jsferic > 0 .or. jacorioconstant > 0)
 
       if (spatial_coriolis .and. (icorio /= 5)) then
          ! Node-based fcor (zeta-based)
-         if (.not. allocated(fcor1_)) allocate (fcor1_(lnx), fcor2_(lnx))
-
-         do L = lnx1D + 1, lnx
-            k1 = ln(1, L)
-            k2 = ln(2, L)
-            fcor1_(L) = fcori(k1)
-            fcor2_(L) = fcori(k2)
-         end do
+         if (.not. allocated(fcor1_)) then
+            allocate (fcor1_(lnx), fcor2_(lnx))
+            do L = lnx1D + 1, lnx
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               fcor1_(L) = fcori(k1)
+               fcor2_(L) = fcori(k2)
+            end do
+         end if
          !$OMP SIMD
          do L = lnx1D + 1, lnx
-            fvcor = calculate_coriolis_force(fcor1_(L), fcor2_(L), jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), &
-                                             csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
+            fvcor = calculate_coriolis_force(fcor1_(L), fcor2_(L), jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
+
             if (hu(L) > 0.0_dp) then
                adve(L) = adve(L) - fvcor
 
@@ -1022,8 +1030,7 @@ contains
          !$OMP SIMD
          do L = lnx1D + 1, lnx
             fcor = fcori(L)
-            fvcor = calculate_coriolis_force(fcori(L), fcori(L), jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), &
-                                             csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
+            fvcor = calculate_coriolis_force(fcor, fcor, jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
 
             if (hu(L) > 0.0_dp) then
                adve(L) = adve(L) - fvcor
@@ -1044,8 +1051,7 @@ contains
 
          !$OMP SIMD
          do L = lnx1D + 1, lnx
-            fvcor = calculate_coriolis_force(fcorio, fcorio, jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), &
-                                             csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
+            fvcor = calculate_coriolis_force(fcorio, fcorio, jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
 
             if (hu(L) > 0.0_dp) then
                adve(L) = adve(L) - fvcor
@@ -1063,29 +1069,40 @@ contains
    end subroutine compute_coriolis_correction_2D_default
 
 !> Apply Coriolis correction for a single link
-!! This elemental function enables vectorization by the compiler
+!! This elemental function will be inlined to allow vectorization by the compiler
    elemental function calculate_coriolis_force(fcor_1, fcor_2, jasfer3D, &
                                                acL_L, csu_L, snu_L, &
-                                               ux3_L, uy3_L, ux4_L, uy4_L, &
+                                               ucxq_1_L, ucyq_1_L, ucxq_2_L, ucyq_2_L, &
                                                csb_1_L, snb_1_L, csb_2_L, snb_2_L, &
                                                hmin_L, trshcorio) result(fvcor)
-      integer, intent(in) :: jasfer3D
-      real(dp), intent(in) :: fcor_1, fcor_2
-      real(dp), intent(in) :: acL_L, csu_L, snu_L
-      real(dp), intent(in) :: ux3_L, uy3_L, ux4_L, uy4_L
-      real(dp), intent(in) :: csb_1_L, snb_1_L, csb_2_L, snb_2_L
-      real(dp), intent(in) :: hmin_L, trshcorio
-      real(dp) :: fvcor
 
+      integer, intent(in) :: jasfer3D !< 3D sferic coordinates flag, should match m_sferic jasfer3D
+      real(dp), intent(in) :: fcor_1 !< Coriolis parameter at node 1
+      real(dp), intent(in) :: fcor_2 !< Coriolis parameter at node 2
+      real(dp), intent(in) :: acL_L !< Link interpolation weight for node 1
+      real(dp), intent(in) :: csu_L !< Cosine of link orientation
+      real(dp), intent(in) :: snu_L !< Sine of link orientation
+      real(dp), intent(in) :: ucxq_1_L !< x-velocity at node 1 (global frame)
+      real(dp), intent(in) :: ucyq_1_L !< y-velocity at node 1 (global frame)
+      real(dp), intent(in) :: ucxq_2_L !< x-velocity at node 2 (global frame)
+      real(dp), intent(in) :: ucyq_2_L !< y-velocity at node 2 (global frame)
+      real(dp), intent(in) :: csb_1_L !< Cosine of node 1 to link transformation
+      real(dp), intent(in) :: snb_1_L !< Sine of node 1 to link transformation
+      real(dp), intent(in) :: csb_2_L !< Cosine of node 2 to link transformation
+      real(dp), intent(in) :: snb_2_L !< Sine of node 2 to link transformation
+      real(dp), intent(in) :: hmin_L !< Minimum water depth at link endpoints
+      real(dp), intent(in) :: trshcorio !< Depth threshold for Coriolis scaling
+
+      real(dp) :: fvcor
       real(dp) :: tangential_1, tangential_2
 
       ! Compute tangential velocities
       if (jasfer3D == 1) then
-         tangential_1 = compute_tangential_velocity_spherical(ux3_L, uy3_L, csb_1_L, snb_1_L, csu_L, snu_L)
-         tangential_2 = compute_tangential_velocity_spherical(ux4_L, uy4_L, csb_2_L, snb_2_L, csu_L, snu_L)
+         tangential_1 = compute_tangential_velocity_spherical(ucxq_1_L, ucyq_1_L, csb_1_L, snb_1_L, csu_L, snu_L)
+         tangential_2 = compute_tangential_velocity_spherical(ucxq_2_L, ucyq_2_L, csb_2_L, snb_2_L, csu_L, snu_L)
       else
-         tangential_1 = -snu_L * ux3_L + csu_L * uy3_L
-         tangential_2 = -snu_L * ux4_L + csu_L * uy4_L
+         tangential_1 = -snu_L * ucxq_1_L + csu_L * ucyq_1_L
+         tangential_2 = -snu_L * ucxq_2_L + csu_L * ucyq_2_L
       end if
 
       ! Compute Coriolis force
