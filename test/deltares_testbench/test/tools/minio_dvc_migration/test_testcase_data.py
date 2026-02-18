@@ -170,6 +170,32 @@ def test_add_to_dvc_failing(fs: FakeFilesystem, fail_target: str, expected_messa
             testcase.add_to_dvc(repo)
 
 
+def test_add_to_dvc_missing_doc_folder(fs: FakeFilesystem) -> None:
+    """Validate add_to_dvc skips doc folder when it does not exist."""
+    # Arrange
+    testcase = __make_testcase()
+    case_path = testcase.case.to_local()
+    reference_path = testcase.reference.to_local()
+
+    fs.create_dir(case_path)
+    fs.create_dir(reference_path)
+
+    repo = MagicMock()
+
+    responses = {
+        case_path: [Path("case.dvc")],
+        reference_path: [Path("reference.dvc")],
+    }
+
+    # Act
+    fake_add_directory = _fake_add_directory_factory(responses)
+    with patch("tools.minio_dvc_migration.testcase_data.add_directory_to_dvc", fake_add_directory):
+        result = testcase.add_to_dvc(repo)
+
+    # Assert — only case and reference, no doc
+    assert [path.name for path in result] == ["case.dvc", "reference.dvc"]
+
+
 def test_add_to_dvc_success(fs: FakeFilesystem) -> None:
     """Validate add_to_dvc returns all DVC files when successful."""
     # Arrange
