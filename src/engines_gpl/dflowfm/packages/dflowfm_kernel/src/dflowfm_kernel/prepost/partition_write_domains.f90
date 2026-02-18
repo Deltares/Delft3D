@@ -74,7 +74,6 @@ contains
       integer :: ierror
       
       ierror = 1
-      call output_mask_full%create_mask_arrays() ! Make sure output_mask_full is up to date with the current network, so that unc_write_net writes the correct variables.
 
 !     save network
       call savenet()

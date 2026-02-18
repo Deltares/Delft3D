@@ -74,13 +74,19 @@ contains
       if (allocated(this%cell_indices)) then
          return
       end if
-      this%ndx = ndx
       this%lnx = lnx
+      this%lnxi = lnxi
+      this%lnx1d = lnx1d
+      this%lnx1db = lnx1db
+      
+      this%ndx = ndx
       this%ndxi = ndxi
       this%ndx2d = ndx2d
       this%ndx1db = ndx1db
+
       this%numk = numk
       this%numl = numl
+      this%numl1d = numl1d
 
       call allocate_arrays(this)
       this%cells_mask = 0
@@ -92,24 +98,20 @@ contains
 
          this%link_indices = [(k, k=1, lnx)]
          this%links_mask = [(k, k=1, lnx)]
-         this%link_to_nodes = ln
+         if (allocated(ln)) then
+            this%link_to_nodes = ln
+         end if
 
          this%netnode_indices = [(k, k=1, numk)]
          this%netnodes_mask = [(k, k=1, numk)]
 
          this%netlink_indices = [(k, k=1, numL)]
-         this%netlinks_mask = [(k, k=1, numL)]
-         do k = 1, numL
-            this%netlink_to_netnodes(1:2, k) = kn(1:2, k)
-         end do
-
-         this%ndxi = ndxi
-         this%ndx2d = ndx2d
-         this%ndx1db = ndx1db
-         this%lnx1d = lnx1d
-         this%lnx1db = lnx1db
-         this%lnxi = lnxi
-         this%numl1d = numl1d
+         if (allocated(kn)) then
+            this%netlinks_mask = [(k, k=1, numL)]
+            do k = 1, numL
+               this%netlink_to_netnodes(1:2, k) = kn(1:2, k)
+            end do
+         end if
 
          return
       end if
@@ -140,6 +142,66 @@ contains
       call allocate_arrays(this)
 
    end subroutine create_mask_arrays_impl
+
+   module subroutine reset_mask_arrays_impl(this)
+      use messagehandling, only: msgbuf, fatal_flush
+      use m_reapol, only: reapol
+      use geometry_module, only: dbpinpol
+      use m_alloc, only: realloc
+
+      class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+
+      integer :: k
+
+      if (allocated(this%cell_indices)) then
+         deallocate(this%cell_indices)
+      end if
+
+      if (allocated(this%cell_indices)) then
+         deallocate(this%cell_indices)
+      end if
+      if (allocated(this%link_indices)) then
+         deallocate(this%link_indices)
+      end if
+      if (allocated(this%link_to_nodes)) then
+         deallocate(this%link_to_nodes)
+      end if
+      if (allocated(this%netnode_indices)) then
+         deallocate(this%netnode_indices)
+      end if
+      if (allocated(this%netlink_indices)) then
+         deallocate(this%netlink_indices)
+      end if
+      if (allocated(this%netlink_to_netnodes)) then
+         deallocate(this%netlink_to_netnodes)
+      end if
+      if (allocated(this%cells_mask)) then
+         deallocate(this%cells_mask)
+      end if
+      if (allocated(this%links_mask)) then
+         deallocate(this%links_mask)
+      end if
+      if (allocated(this%netnodes_mask)) then
+         deallocate(this%netnodes_mask)
+      end if
+      if (allocated(this%netlinks_mask)) then
+         deallocate(this%netlinks_mask)
+      end if
+      this%lnx = 0
+      this%lnxi = 0
+      this%lnx1d = 0
+      this%lnx1db = 0
+      
+      this%ndx = 0
+      this%ndxi = 0
+      this%ndx2d = 0
+      this%ndx1db = 0
+
+      this%numk = 0
+      this%numl = 0
+      this%numl1d = 0
+
+   end subroutine reset_mask_arrays_impl
 
    !> @brief Get the new index for the highest numbered element in mask.
    !! @details This function finds the highest index value in the mask array

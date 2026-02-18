@@ -86,6 +86,10 @@ module m_output_to_polygon
       !! model elements (cells, links, nodes) that fall within the polygon boundary
       procedure :: create_mask_arrays => create_mask_arrays_impl
 
+      !> @brief Reset mask arrays for polygon region
+      !! @details Deallocates and resets all mask arrays for the polygon region
+      procedure :: reset => reset_mask_arrays_impl
+
       !> @brief Find cells inside polygon boundary
       !! @details Determines which flow cells are located within the specified
       !! polygon region and creates appropriate mask arrays
@@ -120,6 +124,15 @@ module m_output_to_polygon
          implicit none
          class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
       end subroutine create_mask_arrays_impl
+   end interface
+
+   !> @brief Reset mask arrays for polygon region
+   !! @details Deallocates and resets all mask arrays for the polygon region
+   interface
+      module subroutine reset_mask_arrays_impl(this)
+         implicit none
+         class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+      end subroutine reset_mask_arrays_impl
    end interface
 
    !> @brief Interface for findcells_inside_polygon implementation
