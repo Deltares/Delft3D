@@ -41,7 +41,6 @@
 class Exception {
     public:
         Exception (
-            bool    fatal,
             const char *  format,
             ...
             );
@@ -51,7 +50,6 @@ class Exception {
             );
 
     public:
-        bool    fatal;
         char *  message;
 
     };

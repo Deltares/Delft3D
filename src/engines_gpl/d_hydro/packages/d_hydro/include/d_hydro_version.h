@@ -30,11 +30,11 @@
 
 /*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE ===================================================================== */
 
-char * getversionstring_d_hydro(void);
-char * getfullversionstring_d_hydro(void);
-char * getshortversionstring_d_hydro(void);
-char * geturlstring_d_hydro(void);
-char * getversionidstring_d_hydro(void);
+const char * getversionstring_d_hydro(void);
+const char * getfullversionstring_d_hydro(void);
+const char * getshortversionstring_d_hydro(void);
+const char * geturlstring_d_hydro(void);
+const char * getversionidstring_d_hydro(void);
 
 #endif /* DIMR_EXE_VERSION */
 

@@ -133,9 +133,9 @@ def make_verschillentool_workbook(
     # Leave maxima sheet empty for now.
     maxima_sheet = workbook.create_sheet(title="Maxima")
     for row in [
-        ["", "Time", "Maximum value over all times"],
-        ["sea_surface_height (m)", "2-1-2035  11:00:00", water_level_stats.max],
-        ["sea_water_speed (m s-1)", "2-1-2035  06:00:00", flow_velocity_stats.max],
+        ["", "Time", "Maximum value over all times", "layers of max"],
+        ["sea_surface_height (m)", "2-1-2035  11:00:00", water_level_stats.max, "2D variable"],
+        ["sea_water_speed (m s-1)", "2-1-2035  06:00:00", flow_velocity_stats.max, "2D variable"],
     ]:
         maxima_sheet.append(row)
 

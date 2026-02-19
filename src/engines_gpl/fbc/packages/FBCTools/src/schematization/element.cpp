@@ -23,7 +23,6 @@
 
 #include "element.h"
 
-using namespace std;
 using namespace rtctools::schematization;
 
 element::element(string id, string name)

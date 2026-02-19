@@ -6440,6 +6440,7 @@ module m_meteo
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
+   integer, target :: item_bubblescreen_discharge !< Unique Item id of the new ext-file's '[BubbleScreen] air discharge' quantity
    integer, allocatable, dimension(:), target :: item_sourcesink_constituent_delta !< Unique Item id of the new ext-file's '[SourceSink] salinityDelta/temperatureDelta/<other constituents>Delta' quantity
 
    integer, target :: item_hrms !< Unique Item id of the ext-file's 'item_hrms' quantity
@@ -6610,6 +6611,7 @@ contains
       item_nudge_salinity = ec_undef_int
       item_discharge_salinity_temperature_sorsin = ec_undef_int
       item_sourcesink_discharge = ec_undef_int
+      item_bubblescreen_discharge = ec_undef_int
       item_hrms = ec_undef_int
       item_tp = ec_undef_int
       item_dir = ec_undef_int
@@ -7085,6 +7087,10 @@ contains
          ! Do not point to array qstss here.
          ! qstss might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
+         nullify (dataPtr1)
+      case ('bubblescreen_discharge')
+         itemPtr1 => item_bubblescreen_discharge
+         ! Do not point to an array here as it might be reallocated after initialization
          nullify (dataPtr1)
       case ('sourcesink_constituentdelta')
          if (strcmpi(constituent_name, 'salinity')) then

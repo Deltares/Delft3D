@@ -86,7 +86,7 @@ contains
       fsqrtt = sqrt(0.5_dp)
       call timstrt('Furu', handle_furu)
 
-      if (kmx == 0 .or. ifixedweirscheme > 0) then ! original 2D coding
+      if (kmx == 0) then ! original 2D coding
 
          call calculate_manhole_losses(network%storS, advi)
 
@@ -95,12 +95,6 @@ contains
          do L = 1, lnx
 
             if (hu(L) > 0) then
-
-               if (kmx > 0) then
-                  if (.not. (iadv(L) == IADV_SUBGRID_WEIR .or. iadv(L) >= IADV_RAJARATNAM_WEIR .and. iadv(L) <= IADV_VILLEMONTE_WEIR)) then ! in 3D, only do this for weir points
-                     cycle
-                  end if
-               end if
 
                k1 = ln(1, L)
                k2 = ln(2, L)
