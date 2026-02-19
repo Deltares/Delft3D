@@ -51,7 +51,8 @@ module m_turbulence
    real(kind=dp), parameter :: C2T = 1.0_DP - C2E
    real(kind=dp), parameter :: C3T_STABLE = 1.0_DP * CMUKEP
    real(kind=dp), parameter :: C3T_UNSTABLE = (1.0_DP - C1E) * CMUKEP
-
+   real(kind=dp), parameter :: CDE = CMUKEP**0.75_DP
+   
    real(kind=dp) :: brunt_vaisala_coefficient
 
    integer, parameter :: kmxx = 2000 !< max dim of nr of vertical layers
