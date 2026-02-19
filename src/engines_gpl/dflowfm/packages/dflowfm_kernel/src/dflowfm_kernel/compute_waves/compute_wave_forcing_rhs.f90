@@ -81,30 +81,30 @@ contains
       end if
       !
       ! Surfbeat model
-      if (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. nwbnd > 0) then
-         if (swave == 1) then
-            call xbeach_wave_bc()
-            call xbeach_apply_wave_bc()
-            call xbeach_waves(ierror)
-            !
-            call xbeach_wave_compute_flowforcing2D() ! Always: sets fx, fy based on radiation stress gradients
-            if (kmx > 0) then
-               call xbeach_wave_compute_flowforcing3D() ! set wavfu 3D
-            end if
-            !
-            if (jaavgwavquant == 1) then
-               call xbeach_makeaverages(dts) ! time-averaged stats
-            end if
-         else
-            uin = 0.0_dp
-            vin = 0.0_dp
-         end if
-         !
-         if (kmx == 0) then
-            call tauwave()
-            call xbeach_flow_bc()
-         end if
-      end if
+      ! if (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. nwbnd > 0) then
+      !    if (swave == 1) then
+      !       call xbeach_wave_bc()
+      !       call xbeach_apply_wave_bc()
+      !       call xbeach_waves(ierror)
+      !       !
+      !       call xbeach_wave_compute_flowforcing2D() ! Always: sets fx, fy based on radiation stress gradients
+      !       if (kmx > 0) then
+      !          call xbeach_wave_compute_flowforcing3D() ! set wavfu 3D
+      !       end if
+      !       !
+      !       if (jaavgwavquant == 1) then
+      !          call xbeach_makeaverages(dts) ! time-averaged stats
+      !       end if
+      !    else
+      !       uin = 0.0_dp
+      !       vin = 0.0_dp
+      !    end if
+      !    !
+      !    if (kmx == 0) then
+      !       call tauwave()
+      !       call xbeach_flow_bc()
+      !    end if
+      ! end if
       !
       ! Uniform wave field
       if (jawave == WAVE_UNIFORM) then
