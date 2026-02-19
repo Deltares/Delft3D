@@ -10,7 +10,7 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 object LinuxSubmitH7ContainerSmokeTest : BuildType({
     templates(
-        TemplateLinuxAgentNoFips,
+        TemplateLinuxAgentFips,
         TemplateMonitorPerformance,
         TemplateDockerRegistry
     )

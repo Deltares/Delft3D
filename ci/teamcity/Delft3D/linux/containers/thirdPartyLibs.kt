@@ -14,7 +14,7 @@ object LinuxThirdPartyLibs : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
-        TemplateLinuxAgentNoFips,
+        TemplateLinuxAgentFips,
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,

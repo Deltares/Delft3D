@@ -13,7 +13,7 @@ object Trigger : BuildType({
     description = "This is triggered for pull-requests and will schedule the appropriate testbenches."
 
     templates(
-        TemplateLinuxAgentNoFips,
+        TemplateLinuxAgentFips,
         TemplateMergeRequest,
         TemplateDetermineProduct,
         TemplatePublishStatus,
