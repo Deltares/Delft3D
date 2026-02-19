@@ -3,9 +3,9 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
                    & dstar     ,taucr     ,aks       ,usus      ,zusus     , &
                    & uwb       ,delr      ,muc       ,tauwav    ,ustarc    , &
                    & tauc      ,taubcw    ,taurat    ,ta        ,caks      , &
-                   & dss       ,mudfrac   ,eps       ,aksfac    ,rwave     , &
+                   & dss       ,eps       ,aksfac    ,rwave     , &
                    & camax     ,rdc       ,rdw       ,iopkcw    ,iopsus    , &
-                   & vonkar    ,wave      ,tauadd    ,betam     ,awb       )
+                   & vonkar    ,wave      ,tauadd    ,awb       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -51,7 +51,6 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
 !
     real(fp), intent(out)   :: aks    !  Description and declaration in esm_alloc_real.f90
     real(fp), intent(out)   :: awb
-    real(fp), intent(in)    :: betam
     real(fp), intent(out)   :: caks
     real(fp), intent(in)    :: d50
     real(fp), intent(in)    :: d90
@@ -60,7 +59,6 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     real(fp), intent(in)    :: dstar
     real(fp), intent(in)    :: h1
     real(fp), intent(out)   :: muc
-    real(fp), intent(in)    :: mudfrac
     real(fp), intent(in)    :: rhowat !  Description and declaration in esm_alloc_real.f90
     real(fp), intent(out)   :: ta
     real(fp), intent(out)   :: taubcw
@@ -103,7 +101,6 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     real(fp) :: ra
     real(fp) :: rc
     real(fp) :: rw
-    real(fp) :: taucr1   ! critical shear stress corrected for mud fraction
 !
 !! executable statements -------------------------------------------------------
 !
@@ -257,13 +254,12 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
     ! Note: this ignores bed-slope effects on initiation of motion
     !
     taubcw = muc*tauc + muw*tauwav
-    taucr1 = taucr*(1.0_fp + mudfrac)**betam
-    taurat = taubcw/taucr1
+    taurat = taubcw/taucr
     !
     ! Calculate Van Rijn's Dimensionless bed-shear stress for reference
     ! concentration at z=a
     !
-    ta = max(0.0_fp, (muc*tauc + muwa*tauwav)/taucr1 - 1.0_fp)
+    ta = max(0.0_fp, (muc*tauc + muwa*tauwav)/taucr - 1.0_fp)
     !
     ! Equilibrium concentration at reference level aks
     ! following Van Rijn.

@@ -281,17 +281,21 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     call copy_and_sort_percentiles(morpar, nxxuser, nxxprog, xxprog, max_nuserfrac, rfield, lundia, error)
     if (error) return
     !
-    if (sedpar%anymud) then
-       call rdflufflyr(lundia    ,error    ,filmor    ,lsed    , &
-                     & mor_ptr   ,morpar%flufflyr     ,sedpar  , &
-                     & griddim   )
-    end if
-    !
     call rdmorlyr (lundia    ,error     ,filmor    , &
                  & nmaxus    ,nto       ,lfbedfrm  , &
                  & nambnd    ,version   ,lsedtot   , sedpar%namsed    , &
                  & morpar    ,morlyr    ,sedpar    ,mor_ptr   , &
                  & griddim   )
+    if (error) return
+    !
+    if (sedpar%anymud) then
+       if (morlyr%settings%iconsolidate==1) then
+          morpar%flufflyr%iburtype = 2
+       endif
+       call rdflufflyr(lundia    ,error    ,filmor    ,lsed    , &
+                     & mor_ptr   ,morpar%flufflyr     ,sedpar  , &
+                     & griddim   )
+    end if
     !
     deallocate(xxprog)
 end subroutine rdmor
@@ -875,13 +879,17 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     call prop_get(mor_ptr, 'Output', 'ReferenceHeight'             , moroutput%aks)
     call prop_get(mor_ptr, 'Output', 'SettlingVelocity'            , moroutput%ws)
     call prop_get(mor_ptr, 'Output', 'RawTransportsAtZeta'         , moroutput%rawtransports)
+    call prop_get(mor_ptr, 'Output', 'OrbitalVel'                  , moroutput%orbvel)
     call prop_get(mor_ptr, 'Output', 'Seddif'                      , moroutput%seddif)
     call prop_get(mor_ptr, 'Output', 'SedParOut'                   , moroutput%sedpar) ! backward compatibility
     call prop_get(mor_ptr, 'Output', 'SedPar'                      , moroutput%sedpar)
     !
     call prop_get(mor_ptr, 'Output', 'Bedslope'                    , moroutput%dzduuvv)
+    call prop_get(mor_ptr, 'Output', 'EroPar'                      , moroutput%eropar)
+    call prop_get(mor_ptr, 'Output', 'TcrEro'                      , moroutput%tcrero)
     call prop_get(mor_ptr, 'Output', 'Taub'                        , moroutput%taub)
     call prop_get(mor_ptr, 'Output', 'Taurat'                      , moroutput%taurat)
+    call prop_get(mor_ptr, 'Output', 'td    '                      , moroutput%td)
     !
     call prop_get(mor_ptr, 'Output', 'Dm'                          , moroutput%dm)
     call prop_get(mor_ptr, 'Output', 'Dg'                          , moroutput%dg)
@@ -901,6 +909,13 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     call prop_get(mor_ptr, 'Output', 'BedLayerDepth'               , moroutput%dpbedlyr)
     call prop_get(mor_ptr, 'Output', 'BedLayerPorosity'            , moroutput%poros)
     call prop_get(mor_ptr, 'Output', 'BedLayerPreload'             , moroutput%preload)
+    call prop_get(mor_ptr, 'Output', 'BedLayerMudConcentration'    , moroutput%cmudlyr)
+    call prop_get(mor_ptr, 'Output', 'BedLayerSandConcentration'   , moroutput%csandlyr)
+    call prop_get(mor_ptr, 'Output', 'BedLayerConcentrations'      , moroutput%conclyr)
+    !
+    call prop_get(mor_ptr, 'Output', 'FluffDepositionFlux'         , moroutput%depflxf)
+    call prop_get(mor_ptr, 'Output', 'FluffErosionFlux'            , moroutput%eroflxf)
+    call prop_get(mor_ptr, 'Output', 'FluffBurialFlux'             , moroutput%burflxf)
     !
     call prop_get(mor_ptr, 'Output', 'TimeAveragedTransport'    , moroutput%sxyavg)
     call prop_get(mor_ptr, 'Output', 'AverageAtEachOutputTime'     , moroutput%cumavg)
@@ -2133,6 +2148,9 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
 !
     integer                         , pointer :: iflufflyr
     real(fp)      , dimension(:)    , pointer :: mfluni
+    real(fp)                        , pointer :: cmfluff
+    real(fp)                        , pointer :: kkfluff
+    real(fp)                        , pointer :: acalbur0
     real(fp)      , dimension(:,:)  , pointer :: bfluff
     real(fp)      , dimension(:,:)  , pointer :: depfac
     character(256), dimension(:)    , pointer :: mflfil
@@ -2157,6 +2175,9 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
 !! executable statements -------------------------------------------------------
 !
     iflufflyr            => flufflyr%iflufflyr
+    cmfluff              => flufflyr%cmfluff
+    kkfluff              => flufflyr%kkfluff
+    acalbur0             => flufflyr%acalbur0
     !
     error      = .false.
     rmissval   = -999.0
@@ -2196,6 +2217,7 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     enddo
     !
     if (iflufflyr==1) then
+       call prop_get(mor_ptr, 'FluffLayer', 'BurType', flufflyr%iburtype)
        do i = 0, 1 ! loop over burial terms
           if (i==0) then ! is this mixing of 0/1-based indexing clear for the user?
              key = 'BurFluff0'
@@ -2210,47 +2232,56 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
           end if
           bfluff = 0.0_fp
           !
-          call prop_get(mor_ptr, 'FluffLayer', key, filmor, is_float, bfluff(1,1), filename)
-          if (is_float) then
-             if (bfluff(1,1) < 0.0_fp) then
-                call write_error('Value for '//quantity//' should be positive in '//trim(filmor), unit=lundia)
-                error = .true.
-                return
-             end if
-             bfluff(1,:) = bfluff(1,1)
-          else
-             inquire (file = filename, exist = ex)
-             if (ex) then
-                !
-                ! read data from file
-                !
-                call depfil_stm(lundia    ,error     ,filename  ,fmttmp    , &
-                              & bfluff    ,lsed      ,1         ,griddim   ,errmsg )
-                if (error) then
-                    call write_error(errmsg, unit=lundia)
-                    call write_error('Unable to read '//quantity//' from '//filename, unit=lundia)
-                    return
+          if (flufflyr%iburtype /= 1 .and. i == 0)
+             !
+             ! Burial term 1 fluff layer computed dynamically
+             !
+             call prop_get(mor_ptr, 'FluffLayer', 'cmfluff', cmfluff)
+             call prop_get(mor_ptr, 'FluffLayer', 'kkfluff', kkfluff)
+             call prop_get(mor_ptr, 'FluffLayer', 'acalbur0', acalbur0)
+          else ! flufflyr%iburtype == 1
+             call prop_get(mor_ptr, 'FluffLayer', key, filmor, is_float, bfluff(1,1), filename)
+             if (is_float) then
+                if (bfluff(1,1) < 0.0_fp) then
+                   call write_error('Value for '//quantity//' should be positive in '//trim(filmor), unit=lundia)
+                   error = .true.
+                   return
                 end if
-                flufflyr%bfluff0_fil = filename
-                !
-                ! check input
-                !
-                do nm = nmlb, nmub
-                    if (bfluff(1,nm) < 0.0_fp .and. bfluff(1,nm) /= rmissval ) then
-                        call write_error('Values for '//quantity//' should be positive in '//filename, unit=lundia)
-                        error = .true.
-                        return
-                    end if
-                enddo
+                bfluff(1,:) = bfluff(1,1)
              else
-                call write_error('File for '//quantity//' not found: '//filename, unit=lundia)
-                error = .true.
-                return
+                inquire (file = filename, exist = ex)
+                if (ex) then
+                   !
+                   ! read data from file
+                   !
+                   call depfil_stm(lundia    ,error     ,filename  ,fmttmp    , &
+                                 & bfluff    ,lsed      ,1         ,griddim   ,errmsg )
+                   if (error) then
+                       call write_error(errmsg, unit=lundia)
+                       call write_error('Unable to read '//quantity//' from '//filename, unit=lundia)
+                       return
+                   end if
+                   flufflyr%bfluff0_fil = filename
+                   !
+                   ! check input
+                   !
+                   do nm = nmlb, nmub
+                       if (bfluff(1,nm) < 0.0_fp .and. bfluff(1,nm) /= rmissval ) then
+                           call write_error('Values for '//quantity//' should be positive in '//filename, unit=lundia)
+                           error = .true.
+                           return
+                       end if
+                   enddo
+                else
+                   call write_error('File for '//quantity//' not found: '//filename, unit=lundia)
+                   error = .true.
+                   return
+                end if
              end if
-          end if
-          do l = 2, lsed
-              bfluff(l,:) = bfluff(1,:)
-          end do
+             do l = 2, lsed
+                 bfluff(l,:) = bfluff(1,:)
+             end do
+          endif
        end do
 
     elseif (iflufflyr==2) then
@@ -2323,6 +2354,8 @@ subroutine echoflufflyr(lundia    ,error    ,flufflyr)
 ! Local variables
 !
     integer         , pointer :: iflufflyr
+    real(fp)        , pointer :: cmfluff
+    real(fp)        , pointer :: kkfluff
     !
     character(30)             :: txtput1
 !
@@ -2330,6 +2363,9 @@ subroutine echoflufflyr(lundia    ,error    ,flufflyr)
 !
     error      = .false.
     iflufflyr            => flufflyr%iflufflyr
+    cmfluff              => flufflyr%cmfluff
+    kkfluff              => flufflyr%kkfluff
+
     if (iflufflyr==0) return
     !
     write (lundia, '(a)')   '*** Start  of fluff layer input'
@@ -2338,11 +2374,21 @@ subroutine echoflufflyr(lundia    ,error    ,flufflyr)
     !
     if (iflufflyr==1) then
         txtput1 = 'Burial coefficient 1'
-        if (flufflyr%bfluff0_fil /= ' ') then
-            write(lundia,'(3a)') txtput1, ':', trim(flufflyr%bfluff0_fil)
+        if (flufflyr%iburtype == 1) then
+           if (flufflyr%bfluff0_fil /= ' ') then
+               write(lundia,'(3a)') txtput1, ':', trim(flufflyr%bfluff0_fil)
+           else
+               write(lundia,'(2a,e20.4)') txtput1, ':', flufflyr%bfluff0(1,1)
+           end if
         else
-            write(lundia,'(2a,e20.4)') txtput1, ':', flufflyr%bfluff0(1,1)
-        end if
+           write(lundia,'(3a)') txtput1, ':', 'Computed using'
+           txtput1 = '   Fluffy layer dry density'
+           write(lundia,'(2a,e20.4)') txtput1, ':', flufflyr%cmfluff
+           txtput1 = '   Fluffy layer permeability'
+           write(lundia,'(2a,e20.4)') txtput1, ':', flufflyr%kkfluff
+           txtput1 = '   Burial term calibration coeff.'
+           write(lundia,'(2a,e20.4)') txtput1, ':', flufflyr%acalbur0
+        endif
         !
         txtput1 = 'Burial coefficient 2'
         if (flufflyr%bfluff1_fil /= ' ') then

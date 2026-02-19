@@ -1,15 +1,15 @@
 subroutine bedbc2004(tp        ,rhowat    , &
                    & h1        ,umod      ,d10       ,zumod     ,d50       , &
                    & d90       ,z0cur     ,z0rou     ,drho      ,dstar     , &
-                   & taucr0    ,u2dhim    ,aks       ,ra        ,usus      , &
+                   & taucr     ,u2dhim    ,aks       ,ra        ,usus      , &
                    & zusus     ,uwb       ,muc       ,tauwav    ,ustarc    , &
                    & tauc      ,taurat    ,ta        ,caks      ,dss       , &
                    & uwc       ,uuu       ,vvv       ,rlabda    ,taubcw    , &
                    & hrms      ,delw      ,uon       ,uoff      ,uwbih     , &
                    & delm      ,fc1       ,fw1       ,phicur    ,kscr      , &
-                   & i2d3d     ,mudfrac   ,fsilt     ,taucr1    ,psi       , &
+                   & i2d3d     ,mudfrac   ,fsilt     ,psi       , &
                    & dzduu     ,dzdvv     ,eps       ,camax     ,iopsus    , &
-                   & ag        ,wave      ,tauadd    ,gamtcr    ,betam     , &
+                   & ag        ,wave      ,tauadd    , &
                    & awb       ,wform     ,phi_phase ,r         ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -59,7 +59,6 @@ subroutine bedbc2004(tp        ,rhowat    , &
     integer, intent(in)   :: i2d3d
     real(fp), intent(out) :: aks    !< reference height
     real(fp), intent(out) :: awb    !< peak orbital excursion at edge of wave boundary layer
-    real(fp), intent(in)  :: betam
     real(fp), intent(out) :: caks
     real(fp), intent(in)  :: d10
     real(fp), intent(in)  :: d50
@@ -70,7 +69,6 @@ subroutine bedbc2004(tp        ,rhowat    , &
     real(fp), intent(in)  :: dstar
     real(fp), intent(out) :: fc1
     real(fp), intent(out) :: fsilt
-    real(fp), intent(in)  :: gamtcr
     real(fp), intent(in)  :: h1
     real(fp), intent(in)  :: hrms   !< root mean square wave height
     real(fp), intent(in)  :: kscr
@@ -83,8 +81,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
     real(fp), intent(out) :: ta
     real(fp), intent(out) :: taubcw
     real(fp), intent(out) :: tauc
-    real(fp), intent(in)  :: taucr0
-    real(fp), intent(out) :: taucr1
+    real(fp), intent(in)  :: taucr
     real(fp), intent(out) :: taurat
     real(fp), intent(out) :: tauwav
     real(fp), intent(in)  :: tp     !< peak wave period (limited to values larger than 1e-2)
@@ -118,15 +115,10 @@ subroutine bedbc2004(tp        ,rhowat    , &
 !
     real(fp) :: a11  
     real(fp) :: alfacw
-    real(fp) :: cmax
     real(fp) :: cc
-    real(fp) :: cmaxs
     real(fp) :: d50t
     real(fp) :: delm
     real(fp) :: fc
-    real(fp) :: fch1
-    real(fp) :: fclay
-    real(fp) :: fpack
     real(fp) :: fw
     real(fp) :: fw1
     real(fp) :: kswr
@@ -375,19 +367,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
     !
     ! critical bed-shear stress
     !
-    fclay = 1.0_fp
-    fpack = 1.0_fp
-    fch1  = 1.0_fp
-    if (d50 < dsand) then
-       cmaxs = 0.65_fp
-       fch1  = max((dsand/d50)**gamtcr, 1.0_fp)
-       cmax  = min(max((d50/dsand)*cmaxs , 0.05_fp) , cmaxs)
-       fpack = min(cmax/cmaxs , 1.0_fp)
-    else
-       fclay = min((1.0_fp+mudfrac)**betam, 2.0_fp)
-    endif
-    taucr1 = fpack * fch1 * fclay * taucr0
-    taurat  = taubcw / taucr1
+    taurat = taubcw / taucr
     !
     ! Make assumptions for friction angle
     !
@@ -405,8 +385,8 @@ subroutine bedbc2004(tp        ,rhowat    , &
     ! calculate Van Rijn's Dimensionless bed-shear stress for reference
     ! concentration at z=a
     !
-    rrr1    = max(min(0.8_fp+0.2_fp*((taubcw/(taucr1*fac_slp)-0.8_fp)/1.2_fp) , 1.0_fp) , 0.8_fp )
-    ta = (taubcw-rrr1*taucr1*fac_slp) / (taucr1*fac_slp)
+    rrr1    = max(min(0.8_fp+0.2_fp*((taubcw/(taucr*fac_slp)-0.8_fp)/1.2_fp) , 1.0_fp) , 0.8_fp )
+    ta = (taubcw-rrr1*taucr*fac_slp) / (taucr*fac_slp)
     !
     ! Equilibrium concentration at reference level aks
     ! following Van Rijn.

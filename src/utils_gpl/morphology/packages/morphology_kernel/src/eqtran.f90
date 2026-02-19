@@ -184,6 +184,7 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     real(fp)                    :: dzdx
     real(fp)                    :: dzdy
     real(fp)                    :: poros
+    real(fp)                    :: taucrb !< critical shear stress of bed material [N/m2]
     real(fp)                    :: ua
     real(fp)                    :: va
     real(fp)                    :: wsb
@@ -262,6 +263,7 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     dgsd      = real(realpar(RP_DGSD) ,fp)
     sandfrac  = real(realpar(RP_SNDFR),fp)
     zb        = real(realpar(RP_ZB)   ,fp)
+    taucrb    = real(realpar(RP_TAUCR),fp)
     !
     cesus  = 0.0_fp
     sbot   = 0.0_fp
@@ -306,7 +308,7 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        ! Van Rijn 1993
        !
        call tram1(numrealpar,realpar   ,wave      ,npar      ,par       , &
-                & num_layers_grid      ,bed       , &
+                & num_layers_grid      ,bed       ,taucrb    , &
                 & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
                 & frac      ,sig       ,thick     ,ws        , &
                 & dicww     ,ltur      , &

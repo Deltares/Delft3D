@@ -72,12 +72,14 @@ contains
       use precision_basics
       use bedcomposition_module
       use sediment_basics_module
+      use m_flow, only: kmx
       use m_flowgeom, only: ndxi, ndx
       use m_flowparameters, only: eps10, jawave
       use fm_external_forcings_data, only: nopenbndsect
       use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
+      use m_turbulence, only: rhowat
       use unstruc_files, only: mdia
-      use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
+      use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy, iconsolidate, rhosol
       use m_sediment, only: kcsmor
       use m_partitioninfo, only: jampi, ITYPE_Sall, update_ghosts
       use m_fm_morstatistics, only: morstats, morstatt0
@@ -106,9 +108,12 @@ contains
       logical :: error
 
       integer :: ierror, ll
+      integer :: kb, kt
 
       real(kind=dp) :: dtmor
       real(kind=dp) :: timhr
+      
+      real(fp), dimension(:), allocatable :: rhowat2d
 
       logical, pointer :: cmpupd
 
@@ -192,9 +197,19 @@ contains
          call fm_bed_boundary_conditions(timhr)
 
          call fm_change_in_sediment_thickness(dtmor)
-
-         call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac)
-
+         
+         allocate(rhowat2d(ndxi))
+         do nm = 1, ndxi
+            if (kmx>0) then ! 3D case
+               call getkbotktop(nm, kb, kt)
+            else ! 2D case
+               kb = nm
+            endif
+            rhowat2d(nm) = rhowat(kb)
+         enddo
+         call fluff_burial(stmpar%morpar%flufflyr, dbodsd, lsed, lsedtot, 1, ndxi, dts, morfac, iconsolidate, rhosol, rhowat2d)
+         deallocate(rhowat2d)
+         
          call fm_dry_bed_erosion(dtmor)
 
          !See: UNST-7368
@@ -233,7 +248,7 @@ contains
             ! Update layers and obtain the depth change
             !
             !See: UNST-7369
-            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages) /= 0) then
+            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages, morft, dtmor) /= 0) then
                call writemessages(mtd%messages, mdia)
                write (errmsg, '(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
                call write_error(errmsg, unit=mdia)

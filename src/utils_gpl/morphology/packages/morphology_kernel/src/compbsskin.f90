@@ -178,7 +178,11 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
     !
     ! Compute basic parameters
     !
-    effwave = wave .and. (tper > 0.0_fp) .and. (uorb >= 1.0-6_fp)
+    if (wave) then
+        effwave = (tper > 0.0_fp) .and. (uorb >= 1.0-6_fp)
+    else
+        effwave = .false.
+    endif
     umod   = max( sqrt(umean*umean + vmean*vmean) , localeps )
     !
     if (sc_mudfac == SC_MUDFRAC) then

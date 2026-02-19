@@ -128,7 +128,7 @@ subroutine morstats_full(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, s
     !
     if (nstatqnt == 0) return
     !
-    do nm = nmlb, nmub
+    do nm = nmlb + nmaxddb, nmub
         nmd = nm - nmaxddb
         ndm = nm - 1
         !
