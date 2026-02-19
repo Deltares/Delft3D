@@ -32,6 +32,7 @@ project {
 
     }
 
+    template(TemplateNoFipsAgent)    
     template(TemplateMergeRequest)
     template(TemplateDetermineProduct)
     template(TemplatePublishStatus)
