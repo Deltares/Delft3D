@@ -414,9 +414,9 @@ module fm_external_forcings_data
    integer, allocatable :: ksrc(:, :) !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
    real(kind=dp), target, allocatable :: qsrc(:) !< cell influx (m3/s) if negative: outflux
    real(kind=dp), allocatable :: ccsrc(:, :) !< dimension (numvalssrc, num_source_sink), keeps sasrc, tmsrc etc
-   real(kind=dp), allocatable :: arsrc(:) !< pipe cross sectional area (m2). If 0, no net momentum
-   real(kind=dp), allocatable :: cssrc(:, :) !< (1:2,num_source_sink) cosine discharge dir pipe on start side (1) and end side (2) of pipe.
-   real(kind=dp), allocatable :: snsrc(:, :) !< (1:2,num_source_sink) sine discharge dir pipe on start side (1) and end side (2) of pipe.
+   real(kind=dp), allocatable :: source_sink_area(:) !< [m2] area of source/sink. If zero, source/sink transport no momentum {size=(num_source_sink)}
+   real(kind=dp), allocatable :: source_sink_discharge_cosine(:, :) !< Cosine of discharge on sink side (1) and source side (2) {size=(2,num_source_sink)}
+   real(kind=dp), allocatable :: source_sink_discharge_sine(:, :) !< Sine of discharge on sink side (1) and source side (2) {size=(2,num_source_sink)}
    real(kind=dp), allocatable :: zsrc(:, :) !< vertical level (m) bot
    real(kind=dp), allocatable :: zsrc2(:, :) !< vertical level (m) top (optional)
    real(kind=dp), allocatable :: srsn(:, :) !< 2*(1+numvalssrc),num_source_sink, to be reduced

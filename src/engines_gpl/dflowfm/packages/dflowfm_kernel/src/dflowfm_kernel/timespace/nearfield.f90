@@ -295,9 +295,9 @@ contains
 !>                    (2,i) top    z-coordinate of source
 !>            qstss : discharge volumes and constituents
 !>         For momentum:
-!>            arsrc : area of discharge. Velocity = qstss_volume / arsrc
-!>            cssrc : cosine of angle of discharge
-!>            snsrc : sinus  of angle of discharge
+!>            source_sink_area : area of discharge. Velocity = qstss_volume / source_sink_area
+!>            source_sink_discharge_cosine : cosine of angle of discharge
+!>            source_sink_discharge_sine : sinus  of angle of discharge
    subroutine nearfieldToFM()
       use m_alloc, only: realloc
       use m_physcoef, only: NFEntrainmentMomentum
@@ -314,7 +314,7 @@ contains
       !     num_source_sink_near_field: 0
       ! They will be redefined in this subroutine
       do i = num_source_sink + 1, num_source_sink_near_field
-         arsrc(i) = 0.0_hp
+         source_sink_area(i) = 0.0_hp
       end do
       num_source_sink = num_source_sink - num_source_sink_near_field
       num_source_sink_near_field = 0
@@ -832,12 +832,12 @@ contains
          ! =>
          !         ai = Atot / wi
          !
-         arsrc(num_source_sink) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
+         source_sink_area(num_source_sink) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
          ! Direction:
          ! nf_sour(:,:,NF_IUDIR)                           : 0=east , 90=north
          ! To be consistent with Delft3D4, change this into: 0=north, 90=east
-         cssrc(2, num_source_sink) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
-         snsrc(2, num_source_sink) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         source_sink_discharge_cosine(2, num_source_sink) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         source_sink_discharge_sine(2, num_source_sink) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
       end do
    end subroutine dischargeToSrc
 !
@@ -917,7 +917,7 @@ contains
 !==============================================================================
 !> If "NearFieldEntrainmentMomentum" is switched on:
 !> Every timestep:
-!> Update arsrc, cssrc, snsrc based on ucx/ucy in the sink point
+!> Update source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine based on ucx/ucy in the sink point
 !> The nk index of the sink point is stored in nf_sinkid
 !> Keep in mind that the number of entrainment (coupled sink/source) points may vary per diffuser. As a result,
 !> the values in nf_sinkid are shifted: instead of using "i", use "i-nf_entr_start(idif)+1"
@@ -941,11 +941,11 @@ contains
             nk = nf_sinkid(idif, i - nf_entr_start(idif) + 1)
             umag = sqrt(ucx(nk)**2 + ucy(nk)**2)
             if (umag < eps_fp) then
-               arsrc(i) = 0.0_hp
+               source_sink_area(i) = 0.0_hp
             else
-               arsrc(i) = qstss((1 + numconst) * (i - 1) + 1) / umag
-               cssrc(2, i) = ucx(nk) / umag
-               snsrc(2, i) = ucy(nk) / umag
+               source_sink_area(i) = qstss((1 + numconst) * (i - 1) + 1) / umag
+               source_sink_discharge_cosine(2, i) = ucx(nk) / umag
+               source_sink_discharge_sine(2, i) = ucy(nk) / umag
             end if
          end do
       end do

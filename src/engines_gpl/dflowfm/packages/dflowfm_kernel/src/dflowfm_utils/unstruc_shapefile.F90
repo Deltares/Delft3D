@@ -1028,7 +1028,7 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use fm_external_forcings_data, only: ksrc, num_source_sink, xsrc, ysrc, nxsrc, srcname, arsrc, qstss
+      use fm_external_forcings_data, only: ksrc, num_source_sink, xsrc, ysrc, nxsrc, srcname, source_sink_area, qstss
       use m_flowgeom, only: xz, yz
       use m_transportdata, only: NUMCONST
       implicit none
@@ -1138,8 +1138,8 @@ contains
             end if
 
             ! write area
-            if (allocated(arsrc)) then
-               j = dbfwriteattribute(shphandle, ishape, id_area, arsrc(i))
+            if (allocated(source_sink_area)) then
+               j = dbfwriteattribute(shphandle, ishape, id_area, source_sink_area(i))
             end if
 
             if (j /= 1) then

@@ -134,7 +134,7 @@ contains
 
    !> Add a source-sink to the model.
    subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
-      use fm_external_forcings_data, only: num_source_sink, xsrc, ysrc, nxsrc, ksrc, zsrc, zsrc2, arsrc, cssrc, snsrc, srcname
+      use fm_external_forcings_data, only: num_source_sink, xsrc, ysrc, nxsrc, ksrc, zsrc, zsrc2, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, srcname
       use m_GlobalParameters, only: INDTP_ALL
 
       use messagehandling, only: msgbuf, warn_flush
@@ -194,7 +194,7 @@ contains
             write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
             call warn_flush()
          end if
-         arsrc(num_source_sink) = 0.0_dp
+         source_sink_area(num_source_sink) = 0.0_dp
       else ! Default: linked source-sink, with 2 or more polyline points
          ! call inflowcell(xpl(1) , ypl(1)  , kk) ! FROM: sink
          tmpname = name//' sink'
@@ -205,7 +205,7 @@ contains
          end if
 
          if (kk /= 0 .or. kk2 /= 0) then
-            arsrc(num_source_sink) = area
+            source_sink_area(num_source_sink) = area
          end if
       end if
 
@@ -232,7 +232,7 @@ contains
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), xsrc(num_source_sink, 2), ysrc(num_source_sink, 2), cssrc(1, num_source_sink), snsrc(1, num_source_sink), xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), jsferic, jasfer3D, dxymis)
+            call normalin(xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), xsrc(num_source_sink, 2), ysrc(num_source_sink, 2), source_sink_discharge_cosine(1, num_source_sink), source_sink_discharge_sine(1, num_source_sink), xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), jsferic, jasfer3D, dxymis)
          end if
 
          do i = 1, num_source_sink - 1
@@ -255,7 +255,7 @@ contains
          end if
          ! Determine angle (sin/cos) of 'to' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(xsrc(num_source_sink, num_points - 1), ysrc(num_source_sink, num_points - 1), xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), cssrc(2, num_source_sink), snsrc(2, num_source_sink), xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
+            call normalin(xsrc(num_source_sink, num_points - 1), ysrc(num_source_sink, num_points - 1), xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), source_sink_discharge_cosine(2, num_source_sink), source_sink_discharge_sine(2, num_source_sink), xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
          end if
 
          do i = 1, num_source_sink - 1

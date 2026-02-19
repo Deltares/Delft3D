@@ -42,7 +42,7 @@ contains
 
    subroutine doaddksources() ! add k sources
       use precision, only: dp
-      use m_flow, only: num_source_sink, ksrc, arsrc, qsrc, vol1, turkinws
+      use m_flow, only: num_source_sink, ksrc, source_sink_area, qsrc, vol1, turkinws
       use m_flowtimes, only: dts
       implicit none
 
@@ -54,7 +54,7 @@ contains
             cycle ! due to initialisation
          end if
 
-         if (arsrc(n) == 0) then
+         if (source_sink_area(n) == 0) then
             cycle
          end if
          kk = ksrc(1, n) ! 2D pressure cell nr FROM
@@ -67,7 +67,7 @@ contains
             if (qsrck > 0) then ! FROM k to k2
                turkinws(k) = turkinws(k) - dts * qsrck * dvoli * turkinws(k)
             else if (qsrck < 0) then ! FROM k2 to k
-               turkinws(k) = turkinws(k) - dts * qsrck * dvoli * 0.5_dp * (qsrck / arsrc(n))**2
+               turkinws(k) = turkinws(k) - dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sink_area(n))**2
             end if
          end if
 
@@ -75,7 +75,7 @@ contains
             k = ksrc(5, n)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then
-               turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / arsrc(n))**2
+               turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sink_area(n))**2
             else if (qsrck < 0) then
                turkinws(k) = turkinws(k) + dts * qsrck * dvoli * turkinws(k)
             end if
