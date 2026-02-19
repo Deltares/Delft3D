@@ -151,7 +151,7 @@ module unstruc_model
    character(len=max_prop_length) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
    character(len=max_prop_length) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
    character(len=max_prop_length) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
-   character(len=255) :: md_dynvegpol = ' ' !< File containing extent of dynymic vegetation application
+   character(len=max_prop_length) :: md_dynvegpol = ' ' !< File containing extent of dynamic vegetation application
 
    character(len=max_prop_length) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
    integer :: md_delete_observation_points_outside_grid !< 0 - do not delete, 1 - delete
@@ -1522,7 +1522,7 @@ contains
       call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
       call prop_get(md_ptr, 'sediment', 'DiffusionScaling', difparam, success) ! Scaling factor to increase diffusion below reference level
-      call prop_get(md_ptr, 'sediment', 'DiffusionCal', difcal, success) ! Scaling factor to change diffusion for ssc
+      call prop_get(md_ptr, 'sediment', 'DiffusionCal', seddif_cal, success) ! Scaling factor to change diffusion for ssc
 
       if (jased > 0 .and. .not. stm_included) then
          call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)

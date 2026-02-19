@@ -51,10 +51,10 @@ module m_physcoef
    real(kind=dp) :: frcuniroof = 0.030
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
-   integer :: dynroughveg
-   real(kind=dp) :: frcumin
-   real(kind=dp) :: droot
-   real(kind=dp) :: dstem
+   integer :: dynroughveg !< 0=off, 1=on, effect erosion/sedimentation on Manning roughness representative of dune vegetation in storm models, only for 2D friction
+   real(kind=dp) :: frcumin !< base (Manning) friction (without vegetation) in vegetation polygon area, default 0.023 [s/m^(1/3)]
+   real(kind=dp) :: droot !< root depth for dynamic roughness vegetation, default 0.5m
+   real(kind=dp) :: dstem !< stem height for dynamic roughness vegetation, default 0.5m
 
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
    real(kind=dp) :: frcunilin !< uniform friction coeff
