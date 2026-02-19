@@ -137,7 +137,7 @@ contains
 !! arrays used during the D-Flow FM computation
    subroutine addNearfieldData()
       call desa()
-      call nearfieldToFM() !ksrc(1,:),ksrc(4,:),qstss, srcnames, zsrc, zsrc2, later also area
+      call nearfieldToFM() !ksrc(1,:),ksrc(4,:),qstss, srcnames, source_sink_z_bot, source_sink_z_top, later also area
       nearfield_mode = NEARFIELD_ENABLED
    end subroutine addNearfieldData
 !
@@ -289,9 +289,9 @@ contains
 !> Result: Filled:
 !>            ksrc  : (1,i) horizontal cell index of sink
 !>                    (4,i) horizontal cell index of source
-!>            zsrc  : (1,i) bottom z-coordinate of sink
+!>            source_sink_z_bot  : (1,i) bottom z-coordinate of sink
 !>                    (2,i) bottom z-coordinate of source
-!>            zsrc2 : (1,i) top    z-coordinate of sink
+!>            source_sink_z_top : (1,i) top    z-coordinate of sink
 !>                    (2,i) top    z-coordinate of source
 !>            qstss : discharge volumes and constituents
 !>         For momentum:
@@ -676,19 +676,19 @@ contains
             !
             ! Sink
             ksrc(1, num_source_sink) = nf_sink_n(idif, isink)
-            zsrc(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
-            zsrc2(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
+            source_sink_z_bot(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
+            source_sink_z_top(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
             !
             ! Source
             ksrc(4, num_source_sink) = nf_sour_n(idif, isour)
             if (nf_numsour == 1) then
-               zsrc(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-               zsrc2(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+               source_sink_z_bot(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+               source_sink_z_top(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
             else
                !
                ! Do not use NF_IH, but just NF_IZ
-               zsrc(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
-               zsrc2(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+               source_sink_z_bot(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+               source_sink_z_top(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
             end if
             call check_mixed_source_sink(num_source_sink)
             !
@@ -782,19 +782,19 @@ contains
          !
          ! Sink
          ksrc(1, num_source_sink) = 0
-         zsrc(1, num_source_sink) = 0.0_hp
-         zsrc2(1, num_source_sink) = 0.0_hp
+         source_sink_z_bot(1, num_source_sink) = 0.0_hp
+         source_sink_z_top(1, num_source_sink) = 0.0_hp
          !
          ! Source
          ksrc(4, num_source_sink) = nf_sour_n(idif, isour)
          if (nf_numsour == 1) then
-            zsrc(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-            zsrc2(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+            source_sink_z_bot(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+            source_sink_z_top(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
          else
             !
             ! Do not use NF_IH, but just NF_IZ
-            zsrc(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
-            zsrc2(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+            source_sink_z_bot(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+            source_sink_z_top(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
          end if
          call check_mixed_source_sink(num_source_sink)
          !
@@ -870,13 +870,13 @@ contains
          !
          ! Sink
          ksrc(1, num_source_sink) = nf_intake_n(idif, iintake)
-         zsrc(1, num_source_sink) = nf_intake_z(idif, iintake)
-         zsrc2(1, num_source_sink) = nf_intake_z(idif, iintake)
+         source_sink_z_bot(1, num_source_sink) = nf_intake_z(idif, iintake)
+         source_sink_z_top(1, num_source_sink) = nf_intake_z(idif, iintake)
          !
          ! Source
          ksrc(4, num_source_sink) = 0
-         zsrc(2, num_source_sink) = 0.0_hp
-         zsrc2(2, num_source_sink) = 0.0_hp
+         source_sink_z_bot(2, num_source_sink) = 0.0_hp
+         source_sink_z_top(2, num_source_sink) = 0.0_hp
          !
          call check_mixed_source_sink(num_source_sink)
          !
@@ -972,7 +972,7 @@ contains
          if (ksrc(1, num_source_sink) == ksrc(4, i) .and. ksrc(1, num_source_sink) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (zsrc2(1, num_source_sink) > zsrc(2, i) .and. zsrc2(2, i) > zsrc(1, num_source_sink)) then
+            if (source_sink_z_top(1, num_source_sink) > source_sink_z_bot(2, i) .and. source_sink_z_top(2, i) > source_sink_z_bot(1, num_source_sink)) then
                write (message, '(5a,i0)') "The sink location of '", trim(srcname(num_source_sink)), &
                                       & "' coincides with the source location of '", trim(srcname(i)), &
                                       & "'. Horizontal cell index: ", ksrc(1, num_source_sink)
@@ -985,7 +985,7 @@ contains
          if (ksrc(4, num_source_sink) == ksrc(1, i) .and. ksrc(4, num_source_sink) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (zsrc2(2, num_source_sink) > zsrc(1, i) .and. zsrc2(1, i) > zsrc(2, num_source_sink)) then
+            if (source_sink_z_top(2, num_source_sink) > source_sink_z_bot(1, i) .and. source_sink_z_top(1, i) > source_sink_z_bot(2, num_source_sink)) then
                write (message, '(5a,i0)') "The source location of '", trim(srcname(num_source_sink)), &
                                       & "' coincides with the sink location of '", trim(srcname(i)), &
                                       & "'. Horizontal cell index: ", ksrc(4, num_source_sink)

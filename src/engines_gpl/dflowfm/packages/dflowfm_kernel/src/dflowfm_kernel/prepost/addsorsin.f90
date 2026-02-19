@@ -134,7 +134,7 @@ contains
 
    !> Add a source-sink to the model.
    subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
-      use fm_external_forcings_data, only: num_source_sink, xsrc, ysrc, nxsrc, ksrc, zsrc, zsrc2, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, srcname
+      use fm_external_forcings_data, only: num_source_sink, xsrc, ysrc, nxsrc, ksrc, source_sink_z_bot, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, srcname
       use m_GlobalParameters, only: INDTP_ALL
 
       use messagehandling, only: msgbuf, warn_flush
@@ -217,17 +217,17 @@ contains
       end if
 
       ksrc(1, num_source_sink) = kk
-      zsrc(1, num_source_sink) = z_sink(1)
-      zsrc2(1, num_source_sink) = z_sink(1)
+      source_sink_z_bot(1, num_source_sink) = z_sink(1)
+      source_sink_z_top(1, num_source_sink) = z_sink(1)
 
       ksrc(4, num_source_sink) = kk2
-      zsrc(2, num_source_sink) = z_source(1)
-      zsrc2(2, num_source_sink) = z_source(1)
+      source_sink_z_bot(2, num_source_sink) = z_source(1)
+      source_sink_z_top(2, num_source_sink) = z_source(1)
 
       if (kk > 0) then
          if (size(z_sink) == 2) then
             if (z_sink(2) /= dmiss) then
-               zsrc2(1, num_source_sink) = z_sink(2)
+               source_sink_z_top(1, num_source_sink) = z_sink(2)
             end if
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
@@ -250,7 +250,7 @@ contains
       if (kk2 > 0) then
          if (size(z_source) == 2) then
             if (z_source(2) /= dmiss) then
-               zsrc2(2, num_source_sink) = z_source(2)
+               source_sink_z_top(2, num_source_sink) = z_source(2)
             end if
          end if
          ! Determine angle (sin/cos) of 'to' link (=first segment of polyline)

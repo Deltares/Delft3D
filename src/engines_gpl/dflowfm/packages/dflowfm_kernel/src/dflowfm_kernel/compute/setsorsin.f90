@@ -43,7 +43,7 @@ contains
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
       use precision, only: dp
-      use m_flow, only: srsn, num_source_sink, ksrc, qsrc, qstss, kmx, zsrc, dmiss, zws, zsrc2, vol1, jamess, ccsrc, qin, epshs, srcname
+      use m_flow, only: srsn, num_source_sink, ksrc, qsrc, qstss, kmx, source_sink_z_bot, dmiss, zws, source_sink_z_top, vol1, jamess, ccsrc, qin, epshs, srcname
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
@@ -62,20 +62,20 @@ contains
          if (kk > 0) then ! FROM point
             if (kmx > 0) then
                call getkbotktop(kk, kb, kt)
-               if (zsrc(1, n) == dmiss) then
+               if (source_sink_z_bot(1, n) == dmiss) then
                   k = kb
                   ku = kt
                else
                   do k = kb, kt
-                     if (zws(k) > zsrc(1, n) .or. k == kt) then
+                     if (zws(k) > source_sink_z_bot(1, n) .or. k == kt) then
                         exit
                      end if
                   end do
-                  if (zsrc2(1, n) == dmiss) then
+                  if (source_sink_z_top(1, n) == dmiss) then
                      ku = k
                   else
                      do ku = kb, kt
-                        if (zws(ku) > zsrc2(1, n) .or. ku == kt) then
+                        if (zws(ku) > source_sink_z_top(1, n) .or. ku == kt) then
                            exit
                         end if
                      end do
@@ -119,20 +119,20 @@ contains
          if (kk2 > 0) then ! TO point
             if (kmx > 0) then
                call getkbotktop(kk2, kb, kt)
-               if (zsrc(2, n) == dmiss) then
+               if (source_sink_z_bot(2, n) == dmiss) then
                   k = kb
                   ku = kt
                else
                   do k = kb, kt
-                     if (zws(k) > zsrc(2, n) .or. k == kt) then
+                     if (zws(k) > source_sink_z_bot(2, n) .or. k == kt) then
                         exit
                      end if
                   end do
-                  if (zsrc2(2, n) == dmiss) then
+                  if (source_sink_z_top(2, n) == dmiss) then
                      ku = k
                   else
                      do ku = kb, kt
-                        if (zws(ku) > zsrc2(2, n) .or. ku == kt) then
+                        if (zws(ku) > source_sink_z_top(2, n) .or. ku == kt) then
                            exit
                         end if
                      end do

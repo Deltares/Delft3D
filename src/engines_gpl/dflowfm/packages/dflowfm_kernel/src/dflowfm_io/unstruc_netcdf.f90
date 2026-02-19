@@ -8154,10 +8154,10 @@ contains
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < zsrc(1, isrc)) then
+                  if (zws(nk) < source_sink_z_bot(1, isrc)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < zsrc2(1, isrc)) then
+                  if (zws(nk) < source_sink_z_top(1, isrc)) then
                      nktop = nk
                   end if
                end do
@@ -8173,10 +8173,10 @@ contains
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < zsrc(2, isrc)) then
+                  if (zws(nk) < source_sink_z_bot(2, isrc)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < zsrc2(2, isrc)) then
+                  if (zws(nk) < source_sink_z_top(2, isrc)) then
                      nktop = nk
                   end if
                end do
