@@ -4,11 +4,10 @@ import jetbrains.buildServer.configs.kotlin.*
 
 object TemplateLinuxAgent : Template({
 
-    name = "Linux agent (without FIPS)"
-    description = "Run on Linux agent (without FIPS)."
+    name = "Linux agent"
+    description = "Run on Linux agent (with or without FIPS)."
 
     requirements {
         equals("teamcity.agent.jvm.os.name", "Linux")
-        doesNotExist("env.FIPS")
     }
 })
