@@ -2003,7 +2003,7 @@ contains
       if (md_mapformat == IFORMAT_NETCDF .and. strcmpi(md_nc_map_precision, 'single')) then
          call mess(LEVEL_WARN, 'MapFormat = 1 (NetCDF) does not support single precision output, output will be in double precision. Consider upgrading to MapFormat=4 (UGRID) for single precision output support.')
       end if
-      
+
       call prop_get(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
       call prop_get(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
       if (success .and. .not. value_parsed) then
@@ -3575,7 +3575,7 @@ contains
 
       if (jaspacevarcharn .and. (wind_drag_type /= CD_TYPE_CHARNOCK1955 .and. wind_drag_type /= CD_TYPE_CHARNOCK_PLUS_VISCOUS)) then
          write (msgbuf, '(a,i0,a)') &
-            'Inconsistent configuration: a time- and space-varying Charnock coefficient was ' // &
+            'Inconsistent configuration: a time- and space-varying Charnock coefficient was '// &
             'specified in the .ext file, but [wind] ICdtyp is set to ', &
             wind_drag_type, '. Expected ICdtyp = 4 (Charnock) or 8 (Charnock + viscous term).'
          call mess(LEVEL_ERROR, msgbuf)

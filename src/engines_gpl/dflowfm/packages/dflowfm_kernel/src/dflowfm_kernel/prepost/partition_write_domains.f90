@@ -72,7 +72,7 @@ contains
       integer :: idmn ! domain number
       integer :: len_basename, mdep, i1, i2, iconv
       integer :: ierror
-      
+
       ierror = 1
 
 !     save network

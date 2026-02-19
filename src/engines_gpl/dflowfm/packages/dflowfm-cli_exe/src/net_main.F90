@@ -205,7 +205,7 @@ program unstruc
    call iset_jaopengl(md_jaopengl)
 
 #ifdef _OPENMP
-      ierr = init_openmp(md_numthreads, jampi)
+   ierr = init_openmp(md_numthreads, jampi)
 #endif
 
    call START_PROGRAM()

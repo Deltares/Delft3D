@@ -72,7 +72,7 @@ contains
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
       type(t_unc_mapids) :: mapids
-      
+
       call output_mask_full%create_mask_arrays() ! Make sure output_mask_full is up to date with the current network, so that unc_write_net writes the correct variables.
 
       call unc_write_1D_flowgeom_ugrid(mapids%id_tsp, ncid, output_mask_full)
