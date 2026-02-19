@@ -3813,25 +3813,25 @@ contains
 
    end subroutine reduce_statistical_output
 
-!> reduce source-sinks
-!>   it is assumed that the source-sinks are unique
+   !> reduce source-sinks
+   !! it is assumed that the source-sinks are unique
    subroutine reduce_srsn(numvals, numsrc, srsn)
       use m_missing
 #ifdef HAVE_MPI
       use mpi
 #endif
 
-      implicit none
+      implicit none(type, external)
 
-      integer, intent(in) :: numvals, numsrc !< number of sources/sinks
-      real(kind=dp) srsn(numvals, numsrc) !< values associated with sources/sinks
-
-      real(kind=dp), dimension(NUMVALS, numsrc) :: srsn_all
+      integer, intent(in) :: numvals
+      integer, intent(in) :: numsrc !< number of sources/sinks
+      real(kind=dp), dimension(numvals, numsrc) :: srsn !< values associated with sources/sinks
+      real(kind=dp), dimension(numvals, numsrc) :: srsn_all
 
       integer :: ierror
 
 #ifdef HAVE_MPI
-      call MPI_allreduce(srsn, srsn_all, numsrc * NUMVALS, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+      call MPI_allreduce(srsn, srsn_all, numsrc * numvals, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
       srsn = srsn_all
 #endif
       return

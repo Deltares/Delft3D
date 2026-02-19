@@ -159,7 +159,7 @@ contains
       nf_numintake = 0
       nf_numsour = 0
       nf_numsink = 0
-      numsrc_nf = 0
+      num_source_sink_near_field = 0
       nf_entr_start = 0
       nf_entr_end = 0
       !
@@ -310,14 +310,14 @@ contains
       ! Body
       !
       ! Reset the FM dimensions:
-      !     numsrc   : without numsrc_nf
-      !     numsrc_nf: 0
+      !     num_source_sink   : without num_source_sink_near_field
+      !     num_source_sink_near_field: 0
       ! They will be redefined in this subroutine
-      do i = numsrc + 1, numsrc_nf
+      do i = num_source_sink + 1, num_source_sink_near_field
          arsrc(i) = 0.0_hp
       end do
-      numsrc = numsrc - numsrc_nf
-      numsrc_nf = 0
+      num_source_sink = num_source_sink - num_source_sink_near_field
+      num_source_sink_near_field = 0
       nf_entr_max = 0
       if (NFEntrainmentMomentum > 0) then
          call realloc(nf_entr_start, nf_num_dif, keepExisting=.false., fill=0)
@@ -652,7 +652,7 @@ contains
       !
       ! Body
       if (NFEntrainmentMomentum > 0) then
-         nf_entr_start(idif) = numsrc + 1
+         nf_entr_start(idif) = num_source_sink + 1
          nf_entr_end(idif) = nf_entr_start(idif) - 1
       end if
       ! Start with isink=2: For isink=1, q is zero, because nf_sink(i,isink-1,IS) is undefined
@@ -663,42 +663,42 @@ contains
             if (nf_sour_n(idif, isour) == 0) then
                exit ! This might happen if the number of sources is not the same for each diffuser
             end if
-            numsrc_nf = numsrc_nf + 1
-            numsrc = numsrc + 1
+            num_source_sink_near_field = num_source_sink_near_field + 1
+            num_source_sink = num_source_sink + 1
             if (NFEntrainmentMomentum > 0) then
                nf_entr_end(idif) = nf_entr_end(idif) + 1
                nf_entr_max = max(nf_entr_max, nf_entr_end(idif) - nf_entr_start(idif) + 1)
             end if
-            call reallocsrc(numsrc, 2)
+            call reallocsrc(num_source_sink, 2)
             !
             ! Name
-            write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
+            write (srcname(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
             !
             ! Sink
-            ksrc(1, numsrc) = nf_sink_n(idif, isink)
-            zsrc(1, numsrc) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
-            zsrc2(1, numsrc) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
+            ksrc(1, num_source_sink) = nf_sink_n(idif, isink)
+            zsrc(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
+            zsrc2(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
             !
             ! Source
-            ksrc(4, numsrc) = nf_sour_n(idif, isour)
+            ksrc(4, num_source_sink) = nf_sour_n(idif, isour)
             if (nf_numsour == 1) then
-               zsrc(2, numsrc) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-               zsrc2(2, numsrc) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+               zsrc(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+               zsrc2(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
             else
                !
                ! Do not use NF_IH, but just NF_IZ
-               zsrc(2, numsrc) = -nf_sour(idif, isour, NF_IZ)
-               zsrc2(2, numsrc) = -nf_sour(idif, isour, NF_IZ)
+               zsrc(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+               zsrc2(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
             end if
-            call check_mixed_source_sink(numsrc)
+            call check_mixed_source_sink(num_source_sink)
             !
             ! q = delta_IS * Q_TOT * this_cell_fraction
-            qstss((1 + numconst) * (numsrc - 1) + 1) = (nf_sink(idif, isink, NF_IS) - nf_sink(idif, isink - 1, NF_IS)) * nf_q_source(idif) &
+            qstss((1 + numconst) * (num_source_sink - 1) + 1) = (nf_sink(idif, isink, NF_IS) - nf_sink(idif, isink - 1, NF_IS)) * nf_q_source(idif) &
                                                       & * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
             !
             ! Constituents: Entrainment does not cause addition
             do iconst = 1, numconst
-               qstss((1 + numconst) * (numsrc - 1) + 1 + iconst) = 0.0_hp
+               qstss((1 + numconst) * (num_source_sink - 1) + 1 + iconst) = 0.0_hp
             end do
             !
             if (NFEntrainmentMomentum > 0) then
@@ -768,9 +768,9 @@ contains
          if (nf_sour_n(idif, isour) == 0) then
             exit
          end if
-         numsrc_nf = numsrc_nf + 1
-         numsrc = numsrc + 1
-         call reallocsrc(numsrc, 2)
+         num_source_sink_near_field = num_source_sink_near_field + 1
+         num_source_sink = num_source_sink + 1
+         call reallocsrc(num_source_sink, 2)
          if (nf_numsour == 1) then
             sourId = nf_numsour
          else
@@ -778,36 +778,36 @@ contains
          end if
          !
          ! Name
-         write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
+         write (srcname(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
          !
          ! Sink
-         ksrc(1, numsrc) = 0
-         zsrc(1, numsrc) = 0.0_hp
-         zsrc2(1, numsrc) = 0.0_hp
+         ksrc(1, num_source_sink) = 0
+         zsrc(1, num_source_sink) = 0.0_hp
+         zsrc2(1, num_source_sink) = 0.0_hp
          !
          ! Source
-         ksrc(4, numsrc) = nf_sour_n(idif, isour)
+         ksrc(4, num_source_sink) = nf_sour_n(idif, isour)
          if (nf_numsour == 1) then
-            zsrc(2, numsrc) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-            zsrc2(2, numsrc) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+            zsrc(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+            zsrc2(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
          else
             !
             ! Do not use NF_IH, but just NF_IZ
-            zsrc(2, numsrc) = -nf_sour(idif, isour, NF_IZ)
-            zsrc2(2, numsrc) = -nf_sour(idif, isour, NF_IZ)
+            zsrc(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+            zsrc2(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
          end if
-         call check_mixed_source_sink(numsrc)
+         call check_mixed_source_sink(num_source_sink)
          !
          ! q = Q_TOT * this_cell_fraction
-         qstss((1 + numconst) * (numsrc - 1) + 1) = nf_q_source(idif) * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
+         qstss((1 + numconst) * (num_source_sink - 1) + 1) = nf_q_source(idif) * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
          !
          ! Constituents: Additions as specified by NearField
          do iconst = 1, numconst
             if (iconst_operator == CONST_OPERATOR_ABSOLUTE) then
-               qstss((1 + numconst) * (numsrc - 1) + 1 + iconst) = nf_const(idif, iconst)
+               qstss((1 + numconst) * (num_source_sink - 1) + 1 + iconst) = nf_const(idif, iconst)
             else
                ! Excess
-               qstss((1 + numconst) * (numsrc - 1) + 1 + iconst) = nf_const(idif, iconst) + intake_avg_consts(iconst)
+               qstss((1 + numconst) * (num_source_sink - 1) + 1 + iconst) = nf_const(idif, iconst) + intake_avg_consts(iconst)
             end if
          end do
          !
@@ -832,12 +832,12 @@ contains
          ! =>
          !         ai = Atot / wi
          !
-         arsrc(numsrc) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
+         arsrc(num_source_sink) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
          ! Direction:
          ! nf_sour(:,:,NF_IUDIR)                           : 0=east , 90=north
          ! To be consistent with Delft3D4, change this into: 0=north, 90=east
-         cssrc(2, numsrc) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
-         snsrc(2, numsrc) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         cssrc(2, num_source_sink) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         snsrc(2, num_source_sink) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
       end do
    end subroutine dischargeToSrc
 !
@@ -861,31 +861,31 @@ contains
          if (nf_intake_n(idif, iintake) == 0) then
             exit
          end if
-         numsrc_nf = numsrc_nf + 1
-         numsrc = numsrc + 1
-         call reallocsrc(numsrc, 2)
+         num_source_sink_near_field = num_source_sink_near_field + 1
+         num_source_sink = num_source_sink + 1
+         call reallocsrc(num_source_sink, 2)
          !
          ! Name
-         write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
+         write (srcname(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
          !
          ! Sink
-         ksrc(1, numsrc) = nf_intake_n(idif, iintake)
-         zsrc(1, numsrc) = nf_intake_z(idif, iintake)
-         zsrc2(1, numsrc) = nf_intake_z(idif, iintake)
+         ksrc(1, num_source_sink) = nf_intake_n(idif, iintake)
+         zsrc(1, num_source_sink) = nf_intake_z(idif, iintake)
+         zsrc2(1, num_source_sink) = nf_intake_z(idif, iintake)
          !
          ! Source
-         ksrc(4, numsrc) = 0
-         zsrc(2, numsrc) = 0.0_hp
-         zsrc2(2, numsrc) = 0.0_hp
+         ksrc(4, num_source_sink) = 0
+         zsrc(2, num_source_sink) = 0.0_hp
+         zsrc2(2, num_source_sink) = 0.0_hp
          !
-         call check_mixed_source_sink(numsrc)
+         call check_mixed_source_sink(num_source_sink)
          !
          ! q = Q_TOT * this_cell_fraction
-         qstss((1 + numconst) * (numsrc - 1) + 1) = nf_q_intake(idif) * nf_intake_wght(idif, iintake) / sum_weight_intakes
+         qstss((1 + numconst) * (num_source_sink - 1) + 1) = nf_q_intake(idif) * nf_intake_wght(idif, iintake) / sum_weight_intakes
          !
          ! Constituents, not relevant for pure sinks
          do iconst = 1, numconst
-            qstss((1 + numconst) * (numsrc - 1) + 1 + iconst) = 0.0_hp
+            qstss((1 + numconst) * (num_source_sink - 1) + 1 + iconst) = 0.0_hp
          end do
       end do
    end subroutine intakesToSrc
@@ -957,38 +957,38 @@ contains
 !> - Check whether the new sink   location coincides with an existing source location
 !> - Check whether the new source location coincides with an existing sink   location
 !> Generate a warning if this happens
-   subroutine check_mixed_source_sink(numsrc)
-      integer, intent(in) :: numsrc
+   subroutine check_mixed_source_sink(num_source_sink)
+      integer, intent(in) :: num_source_sink
       !
       ! Locals
       integer :: i
       character(300) :: message
       !
       ! Body
-      do i = 1, numsrc - 1
+      do i = 1, num_source_sink - 1
          !
          ! Check if new sink coincides with an already existing source
          ! Horizontally:
-         if (ksrc(1, numsrc) == ksrc(4, i) .and. ksrc(1, numsrc) /= 0) then
+         if (ksrc(1, num_source_sink) == ksrc(4, i) .and. ksrc(1, num_source_sink) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (zsrc2(1, numsrc) > zsrc(2, i) .and. zsrc2(2, i) > zsrc(1, numsrc)) then
-               write (message, '(5a,i0)') "The sink location of '", trim(srcname(numsrc)), &
+            if (zsrc2(1, num_source_sink) > zsrc(2, i) .and. zsrc2(2, i) > zsrc(1, num_source_sink)) then
+               write (message, '(5a,i0)') "The sink location of '", trim(srcname(num_source_sink)), &
                                       & "' coincides with the source location of '", trim(srcname(i)), &
-                                      & "'. Horizontal cell index: ", ksrc(1, numsrc)
+                                      & "'. Horizontal cell index: ", ksrc(1, num_source_sink)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if
          !
          ! Check if new source coincides with an already existing sink
          ! Horizontally:
-         if (ksrc(4, numsrc) == ksrc(1, i) .and. ksrc(4, numsrc) /= 0) then
+         if (ksrc(4, num_source_sink) == ksrc(1, i) .and. ksrc(4, num_source_sink) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (zsrc2(2, numsrc) > zsrc(1, i) .and. zsrc2(1, i) > zsrc(2, numsrc)) then
-               write (message, '(5a,i0)') "The source location of '", trim(srcname(numsrc)), &
+            if (zsrc2(2, num_source_sink) > zsrc(1, i) .and. zsrc2(1, i) > zsrc(2, num_source_sink)) then
+               write (message, '(5a,i0)') "The source location of '", trim(srcname(num_source_sink)), &
                                       & "' coincides with the sink location of '", trim(srcname(i)), &
-                                      & "'. Horizontal cell index: ", ksrc(4, numsrc)
+                                      & "'. Horizontal cell index: ", ksrc(4, num_source_sink)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if

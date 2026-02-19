@@ -51,7 +51,7 @@ contains
       use m_physcoef, only: dicouv, constant_dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
-      use fm_external_forcings_data, only: wstracers, numsrc, ksrc, qsrc, ccsrc
+      use fm_external_forcings_data, only: wstracers, num_source_sink, ksrc, qsrc, ccsrc
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
@@ -290,7 +290,7 @@ contains
          goto 1234 ! no sources from initialise
       end if
 
-      do n = 1, numsrc
+      do n = 1, num_source_sink
          kk = ksrc(1, n) ! 2D pressure cell nr FROM
          kk2 = ksrc(4, n) ! 2D pressure cell nr TO
          qsrckk = qsrc(n)

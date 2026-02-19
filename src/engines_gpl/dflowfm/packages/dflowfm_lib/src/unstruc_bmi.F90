@@ -1051,7 +1051,7 @@ contains
          shape(1) = network%sts%numCulverts
          shape(2) = 1
       case ("sourcesinks")
-         shape(1) = numsrc
+         shape(1) = num_source_sink
          shape(2) = 3
          return
       case ("observations")

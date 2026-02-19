@@ -85,7 +85,7 @@ contains
             end if
          end do
       else if (trim(strtypename) == 'sourcesinks') then
-         do i = 1, numsrc
+         do i = 1, num_source_sink
             if (trim(srcname(i)) == trim(strname)) then
                index = i
                exit

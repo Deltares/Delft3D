@@ -52,14 +52,14 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: xp, yp
 
-      if (ndraw(41) <= 1 .or. numsrc == 0) then
+      if (ndraw(41) <= 1 .or. num_source_sink == 0) then
          return
       end if
 
       call IGrCharJustify('L')
       call settextsizefac(1.0_dp)
 
-      do n = 1, numsrc ! teksorsin
+      do n = 1, num_source_sink ! teksorsin
          k = ksrc(1, n)
          if (k /= 0) then
             n2 = 1

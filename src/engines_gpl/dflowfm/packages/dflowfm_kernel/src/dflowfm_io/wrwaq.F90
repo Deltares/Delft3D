@@ -624,13 +624,13 @@ contains
       !discharges
       !    2   14    1   '(14,2)'
       !end-discharges
-      if (numsrc > 0) then
+      if (num_source_sink > 0) then
          ibnd = 0
          if (nopenbndsect > 0) then
             ibnd = nopenbndlin(nopenbndsect)
          end if
          write (lunhyd, '(A      )') 'sink-sources'
-         do isrc = 1, numsrc
+         do isrc = 1, num_source_sink
             kk1 = ksrc(1, isrc)
             kk2 = ksrc(4, isrc)
             if ((kk1 == 0 .and. kk2 > 0) .or. &
@@ -1660,7 +1660,7 @@ contains
          istart = nopenbndlin(i)
       end do
       ibnd = ndx - ndxi
-      do isrc = 1, numsrc
+      do isrc = 1, num_source_sink
          if ((ksrc(1, isrc) == 0 .and. ksrc(4, isrc) > 0) .or. (ksrc(4, isrc) == 0 .and. ksrc(1, isrc) > 0)) then
             ! This is a boundary condition within the current domain
             ibnd = ibnd + 1
@@ -1834,7 +1834,7 @@ contains
             if (kmx > 0) then
                qwwaq = 0.0_dp
             end if
-            if (numsrc > 0) then
+            if (num_source_sink > 0) then
                qsrcwaq = 0.0_dp ! Reset accumulated discharges
             end if
             if (numlatsg > 0) then
@@ -1852,7 +1852,7 @@ contains
       if (kmx > 0) then
          qwwaq = 0.0_dp ! Reset accumulated discharges
       end if
-      if (numsrc > 0) then
+      if (num_source_sink > 0) then
          qsrcwaq = 0.0_dp ! Reset accumulated discharges
       end if
       if (numlatsg > 0) then
@@ -2034,7 +2034,7 @@ contains
       if (waqpar%kmxnxa > 1) then
          waqpar%num_exchanges = waqpar%noq12 + waqpar%numsrcwaq + waqpar%numlatwaq + ndxi * waqpar%kmxnxa
       else
-         waqpar%num_exchanges = waqpar%noq12 + numsrc + waqpar%numlatwaq
+         waqpar%num_exchanges = waqpar%noq12 + num_source_sink + waqpar%numlatwaq
       end if
       call realloc(waqpar%ifrmto, [4, waqpar%num_exchanges], keepExisting=.false., fill=0)
 
@@ -2283,12 +2283,12 @@ contains
 
       waqpar%numsrcbnd = 0
       waqpar%numsrcwaq = 0
-      if (numsrc == 0) then
+      if (num_source_sink == 0) then
          return ! skip is no resources
       end if
-      call realloc(ksrcwaq, numsrc, keepexisting=.false., fill=-1)
+      call realloc(ksrcwaq, num_source_sink, keepexisting=.false., fill=-1)
       ! First determine the number of external sink/sources and the allocations needed
-      do isrc = 1, numsrc
+      do isrc = 1, num_source_sink
          kk1 = ksrc(1, isrc)
          kk2 = ksrc(4, isrc)
          if (kk1 == 0 .or. kk2 == 0) then
@@ -2308,7 +2308,7 @@ contains
             else if (kk1 > 0 .or. kk2 > 0) then
                ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
                ! If both are in an other domain, we simply skip this.
-               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(srcname(numsrc)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
+               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(srcname(num_source_sink)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
                call err_flush()
             end if
          end if
@@ -2320,7 +2320,7 @@ contains
       ibnd = ndx - ndxi ! starting number for sink source boundaries
 
       ! Create additional pointer for sink/sources
-      do isrc = 1, numsrc
+      do isrc = 1, num_source_sink
          kk1 = ksrc(1, isrc)
          kk2 = ksrc(4, isrc)
          if (kk1 == 0 .or. kk2 == 0) then

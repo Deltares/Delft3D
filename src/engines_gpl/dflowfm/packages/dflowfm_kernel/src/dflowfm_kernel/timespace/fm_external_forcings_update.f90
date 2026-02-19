@@ -37,7 +37,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, &
                       item_pump, qpump, item_longculvert_valve_relative_opening, nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, &
-                      item_lateraldischarge, npumpswithlevels, numsrc, item_discharge_salinity_temperature_sorsin, qstss, &
+                      item_lateraldischarge, npumpswithlevels, num_source_sink, item_discharge_salinity_temperature_sorsin, qstss, &
                       item_sourcesink_discharge, item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, &
                       jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, item_relative_humidity, &
                       btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, &
@@ -209,7 +209,7 @@ contains
          call update_pumps_with_levels()
       end if
 
-      if (numsrc > 0) then
+      if (num_source_sink > 0) then
          ! qstss must be an argument when calling ec_gettimespacevalue.
          ! It might be reallocated after initialization (when coupled to Cosumo).
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, qstss)

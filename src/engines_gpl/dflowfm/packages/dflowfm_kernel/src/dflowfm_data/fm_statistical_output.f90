@@ -2308,16 +2308,16 @@ contains
       !
       ! Source-sink variables
       !
-      if (jahissourcesink > 0 .and. numsrc > 0) then
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), qstss(1:(numconst + 1) * numsrc:(numconst + 1)))
+      if (jahissourcesink > 0 .and. num_source_sink > 0) then
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), qstss(1:(numconst + 1) * num_source_sink:(numconst + 1)))
          i = 1
          if (isalt > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), qstss(i:(numconst + 1) * numsrc:(numconst + 1)))
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), qstss(i:(numconst + 1) * num_source_sink:(numconst + 1)))
          end if
          if (itemp > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), qstss(i:(numconst + 1) * numsrc:(numconst + 1)))
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), qstss(i:(numconst + 1) * num_source_sink:(numconst + 1)))
          end if
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), qsrc)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), vsrccum)

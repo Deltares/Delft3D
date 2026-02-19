@@ -42,14 +42,14 @@ contains
 
    subroutine doaddksources() ! add k sources
       use precision, only: dp
-      use m_flow, only: numsrc, ksrc, arsrc, qsrc, vol1, turkinws
+      use m_flow, only: num_source_sink, ksrc, arsrc, qsrc, vol1, turkinws
       use m_flowtimes, only: dts
       implicit none
 
       integer :: n, k, kk, kk2
       real(kind=dp) :: qsrck, dvoli, dtol = 1.0e-4_dp
 
-      do n = 1, numsrc
+      do n = 1, num_source_sink
          if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) then
             cycle ! due to initialisation
          end if

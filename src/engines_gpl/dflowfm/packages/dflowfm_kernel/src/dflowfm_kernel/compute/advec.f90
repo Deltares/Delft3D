@@ -55,7 +55,7 @@ contains
                             iadv_original_lateral_overflow, dx, dxi, bai, ba, lnx1d
       use m_flow, only: kmxx, japiaczek33, ifixedweirscheme, u0, ucx, ucy, jabarrieradvection, ngatesg, l1gatesg, l2gatesg, kgate, &
                         ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, uqcx, uqcy, sqa, kmx, qa, ucxu, ucyu, lbot, ltop, javau, &
-                        jarhoxu, qw, zws, kbot, ktop, rho, numsrc, arsrc, qsrc, ksrc, epshs, rhomean, cssrc, snsrc, hu, u1, vol1_f, &
+                        jarhoxu, qw, zws, kbot, ktop, rho, num_source_sink, arsrc, qsrc, ksrc, epshs, rhomean, cssrc, snsrc, hu, u1, vol1_f, &
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
                         hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
       use m_sferic, only: jasfer3d
@@ -315,7 +315,7 @@ contains
          sqa = sqa * rho
       end if
 
-      do n = 1, numsrc ! momentum
+      do n = 1, num_source_sink ! momentum
          if (arsrc(n) > 0) then ! if momentum desired
             if (qsrc(n) > 0) then
                kk = ksrc(4, n) ! 2D pressure cell nr TO

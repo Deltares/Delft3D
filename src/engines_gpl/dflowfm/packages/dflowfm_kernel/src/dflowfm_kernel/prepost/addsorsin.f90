@@ -134,7 +134,7 @@ contains
 
    !> Add a source-sink to the model.
    subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
-      use fm_external_forcings_data, only: numsrc, xsrc, ysrc, nxsrc, ksrc, zsrc, zsrc2, arsrc, cssrc, snsrc, srcname
+      use fm_external_forcings_data, only: num_source_sink, xsrc, ysrc, nxsrc, ksrc, zsrc, zsrc2, arsrc, cssrc, snsrc, srcname
       use m_GlobalParameters, only: INDTP_ALL
 
       use messagehandling, only: msgbuf, warn_flush
@@ -163,25 +163,25 @@ contains
          return
       end if
 
-      numsrc = numsrc + 1
-      call reallocsrc(numsrc, num_points)
+      num_source_sink = num_source_sink + 1
+      call reallocsrc(num_source_sink, num_points)
 
       ! set the coordinates of source/sink
-      xsrc(numsrc, 1:num_points) = x_points(1:num_points)
-      ysrc(numsrc, 1:num_points) = y_points(1:num_points)
-      nxsrc(numsrc) = num_points
+      xsrc(num_source_sink, 1:num_points) = x_points(1:num_points)
+      ysrc(num_source_sink, 1:num_points) = y_points(1:num_points)
+      nxsrc(num_source_sink) = num_points
       kk = 0
       kk2 = 0
 
       ! Store sink/source name for waq
-      srcname(numsrc) = name
+      srcname(num_source_sink) = name
 
       ! call inflowcell(xpl(npl), ypl(npl), kk2) ! TO: Source
       tmpname(1) = name//' source'
       jakdtree = 0
       kdum(1) = 0
-      if (xsrc(numsrc, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, xsrc(numsrc, num_points), ysrc(numsrc, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+      if (xsrc(num_source_sink, num_points) /= dmiss) then
+         call find_nearest_flownodes(1, xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
          kk2 = kdum(1)
       end if
 
@@ -194,18 +194,18 @@ contains
             write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
             call warn_flush()
          end if
-         arsrc(numsrc) = 0.0_dp
+         arsrc(num_source_sink) = 0.0_dp
       else ! Default: linked source-sink, with 2 or more polyline points
          ! call inflowcell(xpl(1) , ypl(1)  , kk) ! FROM: sink
          tmpname = name//' sink'
          kdum(1) = 0
-         if (xsrc(numsrc, 1) /= dmiss) then
-            call find_nearest_flownodes(1, xsrc(numsrc, 1), ysrc(numsrc, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+         if (xsrc(num_source_sink, 1) /= dmiss) then
+            call find_nearest_flownodes(1, xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
             kk = kdum(1)
          end if
 
          if (kk /= 0 .or. kk2 /= 0) then
-            arsrc(numsrc) = area
+            arsrc(num_source_sink) = area
          end if
       end if
 
@@ -216,31 +216,31 @@ contains
          goto 8888
       end if
 
-      ksrc(1, numsrc) = kk
-      zsrc(1, numsrc) = z_sink(1)
-      zsrc2(1, numsrc) = z_sink(1)
+      ksrc(1, num_source_sink) = kk
+      zsrc(1, num_source_sink) = z_sink(1)
+      zsrc2(1, num_source_sink) = z_sink(1)
 
-      ksrc(4, numsrc) = kk2
-      zsrc(2, numsrc) = z_source(1)
-      zsrc2(2, numsrc) = z_source(1)
+      ksrc(4, num_source_sink) = kk2
+      zsrc(2, num_source_sink) = z_source(1)
+      zsrc2(2, num_source_sink) = z_source(1)
 
       if (kk > 0) then
          if (size(z_sink) == 2) then
             if (z_sink(2) /= dmiss) then
-               zsrc2(1, numsrc) = z_sink(2)
+               zsrc2(1, num_source_sink) = z_sink(2)
             end if
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(xsrc(numsrc, 1), ysrc(numsrc, 1), xsrc(numsrc, 2), ysrc(numsrc, 2), cssrc(1, numsrc), snsrc(1, numsrc), xsrc(numsrc, 1), ysrc(numsrc, 1), jsferic, jasfer3D, dxymis)
+            call normalin(xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), xsrc(num_source_sink, 2), ysrc(num_source_sink, 2), cssrc(1, num_source_sink), snsrc(1, num_source_sink), xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), jsferic, jasfer3D, dxymis)
          end if
 
-         do i = 1, numsrc - 1
+         do i = 1, num_source_sink - 1
             if (ksrc(1, i) /= 0 .and. kk == ksrc(1, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(numsrc)), ' coincides with FROM point of ', trim(srcname(i))
+               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(num_source_sink)), ' coincides with FROM point of ', trim(srcname(i))
                call warn_flush()
             else if (ksrc(4, i) /= 0 .and. kk == ksrc(4, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(numsrc)), ' coincides with TO   point of ', trim(srcname(i))
+               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(num_source_sink)), ' coincides with TO   point of ', trim(srcname(i))
                call warn_flush()
             end if
          end do
@@ -250,20 +250,20 @@ contains
       if (kk2 > 0) then
          if (size(z_source) == 2) then
             if (z_source(2) /= dmiss) then
-               zsrc2(2, numsrc) = z_source(2)
+               zsrc2(2, num_source_sink) = z_source(2)
             end if
          end if
          ! Determine angle (sin/cos) of 'to' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(xsrc(numsrc, num_points - 1), ysrc(numsrc, num_points - 1), xsrc(numsrc, num_points), ysrc(numsrc, num_points), cssrc(2, numsrc), snsrc(2, numsrc), xsrc(numsrc, num_points), ysrc(numsrc, num_points), jsferic, jasfer3D, dxymis)
+            call normalin(xsrc(num_source_sink, num_points - 1), ysrc(num_source_sink, num_points - 1), xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), cssrc(2, num_source_sink), snsrc(2, num_source_sink), xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
          end if
 
-         do i = 1, numsrc - 1
+         do i = 1, num_source_sink - 1
             if (ksrc(1, i) /= 0 .and. kk2 == ksrc(1, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(numsrc)), ' coincides with FROM point of ', trim(srcname(i))
+               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(num_source_sink)), ' coincides with FROM point of ', trim(srcname(i))
                call warn_flush()
             else if (ksrc(4, i) /= 0 .and. kk2 == ksrc(4, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(numsrc)), ' coincides with TO   point of ', trim(srcname(i))
+               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(num_source_sink)), ' coincides with TO   point of ', trim(srcname(i))
                call warn_flush()
             end if
          end do

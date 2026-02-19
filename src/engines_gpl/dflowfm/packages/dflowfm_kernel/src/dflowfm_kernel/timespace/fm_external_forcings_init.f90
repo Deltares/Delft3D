@@ -971,7 +971,7 @@ contains
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use fm_external_forcings_data, only: numsrc, qstss
+      use fm_external_forcings_data, only: num_source_sink, qstss
       use dfm_error, only: DFM_NOERR
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
@@ -1071,7 +1071,7 @@ contains
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (num_source_sink - 1) + 1, &
                                                     1, qstss)
 
       if (.not. is_successful) then
@@ -1116,7 +1116,7 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1) * (numsrc - 1) + 1 + i_const, &
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1) * (num_source_sink - 1) + 1 + i_const, &
                                                               1, qstss)
                continue
             end if
@@ -1136,7 +1136,7 @@ contains
    !! Input is a loaded .ext file tree structure.
    !! Returns the resulting number of source sinks
    function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(num_source_sinks)
-      use fm_external_forcings_data, only: numsrc
+      use fm_external_forcings_data, only: num_source_sink
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1293,7 +1293,7 @@ contains
                tmsx = xzw(bubblescreen%flow_cells(cidx)%flownode_nr)
                tmsy = yzw(bubblescreen%flow_cells(cidx)%flownode_nr)
 
-               bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
+               bubblescreen%flow_cells(cidx)%start_index = num_source_sink + 1
                do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
                         bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
                   write(srcid, '(A,I0)') trim(id), bubble_source_count + 1

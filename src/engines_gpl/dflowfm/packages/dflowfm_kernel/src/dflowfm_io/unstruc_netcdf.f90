@@ -8145,7 +8145,7 @@ contains
       !
       if (jamapNearField == 1) then
          call realloc(work1d, ndkx, keepExisting=.false., fill=0.0_dp)
-         do isrc = numsrc - numsrc_nf + 1, numsrc
+         do isrc = num_source_sink - num_source_sink_near_field + 1, num_source_sink
             !
             ! Sinks
             n = ksrc(1, isrc)

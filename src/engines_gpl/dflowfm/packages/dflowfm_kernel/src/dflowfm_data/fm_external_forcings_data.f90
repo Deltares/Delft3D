@@ -405,28 +405,28 @@ module fm_external_forcings_data
    type (t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
    real (kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< array to catch bubble screen air discharges
 
-   integer :: numsrc !< nr of point sources/sinks
-   
-   integer :: numsrc_old !< nr of point sources/sinks in old ext-file
+   integer :: num_source_sink !< number of source/sinks in the model
+   integer :: num_source_sink_old !< number of source/sinks in old extforce file
+   integer :: num_source_sink_near_field !< number of source/sinks added for near field
+
    integer :: numvalssrc !< nr of point constituents
-   integer :: numsrc_nf !< nr of sources/sinks added for nearfield
    integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
    integer, allocatable :: ksrc(:, :) !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
    real(kind=dp), target, allocatable :: qsrc(:) !< cell influx (m3/s) if negative: outflux
    real(kind=dp), allocatable :: sasrc(:) !< q*salinity    (ppt) (m3/s)  if ksrc 3,4 == 0, else delta salinity
    real(kind=dp), allocatable :: tmsrc(:) !< q*temperature (degC) (m3/s) if ksrc 3,4 == 0, else delta temperature
-   real(kind=dp), allocatable :: ccsrc(:, :) !< dimension (numvalssrc,numsrc), keeps sasrc, tmsrc etc
+   real(kind=dp), allocatable :: ccsrc(:, :) !< dimension (numvalssrc,num_source_sink), keeps sasrc, tmsrc etc
    real(kind=dp), allocatable :: qcsrc(:, :) !< q*constituent (c) (m3/s)  )
    real(kind=dp), allocatable :: vcsrc(:, :) !< v*constituent (c) (m3)    )
    real(kind=dp), allocatable :: arsrc(:) !< pipe cross sectional area (m2). If 0, no net momentum
-   real(kind=dp), allocatable :: cssrc(:, :) !< (1:2,numsrc) cosine discharge dir pipe on start side (1) and end side (2) of pipe.
-   real(kind=dp), allocatable :: snsrc(:, :) !< (1:2,numsrc) sine discharge dir pipe on start side (1) and end side (2) of pipe.
+   real(kind=dp), allocatable :: cssrc(:, :) !< (1:2,num_source_sink) cosine discharge dir pipe on start side (1) and end side (2) of pipe.
+   real(kind=dp), allocatable :: snsrc(:, :) !< (1:2,num_source_sink) sine discharge dir pipe on start side (1) and end side (2) of pipe.
    real(kind=dp), allocatable :: zsrc(:, :) !< vertical level (m) bot
    real(kind=dp), allocatable :: zsrc2(:, :) !< vertical level (m) top (optional)
-   real(kind=dp), allocatable :: srsn(:, :) !< 2*(1+numvalssrc),numsrc, to be reduced
+   real(kind=dp), allocatable :: srsn(:, :) !< 2*(1+numvalssrc),num_source_sink, to be reduced
    integer, allocatable :: jamess(:) !< issue message mess for from or to point, 0, 1, 2
    real(kind=dp), allocatable, target :: qstss(:) !< array to catch multiple_uni_discharge_salinity_temperature
-   character(len=255), allocatable :: srcname(:) !< sources/sinks name (numsrc)
+   character(len=255), allocatable :: srcname(:) !< sources/sinks name (num_source_sink)
    real(kind=dp), target, allocatable :: vsrccum(:) !< cumulative volume at each source/sink from Tstart to now
    real(kind=dp), allocatable :: vsrccum_pre(:) !< cumulative volume at each source/sink from Tstart to the previous His-output time
    real(kind=dp), target, allocatable :: qsrcavg(:) !< average discharge in the past his-interval at each source/sink
@@ -498,9 +498,9 @@ contains
       ! JRE
       nzbnd = 0
       nubnd = 0
-      numsrc = 0
-      numsrc_old = 0
-      numsrc_nf = 0
+      num_source_sink = 0
+      num_source_sink_old = 0
+      num_source_sink_near_field = 0
 
    end subroutine default_fm_external_forcing_data
 

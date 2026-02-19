@@ -42,7 +42,7 @@ contains
 
    subroutine updateValuesOnSourceSinks(tim1)
       use m_reallocsrc, only: reallocsrc
-      use fm_external_forcings_data, only: qsrc, qsrcavg, vsrccum, vsrccum_pre, numsrc
+      use fm_external_forcings_data, only: qsrc, qsrcavg, vsrccum, vsrccum_pre, num_source_sink
       use precision, only: dp, comparereal
       use m_flowtimes, only: ti_his, time_his
       use m_flowparameters, only: eps10
@@ -55,16 +55,16 @@ contains
 
       if (timprev < 0.0_dp) then
          ! This realloc should not be needed
-         call reallocsrc(numsrc, 0)
+         call reallocsrc(num_source_sink, 0)
       else
          timstep = tim1 - timprev
          ! cumulative volume from Tstart
-         do i = 1, numsrc
+         do i = 1, num_source_sink
             vsrccum(i) = vsrccum(i) + timstep * qsrc(i)
          end do
 
          if (comparereal(tim1, time_his, eps10) == 0) then
-            do i = 1, numsrc
+            do i = 1, num_source_sink
                qsrcavg(i) = (vsrccum(i) - vsrccum_pre(i)) / ti_his ! average discharge in the past His-interval
                vsrccum_pre(i) = vsrccum(i)
             end do

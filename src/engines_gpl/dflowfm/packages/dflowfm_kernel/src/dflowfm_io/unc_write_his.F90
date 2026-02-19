@@ -314,10 +314,10 @@ contains
                                                   id_rugdim, id_rugname) ! No geometry
 
          ! Source-sinks
-         if (jahissourcesink > 0 .and. numsrc > 0) then
+         if (jahissourcesink > 0 .and. num_source_sink > 0) then
             ! Define geometry related variables
             nNodeTot = 0
-            do i = 1, numsrc
+            do i = 1, num_source_sink
                nNodes = 0
                k1 = ksrc(1, i)
                k2 = ksrc(4, i)
@@ -331,10 +331,10 @@ contains
             end do
          end if
 
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, jahissourcesink, numsrc, 'line', nNodeTot, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, jahissourcesink, num_source_sink, 'line', nNodeTot, id_strlendim, &
                                                   id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
                                                   id_poly_xmid=id_src_xmid, id_poly_ymid=id_src_ymid)
-         if (jahissourcesink > 0 .and. numsrc > 0) then
+         if (jahissourcesink > 0 .and. num_source_sink > 0) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', msrc, id_srcptsdim))
             call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate')
             call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate')
@@ -675,14 +675,14 @@ contains
             end if
 
             ! Source-sinks
-            if (jahissourcesink > 0 .and. numsrc > 0) then
+            if (jahissourcesink > 0 .and. num_source_sink > 0) then
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, xsrc))
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, ysrc))
                j = 1
-               call realloc(node_count, numsrc, fill=0)
+               call realloc(node_count, num_source_sink, fill=0)
                call realloc(geom_x, 2)
                call realloc(geom_y, 2)
-               do i = 1, numsrc
+               do i = 1, num_source_sink
                   k1 = ksrc(1, i)
                   k2 = ksrc(4, i)
                   nNodes = 0
@@ -759,7 +759,7 @@ contains
       ntot = numobs + nummovobs
       !Fill average source-sink discharge with different array on first timestep
       if (it_his == 1) then
-         do i = 1, numsrc
+         do i = 1, num_source_sink
             qsrc(i) = qstss((numconst + 1) * (i - 1) + 1)
          end do
       end if
@@ -1486,7 +1486,7 @@ contains
 
    !> Write static data such as names, coordintates, and geometry of structures to the history file
    subroutine unc_put_his_structure_static_vars(ncid)
-      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, srcname, numsrc, gate2cgen, ngategen
+      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, srcname, num_source_sink, gate2cgen, ngategen
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: jahisweir, jahisorif, jahispump, jahisgate, jahiscgen, jahisuniweir, jahisdambreak, jahisculv, jahisbridge, jahiscmpstru, jahislongculv, jahiscdam, jahissourcesink, jahislateral
@@ -1569,7 +1569,7 @@ contains
       structure_names = [(rug(i)%name, integer :: i=1, num_rugs)]
       call unc_put_his_structure_names(ncid, 1, id_rugname, structure_names)
 
-      structure_names = [(srcname(i), integer :: i=1, numsrc)]
+      structure_names = [(srcname(i), integer :: i=1, num_source_sink)]
       call unc_put_his_structure_names(ncid, jahissourcesink, id_srcname, structure_names)
 
       if (network%sts%numGates > 0) then

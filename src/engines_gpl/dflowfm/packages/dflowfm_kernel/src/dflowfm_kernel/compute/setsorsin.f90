@@ -43,7 +43,7 @@ contains
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
       use precision, only: dp
-      use m_flow, only: srsn, vcsrc, numsrc, ksrc, qsrc, qstss, kmx, zsrc, dmiss, zws, zsrc2, vol1, jamess, ccsrc, qin, epshs, srcname
+      use m_flow, only: srsn, vcsrc, num_source_sink, ksrc, qsrc, qstss, kmx, zsrc, dmiss, zws, zsrc2, vol1, jamess, ccsrc, qin, epshs, srcname
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
@@ -56,7 +56,7 @@ contains
 
       srsn = 0.0_dp
       vcsrc = 0.0_dp
-      do n = 1, numsrc
+      do n = 1, num_source_sink
          kk = ksrc(1, n) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
          kk2 = ksrc(4, n) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
          qsrc(n) = qstss((1 + numconst) * (n - 1) + 1)
@@ -178,11 +178,11 @@ contains
 
       if (jampi > 0) then
          numvals = 2 * (1 + numconst)
-         call reduce_srsn(numvals, numsrc, srsn)
+         call reduce_srsn(numvals, num_source_sink, srsn)
       end if
 
       jamess = 0
-      do n = 1, numsrc
+      do n = 1, num_source_sink
          qsrc(n) = qstss((numconst + 1) * (n - 1) + 1)
          do L = 1, numconst
             ccsrc(L, n) = qstss((numconst + 1) * (n - 1) + L + 1)
@@ -253,7 +253,7 @@ contains
 
       end do
 
-      do n = 1, numsrc
+      do n = 1, num_source_sink
          if (jamess(n) == 1) then
             write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(srcname(n))
             call mess(LEVEL_WARN, msgbuf)

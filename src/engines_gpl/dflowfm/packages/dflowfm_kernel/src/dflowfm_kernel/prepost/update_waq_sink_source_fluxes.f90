@@ -61,7 +61,7 @@ contains
       real(8) :: dzss, qsrck, fsor, fsorlay
       real(8), allocatable :: fsin(:)
 
-      do isrc = 1, numsrc
+      do isrc = 1, num_source_sink
          if (ksrcwaq(isrc) >= 0) then
             ! If ksrcwaq < 0, then the sink source is not in the current domain
             if (waqpar%kmxnxa == 1) then
