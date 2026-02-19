@@ -119,7 +119,7 @@ program unstruc
    use m_iset_jaopengl, only: iset_jaopengl
    use m_resetb, only: resetb
    use m_init_openmp, only: init_openmp
-   
+
    implicit none
 
    integer :: KEY

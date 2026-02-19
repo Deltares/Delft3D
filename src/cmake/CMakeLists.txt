@@ -147,6 +147,9 @@ if (UNIX)
 
     # Proj
     pkg_check_modules(proj REQUIRED proj)
+
+    # preCICE
+    pkg_check_modules(precice REQUIRED precice)
 endif(UNIX)
 
 if (UNIX)
