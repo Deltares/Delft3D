@@ -46,9 +46,9 @@ module m_physcoef
    real(kind=dp) :: frcuni !< uniform friction coeff 2D
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
-   real(kind=dp), parameter :: frcunistreetinlet = 0.035
-   real(kind=dp), parameter :: frcuniroofgutterpipe = 0.035
-   real(kind=dp), parameter :: frcuniroof = 0.030
+   real(kind=dp), parameter :: frcunistreetinlet = 0.035_dp
+   real(kind=dp), parameter :: frcuniroofgutterpipe = 0.035_dp
+   real(kind=dp), parameter :: frcuniroof = 0.030_dp
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
 
@@ -79,8 +79,8 @@ module m_physcoef
    !< Molecular diffusivity coefficients (m2/s):
    real(kind=dp), parameter :: viskin = 1e-6_dp !< kinematic  viscosity water in keps model
    real(kind=dp) :: vismol !< molecular viscosity (m2/s)
-   real(kind=dp) :: difmolsal !< molecular diffusivity of salinity
-   real(kind=dp) :: difmoltem !<           diffusivity of temperature
+   real(kind=dp), parameter :: difmolsal = viskin / 700.0_dp !< molecular diffusivity of salinity
+   real(kind=dp), parameter :: difmoltem = viskin / 6.7_dp !<           diffusivity of temperature
    real(kind=dp), parameter :: difmolsed = 0.0_dp !< diffusivity of sediment
    real(kind=dp), parameter :: difmoltracer = 0.0_dp !< diffusivity of tracers
 
@@ -175,8 +175,6 @@ contains
       sag = sqrt(ag)
       rhog = ag * rhomean
       vismol = 4.0_dp / (20.0_dp + backgroundwatertemperature) * 1e-5_dp ! Van Rijn, 1993, from iniphys.f90
-      difmolsal = viskin / 700.0_dp
-      difmoltem = viskin / 6.7_dp
    end subroutine calculate_derived_physcoef
 
 end module m_physcoef
