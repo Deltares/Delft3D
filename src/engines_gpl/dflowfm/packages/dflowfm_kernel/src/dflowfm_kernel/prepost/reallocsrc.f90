@@ -44,7 +44,7 @@ contains
    !! If arrays are already large enough, nothing is done (specifically, no shrinking is done).
    subroutine reallocsrc(new_size_src, new_num_points)
       use m_transport, only: NUMCONST
-      use fm_external_forcings_data, only: ksrc, msrc, xsrc, ysrc, qsrc, dp, ccsrc, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, srsn, jamess, qstss, srcname, nxsrc, qsrcavg, vsrccum, vsrccum_pre
+      use fm_external_forcings_data, only: ksrc, msrc, source_sink_x, source_sink_y, qsrc, dp, ccsrc, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, srsn, jamess, qstss, srcname, source_sink_max_num_xy_points, qsrcavg, vsrccum, vsrccum_pre
       use m_alloc, only: realloc
       use m_missing, only: dmiss
 
@@ -62,8 +62,8 @@ contains
       ! Always make sure that the "points arrays" are large enough.
       if (new_size_src > current_size_src .or. new_num_points > msrc) then
          msrc = max(msrc, new_num_points)
-         call realloc(xsrc, [max(current_size_src, new_size_src), msrc], keepExisting=.true., fill=dmiss)
-         call realloc(ysrc, [max(current_size_src, new_size_src), msrc], keepExisting=.true., fill=dmiss)
+         call realloc(source_sink_x, [max(current_size_src, new_size_src), msrc], keepExisting=.true., fill=dmiss)
+         call realloc(source_sink_y, [max(current_size_src, new_size_src), msrc], keepExisting=.true., fill=dmiss)
       end if
 
       ! Next, make sure that all other arrays are large enough
@@ -80,7 +80,7 @@ contains
          call realloc(jamess, new_size_src, keepExisting=.true.)
          call realloc(qstss, (NUMCONST + 1) * new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(srcname, new_size_src, keepExisting=.true., fill=' ')
-         call realloc(nxsrc, new_size_src, keepExisting=.true., fill=0)
+         call realloc(source_sink_max_num_xy_points, new_size_src, keepExisting=.true., fill=0)
          call realloc(qsrcavg, new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(vsrccum, new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(vsrccum_pre, new_size_src, keepExisting=.true., fill=0.0_dp)

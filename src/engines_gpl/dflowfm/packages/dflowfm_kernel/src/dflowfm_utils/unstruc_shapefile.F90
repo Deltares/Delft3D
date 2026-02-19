@@ -1028,7 +1028,7 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use fm_external_forcings_data, only: ksrc, num_source_sink, xsrc, ysrc, nxsrc, srcname, source_sink_area, qstss
+      use fm_external_forcings_data, only: ksrc, num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, srcname, source_sink_area, qstss
       use m_flowgeom, only: xz, yz
       use m_transportdata, only: NUMCONST
       implicit none
@@ -1102,20 +1102,20 @@ contains
          if (k1 <= 0 .and. k2 <= 0) then ! if both points are not in the domain
             cycle
          else
-            maxnr = nxsrc(i)
+            maxnr = source_sink_max_num_xy_points(i)
             if (k1 > 0) then
                tmp_x(1) = xz(k1)
                tmp_y(1) = yz(k1)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(1) = xsrc(i, 1)
-               tmp_y(1) = ysrc(i, 1)
+               tmp_x(1) = source_sink_x(i, 1)
+               tmp_y(1) = source_sink_y(i, 1)
             end if
             if (k2 > 0) then
                tmp_x(2) = xz(k2)
                tmp_y(2) = yz(k2)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(2) = xsrc(i, maxnr)
-               tmp_y(2) = ysrc(i, maxnr)
+               tmp_x(2) = source_sink_x(i, maxnr)
+               tmp_y(2) = source_sink_y(i, maxnr)
             end if
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
@@ -1149,15 +1149,15 @@ contains
 
             ! determine source and sink points
             if (qstss((NUMCONST + 1) * (i - 1) + 1) > 0) then
-               snkx = xsrc(i, 1)
-               snky = ysrc(i, 1)
-               srcx = xsrc(i, maxnr)
-               srcy = ysrc(i, maxnr)
+               snkx = source_sink_x(i, 1)
+               snky = source_sink_y(i, 1)
+               srcx = source_sink_x(i, maxnr)
+               srcy = source_sink_y(i, maxnr)
             else
-               snkx = xsrc(i, maxnr)
-               snky = ysrc(i, maxnr)
-               srcx = xsrc(i, 1)
-               srcy = ysrc(i, 1)
+               snkx = source_sink_x(i, maxnr)
+               snky = source_sink_y(i, maxnr)
+               srcx = source_sink_x(i, 1)
+               srcy = source_sink_y(i, 1)
             end if
             ! write ORIGXSNK
             j = dbfwriteattribute(shphandle, ishape, id_origxsnk, snkx)

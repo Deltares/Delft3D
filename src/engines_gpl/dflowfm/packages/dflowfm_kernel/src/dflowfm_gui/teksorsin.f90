@@ -63,8 +63,8 @@ contains
          k = ksrc(1, n)
          if (k /= 0) then
             n2 = 1
-            xp = xsrc(n, n2)
-            yp = ysrc(n, n2)
+            xp = source_sink_x(n, n2)
+            yp = source_sink_y(n, n2)
             if (inview(xp, yp)) then
                if (qsrc(n) > 0) then
                   ncol = 3
@@ -92,9 +92,9 @@ contains
          end if
          k = ksrc(4, n)
          if (k /= 0) then
-            n2 = nxsrc(n)
-            xp = xsrc(n, n2)
-            yp = ysrc(n, n2)
+            n2 = source_sink_max_num_xy_points(n)
+            xp = source_sink_x(n, n2)
+            yp = source_sink_y(n, n2)
             if (inview(xp, yp)) then
                if (qsrc(n) > 0) then
                   ncol = 221

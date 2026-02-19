@@ -676,8 +676,8 @@ contains
 
             ! Source-sinks
             if (jahissourcesink > 0 .and. num_source_sink > 0) then
-               call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, xsrc))
-               call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, ysrc))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, source_sink_x))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, source_sink_y))
                j = 1
                call realloc(node_count, num_source_sink, fill=0)
                call realloc(geom_x, 2)

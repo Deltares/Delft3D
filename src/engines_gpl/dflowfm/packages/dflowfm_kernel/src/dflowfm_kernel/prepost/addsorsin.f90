@@ -134,7 +134,7 @@ contains
 
    !> Add a source-sink to the model.
    subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
-      use fm_external_forcings_data, only: num_source_sink, xsrc, ysrc, nxsrc, ksrc, source_sink_z_bot, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, srcname
+      use fm_external_forcings_data, only: num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, ksrc, source_sink_z_bot, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, srcname
       use m_GlobalParameters, only: INDTP_ALL
 
       use messagehandling, only: msgbuf, warn_flush
@@ -167,9 +167,9 @@ contains
       call reallocsrc(num_source_sink, num_points)
 
       ! set the coordinates of source/sink
-      xsrc(num_source_sink, 1:num_points) = x_points(1:num_points)
-      ysrc(num_source_sink, 1:num_points) = y_points(1:num_points)
-      nxsrc(num_source_sink) = num_points
+      source_sink_x(num_source_sink, 1:num_points) = x_points(1:num_points)
+      source_sink_y(num_source_sink, 1:num_points) = y_points(1:num_points)
+      source_sink_max_num_xy_points(num_source_sink) = num_points
       kk = 0
       kk2 = 0
 
@@ -180,8 +180,8 @@ contains
       tmpname(1) = name//' source'
       jakdtree = 0
       kdum(1) = 0
-      if (xsrc(num_source_sink, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+      if (source_sink_x(num_source_sink, num_points) /= dmiss) then
+         call find_nearest_flownodes(1, source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
          kk2 = kdum(1)
       end if
 
@@ -199,8 +199,8 @@ contains
          ! call inflowcell(xpl(1) , ypl(1)  , kk) ! FROM: sink
          tmpname = name//' sink'
          kdum(1) = 0
-         if (xsrc(num_source_sink, 1) /= dmiss) then
-            call find_nearest_flownodes(1, xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+         if (source_sink_x(num_source_sink, 1) /= dmiss) then
+            call find_nearest_flownodes(1, source_sink_x(num_source_sink, 1), source_sink_y(num_source_sink, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
             kk = kdum(1)
          end if
 
@@ -232,7 +232,7 @@ contains
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), xsrc(num_source_sink, 2), ysrc(num_source_sink, 2), source_sink_discharge_cosine(1, num_source_sink), source_sink_discharge_sine(1, num_source_sink), xsrc(num_source_sink, 1), ysrc(num_source_sink, 1), jsferic, jasfer3D, dxymis)
+            call normalin(source_sink_x(num_source_sink, 1), source_sink_y(num_source_sink, 1), source_sink_x(num_source_sink, 2), source_sink_y(num_source_sink, 2), source_sink_discharge_cosine(1, num_source_sink), source_sink_discharge_sine(1, num_source_sink), source_sink_x(num_source_sink, 1), source_sink_y(num_source_sink, 1), jsferic, jasfer3D, dxymis)
          end if
 
          do i = 1, num_source_sink - 1
@@ -255,7 +255,7 @@ contains
          end if
          ! Determine angle (sin/cos) of 'to' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(xsrc(num_source_sink, num_points - 1), ysrc(num_source_sink, num_points - 1), xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), source_sink_discharge_cosine(2, num_source_sink), source_sink_discharge_sine(2, num_source_sink), xsrc(num_source_sink, num_points), ysrc(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
+            call normalin(source_sink_x(num_source_sink, num_points - 1), source_sink_y(num_source_sink, num_points - 1), source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), source_sink_discharge_cosine(2, num_source_sink), source_sink_discharge_sine(2, num_source_sink), source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
          end if
 
          do i = 1, num_source_sink - 1
