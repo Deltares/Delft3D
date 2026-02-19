@@ -592,7 +592,7 @@ module unstruc_netcdf
          real(kind=dp), optional :: default_value
          integer, optional, intent(in) :: jabndnd
       end function unc_put_var_map_int
-      
+
       module function unc_put_var_map_real(ncid, id_tsp, id_var, iloc, output_mask, reals, default_value, jabndnd) result(ierr)
          use precision, only: dp
          integer :: ierr
@@ -605,7 +605,7 @@ module unstruc_netcdf
          real(kind=dp), optional :: default_value
          integer, optional, intent(in) :: jabndnd
       end function unc_put_var_map_real
-      
+
       module function unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, output_mask, values, default_value, jabndnd) result(ierr)
          use precision, only: dp
          integer, intent(in) :: ncid
@@ -618,7 +618,7 @@ module unstruc_netcdf
          integer, optional, intent(in) :: jabndnd
          integer :: ierr
       end function unc_put_var_map_dble
-      
+
       module function unc_put_var_map_dble2(ncid, id_tsp, id_var, iloc, output_mask, values, default_value, locdim, jabndnd) result(ierr)
          use precision, only: dp
          integer :: ierr
@@ -632,7 +632,7 @@ module unstruc_netcdf
          integer, optional, intent(in) :: locdim
          integer, optional, intent(in) :: jabndnd
       end function unc_put_var_map_dble2
-      
+
       module function unc_put_var_map_dble3(ncid, id_tsp, id_var, iloc, values, default_value, locdim, jabndnd) result(ierr)
          use precision, only: dp
          integer :: ierr
@@ -645,7 +645,7 @@ module unstruc_netcdf
          integer, optional, intent(in) :: locdim
          integer, optional, intent(in) :: jabndnd
       end function unc_put_var_map_dble3
-      
+
       module function unc_put_var_map_byte_timebuffer(ncid, id_tsp, id_var, iloc, values, t1, tl, jabndnd) result(ierr)
          integer :: ierr
          integer, intent(in) :: ncid
@@ -657,7 +657,7 @@ module unstruc_netcdf
          integer, intent(in) :: tl
          integer, optional, intent(in) :: jabndnd
       end function unc_put_var_map_byte_timebuffer
-      
+
       module function unc_put_var_map_byte(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
          integer :: ierr
          integer, intent(in) :: ncid
@@ -668,7 +668,7 @@ module unstruc_netcdf
          integer(kind=1), optional, intent(in) :: default_value
          integer, optional, intent(in) :: jabndnd
       end function unc_put_var_map_byte
-      
+
       module function unc_put_var_map_nodes(ncid, id_tsp, id_var, output_mask, values, jabndnd_) result(ierr)
          use precision, only: dp
          integer :: ierr
@@ -1998,12 +1998,12 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, & 
-         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, &
-         jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flow_without_waves, jawaveswartdelwaq, &
-         jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
-         fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
-         thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
+      use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, &
+                        bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, &
+                        jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flow_without_waves, jawaveswartdelwaq, &
+                        jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
+                        fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
+                        thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: tudunitstr, refdat, dts
       use m_flowgeom, only: lnx, ndx, ndxi, ndx2d, xz, yz, bl, xu, yu, ln, lnxi
@@ -2023,7 +2023,7 @@ contains
       use m_get_Lbot_Ltop_max, only: getlbotltopmax
       use m_reconstruct_ucz, only: reconstructucz
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, &
-         const_units, ifrac2const
+                             const_units, ifrac2const
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot
       use m_xbeach_data, only: E, thetamean, sigmwav
       use unstruc_channel_flow, only: network
@@ -7274,7 +7274,7 @@ contains
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
       use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, &
-         ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
+                               ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -10094,9 +10094,9 @@ contains
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
       end if
-      
+
       if (jamapheatflux > 0) then ! Heat modelling only
-         if (temperature_model  == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
             ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_cloudiness(iid), cloudiness, [1, itim], [ndxndxi, 1])
@@ -11351,7 +11351,7 @@ contains
       ndxi = nump1d2d
       call output_mask%reset()
       call output_mask%create_mask_arrays()
-      
+
       if (jaidomain_ > 0) then
          ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemdomain(:), nf90_int, UNC_LOC_S, 'netelem_domain', '', 'domain number of netcell', '', output_mask, 0, cell_method='point', jabndnd=0, ivalid_max=ndomains)
       end if
@@ -15280,7 +15280,7 @@ contains
          ierr = nf90_enddef(ncid)
 
          do i = 1, n1d_write
-            cell_index = output_mask%cell_indices(output_mask%ndx2d+i)
+            cell_index = output_mask%cell_indices(output_mask%ndx2d + i)
             nn = size(nd(cell_index)%x)
             do n = 1, nn
                work2(n, i) = nd(cell_index)%x(n)
@@ -15290,7 +15290,7 @@ contains
          ierr = nf90_put_var(ncid, id_flowelemcontourx, work2(1:numContPts, 1:n1d_write), [1, 1], [numContPts, n1d_write])
 
          do i = 1, n1d_write
-            cell_index = output_mask%cell_indices(output_mask%ndx2d+i)
+            cell_index = output_mask%cell_indices(output_mask%ndx2d + i)
             nn = size(nd(cell_index)%x)
             do n = 1, nn
                work2(n, i) = nd(cell_index)%y(n)

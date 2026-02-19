@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 
 !> Submodule containing unc_put_var_map_dble implementation for unstruc_netcdf module
-submodule (unstruc_netcdf) unstruc_netcdf_submodule_unc_put_var_map
+submodule(unstruc_netcdf) unstruc_netcdf_submodule_unc_put_var_map
 
    implicit none
 

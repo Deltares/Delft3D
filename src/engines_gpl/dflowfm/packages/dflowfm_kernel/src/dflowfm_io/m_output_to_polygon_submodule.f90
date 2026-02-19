@@ -78,7 +78,7 @@ contains
       this%lnxi = lnxi
       this%lnx1d = lnx1d
       this%lnx1db = lnx1db
-      
+
       this%ndx = ndx
       this%ndxi = ndxi
       this%ndx2d = ndx2d
@@ -151,47 +151,45 @@ contains
 
       class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
 
-      integer :: k
-
       if (allocated(this%cell_indices)) then
-         deallocate(this%cell_indices)
+         deallocate (this%cell_indices)
       end if
 
       if (allocated(this%cell_indices)) then
-         deallocate(this%cell_indices)
+         deallocate (this%cell_indices)
       end if
       if (allocated(this%link_indices)) then
-         deallocate(this%link_indices)
+         deallocate (this%link_indices)
       end if
       if (allocated(this%link_to_nodes)) then
-         deallocate(this%link_to_nodes)
+         deallocate (this%link_to_nodes)
       end if
       if (allocated(this%netnode_indices)) then
-         deallocate(this%netnode_indices)
+         deallocate (this%netnode_indices)
       end if
       if (allocated(this%netlink_indices)) then
-         deallocate(this%netlink_indices)
+         deallocate (this%netlink_indices)
       end if
       if (allocated(this%netlink_to_netnodes)) then
-         deallocate(this%netlink_to_netnodes)
+         deallocate (this%netlink_to_netnodes)
       end if
       if (allocated(this%cells_mask)) then
-         deallocate(this%cells_mask)
+         deallocate (this%cells_mask)
       end if
       if (allocated(this%links_mask)) then
-         deallocate(this%links_mask)
+         deallocate (this%links_mask)
       end if
       if (allocated(this%netnodes_mask)) then
-         deallocate(this%netnodes_mask)
+         deallocate (this%netnodes_mask)
       end if
       if (allocated(this%netlinks_mask)) then
-         deallocate(this%netlinks_mask)
+         deallocate (this%netlinks_mask)
       end if
       this%lnx = 0
       this%lnxi = 0
       this%lnx1d = 0
       this%lnx1db = 0
-      
+
       this%ndx = 0
       this%ndxi = 0
       this%ndx2d = 0
