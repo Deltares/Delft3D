@@ -32,6 +32,9 @@ project {
 
     }
 
+    template(TemplateLinuxAgent)
+    template(TemplateLinuxAgentFips)
+    template(TemplateLinuxAgentNoFips)
     template(TemplateMergeRequest)
     template(TemplateDetermineProduct)
     template(TemplatePublishStatus)
