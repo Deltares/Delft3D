@@ -13,6 +13,7 @@ object LinuxBuild : BuildType({
     description = "CMake build."
 
     templates(
+        TemplateNoFipsAgent,
         TemplateMergeRequest,
         TemplateDetermineProduct,
         TemplatePublishStatus,

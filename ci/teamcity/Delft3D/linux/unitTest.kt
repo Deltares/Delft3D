@@ -20,6 +20,7 @@ object LinuxUnitTest : BuildType({
     """.trimIndent()
 
     templates(
+        TemplateNoFipsAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance

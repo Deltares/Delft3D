@@ -12,6 +12,7 @@ object LinuxCollect : BuildType({
     description = "Prepping the binaries for testing/release."
 
     templates(
+        TemplateNoFipsAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance

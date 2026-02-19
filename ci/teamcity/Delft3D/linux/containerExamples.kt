@@ -15,6 +15,7 @@ object LinuxRunAllContainerExamples : BuildType({
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     templates(
+        TemplateNoFipsAgent,
         TemplateMergeRequest,
         TemplateDockerRegistry,
         TemplatePublishStatus,

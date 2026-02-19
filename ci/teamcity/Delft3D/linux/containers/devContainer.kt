@@ -16,6 +16,7 @@ object LinuxDevContainer : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
+        TemplateNoFipsAgent,
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,

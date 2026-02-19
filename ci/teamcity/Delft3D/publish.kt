@@ -9,6 +9,7 @@ import Delft3D.windows.*
 object Publish : BuildType({
 
     templates(
+        TemplateNoFipsAgent,
         TemplateMonitorPerformance,
         TemplateDockerRegistry,
         TemplateFailureCondition
