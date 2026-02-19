@@ -80,12 +80,15 @@ class TestCaseData:
             raise RuntimeError(f"Failed to add reference to DVC: {reference_path}")
 
         case_doc_folder = Path(case_path).parent / "doc"
-        print(f"Adding doc folder to DVC: {case_doc_folder}")
-        result = add_directory_to_dvc(case_doc_folder, repo)
-        if result:
-            dvc_files.extend(result)
+        if case_doc_folder.exists():
+            print(f"Adding doc folder to DVC: {case_doc_folder}")
+            result = add_directory_to_dvc(case_doc_folder, repo)
+            if result:
+                dvc_files.extend(result)
+            else:
+                raise RuntimeError(f"Failed to add doc folder to DVC: {case_doc_folder}")
         else:
-            raise RuntimeError(f"Failed to add doc folder to DVC: {case_doc_folder}")
+            print(f"No doc folder found at {case_doc_folder}, skipping.")
 
         return dvc_files
 

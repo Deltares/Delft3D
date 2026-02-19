@@ -203,7 +203,7 @@
       </checks>              
     </testCase>
     <testCase name="e02_f030_c301_dllso_Apptainer" ref="dimr_trunk"> <!-- dflowfm + dwaq -->	
-		<path version="2026-2-03T14:00:00.00000">e02_dflowfm/f030_water_quality_processes/c301_dllso_Apptainer</path>
+		<path version="2026-02-03T14:00:00.00000">e02_dflowfm/f030_water_quality_processes/c301_dllso_Apptainer</path>
 		<checks>
 		  <file name="FlowFM_map.nc" type="netCDF">
 			  <parameters>
@@ -220,7 +220,7 @@
 		</checks>
     </testCase>
     <testCase name="e02_f030_c302_dllso_parallel_Apptainer" ref="dimr_trunk"> <!-- dflowfm + dwaq -->
-		<path version="2026-2-03T14:00:00.00000">e02_dflowfm/f030_water_quality_processes/c302_dllso_parallel_Apptainer</path>
+		<path version="2026-02-03T14:00:00.00000">e02_dflowfm/f030_water_quality_processes/c302_dllso_parallel_Apptainer</path>
 		<checks>
 		  <file name="output/FlowFM_0000_map.nc" type="netCDF">
 			  <parameters>
