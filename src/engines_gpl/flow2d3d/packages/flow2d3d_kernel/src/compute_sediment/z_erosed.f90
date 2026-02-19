@@ -903,8 +903,6 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           temperature = temeqs
        endif
        !
-       taks0 = 0.0_fp
-       !
        ! Calculate Van Rijn's reference height
        !
        if (iopkcw==1) then
@@ -1198,7 +1196,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                    klc=klc+1
                 enddo
              endif
-             taks = 0.0_fp
+             taks = taks0
              !
              klc    = 1
              do k = kfsmax(nm),kfsmin(nm),-1

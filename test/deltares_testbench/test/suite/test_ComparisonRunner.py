@@ -2,6 +2,7 @@ import glob
 import os
 import pathlib as pl
 from datetime import datetime, timezone
+from enum import Enum
 from typing import List
 from unittest.mock import MagicMock, PropertyMock, call
 
@@ -16,6 +17,7 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_path import TestCasePath
 from src.config.types.path_type import PathType
 from src.suite.comparison_runner import ComparisonRunner
+from src.suite.run_data import RunData
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_default_logging_folder_path
 from src.utils.comparers.end_result import EndResult
@@ -23,6 +25,47 @@ from src.utils.logging.console_logger import ConsoleLogger
 from src.utils.logging.log_level import LogLevel
 from src.utils.paths import Paths
 from src.utils.xml_config_parser import XmlConfigParser
+
+
+class FakeDownloadMode(Enum):
+    ALL = "all"
+    REFS_ONLY = "refs_only"
+    FILES = "files"
+    OVERWRITE = "overwrite"
+
+
+def patch_fake_download(mocker: MockerFixture, fs: FakeFilesystem, mode: FakeDownloadMode) -> None:
+    def _fake_download(
+        from_path: str,
+        to_path: str,
+        programs,
+        logger,
+        credentials,
+        version,
+    ) -> None:
+        match mode:
+            case FakeDownloadMode.ALL:
+                fs.makedirs(to_path, exist_ok=True)
+                return
+            case FakeDownloadMode.REFS_ONLY:
+                if to_path.startswith("/refs"):
+                    fs.makedirs(to_path, exist_ok=True)
+                return
+            case FakeDownloadMode.FILES:
+                if to_path.startswith("/refs"):
+                    fs.makedirs(to_path, exist_ok=True)
+                elif to_path.startswith("/cases"):
+                    fs.makedirs(to_path, exist_ok=True)
+                    fs.makedirs(f"{to_path}/sub", exist_ok=True)
+                    fs.create_file(f"{to_path}/sub/real.txt", contents="hello")
+            case FakeDownloadMode.OVERWRITE:
+                if to_path.startswith("/refs"):
+                    fs.makedirs(to_path, exist_ok=True)
+                elif to_path.startswith("/cases"):
+                    fs.makedirs(to_path, exist_ok=True)
+                    fs.create_file(f"{to_path}/file.txt", contents="new")
+
+    mocker.patch("src.suite.test_set_runner.HandlerFactory.download", side_effect=_fake_download)
 
 
 class TestComparisonRunner:
@@ -305,6 +348,142 @@ class TestComparisonRunner:
         assert not others
         assert failed.results[0][-1].result == EndResult.ERROR
         assert not succeeded.results  # No `EndResult.ERROR` in `results` means the comparison can potentially succeed.
+
+    def test_case_preperation_makes_copy_of_case_dir(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.command_line_settings.skip_download = []
+        settings.local_paths = LocalPaths(cases_path="/cases", references_path="/refs")
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        config = TestComparisonRunner.create_test_case_config(
+            "Banana_1", ignore_testcase=True, locations=[ref_location, case_location]
+        )
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+        run_data = RunData(1, 10)
+
+        patch_fake_download(mocker, fs, FakeDownloadMode.ALL)
+
+        expected_work_path = "/cases/win64/Banana_1_work"
+
+        # Act
+        runner.run_test_case(config=config, run_data=run_data)
+
+        # Assert
+        assert fs.exists(expected_work_path)
+
+    def test_copy_to_work_folder__missing_source__warns_and_returns(
+        self, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.command_line_settings.skip_download = []
+        settings.command_line_settings.skip_run = True
+        settings.command_line_settings.skip_post_processing = True
+        settings.local_paths = LocalPaths(cases_path="/cases", references_path="/refs")
+
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        config = TestComparisonRunner.create_test_case_config(
+            "Name_1", ignore_testcase=True, locations=[ref_location, case_location]
+        )
+
+        logger = MagicMock(spec=ConsoleLogger)
+        testcase_logger = MagicMock()
+        logger.create_test_case_logger.return_value = testcase_logger
+        runner = ComparisonRunner(settings, logger)
+        run_data = RunData(1, 1)
+
+        expected_local_input_path = "/cases/win64/Name_1"
+        expected_work_path = expected_local_input_path + "_work"
+
+        patch_fake_download(mocker, fs, FakeDownloadMode.REFS_ONLY)
+
+        # Make the input path exist but not be a directory.
+        fs.create_file(expected_local_input_path, contents="not a directory")
+
+        # Act
+        result = runner.run_test_case(config=config, run_data=run_data)
+
+        # Assert
+        assert any(
+            "NotADirectoryError" in str(call.args[0])
+            and "Expected a directory to copy to work folder" in str(call.args[0])
+            for call in testcase_logger.exception.call_args_list
+        ), "Expected NotADirectoryError to be logged"
+        assert result.results[0][-1].result == EndResult.ERROR
+        assert not fs.exists(expected_work_path)
+
+    def test_copy_to_work_folder__copies_directory(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.command_line_settings.skip_download = []
+        settings.command_line_settings.skip_run = True
+        settings.command_line_settings.skip_post_processing = True
+        settings.local_paths = LocalPaths(cases_path="/cases", references_path="/refs")
+
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        config = TestComparisonRunner.create_test_case_config(
+            "Name_1", ignore_testcase=True, locations=[ref_location, case_location]
+        )
+
+        logger = MagicMock(spec=ConsoleLogger)
+        testcase_logger = MagicMock()
+        logger.create_test_case_logger.return_value = testcase_logger
+        runner = ComparisonRunner(settings, logger)
+        run_data = RunData(1, 1)
+
+        expected_local_input_path = "/cases/win64/Name_1"
+        expected_work_path = expected_local_input_path + "_work"
+
+        patch_fake_download(mocker, fs, FakeDownloadMode.FILES)
+
+        # Act
+        runner.run_test_case(config=config, run_data=run_data)
+
+        # Assert
+        assert fs.exists(f"{expected_work_path}/sub/real.txt")
+
+    def test_copy_to_work_folder__overwrites_existing_work_folder(
+        self, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.command_line_settings.skip_download = []
+        settings.command_line_settings.skip_run = True
+        settings.command_line_settings.skip_post_processing = True
+        settings.local_paths = LocalPaths(cases_path="/cases", references_path="/refs")
+
+        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
+        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
+        config = TestComparisonRunner.create_test_case_config(
+            "Name_1", ignore_testcase=True, locations=[ref_location, case_location]
+        )
+
+        logger = MagicMock(spec=ConsoleLogger)
+        testcase_logger = MagicMock()
+        logger.create_test_case_logger.return_value = testcase_logger
+        runner = ComparisonRunner(settings, logger)
+        run_data = RunData(1, 1)
+
+        expected_local_input_path = "/cases/win64/Name_1"
+        expected_work_path = expected_local_input_path + "_work"
+
+        fs.makedirs(expected_work_path, exist_ok=True)
+        fs.create_file(f"{expected_work_path}/file.txt", contents="old")
+        fs.create_file(f"{expected_work_path}/old.txt", contents="should be removed")
+
+        patch_fake_download(mocker, fs, FakeDownloadMode.OVERWRITE)
+
+        # Act
+        runner.run_test_case(config=config, run_data=run_data)
+
+        # Assert
+        with open(f"{expected_work_path}/file.txt") as f:
+            assert f.read() == "new"
+        assert not fs.exists(f"{expected_work_path}/old.txt")
 
     @staticmethod
     def create_test_case_config(

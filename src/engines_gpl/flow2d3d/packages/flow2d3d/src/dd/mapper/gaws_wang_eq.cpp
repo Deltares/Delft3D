@@ -478,7 +478,7 @@ void WangEquations::AddEquationSpace(void)
     if ( newEquations == NULL )
     {
                 printf("ABORT: Unable to realloc in WangEquations::AddEquationSpace\n");
-                throw new Exception (true, "Unable to realloc in WangEquations::AddEquationSpace\n");
+                throw new Exception("Unable to realloc in WangEquations::AddEquationSpace\n");
         }
 
     this->equations = newEquations;

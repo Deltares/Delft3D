@@ -215,7 +215,7 @@ contains
    end subroutine
 
    !> Read bubblescreen forcing attributes from block pointer
-   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input) result(success)
+   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_level, discharge_input) result(success)
       use MessageHandling, only: err_flush, msgbuf
       use properties, only: prop_get
       use tree_data_types, only: tree_data
@@ -228,6 +228,7 @@ contains
       character(len=*), intent(in) :: group_name !< Name of the group in the ext file
       character(len=:), allocatable, intent(out) :: id !< Bubblescreen id
       character(len=:), allocatable, intent(out) :: location_file !< Bubblescreen location file name
+      real(kind=dp), intent(out) :: z_level !< [m] Bubblescreen z level
       character(len=:), allocatable, intent(out) :: discharge_input !< Bubblescreen discharge input file
       logical :: success !< Error code
 
@@ -260,13 +261,21 @@ contains
          return
       else ! If locationFile is present, check if it has correct extension
          call resolvePath(readout_location_file, base_dir)
-         if (readout_location_file(len-4:len) /= '.pliz') then ! Check if locationFile has .pliz extension
-            write (msgbuf, '(5a)') 'Incorrect locationFile specified in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file should have ".pliz" extension.'
+         if (readout_location_file(len-3:len) /= '.pli') then ! Check if locationFile has .pli extension
+            write (msgbuf, '(5a)') 'Incorrect locationFile specified in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file should have ".pli" extension.'
             call err_flush()
             return
          else ! If locationFile is valid, store it
             location_file = trim(readout_location_file(1:len_trim(readout_location_file)))
          end if
+      end if
+
+      ! (required) Read out 'zLevel' keyword
+      call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
+      if (.not. is_read) then ! Check if zLevel is present
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''zLevel'' is missing or is invalid value.'
+         call err_flush()
+         return
       end if
 
       ! (required) Read out 'discharge' keyword

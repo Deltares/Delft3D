@@ -47,7 +47,6 @@
 #define WSTRING(x) x
 #endif
 
-using namespace std;
 using namespace timeseries;
 using namespace utilities;
 

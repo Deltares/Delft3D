@@ -2,7 +2,10 @@
 """Script to migrate XML testcases from MinIO S3 storage to DVC storage."""
 
 import argparse
+import io
+import sys
 from pathlib import Path
+from typing import TextIO
 
 from dvc.repo import Repo
 
@@ -17,6 +20,24 @@ S3_BUCKET = "dsc-testbench"
 # Path to the TeamCity CSV relative to the DVC repository root (.dvc folder).
 # The DVC root is derived from this file's location (via `__file__`)
 TEAMCITY_CSV_RELATIVE_PATH = Path("ci") / "teamcity" / "Delft3D" / "vars" / "dimr_testbench_table.csv"
+LOG_FILE = Path("migrate_xmls.log")
+
+
+class TeeStream(io.TextIOBase):
+    """Write to multiple streams simultaneously (e.g. stdout + log file)."""
+
+    def __init__(self, *streams: TextIO) -> None:
+        self.streams = streams
+
+    def write(self, data: str) -> int:
+        for stream in self.streams:
+            stream.write(data)
+            stream.flush()
+        return len(data)
+
+    def flush(self) -> None:
+        for stream in self.streams:
+            stream.flush()
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -74,35 +95,39 @@ def extract_data_from_xml_files(xml_files: list[Path]) -> list[XmlFileWithTestCa
 
 def main() -> None:
     """Execute main functionality for the minio to DVC migration tool."""
-    args = parse_arguments()
+    with open(LOG_FILE, "a", encoding="utf-8") as log_file:
+        original_stdout = sys.__stdout__ or sys.stdout
+        sys.stdout = TeeStream(original_stdout, log_file)
+        try:
+            print(f"\n{'='*60}")
+            print("Migration started")
+            print(f"{'='*60}")
 
-    xml_files = determine_xml_files_to_process(args)
-    xml_files_with_all_testcases = extract_data_from_xml_files(xml_files)
+            args = parse_arguments()
 
-    xml_files_with_testcases_to_migrate = filter_cases_to_migrate(xml_files_with_all_testcases)
+            xml_files = determine_xml_files_to_process(args)
+            xml_files_with_all_testcases = extract_data_from_xml_files(xml_files)
 
-    rewinder = setup_minio_rewinder(BASE_URL)
+            xml_files_with_testcases_to_migrate = filter_cases_to_migrate(xml_files_with_all_testcases)
 
-    repo_root = find_dvc_root_in_parent_directories(Path(__file__).resolve())
-    print(f"Found existing DVC repo at: {repo_root}")
-    repo = Repo(str(repo_root))
+            rewinder = setup_minio_rewinder(BASE_URL)
 
-    # First download all cases and references then move doc folders and add to DVC. This will speed up the process.
-    for xml_file in xml_files_with_testcases_to_migrate:
-        xml_file.download_from_minio_in_new_folder_structure(rewinder=rewinder)
+            repo_root = find_dvc_root_in_parent_directories(Path(__file__).resolve())
+            print(f"Found existing DVC repo at: {repo_root}")
+            repo = Repo(str(repo_root))
 
-    for xml_file in xml_files_with_testcases_to_migrate:
-        xml_file.move_testcases_doc_folder_to_parent()
-
-    dvc_files = []
-    for i, xml_file in enumerate(xml_files_with_testcases_to_migrate, start=1):
-        print(f"Add testcases {xml_file.xml_file.name} to dvc - {i}/{len(xml_files_with_testcases_to_migrate)} xml's")
-        dvc_files.extend(xml_file.add_to_dvc(repo=repo))
-
-    push_dvc_files_to_remote(repo, dvc_files)
-
-    for xml_file in xml_files_with_testcases_to_migrate:
-        xml_file.migrate_xml_to_dvc()
+            for i, xml_file in enumerate(xml_files_with_testcases_to_migrate, start=1):
+                print(
+                    f"Add testcases {xml_file.xml_file.name} to dvc - {i}/{len(xml_files_with_testcases_to_migrate)} xml's"
+                )
+                xml_file.download_from_minio_in_new_folder_structure(rewinder=rewinder)
+                xml_file.move_testcases_doc_folder_to_parent()
+                dvc_files = []
+                dvc_files.extend(xml_file.add_to_dvc(repo=repo))
+                push_dvc_files_to_remote(repo, dvc_files)
+                xml_file.migrate_xml_to_dvc()
+        finally:
+            sys.stdout = sys.__stdout__
 
 
 if __name__ == "__main__":

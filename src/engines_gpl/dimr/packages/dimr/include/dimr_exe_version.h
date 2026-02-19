@@ -30,11 +30,11 @@
 
 /*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE ===================================================================== */
 
-char * getversionstring_dimr_exe(void);
-char * getfullversionstring_dimr_exe(void);
-char * getshortversionstring_dimr_exe(void);
-char * geturlstring_dimr_exe(void);
-char * getversionidstring_dimr_exe(void);
+const char * getversionstring_dimr_exe(void);
+const char * getfullversionstring_dimr_exe(void);
+const char * getshortversionstring_dimr_exe(void);
+const char * geturlstring_dimr_exe(void);
+const char * getversionidstring_dimr_exe(void);
 
 #endif /* DIMR_EXE_VERSION */
 

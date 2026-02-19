@@ -92,6 +92,13 @@ object PublishToGui : BuildType({
             cleanOutputDir = false
             publishPackages = true
         }
+        nuGetPublish {
+            name = "Publish NuGet artifacts to Nexus"
+            toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
+            packages = "target/*.nupkg"
+            serverUrl = "https://artifacts.deltares.nl/repository/nuget-release/"
+            apiKey = "%nexus_nuget_apikey%"
+        }
     }
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {

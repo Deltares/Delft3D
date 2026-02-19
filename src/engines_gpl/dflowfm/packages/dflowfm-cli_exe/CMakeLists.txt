@@ -144,7 +144,7 @@ if(WIN32)
 endif()
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/parallel/generate_parallel_mdu.sh  DESTINATION bin)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/submit_dflowfm_h7.sh     DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/submit_dflowfm_h7.sh    DESTINATION bin)
 endif(UNIX)
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/runscripts/run_dflowfm.${platform_extension} DESTINATION bin)

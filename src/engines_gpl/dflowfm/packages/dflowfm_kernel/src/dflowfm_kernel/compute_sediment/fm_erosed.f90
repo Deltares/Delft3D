@@ -808,8 +808,6 @@ contains
             temperature = backgroundwatertemperature
          end if
          !
-         taks0 = 0.0_dp
-         !
          ! Calculate Van Rijn's reference height
          !
          if (iopkcw == 1) then !  iopkcw: options to calculate curr related roughness height
@@ -1133,7 +1131,7 @@ contains
                      klc = klc + 1
                   end do
                end if
-               taks = 0.0_fp
+               taks = taks0
                !
                ! Solve equilibrium concentration vertical and
                ! integrate over vertical
