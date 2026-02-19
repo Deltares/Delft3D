@@ -2078,22 +2078,13 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_ancillary_variables', jamapanc, success)
       if (jamapanc > 0) then
          if (jamaps1 <= 0) then
-            jamaps1 = 1
-            write (msgbuf, '(a, i0, a)') 'MDU setting "Wrimap_ancillary_variables = ', jamapanc, '" requires ' &
-               //'"Wrimap_waterlevel_s1 = 1". Has been enabled now.'
-            call warn_flush()
+            jamaps1 = 1 ! Enable writing s1, necessary for writing ancillary variables
          end if
          if (jamaphs <= 0) then
-            jamaphs = 1
-            write (msgbuf, '(a, i0, a)') 'MDU setting "Wrimap_ancillary_variables = ', jamapanc, '" requires ' &
-               //'"Wrimap_waterdepth = 1". Has been enabled now.'
-            call warn_flush()
+            jamaphs = 1 ! Enable writing waterdepth, necessary for writing ancillary variables
          end if
          if (jamaphu <= 0) then
-            jamaphu = 1
-            write (msgbuf, '(a, i0, a)') 'MDU setting "Wrimap_ancillary_variables = ', jamapanc, '" requires ' &
-               //'"Wrimap_waterdepth_hu = 1". Has been enabled now.'
-            call warn_flush()
+            jamaphu = 1 ! Enable writing waterdepth_hu, necessary for writing ancillary variables
          end if
       end if
       call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', jamapFlowAnalysis, success)
@@ -2103,10 +2094,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', jamapucvec, success)
       !
       if (jawave == WAVE_SWAN_ONLINE .and. jamapucvec == 0) then ! only needed for 2 way coupling
-         jamapucvec = 1
-         write (msgbuf, '(a, i0, a)') 'MDU setting "Wavemodelnr = ', jawave, '" requires ' &
-            //'"Wrimap_velocity_vector = 1". Has been enabled now.'
-         call warn_flush()
+         jamapucvec = 1 ! Enable writing velocity vector to map file, necessary for SWAN online coupling
       end if
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_magnitude', jamapucmag, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_vectorq', jamapucqvec, success)
@@ -2123,25 +2111,10 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
       call prop_get(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
-      if (success .and. jamapsal == 1 .and. jasal < 1) then
-         write (msgbuf, '(a)') 'MDU setting "Wrimap_salinity = 1" asks to write salinity to the output map file, ' &
-            //'but no salinity is involved due to MDU setting "Salinity = 0". So we set "Wrimap_salinity = 0" ' &
-            //'and do not write salinity to map file.'
-         call warn_flush()
-      end if
-
       call prop_get(md_ptr, 'output', 'Wrimap_chezy', jamap_chezy_elements, success)
       call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', jamap_chezy_links, success)
       call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', jamap_chezy_input, success)
-
       call prop_get(md_ptr, 'output', 'Wrimap_temperature', jamaptem, success)
-      if (success .and. jamaptem == 1 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
-         write (msgbuf, '(a)') 'MDU setting "Wrimap_temperature = 1" asks to write temperature to the output map file, ' &
-            //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrimap_temperature = 0"' &
-            //'and do not write temperature to map file.'
-         call warn_flush()
-      end if
-
       call prop_get(md_ptr, 'output', 'Wrimap_constituents', jamapconst, success)
       call prop_get(md_ptr, 'output', 'Wrimap_sediment', jamapsed, success)
       call prop_get(md_ptr, 'output', 'Wrimap_turbulence', jamaptur, success)
@@ -2181,10 +2154,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
       call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, success)
       if (kmx == 0 .and. jamapwqbot3d == 1) then
-         jamapwqbot3d = 0
-         write (msgbuf, '(a)') 'MDU setting "wrimap_wqbot3d = 1" asks to write 3D water quality bottom quantities to the map output, ' &
-            //'but this is ignored since the simulation is 2D.'
-         call warn_flush()
+         jamapwqbot3d = 0 ! Disable wqbot3d map output if model is 2D
       end if
 
       ! Output
