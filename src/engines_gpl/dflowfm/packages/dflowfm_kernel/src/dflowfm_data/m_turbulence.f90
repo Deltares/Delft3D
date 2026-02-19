@@ -32,7 +32,6 @@
 
 module m_turbulence
    use precision, only: dp
-   use m_physcoef, only: vonkar
    implicit none
 
    ! Coefficients of turbulence model
@@ -46,12 +45,12 @@ module m_turbulence
    real(kind=dp), parameter :: SIGEPSI = 1.0_DP/SIGEPS
    real(kind=dp), parameter :: SIGRHO = 0.7_DP !< BOUYANCY
    real(kind=dp), parameter :: C2E = 1.92_DP
-   real(kind=dp), parameter :: C1E = C2E - VONKAR**2 / (SIGEPS * SQRT(CMUKEP))
-   real(kind=dp), parameter :: C1T = (1.0_DP - C1E) * CMUKEP
    real(kind=dp), parameter :: C2T = 1.0_DP - C2E
    real(kind=dp), parameter :: C3T_STABLE = 1.0_DP * CMUKEP
-   real(kind=dp), parameter :: C3T_UNSTABLE = (1.0_DP - C1E) * CMUKEP
    real(kind=dp), parameter :: CDE = CMUKEP**0.75_DP
+   real(kind=dp) :: c1e
+   real(kind=dp) :: c1t
+   real(kind=dp) :: c3t_unstable
    
    real(kind=dp) :: brunt_vaisala_coefficient
 
@@ -135,7 +134,9 @@ contains
    !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
       use m_physcoef, only: vonkar
-
+      c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep))
+      c1t = (1.0_dp - c1e) * cmukep
+      c3t_unstable = (1.0_dp - c1e) * cmukep
       c3e_stable = 0.0_dp
       c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
 
