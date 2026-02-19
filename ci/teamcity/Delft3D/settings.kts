@@ -32,7 +32,7 @@ project {
 
     }
 
-    template(TemplateNoFipsAgent)    
+    template(TemplateLinuxAgent)    
     template(TemplateMergeRequest)
     template(TemplateDetermineProduct)
     template(TemplatePublishStatus)

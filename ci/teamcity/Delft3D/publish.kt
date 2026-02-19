@@ -9,7 +9,7 @@ import Delft3D.windows.*
 object Publish : BuildType({
 
     templates(
-        TemplateNoFipsAgent,
+        TemplateLinuxAgent,
         TemplateMonitorPerformance,
         TemplateDockerRegistry,
         TemplateFailureCondition
@@ -108,10 +108,6 @@ object Publish : BuildType({
                 }
             }
         }
-    }
-
-    requirements {
-        contains("teamcity.agent.jvm.os.name", "Linux")
     }
 
     steps {

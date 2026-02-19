@@ -12,7 +12,7 @@ object LinuxCollect : BuildType({
     description = "Prepping the binaries for testing/release."
 
     templates(
-        TemplateNoFipsAgent,
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance
@@ -123,8 +123,5 @@ object LinuxCollect : BuildType({
                 artifactRules = "oss_artifacts_lnx64_*.tar.gz!lnx64/** => lnx64"
             }
         }
-    }
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })

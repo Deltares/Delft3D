@@ -14,7 +14,7 @@ object LinuxThirdPartyLibs : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
-        TemplateNoFipsAgent,
+        TemplateLinuxAgent,
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
@@ -106,9 +106,5 @@ object LinuxThirdPartyLibs : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })

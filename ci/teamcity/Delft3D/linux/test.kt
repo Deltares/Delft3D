@@ -17,7 +17,7 @@ object LinuxTest : BuildType({
     description = "Run TestBench.py within the Docker container on a list of testbench XML files."
 
     templates(
-        TemplateNoFipsAgent,
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
@@ -166,7 +166,4 @@ object LinuxTest : BuildType({
         }
     }
 
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
 })

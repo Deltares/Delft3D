@@ -12,7 +12,7 @@ object LinuxBuild2D3DSP : BuildType({
     description = "CMake build 2D3D single-precision. This is necessary for Delft3D 4."
 
     templates(
-        TemplateNoFipsAgent,
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplateDetermineProduct,
         TemplatePublishStatus,
@@ -96,7 +96,4 @@ object LinuxBuild2D3DSP : BuildType({
         }
     }
 
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
 })

@@ -13,7 +13,7 @@ object LinuxBuild : BuildType({
     description = "CMake build."
 
     templates(
-        TemplateNoFipsAgent,
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplateDetermineProduct,
         TemplatePublishStatus,
@@ -129,7 +129,4 @@ object LinuxBuild : BuildType({
         }
     }
 
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
 })

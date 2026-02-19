@@ -10,7 +10,7 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 object LinuxSubmitH7ContainerSmokeTest : BuildType({
     templates(
-        TemplateNoFipsAgent,
+        TemplateLinuxAgent,
         TemplateMonitorPerformance,
         TemplateDockerRegistry
     )
@@ -167,9 +167,5 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })

@@ -16,7 +16,7 @@ object LinuxDevContainer : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
-        TemplateNoFipsAgent,
+        TemplateLinuxAgent,
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
@@ -82,9 +82,5 @@ object LinuxDevContainer : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })
