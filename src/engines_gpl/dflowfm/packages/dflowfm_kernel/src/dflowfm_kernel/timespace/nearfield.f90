@@ -672,7 +672,7 @@ contains
             call reallocsrc(num_source_sink, 2)
             !
             ! Name
-            write (srcname(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
+            write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
             !
             ! Sink
             ksrc(1, num_source_sink) = nf_sink_n(idif, isink)
@@ -778,7 +778,7 @@ contains
          end if
          !
          ! Name
-         write (srcname(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
+         write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
          !
          ! Sink
          ksrc(1, num_source_sink) = 0
@@ -866,7 +866,7 @@ contains
          call reallocsrc(num_source_sink, 2)
          !
          ! Name
-         write (srcname(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
+         write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
          !
          ! Sink
          ksrc(1, num_source_sink) = nf_intake_n(idif, iintake)
@@ -973,8 +973,8 @@ contains
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
             if (source_sink_z_top(1, num_source_sink) > source_sink_z_bot(2, i) .and. source_sink_z_top(2, i) > source_sink_z_bot(1, num_source_sink)) then
-               write (message, '(5a,i0)') "The sink location of '", trim(srcname(num_source_sink)), &
-                                      & "' coincides with the source location of '", trim(srcname(i)), &
+               write (message, '(5a,i0)') "The sink location of '", trim(source_sink_name(num_source_sink)), &
+                                      & "' coincides with the source location of '", trim(source_sink_name(i)), &
                                       & "'. Horizontal cell index: ", ksrc(1, num_source_sink)
                call mess(LEVEL_WARN, trim(message))
             end if
@@ -986,8 +986,8 @@ contains
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
             if (source_sink_z_top(2, num_source_sink) > source_sink_z_bot(1, i) .and. source_sink_z_top(1, i) > source_sink_z_bot(2, num_source_sink)) then
-               write (message, '(5a,i0)') "The source location of '", trim(srcname(num_source_sink)), &
-                                      & "' coincides with the sink location of '", trim(srcname(i)), &
+               write (message, '(5a,i0)') "The source location of '", trim(source_sink_name(num_source_sink)), &
+                                      & "' coincides with the sink location of '", trim(source_sink_name(i)), &
                                       & "'. Horizontal cell index: ", ksrc(4, num_source_sink)
                call mess(LEVEL_WARN, trim(message))
             end if

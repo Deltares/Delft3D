@@ -1028,7 +1028,7 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use fm_external_forcings_data, only: ksrc, num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, srcname, source_sink_area, qstss
+      use fm_external_forcings_data, only: ksrc, num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, source_sink_name, source_sink_area, qstss
       use m_flowgeom, only: xz, yz
       use m_transportdata, only: NUMCONST
       implicit none
@@ -1093,7 +1093,7 @@ contains
       end if
 
       do i = 1, num_source_sink
-         objectid = srcname(i)
+         objectid = source_sink_name(i)
          !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')
 
          ! create a shape object with the "simple" method, for each shape 2 components are added x, y

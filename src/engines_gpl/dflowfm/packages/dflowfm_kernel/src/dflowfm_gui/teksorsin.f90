@@ -73,7 +73,7 @@ contains
                end if
                call cirr(xp, yp, ncol)
                if (ndraw(41) == 3) then
-                  call gtext(' '//trim(srcname(n)), xp, yp, klsrc)
+                  call gtext(' '//trim(source_sink_name(n)), xp, yp, klsrc)
                else if (ndraw(41) == 4) then
                   write (tex, '(f10.3)') - qsrc(n)
                   call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
@@ -103,7 +103,7 @@ contains
                end if
                call cirr(xp, yp, ncol)
                if (ndraw(41) == 3) then
-                  call gtext(' '//trim(srcname(n)), xp, yp, klsrc)
+                  call gtext(' '//trim(source_sink_name(n)), xp, yp, klsrc)
                else if (ndraw(41) == 4) then
                   write (tex, '(f10.3)') qsrc(n)
                   call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)

@@ -43,7 +43,7 @@ contains
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
       use precision, only: dp
-      use m_flow, only: srsn, num_source_sink, ksrc, qsrc, qstss, kmx, source_sink_z_bot, dmiss, zws, source_sink_z_top, vol1, jamess, ccsrc, qin, epshs, srcname
+      use m_flow, only: srsn, num_source_sink, ksrc, qsrc, qstss, kmx, source_sink_z_bot, dmiss, zws, source_sink_z_top, vol1, source_sink_extraction_warning, ccsrc, qin, epshs, source_sink_name
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
@@ -180,7 +180,7 @@ contains
          call reduce_srsn(numvals, num_source_sink, srsn)
       end if
 
-      jamess = 0
+      source_sink_extraction_warning = 0
       do n = 1, num_source_sink
          qsrc(n) = qstss((numconst + 1) * (n - 1) + 1)
          do L = 1, numconst
@@ -192,7 +192,7 @@ contains
          if (kk /= 0 .and. qsrck > 0) then ! Extract FROM 1
             if (frac * srsn(1, n) / dts < abs(qsrck)) then
                qsrck = frac * srsn(1, n) / dts
-               jamess(n) = 1
+               source_sink_extraction_warning(n) = 1
             end if
          end if
 
@@ -200,7 +200,7 @@ contains
          if (kk2 /= 0 .and. qsrck < 0) then ! Extract From 2
             if (frac * srsn(1 + numconst + 1, n) / dts < abs(qsrck)) then
                qsrck = -frac * srsn(1 + numconst + 1, n) / dts
-               jamess(n) = 2
+               source_sink_extraction_warning(n) = 2
             end if
          end if
 
@@ -253,11 +253,11 @@ contains
       end do
 
       do n = 1, num_source_sink
-         if (jamess(n) == 1) then
-            write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(srcname(n))
+         if (source_sink_extraction_warning(n) == 1) then
+            write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(source_sink_name(n))
             call mess(LEVEL_WARN, msgbuf)
-         else if (jamess(n) == 2) then
-            write (msgbuf, *) 'Extraction flux larger than cell volume at point 2 of : ', trim(srcname(n))
+         else if (source_sink_extraction_warning(n) == 2) then
+            write (msgbuf, *) 'Extraction flux larger than cell volume at point 2 of : ', trim(source_sink_name(n))
             call mess(LEVEL_WARN, msgbuf)
          end if
       end do

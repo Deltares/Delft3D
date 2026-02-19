@@ -134,7 +134,7 @@ contains
 
    !> Add a source-sink to the model.
    subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
-      use fm_external_forcings_data, only: num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, ksrc, source_sink_z_bot, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, srcname
+      use fm_external_forcings_data, only: num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, ksrc, source_sink_z_bot, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_name
       use m_GlobalParameters, only: INDTP_ALL
 
       use messagehandling, only: msgbuf, warn_flush
@@ -174,7 +174,7 @@ contains
       kk2 = 0
 
       ! Store sink/source name for waq
-      srcname(num_source_sink) = name
+      source_sink_name(num_source_sink) = name
 
       ! call inflowcell(xpl(npl), ypl(npl), kk2) ! TO: Source
       tmpname(1) = name//' source'
@@ -237,10 +237,10 @@ contains
 
          do i = 1, num_source_sink - 1
             if (ksrc(1, i) /= 0 .and. kk == ksrc(1, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(num_source_sink)), ' coincides with FROM point of ', trim(srcname(i))
+               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sink_name(num_source_sink)), ' coincides with FROM point of ', trim(source_sink_name(i))
                call warn_flush()
             else if (ksrc(4, i) /= 0 .and. kk == ksrc(4, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(num_source_sink)), ' coincides with TO   point of ', trim(srcname(i))
+               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sink_name(num_source_sink)), ' coincides with TO   point of ', trim(source_sink_name(i))
                call warn_flush()
             end if
          end do
@@ -260,10 +260,10 @@ contains
 
          do i = 1, num_source_sink - 1
             if (ksrc(1, i) /= 0 .and. kk2 == ksrc(1, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(num_source_sink)), ' coincides with FROM point of ', trim(srcname(i))
+               write (msgbuf, '(4a)') 'TO point of ', trim(source_sink_name(num_source_sink)), ' coincides with FROM point of ', trim(source_sink_name(i))
                call warn_flush()
             else if (ksrc(4, i) /= 0 .and. kk2 == ksrc(4, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(num_source_sink)), ' coincides with TO   point of ', trim(srcname(i))
+               write (msgbuf, '(4a)') 'TO point of ', trim(source_sink_name(num_source_sink)), ' coincides with TO   point of ', trim(source_sink_name(i))
                call warn_flush()
             end if
          end do

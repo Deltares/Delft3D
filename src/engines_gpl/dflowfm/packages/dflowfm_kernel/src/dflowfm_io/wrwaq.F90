@@ -655,7 +655,7 @@ contains
                   ibnd = ibnd + 1
                   kk2 = -ibnd
                end if
-               write (lunhyd, '(3I10,4F18.6,2X,A)') isrc, kk1, kk2, x1, y1, x2, y2, trim(srcname(isrc))
+               write (lunhyd, '(3I10,4F18.6,2X,A)') isrc, kk1, kk2, x1, y1, x2, y2, trim(source_sink_name(isrc))
             end if
          end do
          write (lunhyd, '(A      )') 'end-sink-sources'
@@ -1669,7 +1669,7 @@ contains
             else
                kk = ksrc(4, isrc)
             end if
-            sectionname = makesectionname('src_', srcname(isrc))
+            sectionname = makesectionname('src_', source_sink_name(isrc))
             write (lunbnd, '(a)') sectionname ! Section name
             write (lunbnd, '(i8)') 1 ! Nr of source links in section
             write (lunbnd, '(i8,4f18.8)') - (ibnd), xz(kk), yz(kk), xz(kk), yz(kk)
@@ -2308,7 +2308,7 @@ contains
             else if (kk1 > 0 .or. kk2 > 0) then
                ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
                ! If both are in an other domain, we simply skip this.
-               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(srcname(num_source_sink)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
+               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(source_sink_name(num_source_sink)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
                call err_flush()
             end if
          end if

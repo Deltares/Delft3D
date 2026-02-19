@@ -189,8 +189,8 @@ contains
       call realloc(mbafluxheat, [2, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxheattot, [2, nomba], keepExisting=.false., fill=0.0_dp)
 
-      if (.not. allocated(srcname)) then
-         allocate (srcname(0))
+      if (.not. allocated(source_sink_name)) then
+         allocate (source_sink_name(0))
       end if
 
       if (jampi == 1) then
@@ -1205,7 +1205,7 @@ contains
    subroutine mba_prepare_names_flows(imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use fm_external_forcings_data, only: num_source_sink, srcname
+      use fm_external_forcings_data, only: num_source_sink, source_sink_name
       use m_mass_balance_areas
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1251,10 +1251,10 @@ contains
       if (jambalumpsrc == 0) then
          do isrc = 1, num_source_sink
             if (mbasorsinout(1, isrc) == imba) then
-               call add_name(balance, labelsrc, srcname(isrc))
+               call add_name(balance, labelsrc, source_sink_name(isrc))
             end if
             if (mbasorsinout(2, isrc) == imba) then
-               call add_name(balance, labelsrc, srcname(isrc))
+               call add_name(balance, labelsrc, source_sink_name(isrc))
             end if
          end do
       else
@@ -1368,7 +1368,7 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use fm_external_forcings_data, only: num_source_sink, srcname
+      use fm_external_forcings_data, only: num_source_sink, source_sink_name
       use m_mass_balance_areas
 
       integer :: jmba !< index of other mass balance area or open boundary
@@ -1398,10 +1398,10 @@ contains
       if (jambalumpsrc == 0) then
          do isrc = 1, num_source_sink
             if (mbasorsinout(1, isrc) > 0) then
-               call add_name(balance, labelsrc, srcname(isrc))
+               call add_name(balance, labelsrc, source_sink_name(isrc))
             end if
             if (mbasorsinout(2, isrc) > 0) then
-               call add_name(balance, labelsrc, srcname(isrc))
+               call add_name(balance, labelsrc, source_sink_name(isrc))
             end if
          end do
       else
@@ -1499,7 +1499,7 @@ contains
    subroutine mba_prepare_names_fluxes(imbs, imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
-      use fm_external_forcings_data, only: num_source_sink, srcname
+      use fm_external_forcings_data, only: num_source_sink, source_sink_name
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1566,10 +1566,10 @@ contains
          if (jambalumpsrc == 0) then
             do isrc = 1, num_source_sink
                if (mbasorsinout(1, isrc) == imba) then
-                  call add_name(balance, labelsrc, srcname(isrc))
+                  call add_name(balance, labelsrc, source_sink_name(isrc))
                end if
                if (mbasorsinout(2, isrc) == imba) then
-                  call add_name(balance, labelsrc, srcname(isrc))
+                  call add_name(balance, labelsrc, source_sink_name(isrc))
                end if
             end do
          else
@@ -1827,7 +1827,7 @@ contains
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
-      use fm_external_forcings_data, only: num_source_sink, srcname
+      use fm_external_forcings_data, only: num_source_sink, source_sink_name
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1879,10 +1879,10 @@ contains
          if (jambalumpsrc == 0) then
             do isrc = 1, num_source_sink
                if (mbasorsinout(1, isrc) > 0) then
-                  call add_name(balance, labelsrc, srcname(isrc))
+                  call add_name(balance, labelsrc, source_sink_name(isrc))
                end if
                if (mbasorsinout(2, isrc) > 0) then
-                  call add_name(balance, labelsrc, srcname(isrc))
+                  call add_name(balance, labelsrc, source_sink_name(isrc))
                end if
             end do
          else
