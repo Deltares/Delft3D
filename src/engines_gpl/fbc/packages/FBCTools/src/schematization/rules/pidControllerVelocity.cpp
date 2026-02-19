@@ -29,7 +29,6 @@
 #define isnan(a) ((a)!=(a))
 
 using namespace rtctools::schematization::rules;
-using namespace std;
 
 /**
  * This method is available for backwards compatibility with Velocity. It is obsolete and will

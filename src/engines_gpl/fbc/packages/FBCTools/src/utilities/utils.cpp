@@ -47,7 +47,6 @@
 
 using namespace boost::gregorian;
 using namespace boost::posix_time;
-using namespace std;
 using namespace rtctools::utilities;
 
 
