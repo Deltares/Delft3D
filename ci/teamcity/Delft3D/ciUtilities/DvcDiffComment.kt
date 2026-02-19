@@ -17,14 +17,7 @@ object DvcDiffComment : BuildType({
     templates(
         TemplateMergeRequest,
     )
-
-    triggers {
-        vcs { 
-            triggerRules = "+:**/*.dvc"
-            branchFilter = "+:pull/*"
-        }
-    }
-
+    
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
