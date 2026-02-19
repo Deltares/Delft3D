@@ -67,6 +67,7 @@ contains
         use m_cli_utils, only: is_command_arg_specified
         use timers
 
+       ! Arguments
         integer(kind = int_wp), intent(in) :: file_unit               !< Unit number of the monitoring file
         integer(kind = int_wp), intent(in) :: num_substances_transported                   !< Number of transported substances
         integer(kind = int_wp), intent(in) :: num_substances_total                   !< Total number of substances
@@ -129,8 +130,9 @@ contains
         integer(kind = int_wp), intent(in) :: num_constants                  !< Number of constants used
         character(20), intent(in) :: coname(num_constants)          !< Constant names
         real(kind = real_wp), intent(in) :: const(num_constants)           !< Constants
+       ! Arguments
 
-        ! Local variables
+       ! Local variables
         integer(kind = int_wp) :: i, j, k                     !< General loop counter
         integer(kind = int_wp) :: noqh                        !< Total number of horizontal interfaces
         integer(kind = int_wp) :: noqv                        !< Total number of vertical interfaces in the water
@@ -205,9 +207,13 @@ contains
         integer(kind = int_wp) :: ithand5 = 0
         integer(kind = int_wp) :: ithand6 = 0
         integer(kind = int_wp) :: ithand7 = 0
+       ! Local variables
+
+
+
         if (timon) call timstrt("locally_adaptive_time_step", ithandl)
 
-        ! Initialisations
+       ! Initialisations
         if (timon) call timstrt("administration", ithand1)
         ! shouldn't these lines be run only ONCE as well??
         ! !!!!!!!
@@ -231,6 +237,7 @@ contains
 
             init = 1    !   do this only once per simulation
         end if
+       ! end initialisations
 
         ! PART 1 : make the administration for the variable time step approach
 
@@ -803,7 +810,6 @@ contains
         end do
 
         ! All substeps have been calculated, so we have moved one simulation time step
-
         if (report .and. (acc_changed > 0.0 .or. acc_remained > 0.0)) then
             write (file_unit, '(a)') 'Averaged over all steps in this iteration:'
             write (file_unit, '(a,2g12.4)') 'Number of segments changed:  ', acc_changed / count_substeps
@@ -821,7 +827,7 @@ contains
         end do
 
 
-        ! PART3:  set now the implicit step of additional velocities and diffusions per substance in the vertical
+       ! PART3:  set now the implicit step of additional velocities and diffusions per substance in the vertical
         ! There is also an implicit part in the bed if num_exchanges_bottom_dir > 0.
         ! This is mainly done for settling velocity and sediment bed diffusion
         ! Note that vertical advection due to hydrodynamics has already been done in PART2
@@ -1176,6 +1182,7 @@ contains
                 rhs(substance_i, cell_i) = rhs(substance_i, cell_i) * vol
             end do
         end do
+       ! End of Part 3 
 
         ! assign the double precisison results to the single precision system arrays
         ! for the bed phase only
@@ -2326,7 +2333,7 @@ contains
                         if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) + dlt_mass
                         if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
                     end do
-                    sorted_flows(flow_idx) = -sorted_flows(flow_idx)  ! mark flow as successfully processed
+                    sorted_flows(i_flow) = -sorted_flows(i_flow)  ! mark flow as successfully processed
                     changed = changed + 1               ! indicated that something has been achieved in this iteration
                 else if (target_has_cfl_risk) then
                     ! flow could be processed
@@ -2356,7 +2363,7 @@ contains
                             if (massbal) amass2(i_substance, 3) = amass2(i_substance, 3) - dlt_mass
                             if (ipb > 0) dmpq(i_substance, ipb, 1) = dmpq(i_substance, ipb, 1) + dlt_mass
                         end do
-                        sorted_flows(flow_idx) = -sorted_flows(flow_idx)  ! mark flow as successfully processed
+                        sorted_flows(i_flow) = -sorted_flows(i_flow)  ! mark flow as successfully processed
                         changed = changed + 1                             ! indicates that something has been achieved in this iteration
                     end if
                 end if
@@ -2453,6 +2460,10 @@ contains
             dlt_vol = abs(dlt_vol) ! sign no longer required
 
             source_is_bc = is_bc_cell(i_source)
+            if (source_is_bc) then
+                cycle
+            end if
+
             target_is_bc = is_bc_cell(i_target)
 
             i_source = get_top_cell_index(i_source, nvert, ivert)
