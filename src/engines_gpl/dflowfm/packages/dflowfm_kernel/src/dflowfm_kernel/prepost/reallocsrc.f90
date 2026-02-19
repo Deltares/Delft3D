@@ -44,7 +44,7 @@ contains
    !! If arrays are already large enough, nothing is done (specifically, no shrinking is done).
    subroutine reallocsrc(new_size_src, new_num_points)
       use m_transport, only: NUMCONST
-      use fm_external_forcings_data, only: ksrc, msrc, xsrc, ysrc, qsrc, dp, tmsrc, sasrc, ccsrc, arsrc, cssrc, snsrc, zsrc, zsrc2, srsn, jamess, qstss, srcname, nxsrc, qsrcavg, vsrccum, vsrccum_pre
+      use fm_external_forcings_data, only: ksrc, msrc, xsrc, ysrc, qsrc, dp, ccsrc, arsrc, cssrc, snsrc, zsrc, zsrc2, srsn, jamess, qstss, srcname, nxsrc, qsrcavg, vsrccum, vsrccum_pre
       use m_alloc, only: realloc
       use m_missing, only: dmiss
 
@@ -70,9 +70,7 @@ contains
       if (new_size_src > current_size_src) then
          call realloc(ksrc, [6, new_size_src], keepexisting=.true., fill=0)
          call realloc(qsrc, new_size_src, keepExisting=.true., fill=0.0_dp)
-         call realloc(tmsrc, new_size_src, keepExisting=.true., fill=0.0_dp)
-         call realloc(sasrc, new_size_src, keepExisting=.true., fill=0.0_dp)
-         call realloc(CCsrc, [NUMCONST, new_size_src], keepExisting=.true., fill=0.0_dp)
+         call realloc(ccsrc, [NUMCONST, new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(arsrc, new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(cssrc, [2, new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(snsrc, [2, new_size_src], keepExisting=.true., fill=0.0_dp)
