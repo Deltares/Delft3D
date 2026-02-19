@@ -20,5 +20,5 @@ echo
 $bindir/waqpb_export "$@"
 
 ## Wait until all child processes are finished
-wait
+#wait
 
