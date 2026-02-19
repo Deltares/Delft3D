@@ -2693,7 +2693,6 @@ contains
       use m_structures, only: jahiscgen, jahiscdam, jahispump, jahisgate, jahisweir, jahisorif, jahisbridge, jahisculv, jahisdambreak, jahisuniweir, jahiscmpstru, jahislongculv
       use m_1d2d_fixedweirs, only: lat_fix_weir_umin, lat_fix_weir_umin_method, lat_fix_weir_minimal_1d2d_embankment, lat_fix_weir_relax, lat_fix_weir_dx
       use m_subsidence, only: sdu_update_s1
-      use m_xbeach_data, only: swave
       use unstruc_channel_flow
       use m_sedtrails_data
       use m_output_config, only: set_properties
