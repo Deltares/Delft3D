@@ -87,6 +87,8 @@ f90twtest(test_getprof_1d
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
+copy_dflowfm_test_dependencies(test_getprof_1d)
+
 f90twtest(test_longculverts
     CFILES test_longculverts.cpp
     F90FILES test_longculverts.f90
