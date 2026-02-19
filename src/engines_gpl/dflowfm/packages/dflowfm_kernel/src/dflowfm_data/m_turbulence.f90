@@ -32,26 +32,25 @@
 
 module m_turbulence
    use precision, only: dp
-
+   use m_physcoef, only: vonkar
    implicit none
 
    ! Coefficients of turbulence model
-   real(kind=dp) :: cmukep
-   real(kind=dp) :: cewall
-   real(kind=dp) :: cde
-   real(kind=dp) :: c1e
+   real(kind=dp), parameter :: CMUKEP = 0.09_dp
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
-   real(kind=dp) :: c2e
-   real(kind=dp) :: sigdif
-   real(kind=dp) :: sigtke, sigtkei
-   real(kind=dp) :: sigeps, sigepsi
-   real(kind=dp) :: sigrho !< bouyancy
-
-   real(kind=dp) :: c1t
-   real(kind=dp) :: c2t
-   real(kind=dp) :: c3t_stable
-   real(kind=dp) :: c3t_unstable
+   real(kind=dp), parameter :: SIGDIF = 1.0_DP
+   real(kind=dp), parameter :: SIGTKE = 1.0_DP
+   real(kind=dp), parameter :: SIGTKEI = 1.0_DP
+   real(kind=dp), parameter :: SIGEPS = 1.3_DP
+   real(kind=dp), parameter :: SIGEPSI = 1.0_DP/SIGEPS
+   real(kind=dp), parameter :: SIGRHO = 0.7_DP !< BOUYANCY
+   real(kind=dp), parameter :: C2E = 1.92_DP
+   real(kind=dp), parameter :: C1E = C2E - VONKAR**2 / (SIGEPS * SQRT(CMUKEP))
+   real(kind=dp), parameter :: C1T = (1.0_DP - C1E) * CMUKEP
+   real(kind=dp), parameter :: C2T = 1.0_DP - C2E
+   real(kind=dp), parameter :: C3T_STABLE = 1.0_DP * CMUKEP
+   real(kind=dp), parameter :: C3T_UNSTABLE = (1.0_DP - C1E) * CMUKEP
 
    real(kind=dp) :: brunt_vaisala_coefficient
 
@@ -136,15 +135,6 @@ contains
    subroutine default_turbulence()
       use m_physcoef, only: vonkar
 
-      sigdif = 1.0_dp
-      sigtke = 1.0_dp
-      sigeps = 1.3_dp
-      sigrho = 0.7_dp
-
-      cmukep = 0.09_dp
-      c2e = 1.92_dp
-      c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep)) ! Can be overriden by user and is therefore not a derived coefficient
-
       c3e_stable = 0.0_dp
       c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
 
@@ -156,18 +146,7 @@ contains
    subroutine calculate_derived_coefficients_turbulence()
       use m_physcoef, only: vonkar, rhomean, ag
 
-      sigtkei = 1.0_dp / sigtke
-      sigepsi = 1.0_dp / sigeps
-
-      cewall = cmukep**0.75_dp / vonkar
-      cde = cmukep**0.75_dp
-
-      c1t = (1.0_dp - c1e) * cmukep
-      c2t = 1.0_dp - c2e
-      c3t_stable = 1.0_dp * cmukep
-      c3t_unstable = (1.0_dp - c1e) * cmukep
-
-      brunt_vaisala_coefficient = -ag / (sigrho * rhomean)
+      brunt_vaisala_coefficient = -ag / (SIGRHO * rhomean)
 
    end subroutine calculate_derived_coefficients_turbulence
 
