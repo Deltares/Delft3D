@@ -34,7 +34,6 @@
 #define strncpy strncpy_s
 #endif
 
-using namespace std;
 using namespace PI;
 using namespace boost::posix_time;
 
