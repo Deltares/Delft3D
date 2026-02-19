@@ -44,7 +44,7 @@ contains
    !! If arrays are already large enough, nothing is done (specifically, no shrinking is done).
    subroutine reallocsrc(new_size_src, new_num_points)
       use m_transport, only: NUMCONST
-      use fm_external_forcings_data, only: ksrc, msrc, source_sink_x, source_sink_y, qsrc, dp, ccsrc, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, srsn, source_sink_extraction_warning, qstss, source_sink_name, source_sink_max_num_xy_points, qsrcavg, vsrccum, vsrccum_pre
+      use fm_external_forcings_data, only: ksrc, msrc, source_sink_x, source_sink_y, qsrc, dp, ccsrc, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, srsn, source_sink_extraction_warning, source_sink_discharge, source_sink_name, source_sink_max_num_xy_points, qsrcavg, vsrccum, vsrccum_pre
       use m_alloc, only: realloc
       use m_missing, only: dmiss
 
@@ -70,15 +70,15 @@ contains
       if (new_size_src > current_size_src) then
          call realloc(ksrc, [6, new_size_src], keepexisting=.true., fill=0)
          call realloc(qsrc, new_size_src, keepExisting=.true., fill=0.0_dp)
-         call realloc(ccsrc, [NUMCONST, new_size_src], keepExisting=.true., fill=0.0_dp)
+         call realloc(ccsrc, [numconst, new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_area, new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_discharge_cosine, [2, new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_discharge_sine, [2, new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_z_bot, [2, new_size_src], keepExisting=.true., fill=dmiss)
          call realloc(source_sink_z_top, [2, new_size_src], keepExisting=.true., fill=dmiss)
-         call realloc(srsn, [2 * (NUMCONST + 1), new_size_src], keepExisting=.true.)
+         call realloc(srsn, [2 * (numconst + 1), new_size_src], keepExisting=.true.)
          call realloc(source_sink_extraction_warning, new_size_src, keepExisting=.true.)
-         call realloc(qstss, (NUMCONST + 1) * new_size_src, keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_discharge, [(numconst + 1), new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_name, new_size_src, keepExisting=.true., fill=' ')
          call realloc(source_sink_max_num_xy_points, new_size_src, keepExisting=.true., fill=0)
          call realloc(qsrcavg, new_size_src, keepExisting=.true., fill=0.0_dp)

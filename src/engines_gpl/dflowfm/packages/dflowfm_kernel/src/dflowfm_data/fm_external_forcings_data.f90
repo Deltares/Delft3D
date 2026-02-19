@@ -426,6 +426,8 @@ module fm_external_forcings_data
    character(len=255), allocatable :: source_sink_name(:) !< Name of the source/sink. {size=(num_source_sink)}
    integer, allocatable :: source_sink_extraction_warning(:) !< Issue a warning message if the extraction flux exceeds the cell volume (0 = no message, 1 = sink extraction too large, 2 = source extraction too large). {size=(num_source_sink)}
 
+   real(kind=dp), allocatable, target :: source_sink_discharge(:, :) !< Source/sink discharge (1) and discharge constituents (2:). {size=(numconst+1,num_source_sink)}
+
    ! To be renamed 
    integer :: numvalssrc !< nr of point constituents
    integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
@@ -433,7 +435,6 @@ module fm_external_forcings_data
    real(kind=dp), target, allocatable :: qsrc(:) !< cell influx (m3/s) if negative: outflux
    real(kind=dp), allocatable :: ccsrc(:, :) !< dimension (numvalssrc, num_source_sink), keeps sasrc, tmsrc etc
    real(kind=dp), allocatable :: srsn(:, :) !< 2*(1+numvalssrc),num_source_sink, to be reduced
-   real(kind=dp), allocatable, target :: qstss(:) !< array to catch multiple_uni_discharge_salinity_temperature
    real(kind=dp), target, allocatable :: vsrccum(:) !< cumulative volume at each source/sink from Tstart to now
    real(kind=dp), allocatable :: vsrccum_pre(:) !< cumulative volume at each source/sink from Tstart to the previous His-output time
    real(kind=dp), target, allocatable :: qsrcavg(:) !< average discharge in the past his-interval at each source/sink

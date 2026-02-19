@@ -1,6 +1,6 @@
 module m_bubblescreen
     use precision_basics, only: dp, comparereal
-    use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubblescreens, ksrc, qstss, bubblescreen_air_discharge
+    use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubblescreens, ksrc, source_sink_discharge, bubblescreen_air_discharge
     use m_alloc, only: realloc
     use m_cell_geometry, only: ba
     use m_flow, only: kmx, zws, kbot, s1, vol1
@@ -342,7 +342,7 @@ contains
 
     end subroutine compute_constituent_discharge
 
-    !> Writes the computed discharges for a bubble screen in a flow cell to the source/sink discharge array {fm_external_forcings_data::qstss}
+    !> Writes the computed discharges for a bubble screen in a flow cell to the source/sink discharge array {fm_external_forcings_data::source_sink_discharge}
     subroutine write_discharge_to_source_sinks(flow_cell, discharge_water, discharge_constituents)
         ! Parameters
         type(t_BubbleScreenFlowCell), intent(in) :: flow_cell !< Flow cell data structure
@@ -361,11 +361,11 @@ contains
             call set_source_or_sink_for_bubblescreen(discharge_water(k_local), flow_cell%start_index + k_local - 1)
 
             ! Write water discharge to source/sink discharge array
-            qstss((1+numconst)*(flow_cell%start_index + k_local - 2) + 1) = abs(discharge_water(k_local))
+            source_sink_discharge(1, flow_cell%start_index + k_local - 1) = abs(discharge_water(k_local))
 
             ! Write constituent discharges to source/sink discharge array
             do i = 1, numconst
-                qstss((1+numconst)*(flow_cell%start_index + k_local - 2) + i + 1) = discharge_constituents(i, k_local)
+                source_sink_discharge(i + 1, flow_cell%start_index + k_local - 1) = discharge_constituents(i, k_local)
             end do
         end do
 
@@ -375,7 +375,7 @@ contains
     subroutine set_source_or_sink_for_bubblescreen(discharge, source_sink_index)
         ! Parameters
         real(kind=dp), intent(in) :: discharge !< Discharge for this layer; if positive, this layer is a source; if negative, this layer is a sink
-        integer, intent(in) :: source_sink_index !< Index in ksrc/qstss arrays corresponding to this layer
+        integer, intent(in) :: source_sink_index !< Index in ksrc/source_sink_discharge arrays corresponding to this layer
 
         if (ksrc(4, source_sink_index) > 0) then ! Check if this layer is a source
                 if (comparereal(discharge, 0.0_dp) == -1) then ! Check if discharge is negative (sink); if true set source to sink

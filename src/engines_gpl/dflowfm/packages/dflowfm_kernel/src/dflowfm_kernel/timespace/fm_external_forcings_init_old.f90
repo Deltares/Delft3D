@@ -1973,7 +1973,7 @@ contains
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = ..
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
-                  ! Converter will put 'qsrc, sasrc and tmsrc' values in array qstss on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
+                  ! Converter will put 'qsrc, sasrc and tmsrc' values in array source_sink_discharge on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
                   call clearECMessage()
                   if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=num_source_sink)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &

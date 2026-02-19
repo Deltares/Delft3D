@@ -8162,7 +8162,7 @@ contains
                   end if
                end do
                do nk = nkbot, nktop
-                  work1d(nk) = work1d(nk) - qstss((1 + numconst) * (isrc - 1) + 1) / real(nktop - nkbot + 1, hp)
+                  work1d(nk) = work1d(nk) - source_sink_discharge(1, isrc) / real(nktop - nkbot + 1, hp)
                end do
             end if
             !
@@ -8181,7 +8181,7 @@ contains
                   end if
                end do
                do nk = nkbot, nktop
-                  work1d(nk) = work1d(nk) + qstss((1 + numconst) * (isrc - 1) + 1) / real(nktop - nkbot + 1, hp)
+                  work1d(nk) = work1d(nk) + source_sink_discharge(1, isrc) / real(nktop - nkbot + 1, hp)
                end do
             end if
          end do

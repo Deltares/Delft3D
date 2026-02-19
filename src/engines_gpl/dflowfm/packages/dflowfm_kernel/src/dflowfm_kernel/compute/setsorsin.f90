@@ -43,7 +43,7 @@ contains
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
       use precision, only: dp
-      use m_flow, only: srsn, num_source_sink, ksrc, qsrc, qstss, kmx, source_sink_z_bot, dmiss, zws, source_sink_z_top, vol1, source_sink_extraction_warning, ccsrc, qin, epshs, source_sink_name
+      use m_flow, only: srsn, num_source_sink, ksrc, qsrc, source_sink_discharge, kmx, source_sink_z_bot, dmiss, zws, source_sink_z_top, vol1, source_sink_extraction_warning, ccsrc, qin, epshs, source_sink_name
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
@@ -58,7 +58,7 @@ contains
       do n = 1, num_source_sink
          kk = ksrc(1, n) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
          kk2 = ksrc(4, n) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
-         qsrc(n) = qstss((1 + numconst) * (n - 1) + 1)
+         qsrc(n) = source_sink_discharge(1, n)
          if (kk > 0) then ! FROM point
             if (kmx > 0) then
                call getkbotktop(kk, kb, kt)
@@ -182,9 +182,9 @@ contains
 
       source_sink_extraction_warning = 0
       do n = 1, num_source_sink
-         qsrc(n) = qstss((numconst + 1) * (n - 1) + 1)
+         qsrc(n) = source_sink_discharge(1, n)
          do L = 1, numconst
-            ccsrc(L, n) = qstss((numconst + 1) * (n - 1) + L + 1)
+            ccsrc(L, n) = source_sink_discharge(L + 1, n)
          end do
 
          kk = ksrc(1, n) ! 2D pressure cell nr

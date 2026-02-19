@@ -760,7 +760,7 @@ contains
       !Fill average source-sink discharge with different array on first timestep
       if (it_his == 1) then
          do i = 1, num_source_sink
-            qsrc(i) = qstss((numconst + 1) * (i - 1) + 1)
+            qsrc(i) = source_sink_discharge(1, i)
          end do
       end if
       !Bottom level is written separately from statout if it is static

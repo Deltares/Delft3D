@@ -2275,19 +2275,19 @@ contains
          end if
          select case (field_name)
          case ("discharge")
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + 1))
+            x = c_loc(source_sink_discharge(1, item_index))
             return
          case ("change_in_salinity")
-            if (ISALT == 0) then
+            if (isalt == 0) then
                return
             end if
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + ISALT + 1))
+            x = c_loc(source_sink_discharge(isalt + 1, item_index))
             return
          case ("change_in_temperature")
-            if (ITEMP == 0) then
+            if (itemp == 0) then
                return
             end if
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + ITEMP + 1))
+            x = c_loc(source_sink_discharge(itemp + 1, item_index))
             return
          end select
          ! Dambreak
@@ -2747,21 +2747,21 @@ contains
          select case (field_name)
          case ("discharge")
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + 1) = x_0d_double_ptr
+            source_sink_discharge(1, item_index) = x_0d_double_ptr
             return
          case ("change_in_salinity")
-            if (ISALT == 0) then
+            if (isalt == 0) then
                return
             end if
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + ISALT + 1) = x_0d_double_ptr
+            source_sink_discharge(isalt + 1, item_index) = x_0d_double_ptr
             return
          case ("change_in_temperature")
-            if (ITEMP == 0) then
+            if (itemp == 0) then
                return
             end if
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + ITEMP + 1) = x_0d_double_ptr
+            source_sink_discharge(itemp + 1, item_index) = x_0d_double_ptr
             return
          end select
 
