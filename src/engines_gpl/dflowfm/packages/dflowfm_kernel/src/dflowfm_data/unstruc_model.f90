@@ -2067,19 +2067,7 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', jahisdred, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', jahiswaq, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
-      if (success .and. jahistem == 1 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
-         write (msgbuf, '(a)') 'MDU setting "Wrihis_temperature = 1" asks to write temperature to the output his file, ' &
-            //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrihis_temperature = 0" ' &
-            //' and do not write temperature to his file.'
-         call warn_flush()
-      end if
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', jahissal, success)
-      if (success .and. jahissal == 1 .and. jasal < 1) then
-         write (msgbuf, '(a)') 'MDU setting "Wrihis_salinity = 1" asks to write salinity to the output his file, ' &
-            //'but no salinity is involved due to MDU setting "Salinity = 0". So we set "Wrihis_salinity = 0" ' &
-            //'and do not write salinity to his file.'
-         call warn_flush()
-      end if
 
       call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', jamaps0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', jamaps1, success)
