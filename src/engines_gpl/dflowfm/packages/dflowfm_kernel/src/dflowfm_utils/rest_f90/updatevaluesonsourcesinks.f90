@@ -42,7 +42,7 @@ contains
 
    subroutine updateValuesOnSourceSinks(tim1)
       use m_reallocsrc, only: reallocsrc
-      use fm_external_forcings_data, only: source_sink_water_discharge, qsrcavg, source_sink_cum_volume, source_sink_cum_volume_prev, num_source_sink
+      use fm_external_forcings_data, only: source_sink_water_discharge, source_sink_average_discharge_prev, source_sink_cum_volume, source_sink_cum_volume_prev, num_source_sink
       use precision, only: dp, comparereal
       use m_flowtimes, only: ti_his, time_his
       use m_flowparameters, only: eps10
@@ -65,7 +65,7 @@ contains
 
          if (comparereal(tim1, time_his, eps10) == 0) then
             do i = 1, num_source_sink
-               qsrcavg(i) = (source_sink_cum_volume(i) - source_sink_cum_volume_prev(i)) / ti_his ! average discharge in the past His-interval
+               source_sink_average_discharge_prev(i) = (source_sink_cum_volume(i) - source_sink_cum_volume_prev(i)) / ti_his ! average discharge in the past His-interval
                source_sink_cum_volume_prev(i) = source_sink_cum_volume(i)
             end do
          end if

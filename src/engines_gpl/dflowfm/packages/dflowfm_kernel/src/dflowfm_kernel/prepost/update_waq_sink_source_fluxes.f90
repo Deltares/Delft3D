@@ -62,11 +62,11 @@ contains
       real(8), allocatable :: fsin(:)
 
       do isrc = 1, num_source_sink
-         if (ksrcwaq(isrc) >= 0) then
-            ! If ksrcwaq < 0, then the sink source is not in the current domain
+         if (source_sink_waq_index(isrc) >= 0) then
+            ! If source_sink_waq_index < 0, then the sink source is not in the current domain
             if (waqpar%kmxnxa == 1) then
                ! 2D case
-               ip = ksrcwaq(isrc) + 1
+               ip = source_sink_waq_index(isrc) + 1
                if (ip > 0) then
                   source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * source_sink_water_discharge(isrc)
                end if
@@ -88,7 +88,7 @@ contains
                      else
                         qsrck = source_sink_water_discharge(isrc) / (ktsor - kbsor + 1)
                      end if
-                     ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsor - k + 1)
+                     ip = source_sink_waq_index(isrc) + waqpar%ilaggr(kktxsor - k + 1)
                      source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * qsrck
                   end do
                else if (kksin /= 0 .and. kksor == 0) then
@@ -101,7 +101,7 @@ contains
                      else
                         qsrck = source_sink_water_discharge(isrc) / (ktsin - kbsin + 1)
                      end if
-                     ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - k + 1)
+                     ip = source_sink_waq_index(isrc) + waqpar%ilaggr(kktxsin - k + 1)
                      source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * qsrck
                   end do
                else if (kksin /= 0 .and. kksor /= 0) then
@@ -116,7 +116,7 @@ contains
                         else
                            qsrck = source_sink_water_discharge(isrc) / (ktsor - kbsor + 1)
                         end if
-                        ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - kbsin + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - k + 1) - 1)
+                        ip = source_sink_waq_index(isrc) + waqpar%ilaggr(kktxsin - kbsin + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - k + 1) - 1)
                         source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * qsrck
                      end do
                   else if (kbsor == ktsor) then
@@ -128,7 +128,7 @@ contains
                         else
                            qsrck = source_sink_water_discharge(isrc) / (ktsin - kbsin + 1)
                         end if
-                        ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - k + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - kbsor + 1) - 1)
+                        ip = source_sink_waq_index(isrc) + waqpar%ilaggr(kktxsin - k + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - kbsor + 1) - 1)
                         source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * qsrck
                      end do
                   else
@@ -158,7 +158,7 @@ contains
                            fsorlay = min(fsin(ilaysin), fsor)
                            fsin(ilaysin) = fsin(ilaysin) - fsorlay
                            fsor = fsor - fsorlay
-                           ip = ksrcwaq(isrc) + waqpar%ilaggr(ilaysin) + waqpar%kmxnxa * (waqpar%ilaggr(ilaysor) - 1)
+                           ip = source_sink_waq_index(isrc) + waqpar%ilaggr(ilaysin) + waqpar%kmxnxa * (waqpar%ilaggr(ilaysor) - 1)
                            source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * fsorlay * source_sink_water_discharge(isrc)
                         end do
                      end do

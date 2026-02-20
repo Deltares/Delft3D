@@ -2287,7 +2287,7 @@ contains
       if (num_source_sink == 0) then
          return ! skip is no resources
       end if
-      call realloc(ksrcwaq, num_source_sink, keepexisting=.false., fill=-1)
+      call realloc(source_sink_waq_index, num_source_sink, keepexisting=.false., fill=-1)
       ! First determine the number of external sink/sources and the allocations needed
       do isrc = 1, num_source_sink
          kk1 = source_sink_indices(1, isrc)
@@ -2296,7 +2296,7 @@ contains
             ! If one of the nodes is external
             if (kk1 > 0 .or. kk2 > 0) then
                ! And the other is not a ghost cell, then this is a boundary within this domain
-               ksrcwaq(isrc) = waqpar%numsrcwaq
+               source_sink_waq_index(isrc) = waqpar%numsrcwaq
                waqpar%numsrcbnd = waqpar%numsrcbnd + 1
                waqpar%numsrcwaq = waqpar%numsrcwaq + waqpar%kmxnxa
             end if
@@ -2304,7 +2304,7 @@ contains
             ! This is an internal sink/source combination
             if (kk1 > 0 .and. kk2 > 0) then
                ! And the first node is not a ghost cell
-               ksrcwaq(isrc) = waqpar%numsrcwaq
+               source_sink_waq_index(isrc) = waqpar%numsrcwaq
                waqpar%numsrcwaq = waqpar%numsrcwaq + waqpar%kmxnxa * waqpar%kmxnxa
             else if (kk1 > 0 .or. kk2 > 0) then
                ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
@@ -2329,14 +2329,14 @@ contains
             if (kk1 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
-                  waqpar%ifrmtosrc(1, ksrcwaq(isrc) + K) = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
-                  waqpar%ifrmtosrc(2, ksrcwaq(isrc) + K) = -ibnd - nbnd * (K - 1)
+                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + K) = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
+                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
                end do
             else if (kk2 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
-                  waqpar%ifrmtosrc(1, ksrcwaq(isrc) + K) = -ibnd - nbnd * (K - 1)
-                  waqpar%ifrmtosrc(2, ksrcwaq(isrc) + K) = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
+                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
+                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + K) = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
                end do
             end if
          else
@@ -2347,14 +2347,14 @@ contains
                if (waqpar%kmxnxa > 1) then
                   do K1 = 1, waqpar%kmxnxa
                      do K2 = 1, waqpar%kmxnxa
-                        kk = ksrcwaq(isrc) + K1 + (K2 - 1) * waqpar%kmxnxa
+                        kk = source_sink_waq_index(isrc) + K1 + (K2 - 1) * waqpar%kmxnxa
                         waqpar%ifrmtosrc(1, kk) = waqpar%iapnt(kk1) + (K1 - 1) * waqpar%nosegl
                         waqpar%ifrmtosrc(2, kk) = waqpar%iapnt(kk2) + (K2 - 1) * waqpar%nosegl
                      end do
                   end do
                else
-                  waqpar%ifrmtosrc(1, ksrcwaq(isrc) + 1) = waqpar%iapnt(kk1)
-                  waqpar%ifrmtosrc(2, ksrcwaq(isrc) + 1) = waqpar%iapnt(kk2)
+                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + 1) = waqpar%iapnt(kk1)
+                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + 1) = waqpar%iapnt(kk2)
                end if
             end if
          end if

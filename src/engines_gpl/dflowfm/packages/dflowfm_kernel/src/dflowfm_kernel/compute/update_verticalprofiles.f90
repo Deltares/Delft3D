@@ -46,7 +46,7 @@ contains
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, qw, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, num_source_sink, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, num_source_sink, source_sink_add_k_to_turkin, tqcu, eqcu, sqcu, q1, tetavkeps, &
                         eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, c9of1, eps6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
@@ -221,7 +221,7 @@ contains
 
          if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
-            if (num_source_sink > 0 .and. addksources > 0.0_dp) then
+            if (num_source_sink > 0 .and. source_sink_add_k_to_turkin == 1) then
                call doaddksources()
             end if
 

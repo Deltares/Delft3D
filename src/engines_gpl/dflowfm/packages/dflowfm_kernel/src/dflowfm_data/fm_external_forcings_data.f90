@@ -405,10 +405,9 @@ module fm_external_forcings_data
    type (t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
    real (kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< array to catch bubble screen air discharges
 
-   ! Source/sink variables
+   ! Source/sink variables, to be moved to a separate module; see UNST-9614
    ! ====================================================================================================
 
-   ! Renamed
    integer :: num_source_sink !< [-] number of source/sinks in the model
    integer :: num_source_sink_old !< [-] number of source/sinks in old extforce file
    integer :: num_source_sink_near_field !< [-] number of source/sinks added for near field
@@ -432,17 +431,16 @@ module fm_external_forcings_data
    real(kind=dp), dimension(:), target, allocatable :: source_sink_water_discharge !< [m3/s] Water discharge of source/sink. {size=(num_source_sink)}
    real(kind=dp), dimension(:,:), allocatable :: source_sink_constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges. {size=(numconst,num_source_sink)}
 
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),num_source_sink)}
+   
    real(kind=dp), dimension(:), target, allocatable :: source_sink_cum_volume !< [m3] Cumulative volume at each source/sink from Tstart to now. {size=(num_source_sink)}
    real(kind=dp), dimension(:), target, allocatable :: source_sink_cum_volume_prev !< [m3] Cumulative volume at each source/sink from Tstart to the previous His-output time. {size=(num_source_sink)}
+   real(kind=dp), dimension(:), target, allocatable :: source_sink_average_discharge_prev !< [m3/s] Average discharge in the past his-interval at each source/sink. {size=(num_source_sink)}
+   integer, dimension(:), allocatable :: source_sink_waq_index !< [-] Index array to map source/sink to waq source/sink arrays. {size=(num_source_sink)}
    real(kind=dp), dimension(:), allocatable :: source_sink_cum_discharge_waq !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep. {size=(num_source_sink)}
    real(kind=dp), dimension(:), allocatable :: source_sink_cum_discharge_waq_prev !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep at the beginning of the time step before possible reduction. {size=(num_source_sink)}
 
-   ! To be renamed 
-   real(kind=dp), dimension(:,:), allocatable :: srsn !< 2*(1+numvalssrc),num_source_sink, to be reduced
-   real(kind=dp), dimension(:), target, allocatable :: qsrcavg !< average discharge in the past his-interval at each source/sink
-   integer, dimension(:), allocatable :: ksrcwaq !< index array, starting point in qsrcwaq
-
-   real(kind=dp) :: addksources = 0.0_dp !< Add k of sources to turkin 1/0
+   integer :: source_sink_add_k_to_turkin !< [-] Add k of sources to turkin (0 = no, 1 = yes)
 
    ! ====================================================================================================
 
