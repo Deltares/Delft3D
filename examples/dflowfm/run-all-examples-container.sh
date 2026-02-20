@@ -40,6 +40,13 @@ if [ "$container_runtime" = "apptainer" ]; then
         echo "Error: 'apptainer' command not found. Please install Apptainer and ensure it is in your PATH."
         exit 1
     fi
+
+    # Set FIPS-compliant OpenSSL environment variables for Apptainer
+    export OPENSSL_MODULES=/usr/lib64/ossl-modules
+    export OPENSSL_CONF=/etc/pki/tls/fips_local.cnf
+
+    # Check that FIPS provider actually loads
+    openssl list -providers | grep -E 'fips|name:'
 else
     container_image="$image"
     echo "Using Docker with image: $container_image"
