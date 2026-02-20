@@ -95,7 +95,10 @@ class TestSetRunner(ABC):
         # Parallel download is not supported by DVC.
         for config in self.__settings.configs_to_run:
             log_sub_header(f"Preparing test case name = '{config.name}'", self.__logger)
-            self.prepare_test_case(config, self.__logger)
+            try:
+                self.prepare_test_case(config, self.__logger)
+            except Exception as exception:
+                self.__logger.error(f"Failed to prepare test case '{config.name}': {exception}")
             log_separator(self.__logger, char="-")
 
         results = (
