@@ -759,6 +759,8 @@ contains
                               e_sbct(L, ised) = 0.0
                            end if
 
+                        elseif (pNodRel%Method == 'BollaPittaluga') then
+                            
                         else
                            call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
                         end if
