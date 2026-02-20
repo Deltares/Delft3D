@@ -68,7 +68,7 @@ contains
                ! 2D case
                ip = ksrcwaq(isrc) + 1
                if (ip > 0) then
-                  qsrcwaq(ip) = qsrcwaq(ip) + dts * source_sink_water_discharge(isrc)
+                  source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * source_sink_water_discharge(isrc)
                end if
             else
                ! 3D case
@@ -89,7 +89,7 @@ contains
                         qsrck = source_sink_water_discharge(isrc) / (ktsor - kbsor + 1)
                      end if
                      ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsor - k + 1)
-                     qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
+                     source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * qsrck
                   end do
                else if (kksin /= 0 .and. kksor == 0) then
                   ! there is only a sink side (used?)
@@ -102,7 +102,7 @@ contains
                         qsrck = source_sink_water_discharge(isrc) / (ktsin - kbsin + 1)
                      end if
                      ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - k + 1)
-                     qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
+                     source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * qsrck
                   end do
                else if (kksin /= 0 .and. kksor /= 0) then
                   call getkbotktopmax(kksin, kkbsin, kktsin, kktxsin)
@@ -117,7 +117,7 @@ contains
                            qsrck = source_sink_water_discharge(isrc) / (ktsor - kbsor + 1)
                         end if
                         ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - kbsin + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - k + 1) - 1)
-                        qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
+                        source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * qsrck
                      end do
                   else if (kbsor == ktsor) then
                      ! sor side has only one layer
@@ -129,7 +129,7 @@ contains
                            qsrck = source_sink_water_discharge(isrc) / (ktsin - kbsin + 1)
                         end if
                         ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - k + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - kbsor + 1) - 1)
-                        qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
+                        source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * qsrck
                      end do
                   else
                      ! multiple layers on both side... it's a bit more complicated...
@@ -159,7 +159,7 @@ contains
                            fsin(ilaysin) = fsin(ilaysin) - fsorlay
                            fsor = fsor - fsorlay
                            ip = ksrcwaq(isrc) + waqpar%ilaggr(ilaysin) + waqpar%kmxnxa * (waqpar%ilaggr(ilaysor) - 1)
-                           qsrcwaq(ip) = qsrcwaq(ip) + dts * fsorlay * source_sink_water_discharge(isrc)
+                           source_sink_cum_discharge_waq(ip) = source_sink_cum_discharge_waq(ip) + dts * fsorlay * source_sink_water_discharge(isrc)
                         end do
                      end do
                   end if

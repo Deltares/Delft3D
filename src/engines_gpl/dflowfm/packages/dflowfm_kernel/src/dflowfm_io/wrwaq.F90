@@ -1835,7 +1835,7 @@ contains
                qwwaq = 0.0_dp
             end if
             if (num_source_sink > 0) then
-               qsrcwaq = 0.0_dp ! Reset accumulated discharges
+               source_sink_cum_discharge_waq = 0.0_dp ! Reset accumulated discharges
             end if
             if (numlatsg > 0) then
                qlatwaq = 0.0_dp ! Reset accumulated discharges
@@ -1853,7 +1853,7 @@ contains
          qwwaq = 0.0_dp ! Reset accumulated discharges
       end if
       if (num_source_sink > 0) then
-         qsrcwaq = 0.0_dp ! Reset accumulated discharges
+         source_sink_cum_discharge_waq = 0.0_dp ! Reset accumulated discharges
       end if
       if (numlatsg > 0) then
          qlatwaq = 0.0_dp ! Reset accumulated discharges
@@ -2314,8 +2314,8 @@ contains
          end if
       end do
       call realloc(waqpar%ifrmtosrc, [2, waqpar%numsrcwaq], keepexisting=.true., fill=0)
-      call realloc(qsrcwaq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
-      call realloc(qsrcwaq0, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
+      call realloc(source_sink_cum_discharge_waq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
+      call realloc(source_sink_cum_discharge_waq_prev, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
       nbnd = ndx - ndxi + waqpar%numsrcbnd ! total number of boudaries
       ibnd = ndx - ndxi ! starting number for sink source boundaries
 
@@ -3141,7 +3141,7 @@ contains
    !! TODO: write out discharges to a separe (ascii) file for additional wasteloads?
       if (waqpar%numsrcwaq > 0) then
          do isrc = 1, waqpar%numsrcwaq
-            waqpar%qag(waqpar%noq12 + isrc) = qsrcwaq(isrc) / real(ti_waq, kind=dp)
+            waqpar%qag(waqpar%noq12 + isrc) = source_sink_cum_discharge_waq(isrc) / real(ti_waq, kind=dp)
          end do
       end if
 

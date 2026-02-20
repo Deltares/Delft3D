@@ -44,7 +44,7 @@ contains
    !! If arrays are already large enough, nothing is done (specifically, no shrinking is done).
    subroutine reallocsrc(new_size_src, new_num_points)
       use m_transport, only: NUMCONST
-      use fm_external_forcings_data, only: source_sink_indices, num_source_sink_max_polyline_points, source_sink_x, source_sink_y, source_sink_water_discharge, dp, source_sink_constituents, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, srsn, source_sink_extraction_warning, source_sink_discharge, source_sink_name, source_sink_max_num_xy_points, qsrcavg, vsrccum, vsrccum_pre
+      use fm_external_forcings_data, only: source_sink_indices, num_source_sink_max_polyline_points, source_sink_x, source_sink_y, source_sink_water_discharge, dp, source_sink_constituents, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, srsn, source_sink_extraction_warning, source_sink_discharge, source_sink_name, source_sink_max_num_xy_points, qsrcavg, source_sink_cum_volume, source_sink_cum_volume_prev
       use m_alloc, only: realloc
       use m_missing, only: dmiss
 
@@ -82,8 +82,8 @@ contains
          call realloc(source_sink_name, new_size_src, keepExisting=.true., fill=' ')
          call realloc(source_sink_max_num_xy_points, new_size_src, keepExisting=.true., fill=0)
          call realloc(qsrcavg, new_size_src, keepExisting=.true., fill=0.0_dp)
-         call realloc(vsrccum, new_size_src, keepExisting=.true., fill=0.0_dp)
-         call realloc(vsrccum_pre, new_size_src, keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_cum_volume, new_size_src, keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_cum_volume_prev, new_size_src, keepExisting=.true., fill=0.0_dp)
       end if
 
    end subroutine reallocsrc

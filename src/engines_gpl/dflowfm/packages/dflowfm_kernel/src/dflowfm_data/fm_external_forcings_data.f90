@@ -432,19 +432,22 @@ module fm_external_forcings_data
    real(kind=dp), dimension(:), target, allocatable :: source_sink_water_discharge !< [m3/s] Water discharge of source/sink. {size=(num_source_sink)}
    real(kind=dp), dimension(:,:), allocatable :: source_sink_constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges. {size=(numconst,num_source_sink)}
 
+   real(kind=dp), dimension(:), target, allocatable :: source_sink_cum_volume !< [m3] Cumulative volume at each source/sink from Tstart to now. {size=(num_source_sink)}
+   real(kind=dp), dimension(:), target, allocatable :: source_sink_cum_volume_prev !< [m3] Cumulative volume at each source/sink from Tstart to the previous His-output time. {size=(num_source_sink)}
+   real(kind=dp), dimension(:), allocatable :: source_sink_cum_discharge_waq !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep. {size=(num_source_sink)}
+   real(kind=dp), dimension(:), allocatable :: source_sink_cum_discharge_waq_prev !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep at the beginning of the time step before possible reduction. {size=(num_source_sink)}
+
    ! To be renamed 
    real(kind=dp), dimension(:,:), allocatable :: srsn !< 2*(1+numvalssrc),num_source_sink, to be reduced
-   real(kind=dp), dimension(:), target, allocatable :: vsrccum !< cumulative volume at each source/sink from Tstart to now
-   real(kind=dp), dimension(:), allocatable :: vsrccum_pre !< cumulative volume at each source/sink from Tstart to the previous His-output time
    real(kind=dp), dimension(:), target, allocatable :: qsrcavg !< average discharge in the past his-interval at each source/sink
    integer, dimension(:), allocatable :: ksrcwaq !< index array, starting point in qsrcwaq
-   real(kind=dp), dimension(:), allocatable :: qsrcwaq !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), dimension(:), allocatable :: qsrcwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
-   real(kind=dp), dimension(:), allocatable :: qlatwaq !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), dimension(:), allocatable :: qlatwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
+
    real(kind=dp) :: addksources = 0.0_dp !< Add k of sources to turkin 1/0
 
    ! ====================================================================================================
+
+   real(kind=dp), dimension(:), allocatable :: qlatwaq !< Cumulative qsrc within current waq-timestep
+   real(kind=dp), dimension(:), allocatable :: qlatwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
 
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
