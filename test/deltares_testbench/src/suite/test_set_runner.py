@@ -232,6 +232,8 @@ class TestSetRunner(ABC):
 
         try:
             # Run testcase
+            if not config.absolute_test_case_path or not config.absolute_test_case_reference_path:
+                raise TestBenchError("Test case paths are not prepared.")
             testcase = TestCase(config, logger)
 
             if self.__settings.command_line_settings.skip_run:

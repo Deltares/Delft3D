@@ -128,6 +128,8 @@ class TestComparisonRunner:
         case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
         config = TestComparisonRunner.create_test_case_config("Name_1", locations=[ref_location, case_location])
         config.path = TestCasePath("abc/prefix", "vl")
+        config.absolute_test_case_path = "/fake/case/path"
+        config.absolute_test_case_reference_path = "/fake/reference/path"
         settings.configs_to_run = [config]
         logger = MagicMock(spec=ConsoleLogger)
         testcase_logger = MagicMock()
@@ -526,6 +528,31 @@ class TestComparisonRunner:
         assert call_order == ["prepare:Name_1", "prepare:Name_2", "dispatch:parallel"]
         prepare_mock.assert_has_calls([call(config1, logger), call(config2, logger)])
         parallel_mock.assert_called_once()
+
+    def test_run_test_case_raises_error_when_paths_not_prepared(self) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths()
+
+        logger = MagicMock(spec=ConsoleLogger)
+        test_case_logger = MagicMock()
+        logger.create_test_case_logger.return_value = test_case_logger
+
+        runner = ComparisonRunner(settings, logger)
+
+        config = TestComparisonRunner.create_test_case_config("Name_1")
+        config.absolute_test_case_path = ""
+        config.absolute_test_case_reference_path = ""
+
+        run_data = RunData(1, 1)
+
+        # Act
+        runner.run_test_case(config, run_data)
+
+        # Assert
+        assert test_case_logger.exception.called
+        exception_args = test_case_logger.exception.call_args[0]
+        assert "Test case paths are not prepared" in str(exception_args[0])
 
     @staticmethod
     def create_test_case_config(
