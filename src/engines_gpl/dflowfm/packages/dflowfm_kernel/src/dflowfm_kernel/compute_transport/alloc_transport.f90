@@ -49,7 +49,7 @@ contains
       use m_transport
       use m_alloc
       use m_meteo, only: numtracers, numfracs, item_sourcesink_constituent_delta
-      use fm_external_forcings_data, only: num_source_sink, wstracers
+      use fm_external_forcings_data, only: wstracers
       use m_sediment, only: stm_included
       use m_ec_module, only: ec_undef_int
       implicit none

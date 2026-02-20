@@ -1071,8 +1071,8 @@ contains
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (num_source_sink - 1) + 1, &
-                                                    1, source_sink_discharge)
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), num_source_sink, &
+                                                    1, source_sink_discharge(1, :))
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
@@ -1084,18 +1084,18 @@ contains
       ! Constituents (salinity, temperature, sediments, tracers) may have a timeseries file
       ! specifying the difference in concentration added by the source/sink.
       ! All these files are optional, so no check on 'is_read' can be present below.
-      if (NUMCONST > 0) then
-         allocate (constituent_delta_file(NUMCONST), stat=ierr)
-         do i_const = 1, NUMCONST
+      if (numconst > 0) then
+         allocate (constituent_delta_file(numconst), stat=ierr)
+         do i_const = 1, numconst
             is_read = .false.
             const_name_with_prefix = const_names(i_const)
-            if (i_const == ISALT) then
+            if (i_const == isalt) then
                ! Rename 'salt' constituent to 'salinity' for source-sink input.
                const_name_with_prefix = 'salinity'
-            else if (i_const == ITEMP) then
+            else if (i_const == itemp) then
                ! temperature name is correct already
                continue
-            else if (i_const == ISPIR) then
+            else if (i_const == ispir) then
                ! Spiral flow intensity "constituent" not relevant for source-sinks.
                cycle
             else
@@ -1103,9 +1103,9 @@ contains
                call ncu_sanitize_name(const_name_with_prefix)
 
                ! Add correct "group" prefix to constituent name.
-               if (i_const >= ISED1 .and. i_const <= ISEDN) then
+               if (i_const >= ised1 .and. i_const <= isedn) then
                   const_name_with_prefix = 'sedFrac'//trim(const_name_with_prefix)
-               else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
+               else if (i_const >= itra1 .and. i_const <= itran) then
                   const_name_with_prefix = 'tracer'//trim(const_name_with_prefix)
                end if
             end if
@@ -1116,8 +1116,8 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1) * (num_source_sink - 1) + 1 + i_const, &
-                                                              1, source_sink_discharge)
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), num_source_sink, &
+                                                              1, source_sink_discharge(1 + i_const, :))
                continue
             end if
          end do

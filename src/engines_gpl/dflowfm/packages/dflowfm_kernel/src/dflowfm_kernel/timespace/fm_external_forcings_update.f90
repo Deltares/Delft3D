@@ -210,11 +210,12 @@ contains
       end if
 
       if (num_source_sink > 0) then
-         ! source_sink_discharge must be an argument when calling ec_gettimespacevalue.
-         ! It might be reallocated after initialization (when coupled to Cosumo).
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_discharge)
+         ! source_sink_discharge EC item registered with target array during init.
+         ! Note: Passing the array explicitly causes build errors due to 2D vs 1D dimension mismatch.
+         ! EC module will update the target array internally.
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds)
 
-         !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds, source_sink_discharge)
+         !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds)
          call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)
          do i_const = 1, numconst
             call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_constituent_delta(i_const), time_in_seconds)

@@ -426,6 +426,7 @@ module fm_external_forcings_data
    character(len=255), allocatable :: source_sink_name(:) !< Name of the source/sink. {size=(num_source_sink)}
    integer, allocatable :: source_sink_extraction_warning(:) !< Issue a warning message if the extraction flux exceeds the cell volume (0 = no message, 1 = sink extraction too large, 2 = source extraction too large). {size=(num_source_sink)}
 
+   ! real(kind=dp), allocatable, target :: source_sink_discharge(:) !< Source/sink discharge and discharge constituents. {size=((numconst+1)*num_source_sink)}
    real(kind=dp), allocatable, target :: source_sink_discharge(:, :) !< Source/sink discharge (1) and discharge constituents (2:). {size=(numconst+1,num_source_sink)}
 
    ! To be renamed 

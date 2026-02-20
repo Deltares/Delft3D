@@ -2224,7 +2224,7 @@ contains
       use m_observations_data
       use m_density_parameters, only: apply_thermobaricity
       use m_statistical_output_types, only: process_data_interface_double
-      use m_transport, only: NUMCONST, itemp, isalt, ised1
+      use m_transport, only: itemp, isalt, ised1
       use m_sediment, only: stm_included, stmpar
       use m_longculverts_data, only: nlongculverts
       use m_monitoring_crosssections, only: ncrs

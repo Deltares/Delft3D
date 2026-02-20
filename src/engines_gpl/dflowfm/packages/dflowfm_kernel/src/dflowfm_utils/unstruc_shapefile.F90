@@ -1030,7 +1030,7 @@ contains
    subroutine unc_write_shp_src()
       use fm_external_forcings_data, only: ksrc, num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, source_sink_name, source_sink_area, source_sink_discharge
       use m_flowgeom, only: xz, yz
-      use m_transportdata, only: NUMCONST
+      
       implicit none
 
       integer, parameter :: lencharattr = 256, tshp = shpt_arc ! arcs (Polylines, possible in parts)

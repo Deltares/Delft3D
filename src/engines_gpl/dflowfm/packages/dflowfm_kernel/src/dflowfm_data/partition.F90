@@ -3821,11 +3821,9 @@ contains
       use mpi
 #endif
 
-      implicit none(type, external)
-
       integer, intent(in) :: numvals
       integer, intent(in) :: numsrc !< number of sources/sinks
-      real(kind=dp), dimension(numvals, numsrc) :: srsn !< values associated with sources/sinks
+      real(kind=dp), dimension(numvals, numsrc), intent(inout) :: srsn !< values associated with sources/sinks
       real(kind=dp), dimension(numvals, numsrc) :: srsn_all
 
       integer :: ierror
