@@ -99,6 +99,7 @@ class TestSetRunner(ABC):
                 self.prepare_test_case(config, self.__logger)
             except Exception as exception:
                 self.__logger.error(f"Failed to prepare test case '{config.name}': {exception}")
+                self.cleanup_failed_preparation(config)
             log_separator(self.__logger, char="-")
 
         results = (
@@ -378,6 +379,34 @@ class TestSetRunner(ABC):
             skip_postprocessing = True
 
         return skip_testcase, skip_postprocessing
+
+    def cleanup_failed_preparation(self, config: TestCaseConfig) -> None:
+        """Clean up partially downloaded files after preparation failure.
+
+        Parameters
+        ----------
+        config : TestCaseConfig
+            Configuration of the test case that failed to prepare.
+        """
+        # Clean up input directory (without _work suffix)
+        if config.absolute_test_case_path:
+            input_path = Path(config.absolute_test_case_path)
+            if input_path.name.endswith("_work"):
+                original_input = input_path.with_name(input_path.name[:-5])  # Remove "_work"
+                if original_input.exists():
+                    self.__logger.debug(f"Cleaning up input directory: {original_input}")
+                    try:
+                        shutil.rmtree(original_input)
+                    except Exception as e:
+                        self.__logger.warning(f"Failed to remove input directory: {e}")
+
+        # Clean up reference directory if it was created
+        if config.absolute_test_case_reference_path and os.path.exists(config.absolute_test_case_reference_path):
+            self.__logger.debug(f"Cleaning up reference directory: {config.absolute_test_case_reference_path}")
+            try:
+                shutil.rmtree(config.absolute_test_case_reference_path)
+            except Exception as e:
+                self.__logger.warning(f"Failed to remove reference directory: {e}")
 
     def __download_dependencies(self) -> None:
         configs_to_handle = [c for c in self.__settings.configs_to_run if c.dependency]

@@ -573,6 +573,7 @@ class TestComparisonRunner:
 
         test_exception = Exception("Test preparation failed")
         mocker.patch.object(runner, "prepare_test_case", side_effect=test_exception)
+        cleanup_mock = mocker.patch.object(runner, "cleanup_failed_preparation")
 
         # Act
         runner.run()
@@ -580,6 +581,35 @@ class TestComparisonRunner:
         # Assert
         expected_error_message = f"Failed to prepare test case 'Name_1': {test_exception}"
         logger.error.assert_called_with(expected_error_message)
+        cleanup_mock.assert_called_once_with(config)
+
+    def test_cleanup_failed_preparation_removes_directories(self, fs: FakeFilesystem) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths()
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        config = TestComparisonRunner.create_test_case_config("Name_1")
+
+        work_dir = "/cases/win64/Name_1_work"
+        input_dir = "/cases/win64/Name_1"
+        ref_dir = "/refs/win64/Name_1"
+
+        fs.create_dir(work_dir)
+        fs.create_dir(input_dir)
+        fs.create_dir(ref_dir)
+
+        config.absolute_test_case_path = work_dir
+        config.absolute_test_case_reference_path = ref_dir
+
+        # Act
+        runner.cleanup_failed_preparation(config)
+
+        # Assert
+        assert fs.exists(work_dir), "Work directory should NOT be removed"
+        assert not fs.exists(input_dir), "Input directory should be removed"
+        assert not fs.exists(ref_dir), "Reference directory should be removed"
 
     @staticmethod
     def create_test_case_config(
