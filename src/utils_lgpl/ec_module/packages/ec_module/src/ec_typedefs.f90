@@ -324,7 +324,7 @@ module m_ec_typedefs
       real(hp), pointer :: scalarPtr => null() !< points to a single scalar stored in arr1d OR in a kernel
       real(hp), dimension(:), pointer :: arr1dPtr => null() !< points to an array field, stored in arr1d OR in a kernel
       real(hp), dimension(:), allocatable :: arr1d !< 1-dim array field
-      ! TK_Temp, for storing z values on time basis
+      ! For storing z values on time basis
       real(hp), dimension(:), pointer :: arrzPtr => null() !< points to an array field, stored in arr1d OR in a kernel
       real(hp), dimension(:), allocatable :: arrz !< 1-dim array field
       real(hp) :: x_spw_eye !< x-coordinate of spiderweb eye

@@ -111,19 +111,14 @@ contains
           return                                               ! quantityName-plilabel combination not found
        endif
        
-       !TK_Temp: Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
+       ! Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
        do nrVar = 1, size(bc%ncptr%variable_names)
           if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) exit
-
        enddo
                               
-       if (bc%ncptr%variable_dimension(nrVar) == 2) then
-          bc%func = BC_FUNC_TSERIES
-       elseif (bc%ncptr%variable_dimension(nrVar) == 3) then
-          bc%func = BC_FUNC_TIM3D
-       else
-           ! Hier nog een foutmelding
-       endif
+       if (bc%ncptr%variable_dimension(nrVar) == 2) bc%func = BC_FUNC_TSERIES
+       if (bc%ncptr%variable_dimension(nrVar) == 3) bc%func = BC_FUNC_TIM3D
+       
        ! TODO:
        ! Support specification of the time-interpolation type in the netcdf timeseries variable as an attribute
        bc%timeunit         = bc%ncptr%timeunit
@@ -904,8 +899,8 @@ contains
           return
        endif
        
-       !TK_Temp Use FUNC to determine whether normal or TIM3D series
-       !        First, get the vertical coordinates and store in BCPTR.VP (only for nc history files)
+       ! Use FUNC to determine whether normal or TIM3D series
+       ! First, get the vertical coordinates and store in BCPTR.VP (only for nc history files)
        if (BCPtr.ncptr.ncType == 2 .and. BCPtr.FUNC == BC_FUNC_TIM3D) then
           nrTmp(1) = BCPtr%ncptr%layervarid
           if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,nrTmp,BCPtr%nclocndx,BCPtr%dimvector, &

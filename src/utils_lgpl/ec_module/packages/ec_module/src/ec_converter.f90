@@ -1210,10 +1210,11 @@ contains
           
       if (quantityValues) then
          valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPTR
-         valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
-      ! TK_Temp: time series interpolation on depth velues, only if origin is history file   
+         valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr   
       else
+         ! Time series interpolation on depth values   
          if (.not. strcmpi(connection%sourceItemsPtr(1)%ptr%ElementSetPtr%origin,'nchis') ) then
+            ! No timeinterpolation needed if origin is old nc file! (z values fixed in time)
             success = .true.
             return
          else    
@@ -1754,7 +1755,7 @@ contains
                      kR = kL
                      wR = 0.0_dp
                   end if
-                  ! TK_Temp: Dont think if kl > 0 and kr > 0 is needed, lines above ensure both have a value > 0
+
                   if (kL > 0) then
                      if (kR > 0) then               
                         kbegin = maxlay_tgt * (i - 1) + 1 ! refers to target column
@@ -1762,14 +1763,10 @@ contains
 
                         kbeginL = maxlay_src * (kL - 1) + 1 ! refers to source left column
                         kendL = maxlay_src * kL
-                        ! TK_Temp, not needed! Retrieved beloww by ecElementSetGetAbsZ
-                        ! sigmaL =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginL:kendL)
 
                         kbeginR = maxlay_src * (kR - 1) + 1 ! refers to source right column
                         kendR = maxlay_src * kR
-                        ! TK_Temp, not needed!
-                        ! sigmaR =  connection%sourceItemsPtr(1)%ptr%ElementSetPtr%z(kbeginR:kendR)
-
+   
                         ! Convert Z-coordinate to absolute z wrt datum
                         ! For the time being, let's assume that both support points have the same
                         ! zmin and zmax as the support points. This way interpolation from sigma->sigma

@@ -214,9 +214,7 @@ module m_ec_field
                fieldPtr%arr1d = ec_undef_hp
             end if
             fieldPtr%arr1dPtr => fieldPtr%arr1d
-            ! TK_Temp: allocate array for z values
-
-            ! Reallocate 1D real(hp) array.
+            ! Allocate array for z values (needed for reading from his file in case of nesting)
             if (allocated(fieldPtr%arrz)) then
                deallocate(fieldPtr%arrz, stat = istat)
                if (istat /= 0) then

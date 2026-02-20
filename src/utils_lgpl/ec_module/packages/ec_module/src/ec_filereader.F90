@@ -231,7 +231,7 @@ module m_ec_filereader
                      success = ecBCReadBlock(fileReaderPtr, fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%timesteps, &
                                                             fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arr1dPtr)
                      if (success) then
-                        ! TK_Temp: set z-value (mis)use ELEMENTSETPTR%Z to detrmine z-coordinate needed or not 
+                        ! Set z-value for time interpolation, (mis)use ELEMENTSETPTR%Z to determine z-coordinate needed or not 
                         if (associated(fileReaderPtr%items(1)%ptr%ELEMENTSETPTR%Z) .and. &
                            strcmpi(fileReaderPtr%items(1)%ptr%ELEMENTSETPTR%origin,'nchis')) then
                            fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arrzPtr(1:size(fileReaderPtr%BC%VP)) = fileReaderPtr%BC%VP
