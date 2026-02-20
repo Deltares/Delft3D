@@ -35,7 +35,7 @@ class FakeDownloadMode(Enum):
     OVERWRITE = "overwrite"
 
 
-def patch_fake_download(mocker: MockerFixture, fs: FakeFilesystem, mode: FakeDownloadMode):
+def patch_fake_download(mocker: MockerFixture, fs: FakeFilesystem, mode: FakeDownloadMode) -> MagicMock:
     def _fake_download(
         from_path: str,
         to_path: str,
@@ -553,6 +553,33 @@ class TestComparisonRunner:
         assert test_case_logger.exception.called
         exception_args = test_case_logger.exception.call_args[0]
         assert "Test case paths are not prepared" in str(exception_args[0])
+
+    def test_run_logs_error_when_prepare_test_case_fails(self, mocker: MockerFixture) -> None:
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths()
+        settings.command_line_settings.parallel = False
+
+        config = TestComparisonRunner.create_test_case_config("Name_1")
+        settings.configs_to_run = [config]
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mocker.patch.object(runner, "_TestSetRunner__update_programs", return_value=[])
+        mocker.patch.object(runner, "_TestSetRunner__download_dependencies")
+        mocker.patch.object(runner, "run_tests_sequentially", return_value=[MagicMock()])
+        mocker.patch.object(runner, "show_summary", return_value=None)
+
+        test_exception = Exception("Test preparation failed")
+        mocker.patch.object(runner, "prepare_test_case", side_effect=test_exception)
+
+        # Act
+        runner.run()
+
+        # Assert
+        expected_error_message = f"Failed to prepare test case 'Name_1': {test_exception}"
+        logger.error.assert_called_with(expected_error_message)
 
     @staticmethod
     def create_test_case_config(
