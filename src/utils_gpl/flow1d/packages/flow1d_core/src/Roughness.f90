@@ -37,6 +37,7 @@ module m_Roughness
    use m_spatial_data
    use m_hash_search
    use precision, only: dp
+   use m_physcoef, only: ag, vonkar, sag
 
    implicit none
 
@@ -49,10 +50,6 @@ module m_Roughness
    public frictionTypeStringToInteger
    public functionTypeStringToInteger
    public frictionTypeIntegerToString
-
-   real(kind=dp) :: vonkar = 0.41 !< von Karman constant ()
-   real(kind=dp) :: ag = 9.81_dp !< gravity acceleration
-   real(kind=dp) :: sag !< = sqrt(ag)
 
 !   public setCrossSectionIncrement
 !
