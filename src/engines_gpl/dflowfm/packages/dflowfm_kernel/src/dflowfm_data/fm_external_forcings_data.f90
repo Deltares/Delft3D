@@ -506,6 +506,7 @@ contains
       num_source_sink_old = 0
       num_source_sink_near_field = 0
       num_source_sink_max_polyline_points = 0
+      source_sink_add_k_to_turkin = 0
 
    end subroutine default_fm_external_forcing_data
 
