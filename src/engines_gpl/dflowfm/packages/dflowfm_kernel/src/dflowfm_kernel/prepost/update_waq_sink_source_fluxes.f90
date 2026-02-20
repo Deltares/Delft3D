@@ -68,7 +68,7 @@ contains
                ! 2D case
                ip = ksrcwaq(isrc) + 1
                if (ip > 0) then
-                  qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrc(isrc)
+                  qsrcwaq(ip) = qsrcwaq(ip) + dts * source_sink_water_discharge(isrc)
                end if
             else
                ! 3D case
@@ -84,9 +84,9 @@ contains
                   dzss = zws(ktsor) - zws(kbsor - 1)
                   do k = kbsor, ktsor
                      if (dzss > epshs) then
-                        qsrck = qsrc(isrc) * (zws(k) - zws(k - 1)) / dzss
+                        qsrck = source_sink_water_discharge(isrc) * (zws(k) - zws(k - 1)) / dzss
                      else
-                        qsrck = qsrc(isrc) / (ktsor - kbsor + 1)
+                        qsrck = source_sink_water_discharge(isrc) / (ktsor - kbsor + 1)
                      end if
                      ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsor - k + 1)
                      qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
@@ -97,9 +97,9 @@ contains
                   dzss = zws(ktsin) - zws(kbsin - 1)
                   do k = kbsin, ktsin
                      if (dzss > epshs) then
-                        qsrck = qsrc(isrc) * (zws(k) - zws(k - 1)) / dzss
+                        qsrck = source_sink_water_discharge(isrc) * (zws(k) - zws(k - 1)) / dzss
                      else
-                        qsrck = qsrc(isrc) / (ktsin - kbsin + 1)
+                        qsrck = source_sink_water_discharge(isrc) / (ktsin - kbsin + 1)
                      end if
                      ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - k + 1)
                      qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
@@ -112,9 +112,9 @@ contains
                      dzss = zws(ktsor) - zws(kbsor - 1)
                      do k = kbsor, ktsor
                         if (dzss > epshs) then
-                           qsrck = qsrc(isrc) * (zws(k) - zws(k - 1)) / dzss
+                           qsrck = source_sink_water_discharge(isrc) * (zws(k) - zws(k - 1)) / dzss
                         else
-                           qsrck = qsrc(isrc) / (ktsor - kbsor + 1)
+                           qsrck = source_sink_water_discharge(isrc) / (ktsor - kbsor + 1)
                         end if
                         ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - kbsin + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - k + 1) - 1)
                         qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
@@ -124,9 +124,9 @@ contains
                      dzss = zws(ktsin) - zws(kbsin - 1)
                      do k = kbsin, ktsin
                         if (dzss > epshs) then
-                           qsrck = qsrc(isrc) * (zws(k) - zws(k - 1)) / dzss
+                           qsrck = source_sink_water_discharge(isrc) * (zws(k) - zws(k - 1)) / dzss
                         else
-                           qsrck = qsrc(isrc) / (ktsin - kbsin + 1)
+                           qsrck = source_sink_water_discharge(isrc) / (ktsin - kbsin + 1)
                         end if
                         ip = ksrcwaq(isrc) + waqpar%ilaggr(kktxsin - k + 1) + waqpar%kmxnxa * (waqpar%ilaggr(kktxsor - kbsor + 1) - 1)
                         qsrcwaq(ip) = qsrcwaq(ip) + dts * qsrck
@@ -159,7 +159,7 @@ contains
                            fsin(ilaysin) = fsin(ilaysin) - fsorlay
                            fsor = fsor - fsorlay
                            ip = ksrcwaq(isrc) + waqpar%ilaggr(ilaysin) + waqpar%kmxnxa * (waqpar%ilaggr(ilaysor) - 1)
-                           qsrcwaq(ip) = qsrcwaq(ip) + dts * fsorlay * qsrc(isrc)
+                           qsrcwaq(ip) = qsrcwaq(ip) + dts * fsorlay * source_sink_water_discharge(isrc)
                         end do
                      end do
                   end if

@@ -737,7 +737,7 @@ contains
    subroutine comp_horflowmba()
       use m_flow, only: Lbot, Ltop, q1
       use m_flowtimes, only: dts
-      use fm_external_forcings_data, only: num_source_sink, qsrc
+      use fm_external_forcings_data, only: num_source_sink, source_sink_water_discharge
       use m_mass_balance_areas
       use timers
 
@@ -768,7 +768,7 @@ contains
       end do
 
       do n = 1, num_source_sink
-         qsrck = qsrc(n)
+         qsrck = source_sink_water_discharge(n)
          if (qsrck > 0) then
             if (mbasorsin(2, n) /= 0) then
                mbaflowsorsin(2, n) = mbaflowsorsin(2, n) + qsrck * dts

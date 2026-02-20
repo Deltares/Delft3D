@@ -42,7 +42,7 @@ contains
 
    subroutine doaddksources() ! add k sources
       use precision, only: dp
-      use m_flow, only: num_source_sink, ksrc, source_sink_area, qsrc, vol1, turkinws
+      use m_flow, only: num_source_sink, ksrc, source_sink_area, source_sink_water_discharge, vol1, turkinws
       use m_flowtimes, only: dts
       implicit none
 
@@ -59,7 +59,7 @@ contains
          end if
          kk = ksrc(1, n) ! 2D pressure cell nr FROM
          kk2 = ksrc(4, n) ! 2D pressure cell nr TO
-         qsrck = qsrc(n)
+         qsrck = source_sink_water_discharge(n)
 
          if (kk > 0) then ! FROM Point
             k = ksrc(2, n)

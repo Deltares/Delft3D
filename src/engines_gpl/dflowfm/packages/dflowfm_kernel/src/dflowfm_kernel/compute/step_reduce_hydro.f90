@@ -80,7 +80,7 @@ contains
       last_iteration = .false.
 
       if (wrwaqon) then
-         ! store current cumulative qsrc and qlat for waq at the beginning of this time step
+         ! store current cumulative source_sink_water_discharge and qlat for waq at the beginning of this time step
          if (allocated(qsrcwaq)) then
             qsrcwaq0 = qsrcwaq
          end if
@@ -180,7 +180,7 @@ contains
                      end if
 
                      if (wrwaqon) then
-                        ! restore cumulative qsrc and qlat for waq from start of this time step to avoid
+                        ! restore cumulative source_sink_water_discharge and qlat for waq from start of this time step to avoid
                         ! double accumulation and use of incorrect dts in case of time step reduction
                         if (allocated(qsrcwaq)) then
                            qsrcwaq = qsrcwaq0

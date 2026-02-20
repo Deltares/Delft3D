@@ -335,7 +335,7 @@ contains
                                                   id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
                                                   id_poly_xmid=id_src_xmid, id_poly_ymid=id_src_ymid)
          if (jahissourcesink > 0 .and. num_source_sink > 0) then
-            call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', msrc, id_srcptsdim))
+            call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', num_source_sink_max_polyline_points, id_srcptsdim))
             call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate')
             call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate')
             ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
@@ -760,7 +760,7 @@ contains
       !Fill average source-sink discharge with different array on first timestep
       if (it_his == 1) then
          do i = 1, num_source_sink
-            qsrc(i) = source_sink_discharge(1, i)
+            source_sink_water_discharge(i) = source_sink_discharge(1, i)
          end do
       end if
       !Bottom level is written separately from statout if it is static

@@ -409,41 +409,39 @@ module fm_external_forcings_data
    ! ====================================================================================================
 
    ! Renamed
-   integer :: num_source_sink !< number of source/sinks in the model
-   integer :: num_source_sink_old !< number of source/sinks in old extforce file
-   integer :: num_source_sink_near_field !< number of source/sinks added for near field
+   integer :: num_source_sink !< [-] number of source/sinks in the model
+   integer :: num_source_sink_old !< [-] number of source/sinks in old extforce file
+   integer :: num_source_sink_near_field !< [-] number of source/sinks added for near field
+   integer :: num_source_sink_max_polyline_points !< [-] maximum number of points in source_sink_x, source_sink_y over all sources/sinks. Used for array dimensions.
 
-   real(kind=dp), allocatable :: source_sink_area(:) !< [m2] area of source/sink. If zero, source/sink transport no momentum. {size=(num_source_sink)}
-   real(kind=dp), allocatable :: source_sink_discharge_cosine(:, :) !< Cosine of discharge on sink side (1) and source side (2). {size=(2,num_source_sink)}
-   real(kind=dp), allocatable :: source_sink_discharge_sine(:, :) !< Sine of discharge on sink side (1) and source side (2). {size=(2,num_source_sink)}
+   real(kind=dp), dimension(:), allocatable :: source_sink_area !< [m2] area of source/sink. If zero, source/sink transport no momentum. {size=(num_source_sink)}
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_discharge_cosine !< [-] Cosine of discharge on sink side (1) and source side (2). {size=(2,num_source_sink)}
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_discharge_sine !< [-] Sine of discharge on sink side (1) and source side (2). {size=(2,num_source_sink)}
 
-   real(kind=dp), allocatable :: source_sink_z_bot(:, :) !< z-level of bottom sink (1) and source (2). {size=(2,num_source_sink)}
-   real(kind=dp), allocatable :: source_sink_z_top(:, :) !< z-level of top sink (1) and source (2). {size=(2,num_source_sink)}
-   real(kind=dp), allocatable :: source_sink_x(:, :) !< x-coordinates of source/sink. {size=(num_source_sink,source_sink_max_num_xy_points)}
-   real(kind=dp), allocatable :: source_sink_y(:, :) !< y-coordinates of source/sink. {size=(num_source_sink,source_sink_max_num_xy_points)}
-   integer, allocatable :: source_sink_max_num_xy_points(:) !< Maximum number of points in source_sink_x, source_sink_y. {size=(num_source_sink)}
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_x !< [m] x-coordinates of source/sink. {size=(num_source_sink,source_sink_max_num_xy_points)}
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_y !< [m] y-coordinates of source/sink. {size=(num_source_sink,source_sink_max_num_xy_points)}
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_z_bot !< [m] z-level of bottom sink (1) and source (2). {size=(2,num_source_sink)}
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_z_top !< [m] z-level of top sink (1) and source (2). {size=(2,num_source_sink)}
+   integer, dimension(:), allocatable :: source_sink_max_num_xy_points !< [-] Maximum number of points in source_sink_x, source_sink_y. {size=(num_source_sink)}
 
-   character(len=255), allocatable :: source_sink_name(:) !< Name of the source/sink. {size=(num_source_sink)}
-   integer, allocatable :: source_sink_extraction_warning(:) !< Issue a warning message if the extraction flux exceeds the cell volume (0 = no message, 1 = sink extraction too large, 2 = source extraction too large). {size=(num_source_sink)}
+   character(len=255), dimension(:), allocatable :: source_sink_name !< [-] Name of the source/sink. {size=(num_source_sink)}
+   integer, dimension(:), allocatable :: source_sink_extraction_warning !< [-] Issue a warning message if the extraction flux exceeds the cell volume (0 = no message, 1 = sink extraction too large, 2 = source extraction too large). {size=(num_source_sink)}
 
-   ! real(kind=dp), allocatable, target :: source_sink_discharge(:) !< Source/sink discharge and discharge constituents. {size=((numconst+1)*num_source_sink)}
-   real(kind=dp), allocatable, target :: source_sink_discharge(:, :) !< Source/sink discharge (1) and discharge constituents (2:). {size=(numconst+1,num_source_sink)}
+   real(kind=dp), dimension(:,:), allocatable, target :: source_sink_discharge !< [m3/s,ppt,degC,kg/m3] Source/sink discharge (1) and discharge constituents (2:). {size=(numconst+1,num_source_sink)}
+   real(kind=dp), dimension(:), target, allocatable :: source_sink_water_discharge !< [m3/s] Water discharge of source/sink. {size=(num_source_sink)}
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges. {size=(numconst,num_source_sink)}
 
    ! To be renamed 
-   integer :: numvalssrc !< nr of point constituents
-   integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
-   integer, allocatable :: ksrc(:, :) !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
-   real(kind=dp), target, allocatable :: qsrc(:) !< cell influx (m3/s) if negative: outflux
-   real(kind=dp), allocatable :: ccsrc(:, :) !< dimension (numvalssrc, num_source_sink), keeps sasrc, tmsrc etc
-   real(kind=dp), allocatable :: srsn(:, :) !< 2*(1+numvalssrc),num_source_sink, to be reduced
-   real(kind=dp), target, allocatable :: vsrccum(:) !< cumulative volume at each source/sink from Tstart to now
-   real(kind=dp), allocatable :: vsrccum_pre(:) !< cumulative volume at each source/sink from Tstart to the previous His-output time
-   real(kind=dp), target, allocatable :: qsrcavg(:) !< average discharge in the past his-interval at each source/sink
-   integer, allocatable :: ksrcwaq(:) !< index array, starting point in qsrcwaq
-   real(kind=dp), allocatable :: qsrcwaq(:) !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), allocatable :: qsrcwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   real(kind=dp), allocatable :: qlatwaq(:) !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), allocatable :: qlatwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
+   integer, dimension(:,:), allocatable :: ksrc !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
+   real(kind=dp), dimension(:,:), allocatable :: srsn !< 2*(1+numvalssrc),num_source_sink, to be reduced
+   real(kind=dp), dimension(:), target, allocatable :: vsrccum !< cumulative volume at each source/sink from Tstart to now
+   real(kind=dp), dimension(:), allocatable :: vsrccum_pre !< cumulative volume at each source/sink from Tstart to the previous His-output time
+   real(kind=dp), dimension(:), target, allocatable :: qsrcavg !< average discharge in the past his-interval at each source/sink
+   integer, dimension(:), allocatable :: ksrcwaq !< index array, starting point in qsrcwaq
+   real(kind=dp), dimension(:), allocatable :: qsrcwaq !< Cumulative qsrc within current waq-timestep
+   real(kind=dp), dimension(:), allocatable :: qsrcwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
+   real(kind=dp), dimension(:), allocatable :: qlatwaq !< Cumulative qsrc within current waq-timestep
+   real(kind=dp), dimension(:), allocatable :: qlatwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
    real(kind=dp) :: addksources = 0.0_dp !< Add k of sources to turkin 1/0
 
    ! ====================================================================================================
@@ -509,6 +507,7 @@ contains
       num_source_sink = 0
       num_source_sink_old = 0
       num_source_sink_near_field = 0
+      num_source_sink_max_polyline_points = 0
 
    end subroutine default_fm_external_forcing_data
 

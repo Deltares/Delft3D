@@ -702,7 +702,7 @@ contains
       call setcol(121)
       if (kmx > 0) then
          do n = 1, num_source_sink ! teksorsin rai
-            qsrck = qsrc(n)
+            qsrck = source_sink_water_discharge(n)
             kk = ksrc(1, n) ! 2D pressure cell nr from
             if (japol == 1) then
                if (kc(kk) == 0) then
