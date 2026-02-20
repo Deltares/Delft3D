@@ -37,7 +37,6 @@ module m_Roughness
    use m_spatial_data
    use m_hash_search
    use precision, only: dp
-   use m_physcoef, only: ag, vonkar, sag
 
    implicit none
 
@@ -50,6 +49,10 @@ module m_Roughness
    public frictionTypeStringToInteger
    public functionTypeStringToInteger
    public frictionTypeIntegerToString
+
+   real(kind=dp), parameter :: vonkar = 0.41 !< von Karman constant ()
+   real(kind=dp), parameter :: ag = 9.81_dp !< gravity acceleration
+   real(kind=dp), parameter :: sag  = sqrt(ag)
 
 !   public setCrossSectionIncrement
 !
@@ -139,7 +142,6 @@ contains
          deallocate (rgs%rough)
       else
          ! set some parameters (not the correct location)
-         sag = sqrt(ag)
          rgs%version = -1
       end if
 
