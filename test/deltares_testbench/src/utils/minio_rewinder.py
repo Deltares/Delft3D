@@ -314,7 +314,7 @@ class Rewinder:
                 etag = self.__etag(path, part_size)
                 yield (str(path.relative_to(src_dir).as_posix()), etag)  # Make sure to use unix path separators.
             elif self.__dir_is_empty(path):  # `path` is an empty directory.
-                etag = hashlib.md5(b"").hexdigest()
+                etag = _md5(b"").hexdigest()
                 yield (str((path.relative_to(src_dir) / ".miniokeep").as_posix()), etag)
 
     def execute_plan(self, plan: Plan) -> None:
@@ -531,16 +531,23 @@ class Rewinder:
                 yield chunk
                 chunk = f.read(size)
 
+        # FIPS-compatible MD5 (MD5 is only used for S3 ETag compatibility, not security)
+        def _md5(data: bytes) -> "hashlib._Hash":
+            try:
+                return hashlib.md5(data, usedforsecurity=False)  # Python 3.9+
+            except TypeError:
+                return hashlib.md5(data)  # fallback for very old Python
+
         with open(path, "rb") as f:
-            hashes = [hashlib.md5(chunk) for chunk in chunker(f, part_size)]
+            hashes = [_md5(chunk) for chunk in chunker(f, part_size)]
 
         if not hashes:
-            return hashlib.md5(b"").hexdigest()  # Emtpy file
+            return _md5(b"").hexdigest()  # empty file
         elif len(hashes) == 1:
-            return hashes[0].hexdigest()  # Regular file
+            return hashes[0].hexdigest()
         else:
-            digests = b"".join(h.digest() for h in hashes)  # Files split in multiple parts
-            return hashlib.md5(digests).hexdigest() + f"-{len(hashes)}"
+            digests = b"".join(h.digest() for h in hashes)
+            return _md5(digests).hexdigest() + f"-{len(hashes)}"
 
     def __add_object_tags(self, obj: MinioObject) -> MinioObject:
         if obj.is_delete_marker:
