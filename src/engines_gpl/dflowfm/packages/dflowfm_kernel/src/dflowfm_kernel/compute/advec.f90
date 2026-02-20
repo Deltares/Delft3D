@@ -55,7 +55,7 @@ contains
                             iadv_original_lateral_overflow, dx, dxi, bai, ba, lnx1d
       use m_flow, only: kmxx, japiaczek33, ifixedweirscheme, u0, ucx, ucy, jabarrieradvection, ngatesg, l1gatesg, l2gatesg, kgate, &
                         ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, uqcx, uqcy, sqa, kmx, qa, ucxu, ucyu, lbot, ltop, javau, &
-                        jarhoxu, qw, zws, kbot, ktop, rho, num_source_sink, source_sink_area, source_sink_water_discharge, ksrc, epshs, rhomean, source_sink_discharge_cosine, source_sink_discharge_sine, hu, u1, vol1_f, &
+                        jarhoxu, qw, zws, kbot, ktop, rho, num_source_sink, source_sink_area, source_sink_water_discharge, source_sink_indices, epshs, rhomean, source_sink_discharge_cosine, source_sink_discharge_sine, hu, u1, vol1_f, &
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
                         hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
       use m_sferic, only: jasfer3d
@@ -318,13 +318,13 @@ contains
       do n = 1, num_source_sink ! momentum
          if (source_sink_area(n) > 0) then ! if momentum desired
             if (source_sink_water_discharge(n) > 0) then
-               kk = ksrc(4, n) ! 2D pressure cell nr TO
-               ksb = ksrc(5, n) ! cell nr
-               kst = ksrc(6, n) ! cell nr
+               kk = source_sink_indices(4, n) ! 2D pressure cell nr TO
+               ksb = source_sink_indices(5, n) ! cell nr
+               kst = source_sink_indices(6, n) ! cell nr
             else
-               kk = ksrc(1, n) ! 2D pressure cell nr FROM
-               ksb = ksrc(2, n) ! cell nr
-               kst = ksrc(3, n) ! cell nr
+               kk = source_sink_indices(1, n) ! 2D pressure cell nr FROM
+               ksb = source_sink_indices(2, n) ! cell nr
+               kst = source_sink_indices(3, n) ! cell nr
             end if
 
             if (kk > 0 .and. ksb > 0) then

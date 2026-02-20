@@ -319,8 +319,8 @@ contains
             nNodeTot = 0
             do i = 1, num_source_sink
                nNodes = 0
-               k1 = ksrc(1, i)
-               k2 = ksrc(4, i)
+               k1 = source_sink_indices(1, i)
+               k2 = source_sink_indices(4, i)
                if (k1 /= 0) then
                   nNodes = nNodes + 1
                end if
@@ -683,8 +683,8 @@ contains
                call realloc(geom_x, 2)
                call realloc(geom_y, 2)
                do i = 1, num_source_sink
-                  k1 = ksrc(1, i)
-                  k2 = ksrc(4, i)
+                  k1 = source_sink_indices(1, i)
+                  k2 = source_sink_indices(4, i)
                   nNodes = 0
                   if (k1 > 0) then
                      nNodes = nNodes + 1

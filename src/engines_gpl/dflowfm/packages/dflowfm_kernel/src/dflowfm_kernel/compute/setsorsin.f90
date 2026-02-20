@@ -43,7 +43,7 @@ contains
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
       use precision, only: dp
-      use m_flow, only: srsn, num_source_sink, ksrc, source_sink_water_discharge, source_sink_discharge, kmx, source_sink_z_bot, dmiss, zws, source_sink_z_top, vol1, source_sink_extraction_warning, source_sink_constituents, qin, epshs, source_sink_name
+      use m_flow, only: srsn, num_source_sink, source_sink_indices, source_sink_water_discharge, source_sink_discharge, kmx, source_sink_z_bot, dmiss, zws, source_sink_z_top, vol1, source_sink_extraction_warning, source_sink_constituents, qin, epshs, source_sink_name
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
@@ -56,8 +56,8 @@ contains
 
       srsn = 0.0_dp
       do n = 1, num_source_sink
-         kk = ksrc(1, n) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
-         kk2 = ksrc(4, n) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
+         kk = source_sink_indices(1, n) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
+         kk2 = source_sink_indices(4, n) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
          source_sink_water_discharge(n) = source_sink_discharge(1, n)
          if (kk > 0) then ! FROM point
             if (kmx > 0) then
@@ -86,16 +86,16 @@ contains
                kt = kk
                ku = kk ! in 2D, volume cell nr = pressure cell nr
             end if
-            ksrc(2, n) = k ! store kb of src
-            ksrc(3, n) = ku !
+            source_sink_indices(2, n) = k ! store kb of src
+            source_sink_indices(3, n) = ku !
             if (source_sink_water_discharge(n) > 0) then ! Reduce if flux pos
 
-               do k = ksrc(2, n), kt
+               do k = source_sink_indices(2, n), kt
                   srsn(1, n) = srsn(1, n) + vol1(k)
                   do L = 1, numconst
                      srsn(1 + L, n) = srsn(1 + L, n) + constituents(L, k) * vol1(k)
                   end do
-                  ksrc(3, n) = k
+                  source_sink_indices(3, n) = k
                   if (frac * srsn(1, n) / dts > abs(source_sink_water_discharge(n))) then
                      exit
                   end if
@@ -105,7 +105,7 @@ contains
                      srsn(1 + L, n) = srsn(1 + L, n) / srsn(1, n)
                   end do
                end if
-               do k = ksrc(2, n), ksrc(3, n)
+               do k = source_sink_indices(2, n), source_sink_indices(3, n)
                   !if (jasal > 0) constituents(isalt,k) = srsn(1+isalt,n)
                   !if (temperature_model /= TEMPERATURE_MODEL_NONE) constituents(itemp,k) = srsn(1+itemp,n)
                   do L = 1, numconst
@@ -143,16 +143,16 @@ contains
                kt = kk2
                ku = kk2 ! in 2D, volume cell nr = pressure cell nr
             end if
-            ksrc(5, n) = k
-            ksrc(6, n) = ku
+            source_sink_indices(5, n) = k
+            source_sink_indices(6, n) = ku
             if (source_sink_water_discharge(n) < 0) then ! Reduce if flux neg
 
-               do k = ksrc(5, n), kt
+               do k = source_sink_indices(5, n), kt
                   srsn(1 + numconst + 1, n) = srsn(1 + numconst + 1, n) + vol1(k)
                   do L = 1, numconst
                      srsn(1 + numconst + 1 + L, n) = srsn(1 + numconst + 1 + L, n) + constituents(L, k) * vol1(k)
                   end do
-                  ksrc(6, n) = k
+                  source_sink_indices(6, n) = k
                   if (frac * srsn(1 + numconst + 1, n) / dts > abs(source_sink_water_discharge(n))) then
                      exit
                   end if
@@ -162,7 +162,7 @@ contains
                      srsn(1 + numconst + 1 + L, n) = srsn(1 + numconst + 1 + L, n) / srsn(1 + numconst + 1, n)
                   end do
                end if
-               do k = ksrc(5, n), ksrc(6, n)
+               do k = source_sink_indices(5, n), source_sink_indices(6, n)
                   !if (jasal > 0) constituents(isalt,k) = srsn(1+numconst+1+isalt,n)
                   !if (temperature_model /= TEMPERATURE_MODEL_NONE) constituents(itemp,k) = srsn(1+numconst+1+itemp,n)
                   do L = 1, numconst
@@ -187,7 +187,7 @@ contains
             source_sink_constituents(L, n) = source_sink_discharge(L + 1, n)
          end do
 
-         kk = ksrc(1, n) ! 2D pressure cell nr
+         kk = source_sink_indices(1, n) ! 2D pressure cell nr
          qsrck = source_sink_water_discharge(n)
          if (kk /= 0 .and. qsrck > 0) then ! Extract FROM 1
             if (frac * srsn(1, n) / dts < abs(qsrck)) then
@@ -196,7 +196,7 @@ contains
             end if
          end if
 
-         kk2 = ksrc(4, n) ! 2D pressure cell nr
+         kk2 = source_sink_indices(4, n) ! 2D pressure cell nr
          if (kk2 /= 0 .and. qsrck < 0) then ! Extract From 2
             if (frac * srsn(1 + numconst + 1, n) / dts < abs(qsrck)) then
                qsrck = -frac * srsn(1 + numconst + 1, n) / dts
@@ -221,13 +221,13 @@ contains
          if (kk > 0) then ! FROM Point
             qsrckk = source_sink_water_discharge(n)
             qin(kk) = qin(kk) - qsrckk ! add to 2D pressure cell nr
-            do k = ksrc(2, n), ksrc(3, n)
+            do k = source_sink_indices(2, n), source_sink_indices(3, n)
                if (kmx > 0) then
-                  dzss = zws(ksrc(3, n)) - zws(ksrc(2, n) - 1)
+                  dzss = zws(source_sink_indices(3, n)) - zws(source_sink_indices(2, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (ksrc(3, n) - ksrc(2, n) + 1)
+                     qsrck = qsrckk / (source_sink_indices(3, n) - source_sink_indices(2, n) + 1)
                   end if
                   qin(k) = qin(k) - qsrck
                end if
@@ -237,13 +237,13 @@ contains
          if (kk2 > 0) then ! TO Point
             qsrckk = source_sink_water_discharge(n)
             qin(kk2) = qin(kk2) + qsrckk ! add to 2D pressure cell nr
-            do k = ksrc(5, n), ksrc(6, n)
+            do k = source_sink_indices(5, n), source_sink_indices(6, n)
                if (kmx > 0) then
-                  dzss = zws(ksrc(6, n)) - zws(ksrc(5, n) - 1)
+                  dzss = zws(source_sink_indices(6, n)) - zws(source_sink_indices(5, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (ksrc(6, n) - ksrc(5, n) + 1)
+                     qsrck = qsrckk / (source_sink_indices(6, n) - source_sink_indices(5, n) + 1)
                   end if
                   qin(k) = qin(k) + qsrck
                end if

@@ -44,7 +44,7 @@ contains
    !! If arrays are already large enough, nothing is done (specifically, no shrinking is done).
    subroutine reallocsrc(new_size_src, new_num_points)
       use m_transport, only: NUMCONST
-      use fm_external_forcings_data, only: ksrc, num_source_sink_max_polyline_points, source_sink_x, source_sink_y, source_sink_water_discharge, dp, source_sink_constituents, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, srsn, source_sink_extraction_warning, source_sink_discharge, source_sink_name, source_sink_max_num_xy_points, qsrcavg, vsrccum, vsrccum_pre
+      use fm_external_forcings_data, only: source_sink_indices, num_source_sink_max_polyline_points, source_sink_x, source_sink_y, source_sink_water_discharge, dp, source_sink_constituents, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, srsn, source_sink_extraction_warning, source_sink_discharge, source_sink_name, source_sink_max_num_xy_points, qsrcavg, vsrccum, vsrccum_pre
       use m_alloc, only: realloc
       use m_missing, only: dmiss
 
@@ -53,8 +53,8 @@ contains
 
       integer :: current_size_src
 
-      if (allocated(ksrc)) then
-         current_size_src = size(ksrc, 2)
+      if (allocated(source_sink_indices)) then
+         current_size_src = size(source_sink_indices, 2)
       else
          current_size_src = 0
       end if
@@ -68,7 +68,7 @@ contains
 
       ! Next, make sure that all other arrays are large enough
       if (new_size_src > current_size_src) then
-         call realloc(ksrc, [6, new_size_src], keepexisting=.true., fill=0)
+         call realloc(source_sink_indices, [6, new_size_src], keepexisting=.true., fill=0)
          call realloc(source_sink_water_discharge, new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_constituents, [numconst, new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_area, new_size_src, keepExisting=.true., fill=0.0_dp)

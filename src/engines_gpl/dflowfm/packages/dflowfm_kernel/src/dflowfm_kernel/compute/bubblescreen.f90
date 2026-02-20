@@ -1,6 +1,6 @@
 module m_bubblescreen
     use precision_basics, only: dp, comparereal
-    use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubblescreens, ksrc, source_sink_discharge, bubblescreen_air_discharge
+    use fm_external_forcings_data, only: t_BubbleScreen, t_BubbleScreenFlowCell, bubblescreens, source_sink_indices, source_sink_discharge, bubblescreen_air_discharge
     use m_alloc, only: realloc
     use m_cell_geometry, only: ba
     use m_flow, only: kmx, zws, kbot, s1, vol1
@@ -375,29 +375,29 @@ contains
     subroutine set_source_or_sink_for_bubblescreen(discharge, source_sink_index)
         ! Parameters
         real(kind=dp), intent(in) :: discharge !< Discharge for this layer; if positive, this layer is a source; if negative, this layer is a sink
-        integer, intent(in) :: source_sink_index !< Index in ksrc/source_sink_discharge arrays corresponding to this layer
+        integer, intent(in) :: source_sink_index !< Index in source_sink_indices/source_sink_discharge arrays corresponding to this layer
 
-        if (ksrc(4, source_sink_index) > 0) then ! Check if this layer is a source
+        if (source_sink_indices(4, source_sink_index) > 0) then ! Check if this layer is a source
                 if (comparereal(discharge, 0.0_dp) == -1) then ! Check if discharge is negative (sink); if true set source to sink
-                    ksrc(1, source_sink_index) = ksrc(4, source_sink_index)
-                    ksrc(2, source_sink_index) = ksrc(5, source_sink_index)
-                    ksrc(3, source_sink_index) = ksrc(6, source_sink_index)
+                    source_sink_indices(1, source_sink_index) = source_sink_indices(4, source_sink_index)
+                    source_sink_indices(2, source_sink_index) = source_sink_indices(5, source_sink_index)
+                    source_sink_indices(3, source_sink_index) = source_sink_indices(6, source_sink_index)
 
-                    ksrc(4, source_sink_index) = 0
-                    ksrc(5, source_sink_index) = 0
-                    ksrc(6, source_sink_index) = 0
+                    source_sink_indices(4, source_sink_index) = 0
+                    source_sink_indices(5, source_sink_index) = 0
+                    source_sink_indices(6, source_sink_index) = 0
                 end if
             end if
 
-            if (ksrc(1, source_sink_index) > 0) then ! Check if this layer is a sink
+            if (source_sink_indices(1, source_sink_index) > 0) then ! Check if this layer is a sink
                 if (comparereal(discharge, 0.0_dp) == 1) then ! Check if discharge is positive (source); if true set sink to source
-                    ksrc(4, source_sink_index) = ksrc(1, source_sink_index)
-                    ksrc(5, source_sink_index) = ksrc(2, source_sink_index)
-                    ksrc(6, source_sink_index) = ksrc(3, source_sink_index)
+                    source_sink_indices(4, source_sink_index) = source_sink_indices(1, source_sink_index)
+                    source_sink_indices(5, source_sink_index) = source_sink_indices(2, source_sink_index)
+                    source_sink_indices(6, source_sink_index) = source_sink_indices(3, source_sink_index)
 
-                    ksrc(1, source_sink_index) = 0
-                    ksrc(2, source_sink_index) = 0
-                    ksrc(3, source_sink_index) = 0
+                    source_sink_indices(1, source_sink_index) = 0
+                    source_sink_indices(2, source_sink_index) = 0
+                    source_sink_indices(3, source_sink_index) = 0
                 end if
             end if
 

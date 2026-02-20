@@ -426,13 +426,13 @@ module fm_external_forcings_data
 
    character(len=255), dimension(:), allocatable :: source_sink_name !< [-] Name of the source/sink. {size=(num_source_sink)}
    integer, dimension(:), allocatable :: source_sink_extraction_warning !< [-] Issue a warning message if the extraction flux exceeds the cell volume (0 = no message, 1 = sink extraction too large, 2 = source extraction too large). {size=(num_source_sink)}
+   integer, dimension(:,:), allocatable :: source_sink_indices !< [-] Index array of source/sinks. 1 = nodenr sink, 2 = kbot sink, 3 = ktop sink, 4 = nodenr source, 5 = kbot source, 6 = ktop source. {size=(6,num_source_sink)}
 
    real(kind=dp), dimension(:,:), allocatable, target :: source_sink_discharge !< [m3/s,ppt,degC,kg/m3] Source/sink discharge (1) and discharge constituents (2:). {size=(numconst+1,num_source_sink)}
    real(kind=dp), dimension(:), target, allocatable :: source_sink_water_discharge !< [m3/s] Water discharge of source/sink. {size=(num_source_sink)}
    real(kind=dp), dimension(:,:), allocatable :: source_sink_constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges. {size=(numconst,num_source_sink)}
 
    ! To be renamed 
-   integer, dimension(:,:), allocatable :: ksrc !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
    real(kind=dp), dimension(:,:), allocatable :: srsn !< 2*(1+numvalssrc),num_source_sink, to be reduced
    real(kind=dp), dimension(:), target, allocatable :: vsrccum !< cumulative volume at each source/sink from Tstart to now
    real(kind=dp), dimension(:), allocatable :: vsrccum_pre !< cumulative volume at each source/sink from Tstart to the previous His-output time

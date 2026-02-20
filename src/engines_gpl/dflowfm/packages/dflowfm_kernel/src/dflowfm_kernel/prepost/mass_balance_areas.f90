@@ -277,8 +277,8 @@ contains
       call realloc(mbasorsin, [2, num_source_sink], keepExisting=.true., fill=0)
       call realloc(mbasorsinout, [2, num_source_sink], keepExisting=.true., fill=0)
       do isrc = 1, num_source_sink
-         kk1 = ksrc(1, isrc) ! 2D pressure cell nr FROM
-         kk2 = ksrc(4, isrc) ! 2D pressure cell nr TO
+         kk1 = source_sink_indices(1, isrc) ! 2D pressure cell nr FROM
+         kk2 = source_sink_indices(4, isrc) ! 2D pressure cell nr TO
          if (kk1 > 0) then
             mbasorsin(1, isrc) = mbadef(kk1)
             if (jampi == 1) then

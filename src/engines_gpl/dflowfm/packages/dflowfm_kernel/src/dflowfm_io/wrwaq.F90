@@ -631,8 +631,8 @@ contains
          end if
          write (lunhyd, '(A      )') 'sink-sources'
          do isrc = 1, num_source_sink
-            kk1 = ksrc(1, isrc)
-            kk2 = ksrc(4, isrc)
+            kk1 = source_sink_indices(1, isrc)
+            kk2 = source_sink_indices(4, isrc)
             if ((kk1 == 0 .and. kk2 > 0) .or. &
                 (kk2 == 0 .and. kk1 > 0) .or. &
                 (kk1 > 0 .and. kk2 > 0)) then
@@ -1661,13 +1661,13 @@ contains
       end do
       ibnd = ndx - ndxi
       do isrc = 1, num_source_sink
-         if ((ksrc(1, isrc) == 0 .and. ksrc(4, isrc) > 0) .or. (ksrc(4, isrc) == 0 .and. ksrc(1, isrc) > 0)) then
+         if ((source_sink_indices(1, isrc) == 0 .and. source_sink_indices(4, isrc) > 0) .or. (source_sink_indices(4, isrc) == 0 .and. source_sink_indices(1, isrc) > 0)) then
             ! This is a boundary condition within the current domain
             ibnd = ibnd + 1
-            if (ksrc(1, isrc) /= 0) then
-               kk = ksrc(1, isrc)
+            if (source_sink_indices(1, isrc) /= 0) then
+               kk = source_sink_indices(1, isrc)
             else
-               kk = ksrc(4, isrc)
+               kk = source_sink_indices(4, isrc)
             end if
             sectionname = makesectionname('src_', source_sink_name(isrc))
             write (lunbnd, '(a)') sectionname ! Section name
@@ -2289,8 +2289,8 @@ contains
       call realloc(ksrcwaq, num_source_sink, keepexisting=.false., fill=-1)
       ! First determine the number of external sink/sources and the allocations needed
       do isrc = 1, num_source_sink
-         kk1 = ksrc(1, isrc)
-         kk2 = ksrc(4, isrc)
+         kk1 = source_sink_indices(1, isrc)
+         kk2 = source_sink_indices(4, isrc)
          if (kk1 == 0 .or. kk2 == 0) then
             ! If one of the nodes is external
             if (kk1 > 0 .or. kk2 > 0) then
@@ -2321,8 +2321,8 @@ contains
 
       ! Create additional pointer for sink/sources
       do isrc = 1, num_source_sink
-         kk1 = ksrc(1, isrc)
-         kk2 = ksrc(4, isrc)
+         kk1 = source_sink_indices(1, isrc)
+         kk2 = source_sink_indices(4, isrc)
          if (kk1 == 0 .or. kk2 == 0) then
             ! This is a boundary. If kk1 or kk2 is positive, then it is in the active domain
             if (kk1 > 0) then

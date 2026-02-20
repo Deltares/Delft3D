@@ -72,12 +72,12 @@ contains
                end if
             else
                ! 3D case
-               kksin = ksrc(1, isrc) ! 2D segment number of sink
-               kbsin = ksrc(2, isrc) ! actual kbot of sink
-               ktsin = ksrc(3, isrc) ! actual ktop of sink
-               kksor = ksrc(4, isrc) ! 2D segment number of source
-               kbsor = ksrc(5, isrc) ! actual kbot of source
-               ktsor = ksrc(6, isrc) ! actual ktop source
+               kksin = source_sink_indices(1, isrc) ! 2D segment number of sink
+               kbsin = source_sink_indices(2, isrc) ! actual kbot of sink
+               ktsin = source_sink_indices(3, isrc) ! actual ktop of sink
+               kksor = source_sink_indices(4, isrc) ! 2D segment number of source
+               kbsor = source_sink_indices(5, isrc) ! actual kbot of source
+               ktsor = source_sink_indices(6, isrc) ! actual ktop source
                if (kksin == 0 .and. kksor /= 0) then
                   ! there is only a source side
                   call getkbotktopmax(kksor, kkbsor, kktsor, kktxsor)

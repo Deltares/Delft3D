@@ -42,7 +42,7 @@ contains
 
    subroutine doaddksources() ! add k sources
       use precision, only: dp
-      use m_flow, only: num_source_sink, ksrc, source_sink_area, source_sink_water_discharge, vol1, turkinws
+      use m_flow, only: num_source_sink, source_sink_indices, source_sink_area, source_sink_water_discharge, vol1, turkinws
       use m_flowtimes, only: dts
       implicit none
 
@@ -50,19 +50,19 @@ contains
       real(kind=dp) :: qsrck, dvoli, dtol = 1.0e-4_dp
 
       do n = 1, num_source_sink
-         if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) then
+         if (source_sink_indices(2, n) == 0 .and. source_sink_indices(5, n) == 0) then
             cycle ! due to initialisation
          end if
 
          if (source_sink_area(n) == 0) then
             cycle
          end if
-         kk = ksrc(1, n) ! 2D pressure cell nr FROM
-         kk2 = ksrc(4, n) ! 2D pressure cell nr TO
+         kk = source_sink_indices(1, n) ! 2D pressure cell nr FROM
+         kk2 = source_sink_indices(4, n) ! 2D pressure cell nr TO
          qsrck = source_sink_water_discharge(n)
 
          if (kk > 0) then ! FROM Point
-            k = ksrc(2, n)
+            k = source_sink_indices(2, n)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then ! FROM k to k2
                turkinws(k) = turkinws(k) - dts * qsrck * dvoli * turkinws(k)
@@ -72,7 +72,7 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            k = ksrc(5, n)
+            k = source_sink_indices(5, n)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then
                turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sink_area(n))**2

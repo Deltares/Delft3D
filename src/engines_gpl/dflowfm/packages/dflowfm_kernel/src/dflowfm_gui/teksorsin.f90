@@ -60,7 +60,7 @@ contains
       call settextsizefac(1.0_dp)
 
       do n = 1, num_source_sink ! teksorsin
-         k = ksrc(1, n)
+         k = source_sink_indices(1, n)
          if (k /= 0) then
             n2 = 1
             xp = source_sink_x(n, n2)
@@ -90,7 +90,7 @@ contains
                end if
             end if
          end if
-         k = ksrc(4, n)
+         k = source_sink_indices(4, n)
          if (k /= 0) then
             n2 = source_sink_max_num_xy_points(n)
             xp = source_sink_x(n, n2)

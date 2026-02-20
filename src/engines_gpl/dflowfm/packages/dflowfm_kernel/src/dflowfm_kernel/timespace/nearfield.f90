@@ -137,7 +137,7 @@ contains
 !! arrays used during the D-Flow FM computation
    subroutine addNearfieldData()
       call desa()
-      call nearfieldToFM() !ksrc(1,:),ksrc(4,:),source_sink_discharge, srcnames, source_sink_z_bot, source_sink_z_top, later also area
+      call nearfieldToFM() !source_sink_indices(1,:),source_sink_indices(4,:),source_sink_discharge, srcnames, source_sink_z_bot, source_sink_z_top, later also area
       nearfield_mode = NEARFIELD_ENABLED
    end subroutine addNearfieldData
 !
@@ -287,7 +287,7 @@ contains
 !> Convert Nearfield data into arrays actually used during the D-Flow FM computation
 !> Input:  All "nf_" arrays
 !> Result: Filled:
-!>            ksrc  : (1,i) horizontal cell index of sink
+!>            source_sink_indices  : (1,i) horizontal cell index of sink
 !>                    (4,i) horizontal cell index of source
 !>            source_sink_z_bot  : (1,i) bottom z-coordinate of sink
 !>                    (2,i) bottom z-coordinate of source
@@ -675,12 +675,12 @@ contains
             write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
             !
             ! Sink
-            ksrc(1, num_source_sink) = nf_sink_n(idif, isink)
+            source_sink_indices(1, num_source_sink) = nf_sink_n(idif, isink)
             source_sink_z_bot(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
             source_sink_z_top(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
             !
             ! Source
-            ksrc(4, num_source_sink) = nf_sour_n(idif, isour)
+            source_sink_indices(4, num_source_sink) = nf_sour_n(idif, isour)
             if (nf_numsour == 1) then
                source_sink_z_bot(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
                source_sink_z_top(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
@@ -781,12 +781,12 @@ contains
          write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
          !
          ! Sink
-         ksrc(1, num_source_sink) = 0
+         source_sink_indices(1, num_source_sink) = 0
          source_sink_z_bot(1, num_source_sink) = 0.0_hp
          source_sink_z_top(1, num_source_sink) = 0.0_hp
          !
          ! Source
-         ksrc(4, num_source_sink) = nf_sour_n(idif, isour)
+         source_sink_indices(4, num_source_sink) = nf_sour_n(idif, isour)
          if (nf_numsour == 1) then
             source_sink_z_bot(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
             source_sink_z_top(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
@@ -869,12 +869,12 @@ contains
          write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
          !
          ! Sink
-         ksrc(1, num_source_sink) = nf_intake_n(idif, iintake)
+         source_sink_indices(1, num_source_sink) = nf_intake_n(idif, iintake)
          source_sink_z_bot(1, num_source_sink) = nf_intake_z(idif, iintake)
          source_sink_z_top(1, num_source_sink) = nf_intake_z(idif, iintake)
          !
          ! Source
-         ksrc(4, num_source_sink) = 0
+         source_sink_indices(4, num_source_sink) = 0
          source_sink_z_bot(2, num_source_sink) = 0.0_hp
          source_sink_z_top(2, num_source_sink) = 0.0_hp
          !
@@ -969,26 +969,26 @@ contains
          !
          ! Check if new sink coincides with an already existing source
          ! Horizontally:
-         if (ksrc(1, num_source_sink) == ksrc(4, i) .and. ksrc(1, num_source_sink) /= 0) then
+         if (source_sink_indices(1, num_source_sink) == source_sink_indices(4, i) .and. source_sink_indices(1, num_source_sink) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
             if (source_sink_z_top(1, num_source_sink) > source_sink_z_bot(2, i) .and. source_sink_z_top(2, i) > source_sink_z_bot(1, num_source_sink)) then
                write (message, '(5a,i0)') "The sink location of '", trim(source_sink_name(num_source_sink)), &
                                       & "' coincides with the source location of '", trim(source_sink_name(i)), &
-                                      & "'. Horizontal cell index: ", ksrc(1, num_source_sink)
+                                      & "'. Horizontal cell index: ", source_sink_indices(1, num_source_sink)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if
          !
          ! Check if new source coincides with an already existing sink
          ! Horizontally:
-         if (ksrc(4, num_source_sink) == ksrc(1, i) .and. ksrc(4, num_source_sink) /= 0) then
+         if (source_sink_indices(4, num_source_sink) == source_sink_indices(1, i) .and. source_sink_indices(4, num_source_sink) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
             if (source_sink_z_top(2, num_source_sink) > source_sink_z_bot(1, i) .and. source_sink_z_top(1, i) > source_sink_z_bot(2, num_source_sink)) then
                write (message, '(5a,i0)') "The source location of '", trim(source_sink_name(num_source_sink)), &
                                       & "' coincides with the sink location of '", trim(source_sink_name(i)), &
-                                      & "'. Horizontal cell index: ", ksrc(4, num_source_sink)
+                                      & "'. Horizontal cell index: ", source_sink_indices(4, num_source_sink)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if

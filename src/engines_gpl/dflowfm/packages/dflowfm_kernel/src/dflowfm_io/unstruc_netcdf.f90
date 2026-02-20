@@ -8148,7 +8148,7 @@ contains
          do isrc = num_source_sink - num_source_sink_near_field + 1, num_source_sink
             !
             ! Sinks
-            n = ksrc(1, isrc)
+            n = source_sink_indices(1, isrc)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
@@ -8167,7 +8167,7 @@ contains
             end if
             !
             ! Sources
-            n = ksrc(4, isrc)
+            n = source_sink_indices(4, isrc)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
