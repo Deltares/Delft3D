@@ -85,14 +85,14 @@ class TestComparisonRunner:
         settings.configs_to_run = [config]
 
         logger = MagicMock(spec=ConsoleLogger)
-        logger.create_test_case_logger.return_value = MagicMock()
+        test_case_logger = MagicMock()
+        logger.create_test_case_logger.return_value = test_case_logger
 
         download_mock = patch_fake_download(mocker, fs, FakeDownloadMode.ALL)
 
         runner = ComparisonRunner(settings, logger)
         mocker.patch.object(runner, "_TestSetRunner__update_programs", return_value=[])
         mocker.patch.object(runner, "_TestSetRunner__download_dependencies")
-        mocker.patch.object(runner, "run_tests_sequentially", return_value=[MagicMock()])
         mocker.patch.object(runner, "show_summary", return_value=None)
 
         # Act
@@ -107,14 +107,14 @@ class TestComparisonRunner:
         expected_ref_log = f"Downloading reference result, {ref_path} from {ref_remote}"
         expected_case_log = f"Downloading input of case, {case_path} from {case_remote}"
 
-        assert call(expected_ref_log) in logger.debug.call_args_list
-        assert call(expected_case_log) in logger.debug.call_args_list
+        assert call(expected_ref_log) in test_case_logger.debug.call_args_list
+        assert call(expected_case_log) in test_case_logger.debug.call_args_list
 
         assert download_mock.call_count == 2
         download_mock.assert_has_calls(
             [
-                call(ref_remote, ref_path, runner.programs, logger, ref_location.credentials, "v1"),
-                call(case_remote, case_path, runner.programs, logger, case_location.credentials, "v1"),
+                call(ref_remote, ref_path, runner.programs, test_case_logger, ref_location.credentials, "v1"),
+                call(case_remote, case_path, runner.programs, test_case_logger, case_location.credentials, "v1"),
             ],
             any_order=True,
         )
@@ -174,8 +174,8 @@ class TestComparisonRunner:
         case_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("cases", "win64", "testname"))
         expected_log_message1 = f"Downloading reference result, {ref_path} from https://deltares.nl/win64/abc/prefix"
         expected_log_message2 = f"Downloading input of case, {case_path} from https://deltares.nl/win64/abc/prefix"
-        assert call(expected_log_message1) in logger.debug.call_args_list
-        assert call(expected_log_message2) in logger.debug.call_args_list
+        assert call(expected_log_message1) in testcase_logger.debug.call_args_list
+        assert call(expected_log_message2) in testcase_logger.debug.call_args_list
 
     def test_prepare_case_uses_dvc(self, mocker: MockerFixture) -> None:
         # Arrange
@@ -492,14 +492,14 @@ class TestComparisonRunner:
             assert f.read() == "new"
         assert not fs.exists(f"{expected_work_path}/old.txt")
 
-    def test_run_prepares_all_cases_before_dispatch(self, mocker: MockerFixture) -> None:
+    def test_run_prepares_dvc_cases_before_dispatch(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths()
         settings.command_line_settings.parallel = True
 
-        config1 = TestComparisonRunner.create_test_case_config("Name_1")
-        config2 = TestComparisonRunner.create_test_case_config("Name_2")
+        config1 = TestComparisonRunner.create_test_case_config("Name_1", testcase_path=TestCasePath("path1", "DVC"))
+        config2 = TestComparisonRunner.create_test_case_config("Name_2", testcase_path=TestCasePath("path2", "DVC"))
         settings.configs_to_run = [config1, config2]
 
         logger = MagicMock(spec=ConsoleLogger)
@@ -540,7 +540,8 @@ class TestComparisonRunner:
 
         runner = ComparisonRunner(settings, logger)
 
-        config = TestComparisonRunner.create_test_case_config("Name_1")
+        # Create a DVC config so preparation is skipped in run_test_case
+        config = TestComparisonRunner.create_test_case_config("Name_1", testcase_path=TestCasePath("path", "DVC"))
         config.absolute_test_case_path = ""
         config.absolute_test_case_reference_path = ""
 
@@ -560,7 +561,7 @@ class TestComparisonRunner:
         settings.local_paths = LocalPaths()
         settings.command_line_settings.parallel = False
 
-        config = TestComparisonRunner.create_test_case_config("Name_1")
+        config = TestComparisonRunner.create_test_case_config("Name_1", testcase_path=TestCasePath("path", "DVC"))
         settings.configs_to_run = [config]
 
         logger = MagicMock(spec=ConsoleLogger)
@@ -572,6 +573,7 @@ class TestComparisonRunner:
         mocker.patch.object(runner, "show_summary", return_value=None)
 
         test_exception = Exception("Test preparation failed")
+
         mocker.patch.object(runner, "prepare_test_case", side_effect=test_exception)
         cleanup_mock = mocker.patch.object(runner, "cleanup_failed_preparation")
 

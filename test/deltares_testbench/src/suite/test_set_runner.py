@@ -94,13 +94,17 @@ class TestSetRunner(ABC):
         # Prepare cases (download input and reference data, validate etc.)
         # Parallel download is not supported by DVC.
         for config in self.__settings.configs_to_run:
-            log_sub_header(f"Preparing test case name = '{config.name}'", self.__logger)
-            try:
-                self.prepare_test_case(config, self.__logger)
-            except Exception as exception:
-                self.__logger.error(f"Failed to prepare test case '{config.name}': {exception}")
-                self.cleanup_failed_preparation(config)
-            log_separator(self.__logger, char="-")
+            if config.path and config.path.version == "DVC":
+                log_sub_header(
+                    f"Preparing test case name = '{config.name}' (skipping download of input and reference data due to DVC version)",
+                    self.__logger,
+                )
+                try:
+                    self.prepare_test_case(config, self.__logger)
+                except Exception as exception:
+                    self.__logger.error(f"Failed to prepare test case '{config.name}': {exception}")
+                    self.cleanup_failed_preparation(config)
+                log_separator(self.__logger, char="-")
 
         results = (
             self.run_tests_in_parallel()
@@ -235,6 +239,12 @@ class TestSetRunner(ABC):
         )
 
         try:
+            # DVC will not download data as part of the run.
+            if not config.path or config.path.version != "DVC":
+                log_sub_header(f"Preparing test case name = '{config.name}'", logger)
+                self.prepare_test_case(config, logger)
+                log_separator(logger, char="-")
+
             # Run testcase
             if not config.absolute_test_case_path or not config.absolute_test_case_reference_path:
                 raise TestBenchError("Test case paths are not prepared.")
