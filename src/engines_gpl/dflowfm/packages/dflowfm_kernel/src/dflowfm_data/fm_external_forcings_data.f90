@@ -446,9 +446,6 @@ module fm_external_forcings_data
 
    ! ====================================================================================================
 
-   real(kind=dp), dimension(:), allocatable :: qlatwaq !< Cumulative qsrc within current waq-timestep
-   real(kind=dp), dimension(:), allocatable :: qlatwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
-
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
 

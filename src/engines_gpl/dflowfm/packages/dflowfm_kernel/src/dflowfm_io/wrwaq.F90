@@ -1762,6 +1762,7 @@ contains
       use m_flowgeom
       use m_flow
       use fm_external_forcings_data
+      use m_laterals, only: qlatwaq
       use m_waves
       use unstruc_files, only: defaultFilename
       use m_gettaus
@@ -2368,7 +2369,7 @@ contains
       use m_flowgeom
       use m_flow
       use fm_external_forcings_data
-      use m_laterals, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
+      use m_laterals, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat, qlatwaq, qlatwaq0
       use m_alloc
       implicit none
 
@@ -3084,6 +3085,8 @@ contains
       use m_flow
       use wrwaq
       use m_get_Lbot_Ltop_max
+      use m_laterals, only: qlatwaq
+
       implicit none
       !
       !           Global variables

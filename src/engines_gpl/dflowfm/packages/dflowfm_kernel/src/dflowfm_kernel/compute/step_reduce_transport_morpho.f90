@@ -53,6 +53,7 @@ contains
    subroutine step_reduce_transport_morpho()
       use m_equili_spiralintensity
       use m_flow
+      use m_laterals, only: qlatwaq, qlatwaq0
       use m_flowgeom
       use m_sediment, only: stm_included
       use Timers

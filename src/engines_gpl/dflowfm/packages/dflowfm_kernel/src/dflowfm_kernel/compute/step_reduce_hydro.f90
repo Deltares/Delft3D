@@ -48,6 +48,7 @@ contains
       use m_poshcheck
       use m_furu
       use m_flow ! when entering this subroutine, s1=s0, u1=u0, etc
+      use m_laterals, only: qlatwaq, qlatwaq0
       use precision, only: dp
       use m_flowgeom
       use Timers
