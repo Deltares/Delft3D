@@ -47,6 +47,7 @@ object LinuxTest : BuildType({
 
     vcs {
         root(DslContext.settingsRoot)
+        cleanCheckout = true
     }
 
     params {
