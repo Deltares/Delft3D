@@ -1011,9 +1011,9 @@
 
    if (intri == 1) then
       if ( jasfer3D == 0 ) then
-         call linear(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+         call interpolate_linear_in_triangle(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, JATEK, wf, dmiss, jsferic)
       else
-         call linear3D(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, jsferic, jasfer3D, dmiss)
+         call interpolate_linear_in_triangle_3D(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, jsferic, jasfer3D, dmiss)
       end if
       do k = 1,3
          ind(k) = indx(k,nrfind)
@@ -1093,7 +1093,7 @@
             ZT(idim,2) = ZS(idim,INDX(2,K))
             ZT(idim,3) = ZS(idim,INDX(3,K))
          end do
-         CALL LINEAR (XT, YT, ZT, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+         call interpolate_linear_in_triangle(XT, YT, ZT, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
          ind(1) = ik1
          ind(2) = ik2
          ind(3) = ik3
@@ -1112,7 +1112,7 @@
    END subroutine FINDTRI
 
 
-   subroutine LINEAR ( X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+   subroutine interpolate_linear_in_triangle( X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
    implicit none
    integer      , intent(in)    :: NDIM   !< sample vector dimension
    real(kind=hp), intent(in)    :: X(:),Y(:),Z(:,:)
@@ -1163,9 +1163,12 @@
 
    RLAM = ( A22 * B1  - A12 * B2) / DET
    RMHU = (-A21 * B1  + A11 * B2) / DET
+   RLAM = min(max(RLAM,0.0_hp),1.0_hp)
+   RMHU = min(max(RMHU,0.0_hp),1.0_hp-RLAM)
+
    wf(3) = rmhu
    wf(2) = rlam
-   wf(1) = 1d0 - rlam - rmhu
+   wf(1) = 1.0_hp - rlam - rmhu
 
    ZP   = Z(:,1) + RLAM * (Z(:,2) - Z(:,1)) + RMHU * (Z(:,3) - Z(:,1))
 
@@ -1199,9 +1202,9 @@
       end do
    endif
    return
-   end subroutine LINEAR
+   end subroutine interpolate_linear_in_triangle
 
-   subroutine linear3D(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, w, jsferic, jasfer3D, dmiss)
+   subroutine interpolate_linear_in_triangle_3D(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, w, jsferic, jasfer3D, dmiss)
       implicit none
 
       integer,                             intent(in)     :: NDIM       !< sample vector dimension
@@ -1248,15 +1251,15 @@
          A(1,:) = xx2-xx1
          A(2,:) = xx3-xx1
          A(3,:) = s123
-         rhs = 0d0   ! not used
+         rhs = 0_hp   ! not used
 
 !        compute inverse
          call gaussj(A,3,3,rhs,1,1)
 
 !        compute weights
-         w(2) = inprod(xxp-xx1, A(:,1))
-         w(3) = inprod(xxp-xx1, A(:,2))
-         w(1) = 1d0 - w(2) - w(3)
+         w(2) = min(max(inprod(xxp-xx1, A(:,1)), 0.0_hp), 1.0_hp)
+         w(3) = min(max(inprod(xxp-xx1, A(:,2)), 0.0_hp), 1.0_hp - w(2))
+         w(1) = 1.0_hp - w(2) - w(3)
 
       else
          !zp = DMISS
@@ -1275,7 +1278,7 @@
          zp(idim) = w(1) * z(idim,1) + w(2) * z(idim,2) + w(3) * z(idim,3)
       end do
 
-   end subroutine linear3D
+   end subroutine interpolate_linear_in_triangle_3D
 
    !---------------------------------------------------------------------------!
    !   nearest_neighbour
