@@ -1,0 +1,6 @@
+outs:
+- md5: c933bd732749ef545e9050d5e66b9923.dir
+  size: 635636
+  nfiles: 42
+  hash: md5
+  path: input

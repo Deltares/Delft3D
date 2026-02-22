@@ -1,0 +1,6 @@
+outs:
+- md5: 1f09268640dd254a853f5f9164454bf6.dir
+  size: 123871103
+  nfiles: 5
+  hash: md5
+  path: reference_win64

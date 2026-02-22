@@ -1,0 +1,6 @@
+outs:
+- md5: 27be0f3dac9beb800da59f750439f188.dir
+  size: 7077708
+  nfiles: 16
+  hash: md5
+  path: reference_lnx64

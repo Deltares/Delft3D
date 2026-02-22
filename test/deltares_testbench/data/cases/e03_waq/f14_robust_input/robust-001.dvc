@@ -1,0 +1,6 @@
+outs:
+- md5: 549800049b10a4c9311750a931372378.dir
+  size: 1973906
+  nfiles: 29
+  hash: md5
+  path: robust-001

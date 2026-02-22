@@ -1,0 +1,6 @@
+outs:
+- md5: 3a4f060788eaffc4586877a30901adab.dir
+  size: 5084193
+  nfiles: 37
+  hash: md5
+  path: reference_lnx64

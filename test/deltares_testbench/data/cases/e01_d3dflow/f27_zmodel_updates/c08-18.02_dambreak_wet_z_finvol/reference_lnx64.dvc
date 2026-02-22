@@ -1,0 +1,6 @@
+outs:
+- md5: 169af5a1d5419b38ab1d837c29beddad.dir
+  size: 1939130
+  nfiles: 11
+  hash: md5
+  path: reference_lnx64
