@@ -1927,14 +1927,7 @@ contains
             !
          end if
          ! write structured 3d time-dependant output data
-         work0 = dmiss ! For zws, can start at index 0 (kmx+1 vertical values)
-         do kk = 1, ndxi
-            call getkbotktop(kk, kb, kt)
-            call getlayerindices(kk, nlayb, nrlay)
-            do k = kb - 1, kt
-               work0(k - kb + nlayb, kk) = zws(k)
-            end do
-         end do
+         call flow_node_vector_to_matrix(zws, 1, ndxi, work0)
          ierr = nf90_put_var(imapfile, id_flowelemzw(iid), work0(0:kmx, 1:ndxi), [1, 1, itim], [kmx + 1, ndxi, 1])
 
          work1 = dmiss ! For zcc, can start at index 1 (kmx   vertical values)
