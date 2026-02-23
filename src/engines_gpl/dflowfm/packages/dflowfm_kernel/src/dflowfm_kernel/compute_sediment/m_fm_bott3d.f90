@@ -713,6 +713,7 @@ contains
                   wb1d = wu_mor(L)
 
                   ! Get Nodal Point Relation Data
+                  !V: move outside of j-loop, no data is passed to `get_noderel_idx`
                   nrd_idx = get_noderel_idx(inod, pFrac, pnod%gridnumber, branInIDLn(inod), pnod%numberofconnections)
 
                   pNodRel => pFrac%noderelations(nrd_idx)
@@ -760,7 +761,44 @@ contains
                            end if
 
                         elseif (pNodRel%Method == 'BollaPittaluga') then
+                            if (pnod%numberofconnections /= 3) then
+                                call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
+                            endif
+                            !
+                            !Find the link number of the outgoing branches.
+                            !Ouput: `link_out`
+                            !
+                            !One of the is the one we are processing (index `j`) 
+                            link_out(1)=nd(k3)%ln(j)
+                            !There must be another one whth direction -1 and different than `j`.
+                            j2 = -1
+                            do idx = 1, nd(k3)%lnx
+                               if (sb_dir(inod, ised, idx) == -1 .and. idx /= j) then
+                                  j2 = idx
+                                  exit
+                               end if
+                            end do
+                            if (j2 == -1) then
+                               call SetMessage(LEVEL_FATAL, 'There must be two outgoing branches for applying the nodal point relation by BollaPittaluga.')
+                            end if
+                            link_out(2)=nd(k3)%ln(j2)
+                            !
+                            !Get bed level of node downstream of the outgoing links.
+                            !Output: `bl_out`
+                            !
+                            bl_out=0.0_fp
+                            do kl=1,2 !loop on the two downstream links
+                            L2=nd(k3)%ln(j2)
+                            ln(:,L1)
+                            if (ln(1,L1) == k3) then
+                                other = ln(2,L1)
+                            else
+                                other = ln(1,L1)
+                            end if
+                            end do
                             
+                                
+                            e_sbcn(L,ised)
                         else
                            call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
                         end if
