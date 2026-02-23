@@ -134,7 +134,9 @@ contains
 
    !> Add a source-sink to the model.
    subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
-      use fm_external_forcings_data, only: num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, source_sink_indices, source_sink_z_bot, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_name
+      use fm_external_forcings_data, only: num_source_sink, source_sink_x, source_sink_y, source_sink_max_xy_points, &
+         source_sink_indices, source_sink_z_bot, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, &
+         source_sink_discharge_sine, source_sink_name
       use m_GlobalParameters, only: INDTP_ALL
 
       use messagehandling, only: msgbuf, warn_flush
@@ -169,7 +171,7 @@ contains
       ! set the coordinates of source/sink
       source_sink_x(num_source_sink, 1:num_points) = x_points(1:num_points)
       source_sink_y(num_source_sink, 1:num_points) = y_points(1:num_points)
-      source_sink_max_num_xy_points(num_source_sink) = num_points
+      source_sink_max_xy_points(num_source_sink) = num_points
       kk = 0
       kk2 = 0
 

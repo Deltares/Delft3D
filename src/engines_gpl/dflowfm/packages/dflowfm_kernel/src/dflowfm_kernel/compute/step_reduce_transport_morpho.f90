@@ -83,8 +83,8 @@ contains
       numnodneg = 0
       if (wrwaqon) then
          ! store current cumulative source_sink_water_discharge and qlat for waq at the beginning of this time step
-         if (allocated(source_sink_cum_discharge_waq)) then
-            source_sink_cum_discharge_waq_prev = source_sink_cum_discharge_waq
+         if (allocated(source_sink_cumulative_discharge_waq)) then
+            source_sink_cumulative_discharge_waq_previous = source_sink_cumulative_discharge_waq
          end if
          if (allocated(qlatwaq)) then
             qlatwaq0 = qlatwaq

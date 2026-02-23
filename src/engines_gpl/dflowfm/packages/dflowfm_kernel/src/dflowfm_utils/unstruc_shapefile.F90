@@ -1028,7 +1028,7 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use fm_external_forcings_data, only: source_sink_indices, num_source_sink, source_sink_x, source_sink_y, source_sink_max_num_xy_points, source_sink_name, source_sink_area, source_sink_discharge
+      use fm_external_forcings_data, only: source_sink_indices, num_source_sink, source_sink_x, source_sink_y, source_sink_max_xy_points, source_sink_name, source_sink_area, source_sink_discharge
       use m_flowgeom, only: xz, yz
       
       implicit none
@@ -1102,7 +1102,7 @@ contains
          if (k1 <= 0 .and. k2 <= 0) then ! if both points are not in the domain
             cycle
          else
-            maxnr = source_sink_max_num_xy_points(i)
+            maxnr = source_sink_max_xy_points(i)
             if (k1 > 0) then
                tmp_x(1) = xz(k1)
                tmp_y(1) = yz(k1)

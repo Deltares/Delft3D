@@ -221,7 +221,7 @@ contains
 
          if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
-            if (num_source_sink > 0 .and. source_sink_add_k_to_turkin == 1) then
+            if (num_source_sink > 0 .and. source_sink_add_k_to_turkin) then
                call doaddksources()
             end if
 

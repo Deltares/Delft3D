@@ -92,7 +92,7 @@ contains
          end if
          k = source_sink_indices(4, n)
          if (k /= 0) then
-            n2 = source_sink_max_num_xy_points(n)
+            n2 = source_sink_max_xy_points(n)
             xp = source_sink_x(n, n2)
             yp = source_sink_y(n, n2)
             if (inview(xp, yp)) then
