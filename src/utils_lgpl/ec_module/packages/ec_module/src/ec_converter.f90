@@ -42,7 +42,7 @@ module m_ec_converter
    use time_class
    use, intrinsic :: ieee_arithmetic
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -312,11 +312,10 @@ contains
    !> Update the weight factors of a Converter.
    function ecConverterUpdateWeightFactors(instancePtr, connection) result(success)
       use kdtree2Factory
-      use m_ec_basic_interpolation
       use m_alloc
       use ieee_arithmetic, only: ieee_is_nan
       use m_ec_triangle, only: jagetwf, indxx, wfxx
-      use m_ec_basic_interpolation, only: triinterp2
+      use m_ec_basic_interpolation, only: triinterp2, nearest_neighbour
       use m_ec_parameters, only: ec_undef_hp
       implicit none
       logical :: success !< function status
@@ -2838,7 +2837,7 @@ contains
             sourceMissing = sourceItem%quantityPtr%fillvalue
             sourceElementSet => sourceItem%elementSetPtr
             time_interpolation = sourceItem%quantityptr%timeint
-            has_harmonics = associated(sourceItem%hframe)
+            has_harmonics = allocated(sourceItem%hframe)
 
             indexWeight => connection%converterPtr%indexWeight
 
@@ -2856,11 +2855,37 @@ contains
                t0 = sourceT0Field%timesteps
                t1 = sourceT1Field%timesteps
 
-               call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
+               ! Check if this is harmonic data
+               if (has_harmonics) then
+                  ! Evaluate harmonics at source sample points
+                  omega = 2.0_dp * PI / sourceItem%hframe%ec_period
+                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_dp
+                  
+                  ! Loop over all source sample points and evaluate harmonic function
+                  do ipt = 1, n_cols
+                     amplitude = sourceT1Field%arr1d(ipt)
+                     phase0 = sourceItem%hframe%phases(ipt, 1)  ! Linear indexing: phases(point, 1)
+                     
+                     if (comparereal(amplitude, sourceMissing, .true.) == 0 .or. &
+                         comparereal(phase0, sourceMissing, .true.) == 0) then
+                        sourceT0Field%arr1d(ipt) = sourceMissing
+                     else
+                        sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                     end if
+                  end do
+                  
+                  ! Set time weights: use evaluated harmonic values (T0), no interpolation needed
+                  a0 = 1.0_dp
+                  a1 = 0.0_dp
+               else
+                  ! Normal time interpolation for time-series data
+                  call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
+               end if
+
                if (n_layers == 0) then
                   do j = 1, n_points
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
-                         (connection%converterPtr%operandType == operand_replace_if_value)) then ! Dit hoort in de loop beneden per target gridpunt!
+                         (connection%converterPtr%operandType == operand_replace_if_value)) then
                         targetValues(j) = 0.0_dp
                      end if
                      do i_weight_index = 1, size(indexWeight%indices, 1)

@@ -368,7 +368,7 @@ module m_ec_filereader
                qname = fileReaderPtr%items(1)%ptr%quantityPtr%name
                call str_lower(qname)
                itemPtr => fileReaderPtr%items(1)%ptr
-               if (associated(itemPtr%hframe)) then
+               if (allocated(itemPtr%hframe)) then
                   ! This is a harmonics file, read all the variable values because we actually don't have time steps.
                   success = ecNetcdfReadVariable(fileReaderPtr, itemPtr)
                else
@@ -579,7 +579,7 @@ module m_ec_filereader
                end select
             endif
             itemPtr%tframe => fileReaderPtr%tframe
-            itemPtr%hframe => fileReaderPtr%hframe
+            itemPtr%hframe = fileReaderPtr%hframe
             success = .true.
          end if
       end function ecFileReaderAddItem

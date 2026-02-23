@@ -349,7 +349,7 @@ module m_ec_typedefs
       type(tEcItemPtr), dimension(:), pointer :: items => null() !< items to be updated by this fileReader, stored in tEcInstance%ecItemsPtr
       integer :: nItems !< Number of items <= size(items)
       type(tEcTimeFrame), pointer :: tframe => null() !< TimeFrame at which data is available
-      type(tEcHarmonicsFrame), pointer :: hframe => null() !< Harmonics frame
+      type(tEcHarmonicsFrame), allocatable :: hframe !< Harmonics frame
       real(hp) :: lastReadTime
       type(tEcBCBlock), pointer :: bc => null() !< BC-fileheader information
       integer :: vectormax = 1 !< number of vector elements (from the demand side)
@@ -391,7 +391,7 @@ module m_ec_typedefs
       type(tEcTimeseries), allocatable :: timeseries !< Information supporting rewinding of a read timeseries
       type(tEcConnectionPtr), dimension(:), pointer :: connectionsPtr => null() !< Connections in which this Item is a target Item
       type(tEcTimeFrame), pointer :: tframe => null() !< TimeFrame at which data is available
-      type(tEcHarmonicsFrame), pointer :: hframe => null() !< Harmonics frame
+      type(tEcHarmonicsFrame), allocatable :: hframe !< Harmonics frame
       integer :: nConnections !< Number of Connections <= size(connectionsPtr)
 
    end type tEcItem

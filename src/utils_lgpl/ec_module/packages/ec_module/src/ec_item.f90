@@ -563,7 +563,7 @@ module m_ec_item
          ! Update all source Items which belong to the found FileReader, if associated .
          if (associated(fileReaderPtr)) then
             if (.not. fileReaderPtr%end_of_data) then
-               if (associated(item%hframe)) then
+               if (allocated(item%hframe)) then
                   ! Read and remap source amplitudes (Time input will be ignored)
                   success = ecFileReaderReadNextRecord(fileReaderPtr, timesteps%mjd())
                else
