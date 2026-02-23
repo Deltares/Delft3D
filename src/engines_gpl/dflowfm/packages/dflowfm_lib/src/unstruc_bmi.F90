@@ -3627,8 +3627,7 @@ contains
       if (netstat /= NETSTAT_OK) then
          call findcells(0)
       end if
-      call output_mask_full%create_mask_arrays() ! Make sure output_mask_full is up to date with the current network, so that unc_write_net writes the correct variables.
-      call unc_write_net(netgeom_file, output_mask_full, janetcell=1, janetbnd=0, jaidomain=0, jaiglobal_s=0, iconventions=2)
+      call unc_write_net(netgeom_file, janetcell=1, janetbnd=0, jaidomain=0, jaiglobal_s=0, iconventions=2)
    end subroutine write_netgeom
 
    subroutine write_partition_metis(c_netfile_in, c_netfile_out, c_npart, c_jacontiguous) bind(C, name="write_partition_metis")

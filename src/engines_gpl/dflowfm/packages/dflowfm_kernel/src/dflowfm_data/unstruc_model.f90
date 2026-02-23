@@ -1950,9 +1950,9 @@ contains
       call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
       call prop_get(md_ptr, 'output', 'mapMaskFile', output_mask_map%filename, success)
       if (success) then
-         output_mask_map%is_defined = .true.
+         output_mask_map%is_polygon_file_defined = .true.
       else
-         output_mask_map%is_defined = .false.
+         output_mask_map%is_polygon_file_defined = .false.
       end if
 
       ti_map_array = 0.0_dp

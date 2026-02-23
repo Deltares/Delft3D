@@ -251,8 +251,7 @@ contains
 !      save network
             select case (ibedlevtyp)
             case (3, 4, 5, 6) ! primitime position = netnode, cell corner
-               call output_mask_full%create_mask_arrays() ! Make sure output_mask_full is up to date with the current network, so that unc_write_net writes the correct variables.
-               call unc_write_net('DFM_interpreted_network_'//trim(md_ident)//'_net.nc', output_mask_full)
+               call unc_write_net('DFM_interpreted_network_'//trim(md_ident)//'_net.nc')
             end select
          end if
 

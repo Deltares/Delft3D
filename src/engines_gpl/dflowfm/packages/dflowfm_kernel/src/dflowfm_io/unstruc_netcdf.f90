@@ -10166,9 +10166,8 @@ contains
 
 !> Writes the unstructured net to a netCDF file.
 !! If file exists, it will be overwritten.
-   subroutine unc_write_net(filename, output_mask, janetcell, janetbnd, jaidomain, jaiglobal_s, iconventions, md_ident)
+   subroutine unc_write_net(filename, janetcell, janetbnd, jaidomain, jaiglobal_s, iconventions, md_ident)
       character(len=*), intent(in) :: filename !< output filename
-      type(t_variables_inside_polygon), intent(inout) :: output_mask !< Mask for output variables
       integer, optional, intent(in) :: janetcell !< write additional network cell information (1) or not (0). Default: 0.
       integer, optional, intent(in) :: janetbnd !< write additional network boundary information (1) or not (0). Default: 0.
       integer, optional, intent(in) :: jaidomain !< write subdomain numbers (1) or not (0, default)
@@ -10216,7 +10215,8 @@ contains
             meta%modelname = md_ident
          end if
          ierr = ug_addglobalatts(mapids%ncid, meta)
-         call unc_write_net_ugrid2(mapids%ncid, mapids%id_tsp, output_mask, janetcell=janetcell_loc, jaidomain=jaidomain_loc, jaiglobal_s=jaiglobal_s_loc)
+         call output_mask_full%create_mask_arrays()
+         call unc_write_net_ugrid2(mapids%ncid, mapids%id_tsp, output_mask_full, janetcell=janetcell_loc, jaidomain=jaidomain_loc, jaiglobal_s=jaiglobal_s_loc)
       else
          call unc_write_net_filepointer(inetfile, janetcell=janetcell_loc, janetbnd=janetbnd_loc, jaidomain=jaidomain_loc, jaiglobal_s=jaiglobal_s_loc)
       end if

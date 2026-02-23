@@ -52,19 +52,19 @@ module m_output_to_polygon
    !! @ingroup output_to_polygon
    type, public :: t_variables_inside_polygon
       character(len=idLen) :: filename !< Polygon file name.
-      logical :: is_defined !< Flag indicating if there is an output polygon defined.
-      integer, allocatable, dimension(:) :: cell_indices !< Indices of cells inside polygon.
-      integer, allocatable, dimension(:) :: cells_mask !< Mask array for cells. (0 = outside polygon, otherwise local cell index)
+      logical :: is_polygon_file_defined !< Flag indicating if there is an output polygon defined.
+      integer, allocatable, dimension(:) :: cell_indices !< Global indices of cells inside the polygon.
+      integer, allocatable, dimension(:) :: cells_mask !< Mask array for global cells. (0 = outside polygon, otherwise local cell index)
 
-      integer, allocatable, dimension(:) :: link_indices !< Indices of links inside polygon.
-      integer, allocatable, dimension(:) :: links_mask !< Mask array for links. (0 = outside polygon, otherwise local link index)
+      integer, allocatable, dimension(:) :: link_indices !< Global indices of links inside the polygon.
+      integer, allocatable, dimension(:) :: links_mask !< Mask array for global links. (0 = outside polygon, otherwise local link index)
       integer, allocatable, dimension(:, :) :: link_to_nodes !< Link to node connectivity.
 
-      integer, allocatable, dimension(:) :: netnodes_mask !< Mask array for net nodes (0 = outside polygon, otherwise local net node index)
-      integer, allocatable, dimension(:) :: netnode_indices !< Indices of network nodes inside polygon
+      integer, allocatable, dimension(:) :: netnodes_mask !< Mask array for global net nodes (0 = outside polygon, otherwise local net node index)
+      integer, allocatable, dimension(:) :: netnode_indices !< Global indices of network nodes inside polygon
 
-      integer, allocatable, dimension(:) :: netlink_indices !< Indices of network links inside polygon
-      integer, allocatable, dimension(:) :: netlinks_mask !< Mask array for network links, (0 = outside polygon, otherwise local netlink index)
+      integer, allocatable, dimension(:) :: netlink_indices !< Global indices of network links inside polygon
+      integer, allocatable, dimension(:) :: netlinks_mask !< Mask array for global network links, (0 = outside polygon, otherwise local netlink index)
       integer, allocatable, dimension(:, :) :: netlink_to_netnodes !< Network link to node connectivity
 
       integer :: ndx !< Number of flow cells inside polygon
@@ -93,8 +93,8 @@ module m_output_to_polygon
       !> @brief Find cells inside polygon boundary
       !! @details Determines which flow cells are located within the specified
       !! polygon region and creates appropriate mask arrays
+      
       procedure :: findcells_inside_polygon => findcells_inside_polygon_impl
-
       !> @brief Count 2D network nodes inside polygon
       !! @details Counts the number of 2D network nodes that fall within
       !! the polygon boundary

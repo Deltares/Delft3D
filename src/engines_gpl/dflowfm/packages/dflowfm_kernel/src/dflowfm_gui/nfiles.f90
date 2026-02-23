@@ -552,10 +552,10 @@ contains
                      call NEWFIL(MTEK, filnam)
                      call WRINET(MTEK)
                   else
-                     call unc_write_net(filnam, output_mask_full, janetcell=0, janetbnd=0)
+                     call unc_write_net(filnam, janetcell=0, janetbnd=0)
                   end if
                else if (nwhat == 22) then ! _net.nc with extra cell info (for example necessary for Baseline/Bas2FM input)
-                  call unc_write_net(filnam, output_mask_full, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
+                  call unc_write_net(filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
                end if
                call MESSAGE('YOU SAVED ', filnam, ' ')
                md_netfile = ' '
