@@ -1080,10 +1080,10 @@ contains
 !> Apply Coriolis correction for a single link
 !! This elemental function will be inlined to allow vectorization by the compiler
    elemental function calculate_coriolis_force_spherical(fcor_1, fcor_2, &
-                                               acL_L, csu_L, snu_L, &
-                                               ucxq_1_L, ucyq_1_L, ucxq_2_L, ucyq_2_L, &
-                                               csb_1_L, snb_1_L, csb_2_L, snb_2_L, &
-                                               hmin_L, trshcorio) result(fvcor)
+                                                         acL_L, csu_L, snu_L, &
+                                                         ucxq_1_L, ucyq_1_L, ucxq_2_L, ucyq_2_L, &
+                                                         csb_1_L, snb_1_L, csb_2_L, snb_2_L, &
+                                                         hmin_L, trshcorio) result(fvcor)
 
       real(dp), intent(in) :: fcor_1 !< Coriolis parameter at node 1
       real(dp), intent(in) :: fcor_2 !< Coriolis parameter at node 2
@@ -1121,7 +1121,7 @@ contains
    elemental function calculate_coriolis_force(fcor_1, fcor_2, &
                                                acL_L, csu_L, snu_L, &
                                                ucxq_1_L, ucyq_1_L, ucxq_2_L, ucyq_2_L, &
-                                                hmin_L, trshcorio) result(fvcor)
+                                               hmin_L, trshcorio) result(fvcor)
 
       real(dp), intent(in) :: fcor_1 !< Coriolis parameter at node 1
       real(dp), intent(in) :: fcor_2 !< Coriolis parameter at node 2
