@@ -22,7 +22,7 @@ examples in the [configs](./configs/) directory).
 This document describes how to perform some common tasks with test case data,
 such as:
 - Downloading the input files of one or several test cases.
-- Updating the input files or reference files of a test case.
+- Updating the input files or reference files of one or several test cases.
 - Uploading input data for an entirely new test case.
 
 This document does not contain any information about config files for 
@@ -402,6 +402,13 @@ Delft3D repository). This is your local copy of the DVC index. It can be safely 
 DVC can recover it by pulling files from the remote index.
 
 ## HOW TO: See the changes to the test case data between different commits
+
+> [!WARNING]
+> Users of `cmd.exe` be warned: We have noticed that the `dvc diff` command does not
+> generate correct results when invoked with `cmd.exe`. For now we advise Windows
+> users to use `powershell` instead when working with `dvc`. A work-around for people
+> who would like to keep using `cmd.exe`: You can invoke the commands through
+> powershell like this: `powershell -c "dvc diff [arguments...]"`
 
 You can use `dvc diff` to inspect the changed files in the test case data between
 any two `git` commits. First make sure you have the most recent `git` commits stored
