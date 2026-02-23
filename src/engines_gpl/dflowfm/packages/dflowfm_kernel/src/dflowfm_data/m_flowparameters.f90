@@ -283,7 +283,6 @@ module m_flowparameters
    integer :: keepzlay1bedvol = 0 !< 1=: Correct bed volumes for keepzlayeringatbed=1
    !< 0=: default, consistent volumes transport and baroclinic terms
    real(kind=dp) :: cflmx !< max Courant nr ()
-   real(kind=dp) :: cflw !< wave velocity fraction, total courant vel = u + cflw*wavevelocity
    real(kind=dp) :: teta0 !< 1.00d0   ! .52      ! uniform teta in horizontal (),
    integer :: ivariableteta !< 0=fully implicit,   1=teta constant,        2=variable teta
                                                         !! (set teta=1.0)      (set teta=0.51->0.99)   (set teta<0)
@@ -843,7 +842,6 @@ contains
       jasourcesink = 1
 
       cflmx = 0.7_dp ! max Courant nr ()
-      cflw = 0.1_dp ! wave velocity fraction, total courant vel = u + cflw*wavevelocity
       teta0 = 0.55_dp ! 1.00d0   ! .52      ! uniform teta in horizontal (),
       ivariableteta = 0 ! 0=fully implicit,   1=teta constant,        2=variable teta
       ! (set teta=1.0)      (set teta=0.51->0.99)   (set teta<0)
