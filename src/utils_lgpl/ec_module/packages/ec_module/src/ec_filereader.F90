@@ -579,7 +579,9 @@ module m_ec_filereader
                end select
             endif
             itemPtr%tframe => fileReaderPtr%tframe
-            itemPtr%hframe = fileReaderPtr%hframe
+            if (allocated(fileReaderPtr%hframe)) then
+               itemPtr%hframe = fileReaderPtr%hframe
+            end if
             success = .true.
          end if
       end function ecFileReaderAddItem

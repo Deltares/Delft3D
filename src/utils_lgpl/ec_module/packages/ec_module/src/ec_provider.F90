@@ -2763,14 +2763,18 @@ contains
             end do
 
             ! Dimensions ID's and dimension lengths of the THIRD coordinate variable
-            if (crd_dimids(idims, 3) == 0) then
-               crd_dimlen(:, 3) = 0
-            else
+            if (tgd_id > 0) then
                ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, tgd_id, ndims=ndims)
-               ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, tgd_id, dimids=crd_dimids(1:ndims, 3)) ! count dimensions of the first coordinate variable
-               do idims = 1, ndims
-                  crd_dimlen(idims, 3) = fileReaderPtr%dim_length(crd_dimids(idims, 3))
-               end do
+               if (ndims > 0) then
+                  ierror = nf90_inquire_variable(fileReaderPtr%fileHandle, tgd_id, dimids=crd_dimids(1:ndims, 3))
+                  do idims = 1, ndims
+                     crd_dimlen(idims, 3) = fileReaderPtr%dim_length(crd_dimids(idims, 3))
+                  end do
+               else
+                  crd_dimlen(:, 3) = 0
+               end if
+            else
+               crd_dimlen(:, 3) = 0
             end if
 
             ! Check if the dimension(sizes) of the 1st and 2nd coordinate variable agree
@@ -3566,7 +3570,7 @@ contains
 
       if (.not. success) then
          call setECMessage('ERROR: ec_provider::ecNetcdfInitializeHarmonicsFrame: Failed to initialize harmonics frame.')
-         
+
       end if
    end function ecNetcdfInitializeHarmonicsFrame
 
