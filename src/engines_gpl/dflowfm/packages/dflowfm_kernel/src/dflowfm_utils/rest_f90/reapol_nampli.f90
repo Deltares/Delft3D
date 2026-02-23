@@ -42,7 +42,7 @@ contains
       !! A dmiss line starts a new polyline without a name. Multiple dmiss lines are skipped.
    module subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
       use precision, only: dp
-      use m_polygon, only: xpl, ypl, zpl, npl, nampli, jakol45, increasepol, dzl, maxpol, dzr, iweirt, dcrest, dtl, dtr, dveg
+      use m_polygon, only: xpl, ypl, zpl, npl, colpl, nampli, jakol45, increasepol, dzl, maxpol, dzr, iweirt, dcrest, dtl, dtr, dveg
       use m_alloc, only: realloc
       use m_readyy, only: readyy
       use m_qnerror, only: qnerror
@@ -76,6 +76,7 @@ contains
          YPL = XYMIS
          ZPL = XYMIS
          NPL = 0
+         colpl = 0
          call realloc(nampli, 20, keepExisting=.false., fill=' ')
       end if
 
@@ -87,6 +88,7 @@ contains
       end if
       read (MPOL, '(A)', end=999) REC
       read (REC, *, iostat=ierr) NROW, NKOL
+      colpl = nkol
       if (ierr /= 0) then
          goto 888
       end if

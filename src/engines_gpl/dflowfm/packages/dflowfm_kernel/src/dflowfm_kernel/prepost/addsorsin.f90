@@ -50,7 +50,7 @@ contains
    subroutine addsorsin_from_polyline_file(polyline_file, name, z_source, z_sink, area, ierr)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_filez, only: oldfil
-      use m_polygon, only: xpl, ypl, zpl, npl, dzL
+      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
       use m_reapol, only: reapol
       use system_utils, only: split_filename
       use MessageHandling, only: IDLEN
@@ -79,7 +79,7 @@ contains
          return
       end if
 
-      have_z_range = allocated(dzl) .and. size(dzl) >= npl
+      have_z_range = colpl > 3
       if (have_z_range) then
          z_size = 2
       else
