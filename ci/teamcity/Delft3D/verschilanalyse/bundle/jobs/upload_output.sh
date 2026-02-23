@@ -10,7 +10,7 @@
 
 set -eo pipefail
 
-if ! util.check_vars_are_set BUCKET CURRENT_PREFIX VAHOME; then
+if ! util.check_vars_are_set BUCKET CURRENT_PREFIX VAHOME MODELS_PATH; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -40,7 +40,7 @@ rm -rf "$TMP_ARCHIVE_DIR"
 mkdir -p "$TMP_ARCHIVE_DIR"
 
 # Archive all output per individual (non-empty) model directory.
-find "${VAHOME}/input" -mindepth 1 -maxdepth 1 -type d '!' -empty -print0 |
+find "${VAHOME}/${MODELS_PATH}" -mindepth 1 -maxdepth 1 -type d '!' -empty -print0 |
     xargs -0 -P8 -I'{}' bash -c 'zip_output "{}"'
 
 # Upload the archives to MinIO.

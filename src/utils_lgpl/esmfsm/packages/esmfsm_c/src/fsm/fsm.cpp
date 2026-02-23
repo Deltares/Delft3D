@@ -130,7 +130,7 @@ InitProcess (
 static void
 SetError (
     int     thid,
-    char *  message,
+    const char *  message,
     ...
     );
 
@@ -729,7 +729,7 @@ InitProcess (
 void
 SetError (
     int     thid,
-    char *  message,
+    const char *  message,
     ...
     ) {
 
