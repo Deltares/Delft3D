@@ -3563,11 +3563,11 @@ contains
 
       ! Store with correct orientation
       hframe%phase_dims = merge([dim_sizes(2), dim_sizes(1)], dim_sizes, is_column_major)
-
-      allocate (hframe%phases(hframe%phase_dims(1), hframe%phase_dims(2)), stat=istat)
-
-      hframe%phases = merge(transpose(data_block), data_block, is_column_major)
-
+      if (is_column_major) then
+         hframe%phases = transpose(data_block)
+      else
+         hframe%phases = data_block
+      end if
       if (.not. success) then
          call setECMessage('ERROR: ec_provider::ecNetcdfInitializeHarmonicsFrame: Failed to initialize harmonics frame.')
 
