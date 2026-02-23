@@ -43,7 +43,7 @@ contains
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
       use precision, only: dp
-      use m_flow, only: source_sink_reduction, num_source_sink, source_sink_indices, source_sink_water_discharge, source_sink_discharge, kmx, source_sink_z_bot, dmiss, zws, source_sink_z_top, vol1, source_sink_extraction_warning, source_sink_constituents, qin, epshs, source_sink_name
+      use m_flow, only: source_sink_reduction, num_source_sink, source_sink_indices, source_sink_water_discharge, source_sink_all_discharges, kmx, source_sink_z_bottom, dmiss, zws, source_sink_z_top, vol1, source_sink_extraction_warning, source_sink_constituents, qin, epshs, source_sink_name
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
@@ -58,16 +58,16 @@ contains
       do n = 1, num_source_sink
          kk = source_sink_indices(1, n) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
          kk2 = source_sink_indices(4, n) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
-         source_sink_water_discharge(n) = source_sink_discharge(1, n)
+         source_sink_water_discharge(n) = source_sink_all_discharges(1, n)
          if (kk > 0) then ! FROM point
             if (kmx > 0) then
                call getkbotktop(kk, kb, kt)
-               if (source_sink_z_bot(1, n) == dmiss) then
+               if (source_sink_z_bottom(1, n) == dmiss) then
                   k = kb
                   ku = kt
                else
                   do k = kb, kt
-                     if (zws(k) > source_sink_z_bot(1, n) .or. k == kt) then
+                     if (zws(k) > source_sink_z_bottom(1, n) .or. k == kt) then
                         exit
                      end if
                   end do
@@ -119,12 +119,12 @@ contains
          if (kk2 > 0) then ! TO point
             if (kmx > 0) then
                call getkbotktop(kk2, kb, kt)
-               if (source_sink_z_bot(2, n) == dmiss) then
+               if (source_sink_z_bottom(2, n) == dmiss) then
                   k = kb
                   ku = kt
                else
                   do k = kb, kt
-                     if (zws(k) > source_sink_z_bot(2, n) .or. k == kt) then
+                     if (zws(k) > source_sink_z_bottom(2, n) .or. k == kt) then
                         exit
                      end if
                   end do
@@ -182,9 +182,9 @@ contains
 
       source_sink_extraction_warning = 0
       do n = 1, num_source_sink
-         source_sink_water_discharge(n) = source_sink_discharge(1, n)
+         source_sink_water_discharge(n) = source_sink_all_discharges(1, n)
          do L = 1, numconst
-            source_sink_constituents(L, n) = source_sink_discharge(L + 1, n)
+            source_sink_constituents(L, n) = source_sink_all_discharges(L + 1, n)
          end do
 
          kk = source_sink_indices(1, n) ! 2D pressure cell nr

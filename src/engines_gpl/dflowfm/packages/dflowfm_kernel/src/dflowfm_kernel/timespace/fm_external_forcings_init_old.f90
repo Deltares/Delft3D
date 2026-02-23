@@ -1245,7 +1245,7 @@ contains
                   success = .false.
                else
                   success = .true.
-                  num_source_sink_old = num_source_sink_old + 1
+                  num_source_sink_oldfile = num_source_sink_oldfile + 1
                end if
 
                ! 2. Time series hookup is done below, once counting of all num_source_sink is done.
@@ -1951,8 +1951,8 @@ contains
          end do
       end if
 
-      if (num_source_sink_old > 0) then
-         if (num_source_sink_old /= num_source_sink) then
+      if (num_source_sink_oldfile > 0) then
+         if (num_source_sink_oldfile /= num_source_sink) then
             call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
          end if
          ja = 1
@@ -1973,7 +1973,7 @@ contains
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = ..
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
-                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_discharge on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
+                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
                   call clearECMessage()
                   if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=num_source_sink)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &

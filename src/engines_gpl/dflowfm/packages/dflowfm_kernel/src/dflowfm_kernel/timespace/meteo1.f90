@@ -7078,14 +7078,14 @@ contains
          dataPtr1 => nudge_temperature
       case ('discharge_salinity_temperature_sorsin')
          itemPtr1 => item_discharge_salinity_temperature_sorsin
-         ! Do not point to array source_sink_discharge here.
-         ! source_sink_discharge might be reallocated after initialization (when coupled to Cosumo)
+         ! Do not point to array source_sink_all_discharges here.
+         ! source_sink_all_discharges might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
          nullify (dataPtr1)
       case ('sourcesink_discharge')
          itemPtr1 => item_sourcesink_discharge
-         ! Do not point to array source_sink_discharge here.
-         ! source_sink_discharge might be reallocated after initialization (when coupled to Cosumo)
+         ! Do not point to array source_sink_all_discharges here.
+         ! source_sink_all_discharges might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
          nullify (dataPtr1)
       case ('bubblescreen_discharge')
@@ -7099,8 +7099,8 @@ contains
             iconst = find_name(const_names, constituent_name)
          end if
          itemPtr1 => item_sourcesink_constituent_delta(iconst)
-         ! Do not point to array source_sink_discharge here.
-         ! source_sink_discharge might be reallocated after initialization (when coupled to Cosumo)
+         ! Do not point to array source_sink_all_discharges here.
+         ! source_sink_all_discharges might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
          nullify (dataPtr1)
       case ('hrms', 'wavesignificantheight')

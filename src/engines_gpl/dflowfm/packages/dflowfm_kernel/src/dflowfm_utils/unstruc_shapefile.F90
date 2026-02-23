@@ -1028,7 +1028,8 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use fm_external_forcings_data, only: source_sink_indices, num_source_sink, source_sink_x, source_sink_y, source_sink_max_xy_points, source_sink_name, source_sink_area, source_sink_discharge
+      use fm_external_forcings_data, only: source_sink_indices, num_source_sink, source_sink_x, source_sink_y, &
+         source_sink_max_xy_points, source_sink_name, source_sink_area, source_sink_all_discharges
       use m_flowgeom, only: xz, yz
       
       implicit none
@@ -1148,7 +1149,7 @@ contains
             end if
 
             ! determine source and sink points
-            if (source_sink_discharge(1, i) > 0) then
+            if (source_sink_all_discharges(1, i) > 0) then
                snkx = source_sink_x(i, 1)
                snky = source_sink_y(i, 1)
                srcx = source_sink_x(i, maxnr)

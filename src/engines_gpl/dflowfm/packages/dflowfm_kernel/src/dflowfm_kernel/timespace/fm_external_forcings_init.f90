@@ -971,7 +971,7 @@ contains
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use fm_external_forcings_data, only: num_source_sink, source_sink_discharge
+      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
@@ -1072,7 +1072,7 @@ contains
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
       is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), num_source_sink, &
-                                                    1, source_sink_discharge(1, :))
+                                                    1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
@@ -1117,7 +1117,7 @@ contains
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
                is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), num_source_sink, &
-                                                              1, source_sink_discharge(1 + i_const, :))
+                                                              1, source_sink_all_discharges(1 + i_const, :))
                continue
             end if
          end do

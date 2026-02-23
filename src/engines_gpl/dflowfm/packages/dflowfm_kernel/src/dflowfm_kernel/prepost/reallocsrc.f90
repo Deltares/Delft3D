@@ -46,9 +46,9 @@ contains
       use m_transport, only: NUMCONST
       use fm_external_forcings_data, only: source_sink_indices, max_source_sink_polyline_points, source_sink_x, &
          source_sink_y, source_sink_water_discharge, dp, source_sink_constituents, source_sink_area, & 
-         source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bot, source_sink_z_top, source_sink_reduction, &
-         source_sink_extraction_warning, source_sink_discharge, source_sink_name, source_sink_max_xy_points, &
-         source_sink_average_discharge_prev, source_sink_cumulative_volume, source_sink_cumulative_volume_previous
+         source_sink_discharge_cosine, source_sink_discharge_sine, source_sink_z_bottom, source_sink_z_top, source_sink_reduction, &
+         source_sink_extraction_warning, source_sink_all_discharges, source_sink_name, source_sink_max_xy_points, &
+         source_sink_average_discharge_previous, source_sink_cumulative_volume, source_sink_cumulative_volume_previous
       use m_alloc, only: realloc
       use m_missing, only: dmiss
 
@@ -78,14 +78,14 @@ contains
          call realloc(source_sink_area, new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_discharge_cosine, [2, new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_discharge_sine, [2, new_size_src], keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_z_bot, [2, new_size_src], keepExisting=.true., fill=dmiss)
+         call realloc(source_sink_z_bottom, [2, new_size_src], keepExisting=.true., fill=dmiss)
          call realloc(source_sink_z_top, [2, new_size_src], keepExisting=.true., fill=dmiss)
          call realloc(source_sink_reduction, [2 * (numconst + 1), new_size_src], keepExisting=.true.)
          call realloc(source_sink_extraction_warning, new_size_src, keepExisting=.true.)
-         call realloc(source_sink_discharge, [(numconst + 1), new_size_src], keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_all_discharges, [(numconst + 1), new_size_src], keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_name, new_size_src, keepExisting=.true., fill=' ')
          call realloc(source_sink_max_xy_points, new_size_src, keepExisting=.true., fill=0)
-         call realloc(source_sink_average_discharge_prev, new_size_src, keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_average_discharge_previous, new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_cumulative_volume, new_size_src, keepExisting=.true., fill=0.0_dp)
          call realloc(source_sink_cumulative_volume_previous, new_size_src, keepExisting=.true., fill=0.0_dp)
       end if
