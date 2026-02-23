@@ -71,7 +71,7 @@ program unstruc
                             md_epscg, md_convnetcells, md_netfile, md_jasavenet, md_jamake1d2dlinks, md_japartition, md_partugrid, md_ident, md_ndomains, &
                             md_jacontiguous, md_pmethod, md_genpolygon, md_partseed, md_restartfile, md_mapfile, md_classmap_file, md_flowgeomfile, md_partitionfile, &
                             md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts, md_numthreads
-   use unstruc_netcdf, only: unc_conv_ugrid, level_info, unc_write_net, output_mask_full
+   use unstruc_netcdf, only: unc_conv_ugrid, level_info, unc_write_net
    use unstruc_api, only: flow
    use messagehandling, only: warn_flush, msgbuf, mess, msg_flush
    use unstruc_display, only: jagui, ntek
@@ -240,7 +240,7 @@ program unstruc
       ! read net, write net ... md_netfile
       call findcells(0)
       call find1dcells()
-      call unc_write_net(md_netfile, output_mask_full, janetcell=1, janetbnd=0, jaidomain=0)
+      call unc_write_net(md_netfile, janetcell=1, janetbnd=0, jaidomain=0)
       goto 1234
    end if
 
@@ -251,7 +251,7 @@ program unstruc
          call warn_flush()
          goto 1234
       end if
-      call unc_write_net(iarg_outfile, output_mask_full, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+      call unc_write_net(iarg_outfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
       write (msgbuf, '(a)') 'Network was saved in latest format into '''//trim(iarg_outfile)//'''. Done.'
       call msg_flush()
       goto 1234
@@ -269,7 +269,7 @@ program unstruc
       if (len_trim(iarg_outfile) == 0) then
          iarg_outfile = md_netfile ! Overwrite existing file.
       end if
-      call unc_write_net(iarg_outfile, output_mask_full, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+      call unc_write_net(iarg_outfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
       goto 1234
    end if
 
@@ -348,7 +348,7 @@ program unstruc
    if (md_jagridgen == 1) then
       call makenet(0)
       call gridtonet()
-      call unc_write_net('out_net.nc', output_mask_full)
+      call unc_write_net('out_net.nc')
       goto 1234
    end if
 
@@ -361,7 +361,7 @@ program unstruc
       n12 = 3
       call findcells(0)
       call cutcell_list(n12, 0)
-      call unc_write_net('out_net.nc', output_mask_full)
+      call unc_write_net('out_net.nc')
    end if
 
    if (jagui == 1 .and. len_trim(md_cfgfile) > 0) then

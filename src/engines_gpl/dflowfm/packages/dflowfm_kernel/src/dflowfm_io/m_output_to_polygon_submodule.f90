@@ -91,7 +91,7 @@ contains
       call allocate_arrays(this)
       this%cells_mask = 0
 
-      if (.not. this%is_defined) then
+      if (.not. this%is_polygon_file_defined) then
          ! Set to defaults.
          this%cell_indices = [(k, k=1, ndx)]
          this%cells_mask = [(k, k=1, ndx)]
@@ -509,7 +509,7 @@ contains
          index_array => this%netnode_indices
       end select
 
-      if (this%is_defined) then
+      if (this%is_polygon_file_defined) then
          ! Fill the remapped array using the cell indices
          remapped_array => values(1:end_index - start_index + 1)
          do i = 0, end_index - start_index
