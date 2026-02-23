@@ -1442,29 +1442,6 @@ contains
 
    end function unc_put_att_map_char
 
-! TODO: AvD: support integer/other data types
-! TODO: AvD: support in/exclude boundary points/links
-
-!> Writes a map field of a flow variable to a NetCDF map file, taking care of 1D/2D/3D specifics and s/u/w-point specifics.
-!! Only writes data for the current time. Assumes that the mapids%id_tsp%idx_curtime contains the new time index where to write to.
-!! Produces a UGRID-compliant map file.
-!! If there is a 1d and a 2d mesh, then values are written for both meshes in one call to this function.
-!! Typical call: unc_put_var(mapids, mapids%id_s1(:), UNC_LOC_S, s1)
-
-   !> unc_put_var_map_int function has been moved to submodule unstruc_netcdf_submodule_unc_put_var_map
-
-   !> unc_put_var_map_real function has been moved to submodule unstruc_netcdf_submodule_unc_put_var_map
-
-   !> unc_put_var_map_dble function has been moved to submodule unstruc_netcdf_submodule_unc_put_var_map
-
-   !> unc_put_var_map_byte function has been moved to submodule unstruc_netcdf_submodule_unc_put_var_map
-
-   !> unc_put_var_map_byte_timebuffer function has been moved to submodule unstruc_netcdf_submodule_unc_put_var_map
-
-   !> unc_put_var_map_dble2 function has been moved to submodule unstruc_netcdf_submodule_unc_put_var_map
-
-   !> unc_put_var_map_dble3 function has been moved to submodule unstruc_netcdf_submodule_unc_put_var_map
-
 !> Puts global attributes in NetCDF data set.
 !! This includes: institution, Conventions, etc.
    subroutine unc_addglobalatts(ncid)
@@ -4388,7 +4365,7 @@ contains
 
       integer :: i, j, jj, itim, n, LL, L, Lb, Lt, k, k1, k2
       integer :: id_twodim
-      integer :: kk, kb, kt, kkk, found, iloc
+      integer :: kk, kb, kt, kkk, found, iloc, k_global
       integer :: nlayb, nrlay
       integer :: Ltx, nlaybL, nrlayLx
       integer :: iLocS ! Either UNC_LOC_S or UNC_LOC_S3D, depending on whether layers are present.
@@ -5619,7 +5596,7 @@ contains
       end if
       if (jamapnumlimdt > 0) then
          ! ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_numlimdt, UNC_LOC_S, numlimdt) ! TODO: AvD: integer version of this routine
-         call realloc(numlimdtdbl, ndxndxi, keepExisting=.false.)
+         call realloc(numlimdtdbl, ndx, keepExisting=.false.)
          numlimdtdbl = real(numlimdt, kind=dp) ! To prevent stack overflow. TODO: remove once integer version is available.
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_numlimdt, UNC_LOC_S, output_mask, numlimdtdbl, jabndnd=jabndnd_)
          deallocate (numlimdtdbl)
@@ -5628,8 +5605,8 @@ contains
       ! Time dependent grid layers
       if (kmx > 0 .and. jafullgridoutput > 0) then
          call realloc(work1d, ndkx, keepExisting=.false.)
-         call realloc(work3d2, [2, kmx, max(lnx, ndxndxi)], keepExisting=.false., fill=dmiss)
-         do kk = 1, ndxndxi
+         call realloc(work3d2, [2, kmx, max(lnx, ndx)], keepExisting=.false., fill=dmiss)
+         do kk = 1, ndx
             call getkbotktop(kk, kb, kt)
             call getlayerindices(kk, nlayb, nrlay)
             do k = kb, kt
@@ -5641,7 +5618,7 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzw, UNC_LOC_W, output_mask, zws, jabndnd=jabndnd_)
          if (jafullgridoutput == 2) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzcc_bnd, UNC_LOC_S, work3d2, locdim=3, jabndnd=jabndnd_)
-            !ierr = nf90_put_var(mapids%ncid, mapids%id_flowelemzcc_bnd(2), work3d2(1:2, 1:kmx, 1:ndxndxi), start=[ 1, 1, 1, itim ], count=[ 2, kmx, ndxndxi, 1 ])
+            !ierr = nf90_put_var(mapids%ncid, mapids%id_flowelemzcc_bnd(2), work3d2(1:2, 1:kmx, 1:), start=[ 1, 1, 1, itim ], count=[ 2, kmx, ndxndxi, 1 ])
             ! TODO: support this in 1D or 1D2D as well, via unc_put_var_map interfaces.
          end if
 
@@ -5897,7 +5874,7 @@ contains
             workx = DMISS ! For proper fill values in z-model runs.
             if (kmx > 0) then
 !            3D
-               do kk = 1, ndxndxi
+               do kk = 1, ndx
                   call getkbotktop(kk, kb, kt)
                   do k = kb, kt
                      workx(k) = constituents(j, k)
@@ -5907,7 +5884,7 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_const(:, j), UNC_LOC_S3D, output_mask, workx, jabndnd=jabndnd_)
                !   if ( ierr.ne.0 ) exit  ! probably newly added tracer in the GUI
             else
-               do kk = 1, NdxNdxi
+               do kk = 1, ndx
                   workx(kk) = constituents(j, kk)
                end do
 !             ierr = nf90_put_var(imapfile, id_const(iid,j), dum, [ 1, itim ], [ NdxNdxi, 1 ] )
@@ -6097,8 +6074,9 @@ contains
                ! Concentrations
                if (stmpar%morpar%moroutput%sedconc) then
                   do kk = 1, ndxndxi
-                     call getkbotktop(kk, kb, kt)
-                     call getlayerindices(kk, nlayb, nrlay)
+                     k_global = output_mask%cell_indices(kk)
+                     call getkbotktop(k_global, kb, kt)
+                     call getlayerindices(k_global, nlayb, nrlay)
                      do k = kb, kt
                         work3d(k - kb + nlayb, kk, :) = constituents(ISED1:ISEDN, k)
                      end do
@@ -6109,8 +6087,9 @@ contains
                ! Settling velocity
                if (stmpar%morpar%moroutput%ws) then
                   do kk = 1, ndxndxi
-                     call getkbotktop(kk, kb, kt)
-                     call getlayerindices(kk, nlayb, nrlay)
+                     k_global = output_mask%cell_indices(kk)
+                     call getkbotktop(k_global, kb, kt)
+                     call getlayerindices(k_global, nlayb, nrlay)
                      do k = kb, kt
                         work3d(k - kb + nlayb, kk, :) = mtd%ws(k, 1:stmpar%lsedsus)
                      end do
@@ -6119,7 +6098,7 @@ contains
                end if
             else
                if (stmpar%morpar%moroutput%sedconc) then
-                  call realloc(work1d_z, [ndxndxi, stmpar%lsedsus], keepExisting=.false., fill=dmiss)
+                  call realloc(work1d_z, [ndx, stmpar%lsedsus], keepExisting=.false., fill=dmiss)
                   work1d_z = transpose(constituents(ISED1:ISEDN, :)) ! avoid array slice on stack
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedfrac, UNC_LOC_S, output_mask, work1d_z, jabndnd=jabndnd_)
                end if
@@ -6388,8 +6367,8 @@ contains
          !
          if (stmpar%morpar%moroutput%cumavg) then
             ! Bedload components
-            call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
-            call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
+            call realloc(toutputx, [ndxndxi, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
+            call realloc(toutputy, [ndxndxi, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             if (dmorft > 0.0_dp) then
                do l = 1, stmpar%lsedtot
                   select case (stmpar%morpar%moroutput%transptype)
@@ -6400,8 +6379,8 @@ contains
                   case (2)
                      rhodt = stmpar%sedpar%rhosol(l) * dmorfs
                   end select
-                  toutputx(:, l) = sedtra%sbxcum(:, l) / rhodt
-                  toutputy(:, l) = sedtra%sbycum(:, l) / rhodt
+                  toutputx(:, l) = output_mask%remap(sedtra%sbxcum(:, l), 1, ndxndxi, UNC_LOC_S) / rhodt
+                  toutputy(:, l) = output_mask%remap(sedtra%sbycum(:, l), 1, ndxndxi, UNC_LOC_S) / rhodt
                end do
             else
                toutputx = 0.0_dp
@@ -6424,8 +6403,8 @@ contains
                   case (2)
                      rhodt = stmpar%sedpar%rhosol(l) * dmorfs
                   end select
-                  toutputx(:, l) = sedtra%ssxcum(:, l) / rhodt
-                  toutputy(:, l) = sedtra%ssycum(:, l) / rhodt
+                  toutputx(:, l) = output_mask%remap(sedtra%ssxcum(:, l), 1, ndxndxi, UNC_LOC_S) / rhodt
+                  toutputy(:, l) = output_mask%remap(sedtra%ssycum(:, l), 1, ndxndxi, UNC_LOC_S) / rhodt
                end do
             else
                toutputx = 0.0_dp
@@ -6437,8 +6416,8 @@ contains
             if (time_map >= ti_mape) then ! to check, last timestep?
                ierr = nf90_put_var(mapids%ncid, mapids%id_sedavgtim, mortime, [1])
                ! Bedload components
-               call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
-               call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
+               call realloc(toutputx, [ndxndxi, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
+               call realloc(toutputy, [ndxndxi, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                if (dmorft > 0.0_dp) then
                   do l = 1, stmpar%lsedtot
                      select case (stmpar%morpar%moroutput%transptype)
@@ -6449,8 +6428,8 @@ contains
                      case (2)
                         rhodt = stmpar%sedpar%rhosol(l) * dmorfs
                      end select
-                     toutputx(:, l) = sedtra%sbxcum(:, l) / rhodt
-                     toutputy(:, l) = sedtra%sbycum(:, l) / rhodt
+                     toutputx(:, l) = output_mask%remap(sedtra%sbxcum(:, l), 1, ndxndxi, UNC_LOC_S) / rhodt
+                     toutputy(:, l) = output_mask%remap(sedtra%sbycum(:, l), 1, ndxndxi, UNC_LOC_S) / rhodt
                   end do
                else
                   toutputx = 0.0_dp
@@ -6472,8 +6451,8 @@ contains
                      case (2)
                         rhodt = stmpar%sedpar%rhosol(l) * dmorfs
                      end select
-                     toutputx(:, l) = sedtra%ssxcum(:, l) / rhodt
-                     toutputy(:, l) = sedtra%ssycum(:, l) / rhodt
+                     toutputx(:, l) = output_mask%remap(sedtra%ssxcum(:, l), 1, ndxndxi, UNC_LOC_S) / rhodt
+                     toutputy(:, l) = output_mask%remap(sedtra%ssycum(:, l), 1, ndxndxi, UNC_LOC_S) / rhodt
                   end do
                else
                   toutputx = 0.0_dp
@@ -6593,7 +6572,7 @@ contains
                call realloc(toutput, ndx, keepExisting=.false., fill=-999.0_dp)
                toutput = stmpar%morpar%flufflyr%mfluff(l, 1:ndx)
                ! ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_mfluff , UNC_LOC_S, stmpar%morpar%flufflyr%mfluff)
-               ierr = nf90_put_var(mapids%ncid, mapids%id_mfluff(2), toutput(1:ndxndxi), start=[1, l, itim], count=[ndxndxi, 1, 1])
+               ierr = nf90_put_var(mapids%ncid, mapids%id_mfluff(2), output_mask%remap(toutput(1:ndxndxi), 1, ndxndxi, UNC_LOC_S), start=[1, l, itim], count=[ndxndxi, 1, 1])
             end do
          end if
          !
@@ -6619,10 +6598,10 @@ contains
                ierr = nf90_put_var(mapids%ncid, mapids%id_tsp%id_flowelemcrsn(1), work1d_n(1:jmax, 1:nCrs), start=[1, 1, mapids%id_tsp%idx_curtime], count=[jmax, nCrs, 1])
             end if
             if (stmpar%morpar%moroutput%blave) then
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_blave, UNC_LOC_S, output_mask, bl_ave(ndx2d + 1:ndxndxi), jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_blave, UNC_LOC_S, output_mask, bl_ave(ndx2d + 1:ndx), jabndnd=jabndnd_)
             end if
             if (stmpar%morpar%moroutput%bamor) then
-               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_bamor, UNC_LOC_S, output_mask, ba_mor(ndx2d + 1:ndxndxi), jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_bamor, UNC_LOC_S, output_mask, ba_mor(ndx2d + 1:ndx), jabndnd=jabndnd_)
             end if
             if (stmpar%morpar%moroutput%wumor) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wumor, UNC_LOC_U, output_mask, wu_mor, jabndnd=jabndnd_)
@@ -6898,7 +6877,15 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_kwav, UNC_LOC_S, output_mask, kwav, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nwav, UNC_LOC_S, output_mask, nwav, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_l1, UNC_LOC_S, output_mask, L1, jabndnd=jabndnd_)
-               ierr = nf90_put_var(mapids%ncid, mapids%id_ctheta(2), ctheta(:, 1:ndxndxi), start=[1, 1, itim], count=[ntheta, ndxndxi, 1])
+               if (output_mask%is_polygon_file_defined) then
+                  call realloc(work1d_z, [1, 1], [ntheta, ndxndxi], keepExisting=.false., fill=dmiss)
+                  do i = 1, ntheta
+                     work1d_z(i, :) = output_mask%remap(ctheta(i, :), 1, ndxndxi, UNC_LOC_S)
+                  end do
+                  ierr = nf90_put_var(mapids%ncid, mapids%id_ctheta(1), work1d_z, start=[1, 1, itim], count=[ntheta, ndxndxi, 1])
+               else 
+                  ierr = nf90_put_var(mapids%ncid, mapids%id_ctheta(2), ctheta(:, :), start=[1, 1, itim], count=[ntheta, ndxndxi, 1])
+               end if
             end if
             !
          end if
