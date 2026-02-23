@@ -14,7 +14,7 @@ object LinuxBuildTools : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
-        TemplateLinuxAgentNoFips,
+        TemplateLinuxAgent,
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
