@@ -6613,8 +6613,8 @@ contains
       !
       if (bfmpar%lfbedfrmout) then
          if (bfmpar%lfbedfrm) then
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_duneheight, UNC_LOC_S, output_mask, bfmpar%duneheight(1:ndxndxi), jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dunelength, UNC_LOC_S, output_mask, bfmpar%dunelength(1:ndxndxi), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_duneheight, UNC_LOC_S, output_mask, bfmpar%duneheight(1:ndx), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dunelength, UNC_LOC_S, output_mask, bfmpar%dunelength(1:ndx), jabndnd=jabndnd_)
          end if
          !
          if (bfmpar%lfbedfrmrou) then
@@ -6622,14 +6622,14 @@ contains
                allocate (rks(1:ndx))
                rks = 0.0_dp
             end if
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksr, UNC_LOC_S, output_mask, bfmpar%rksr(1:ndxndxi), jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksmr, UNC_LOC_S, output_mask, bfmpar%rksmr(1:ndxndxi), jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksd, UNC_LOC_S, output_mask, bfmpar%rksd(1:ndxndxi), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksr, UNC_LOC_S, output_mask, bfmpar%rksr(1:ndx), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksmr, UNC_LOC_S, output_mask, bfmpar%rksmr(1:ndx), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksd, UNC_LOC_S, output_mask, bfmpar%rksd(1:ndx), jabndnd=jabndnd_)
 
             do nm = 1, ndxndxi
                rks(nm) = sqrt(bfmpar%rksr(nm)**2 + bfmpar%rksmr(nm)**2 + bfmpar%rksd(nm)**2)
             end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ks, UNC_LOC_S, output_mask, rks(1:ndxndxi), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ks, UNC_LOC_S, output_mask, rks(1:ndx), jabndnd=jabndnd_)
          end if
       end if
 
@@ -6657,13 +6657,13 @@ contains
 
       ! Meteo forcings
       if (jawind > 0) then
-         allocate (windx(ndxndxi), windy(ndxndxi), stat=ierr)
+         allocate (windx(ndx), windy(ndx), stat=ierr)
          if (ierr /= 0) then
-            call aerr('windx/windy', ierr, ndxndxi)
+            call aerr('windx/windy', ierr, ndx)
          end if
 
          if (jamapwind > 0) then
-            call linktonode2(wx, wy, windx, windy, ndxndxi)
+            call linktonode2(wx, wy, windx, windy, ndx)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windx, UNC_LOC_S, output_mask, windx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windy, UNC_LOC_S, output_mask, windy, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windxu, UNC_LOC_U, output_mask, wx, jabndnd=jabndnd_)
@@ -6671,7 +6671,7 @@ contains
          end if
 
          if (jamapwindstress > 0) then
-            call linktonode2(wdsu_x, wdsu_y, windx, windy, ndxndxi)
+            call linktonode2(wdsu_x, wdsu_y, windx, windy, ndx)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windstressx, UNC_LOC_S, output_mask, windx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windstressy, UNC_LOC_S, output_mask, windy, jabndnd=jabndnd_)
          end if
@@ -6687,7 +6687,7 @@ contains
       ! Rain
       if (jamaprain > 0 .and. jarain /= 0) then
          call realloc(scaled_rain, ndx, keepExisting=.false., fill=dmiss)
-         do n = 1, ndxndxi
+         do n = 1, ndx
             scaled_rain(n) = rain(n) * bare(n) / ba(n) * 1.0e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
          end do
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rain, UNC_LOC_S, output_mask, scaled_rain, jabndnd=jabndnd_)
@@ -7015,14 +7015,14 @@ contains
       ! water quality bottom variables
       if (numwqbots > 0) then
          do j = 1, numwqbots
-            do k = 1, ndxndxi
+            do k = 1, ndx
                call getkbotktop(k, kb, kt)
                workx(k) = wqbot(j, kb)
             end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqb(:, j), UNC_LOC_S, output_mask, workx(1:ndxndxi), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqb(:, j), UNC_LOC_S, output_mask, workx(1:ndx), jabndnd=jabndnd_)
             if (jamapwqbot3d == 1) then
 !         also write 3D
-               do kk = 1, ndxndxi
+               do kk = 1, ndx
                   call getkbotktop(kk, kb, kt)
                   do k = kb, kt
                      workx(k) = wqbot(j, k)
@@ -7040,7 +7040,7 @@ contains
                workx = DMISS ! For proper fill values in z-model runs.
                if (kmx > 0) then
 !               3D
-                  do kk = 1, ndxndxi
+                  do kk = 1, ndx
                      call getkbotktop(kk, kb, kt)
                      do k = kb, kt
                         workx(k) = waqoutputs(j, k - kbx + 1)
@@ -7049,7 +7049,7 @@ contains
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_waq(:, j), UNC_LOC_S3D, output_mask, workx, jabndnd=jabndnd_)
                else
 !               2D
-                  do kk = 1, NdxNdxi
+                  do kk = 1, ndx
                      workx(kk) = waqoutputs(j, kk)
                   end do
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_waq(:, j), UNC_LOC_S, output_mask, workx, jabndnd=jabndnd_)
@@ -7062,7 +7062,7 @@ contains
                workx = DMISS ! For proper fill values in z-model runs.
                if (kmx > 0) then
 !               3D
-                  do kk = 1, ndxndxi
+                  do kk = 1, ndx
                      call getkbotktop(kk, kb, kt)
                      do k = kb, kt
                         workx(k) = waqoutputs(jj, k - kbx + 1)
@@ -7071,7 +7071,7 @@ contains
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqst(:, j), UNC_LOC_S3D, output_mask, workx, jabndnd=jabndnd_)
                else
 !               2D
-                  do kk = 1, NdxNdxi
+                  do kk = 1, ndx
                      workx(kk) = waqoutputs(jj, kk)
                   end do
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqst(:, j), UNC_LOC_S, output_mask, workx, jabndnd=jabndnd_)
@@ -7085,7 +7085,7 @@ contains
                   workx = DMISS ! For proper fill values in z-model runs.
                   if (kmx > 0) then
 !                  3D
-                     do kk = 1, ndxndxi
+                     do kk = 1, ndx
                         call getkbotktop(kk, kb, kt)
                         do k = kb, kt
                            workx(k) = waqoutputs(jj, k - kbx + 1)
@@ -7094,7 +7094,7 @@ contains
                      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqse(:, j), UNC_LOC_S3D, output_mask, workx, jabndnd=jabndnd_)
                   else
 !                  2D
-                     do kk = 1, NdxNdxi
+                     do kk = 1, ndx
                         workx(kk) = waqoutputs(jj, kk)
                      end do
                      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqse(:, j), UNC_LOC_S, output_mask, workx, jabndnd=jabndnd_)
@@ -14433,8 +14433,8 @@ contains
          end if
 
          edge_type(i) = UG_EDGETYPE_INTERNAL
-         xue(i) = xu(output_mask%link_indices(Lf_mask))
-         yue(i) = yu(output_mask%link_indices(Lf_mask))
+         xue(i) = xu(Lf_global)
+         yue(i) = yu(Lf_global)
 
          if (is_edge_mapping_table_present) then
             edge_mapping_table(L_mask - output_mask%numl1d) = i
@@ -14461,7 +14461,7 @@ contains
          ! i is edge number.
          i = i + 1
 
-         edge_nodes(1:2, i) = output_mask%netnodes_mask(lncn(1:2, output_mask%link_indices(Lf_mask)))
+         edge_nodes(1:2, i) = output_mask%netnodes_mask(lncn(1:2, Lf_global))
          if (is_edge_faces_associated) then
             ! NOTE: the internal face intentionally gets placed on index 1,
             ! even though the flow link has it on index 2 by definition.
@@ -14470,8 +14470,8 @@ contains
          end if
 
          edge_type(i) = UG_EDGETYPE_BND
-         xue(i) = xu(output_mask%link_indices(Lf_mask))
-         yue(i) = yu(output_mask%link_indices(Lf_mask))
+         xue(i) = xu(Lf_global)
+         yue(i) = yu(Lf_global)
 
          if (is_edge_mapping_table_present) edge_mapping_table(L_mask - output_mask%numl1d) = i
          if (is_reverse_edge_mapping_table_present) reverse_edge_mapping_table(i) = L_mask - output_mask%numl1d
