@@ -105,14 +105,14 @@ ESM_Delete (
 void *
 ESM_Alloc (
     int     contextid,
-    char *  name,
+    const char *  name,
     size_t  size
     );
 
 int
 ESM_Free (
     int     contextid,
-    char *  name
+    const char *  name
     );
 
 int
@@ -126,14 +126,14 @@ ESM_ListRegions (
     FILE *  output
     );
 
-char *
+const char *
 ESM_Error (
     void
     );
 
 int
 ESM_TraceFile (
-    char *  filename
+    const char *  filename
     );
 
 int

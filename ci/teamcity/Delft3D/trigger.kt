@@ -13,6 +13,7 @@ object Trigger : BuildType({
     description = "This is triggered for pull-requests and will schedule the appropriate testbenches."
 
     templates(
+        TemplateLinuxAgentNoFips,
         TemplateMergeRequest,
         TemplateDetermineProduct,
         TemplatePublishStatus,
@@ -287,9 +288,4 @@ object Trigger : BuildType({
             }
         }
     }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
-
 })

@@ -315,6 +315,9 @@ contains
 
          if (kk > 0) then ! FROM Point
             do k = ksrc(2, n), ksrc(3, n)
+               if (k == 0) then
+                  cycle
+               end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
                   dzss = zws(ksrc(3, n)) - zws(ksrc(2, n) - 1)
@@ -334,6 +337,9 @@ contains
 
          if (kk2 > 0) then ! TO Point
             do k = ksrc(5, n), ksrc(6, n)
+               if (k == 0) then
+                  cycle
+               end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
                   dzss = zws(ksrc(6, n)) - zws(ksrc(5, n) - 1)
