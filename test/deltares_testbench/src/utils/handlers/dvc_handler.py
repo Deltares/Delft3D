@@ -45,18 +45,29 @@ class DvcHandler(IHandler):
         logger : ILogger
             The logger that logs to a file.
         """
-        self.__download_with_dvc_pull(from_path, logger)
+        self.__download_with_dvc_pull(from_path, credentials, logger)
 
-    def __download_with_dvc_pull(self, dvc_file: str, logger: ILogger) -> None:
+    def __download_with_dvc_pull(self, dvc_file: str, credentials: Credentials, logger: ILogger) -> None:
         """Download using DVC by reading the .dvc file and fetching from remote.
 
         Parameters
         ----------
         dvc_file : str
             Path to the .dvc file (e.g., "data/cases/e02_f002_c100.dvc").
+        credentials : Credentials
+            Credentials whose username maps to the S3 access key ID and
+            password maps to the S3 secret access key.
         logger : ILogger
             Logger instance.
         """
+        # Temporarily inject S3/MinIO credentials as environment variables so
+        # DVC can authenticate without touching the on-disk config.
+        _aws_keys = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
+        _prev_env = {k: os.environ.get(k) for k in _aws_keys}
+        if credentials and credentials.username:
+            os.environ["AWS_ACCESS_KEY_ID"] = credentials.username
+            os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.password
+
         try:
             logger.debug(f"Downloading DVC directory with file: {dvc_file}")
 
@@ -80,6 +91,13 @@ class DvcHandler(IHandler):
         except Exception as e:
             logger.error(f"Error during DVC pull: {str(e)}")
             raise
+        finally:
+            # Restore original environment to avoid leaking credentials.
+            for key, val in _prev_env.items():
+                if val is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = val
 
     def __find_dvc_root(self, path: str) -> str:
         """Find the DVC repository root by looking for .dvc directory.

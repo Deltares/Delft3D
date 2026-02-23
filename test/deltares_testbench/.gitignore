@@ -1,5 +1,6 @@
 /logs/**
 /data/**
+!/data/**/*.dvc
 
 # python virtual environment and caches
 .venv
