@@ -1013,8 +1013,11 @@ contains
          end if
          !$OMP SIMD
          do L = lnx1D + 1, lnx
-            fvcor = calculate_coriolis_force(fcor1_(L), fcor2_(L), jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
-
+            if (jasfer3D == 1) then
+               fvcor = calculate_coriolis_force_spherical(fcor1_(L), fcor2_(L), acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
+            else
+               fvcor = calculate_coriolis_force(fcor1_(L), fcor2_(L), acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), hmin_(L), trshcorio)
+            end if
             if (hu(L) > 0.0_dp) then
                adve(L) = adve(L) - fvcor
 
@@ -1030,8 +1033,11 @@ contains
          !$OMP SIMD
          do L = lnx1D + 1, lnx
             fcor = fcori(L)
-            fvcor = calculate_coriolis_force(fcor, fcor, jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
-
+            if (jasfer3D == 1) then
+               fvcor = calculate_coriolis_force_spherical(fcor, fcor, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
+            else
+               fvcor = calculate_coriolis_force(fcor, fcor, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), hmin_(L), trshcorio)
+            end if
             if (hu(L) > 0.0_dp) then
                adve(L) = adve(L) - fvcor
 
@@ -1051,8 +1057,11 @@ contains
 
          !$OMP SIMD
          do L = lnx1D + 1, lnx
-            fvcor = calculate_coriolis_force(fcorio, fcorio, jasfer3D, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
-
+            if (jasfer3D == 1) then
+               fvcor = calculate_coriolis_force_spherical(fcorio, fcorio, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
+            else
+               fvcor = calculate_coriolis_force(fcorio, fcorio, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), hmin_(L), trshcorio)
+            end if
             if (hu(L) > 0.0_dp) then
                adve(L) = adve(L) - fvcor
 
@@ -1070,13 +1079,12 @@ contains
 
 !> Apply Coriolis correction for a single link
 !! This elemental function will be inlined to allow vectorization by the compiler
-   elemental function calculate_coriolis_force(fcor_1, fcor_2, jasfer3D, &
+   elemental function calculate_coriolis_force_spherical(fcor_1, fcor_2, &
                                                acL_L, csu_L, snu_L, &
                                                ucxq_1_L, ucyq_1_L, ucxq_2_L, ucyq_2_L, &
                                                csb_1_L, snb_1_L, csb_2_L, snb_2_L, &
                                                hmin_L, trshcorio) result(fvcor)
 
-      integer, intent(in) :: jasfer3D !< 3D sferic coordinates flag, should match m_sferic jasfer3D
       real(dp), intent(in) :: fcor_1 !< Coriolis parameter at node 1
       real(dp), intent(in) :: fcor_2 !< Coriolis parameter at node 2
       real(dp), intent(in) :: acL_L !< Link interpolation weight for node 1
@@ -1096,14 +1104,42 @@ contains
       real(dp) :: fvcor
       real(dp) :: tangential_1, tangential_2
 
-      ! Compute tangential velocities
-      if (jasfer3D == 1) then
-         tangential_1 = compute_tangential_velocity_spherical(ucxq_1_L, ucyq_1_L, csb_1_L, snb_1_L, csu_L, snu_L)
-         tangential_2 = compute_tangential_velocity_spherical(ucxq_2_L, ucyq_2_L, csb_2_L, snb_2_L, csu_L, snu_L)
-      else
-         tangential_1 = -snu_L * ucxq_1_L + csu_L * ucyq_1_L
-         tangential_2 = -snu_L * ucxq_2_L + csu_L * ucyq_2_L
+      tangential_1 = compute_tangential_velocity_spherical(ucxq_1_L, ucyq_1_L, csb_1_L, snb_1_L, csu_L, snu_L)
+      tangential_2 = compute_tangential_velocity_spherical(ucxq_2_L, ucyq_2_L, csb_2_L, snb_2_L, csu_L, snu_L)
+
+      ! Compute Coriolis force
+      fvcor = acL_L * tangential_1 * fcor_1 + (1.0_dp - acL_L) * tangential_2 * fcor_2
+
+      ! Apply depth threshold
+      if (trshcorio > 0.0_dp .and. hmin_L < trshcorio) then
+         fvcor = fvcor * hmin_L / trshcorio
       end if
+
+   end function calculate_coriolis_force_spherical
+!> Apply Coriolis correction for a single link
+!! This elemental function will be inlined to allow vectorization by the compiler
+   elemental function calculate_coriolis_force(fcor_1, fcor_2, &
+                                               acL_L, csu_L, snu_L, &
+                                               ucxq_1_L, ucyq_1_L, ucxq_2_L, ucyq_2_L, &
+                                                hmin_L, trshcorio) result(fvcor)
+
+      real(dp), intent(in) :: fcor_1 !< Coriolis parameter at node 1
+      real(dp), intent(in) :: fcor_2 !< Coriolis parameter at node 2
+      real(dp), intent(in) :: acL_L !< Link interpolation weight for node 1
+      real(dp), intent(in) :: csu_L !< Cosine of link orientation
+      real(dp), intent(in) :: snu_L !< Sine of link orientation
+      real(dp), intent(in) :: ucxq_1_L !< x-velocity at node 1 (global frame)
+      real(dp), intent(in) :: ucyq_1_L !< y-velocity at node 1 (global frame)
+      real(dp), intent(in) :: ucxq_2_L !< x-velocity at node 2 (global frame)
+      real(dp), intent(in) :: ucyq_2_L !< y-velocity at node 2 (global frame)
+      real(dp), intent(in) :: hmin_L !< Minimum water depth at link endpoints
+      real(dp), intent(in) :: trshcorio !< Depth threshold for Coriolis scaling
+
+      real(dp) :: fvcor
+      real(dp) :: tangential_1, tangential_2
+
+      tangential_1 = -snu_L * ucxq_1_L + csu_L * ucyq_1_L
+      tangential_2 = -snu_L * ucxq_2_L + csu_L * ucyq_2_L
 
       ! Compute Coriolis force
       fvcor = acL_L * tangential_1 * fcor_1 + (1.0_dp - acL_L) * tangential_2 * fcor_2
