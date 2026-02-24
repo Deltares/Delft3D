@@ -147,6 +147,7 @@
    public   ::  bilin_interp_loc
    public   ::  triinterp2
    public   ::  TerrorInfo
+   public   ::  interpolate_linear_in_triangle
 
    contains
 
