@@ -975,7 +975,6 @@ contains
 !!
 !! Module arrays modified:
 !!   - adve, fvcoro
-!! Adams Bashford is copied 3x as a compromise
    subroutine compute_coriolis_correction_2D_default(icorio, jsferic, jasfer3D, jacorioconstant, fcorio, trshcorio, Corioadamsbashfordfac)
 
       use precision, only: dp
@@ -994,11 +993,15 @@ contains
 
       integer :: L, k1, k2
       logical :: spatial_coriolis
-      real(dp) :: fcor, fvcor
+      real(dp) :: fvcor
 
       real(dp), allocatable, dimension(:), save :: fcor1_, fcor2_
+      real(dp) :: fcor1, fcor2
 
       spatial_coriolis = (jsferic > 0 .or. jacorioconstant > 0)
+      if (.not. spatial_coriolis .and. fcorio == 0.0_dp) then
+         return ! early exit if Coriolis force is zero
+      end if
 
       if (spatial_coriolis .and. (icorio /= 5)) then
          ! Node-based fcor (zeta-based)
@@ -1011,75 +1014,42 @@ contains
                fcor2_(L) = fcori(k2)
             end do
          end if
-         !$OMP SIMD
-         do L = lnx1D + 1, lnx
-            if (jasfer3D == 1) then
-               fvcor = calculate_coriolis_force_spherical(fcor1_(L), fcor2_(L), acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
-            else
-               fvcor = calculate_coriolis_force(fcor1_(L), fcor2_(L), acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), hmin_(L), trshcorio)
-            end if
-            if (hu(L) > 0.0_dp) then
-               adve(L) = adve(L) - fvcor
-
-               if (Corioadamsbashfordfac > 0.0_dp) then
-                  if (fvcoro(L) /= 0.0_dp) then
-                     adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
-                  end if
-                  fvcoro(L) = fvcor
-               end if
-            end if
-         end do
-      else if (spatial_coriolis .and. icorio == 5) then !> separate loop to prevent double memory access for fcor1 & fcor2 in performance sensitive loop
-         !$OMP SIMD
-         do L = lnx1D + 1, lnx
-            fcor = fcori(L)
-            if (jasfer3D == 1) then
-               fvcor = calculate_coriolis_force_spherical(fcor, fcor, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
-            else
-               fvcor = calculate_coriolis_force(fcor, fcor, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), hmin_(L), trshcorio)
-            end if
-            if (hu(L) > 0.0_dp) then
-               adve(L) = adve(L) - fvcor
-
-               if (Corioadamsbashfordfac > 0.0_dp) then
-                  if (fvcoro(L) /= 0.0_dp) then
-                     adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
-                  end if
-                  fvcoro(L) = fvcor
-               end if
-            end if
-         end do
-
-      else !> non-spatial coriolis
-         if (fcorio == 0.0_dp) then
-            return ! early exit if Coriolis force is zero
-         end if
-
-         !$OMP SIMD
-         do L = lnx1D + 1, lnx
-            if (jasfer3D == 1) then
-               fvcor = calculate_coriolis_force_spherical(fcorio, fcorio, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
-            else
-               fvcor = calculate_coriolis_force(fcorio, fcorio, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), hmin_(L), trshcorio)
-            end if
-            if (hu(L) > 0.0_dp) then
-               adve(L) = adve(L) - fvcor
-
-               if (Corioadamsbashfordfac > 0.0_dp) then
-                  if (fvcoro(L) /= 0.0_dp) then
-                     adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
-                  end if
-                  fvcoro(L) = fvcor
-               end if
-            end if
-         end do
       end if
+
+      !$OMP SIMD
+      do L = lnx1D + 1, lnx
+         if (spatial_coriolis .and. icorio /= 5) then
+            fcor1 = fcor1_(L)
+            fcor2 = fcor2_(L)
+         else if (spatial_coriolis .and. icorio == 5) then
+            fcor1 = fcori(L)
+            fcor2 = fcori(L)
+         else
+            fcor1 = fcorio
+            fcor2 = fcorio
+         end if
+         if (jasfer3D == 1) then
+            fvcor = calculate_coriolis_force_spherical_3D(fcor1, fcor2, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), csb_1(L), snb_1(L), csb_2(L), snb_2(L), hmin_(L), trshcorio)
+         else
+            fvcor = calculate_coriolis_force(fcor1, fcor2, acL(L), csu(L), snu(L), ucxq_1(L), ucyq_1(L), ucxq_2(L), ucyq_2(L), hmin_(L), trshcorio)
+         end if
+         if (hu(L) > 0.0_dp) then
+            adve(L) = adve(L) - fvcor
+
+            if (Corioadamsbashfordfac > 0.0_dp) then
+               if (fvcoro(L) /= 0.0_dp) then
+                  adve(L) = adve(L) - Corioadamsbashfordfac * (fvcor - fvcoro(L))
+               end if
+               fvcoro(L) = fvcor
+            end if
+         end if
+      end do
 
    end subroutine compute_coriolis_correction_2D_default
 
-!> Apply Coriolis correction for a single link
+!> Apply Coriolis correction for a single link, using "spherical 3D" mode for the tangential velocity calculation.
 !! This elemental function will be inlined to allow vectorization by the compiler
-   elemental function calculate_coriolis_force_spherical(fcor_1, fcor_2, &
+   elemental function calculate_coriolis_force_spherical_3D(fcor_1, fcor_2, &
                                                          acL_L, csu_L, snu_L, &
                                                          ucxq_1_L, ucyq_1_L, ucxq_2_L, ucyq_2_L, &
                                                          csb_1_L, snb_1_L, csb_2_L, snb_2_L, &
@@ -1115,7 +1085,7 @@ contains
          fvcor = fvcor * hmin_L / trshcorio
       end if
 
-   end function calculate_coriolis_force_spherical
+   end function calculate_coriolis_force_spherical_3D
 !> Apply Coriolis correction for a single link
 !! This elemental function will be inlined to allow vectorization by the compiler
    elemental function calculate_coriolis_force(fcor_1, fcor_2, &
