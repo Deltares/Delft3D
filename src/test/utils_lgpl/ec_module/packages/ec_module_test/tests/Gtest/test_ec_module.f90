@@ -1,14 +1,14 @@
 module test_ec_module
    use assertions_gtest
    use m_missing, only: dmiss
-   use m_ec_basic_interpolation, only: interpolate_linear_in_triangle
+   use m_ec_basic_interpolation, only: interpolate_linear_from_triangle
    use precision, only: dp
    implicit none
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_ec_module, test_interpolate_linear_in_triangle, test_interpolate_linear_in_triangle,
-   subroutine test_interpolate_linear_in_triangle() bind(C)
+   !$f90tw TESTCODE(TEST, test_ec_module, test_interpolate_linear_from_triangle, test_interpolate_linear_from_triangle,
+   subroutine test_interpolate_linear_from_triangle() bind(C)
 
       integer, parameter :: NDIM = 1 !< sample vector dimension
       real(kind=dp), dimension(3) :: X !< x coordinates of triangle
@@ -34,22 +34,30 @@ contains
       jatek = 0
       jsferic = 0
       jslo = 0
-      call interpolate_linear_in_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
-      call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 1: Expected positive value")
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+      call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 1: Point on corner fails")
 
       X = cshift(X, 1)
       Y = cshift(Y, 1)
       Z = cshift(Z, 1, 2)
-      call interpolate_linear_in_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
-      call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 2: Expected positive value")
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+      call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 2: Point on corner fails")
 
       X = cshift(X, 1)
       Y = cshift(Y, 1)
       Z = cshift(Z, 1, 2)
-      call interpolate_linear_in_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
-      call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 3: Expected positive value")
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), 1.420180850975200e-063_dp, "test 3: Point on corner fails")
 
-   end subroutine test_interpolate_linear_in_triangle
+      X = [0.0_dp, 1.0_dp, 0.0_dp]
+      Y = [0.0_dp, 0.0_dp, 1.0_dp]
+      Z = reshape([0.0_dp, 1.0_dp, 1.0_dp], [NDIM, 3])
+      XP = 1.0_dp
+      YP = 1.0_dp
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), 2.0_dp, "test4: Point outside triangle fails")
+      
+   end subroutine test_interpolate_linear_from_triangle
    !$f90tw)
 
 end module test_ec_module
