@@ -1151,7 +1151,7 @@
    real(kind=hp)    :: sum_weights
 
 
-   real(kind=hp), parameter :: EPS_BARY = 1.0e-12_hp     ! snapping distance to points in the mapped triangle space
+   real(kind=hp), parameter :: EPS_BARY = 1.0e-11_hp ! snapping distance to points in the mapped triangle space
 
    ZP  = dmiss
    A11 = getdx(x(1),y(1),x(2),y(2),jsferic)   ! X(2) - X(1)
@@ -1169,20 +1169,23 @@
    RLAM = ( A22 * B1  - A12 * B2) / DET
    RMHU = (-A21 * B1  + A11 * B2) / DET
    
-   if (abs(RLAM) < EPS_BARY) then 
-       RLAM = 0.0_hp
+   ! For points on the triangle vertices and edge, apply rounding
+   if ((RLAM + RMHU > -EPS_BARY) .and. (RLAM + RMHU < 1.0_hp + EPS_BARY)) then
+      if (abs(RLAM) < EPS_BARY) then 
+          RLAM = 0.0_hp
+      end if
+      if (abs(RMHU) < EPS_BARY) then 
+          RMHU = 0.0_hp
+      end if
+      if (abs(1.0_hp - RLAM - RMHU) < EPS_BARY) then
+         ! Renormalize to ensure exact sum = 1
+         sum_weights = RLAM + RMHU
+         if (sum_weights > 0.0_hp) then
+            RLAM = RLAM / sum_weights
+            RMHU = RMHU / sum_weights
+         end if
+      end if
    end if
-   if (abs(RMHU) < EPS_BARY) then 
-       RMHU = 0.0_hp
-   end if
-   if (abs(1.0_hp - RLAM - RMHU) < EPS_BARY) then
-      ! Renormalize to ensure exact sum = 1
-      sum_weights = RLAM + RMHU
-      if (sum_weights > 0.0_hp) then
-         RLAM = RLAM / sum_weights
-         RMHU = RMHU / sum_weights
-      endif
-   endif
 
    wf(3) = rmhu
    wf(2) = rlam
