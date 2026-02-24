@@ -42,7 +42,8 @@ contains
 
    !> Generate *.mdu files for partitions from the main *.mdu file.
    subroutine generate_partition_mdu_file(filename_main, filename_partition)
-      use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, md_netfile, md_partitionfile, md_1dfiles, mess, level_error
+      use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, &
+      md_netfile, md_partitionfile, md_1dfiles, md_convertlongculverts, mess, level_error
       use string_module, only: strcmpi, str_lower
 
       ! Parameters
@@ -54,7 +55,7 @@ contains
       logical :: in_geometry !< Flag to check if currently in [geometry] block
       logical :: icgsolver_present !< Flag to check if icgsolver keyword is present in input *.mdu file, to decide whether it needs to be added
       logical :: crossdeffile_present !< Flag to check if crossdeffile keyword is present in input *.mdu file, to decide whether it needs to be added
-      logical, dimension(9) :: keyword_present !< Flags to check if keywords that need to be replaced are present in input *.mdu file, to decide whether find-and-replace is needed
+      logical, dimension(10) :: keyword_present !< Flags to check if keywords that need to be replaced are present in input *.mdu file, to decide whether find-and-replace is needed
       integer :: equal_pos !< Position of the equal sign in the line, to separate keyword from value
       integer :: stat !< Status of I/O operations
       integer :: unit_main !< Unit number for the main *.mdu file
@@ -123,6 +124,7 @@ contains
          ! Check if the keywords that need to be replaced are present
          keyword_present(1) = index(keyword, 'netfile') /= 0
          keyword_present(2) = index(keyword, 'icgsolver') /= 0
+         keyword_present(10) = index(keyword, 'convertlongculverts') /= 0
          if (len_trim(md_restartfile) > 0) then
             keyword_present(3) = index(keyword, 'restartfile') /= 0
          end if
@@ -176,6 +178,9 @@ contains
                write (unit_partition, "(a)") trim(mdu_line_partition)
             else if (keyword_present(9)) then ! Modify CrossSectionDefinitionsFile
                mdu_line_partition = trim(keyword)//" "//trim(md_1dfiles%cross_section_definitions)//"       # Cross section definitions file (*.ini)"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(10)) then ! Modify ConvertLongCulverts, set the value 0 as long culverts are already converted during partitioning.
+               mdu_line_partition = "ConvertLongCulverts         = 0                   # Default: 0. Whether or not to convert long culvert input to 1D2D long culverts"
                write (unit_partition, "(a)") trim(mdu_line_partition)
             end if
          end if
