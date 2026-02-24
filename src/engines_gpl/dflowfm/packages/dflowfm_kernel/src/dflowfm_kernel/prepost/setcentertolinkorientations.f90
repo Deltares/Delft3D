@@ -65,7 +65,7 @@ contains
          deallocate (snb)
       end if
 
-      if (jsferic == 0 .and. jasfer3D == 0) then
+      if (jsferic == 0 .or. jasfer3D == 0) then
          return
       end if
 
