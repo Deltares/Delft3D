@@ -17,7 +17,7 @@ object LinuxTest : BuildType({
     description = "Run TestBench.py within the Docker container on a list of testbench XML files."
 
     templates(
-        TemplateLinuxAgentNoFips,
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
@@ -47,6 +47,7 @@ object LinuxTest : BuildType({
 
     vcs {
         root(DslContext.settingsRoot)
+        cleanCheckout = true
     }
 
     params {
