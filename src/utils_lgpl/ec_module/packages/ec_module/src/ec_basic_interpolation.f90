@@ -147,7 +147,7 @@
    public   ::  bilin_interp_loc
    public   ::  triinterp2
    public   ::  TerrorInfo
-   public   ::  interpolate_linear_in_triangle
+   public   ::  interpolate_linear_from_triangle
 
    contains
 
@@ -1012,9 +1012,9 @@
 
    if (intri == 1) then
       if ( jasfer3D == 0 ) then
-         call interpolate_linear_in_triangle(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+         call interpolate_linear_from_triangle(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, JATEK, wf, dmiss, jsferic)
       else
-         call interpolate_linear_in_triangle_3D(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, jsferic, jasfer3D, dmiss)
+         call interpolate_linear_from_triangle_3D(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, jsferic, jasfer3D, dmiss)
       end if
       do k = 1,3
          ind(k) = indx(k,nrfind)
@@ -1094,7 +1094,7 @@
             ZT(idim,2) = ZS(idim,INDX(2,K))
             ZT(idim,3) = ZS(idim,INDX(3,K))
          end do
-         call interpolate_linear_in_triangle(XT, YT, ZT, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+         call interpolate_linear_from_triangle(XT, YT, ZT, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
          ind(1) = ik1
          ind(2) = ik2
          ind(3) = ik3
@@ -1113,7 +1113,7 @@
    END subroutine FINDTRI
 
 
-   subroutine interpolate_linear_in_triangle( X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+   subroutine interpolate_linear_from_triangle( X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
    implicit none
    integer      , intent(in)    :: NDIM   !< sample vector dimension
    real(kind=hp), intent(in)    :: X(:),Y(:),Z(:,:)
@@ -1148,6 +1148,10 @@
    real(kind=hp)    :: yn
    real(kind=hp)    :: z3
    real(kind=hp)    :: zn
+   real(kind=hp)    :: sum_weights
+
+
+   real(kind=hp), parameter :: EPS_BARY = 1.0e-12_hp     ! snapping distance to points in the mapped triangle space
 
    ZP  = dmiss
    A11 = getdx(x(1),y(1),x(2),y(2),jsferic)   ! X(2) - X(1)
@@ -1164,8 +1168,21 @@
 
    RLAM = ( A22 * B1  - A12 * B2) / DET
    RMHU = (-A21 * B1  + A11 * B2) / DET
-   RLAM = min(max(RLAM,0.0_hp),1.0_hp)
-   RMHU = min(max(RMHU,0.0_hp),1.0_hp-RLAM)
+   
+   if (abs(RLAM) < EPS_BARY) then 
+       RLAM = 0.0_hp
+   end if
+   if (abs(RMHU) < EPS_BARY) then 
+       RMHU = 0.0_hp
+   end if
+   if (abs(1.0_hp - RLAM - RMHU) < EPS_BARY) then
+      ! Renormalize to ensure exact sum = 1
+      sum_weights = RLAM + RMHU
+      if (sum_weights > 0.0_hp) then
+         RLAM = RLAM / sum_weights
+         RMHU = RMHU / sum_weights
+      endif
+   endif
 
    wf(3) = rmhu
    wf(2) = rlam
@@ -1202,9 +1219,9 @@
       end do
    endif
    return
-   end subroutine interpolate_linear_in_triangle
+   end subroutine interpolate_linear_from_triangle
 
-   subroutine interpolate_linear_in_triangle_3D(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, w, jsferic, jasfer3D, dmiss)
+   subroutine interpolate_linear_from_triangle_3D(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, w, jsferic, jasfer3D, dmiss)
       implicit none
 
       integer,                             intent(in)     :: NDIM       !< sample vector dimension
@@ -1278,7 +1295,7 @@
          zp(idim) = w(1) * z(idim,1) + w(2) * z(idim,2) + w(3) * z(idim,3)
       end do
 
-   end subroutine interpolate_linear_in_triangle_3D
+   end subroutine interpolate_linear_from_triangle_3D
 
    !---------------------------------------------------------------------------!
    !   nearest_neighbour
