@@ -6,7 +6,7 @@
 <summary> <h3>Added</h3> </summary>
 
 {% for file in added | sort(attribute='path') -%}
-    - `{{ file.path }}`
+- `{{ file.path }}`
 {%endfor%}
 
 </details>
@@ -18,7 +18,7 @@
 <summary> <h3>Deleted</h3> </summary>
 
 {% for file in deleted | sort(attribute='path') -%}
-    - `{{ file.path }}`
+- `{{ file.path }}`
 {%endfor%}
 
 </details>
@@ -32,21 +32,21 @@
 <summary> <h3>Renamed</h3> </summary>
 
 {% for rename in renamed -%}
-    - `{{ rename.path.old}}` -> `{{ rename.path.new }}`
+- `{{ rename.path.old}}` -> `{{ rename.path.new }}`
 {%endfor-%}
 
 </details>
 
 {% endif %}
 
-{% if moddified -%}
+{% if modified  -%}
 
 <details>
 
-<summary> <h3>Moddified</h3> </summary>
+<summary> <h3>Modified </h3> </summary>
 
-{% for file in moddified %}
-    - `{{file.path}}`
+{% for file in modified  %}
+- `{{file.path}}`
 {% endfor %}
 
 </details>

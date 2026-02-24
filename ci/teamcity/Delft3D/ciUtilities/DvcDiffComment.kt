@@ -1,12 +1,8 @@
-package Delft3D.linux
+package Delft3D.ciUtilities
 
-import java.io.File
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
-import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
-import Delft3D.linux.*
-import Delft3D.step.*
 import Trigger
 
 object DvcDiffComment : BuildType({
@@ -28,7 +24,7 @@ object DvcDiffComment : BuildType({
             name = "place a comment on the PR"
             scriptContent = """
             set -eo pipefail
-            uv venv --python=3.12 .venv
+            uv venv --python=3.11 .venv
             uv pip sync test/deltares_testbench/pip/lnx-dev-requirements.txt
             source .venv/bin/activate
             uv pip install jinja2-cli
@@ -37,6 +33,7 @@ object DvcDiffComment : BuildType({
             if [ -s report.md ]; then
                 PAYLOAD="$(jq -c -n --rawfile body report.md '${'$'}ARGS.named')"
                 curl -L \
+                    --fail \
                     -X POST \
                     -H "Accept: application/vnd.github+json" \
                     -H "Authorization: Bearer %github_deltares-service-account_access_token%" \

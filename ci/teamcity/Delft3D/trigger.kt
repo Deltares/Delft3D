@@ -272,7 +272,7 @@ object Trigger : BuildType({
         }
 
         script {
-            name = "Start DVC diff reprot build"
+            name = "Start DVC diff report build"
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
