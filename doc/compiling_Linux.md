@@ -589,10 +589,12 @@ EOT
 ```
 
 ## Build steps
-- build.sh
-  Execute "./build.sh --help" to show the usage
-  Currently used as default build process: "./build.sh fm-suite --compiler intel21"
-  This will execute "src/setenv.sh" on Deltares systems. On other systems, the environment must be prepared upfront.
+- Download or clone the source code from https://github.com/Deltares/Delft3D
+- Execute `build.sh` from a bash environment with the configuration specified above.
+  Execute `./build.sh --help` to show the usage
+  Currently used as default build process: `./build.sh fm-suite --compiler intel23`
+  This will automatically execute `src/setenv.sh` on Deltares systems.
+  On other systems, the environment must be prepared upfront.
   For instructions, see [Setup your own Linux environment](Linux_setup.md).
 
 ## Alternative: without build-script
