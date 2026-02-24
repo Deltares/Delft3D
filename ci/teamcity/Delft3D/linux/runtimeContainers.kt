@@ -12,6 +12,7 @@ object LinuxRuntimeContainers : BuildType({
     description = "Build two separate container images: one for running the Delft3D software and the other for executing its tests."
 
     templates(
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
