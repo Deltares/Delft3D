@@ -56,7 +56,7 @@ contains
       YP = 1.0_dp
       call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
       call f90_assert_eq(zp(1), 2.0_dp, "test4: Point outside triangle fails")
-      
+
    end subroutine test_interpolate_linear_from_triangle
    !$f90tw)
 
