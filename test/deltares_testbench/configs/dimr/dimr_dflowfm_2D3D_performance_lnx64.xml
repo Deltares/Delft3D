@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version='1.0' encoding='ISO-8859-1'?>
 <deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
   <!--
                                 Basic Linux   configuration file: tb3_cfg_lnx64_hp.xml
@@ -13,16 +13,16 @@
     <localPaths>
       <testCasesDir>./data/cases</testCasesDir>
       <enginesDir>./data/engines</enginesDir>
-      <referenceDir>./data/references</referenceDir>
+      <referenceDir>./data/cases</referenceDir>
     </localPaths>
     <locations>
       <location name="dsctestbench-cases">
-        <credential ref="commandline" />
-        <root>{server_base_url}/cases</root>
+        <credential ref="commandline"/>
+        <root>./data/cases</root>
       </location>
       <location name="dsctestbench-references">
-        <credential ref="commandline" />
-        <root>{server_base_url}/references</root>
+        <credential ref="commandline"/>
+        <root>./data/cases</root>
       </location>
       <location name="local">
         <root>./data/engines</root>
@@ -48,7 +48,8 @@
         <from>lnx64</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+        <from>teamcity_artifacts/lnx64</from>
+        <!-- just the first part of the directory structure, wil be file by TeamCity -->
       </location>
       <path>bin/run_dimr.sh</path>
       <environments>
@@ -62,7 +63,8 @@
         <from>lnx64</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+        <from>teamcity_artifacts/lnx64</from>
+        <!-- just the first part of the directory structure, wil be file by TeamCity -->
       </location>
       <path>bin/generate_parallel_mdu.sh</path>
     </program>
@@ -71,7 +73,8 @@
         <from>lnx64</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+        <from>teamcity_artifacts/lnx64</from>
+        <!-- just the first part of the directory structure, will be filled by TeamCity -->
       </location>
       <path>bin/run_dflowfm.sh</path>
     </program>
@@ -94,14 +97,12 @@
     </testCase>
   </defaultTestCases>
   <testCases>
-
     <!-- PERFORMANCE TESTS - ONE DOMAIN -->
-
     <testCase name="e02_f091_c040_rws_waal" ref="dflowfm_default">
-      <path version="2025-08-11T15:31:48.975000">e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
+      <path version="DVC">e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
       <programs>
         <program ref="dflowfm" seq="1">
-		  <workingDirectory>dflowfm</workingDirectory>
+          <workingDirectory>dflowfm</workingDirectory>
           <arguments>
             <argument>--partition:ndomains=4:icgsolver=6 Q10165.mdu</argument>
           </arguments>
@@ -136,10 +137,9 @@
         </file>
       </checks>
       <processCount>4</processCount>
-    </testCase>	
-
+    </testCase>
     <testCase name="e110_f03_c010_dcsm_0_5nm" ref="dflowfm_default">
-      <path version="2024-01-11T14:00:00">e110_delft3dfm_suite/f03_caching/c010_dcsm_0_5nm</path>
+      <path version="DVC">e110_delft3dfm_suite/f03_caching/c010_dcsm_0_5nm</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -177,9 +177,8 @@
       </checks>
       <processCount>4</processCount>
     </testCase>
-
     <testCase name="e110_f03_c020_maas" ref="dflowfm_default">
-      <path version="2024-03-11T17:30:00">e110_delft3dfm_suite/f03_caching/c020_maas</path>
+      <path version="DVC">e110_delft3dfm_suite/f03_caching/c020_maas</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -217,12 +216,11 @@
       </checks>
       <processCount>4</processCount>
     </testCase>
-	
     <testCase name="e110_f03_c030_rijntakken" ref="dflowfm_default">
-      <path version="2024-03-22T19:30:00">e110_delft3dfm_suite/f03_caching/c030_rijntakken</path>
+      <path version="DVC">e110_delft3dfm_suite/f03_caching/c030_rijntakken</path>
       <programs>
         <program ref="dflowfm" seq="1">
-		  <workingDirectory>computations/HW_j16-w5</workingDirectory>
+          <workingDirectory>computations/HW_j16-w5</workingDirectory>
           <arguments>
             <argument>--partition:ndomains=4:icgsolver=6 rijn_WBI_kort.mdu</argument>
           </arguments>
@@ -258,12 +256,11 @@
       </checks>
       <processCount>4</processCount>
     </testCase>
-
     <testCase name="e110_f03_c040_rmm" ref="dflowfm_default">
-      <path version="2024-01-11T14:00:00">e110_delft3dfm_suite/f03_caching/c040_rmm</path>
+      <path version="DVC">e110_delft3dfm_suite/f03_caching/c040_rmm</path>
       <programs>
         <program ref="dflowfm" seq="1">
-		  <workingDirectory>computations</workingDirectory>
+          <workingDirectory>computations</workingDirectory>
           <arguments>
             <argument>--partition:ndomains=4:icgsolver=6 RMM_kort.mdu</argument>
           </arguments>
@@ -299,9 +296,8 @@
       </checks>
       <processCount>4</processCount>
     </testCase>
-
     <testCase name="e02_f091_c02_waal_10165_2D" ref="dflowfm_default">
-      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c02_waal_10165_2D</path>
+      <path version="DVC">e02_dflowfm/f091_rws_acceptance/c02_waal_10165_2D</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -339,9 +335,8 @@
       </checks>
       <processCount>4</processCount>
     </testCase>
-
     <testCase name="e02_f091_c03_waal_10165_3D" ref="dflowfm_default">
-      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c03_waal_10165_3D</path>
+      <path version="DVC">e02_dflowfm/f091_rws_acceptance/c03_waal_10165_3D</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -379,18 +374,17 @@
       </checks>
       <processCount>4</processCount>
     </testCase>
-
     <testCase name="e02_f091_c04_maas_D4118" ref="dflowfm_default">
-      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c04_maas_D4118</path>
+      <path version="DVC">e02_dflowfm/f091_rws_acceptance/c04_maas_D4118</path>
       <programs>
         <program ref="dflowfm" seq="1">
-		  <workingDirectory>computations/test/JAMM/D4118-restart-6jan2023</workingDirectory>
+          <workingDirectory>computations/test/JAMM/D4118-restart-6jan2023</workingDirectory>
           <arguments>
             <argument>--partition:ndomains=4:icgsolver=6 Maas.mdu</argument>
           </arguments>
         </program>
         <program ref="dimr" seq="2">
-		  <workingDirectory>computations/test/JAMM/D4118-restart-6jan2023</workingDirectory>
+          <workingDirectory>computations/test/JAMM/D4118-restart-6jan2023</workingDirectory>
           <arguments>
             <argument>-c 4 -n 1 -m dimr_config.xml -d 9</argument>
             <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
@@ -421,9 +415,8 @@
       </checks>
       <processCount>4</processCount>
     </testCase>
-
     <testCase name="e02_f091_c05_san_francisco_bay_2D" ref="dflowfm_default">
-      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c05_san_francisco_bay_2D</path>
+      <path version="DVC">e02_dflowfm/f091_rws_acceptance/c05_san_francisco_bay_2D</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -461,6 +454,5 @@
       </checks>
       <processCount>4</processCount>
     </testCase>
-
   </testCases>
 </deltaresTestbench_v3>
