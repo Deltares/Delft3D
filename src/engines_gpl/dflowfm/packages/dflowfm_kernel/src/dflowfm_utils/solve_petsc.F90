@@ -626,102 +626,94 @@ contains
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    subroutine createPETSCPreconditioner(iprecnd)
-      use petsc, only: kspgetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, pcasmrestoresubksp, petsc_null_integer, tKSP, kspsetreusepreconditioner, petsc_false
-      use m_petsc, only: PETSC_OK, Solver, Preconditioner, SubSolver, SubPrec
+      use petsc, only: kspgetpc, pcdestroy, pccreate, petsc_comm_world, pcsetoperators, kspsetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, pcasmrestoresubksp, petsc_null_integer, tKSP
+      use m_petsc, only: PETSC_OK, PreconditioningType, Solver, Preconditioner, Amat, SubSolver, SubPrec
       use MessageHandling, only: mess, level_error
 
       integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
 
       integer :: jasucces
 
+      integer, save :: jafirst = 1
+
       PetscErrorCode :: ierr = PETSC_OK
       KSP, pointer :: SubSolvers(:)
 
       jasucces = 0
 
-      ! Ensure preconditioner will be recomputed with new matrix values
-      if (ierr == PETSC_OK) then
-         call KSPSetReusePreconditioner(Solver, PETSC_FALSE, ierr)
+      if (iprecnd == 0) then
+!         call mess(LEVEL_INFO, 'default preconditioner')
+      else if (iprecnd == 1) then
+!         call mess(LEVEL_INFO, 'no preconditioner')
+         PreconditioningType = 'none'
+      else if (iprecnd == 2) then
+         PreconditioningType = 'icc'
+      else if (iprecnd == 3) then
+         PreconditioningType = 'cholesky'
+      else if (iprecnd == 4) then ! not supported
+         PreconditioningType = 'gamg'
+      else
+         call mess(LEVEL_ERROR, 'conjugategradientPETSC: unsupported preconditioner')
+         goto 1234
       end if
 
-      ! Get the preconditioner from the KSP
+      ! Destroy the preconditioner and then create a new one
       if (ierr == PETSC_OK) then
          call KSPGetPC(Solver, Preconditioner, ierr)
       end if
 
-      ! Configure the preconditioner type
-      if (iprecnd == 0) then
-!        Use default preconditioner, just set up with current matrix
-         if (ierr == PETSC_OK) then
-            call KSPSetUp(Solver, ierr)
-         end if
-      else if (iprecnd == 1) then
-!        No preconditioner
-         if (ierr == PETSC_OK) then
-            call PCSetType(Preconditioner, 'none', ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call KSPSetUp(Solver, ierr)
-         end if
-      else if (iprecnd == 2) then
-!        Incomplete Cholesky with ASM
-         if (ierr == PETSC_OK) then
-            call PCSetType(Preconditioner, 'asm', ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call PCASMSetOverlap(Preconditioner, 2, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call KSPSetUp(Solver, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolvers, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            SubSolver = SubSolvers(1)
-            call PCASMRestoreSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolvers, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call KSPGetPC(SubSolver, SubPrec, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call PCSetType(SubPrec, 'icc', ierr)
-         end if
-      else if (iprecnd == 3) then
-!        Cholesky with ASM
-         if (ierr == PETSC_OK) then
-            call PCSetType(Preconditioner, 'asm', ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call PCASMSetOverlap(Preconditioner, 2, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call KSPSetUp(Solver, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolvers, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            SubSolver = SubSolvers(1)
-            call PCASMRestoreSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolvers, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call KSPGetPC(SubSolver, SubPrec, ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call PCSetType(SubPrec, 'cholesky', ierr)
-         end if
-      else if (iprecnd == 4) then
-!        GAMG
-         if (ierr == PETSC_OK) then
-            call PCSetType(Preconditioner, 'gamg', ierr)
-         end if
-         if (ierr == PETSC_OK) then
-            call KSPSetUp(Solver, ierr)
-         end if
+      if (jafirst == 1) then
+!     do not destroy the preconditioner
+         jafirst = 0
       else
-         call mess(LEVEL_ERROR, 'conjugategradientPETSC: unsupported preconditioner')
-         goto 1234
+         if (ierr == PETSC_OK) then
+            call PCDestroy(Preconditioner, ierr)
+         end if
+      end if
+
+      if (ierr == PETSC_OK) then
+         call PCCreate(PETSC_COMM_WORLD, Preconditioner, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call PCSetOperators(Preconditioner, Amat, Amat, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call KSPSetPC(Solver, Preconditioner, ierr)
+      end if
+
+      ! Configure the preconditioner
+      if (iprecnd /= 0) then
+         if (PreconditioningType == 'cholesky' .or. PreconditioningType == 'icc') then
+            if (ierr == PETSC_OK) then
+               call PCSetType(Preconditioner, 'asm', ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call PCASMSetOverlap(Preconditioner, 2, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call KSPSetUp(Solver, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolvers, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               SubSolver = SubSolvers(1)
+               call PCASMRestoreSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolvers, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call KSPGetPC(SubSolver, SubPrec, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call PCSetType(SubPrec, PreconditioningType, ierr)
+            end if
+         else
+            if (ierr == PETSC_OK) then
+               call PCSetType(Preconditioner, PreconditioningType, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call KSPSetUp(Solver, ierr)
+            end if
+         end if
       end if
 
       if (ierr /= PETSC_OK) then
