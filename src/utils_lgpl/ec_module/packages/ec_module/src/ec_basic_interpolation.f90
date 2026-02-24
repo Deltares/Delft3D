@@ -1170,8 +1170,7 @@
    wf(2) = rlam
    wf(1) = 1.0_hp - rlam - rmhu
 
-   ZP   = Z(:,1) + RLAM * (Z(:,2) - Z(:,1)) + RMHU * (Z(:,3) - Z(:,1))
-
+   ZP = wf(1)*Z(:,1) + wf(2)*Z(:,2) + wf(3)*Z(:,3)
    IF (JATEK == 1) THEN
       IF (MAX(ABS(A21),ABS(A22))  >  500) THEN
          DUM = 0
