@@ -1,11 +1,14 @@
 # Compiling Delft3D on Windows
 
 ## Prerequisites
-- Microsoft Visual Studio (latest version tested version 2022), this can be the [Community Edition](https://visualstudio.microsoft.com/vs/community/).
+- Microsoft Visual Studio, this can be the Enterprise Edition, Professional Edition, or even the [Community Edition](https://visualstudio.microsoft.com/vs/community/).
   Choose the **"Desktop development with C++"** configuration.
-  Make sure to include under the list of installation details on the right side of the installation dialog the items "C++/CLI support", "C++ MFC", and the latest "Windows SDK".
+  Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"**, **"C++ MFC"**, and the latest **"Windows SDK"**.
   <img src="images/VisualStudio_installed_components.png">
-  https://www.junian.net/dev/visual-studio-community-download-links/
+  We are currently using Visual Studio 2022 for the official release.
+  Initial tests using VS 2026 were successful, but we don't regularly test the build process using other versions.
+  Let us know when you run into issues.
+  Links to previous Visual Studio Community Editions can be found [here](https://www.junian.net/dev/visual-studio-community-download-links/).
 - You may use [Visual Studio Code](https://code.visualstudio.com/) as the development environment, but a Visual Studio installation is still required for the C++ compiler and the Intel Fortran installation.
 - [Intel oneAPI Fortran Compiler](https://www.intel.com/content/www/us/en/developer/tools/oneapi/fortran-compiler-download.html) Please make sure that it's integrated into the Visual Studio environment installed above.
 - [Intel oneAPI MPI Library](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html)
