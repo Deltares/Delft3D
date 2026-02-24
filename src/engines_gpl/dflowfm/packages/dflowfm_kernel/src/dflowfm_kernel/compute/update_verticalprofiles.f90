@@ -444,25 +444,25 @@ contains
                   sortkeshear = sourtu
                   !
                   if (iturbulencemodel == 3) then
-                     sortkeeps = - tureps0(L)
-                     sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
-                     bk(k) = bk(k) + sinktu * 2.0_dp
-                     dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
+                     if (testsplit == 1) then
+                         sortkeeps = - tureps0(L)
+                        if (janettosplit == 1) then         ! splitting on netto 
+                           sorsum = sortkebuoy+sortkeshear+sortkeeps
+                           call addsoursink( splitfac, sorsum  , turkin0(L), bk(k), dk(k) )
+                        else 
+                           sorsum = sortkeshear+sortkebuoy  ! sure positive, so add first
+                           call addsoursink( splitfac, sorsum     , turkin0(L), bk(k), dk(k) )
+                           call addsoursink( splitfac, sortkeeps  , turkin0(L), bk(k), dk(k) )
+                        end if
+                    else
+                       sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
+                       bk(k) = bk(k) + sinktu * 2.0_dp
+                       dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
+                     end if
                   else if (iturbulencemodel == 4) then
                      sinktu = 1.0_dp / tureps0(L) ! + tkedis(L) / turkin0(L)
                      bk(k) = bk(k) + sinktu
                      dk(k) = dk(k) + sourtu
-                  end if
-
-                  if (testsplit == 1) then
-                     if (janettosplit == 1) then         ! splitting on netto 
-                        sorsum = sortkebuoy+sortkeshear+sortkeeps
-                        call addsoursink( splitfac, sorsum  , turkin0(L), bk(k), dk(k) )
-                     else 
-                        sorsum = sortkeshear+sortkebuoy  ! sure positive, so add first
-                        call addsoursink( splitfac, sorsum     , turkin0(L), bk(k), dk(k) )
-                        call addsoursink( splitfac, sortkeeps  , turkin0(L), bk(k), dk(k) )
-                     end if
                   end if
         
                   ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
