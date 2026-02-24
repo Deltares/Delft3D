@@ -3,8 +3,8 @@
 ## Prerequisites
 - Microsoft Visual Studio, this can be the Enterprise Edition, Professional Edition, or even the [Community Edition](https://visualstudio.microsoft.com/vs/community/).
   Choose the **"Desktop development with C++"** configuration.
-  Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"**, **"C++ MFC"**, and the latest **"Windows SDK"**.
-  <img src="images/VisualStudio_installed_components.png">
+  Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"**, **"C++ MFC"**, and the latest **"Windows SDK"**.  
+  <img src="images/VisualStudio_installed_components.png">  
   We are currently using Visual Studio 2022 for the official release.
   Initial tests using VS 2026 were successful, but we don't regularly test the build process using other versions.
   Let us know when you run into issues.
