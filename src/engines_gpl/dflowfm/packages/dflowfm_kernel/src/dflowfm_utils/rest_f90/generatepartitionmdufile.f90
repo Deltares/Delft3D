@@ -42,7 +42,7 @@ contains
 
    !> Generate *.mdu files for partitions from the main *.mdu file.
    subroutine generate_partition_mdu_file(filename_main, filename_partition)
-      use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, md_netfile, md_partitionfile, mess, level_error
+      use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, md_netfile, md_partitionfile, md_1dfiles, mess, level_error
       use string_module, only: strcmpi, str_lower
 
       ! Parameters
@@ -51,8 +51,10 @@ contains
 
       ! Local variables
       logical :: in_numerics !< Flag to check if currently in [numerics] block
+      logical :: in_geometry !< Flag to check if currently in [geometry] block
       logical :: icgsolver_present !< Flag to check if icgsolver keyword is present in input *.mdu file, to decide whether it needs to be added
-      logical, dimension(7) :: keyword_present !< Flags to check if keywords that need to be replaced are present in input *.mdu file, to decide whether find-and-replace is needed
+      logical :: crossdeffile_present !< Flag to check if crossdeffile keyword is present in input *.mdu file, to decide whether it needs to be added
+      logical, dimension(9) :: keyword_present !< Flags to check if keywords that need to be replaced are present in input *.mdu file, to decide whether find-and-replace is needed
       integer :: equal_pos !< Position of the equal sign in the line, to separate keyword from value
       integer :: stat !< Status of I/O operations
       integer :: unit_main !< Unit number for the main *.mdu file
@@ -77,7 +79,9 @@ contains
 
       ! Initialization
       in_numerics = .false.
+      in_geometry = .false.
       icgsolver_present = .false.
+      crossdeffile_present = .false.
       keyword_present = .false.
       stat = 0
 
@@ -88,7 +92,7 @@ contains
             exit
          end if
 
-         ! In case icgsolver was not present in input *.mdu file, find-and-replace is not possible, so add it
+         ! In case icgsolver was not present in input *.mdu file, find-and-replace is not possible, so add icgsolver to partition *.mdu file
          if (strcmpi(mdu_line_main, '[numerics]', 10)) then
             in_numerics = .true.
          elseif (mdu_line_main(1:1) == '[' .and. in_numerics) then ! About to close [numerics] block
@@ -98,6 +102,17 @@ contains
                write (unit_partition, "(a)") trim(mdu_line_partition)
             end if
             in_numerics = .false.
+         end if
+
+         ! In case crossdeffile was not present in input *.mdu file, find-and-replace is not possible, so add crossdeffile to partition *.mdu file
+         if (strcmpi(mdu_line_main, '[geometry]', 10)) then
+            in_geometry = .true.
+         elseif (mdu_line_main(1:1) == '[' .and. in_geometry) then ! About to close [geometry] block
+            if (.not. crossdeffile_present) then
+               mdu_line_partition = "CrossDefFile = "//trim(md_1dfiles%cross_section_definitions)//"       # Cross section definitions file (*.ini)"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            end if
+            in_geometry = .false.
          end if
 
          ! Get keyword and convert to lower case for find-and-replace
@@ -122,6 +137,12 @@ contains
          end if
          if (len_trim(md_classmap_file) > 0) then
             keyword_present(7) = index(keyword, 'classmapfile') /= 0
+         end if
+         if (len_trim(md_1dfiles%structures) > 0) then
+            keyword_present(8) = index(keyword, 'structurefile') /= 0
+         end if
+         if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
+            keyword_present(9) = index(keyword, 'crossdeffile') /= 0
          end if
 
          if (.not. any(keyword_present)) then
@@ -149,6 +170,12 @@ contains
                write (unit_partition, "(a)") trim(mdu_line_partition)
             else if (keyword_present(6)) then ! Modify FlowGeomFile
                mdu_line_partition = trim(keyword)//" "//trim(md_flowgeomfile)//"       # FlowGeomFile name *.nc"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(8)) then ! Modify StructureFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_1dfiles%structures)//"       # Hydraulic structure file (*.ini)"
+               write (unit_partition, "(a)") trim(mdu_line_partition)
+            else if (keyword_present(9)) then ! Modify CrossSectionDefinitionsFile
+               mdu_line_partition = trim(keyword)//" "//trim(md_1dfiles%cross_section_definitions)//"       # Cross section definitions file (*.ini)"
                write (unit_partition, "(a)") trim(mdu_line_partition)
             end if
          end if
