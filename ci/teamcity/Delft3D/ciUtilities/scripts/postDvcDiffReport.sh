@@ -18,15 +18,9 @@ SOURCE_BRANCH="$(git rev-parse HEAD)"
 MERGE_BASE_COMMIT_HASH=$(git merge-base "$TARGET_BRANCH" HEAD)
 POST_URL="https://api.github.com/repos/deltares/delft3d/issues/$PULL_REQUEST_NUMBER/comments"
 
-# setup env
-uv venv --python=3.11 .venv
-uv pip sync test/deltares_testbench/pip/lnx-dev-requirements.txt
-source .venv/bin/activate
-uv pip install jinja2-cli
-
 # Generate the report
 dvc diff "$MERGE_BASE_COMMIT_HASH" "$SOURCE_BRANCH" --json > diff.json
-jinja2 ci/teamcity/Delft3D/ciUtilities/scripts/diff-report-template.jinja diff.json --lstrip-blocks --trim-blocks -o report.md
+jinja2 scripts/diff-report-template.jinja diff.json --lstrip-blocks --trim-blocks -o report.md
 
 # 
 if [ -z "$PULL_REQUEST_NUMBER" ]; then
