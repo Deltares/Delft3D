@@ -190,6 +190,7 @@ else
         \"buildTypeId\": \"$CONFIGURATION_ID\",
         $BRANCH_NAME_JSON
         $PROPERTIES_JSON_CLEAN
+    }"
 fi
 
 CONTENT_TYPE="application/json"
