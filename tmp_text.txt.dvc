@@ -1,0 +1,5 @@
+outs:
+- md5: 3bc34a45d26784b5bea8529db533ae84
+  size: 12
+  hash: md5
+  path: tmp_text.txt

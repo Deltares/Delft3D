@@ -55,3 +55,4 @@ unit-test-report-windows.xml
 test/deltares_testbench/data/cases/*
 !test/deltares_testbench/data/cases/**/*.dvc
 
+/tmp_text.txt
