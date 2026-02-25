@@ -2857,9 +2857,15 @@ contains
 
                ! Check if this is harmonic data
                if (has_harmonics) then
-                  ! Evaluate harmonics at source sample points
-                  omega = 2.0_dp * PI / sourceItem%hframe%ec_period
-                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_dp
+                  ! No time interpolation, but we DO have to update source values based on phase and amplitude.
+                  ! FieldT0 should contain the currently calculated values. (hence a0 = 1, a1 = 0)
+                  a0 = 1.0
+                  a1 = 0.0
+                  ! FOR SIMPLE HARMONIC only one step needed:
+                  !   1. calculate with cosine, and time, phase and source (T1) amplitude.
+                  ! note: source file Amplitude lives in T1
+                  omega = 2.0_dp * PI / sourceItem%hframe%ec_period ! period from seconds to radians
+                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_dp ! delta t in seconds since refdate
                   
                   ! Loop over all source sample points and evaluate harmonic function
                   do ipt = 1, n_cols
@@ -2873,10 +2879,6 @@ contains
                         sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
                      end if
                   end do
-                  
-                  ! Set time weights: use evaluated harmonic values (T0), no interpolation needed
-                  a0 = 1.0_dp
-                  a1 = 0.0_dp
                else
                   ! Normal time interpolation for time-series data
                   call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
