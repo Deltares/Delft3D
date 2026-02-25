@@ -72,7 +72,7 @@ object LinuxCollect : BuildType({
         }
         step {
             name = "Upload artifact to Nexus"
-            type = "RawUploadNexusLinux1_1"
+            type = "RawUploadNexusLinux2"
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("file_path", "%file_path%")
             param("nexus_username", "%nexus_username%")
