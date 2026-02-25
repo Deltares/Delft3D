@@ -106,7 +106,7 @@ contains
       real(kind=dp), allocatable :: ueuy(:)
       real(kind=dp), allocatable :: water_depth(:)
       real(kind=dp), allocatable :: ship_level(:)
-      real(kind=dp), allocatable :: tmp_interp_ndkx(:)
+      real(kind=dp), allocatable :: cell_z_centers(:)
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
       kmx_const = kmx
@@ -128,9 +128,13 @@ contains
          call realloc(water_depth, ndx, keepExisting=.false., fill=0.0_dp)
          water_depth = s1 - bl
       end if
-      if (.not. allocated(tmp_interp_ndkx)) then
-         ! Allocate as 2D arry for water levels etc.
-         call realloc(tmp_interp_ndkx, ndkx, keepExisting=.false., fill=0.0_dp)
+      if (model_is_3D() .and. .not. allocated(cell_z_centers)) then
+         ! Allocate as 2D arry for cell z centers
+         call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=0.0_dp)
+         do j = 2, ndkx
+            cell_z_centers(j) = 0.5_dp * (zws(j) + zws(j - 1))
+         end do
+
       end if
       if ((nshiptxy > 0) .and. allocated(zsp) .and. (.not. allocated(ship_level))) then
          call realloc(ship_level, ndx, keepExisting=.false., fill=0.0_dp)
@@ -299,15 +303,13 @@ contains
 
             ! Salinity (interpolated)
             if (jasal > 0) then
-               tmp_interp_ndkx = constituents(isalt, :)
-               call interpolate_and_fill_valobs(tmp_interp_ndkx, i, IPNT_SA1, UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(constituents(isalt, :), i, IPNT_SA1, UNC_LOC_S3D)
             end if
 
             ! Temperature
             ! if (jatem > 0) then
             if (temperature_model /= TEMPERATURE_MODEL_NONE) then
-               tmp_interp_ndkx = constituents(itemp, :)
-               call interpolate_and_fill_valobs(tmp_interp_ndkx, i, IPNT_TEM1, UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(constituents(itemp, :), i, IPNT_TEM1, UNC_LOC_S3D)
             end if
 
             ! Finally; vertical positions
@@ -316,11 +318,7 @@ contains
             if (model_is_3D()) then
                !       interface
                call interpolate_and_fill_valobs(zws, i, IPNT_ZWS, UNC_LOC_W)
-               !       centre: make temporary array with cellcentres
-               do j = 2, ndkx
-                  tmp_interp_ndkx(j) = 0.5_dp * (zws(j) + zws(j - 1))
-               end do
-               call interpolate_and_fill_valobs(tmp_interp_ndkx, i, IPNT_ZCS, UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(cell_z_centers, i, IPNT_ZCS, UNC_LOC_S3D)
             else
                valobs(i, IPNT_ZWS) = valobs(i, IPNT_BL)
                valobs(i, IPNT_ZWS + 1) = valobs(i, IPNT_S1)
