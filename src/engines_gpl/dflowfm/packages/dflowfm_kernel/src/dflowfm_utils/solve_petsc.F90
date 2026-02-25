@@ -848,14 +848,12 @@ contains
 
       integer :: i, n, jasucces
 
-      PetscScalar, dimension(1) :: dum
-      PetscOffset :: idum
-
-      PetscErrorCode :: ierr = PETSC_OK
+      PetscErrorCode :: ierr
       KSPConvergedReason :: Reason
       character(len=100) :: message
 
       jasucces = 0
+      ierr = PETSC_OK
 
       its = 0
 
@@ -868,9 +866,6 @@ contains
       end if
 
 !     fill vector rhs
-      if (ierr == PETSC_OK) then
-         call VecGetArray(rhs, dum, idum, ierr)
-      end if
       i = 0
       rhs_val = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
@@ -881,15 +876,7 @@ contains
          end if
       end do
 
-      if (ierr == PETSC_OK) then
-         call VecRestoreArray(rhs, dum, idum, ierr)
-      end if
-
 !     fill vector sol
-      if (ierr == PETSC_OK) then
-         call VecGetArray(sol, dum, idum, ierr)
-      end if
-
       sol_val = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
@@ -898,12 +885,6 @@ contains
             sol_val(i) = s1(ndn)
          end if
       end do
-      if (ierr == PETSC_OK) then
-         call VecRestoreArray(sol, dum, idum, ierr)
-      end if
-      if (ierr /= PETSC_OK) then
-         call mess(LEVEL_INFO, 'conjugategradientPETSC: PETSC_ERROR (3)')
-      end if
 
       if (ierr /= PETSC_OK) then
          go to 1234
