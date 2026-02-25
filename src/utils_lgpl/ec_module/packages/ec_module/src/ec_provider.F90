@@ -3500,6 +3500,8 @@ contains
       integer :: ierr
       logical :: ok
 
+      success = .true. !> accumulate errors, this stays true unless an error occurs
+
       ! Find phase variable
       phase_id = ecNetcdfFindVariableId(fileReaderPtr, 'PHASE')
       if (phase_id == ec_undef_int) then
