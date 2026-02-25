@@ -354,7 +354,7 @@ module m_ec_typedefs
       type(tEcItemPtr), dimension(:), pointer :: items => null() !< items to be updated by this fileReader, stored in tEcInstance%ecItemsPtr
       integer :: nItems !< Number of items <= size(items)
       type(tEcTimeFrame), pointer :: tframe => null() !< TimeFrame at which data is available
-      type(tEcHarmonicsFrame), pointer :: hframe => null() !< Harmonics frame
+      type(tEcHarmonicsFrame) :: hframe !< Harmonics frame
       real(hp) :: lastReadTime
       type(tEcBCBlock), pointer :: bc => null() !< BC-fileheader information
       integer :: vectormax = 1 !< number of vector elements (from the demand side)
