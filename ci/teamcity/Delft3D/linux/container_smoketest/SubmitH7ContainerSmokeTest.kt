@@ -25,7 +25,7 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
         param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma8-%dep.${LinuxBuild.id}.product%-%dep.${LinuxBuild.id}.commit_id%")
 
         // H7 smoke test directory
-        param("h7_work_directory", "smoke/%build.revisions.short%")
+        param("h7_work_directory", "smoke/%build.revisions.short%-%build.counter%")
 
         // H7 cluster access credentials
         param("h7_account_username", DslContext.getParameter("ad_h7_smoke_test_user"))
