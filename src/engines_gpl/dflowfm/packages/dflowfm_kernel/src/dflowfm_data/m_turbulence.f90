@@ -38,15 +38,15 @@ module m_turbulence
    real(kind=dp), parameter :: CMUKEP = 0.09_dp
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
-   real(kind=dp), parameter :: SIGDIF = 1.0_DP
-   real(kind=dp), parameter :: SIGTKE = 1.0_DP
-   real(kind=dp), parameter :: SIGTKEI = 1.0_DP
+   integer, parameter :: SIGDIF = 1
+   integer, parameter :: SIGTKE = 1
+   integer, parameter :: SIGTKEI = 1
    real(kind=dp), parameter :: SIGEPS = 1.3_DP
    real(kind=dp), parameter :: SIGEPSI = 1.0_DP/SIGEPS
    real(kind=dp), parameter :: SIGRHO = 0.7_DP !< BOUYANCY
    real(kind=dp), parameter :: C2E = 1.92_DP
    real(kind=dp), parameter :: C2T = 1.0_DP - C2E
-   real(kind=dp), parameter :: C3T_STABLE = 1.0_DP * CMUKEP
+   real(kind=dp), parameter :: C3T_STABLE = CMUKEP
    real(kind=dp), parameter :: CDE = CMUKEP**0.75_DP
    real(kind=dp) :: c1e
    real(kind=dp) :: c1t
@@ -146,7 +146,7 @@ contains
 
    !> Calculates derived coefficients for turbulence
    subroutine calculate_derived_coefficients_turbulence()
-      use m_physcoef, only: vonkar, rhomean, ag
+      use m_physcoef, only: rhomean, ag
 
       brunt_vaisala_coefficient = -ag / (SIGRHO * rhomean)
 

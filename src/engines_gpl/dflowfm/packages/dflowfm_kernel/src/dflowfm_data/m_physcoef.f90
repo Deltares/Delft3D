@@ -81,8 +81,8 @@ module m_physcoef
    real(kind=dp) :: vismol !< molecular viscosity (m2/s)
    real(kind=dp), parameter :: difmolsal = viskin / 700.0_dp !< molecular diffusivity of salinity
    real(kind=dp), parameter :: difmoltem = viskin / 6.7_dp !<           diffusivity of temperature
-   real(kind=dp), parameter :: difmolsed = 0.0_dp !< diffusivity of sediment
-   real(kind=dp), parameter :: difmoltracer = 0.0_dp !< diffusivity of tracers
+   integer, parameter :: difmolsed = 0 !< diffusivity of sediment
+   integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
 
    real(kind=dp) :: vicwminb !< minimum eddy viscosity in production terms shear and buoyancy
    real(kind=dp) :: xlozmidov !< Ozmidov length scale (m)
