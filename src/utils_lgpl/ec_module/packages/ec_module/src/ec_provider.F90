@@ -2770,11 +2770,7 @@ contains
                   do idims = 1, ndims
                      crd_dimlen(idims, 3) = fileReaderPtr%dim_length(crd_dimids(idims, 3))
                   end do
-               else
-                  crd_dimlen(:, 3) = 0
                end if
-            else
-               crd_dimlen(:, 3) = 0
             end if
 
             ! Check if the dimension(sizes) of the 1st and 2nd coordinate variable agree
@@ -3479,25 +3475,30 @@ contains
       end do
    end function ecNetcdfFindVariableId
 
+   !> Set the HarmonicsFrame's properties, based on a NetCDF file represented by fileReaderPtr
    subroutine ecNetcdfInitializeHarmonicsFrame(fileReaderPtr, hframe, success)
       use netcdf
       use m_ec_support, only: ecSupportNetcdfCheckErrorAccumulate
-      !
+      
       type(tEcFileReader), pointer, intent(in) :: fileReaderPtr !< filereader that has information on the file that requires an harmonics frame to be initialized
       type(tEcHarmonicsFrame), intent(out) :: hframe !< the hframe object to be initialized
       logical, intent(out) :: success !< status boolean
-      !
-      integer :: phase_id
-      character(len=NF90_MAX_NAME) :: units, attrstring
-      integer :: period
-      integer, dimension(2) :: dimids
-      integer :: numids, dim_sizes(2)
-      real(dp), dimension(:, :), allocatable :: data_block
-      integer :: istat, ierr
-      logical :: is_column_major, ok
-      !
-      success = .true.
-      is_column_major = .false.
+      
+      integer :: phase_id !< integer id of variable with standard_name "phase"
+      character(len=NF90_MAX_NAME) :: units !< units attribute of a variable
+      character(len=NF90_MAX_NAME) :: attrstring !< global attribute
+      integer :: period !< period value in seconds.
+      integer, dimension(2) :: dimids !< integer id's of amplitude/phase variable's dimension variables eg: phase(y,x) -> id's of y and x.
+      integer :: numids !< number of variable id's of amplitude/phase (we expect 2: y,x or x,y)
+      integer, dimension(2) :: dim_sizes !< number of points in x and y directions (note: may be swapped).
+      real(dp), dimension(:, :), allocatable :: data_block !< temporary buffer for phase data
+      integer :: istat !< status of allocation operation
+      integer :: i !< column index loop variable
+      integer :: j !< row index loop variable
+      logical :: is_column_major !< file data is transposed: (X,Y) instead of (Y,X)
+
+      integer :: ierr
+      logical :: ok
 
       ! Find phase variable
       phase_id = ecNetcdfFindVariableId(fileReaderPtr, 'PHASE')
@@ -3515,7 +3516,8 @@ contains
                                         tzone=fileReaderPtr%tframe%ec_timezone)
       success = success .and. ok
 
-      ! Extract period
+      ! Extract period from attributes.
+      ! TODO: Make this an OPTIONAL thing and maybe revert to astro as a fallback. (for now, we expect it to be there)
       attrstring = ''
       ierr = nf90_get_att(fileReaderPtr%fileHandle, 0, "component_period_in_seconds", attrstring)
       call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read component_period_in_seconds", fileReaderPtr%fileName)
@@ -3524,6 +3526,7 @@ contains
       hframe%ec_period = period
 
       ! Validate phase units
+      ! TODO: Add iostat and support other units? (See ecGetTimesteps() for inspiration)
       units = ''
       ierr = nf90_get_att(fileReaderPtr%fileHandle, phase_id, "units", units)
       call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase units", fileReaderPtr%fileName)
