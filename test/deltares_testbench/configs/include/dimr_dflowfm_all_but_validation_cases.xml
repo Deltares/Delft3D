@@ -2074,7 +2074,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c102_netcdf_harmonic_samples" ref="dflowfm_default">
-        <path version="2026-02-25T13:44:18.611000">e02_dflowfm/f006_external_forcing/c102_netcdf_harmonic_samples</path>
+        <path version="2026-02-25T16:23:52.989000">e02_dflowfm/f006_external_forcing/c102_netcdf_harmonic_samples</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="DFM_OUTPUT_model/model_map.nc" type="netcdf">
