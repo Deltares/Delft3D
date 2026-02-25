@@ -43,7 +43,7 @@ contains
    !> test iterative solver (as "mpitest")
    subroutine soltest(iCFL, icgsolver_loc, maxsubmatvecs, iepsdiff, iepscg)
       use m_make_matrix, only: make_matrix
-      use m_solve_guus, only: solve_matrix
+      use m_solve_guus, only: solve_matrix, pack_matrix
       use precision, only: dp
       use m_update_matrix, only: update_matrix
       use m_partitioninfo, only: jampi, jaoverlap, update_ghosts, itype_sall, idomain, my_rank, nghostlist_sall, ndomains, ighostlist_sall
@@ -54,7 +54,6 @@ contains
       use m_flow, only: hu, realloc, s1, itsol
       use network_data, only: xzw
       use m_flow_modelinit, only: flow_modelinit
-      use m_solve_guus, only: pack_matrix
 
       integer, intent(in) :: iCFL !< wave-based Courant number
       integer, intent(in) :: icgsolver_loc ! icgsolver (if > 0)
