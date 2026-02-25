@@ -52,6 +52,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     use sediment_basics_module
     use string_module
     use m_rdmorlyr
+    use tree_structures, only: print_tree
     use message_module, only: write_error, write_warning, FILE_NOT_FOUND, FILE_READ_ERROR, PREMATURE_EOF
     !
     implicit none
@@ -102,6 +103,8 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     character(11)                                                     :: fmttmp !< Format file ('formatted  ')
     character(:), allocatable                                         :: filmor
     character(:), allocatable                                         :: filename
+    character(len=1), dimension(1) :: dummychar
+    logical :: dummylog
 !
 !! executable statements -------------------------------------------------------
 !
@@ -294,6 +297,12 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                  & griddim   )
     !
     deallocate(xxprog)
+    
+    !if (loglevel_StdOut <= LEVEL_DEBUG) then
+       write (*, *) '** DEBUG  : This is the mor file that will be processed:' ! no MessageHandling, because tree_traverse does not (yet) support it.
+       call tree_traverse(mor_ptr, print_tree, dummychar, dummylog)
+       write (*, *) '** DEBUG  : This is the mor file that will be processed:' ! no MessageHandling, because tree_traverse does not (yet) support it.
+    !end if
 end subroutine rdmor
 
 !> put mor file in input tree 
@@ -792,14 +801,11 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     call prop_get(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
-    mornum%sink_theta=1.0_fp
     call prop_get(mor_ptr, 'Numerics', 'SinkTheta', mornum%sink_theta)
-    mornum%suspended_flux_factor=1.0_fp
     call prop_get(mor_ptr, 'Numerics', 'SuspendedFluxFactor', mornum%suspended_flux_factor)
-    mornum%sink_factor=1.0_fp
     call prop_get(mor_ptr, 'Numerics', 'SuspendedSinkFactor', mornum%sink_factor)
-    mornum%source_factor=1.0_fp
     call prop_get(mor_ptr, 'Numerics', 'SuspendedSourceFactor', mornum%source_factor)
+    call prop_get(mor_ptr, 'Numerics', 'UpdateLTSFlux', mornum%update_lts_flux)
 
     fluxlimstring = ' '
     call prop_get(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)       

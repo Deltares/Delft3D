@@ -313,6 +313,7 @@ type mornumericstype
                                         ! at zeta point is `maximumwaterdepthfrac` times the 
                                         ! maximum water depth at active velocity points.
     integer :: fluxlim                  ! flux limiter choice
+    integer :: update_lts_flux          ! flux update choice for local time stepping
     double precision :: sink_theta      ! weighting factor for sink term in suspended sediment equation 0: explicit, 1: implicit
     double precision :: suspended_flux_factor ! factor to scale horizontal suspended sediment fluxes
     double precision :: sink_factor ! factor to scale suspended sediment sink term 
@@ -1596,6 +1597,11 @@ subroutine nullmorpar(morpar)
     morpar%mornum%laterallyaveragedbedload = .false.
     morpar%mornum%maximumwaterdepth        = .false.
     morpar%mornum%maximumwaterdepthfrac    = 1.0d0 !by default, if `maximumwaterdepth=.true.`, `hs_mor=max(hs,hu)`, which is the old functionality. 
+    morpar%mornum%sink_theta=1.0_fp
+    morpar%mornum%suspended_flux_factor=1.0_fp
+    morpar%mornum%sink_factor=1.0_fp
+    morpar%mornum%source_factor=1.0_fp
+    morpar%mornum%update_lts_flux=0
     !
     rmissval           = -999.0_fp
     imissval           = -999

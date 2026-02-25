@@ -200,9 +200,9 @@ contains
          if (nsubsteps > 1) then
             call get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
          end if
-         if (istep == 0) then
+         if (istep == 0 .or. stmpar%morpar%mornum%update_lts_flux == 1) then
 !     compute horizontal fluxes, explicit part
-         if ((.not. stm_included) .or. flow_without_waves) then ! just do the normal stuff
+            if ((.not. stm_included) .or. flow_without_waves) then ! just do the normal stuff
                call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
             else
                if (jatranspvel == 0 .or. jatranspvel == 1) then ! Lagrangian approach
