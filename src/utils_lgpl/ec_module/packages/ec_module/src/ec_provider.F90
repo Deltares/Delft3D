@@ -3523,10 +3523,10 @@ contains
       attrstring = ''
       ierr = nf90_get_att(fileReaderPtr%fileHandle, 0, "component_period_in_seconds", attrstring)
       call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read component_period_in_seconds", fileReaderPtr%fileName)
-
-      read (attrstring, *) period
-      hframe%ec_period = period
-
+      if (success) then
+         read (attrstring, *) period
+         hframe%ec_period = period
+      end if
       ! Validate phase units
       ! TODO: Add iostat and support other units? (See ecGetTimesteps() for inspiration)
       units = ''
