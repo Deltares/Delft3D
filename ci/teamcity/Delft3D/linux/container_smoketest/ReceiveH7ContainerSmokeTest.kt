@@ -3,6 +3,7 @@ package Delft3D.linux.container_smoketest
 import Delft3D.linux.*
 import Delft3D.step.*
 import Delft3D.template.*
+import Delft3D.linux.container_smoketest.LinuxSubmitH7ContainerSmokeTest
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
