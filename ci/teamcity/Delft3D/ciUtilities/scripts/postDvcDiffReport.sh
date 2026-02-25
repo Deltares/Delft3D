@@ -33,7 +33,7 @@ if [ -z "$GITHUB_BARER_TOKEN" ]; then
     exit 0
 fi
 
-# check if report.md is empty. if not then there were definitely no dvc changes
+# check if report.md is empty. if it is then there were no dvc changes
 if [ -s report.md ]; then
     # use jq to format the generated report as a valid JSON payload
     PAYLOAD="$(jq -c -n --rawfile body report.md '$ARGS.named')"
