@@ -3293,7 +3293,8 @@ contains
       case (provFile_netcdf)
          success = ecNetcdfInitializeTimeFrame(fileReaderPtr)
          if (.not. success) then
-            call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr, fileReaderPtr%hframe, success)
+            call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr%fileHandle, fileReaderPtr%fileName, fileReaderPtr%standard_names, fileReaderPtr%variable_names,  &
+                  fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
          end if
          if (.not. success) then
             call setECMessage('ERROR: ec_provider::ecProviderInitializeTimeFrame: Failed to initialize from NetCDF file.')
@@ -3441,34 +3442,37 @@ contains
    ! =======================================================================
 
    !> Get index of supplied variable name
-   function ecNetcdfFindVariableId(fileReaderPtr, variable_name) result(variable_id)
+   function ecNetcdfFindVariableId(fileHandle, fileName, standard_names, variable_names, variable_name) result(variable_id)
       use netcdf
       !
       integer :: variable_id !< variable id of name in file, ec_undef_int if not found.
-      type(tEcFileReader), pointer :: fileReaderPtr !< intent(in) File being read.
-      character(*), intent(in) :: variable_name !< variable name to find.
+      integer, intent(in) :: fileHandle !< NetCDF file handle
+      character(len=*), intent(in) :: fileName !< File name (for error reporting)
+      character(len=*), intent(in) :: standard_names(:) !< Array of standard names
+      character(len=*), intent(in) :: variable_names(:) !< Array of variable names
+      character(len=*), intent(in) :: variable_name !< variable name to find.
       !
       integer :: nVariables !< number of variables in NetCDF file
       integer :: i !< loop variable
       !
       variable_id = ec_undef_int
       !
-      if (.not. ecSupportNetcdfCheckError(nf90_inquire(fileReaderPtr%fileHandle, nVariables=nVariables), "obtain nVariables", fileReaderPtr%fileName)) return
+      if (.not. ecSupportNetcdfCheckError(nf90_inquire(fileHandle, nVariables=nVariables), "obtain nVariables", fileName)) return
       !
       ! Inspect the standard_name attribute of all variables to find and store that variable's id.
       !
       ! check the standard names for the requested name
-      nVariables = size(fileReaderPtr%standard_names)
+      nVariables = size(standard_names)
       do i = 1, nVariables
-         if (strcmpi(fileReaderPtr%standard_names(i), variable_name)) then
+         if (strcmpi(standard_names(i), variable_name)) then
             variable_id = i
             return
          end if
       end do
       ! .... if not found, check variable names ....
-      nVariables = size(fileReaderPtr%variable_names)
+      nVariables = size(variable_names)
       do i = 1, nVariables
-         if (strcmpi(fileReaderPtr%variable_names(i), variable_name)) then
+         if (strcmpi(variable_names(i), variable_name)) then
             variable_id = i
             return
          end if
@@ -3476,11 +3480,18 @@ contains
    end function ecNetcdfFindVariableId
 
    !> Set the HarmonicsFrame's properties, based on a NetCDF file represented by fileReaderPtr
-   subroutine ecNetcdfInitializeHarmonicsFrame(fileReaderPtr, hframe, success)
+subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names, variable_names, lonx_id, laty_id, ec_refdate, ec_timezone, hframe, success)
       use netcdf
       use m_ec_support, only: ecSupportNetcdfCheckErrorAccumulate
       
-      type(tEcFileReader), pointer, intent(in) :: fileReaderPtr !< filereader that has information on the file that requires an harmonics frame to be initialized
+      integer, intent(in) :: fileHandle !< NetCDF file handle
+      character(len=*), intent(in) :: fileName !< File name (for error reporting)
+      character(len=*), intent(in) :: standard_names(:) !< Array of valid standard names
+      character(len=*), intent(in) :: variable_names(:) !< Array of valid variable names
+      integer, intent(in) :: lonx_id !< NetCDF id of X (or longitude) dimension variable
+      integer, intent(in) :: laty_id !< NetCDF id of Y (or latitude) dimension variable
+      real(hp), intent(out) :: ec_refdate !< EC reference date
+      real(hp), intent(out) :: ec_timezone !< EC timezone
       type(tEcHarmonicsFrame), intent(out) :: hframe !< the hframe object to be initialized
       logical, intent(out) :: success !< status boolean
       
@@ -3503,7 +3514,7 @@ contains
       success = .true. !> accumulate errors, this stays true unless an error occurs
 
       ! Find phase variable
-      phase_id = ecNetcdfFindVariableId(fileReaderPtr, 'PHASE')
+      phase_id = ecNetcdfFindVariableId(fileHandle, fileName, standard_names, variable_names, 'PHASE')
       if (phase_id == ec_undef_int) then
          call setECMessage('ERROR: Phase variable not found in NetCDF file.')
          success = .false.
@@ -3511,18 +3522,18 @@ contains
 
       ! Extract reference time
       attrstring = ''
-      ierr = nf90_get_att(fileReaderPtr%fileHandle, 0, "reference_time_of_component_phase", attrstring)
-      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read reference_time_of_component_phase", fileReaderPtr%fileName)
+      ierr = nf90_get_att(fileHandle, 0, "reference_time_of_component_phase", attrstring)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read reference_time_of_component_phase", fileName)
 
-      ok = ecSupportTimestringToRefdate(attrstring, fileReaderPtr%tframe%ec_refdate, &
-                                        tzone=fileReaderPtr%tframe%ec_timezone)
+      ok = ecSupportTimestringToRefdate(attrstring, ec_refdate, &
+                                        tzone=ec_timezone)
       success = success .and. ok
 
       ! Extract period from attributes.
       ! TODO: Make this an OPTIONAL thing and maybe revert to astro as a fallback. (for now, we expect it to be there)
       attrstring = ''
-      ierr = nf90_get_att(fileReaderPtr%fileHandle, 0, "component_period_in_seconds", attrstring)
-      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read component_period_in_seconds", fileReaderPtr%fileName)
+      ierr = nf90_get_att(fileHandle, 0, "component_period_in_seconds", attrstring)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read component_period_in_seconds", fileName)
       if (success) then
          read (attrstring, *) period
          hframe%ec_period = period
@@ -3530,8 +3541,8 @@ contains
       ! Validate phase units
       ! TODO: Add iostat and support other units? (See ecGetTimesteps() for inspiration)
       units = ''
-      ierr = nf90_get_att(fileReaderPtr%fileHandle, phase_id, "units", units)
-      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase units", fileReaderPtr%fileName)
+      ierr = nf90_get_att(fileHandle, phase_id, "units", units)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase units", fileName)
 
       if (units /= 'deg') then
          call setECMessage('ERROR: Phase unit must be degrees, got: '//trim(units))
@@ -3539,21 +3550,21 @@ contains
       end if
 
       ! Get dimensions
-      ierr = nf90_inquire_variable(fileReaderPtr%fileHandle, phase_id, ndims=numids, dimids=dimids)
-      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire phase variable dimensions", fileReaderPtr%fileName)
+      ierr = nf90_inquire_variable(fileHandle, phase_id, ndims=numids, dimids=dimids)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire phase variable dimensions", fileName)
 
       if (numids == 1) then
-         ierr = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(1), len=dim_sizes(1))
-         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire dimension length", fileReaderPtr%fileName)
+         ierr = nf90_inquire_dimension(fileHandle, dimids(1), len=dim_sizes(1))
+         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire dimension length", fileName)
          dim_sizes(2) = 1
       else if (numids == 2) then
-         ierr = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(1), len=dim_sizes(1))
-         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire first dimension length", fileReaderPtr%fileName)
+         ierr = nf90_inquire_dimension(fileHandle, dimids(1), len=dim_sizes(1))
+         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire first dimension length", fileName)
 
-         ierr = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(2), len=dim_sizes(2))
-         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire second dimension length", fileReaderPtr%fileName)
+         ierr = nf90_inquire_dimension(fileHandle, dimids(2), len=dim_sizes(2))
+         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire second dimension length", fileName)
 
-         is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
+         is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), lonx_id, laty_id)
       else
          call setECMessage('ERROR: Phase variable must have 1 or 2 dimensions')
          success = .false.
@@ -3562,8 +3573,8 @@ contains
       ! Load phase data
       allocate (data_block(dim_sizes(1), dim_sizes(2)), stat=istat)
 
-      ierr = nf90_get_var(fileReaderPtr%fileHandle, phase_id, data_block, start=[1, 1], count=dim_sizes)
-      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase data", fileReaderPtr%fileName)
+      ierr = nf90_get_var(fileHandle, phase_id, data_block, start=[1, 1], count=dim_sizes)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase data", fileName)
 
       ! Store with correct orientation
       hframe%phase_dims = merge([dim_sizes(2), dim_sizes(1)], dim_sizes, is_column_major)
