@@ -2837,7 +2837,7 @@ contains
             sourceMissing = sourceItem%quantityPtr%fillvalue
             sourceElementSet => sourceItem%elementSetPtr
             time_interpolation = sourceItem%quantityptr%timeint
-            has_harmonics = allocated(sourceItem%hframe)
+            has_harmonics = associated(sourceItem%hframe)
 
             indexWeight => connection%converterPtr%indexWeight
 

@@ -3297,8 +3297,7 @@ contains
       case (provFile_netcdf)
          success = ecNetcdfInitializeTimeFrame(fileReaderPtr)
          if (.not. success) then
-            fileReaderPtr%hframe = ecNetcdfInitializeHarmonicsFrame(fileReaderPtr)
-            success = (allocated(fileReaderPtr%hframe)) ! TODO: check if any new ec error messages were added to the message stack
+            call ecNetcdfInitializeHarmonicsFrame(fileReaderPtr, fileReaderPtr%hframe, success)
          end if
          if (.not. success) then
             call setECMessage('ERROR: ec_provider::ecProviderInitializeTimeFrame: Failed to initialize from NetCDF file.')
@@ -3480,12 +3479,13 @@ contains
       end do
    end function ecNetcdfFindVariableId
 
-   function ecNetcdfInitializeHarmonicsFrame(fileReaderPtr) result(hframe)
+   subroutine ecNetcdfInitializeHarmonicsFrame(fileReaderPtr, hframe, success)
       use netcdf
+      use m_ec_support, only: ecSupportNetcdfCheckErrorAccumulate
       !
-      logical :: success
-      type(tEcFileReader), pointer, intent(in) :: fileReaderPtr
-      type(tEcHarmonicsFrame) :: hframe
+      type(tEcFileReader), pointer, intent(in) :: fileReaderPtr !< filereader that has information on the file that requires an harmonics frame to be initialized
+      type(tEcHarmonicsFrame), intent(out) :: hframe !< the hframe object to be initialized
+      logical, intent(out) :: success !< status boolean
       !
       integer :: phase_id
       character(len=NF90_MAX_NAME) :: units, attrstring
@@ -3509,7 +3509,7 @@ contains
       ! Extract reference time
       attrstring = ''
       ierr = nf90_get_att(fileReaderPtr%fileHandle, 0, "reference_time_of_component_phase", attrstring)
-      call ecNetcdfCheck(ierr, success, "Failed to read reference_time_of_component_phase", fileReaderPtr%fileName)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read reference_time_of_component_phase", fileReaderPtr%fileName)
 
       ok = ecSupportTimestringToRefdate(attrstring, fileReaderPtr%tframe%ec_refdate, &
                                         tzone=fileReaderPtr%tframe%ec_timezone)
@@ -3518,7 +3518,7 @@ contains
       ! Extract period
       attrstring = ''
       ierr = nf90_get_att(fileReaderPtr%fileHandle, 0, "component_period_in_seconds", attrstring)
-      call ecNetcdfCheck(ierr, success, "Failed to read component_period_in_seconds", fileReaderPtr%fileName)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read component_period_in_seconds", fileReaderPtr%fileName)
 
       read (attrstring, *) period
       hframe%ec_period = period
@@ -3526,7 +3526,7 @@ contains
       ! Validate phase units
       units = ''
       ierr = nf90_get_att(fileReaderPtr%fileHandle, phase_id, "units", units)
-      call ecNetcdfCheck(ierr, success, "Failed to read phase units", fileReaderPtr%fileName)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase units", fileReaderPtr%fileName)
 
       if (units /= 'deg') then
          call setECMessage('ERROR: Phase unit must be degrees, got: '//trim(units))
@@ -3535,21 +3535,20 @@ contains
 
       ! Get dimensions
       ierr = nf90_inquire_variable(fileReaderPtr%fileHandle, phase_id, ndims=numids, dimids=dimids)
-      call ecNetcdfCheck(ierr, success, "Failed to inquire phase variable dimensions", fileReaderPtr%fileName)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire phase variable dimensions", fileReaderPtr%fileName)
 
       if (numids == 1) then
          ierr = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(1), len=dim_sizes(1))
-         call ecNetcdfCheck(ierr, success, "Failed to inquire dimension length", fileReaderPtr%fileName)
+         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire dimension length", fileReaderPtr%fileName)
          dim_sizes(2) = 1
       else if (numids == 2) then
          ierr = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(1), len=dim_sizes(1))
-         call ecNetcdfCheck(ierr, success, "Failed to inquire first dimension length", fileReaderPtr%fileName)
+         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire first dimension length", fileReaderPtr%fileName)
 
          ierr = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(2), len=dim_sizes(2))
-         call ecNetcdfCheck(ierr, success, "Failed to inquire second dimension length", fileReaderPtr%fileName)
+         call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire second dimension length", fileReaderPtr%fileName)
 
-         is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), &
-                                                       fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
+         is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
       else
          call setECMessage('ERROR: Phase variable must have 1 or 2 dimensions')
          success = .false.
@@ -3559,7 +3558,7 @@ contains
       allocate (data_block(dim_sizes(1), dim_sizes(2)), stat=istat)
 
       ierr = nf90_get_var(fileReaderPtr%fileHandle, phase_id, data_block, start=[1, 1], count=dim_sizes)
-      call ecNetcdfCheck(ierr, success, "Failed to read phase data", fileReaderPtr%fileName)
+      call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase data", fileReaderPtr%fileName)
 
       ! Store with correct orientation
       hframe%phase_dims = merge([dim_sizes(2), dim_sizes(1)], dim_sizes, is_column_major)
@@ -3570,9 +3569,11 @@ contains
       end if
       if (.not. success) then
          call setECMessage('ERROR: ec_provider::ecNetcdfInitializeHarmonicsFrame: Failed to initialize harmonics frame.')
-
       end if
-   end function ecNetcdfInitializeHarmonicsFrame
+
+      hframe%initialized = success
+
+   end subroutine ecNetcdfInitializeHarmonicsFrame
 
    ! =======================================================================
 
@@ -3874,38 +3875,5 @@ contains
       end if
       success = .true.
    end function ecProviderNetcdfReadvars
-
-!> Check NetCDF error and update success flag with optional custom error message
-   subroutine ecNetcdfCheck(ierr, success, errmsg, filename)
-      use netcdf
-      implicit none
-      integer, intent(in) :: ierr
-      logical, intent(inout), optional :: success
-      character(len=*), intent(in), optional :: errmsg
-      character(len=*), intent(in), optional :: filename
-      logical :: ok
-
-      ok = (ierr == NF90_NOERR)
-
-      if (.not. ok) then
-         if (present(errmsg)) then
-            if (present(filename)) then
-               call setECMessage('ERROR: '//trim(errmsg)//' in file '//trim(filename)//': '//trim(nf90_strerror(ierr)))
-            else
-               call setECMessage('ERROR: '//trim(errmsg)//': '//trim(nf90_strerror(ierr)))
-            end if
-         else
-            if (present(filename)) then
-               call setECMessage('ERROR: NetCDF error in file '//trim(filename)//': '//trim(nf90_strerror(ierr)))
-            else
-               call setECMessage('ERROR: NetCDF error: '//trim(nf90_strerror(ierr)))
-            end if
-         end if
-      end if
-
-      if (present(success)) then
-         success = success .and. ok
-      end if
-   end subroutine ecNetcdfCheck
 
 end module m_ec_provider

@@ -71,6 +71,7 @@ module m_ec_support
    public :: ecSupportMJDToTimeIndex
    public :: ecSupportTimeIndexToMJD
    public :: ecSupportFindRelatedBCBlock
+   public :: ecSupportNetcdfCheckErrorAccumulate
 
    interface ecTimeFrameRealHpTimestepsToModifiedJulianDate
       module procedure ecTimeFrameRealHpTimestepsToModifiedJulianDate

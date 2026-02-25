@@ -129,8 +129,6 @@ module m_ec_filereader
          if (allocated(fileReader%tframe%times)) deallocate(fileReader%tframe%times, stat = istat)
          deallocate(fileReader%tframe, stat = istat)
          if (istat /= 0) success = .false.
-         deallocate(fileReader%hframe, stat = istat)
-         if (istat /= 0) success = .false.
 
          if (allocated(fileReader%variable_names)) then
             deallocate(fileReader%variable_names)
@@ -368,7 +366,7 @@ module m_ec_filereader
                qname = fileReaderPtr%items(1)%ptr%quantityPtr%name
                call str_lower(qname)
                itemPtr => fileReaderPtr%items(1)%ptr
-               if (allocated(itemPtr%hframe)) then
+               if (associated(itemPtr%hframe)) then
                   ! This is a harmonics file, read all the variable values because we actually don't have time steps.
                   success = ecNetcdfReadVariable(fileReaderPtr, itemPtr)
                else
@@ -579,8 +577,8 @@ module m_ec_filereader
                end select
             endif
             itemPtr%tframe => fileReaderPtr%tframe
-            if (allocated(fileReaderPtr%hframe)) then
-               itemPtr%hframe = fileReaderPtr%hframe
+            if (fileReaderPtr%hframe%initialized) then
+               itemPtr%hframe => fileReaderPtr%hframe
             end if
             success = .true.
          end if
