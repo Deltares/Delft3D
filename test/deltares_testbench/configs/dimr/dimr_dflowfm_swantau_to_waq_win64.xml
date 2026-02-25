@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version='1.0' encoding='ISO-8859-1'?>
 <deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
   <!--
 				Basic Linux   configuration file: tb3_cfg_lnx64_hp.xml
@@ -11,18 +11,18 @@
   <config>
     <!-- CRITICAL, ERROR, WARNING, INFO, DEBUG -->
     <localPaths>
-      <testCasesDir>.\data\cases</testCasesDir>
+      <testCasesDir>./data/cases</testCasesDir>
       <enginesDir>.\data\engines</enginesDir>
-      <referenceDir>.\data\references</referenceDir>
+      <referenceDir>./data/cases</referenceDir>
     </localPaths>
     <locations>
       <location name="dsctestbench-cases">
-        <credential ref="commandline" />
-        <root>{server_base_url}/cases</root>
+        <credential ref="commandline"/>
+        <root>./data/cases</root>
       </location>
       <location name="dsctestbench-references">
-        <credential ref="commandline" />
-        <root>{server_base_url}/references</root>
+        <credential ref="commandline"/>
+        <root>./data/cases</root>
       </location>
       <location name="local">
         <root>./data/engines</root>
@@ -87,17 +87,17 @@
       </arguments>
     </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
-        <path>bin/run_dimr.bat</path>
-        <shell ref="command_prompt"/>
-        <location ref="reference_engines" type="reference">
-            <from>win64</from>
-        </location>
-        <location ref="engines_to_compare" type="check">
-            <from>teamcity_artifacts/x64</from>
-        </location>
-        <environments>
-            <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
-        </environments>    
+      <path>bin/run_dimr.bat</path>
+      <shell ref="command_prompt"/>
+      <location ref="reference_engines" type="reference">
+        <from>win64</from>
+      </location>
+      <location ref="engines_to_compare" type="check">
+        <from>teamcity_artifacts/x64</from>
+      </location>
+      <environments>
+        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+      </environments>
     </program>
   </programs>
   <!--
@@ -114,9 +114,9 @@
       </location>
       <programs>
         <program ref="dimr">
-            <arguments>
-                <argument>dimr_config_win.xml</argument>
-            </arguments>
+          <arguments>
+            <argument>dimr_config_win.xml</argument>
+          </arguments>
         </program>
       </programs>
       <maxRunTime>3600.0</maxRunTime>
@@ -128,23 +128,23 @@
   -->
   <testCases>
     <testCase name="e02_f041_c01_FriesianInlet_schematic" ref="dflowfm_swantau_to_waq_default">
-      <path version="2025-08-27T12:46:18.170000">e02_dflowfm/f041_SWAN-tau_to_WAQ/c01_FriesianInlet_schematic</path>
+      <path version="DVC">e02_dflowfm/f041_SWAN-tau_to_WAQ/c01_FriesianInlet_schematic</path>
       <checks>
         <file name="dflowfm/dflowfmoutput/f34_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_water_quality_output_6" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_hwav" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_water_quality_output_6" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_hwav" toleranceAbsolute="0.0001"/>
           </parameters>
         </file>
       </checks>
     </testCase>
     <testCase name="e02_f041_c02_California" ref="dflowfm_swantau_to_waq_default">
-      <path version="2024-03-12T10:30:00">e02_dflowfm/f041_SWAN-tau_to_WAQ/c02_California</path>
+      <path version="DVC">e02_dflowfm/f041_SWAN-tau_to_WAQ/c02_California</path>
       <checks>
         <file name="dflowfm/dflowfmoutput/cca_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_water_quality_output_1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_hwav" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_water_quality_output_1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_hwav" toleranceAbsolute="0.0001"/>
           </parameters>
         </file>
       </checks>
