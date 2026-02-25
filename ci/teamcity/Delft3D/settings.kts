@@ -4,7 +4,8 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Delft3D.*
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
-import Delft3D.linux.container_smoketest.*
+import Delft3D.linux.container_smoketest.LinuxSubmitH7ContainerSmokeTest
+import Delft3D.linux.container_smoketest.LinuxReceiveH7ContainerSmokeTest
 import Delft3D.windows.*
 import Delft3D.template.*
 
