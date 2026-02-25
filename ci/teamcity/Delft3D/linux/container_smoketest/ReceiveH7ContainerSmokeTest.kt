@@ -3,7 +3,6 @@ package Delft3D.linux.container_smoketest
 import Delft3D.linux.*
 import Delft3D.step.*
 import Delft3D.template.*
-import Delft3D.linux.container_smoketest.LinuxSubmitH7ContainerSmokeTest
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
@@ -32,7 +31,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
 
     params {
         // H7 smoke test directory
-        param("h7_work_directory", "%dep.${LinuxSubmitH7ContainerSmokeTest.id}.h7_work_directory%")
+        param("h7_work_directory", "smoke/%build.revisions.short%")
         
         // H7 cluster access credentials
         param("h7_account_username", DslContext.getParameter("ad_h7_smoke_test_user"))
