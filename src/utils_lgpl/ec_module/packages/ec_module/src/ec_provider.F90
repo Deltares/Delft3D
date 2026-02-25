@@ -3576,8 +3576,6 @@ contains
          call setECMessage('ERROR: ec_provider::ecNetcdfInitializeHarmonicsFrame: Failed to initialize harmonics frame.')
       end if
 
-      hframe%initialized = success
-
    end subroutine ecNetcdfInitializeHarmonicsFrame
 
    ! =======================================================================

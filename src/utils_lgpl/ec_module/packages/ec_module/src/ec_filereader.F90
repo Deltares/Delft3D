@@ -577,7 +577,7 @@ module m_ec_filereader
                end select
             endif
             itemPtr%tframe => fileReaderPtr%tframe
-            if (fileReaderPtr%hframe%initialized) then
+            if (allocated(fileReaderPtr%hframe%phases)) then ! a valid hframe will have allocated phases
                itemPtr%hframe => fileReaderPtr%hframe
             end if
             success = .true.

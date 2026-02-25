@@ -716,7 +716,7 @@ contains
       success = .false.
       fieldPtr => null()
       has_time = (fileReaderPtr%tframe%nr_timesteps > 0)
-      has_harmonics = fileReaderPtr%hframe%initialized
+      has_harmonics = allocated(fileReaderPtr%hframe%phases) ! a valid hframe will have allocated phases
       is_column_major = fileReaderPtr%is_column_major
 
       dmiss_nc = item%quantityPtr%fillvalue
