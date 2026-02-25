@@ -4329,7 +4329,7 @@ contains
       integer, optional, intent(in) :: jabndnd !< Whether to include boundary nodes (1) or not (0). Default: no.
 
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndxndxi !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
+      integer :: ndxndxi, ndxndxi_global !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
       integer, save :: ierr, ndim
 
       real(kind=dp), allocatable :: ust_x(:), ust_y(:), wavout(:), wavout2(:), scaled_rain(:)
@@ -4404,8 +4404,10 @@ contains
       ! Include boundary cells in output (ndx) or not (ndxi)
       if (jabndnd_ == 1) then
          ndxndxi = output_mask%ndx
+         ndxndxi_global = ndx
       else
          ndxndxi = output_mask%ndxi
+         ndxndxi_global = ndxi
       end if
 
       ndx1d = output_mask%ndxi - output_mask%ndx2d
@@ -6606,8 +6608,8 @@ contains
       !
       if (bfmpar%lfbedfrmout) then
          if (bfmpar%lfbedfrm) then
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_duneheight, UNC_LOC_S, output_mask, bfmpar%duneheight(1:ndx), jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dunelength, UNC_LOC_S, output_mask, bfmpar%dunelength(1:ndx), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_duneheight, UNC_LOC_S, output_mask, bfmpar%duneheight(1:ndxndxi_global), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dunelength, UNC_LOC_S, output_mask, bfmpar%dunelength(1:ndxndxi_global), jabndnd=jabndnd_)
          end if
          !
          if (bfmpar%lfbedfrmrou) then
@@ -6615,14 +6617,14 @@ contains
                allocate (rks(1:ndx))
                rks = 0.0_dp
             end if
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksr, UNC_LOC_S, output_mask, bfmpar%rksr(1:ndx), jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksmr, UNC_LOC_S, output_mask, bfmpar%rksmr(1:ndx), jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksd, UNC_LOC_S, output_mask, bfmpar%rksd(1:ndx), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksr, UNC_LOC_S, output_mask, bfmpar%rksr(1:ndxndxi_global), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksmr, UNC_LOC_S, output_mask, bfmpar%rksmr(1:ndxndxi_global), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ksd, UNC_LOC_S, output_mask, bfmpar%rksd(1:ndxndxi_global), jabndnd=jabndnd_)
 
-            do nm = 1, ndxndxi
+            do nm = 1, ndxndxi_global
                rks(nm) = sqrt(bfmpar%rksr(nm)**2 + bfmpar%rksmr(nm)**2 + bfmpar%rksd(nm)**2)
             end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ks, UNC_LOC_S, output_mask, rks(1:ndx), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ks, UNC_LOC_S, output_mask, rks(1:ndxndxi_global), jabndnd=jabndnd_)
          end if
       end if
 
@@ -6650,13 +6652,13 @@ contains
 
       ! Meteo forcings
       if (jawind > 0) then
-         allocate (windx(ndx), windy(ndx), stat=ierr)
+         allocate (windx(ndxndxi_global), windy(ndxndxi_global), stat=ierr)
          if (ierr /= 0) then
-            call aerr('windx/windy', ierr, ndx)
+            call aerr('windx/windy', ierr, ndxndxi_global)
          end if
 
          if (jamapwind > 0) then
-            call linktonode2(wx, wy, windx, windy, ndx)
+            call linktonode2(wx, wy, windx, windy, ndxndxi_global)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windx, UNC_LOC_S, output_mask, windx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windy, UNC_LOC_S, output_mask, windy, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windxu, UNC_LOC_U, output_mask, wx, jabndnd=jabndnd_)
@@ -6664,7 +6666,7 @@ contains
          end if
 
          if (jamapwindstress > 0) then
-            call linktonode2(wdsu_x, wdsu_y, windx, windy, ndx)
+            call linktonode2(wdsu_x, wdsu_y, windx, windy, ndxndxi_global)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windstressx, UNC_LOC_S, output_mask, windx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windstressy, UNC_LOC_S, output_mask, windy, jabndnd=jabndnd_)
          end if
@@ -6680,7 +6682,7 @@ contains
       ! Rain
       if (jamaprain > 0 .and. jarain /= 0) then
          call realloc(scaled_rain, ndx, keepExisting=.false., fill=dmiss)
-         do n = 1, ndx
+         do n = 1, ndxndxi_global
             scaled_rain(n) = rain(n) * bare(n) / ba(n) * 1.0e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day->(m3/s / m2) Average actual rainfall rate on grid cell area (maybe zero bare).
          end do
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rain, UNC_LOC_S, output_mask, scaled_rain, jabndnd=jabndnd_)
@@ -7008,14 +7010,14 @@ contains
       ! water quality bottom variables
       if (numwqbots > 0) then
          do j = 1, numwqbots
-            do k = 1, ndx
+            do k = 1, ndxndxi_global
                call getkbotktop(k, kb, kt)
                workx(k) = wqbot(j, kb)
             end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqb(:, j), UNC_LOC_S, output_mask, workx(1:ndx), jabndnd=jabndnd_)
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqb(:, j), UNC_LOC_S, output_mask, workx(1:ndxndxi_global), jabndnd=jabndnd_)
             if (jamapwqbot3d == 1) then
 !         also write 3D
-               do kk = 1, ndx
+               do kk = 1, ndxndxi_global
                   call getkbotktop(kk, kb, kt)
                   do k = kb, kt
                      workx(k) = wqbot(j, k)
@@ -7033,7 +7035,7 @@ contains
                workx = DMISS ! For proper fill values in z-model runs.
                if (kmx > 0) then
 !               3D
-                  do kk = 1, ndx
+                  do kk = 1, ndxndxi_global
                      call getkbotktop(kk, kb, kt)
                      do k = kb, kt
                         workx(k) = waqoutputs(j, k - kbx + 1)
@@ -7042,7 +7044,7 @@ contains
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_waq(:, j), UNC_LOC_S3D, output_mask, workx, jabndnd=jabndnd_)
                else
 !               2D
-                  do kk = 1, ndx
+                  do kk = 1, ndxndxi_global
                      workx(kk) = waqoutputs(j, kk)
                   end do
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_waq(:, j), UNC_LOC_S, output_mask, workx, jabndnd=jabndnd_)
@@ -7055,7 +7057,7 @@ contains
                workx = DMISS ! For proper fill values in z-model runs.
                if (kmx > 0) then
 !               3D
-                  do kk = 1, ndx
+                  do kk = 1, ndxndxi_global
                      call getkbotktop(kk, kb, kt)
                      do k = kb, kt
                         workx(k) = waqoutputs(jj, k - kbx + 1)
@@ -7064,7 +7066,7 @@ contains
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqst(:, j), UNC_LOC_S3D, output_mask, workx, jabndnd=jabndnd_)
                else
 !               2D
-                  do kk = 1, ndx
+                  do kk = 1, ndxndxi_global
                      workx(kk) = waqoutputs(jj, kk)
                   end do
                   ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqst(:, j), UNC_LOC_S, output_mask, workx, jabndnd=jabndnd_)
@@ -7078,7 +7080,7 @@ contains
                   workx = DMISS ! For proper fill values in z-model runs.
                   if (kmx > 0) then
 !                  3D
-                     do kk = 1, ndx
+                     do kk = 1, ndxndxi_global
                         call getkbotktop(kk, kb, kt)
                         do k = kb, kt
                            workx(k) = waqoutputs(jj, k - kbx + 1)
@@ -7087,7 +7089,7 @@ contains
                      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqse(:, j), UNC_LOC_S3D, output_mask, workx, jabndnd=jabndnd_)
                   else
 !                  2D
-                     do kk = 1, ndx
+                     do kk = 1, ndxndxi_global
                         workx(kk) = waqoutputs(jj, kk)
                      end do
                      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqse(:, j), UNC_LOC_S, output_mask, workx, jabndnd=jabndnd_)
