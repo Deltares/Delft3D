@@ -23,6 +23,9 @@ object DvcDiffComment : BuildType({
         script {
             name = "place a comment on the PR"
             scriptContent = """
+            cd ci/teamcity/Delft3D/ciUtilities/
+            uv sync 
+            source .venv/bin/activate
             ./scripts/postDvcDiffReport.sh "%teamcity.pullRequest.target.branch%" "%teamcity.pullRequest.number%" "%github_deltares-service-account_access_token%" 
             """
         }
