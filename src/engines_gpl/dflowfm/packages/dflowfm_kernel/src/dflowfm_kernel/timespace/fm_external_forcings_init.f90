@@ -143,7 +143,7 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      max_num_src =  compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
+      max_num_src = compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
       
       if (max_num_src > 0) then
@@ -1141,12 +1141,16 @@ contains
       use m_filez, only: oldfil
       use m_reapol, only: reapol
       use tree_data_types, only: tree_data
-      use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use string_module, only: str_tolower
       use m_polygon, only: npl
       use network_data
       use m_flow
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline      
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
+      use m_alloc, only: realloc
+      use m_find_flownode, only: find_nearest_flownodes
+      use m_GlobalParameters, only: INDTP_2D
+      use messageHandling, only: err_flush, msgbuf
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
@@ -1158,10 +1162,13 @@ contains
       integer :: cidx
       integer :: file_pointer
       integer :: i !< Loop index
+      integer :: i_bubblescreen !< Loop index for bubblescreens
+      integer :: jakdtree 
       integer :: k_start !< Bottom active layer index in a flowcell
       integer :: k_end !< Top active layer index in a flowcell
       integer :: num_source_sinks
       integer :: num_items_in_file
+      integer :: num_bubblescreens !< Number of bubblescreens in the ext file, used to allocate the bubblescreens array
       integer, dimension(:), allocatable :: crossed_cells
 
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
@@ -1171,17 +1178,27 @@ contains
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
-      type(t_Bubblescreen) :: bubblescreen
+      type(t_Bubblescreen), allocatable :: bubblescreen
 
+      i_bubblescreen = 0
+      jakdtree = 0
       num_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
+
+      ! Count the number of [bubblescreen] blocks and allocate the bubblescreens and bubblescreen_air_discharge arrays
+      num_bubblescreens = tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
+      allocate (bubblescreens(num_bubblescreens))
+      allocate (bubblescreen_air_discharge(num_bubblescreens))
          
       do i = 1, num_items_in_file
          block_ptr => bnd_ptr%child_nodes(i)%node_ptr
          group_name = trim(tree_get_name(block_ptr))
 
-         select case (str_tolower(group_name))
-         case ('bubblescreen')
+         if (str_tolower(group_name) == 'bubblescreen') then
+            allocate (bubblescreen)
+            i_bubblescreen = i_bubblescreen + 1
+
+            ! Readout [bubblescreen] attributes
             is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
             bubblescreen%id = id
 
@@ -1199,7 +1216,16 @@ contains
 
                call restorepol()
 
-               call find_cells_crossed_by_polyline(bubblescreen%x_polyline, bubblescreen%y_polyline, crossed_cells, error)
+               if (bubblescreen%num_polyline > 1) then
+                  call find_cells_crossed_by_polyline(bubblescreen%x_polyline, bubblescreen%y_polyline, crossed_cells, error)
+               else if (bubblescreen%num_polyline == 1) then
+                  allocate (crossed_cells(1))
+                  call find_nearest_flownodes(1, bubblescreen%x_polyline, bubblescreen%y_polyline, [''], crossed_cells, jakdtree, 0, INDTP_2D)
+               else
+                  write (msgbuf, '(5a)') 'Bubblescreen with id='//trim(id)//' in file ''', trim(file_name), ''': [', trim(group_name), '] has no valid location information.'
+                  call err_flush()
+                  cycle
+               end if
 
                bubblescreen%num_flow_cells = size(crossed_cells)
                allocate(bubblescreen%flow_cells(bubblescreen%num_flow_cells))
@@ -1214,18 +1240,17 @@ contains
                   num_source_sinks = num_source_sinks + bubblescreen%flow_cells(cidx)%num_source_sinks
                end do
            
-               ! Append the initialized bubblescreen to the global array 
-               ! (not really caring about performance here, as number of bubblescreens is expected to be low)
-               if (.not. allocated(bubblescreens)) then 
-                  bubblescreens = [bubblescreen]
-               else
-                  bubblescreens = [bubblescreens, bubblescreen]
-               end if
+               ! Add bubblescreen to global bubblescreens array
+               bubblescreens(i_bubblescreen) = bubblescreen
             end if
-         end select
+
+            ! Deallocate bubblescreen so next [bubblescreen] block has an empty data structure to fill
+            deallocate (crossed_cells)
+            deallocate (bubblescreen)
+
+         end if
       end do 
 
-      allocate(bubblescreen_air_discharge(size(bubblescreens)))
       
    end function compute_and_preinit_bubblescreens_sourcesinks
 
@@ -1315,8 +1340,7 @@ contains
       end if
 
       is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
-                        trim(discharge_input), bi, &
-                        1, bubblescreen_air_discharge)
+                        trim(discharge_input), bi, 1, bubblescreen_air_discharge(bi:bi))
       
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &

@@ -60,9 +60,10 @@ contains
         discharge_water = 0.0_dp
         discharge_constituents = 0.0_dp
 
-        ! ====================================================================================================
+        ! Convert air discharge to water discharge
         water_discharge = convert_discharge_air_to_water(air_discharge)
 
+        ! Compute total area of the bubble screen
         total_area = compute_bubblescreen_area(bubblescreen)
 
         ! Compute vertical distribution for each flow cell
