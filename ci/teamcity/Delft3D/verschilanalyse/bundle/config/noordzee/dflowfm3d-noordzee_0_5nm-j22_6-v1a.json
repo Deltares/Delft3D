@@ -8,7 +8,9 @@
                 "his_2": "/data/input/noordzee/dflowfm3d-noordzee_0_5nm-j22_6-v1a/computations/hist/j2013/DCSM-FM_0_5nm/DCSM-FM_0_5nm_0000_his.nc",
                 "his_variable_list": [
                     "waterlevel",
-                    "velocity_magnitude"
+                    "velocity_magnitude",
+                    "salinity",
+                    "temperature"
                 ],
                 "his_output_as_xlsx": true,
                 "his_generate_plots_of_maximum_difference": true,
