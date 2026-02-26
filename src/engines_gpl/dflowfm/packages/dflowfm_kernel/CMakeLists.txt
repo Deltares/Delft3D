@@ -267,6 +267,26 @@ endif(WIN32)
 
 if (UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
+    set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+    target_link_options(${library_name} PRIVATE ${openmp_flag})
+    find_library(IOMP5_LIB iomp5
+        PATHS
+            "/opt/intel/oneapi/compiler/2024.2/lib"
+            "/opt/intel/oneapi/compiler/latest/linux/compiler/lib/intel64_lin"
+            "/opt/intel/oneapi/compiler/latest/lib"
+        NO_DEFAULT_PATH
+    )
+    if(NOT IOMP5_LIB)
+        # Fallback: search relative to the Fortran compiler
+        get_filename_component(_compiler_dir "${CMAKE_Fortran_COMPILER}" DIRECTORY)
+        find_library(IOMP5_LIB iomp5 HINTS "${_compiler_dir}/../lib" "${_compiler_dir}/../../lib")
+    endif()
+    if(IOMP5_LIB)
+        message(STATUS "Found Intel OpenMP runtime: ${IOMP5_LIB}")
+        target_link_libraries(${library_name} PRIVATE ${IOMP5_LIB})
+    else()
+        message(WARNING "Intel OpenMP runtime (libiomp5) not found; linker may fail with __kmpc_* symbols")
+    endif()    
 endif(UNIX)
 
 # Create the folder structure in vfproj

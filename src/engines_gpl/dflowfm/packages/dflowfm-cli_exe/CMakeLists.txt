@@ -73,6 +73,11 @@ if(WIN32)
     set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
 endif(WIN32)
 
+if(UNIX AND OPENMP)
+    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+    target_link_options(${executable_name} PRIVATE ${openmp_flag})
+endif()
+
 
 # Define additional compilation flags
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/net_main.F90
