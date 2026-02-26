@@ -970,9 +970,12 @@ contains
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
+      use m_addsorsin, only: addsorsin
       use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
+      use m_filez, only: oldfil
+      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
+      use m_reapol, only: reapol
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -997,11 +1000,16 @@ contains
       real(kind=dp) :: area
       integer :: i_const
       integer :: ierr
+      integer :: pli_lun
       logical :: is_successful
       logical :: is_read
+      logical :: is_source_in_ext_file = .false., is_sink_in_ext_file = .false.
+      logical :: source_has_z_range = .false., sink_has_z_range = .false.
       logical :: have_location_file, have_location_coordinates
 
       is_successful = .false.
+      z_range_source(:) = dmiss
+      z_range_sink(:) = dmiss
 
       sourcesink_id = ' '
       call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
@@ -1012,10 +1020,48 @@ contains
       end if
       call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
 
+      
+      ! Read source/sink z range information from ext file. If it's missing well attempt to load it from the polyline file later on as a fallback.
+      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, is_source_in_ext_file)
+      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, is_sink_in_ext_file)
+      
       call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
       if (have_location_file) then
+         ! Read data from polyline file
          call resolvePath(location_file, base_dir)
+         
+         call oldfil(pli_lun, location_file)
+         call reapol(pli_lun, 0)
+
+         if (npl == 0) then
+            write (msgbuf, '(A)') "Failed to read polyline file (or it contains no data) '", trim(location_file), "'"
+            call err_flush()
+            return
+         end if
+         
+         ! Avoid having two places specifying the same (and potentially conflicting) z data.
+         if (colpl > 2 .and. (is_source_in_ext_file .or. is_sink_in_ext_file)) then
+            write (msgbuf, '(A)') 'Source/sink z information cannot be specified both in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
+            call err_flush()
+            return
+         end if
+         
+         if (.not. is_source_in_ext_file) then
+            z_range_source(1) = zpl(npl)
+            if (colpl > 3) z_range_source(2) = dzL(npl) ! 3rd and 4th column contain z range
+         end if
+         
+         if (.not. is_sink_in_ext_file) then
+            z_range_sink(1) = zpl(1)
+            if (colpl > 3) z_range_sink(2) = dzL(1) ! 3rd and 4th column contain z range
+         end if
+         
+         allocate (x_coordinates(npl), stat=ierr)
+         allocate (y_coordinates(npl), stat=ierr)
+         x_coordinates = xpl(1:npl)
+         y_coordinates = ypl(1:npl)
       else
+         ! Read data directly from ext file
          call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
          if (is_read) then
             if (num_coordinates <= 0) then
@@ -1032,21 +1078,16 @@ contains
          end if
          have_location_coordinates = is_read
       end if
+      
       if (.not. have_location_file .and. .not. have_location_coordinates) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
          call err_flush()
          return
       end if
-
-      ! read optional vertical profiles.
-      z_range_source(:) = dmiss
-      z_range_sink(:) = dmiss
-      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
-      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, is_read)
-
+      
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
@@ -1054,14 +1095,11 @@ contains
       ! read optional value 'area' to compute the momentum released
       area = 0.0_dp
       call prop_get(block_ptr, '', 'area', area, is_read)
-
-      if (have_location_file) then
-         call addsorsin_from_polyline_file(location_file, sourcesink_id, z_range_source, z_range_sink, area, ierr)
-      else
-         call addsorsin(sourcesink_id, x_coordinates, y_coordinates, &
-                        z_range_source, z_range_sink, area, ierr)
-      end if
-
+      
+      ! Create the actual source/sink based on the parsed data
+      source_has_z_range = abs(z_range_source(2) - dmiss) > 1.0e-12_dp
+      sink_has_z_range = abs(z_range_sink(2) - dmiss) > 1.0e-12_dp
+      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source(1:merge(2, 1, source_has_z_range)), z_range_sink(1:merge(2, 1, sink_has_z_range)), area, ierr)
       if (ierr /= DFM_NOERR) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
             //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
