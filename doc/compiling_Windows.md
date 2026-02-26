@@ -5,6 +5,7 @@
   During the installation/configuration process, choose the **"Desktop development with C++"** configuration.
   Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"**, **"C++ MFC"**, and the latest **"Windows SDK"**; see the figure below.  
   ![List of installation details](images/VisualStudio_installed_components.png)
+  
   Links to previous Visual Studio Community Editions can be found [here](https://www.junian.net/dev/visual-studio-community-download-links/).
   See the note below.
 - You may use [Visual Studio Code](https://code.visualstudio.com/) as the development environment, but a Visual Studio installation is still required for the C++ compiler and the Intel Fortran installation.
