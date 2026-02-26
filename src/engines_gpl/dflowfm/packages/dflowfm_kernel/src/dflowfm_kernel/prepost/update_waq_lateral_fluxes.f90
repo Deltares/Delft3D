@@ -53,7 +53,7 @@ contains
       use m_flow
       use m_flowgeom
       use m_flowtimes
-      use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat
+      use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat, qlatwaq
 
       integer :: i_node, k1
       integer :: i_lat, i_latwaq, i_layer
