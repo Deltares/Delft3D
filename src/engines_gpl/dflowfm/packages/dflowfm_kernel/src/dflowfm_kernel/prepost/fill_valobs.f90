@@ -276,8 +276,6 @@ contains
             valobs(i, IPNT_CMX) = cmxobs(i)
 
             ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
-            ! First       : allocate tmp_interp for 3D quantities
-            ! call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0.0_dp)
 
             ! Horizontal velocities (3D)
             if (jahisvelocity > 0 .or. jahisvelvec > 0) then
