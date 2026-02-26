@@ -3425,13 +3425,8 @@ contains
          end if
       end if
 
-      if (writeall .or. (jasal == 0 .and. (temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0))) then
-         call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
-      end if
-
-      if (writeall .or. (temperature_model == TEMPERATURE_MODEL_NONE .and. (jasal > 0 .or. jased > 0))) then
-         call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
-      end if
+      call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
+      call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
 
       if (Jadelvappos /= 0) then
          call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
