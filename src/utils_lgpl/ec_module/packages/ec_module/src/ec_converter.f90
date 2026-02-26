@@ -2702,7 +2702,7 @@ contains
       logical :: has_wave_direction
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
       real(dp), dimension(:), pointer :: targetValues
-      real(dp), dimension(:), allocatable :: zsrc
+      real(dp), dimension(:), allocatable :: source_sink_z_bottom
       real(dp) :: ztgt
       real(dp) :: PI, phi, xtmp
       integer :: time_interpolation
@@ -2990,7 +2990,7 @@ contains
                end if
 
                if (n_layers > 0 .and. associated(targetElementSet%z) .and. associated(sourceElementSet%z)) then
-                  allocate (zsrc(n_layers))
+                  allocate (source_sink_z_bottom(n_layers))
                   if (issparse == 1) then
                      Ndatasize = ia(n_rows + 1) - 1
                      s2D_T0(1:Ndatasize, 1:n_layers) => sourceT0Field%arr1d
@@ -3037,13 +3037,13 @@ contains
                         end select
 
                         ! scale source coordinates with factors of target
-                        zsrc = (a_s * sourceElementSet%z + b_s - b_t) / a_t
+                        source_sink_z_bottom = (a_s * sourceElementSet%z + b_s - b_t) / a_t
 
                         ! initialize upper layer kp
                         kp = 2
 
-                        ! dkp: increase direction of (scaled) source z-coordinate zsrc, i.e. zrsc(kp) > zsrc(kp-dkp)
-                        if (zsrc(2) - zsrc(1) > 0) then
+                        ! dkp: increase direction of (scaled) source z-coordinate source_sink_z_bottom, i.e. zrsc(kp) > source_sink_z_bottom(kp-dkp)
+                        if (source_sink_z_bottom(2) - source_sink_z_bottom(1) > 0) then
                            dkp = 1
                         else
                            dkp = -1
@@ -3056,15 +3056,15 @@ contains
                         do k = kbot, ktop
                            ztgt = targetElementSet%z(k)
 
-                           ! get search direction in zsrc
-                           if (dkp * (ztgt - zsrc(kp)) > 0) then
+                           ! get search direction in source_sink_z_bottom
+                           if (dkp * (ztgt - source_sink_z_bottom(kp)) > 0) then
                               k_inc = 1
                            else
                               k_inc = -1
                            end if
 
                            ! get new upper layer kp
-                           do while ((zsrc(kp - dkp) > ztgt) .or. (zsrc(kp) <= ztgt))
+                           do while ((source_sink_z_bottom(kp - dkp) > ztgt) .or. (source_sink_z_bottom(kp) <= ztgt))
                               kp = kp + k_inc
                               if (kp > n_layers .or. kp < 1) exit
                               if (kp - dkp > n_layers .or. kp - dkp < 1) exit
@@ -3113,7 +3113,7 @@ contains
                                  end do
                               end do
                               ! get weights for vertical interpolation
-                              wb = (zsrc(kp) - ztgt) / (zsrc(kp) - zsrc(kp - dkp))
+                              wb = (source_sink_z_bottom(kp) - ztgt) / (source_sink_z_bottom(kp) - source_sink_z_bottom(kp - dkp))
                               wb = min(max(wb, 0.0_dp), 1.0_dp) ! zeroth-order extrapolation beyond range of source vertical coordinates
                               wt = (1.0_dp - wb)
 
@@ -3147,7 +3147,7 @@ contains
                         end do ! loop over vertical
                      end if ! valid mp and np
                   end do ! loop over the target elementset
-                  if (allocated(zsrc)) deallocate (zsrc)
+                  if (allocated(source_sink_z_bottom)) deallocate (source_sink_z_bottom)
                else
                   if (issparse == 1) then
                      Ndatasize = ia(n_rows + 1) - 1
