@@ -21,7 +21,9 @@
                 "map_2": "/data/input/waddenzee/<TBD>",
                 "map_variable_list": [
                     "mesh2d_s1",
-                    "mesh2d_ucmag"
+                    "mesh2d_ucmag",
+                    "mesh2d_sa1",
+                    "mesh2d_tem1"
                 ],
                 "map_output_as_xlsx": true,
                 "map_generate_plots_of_maximum_difference": true,
