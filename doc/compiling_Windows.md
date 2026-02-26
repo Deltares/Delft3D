@@ -1,16 +1,15 @@
 # Compiling Delft3D on Windows
 
 ## Prerequisites
-- Microsoft Visual Studio, this can be the Enterprise Edition, Professional Edition, or even the [Community Edition](https://visualstudio.microsoft.com/vs/community/).
-  Choose the **"Desktop development with C++"** configuration.
-  Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"**, **"C++ MFC"**, and the latest **"Windows SDK"**.  
-  <img src="images/VisualStudio_installed_components.png">  
-  We are currently using Visual Studio 2022 for the official release.
-  Initial tests using VS 2026 were successful, but we don't regularly test the build process using other versions.
-  Let us know when you run into issues.
+- Microsoft Visual Studio, this can be the Enterprise Edition, Professional Edition, or the [Community Edition](https://visualstudio.microsoft.com/vs/community/).
+  During the installation/configuration process, choose the **"Desktop development with C++"** configuration.
+  Make sure to include under the list of installation details on the right side of the installation dialog the items **"C++/CLI support"**, **"C++ MFC"**, and the latest **"Windows SDK"**; see the figure below.  
+  ![List of installation details](images/VisualStudio_installed_components.png)
   Links to previous Visual Studio Community Editions can be found [here](https://www.junian.net/dev/visual-studio-community-download-links/).
+  See the note below.
 - You may use [Visual Studio Code](https://code.visualstudio.com/) as the development environment, but a Visual Studio installation is still required for the C++ compiler and the Intel Fortran installation.
 - [Intel oneAPI Fortran Compiler](https://www.intel.com/content/www/us/en/developer/tools/oneapi/fortran-compiler-download.html) Please make sure that it's integrated into the Visual Studio environment installed above.
+  See the note below.
 - [Intel oneAPI MPI Library](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html)
 - [Intel oneAPI Math Kernal Library](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html)
 - [CMake](https://cmake.org/download/) for configuring the build environment
@@ -19,6 +18,13 @@ If you prefer user interfaces over command lines, you may want to additionally i
 The former tool is generally considered more powerful and true to Git.
 The latter tool offers icon overlays for commit status.
 - [Python](https://www.python.org/downloads/) for some build steps
+
+**Note**
+- We are currently using Visual Studio 2022 and Intel oneAPI 2024.2 for the official release.
+  Visual Studio 2026 and Intel oneAPI 2025.3 were used successfully to build the software, but we have not yet thoroughly tested the resulting binaries.
+  Since the Windows build includes third-party libraries that have been compiled using Visual Studio 2022 against Intel oneAPI 2024.2, runtime problems are possible.
+  We aim to transition to the updated versions in the near future.
+
 
 ## Build steps
 - Download or clone the source code from https://github.com/Deltares/Delft3D
@@ -34,7 +40,7 @@ The latter tool offers icon overlays for commit status.
    `cmake -S .\src\cmake -B build_fm-suite  -T fortran=ifx -A x64 -D CONFIGURATION_TYPE:STRING="fm-suite" -D CMAKE_INSTALL_PREFIX=.\install_fm-suite\`
   
   instead of using the `build.bat` script.
-- Open the generated solution from the **Intel oneAPI command prompt for Intel 64 for Visual Studio XXX** command prompt to ensure that the intel environment is inherited by visual studio. For example:
+- Open the generated solution from the **Intel oneAPI command prompt for Intel 64 for Visual Studio XXX** to ensure that the intel environment is inherited by visual studio. For example:
   `devenv build_fm-suite\fm-suite.sln`
   or
   `devenv build_fm-suite\fm-suite.slnx`
