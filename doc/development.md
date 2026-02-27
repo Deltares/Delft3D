@@ -25,12 +25,8 @@ This is sometimes also used for the full set of binaries of both Delft3D suites 
 See the following sub-pages:
 
 - Prerequisites and compilation steps for **Windows** can be found [here](compiling_Windows.md).
-- The preferred build procedure for **Linux** uses containers.
-  Containers are lightweight, isolated environments that package an application and all its dependencies so it can run consistently across different systems.
-  See [these instructions](../ci/dockerfiles/linux/README.md) for setting up the prerequisites: a container for base build environment and one with the build environment including all third party dependencies.
-  For Windows, we include all third party dependencies in the source distribution in (semi) compiled form, but on Linux it's common practice that you build such libraries yourself.
-  After building the build container with all third party dependencies, you can finally start building Delft3D 4/Delft3D FM yourself.
-  The build steps are described [here](compiling_Linux.md).
+- Prerequisites and compilation steps for **Linux** can be found [here](compiling_Linux.md).
+- The build steps are described [here](compiling_Linux.md).
 - How to **debug** the code on [Windows](debugging.md) and Linux (to be added).
 - Various ways of testing the functionality: [**Unit testing**](unit-testing.md), **regression testing** and **validation** (latter sections to be added).
 - How to [**contribute**](contributing.md) to the development?

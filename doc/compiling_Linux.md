@@ -1,9 +1,36 @@
 # Compiling Delft3D on Linux
 
+The preferred build procedure for Linux uses containers; this is the procedure described here.
+Containers are lightweight, isolated environments that package an application and all its dependencies so it can run consistently across different systems.
+
 ## Prerequisites
-- A build container with all third-party libraries (see the steps [here](../ci/dockerfiles/linux/README.md)).
+- Install git using
+  ```
+  sudo dnf install git
+  ```
+  The example above uses `dnf` which is the current package manager on Red Hat, Alma Linux, CentOS and Fedora.
+  On Debian and Ubuntu one would use `apt`.
+- Download or clone the source code from https://github.com/Deltares/Delft3D
+  ```
+  git clone https://github.com/Deltares/Delft3D.git
+  ```
+  This step is eventually needed for compiling Delft3D, but it also downloads the Dockerfiles for the next step.
+- See [these instructions](../ci/dockerfiles/linux/README.md) for setting up the rest of the prerequisites: a container for the base build environment and one with the build environment including all third party dependencies.
+  For Windows, we include all third party dependencies in the source distribution in (semi) compiled form, but on Linux it's common practice that you build such libraries yourself.
 
 ## Build steps
+- Start the Docker image `localhost/third-party-libs` built in the prerequisites step.
+  ```
+  docker run -it localhost/third-party-libs bash
+  ```
+- Go to the desired work folder
+  ```
+  cd home
+  ```
+- Download or clone the source code from https://github.com/Deltares/Delft3D
+  ```
+  git clone https://github.com/Deltares/Delft3D.git
+  ```
 
 ## Dimrset
 The build instructions in this file use the `third-party-libs` build image to compile the delft3d software.

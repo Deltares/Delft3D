@@ -1,16 +1,15 @@
-# Linux dockerfiles
+# Preparing a Linux development environment using Docker
 
 There are currently two dockerfiles in this directory to prepare a container with the build environment:
 1. `buildtools.Dockerfile`
 2. `third-party-libs.Dockerfile`
 
 To run these build instructions and build the docker images, you should have `docker` installed and configured to build Linux docker images.
-Using another container platform `podman` (another container platform) should also work.
+Using another container platform `podman` should also work.
 
 **Notes:**
 - The resulting container images are quite large.
   The (uncompressed) size of the `buildtools` image is about 10 GB, and the size of the `third-party-libs` image is about 13 GB.
-  Building all libraries from source takes quite some time; a build time for `third-party-libs` image given the `buildtools` image may be in the order of 6 hours.
 - Delft3D FM depends on PETSc; the version of the PETSc library that we are currently using is not compatible with OneAPI 2025.
   We are adjusting the code to use the updated Fortran API of the latest PETSc version.
 
@@ -84,7 +83,7 @@ You can replace that by
 ```
 ARG BUILDTOOLS_IMAGE_URL=localhost/buildtools
 ```
-for your local builds (note that the $TAG is added automatically further down in the Dockerfile).
+for your local builds (note that the `$TAG` is added automatically further down in the Dockerfile).
 In addition it should include all the third party libraries required to start building the software in this repository.
 
 The build instructions in the `third-party-libs.Dockerfile` fetch the source code, configure, build and install the third party libraries one by one.
