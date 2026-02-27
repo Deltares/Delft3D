@@ -448,46 +448,60 @@ class TestSetRunner(ABC):
                         and loc.type == PathType.CHECK
                     ):
                         # if the program is local, use the existing location
+                        # Try loc.root first, then fall back to engines_path
                         sourceLocation = Paths().mergeFullPath(loc.root, loc.from_path)
-                        if Paths().isPath(sourceLocation):
+                        enginesLocation = Paths().mergeFullPath(
+                            self.__settings.local_paths.engines_path, loc.from_path
+                        )
+                        resolved = False
+                        for candidate_source in [sourceLocation, enginesLocation]:
+                            if not Paths().isPath(candidate_source):
+                                continue
                             absLocation = os.path.abspath(
-                                Paths().mergeFullPath(sourceLocation, program_configuration.path)
+                                Paths().mergeFullPath(candidate_source, program_configuration.path)
                             )
                             if ResolveHandler.detect(absLocation, self.__logger, None) == HandlerType.PATH:
-                                if not os.path.exists(absLocation):
-                                    self.__logger.warning(f"could not yet detect specified program {absLocation}")
-                                #                                   raise SystemExit("Program does not exist")
-                                else:
+                                if os.path.exists(absLocation):
                                     self.__logger.debug(
                                         f"detected local path for program {program_configuration.name}, using {absLocation}"
                                     )
+                                    program_configuration.absolute_bin_path = absLocation
+                                    resolved = True
+                                    break
+                        if not resolved:
+                            if Paths().isPath(sourceLocation):
+                                # Use engines_path as default when not found locally
+                                absLocation = os.path.abspath(
+                                    Paths().mergeFullPath(enginesLocation, program_configuration.path)
+                                )
+                                self.__logger.warning(f"could not yet detect specified program {absLocation}")
                                 program_configuration.absolute_bin_path = absLocation
-                        # else download it from a remote location
-                        else:
-                            if loc.version:
-                                to = loc.to_path + "_" + loc.version
                             else:
-                                to = loc.to_path
-                            program_local_path = Paths().rebuildToLocalPath(
-                                os.path.join(self.__settings.local_paths.engines_path, to)
-                            )
+                                # download it from a remote location
+                                if loc.version:
+                                    to = loc.to_path + "_" + loc.version
+                                else:
+                                    to = loc.to_path
+                                program_local_path = Paths().rebuildToLocalPath(
+                                    os.path.join(self.__settings.local_paths.engines_path, to)
+                                )
 
-                            # if the program is remote (network or other) and it does not exist locally, download it
-                            if not os.path.exists(program_local_path):
-                                self.__logger.debug(
-                                    f"Downloading program, {program_configuration.name} from {sourceLocation}"
+                                # if the program is remote (network or other) and it does not exist locally, download it
+                                if not os.path.exists(program_local_path):
+                                    self.__logger.debug(
+                                        f"Downloading program, {program_configuration.name} from {sourceLocation}"
+                                    )
+                                    HandlerFactory.download(
+                                        sourceLocation,
+                                        program_local_path,
+                                        self.programs,
+                                        self.__logger,
+                                        loc.credentials,
+                                        loc.version,
+                                    )
+                                program_configuration.absolute_bin_path = os.path.abspath(
+                                    Paths().mergeFullPath(program_local_path, program_configuration.path)
                                 )
-                                HandlerFactory.download(
-                                    sourceLocation,
-                                    program_local_path,
-                                    self.programs,
-                                    self.__logger,
-                                    loc.credentials,
-                                    loc.version,
-                                )
-                            program_configuration.absolute_bin_path = os.path.abspath(
-                                Paths().mergeFullPath(program_local_path, program_configuration.path)
-                            )
 
             # If a program does not have a network path, and path is not a relative or absolute path, we assume the system can find it
             elif not Paths().isPath(program_configuration.path):
@@ -600,6 +614,9 @@ class TestSetRunner(ABC):
     def __process_test_case_locations(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Process all locations for a test case, downloading files as needed."""
         for location in config.locations:
+            # Skip CHECK locations — those are for program binaries, handled by __update_programs
+            if location.type == PathType.CHECK:
+                continue
             self.__validate_location(config, location)
             remote_path = self.__build_remote_path(config, location)
             local_path = self.__build_local_path(config, location)
