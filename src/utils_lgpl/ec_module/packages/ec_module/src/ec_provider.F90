@@ -2170,6 +2170,7 @@ contains
 
    !> Create source Items and their contained types, based on a spiderweb file's header.
       !! meteo1.f90: reaspwheader
+      ! JRE look here
    function ecProviderCreateSpiderwebItems(instancePtr, fileReaderPtr) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2190,6 +2191,7 @@ contains
       type(tEcItem), pointer :: item2 !< Item containing quantity2
       type(tEcItem), pointer :: item3 !< Item containing quantity3
       character(len=maxNameLen) :: rec !< helper variable
+      character(len=maxNameLen) :: utmzone
       !
       success = .false.
       item1 => null()
@@ -2211,12 +2213,16 @@ contains
       spw_merge_frac = 0.5
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_merge_frac')
       if (len_trim(rec) > 0) read (rec, *) spw_merge_frac
+      utmzone = 'nil'
+      rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_utm_zone_target')
+      if (len_trim(rec) > 0) read (rec, *) utmzone
       !
       ! One common ElementSet.
       elementSetId = ecInstanceCreateElementSet(instancePtr)
       if (.not. (ecElementSetSetType(instancePtr, elementSetId, elmSetType_spw) .and. &
                  ecElementSetSetRadius(instancePtr, elementSetId, radius, spw_merge_frac, radius_unit) .and. &
-                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols))) then
+                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols)) .and. &
+                 ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone)) then
          success = .false.
       end if
       !

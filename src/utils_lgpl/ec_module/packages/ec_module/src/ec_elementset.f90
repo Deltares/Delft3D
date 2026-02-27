@@ -72,6 +72,7 @@ module m_ec_elementSet
    public :: ecElementSetSetXyen
    public :: ecElementSetGetAbsZ
    public :: ecElementSetSetKbotKtop
+   public :: ecElementSetSetUTMzone
 
    interface ecElementSetGetAbsZ
       module procedure ecElementSetGetAbsZbyPtr
@@ -965,6 +966,31 @@ module m_ec_elementSet
             call setECMessage("ERROR: ec_elementSet::ecElementSetSetRadius: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetRadius
+      
+      !> Set the spiderweb target grid utm zone
+      function ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone) result(success)
+         logical                               :: success      !< function status
+         type(tEcInstance), pointer            :: instancePtr  !< intent(in)
+         integer,                   intent(in) :: elementSetId !< unique ElementSet id
+         character(len=maxNameLen), intent(in) :: utmzone      !< utmzone target grid
+         !
+         type(tEcElementSet), pointer :: elementSetPtr !< ElementSet corresponding to elementSetId
+         !
+         success = .false.
+         elementSetPtr => null()
+         !
+         elementSetPtr => ecSupportFindElementSet(instancePtr, elementSetId)
+         if (associated(elementSetPtr)) then
+            if (elementSetPtr%ofType == elmSetType_spw) then
+               elementSetPtr%utmzone = utmzone
+               success = .true.
+            else
+               call setECMessage("WARNING: ec_elementSet::ecElementSetSetUTMzone: Won't set UTM zone of target grid for this ElementSet type.")
+            end if
+         else
+            call setECMessage("ERROR: ec_elementSet::ecElementSetSetRadius: Cannot find an ElementSet with the supplied id.")
+         end if
+      end function ecElementSetSetUTMzone
       
       ! =======================================================================
       
