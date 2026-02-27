@@ -1176,9 +1176,9 @@ contains
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character, dimension(:), allocatable :: error
+      integer :: ierr
 
       type(tree_data), pointer :: block_ptr
-      type(t_Bubblescreen), allocatable :: bubblescreen
 
       i_bubblescreen = 0
       jakdtree = 0
@@ -1195,58 +1195,56 @@ contains
          group_name = trim(tree_get_name(block_ptr))
 
          if (str_tolower(group_name) == 'bubblescreen') then
-            allocate (bubblescreen)
             i_bubblescreen = i_bubblescreen + 1
+            associate (bubblescreen => bubblescreens(i_bubblescreen))
+
+               is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
+               bubblescreen%id = id
+
+               if (is_successful) then
+                  call savepol()
+                  call oldfil(file_pointer, location_file)
+                  call reapol(file_pointer, 0)
+
+                  bubblescreen%num_polyline = npl
+
+                  allocate (bubblescreen%x_polyline(npl))
+                  allocate (bubblescreen%y_polyline(npl))
+                  bubblescreen%x_polyline = xpl(1:npl)
+                  bubblescreen%y_polyline = ypl(1:npl)
+
+                  if (bubblescreen%num_polyline > 1) then
+                     call find_cells_crossed_by_polyline(bubblescreen%x_polyline, bubblescreen%y_polyline, crossed_cells, error)
+                  else if (bubblescreen%num_polyline == 1) then
+                     ! restorepol should be called also for the case above, but find_cells_crossed_by_polyline does it also and then it breaks
+                     ! TODO: fix find_cells_crossed_by_polyline to use own cache
+                     call restorepol()
+                     call realloc(crossed_cells, 1, stat=ierr, fill=0, keepexisting=.false.)
+                     call find_nearest_flownodes(1, bubblescreen%x_polyline, bubblescreen%y_polyline, [''], crossed_cells, jakdtree, 0, INDTP_2D)
+                  else
+                     write (msgbuf, '(5a)') 'Bubblescreen with id='//trim(id)//' in file ''', trim(file_name), ''': [', trim(group_name), '] has no valid location information.'
+                     call err_flush()
+                     cycle
+                  end if
+
+                  bubblescreen%num_flow_cells = size(crossed_cells)
+                  allocate(bubblescreen%flow_cells(bubblescreen%num_flow_cells))
+                  do cidx = 1, size(crossed_cells)
+                     bubblescreen%flow_cells(cidx)%flownode_nr = crossed_cells(cidx)
+                     ! TODO: Check if kbot will not change for changing morphology
+                     k_start = kbot(crossed_cells(cidx))
+                     k_end = k_start + kmxn(crossed_cells(cidx)) - 1
+
+                     bubblescreen%flow_cells(cidx)%flowcell_start_index = k_start
+                     bubblescreen%flow_cells(cidx)%num_source_sinks = kmxn(crossed_cells(cidx))
+                     num_source_sinks = num_source_sinks + bubblescreen%flow_cells(cidx)%num_source_sinks
+                  end do
+               end if              
+            end associate
 
             ! Readout [bubblescreen] attributes
-            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
-            bubblescreen%id = id
+          
 
-            if (is_successful) then
-               call savepol()
-               call oldfil(file_pointer, location_file)
-               call reapol(file_pointer, 0)
-
-               bubblescreen%num_polyline = npl
-
-               allocate (bubblescreen%x_polyline(npl))
-               allocate (bubblescreen%y_polyline(npl))
-               bubblescreen%x_polyline = xpl(1:npl)
-               bubblescreen%y_polyline = ypl(1:npl)
-
-               call restorepol()
-
-               if (bubblescreen%num_polyline > 1) then
-                  call find_cells_crossed_by_polyline(bubblescreen%x_polyline, bubblescreen%y_polyline, crossed_cells, error)
-               else if (bubblescreen%num_polyline == 1) then
-                  allocate (crossed_cells(1))
-                  call find_nearest_flownodes(1, bubblescreen%x_polyline, bubblescreen%y_polyline, [''], crossed_cells, jakdtree, 0, INDTP_2D)
-               else
-                  write (msgbuf, '(5a)') 'Bubblescreen with id='//trim(id)//' in file ''', trim(file_name), ''': [', trim(group_name), '] has no valid location information.'
-                  call err_flush()
-                  cycle
-               end if
-
-               bubblescreen%num_flow_cells = size(crossed_cells)
-               allocate(bubblescreen%flow_cells(bubblescreen%num_flow_cells))
-               do cidx = 1, size(crossed_cells)
-                  bubblescreen%flow_cells(cidx)%flownode_nr = crossed_cells(cidx)
-                  ! TODO: Check if kbot will not change for changing morphology
-                  k_start = kbot(crossed_cells(cidx))
-                  k_end = k_start + kmxn(crossed_cells(cidx)) - 1
-
-                  bubblescreen%flow_cells(cidx)%flowcell_start_index = k_start
-                  bubblescreen%flow_cells(cidx)%num_source_sinks = kmxn(crossed_cells(cidx))
-                  num_source_sinks = num_source_sinks + bubblescreen%flow_cells(cidx)%num_source_sinks
-               end do
-           
-               ! Add bubblescreen to global bubblescreens array
-               bubblescreens(i_bubblescreen) = bubblescreen
-            end if
-
-            ! Deallocate bubblescreen so next [bubblescreen] block has an empty data structure to fill
-            deallocate (crossed_cells)
-            deallocate (bubblescreen)
 
          end if
       end do 
@@ -1340,7 +1338,7 @@ contains
       end if
 
       is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
-                        trim(discharge_input), bi, 1, bubblescreen_air_discharge(bi:bi))
+                        trim(discharge_input), bi, 1, bubblescreen_air_discharge)
       
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
