@@ -129,8 +129,6 @@ module m_ec_filereader
          if (allocated(fileReader%tframe%times)) deallocate(fileReader%tframe%times, stat = istat)
          deallocate(fileReader%tframe, stat = istat)
          if (istat /= 0) success = .false.
-         deallocate(fileReader%hframe, stat = istat)
-         if (istat /= 0) success = .false.
 
          if (allocated(fileReader%variable_names)) then
             deallocate(fileReader%variable_names)
@@ -579,7 +577,9 @@ module m_ec_filereader
                end select
             endif
             itemPtr%tframe => fileReaderPtr%tframe
-            itemPtr%hframe => fileReaderPtr%hframe
+            if (allocated(fileReaderPtr%hframe%phases)) then ! a valid hframe will have allocated phases
+               itemPtr%hframe => fileReaderPtr%hframe
+            end if
             success = .true.
          end if
       end function ecFileReaderAddItem

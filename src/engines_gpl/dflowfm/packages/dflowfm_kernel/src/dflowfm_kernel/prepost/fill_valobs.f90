@@ -104,9 +104,11 @@ contains
       real(kind=dp), allocatable :: poros(:)
       real(kind=dp), allocatable :: ueux(:)
       real(kind=dp), allocatable :: ueuy(:)
-      real(kind=dp), allocatable :: tmp_interp(:)
+      real(kind=dp), allocatable :: water_depth(:)
+      real(kind=dp), allocatable :: ship_level(:)
+      real(kind=dp), allocatable :: cell_z_centers(:)
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
-      
+
       kmx_const = kmx
       if (kmx == 0) then
          kmx_const = 1 ! to make numbering work
@@ -121,11 +123,24 @@ contains
          call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
          call realloc(ueuy, ndkx, keepExisting=.false., fill=0.0_dp)
       end if
-      if (.not. allocated(tmp_interp)) then
-         ! Allocate as 2D arry for water levels etc.
-         call realloc(tmp_interp, ndx, keepExisting=.false., fill=0.0_dp)
+      if (.not. allocated(water_depth)) then
+         ! Allocate as 2D arry for water levels
+         call realloc(water_depth, ndx, keepExisting=.false., fill=0.0_dp)
+         water_depth = s1 - bl
       end if
-      !
+      if (model_is_3D() .and. .not. allocated(cell_z_centers)) then
+         ! Allocate as 2D arry for cell z centers
+         call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=0.0_dp)
+         do j = 2, ndkx
+            cell_z_centers(j) = 0.5_dp * (zws(j) + zws(j - 1))
+         end do
+
+      end if
+      if ((nshiptxy > 0) .and. allocated(zsp) .and. (.not. allocated(ship_level))) then
+         call realloc(ship_level, ndx, keepExisting=.false., fill=0.0_dp)
+         ship_level = s1 + zsp
+      end if
+
       if (jawave > NO_WAVES) then
          if (jahissigwav == 0) then
             wavfac = 1.0_dp
@@ -208,17 +223,18 @@ contains
       end if
 
       valobs = DMISS
+
       do i = 1, numobs + nummovobs
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
-        if (intobs(i) == 0) then
+         if (intobs(i) == 0) then
             ! Treat snapped stations as interpolated ones!
-            neighbour_nodes_obs(1,i)   = k
-            neighbour_nodes_obs(2,i)   = k
-            neighbour_nodes_obs(3,i)   = k
-            neighbour_weights_obs(1,i) = 1.0
-            neighbour_weights_obs(2,i) = 0.0
-            neighbour_weights_obs(3,i) = 0.0
+            neighbour_nodes_obs(1, i) = k
+            neighbour_nodes_obs(2, i) = k
+            neighbour_nodes_obs(3, i) = k
+            neighbour_weights_obs(1, i) = 1.0
+            neighbour_weights_obs(2, i) = 0.0
+            neighbour_weights_obs(3, i) = 0.0
          end if
 
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
@@ -243,79 +259,68 @@ contains
             !              (water levels, velocities, salinity and temperature). Treat other quantities (water quality, morphology, turbulence) as before (snapped)
             !
             ! Water levels
-            
-            call interpolate_and_fill_valobs (s1,i,IPNT_S1,UNC_LOC_S) 
-            
-           if (nshiptxy > 0) then
+
+            call interpolate_and_fill_valobs(s1, i, IPNT_S1, UNC_LOC_S)
+
+            if (nshiptxy > 0) then
                if (allocated(zsp)) then
-                  tmp_interp = s1 + zsp
-                  call interpolate_and_fill_valobs (tmp_interp,i,IPNT_S1,UNC_LOC_S)
+                  call interpolate_and_fill_valobs(ship_level, i, IPNT_S1, UNC_LOC_S)
                end if
             end if
 
             ! Water Depth
-            tmp_interp = s1 - bl
-            call interpolate_and_fill_valobs (tmp_interp,i,IPNT_HS,UNC_LOC_S)
+            call interpolate_and_fill_valobs(water_depth, i, IPNT_HS, UNC_LOC_S)
 
             ! Bed level
-            call interpolate_and_fill_valobs (bl        ,i,IPNT_BL,UNC_LOC_S)
+            call interpolate_and_fill_valobs(bl, i, IPNT_BL, UNC_LOC_S)
             valobs(i, IPNT_CMX) = cmxobs(i)
 
             ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
-            ! First       : allocate tmp_interp for 3D quantities
-            call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0.0_dp)
 
             ! Horizontal velocities (3D)
             if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-               call interpolate_and_fill_valobs (ueux,i,IPNT_UCX,UNC_LOC_S3D)
-               call interpolate_and_fill_valobs (ueuy,i,IPNT_UCY,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(ueux, i, IPNT_UCX, UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(ueuy, i, IPNT_UCY, UNC_LOC_S3D)
             end if
 
             ! Vertical velocities (3D)
             if (model_is_3D()) then
-               call interpolate_and_fill_valobs (ucz,i,IPNT_UCZ,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(ucz, i, IPNT_UCZ, UNC_LOC_S3D)
             end if
 
             ! Velocity magnitude (3D)
             if (jahisvelocity > 0) then
-               call interpolate_and_fill_valobs (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(ucmag, i, IPNT_UMAG, UNC_LOC_S3D)
             end if
 
             ! Depth averaged velocities (first ndx points of ucx/ucy array)
             if (model_is_3D()) then
-               call interpolate_and_fill_valobs (ucx,i,IPNT_UCXQ,UNC_LOC_S)
-               call interpolate_and_fill_valobs (ucy,i,IPNT_UCYQ,UNC_LOC_S)
-            end if                    
-            
+               call interpolate_and_fill_valobs(ucx, i, IPNT_UCXQ, UNC_LOC_S)
+               call interpolate_and_fill_valobs(ucy, i, IPNT_UCYQ, UNC_LOC_S)
+            end if
+
             ! Salinity (interpolated)
             if (jasal > 0) then
-               tmp_interp = constituents(isalt,:)
-               call interpolate_and_fill_valobs (tmp_interp,i,IPNT_SA1,UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(constituents(isalt, :), i, IPNT_SA1, UNC_LOC_S3D)
             end if
-            
+
             ! Temperature
             ! if (jatem > 0) then
-            if (temperature_model /= TEMPERATURE_MODEL_NONE) then 
-               tmp_interp = constituents(itemp,:)
-               call interpolate_and_fill_valobs (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
+            if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+               call interpolate_and_fill_valobs(constituents(itemp, :), i, IPNT_TEM1, UNC_LOC_S3D)
             end if
-            
+
             ! Finally; vertical positions
             ! Maybe not the right place to do this, fille interfaces with bed level and water surface in case of 2d model
- 
-            
-            if (model_is_3D()) then       
+
+            if (model_is_3D()) then
                !       interface
-               call interpolate_and_fill_valobs (zws,i,IPNT_ZWS,UNC_LOC_W)
-               !       centre: make temporary array with cellcentres
-               do j = 2, ndkx
-                  tmp_interp(j) = 0.5_dp * (zws(j) + zws(j - 1))
-               end do
-               call interpolate_and_fill_valobs (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
-            else 
-                valobs(i,IPNT_ZWS)     = valobs(i,IPNT_BL)
-                valobs(i,IPNT_ZWS + 1) = valobs(i,IPNT_S1)
-                valobs(i,IPNT_ZCS)     =  0.5_dp * (valobs(i,IPNT_BL) + valobs(i,IPNT_S1)) 
+               call interpolate_and_fill_valobs(zws, i, IPNT_ZWS, UNC_LOC_W)
+               call interpolate_and_fill_valobs(cell_z_centers, i, IPNT_ZCS, UNC_LOC_S3D)
+            else
+               valobs(i, IPNT_ZWS) = valobs(i, IPNT_BL)
+               valobs(i, IPNT_ZWS + 1) = valobs(i, IPNT_S1)
+               valobs(i, IPNT_ZCS) = 0.5_dp * (valobs(i, IPNT_BL) + valobs(i, IPNT_S1))
             end if
 
             ! Frome here: everything as snapped!!!
@@ -512,7 +517,7 @@ contains
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
-               
+
                valobs(i, IPNT_QMAG + klay - 1) = 0.5_dp * (squ(kk) + sqi(kk))
 
                if (IVAL_TRA1 > 0) then
@@ -714,14 +719,14 @@ contains
          valobs(i, ipnt) = real(array(k), dp)
       end if
    end subroutine conditional_assign
- 
+
    !> Interpolate flow values for a particular observation station using the nearby grid point values.
    !!
    !! Interpolation is only horizontally, within each computational layer.
    !! Interpolation points and weights are supposed to be already available in neighbour_nodes_obs and neighbour_weights_obs.
-   subroutine interpolate_and_fill_valobs (values_on_grid,i_station,ipnt_valobs,loc_type)
+   subroutine interpolate_and_fill_valobs(values_on_grid, i_station, ipnt_valobs, loc_type)
 
-      use precision,             only: dp
+      use precision, only: dp
       use fm_statistical_output, only: model_is_3d
       use m_observations_data, only: neighbour_nodes_obs, neighbour_weights_obs, valobs
       use m_get_kbot_ktop, only: getkbotktop
@@ -734,50 +739,50 @@ contains
       integer, intent(in) :: ipnt_valobs !< Starting index of this quantity inside the valobs(i_station, :) slice, typically one of the IPNT_* integers from m_observations_data.
       integer, intent(in) :: loc_type !< Location type, one of the constants from fm_location_types, .e.g., UNC_LOC_S3D.
 
-      real(kind=dp)                                   :: value
-      real(kind=dp)                                   :: weighttot
+      real(kind=dp) :: value
+      real(kind=dp) :: weighttot
 
       integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), i_point, kstart, kstop, pntnr, klay, oneDown
 
       oneDown = 0
 
       do i_point = 1, 3
-          if (model_is_3D() .and. (loc_type == UNC_LOC_S3D .or. loc_type == UNC_LOC_W)) then
-              call getkbotktop    (neighbour_nodes_obs(i_point,i_station), kb_tmp(i_point), kt_tmp(i_point))
-              call getlayerindices(neighbour_nodes_obs(i_point,i_station), nlayb_tmp(i_point), nrlay_tmp(i_point))
+         if (model_is_3D() .and. (loc_type == UNC_LOC_S3D .or. loc_type == UNC_LOC_W)) then
+            call getkbotktop(neighbour_nodes_obs(i_point, i_station), kb_tmp(i_point), kt_tmp(i_point))
+            call getlayerindices(neighbour_nodes_obs(i_point, i_station), nlayb_tmp(i_point), nrlay_tmp(i_point))
 
-          else
-              kb_tmp   (i_point) = neighbour_nodes_obs(i_point,i_station)
-              kt_tmp   (i_point) = neighbour_nodes_obs(i_point,i_station)
-              nlayb_tmp(i_point) = 1
-              nrlay_tmp(i_point) = 1
-          end if
+         else
+            kb_tmp(i_point) = neighbour_nodes_obs(i_point, i_station)
+            kt_tmp(i_point) = neighbour_nodes_obs(i_point, i_station)
+            nlayb_tmp(i_point) = 1
+            nrlay_tmp(i_point) = 1
+         end if
       end do
 
       ! Values ar interfaces stored 1 below (interface 1 effectively corresponds with layer 0)
       if (loc_type == UNC_LOC_W) then
-          nrlay_tmp = nrlay_tmp + 1
-          oneDown   = 1
+         nrlay_tmp = nrlay_tmp + 1
+         oneDown = 1
       end if
 
       ! Determine lowest and highest layer numbers needed for horizontal interpolation.
       kstart = minval(nlayb_tmp)
-      kstop  = maxval(nlayb_tmp + nrlay_tmp - 1)
+      kstop = maxval(nlayb_tmp + nrlay_tmp - 1)
 
       do klay = kstart, kstop
 
-         value     = 0.0_dp
+         value = 0.0_dp
          weighttot = 0.0_dp
 
          do i_point = 1, 3
-             if ((klay >= nlayb_tmp(i_point)) .and. (klay <= nlayb_tmp(i_point) + nrlay_tmp(i_point) - 1)) then
-               pntnr     = kb_tmp(i_point) - nlayb_tmp(i_point) + klay - oneDown
-               value     = value     + values_on_grid(pntnr)*neighbour_weights_obs(i_point,i_station)
-               weighttot = weighttot + neighbour_weights_obs(i_point,i_station)
-             end if
+            if ((klay >= nlayb_tmp(i_point)) .and. (klay <= nlayb_tmp(i_point) + nrlay_tmp(i_point) - 1)) then
+               pntnr = kb_tmp(i_point) - nlayb_tmp(i_point) + klay - oneDown
+               value = value + values_on_grid(pntnr) * neighbour_weights_obs(i_point, i_station)
+               weighttot = weighttot + neighbour_weights_obs(i_point, i_station)
+            end if
          end do
-         valobs(i_station, ipnt_valobs + klay - 1) = value/weighttot
+         valobs(i_station, ipnt_valobs + klay - 1) = value / weighttot
       end do
-   end subroutine interpolate_and_fill_valobs           
+   end subroutine interpolate_and_fill_valobs
 
 end module m_fill_valobs
