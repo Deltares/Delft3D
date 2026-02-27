@@ -148,6 +148,7 @@ target_link_libraries(${library_name} PRIVATE
                       netcdff
                       polypack
                       precicef
+                      precice::precice
                       trachytopes_io
                       trachytopes_kernel
                       triangle_c
