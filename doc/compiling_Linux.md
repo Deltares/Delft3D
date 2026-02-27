@@ -15,6 +15,22 @@ Containers are lightweight, isolated environments that package an application an
   git clone https://github.com/Deltares/Delft3D.git
   ```
   This step is eventually needed for compiling Delft3D, but it also downloads the Dockerfiles for the next step.
+- Install Docker.
+  The exact steps depend on your operating system.
+  It will typically be something like:
+  ```
+  # 1. Install repo management tools
+  sudo dnf install -y yum-utils
+  
+  # 2. Add the Docker CE repository (CentOS repo used for AlmaLinux/CentOS)
+  sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  
+  # 3. Install Docker Engine + CLI + containerd + Compose plugin
+  sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  
+  # 4. Enable & start service
+  sudo systemctl enable --now docker
+  ```
 - See [these instructions](../ci/dockerfiles/linux/README.md) for setting up the rest of the prerequisites: a container for the base build environment and one with the build environment including all third party dependencies.
   For Windows, we include all third party dependencies in the source distribution in (semi) compiled form, but on Linux it's common practice that you build such libraries yourself.
 
