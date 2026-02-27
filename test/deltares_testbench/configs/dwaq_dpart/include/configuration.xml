@@ -7,11 +7,11 @@
   <locations>
     <location name="reference_results">
       <credential ref="commandline"/>
-      <root>{server_base_url}/references</root>
+      <root>./data/cases</root>
     </location>
     <location name="cases">
       <credential ref="commandline"/>
-      <root>{server_base_url}/cases</root>
+      <root>./data/cases</root>
     </location>
     <location name="engines">
       <root>./data/engines</root>
