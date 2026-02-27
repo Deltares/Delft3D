@@ -85,7 +85,7 @@ contains
 
       ! unfortunately, these prefetch of the sines is necessary despite csb etc already being link-based, but since Fortran is column-major,
       ! csb(1, L) is not contiguous in memory and thus not vectorizable
-      if (jsferic == 1 .or. jasfer3D == 1) then
+      if (jsferic == 1 .and. jasfer3D == 1) then
          csb_1 = csb(1, :)
          csb_2 = csb(2, :)
          snb_1 = snb(1, :)
