@@ -408,6 +408,7 @@ module fm_external_forcings_data
    ! Source/sink variables, to be moved to a separate module; see UNST-9614
    ! ====================================================================================================
 
+   ! Source/sink counters.
    integer :: num_source_sink !< [-] number of source/sinks in the model. {former:numsrc}
    integer :: num_source_sink_oldfile !< [-] number of source/sinks in old extforce file. {former:numsrc_old}
    integer :: num_source_sink_for_nearfield !< [-] number of source/sinks added for near field. {former:numsrc_nf}

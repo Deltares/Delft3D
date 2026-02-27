@@ -109,7 +109,7 @@ contains
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
 
       integer :: i_const
-      real(kind=dp), dimension(:), pointer :: source_sink_discharge_1d !< 1D pointer view of 2D source_sink_all_discharges array
+      real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
 
       call timstrt('External forcings', handle_ext)
 
@@ -213,9 +213,9 @@ contains
       if (num_source_sink > 0) then
          ! Create 1D pointer view of 2D source_sink_all_discharges array to pass to ec_gettimespacevalue
          ! This avoids copying while satisfying the 1D array interface requirement
-         source_sink_discharge_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
+         source_sink_all_discharges_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
          
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_discharge_1d)
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_all_discharges_1d)
 
          !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds)
          call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)
