@@ -71,6 +71,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use m_sand_mud
     use globaldata
     use dfparall
+    use m_compdiam, only: compdiam
     !
     implicit none
     !
@@ -700,15 +701,15 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! calculate percentiles Dxx
        !
        if (ihidexptrcrs == 1) then 
-          call compdiam(frache   ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+          call compdiam(frache    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                       & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
-                      & gdp%d%nmub,xx        ,nxx       ,sedd50fld ,dm_he     , &
-                      & dg_he     ,dxx_he    ,dgsd_he   )
+                      & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+                      & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
        else 
           call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                       & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
-                   & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
-                   & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
+                      & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+                      & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
        endif
        !
        ! determine hiding & exposure factors
