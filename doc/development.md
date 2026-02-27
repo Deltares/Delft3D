@@ -1,4 +1,5 @@
 # Getting started with code compilation and development
+Back to [main page](../README.md).
 
 ## General intro
 The repository includes the source code of both Delft3D 4 and Delft3D FM.
