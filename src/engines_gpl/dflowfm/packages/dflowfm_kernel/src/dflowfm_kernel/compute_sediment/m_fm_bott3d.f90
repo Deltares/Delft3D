@@ -530,6 +530,40 @@ contains
    !< Distribute sediment transport at a 1D node connected to more than
    !! one branch (e.g., a bifurcation). This is done by applying a closure
    !! relation (the nodal point relation)
+   !!
+   !! 
+   !                                                
+   !                  [] flow node                  
+   !                  ^  flow link                  
+   !                                                
+   !                                           []   
+   !                                          /3    
+   !                                       2 /      
+   !                                       ^/       
+   !                                       /        
+   !  discharge                     1     /         
+   !  -------->       _______[]_____^___[]          
+   !                         1          2\          
+   !                                      \ 3       
+   !                                       \^       
+   !                                        \       
+   !                                         \      
+   !                                          \     
+   !                                           []   
+   !                                           4    
+   !
+   !Sediment transport is computed at flow nodes (i.e., cell centres). As there is a flow node at
+   !junctions, sediment transport is computed at the junction point. In the sketch above, flow 
+   !node 2. When upwinding, the sediment transport at flow links is computed. The transport at
+   !flow node 1 is projected to flow link 1. The transport at flow node 2 is projected at flow links
+   !2 and 3. With these transports at links it is already possible to compute the fluxes and the bed
+   !level update. However, in one-dimensional simulations the grid is usually too coarse to properly 
+   !capture the angle at the bifurcation. For this reason, we want to directly control the 
+   !distribution of sediment from flow node 2 to flow links 2 and 3 by means of a nodal point relation.
+   !To this end, the transports first computed at flow links 2 and 3 after upwinding (which come
+   !from the transport at flow node 2) are summed to compute the total transport that exits the
+   !flow node, and this is the transport redistributed by the nodal point relation.
+   !
    subroutine apply_nodal_point_relation()
       use precision, only: dp
 
@@ -561,12 +595,32 @@ contains
 
       integer, dimension(:), allocatable :: branInIDLn !< ID of Incoming Branch (If there is only one) (nnod)
 
-      integer, dimension(:, :, :), allocatable :: sb_dir !< direction of transport at node (nnod, lsedtot, nbr) (-1 = incoming or no transport, +1 = outgoing)
-
+      integer, dimension(:, :, :), allocatable :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
+                                                         !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
+                                                         !  1: Sediment enters the flow node.
+                                                         ! -1: Sediment exits the flow node.                       
+      !                                                        
+      !                               sb_dir                   
+      !                                                        
+      !                                               []       
+      !                                              /         
+      !                                          -1 /          
+      !                                           ^/           
+      !                                           /            
+      !      discharge                      1    /             
+      !      -------->        _______[]_____^___[]             
+      !                                         \              
+      !                                          \ -1          
+      !                                           \^           
+      !                                            \           
+      !                                             \          
+      !                                              \         
+      !                                               []       
+      !                                                        
       real(fp), dimension(:), allocatable :: qb_out !< sum of outgoing discharge at 1d node
       real(fp), dimension(:), allocatable :: width_out !< sum of outgoing main channel widths
 
-      real(fp), dimension(:, :), allocatable :: sb_in !< sum of incoming sediment transport at 1d node
+      real(fp), dimension(:, :), allocatable :: sb_out !< sum of incoming sediment transport at 1d node
 
       real(kind=dp) :: ldir
       real(kind=dp) :: faccheck
@@ -593,7 +647,7 @@ contains
          allocate (width_out(network%nds%Count), stat=istat)
       end if
       if (istat == 0) then
-         allocate (sb_in(network%nds%Count, lsedtot), stat=istat)
+         allocate (sb_out(network%nds%Count, lsedtot), stat=istat)
       end if
       if (istat == 0) then
          allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
@@ -602,10 +656,10 @@ contains
          allocate (branInIDLn(network%nds%Count), stat=istat)
       end if
 
-      qb_out(:) = 0_dp
-      width_out(:) = 0_dp
-      sb_in(:, :) = 0_dp
-      sb_dir(:, :, :) = 1
+      qb_out(:) = 0_dp !Total water discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches.
+      width_out(:) = 0_dp !Width of the downstream branches.
+      sb_out(:, :) = 0_dp !Total sediment discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. 
+      sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometry (flow) node. 
       BranInIDLn(:) = 0
 
    !!
@@ -615,11 +669,11 @@ contains
       !
       ! Determine incoming discharge and transport at nodes
       !
-      do inod = 1, network%nds%Count
+      do inod = 1, network%nds%Count !loop on geometry nodes
          pnod => network%nds%node(inod)
-         if (pnod%numberofconnections > 1) then
+         if (pnod%numberofconnections > 1) then !junction node
             k3 = pnod%gridnumber
-            do j = 1, nd(k3)%lnx
+            do j = 1, nd(k3)%lnx !number of links (i.e., branches) connected to that geometry (i.e., flow) node. 
                L = abs(nd(k3)%ln(j))
                Ldir = sign(1, nd(k3)%ln(j))
                !
@@ -647,6 +701,10 @@ contains
       !
       ! Apply nodal relations to transport
       !
+      !Output = `sb_out`
+      !`sb_out` is the sediment that exits the flow node and must be redistributed over the downstream branches. 
+      !The sediment that is redistributed to the downstream branches is computed as the sum of the sediment that
+      !exits the geometry (flow) node at the junction. 
       do inod = 1, network%nds%Count
          pnod => network%nds%node(inod)
          if (pnod%numberofconnections == 1) then
@@ -669,14 +727,14 @@ contains
                      !we have not modified the link direction and the same logic applies as for the standard scheme.
                      ! this works for one incoming branch TO DO: WO
                      if (sb_dir(inod, ised, j) == -1) then
-                        sb_in(inod, ised) = sb_in(inod, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
+                        sb_out(inod, ised) = sb_out(inod, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
                      end if
                   else !FM1DIMP
                      !V: In the FM1DIMP scheme at <e_sbcn> of the incoming links we have the upwind transport, i.e., the transport
                      !in the ghost cell for multivaluedness of each branch. By summing over all of them we have the total
                      !transport incoming to the junction, which we want to redistribute.
                      if (sb_dir(inod, ised, j) == 1) then
-                        sb_in(inod, ised) = sb_in(inod, ised) + wb1d * sb1d ! incoming transport is positive
+                        sb_out(inod, ised) = sb_out(inod, ised) + wb1d * sb1d ! incoming transport is positive
                      end if
                   end if
                end do
@@ -732,7 +790,7 @@ contains
 
                            facCheck = facCheck + facQ * facW
 
-                           e_sbcn(L, ised) = -Ldir * facQ * facW * sb_in(inod, ised) / wu_mor(L)
+                           e_sbcn(L, ised) = -Ldir * facQ * facW * sb_out(inod, ised) / wu_mor(L)
 
                         elseif (pNodRel%Method == 'table') then
 
@@ -753,10 +811,10 @@ contains
                            SbrRatio = interpolate(pNodRel%Table, QbrRatio)
 
                            if (L == pNodRel%BranchOut1Ln) then
-                              e_sbcn(L, ised) = -Ldir * SbrRatio * sb_in(inod, ised) / (1 + SbrRatio) / wu_mor(L)
+                              e_sbcn(L, ised) = -Ldir * SbrRatio * sb_out(inod, ised) / (1 + SbrRatio) / wu_mor(L)
                               e_sbct(L, ised) = 0.0
                            elseif (L == pNodRel%BranchOut2Ln) then
-                              e_sbcn(L, ised) = -Ldir * sb_in(inod, ised) / (1 + SbrRatio) / wu_mor(L)
+                              e_sbcn(L, ised) = -Ldir * sb_out(inod, ised) / (1 + SbrRatio) / wu_mor(L)
                               e_sbct(L, ised) = 0.0
                            end if
 
@@ -798,9 +856,16 @@ contains
                             !end do
                             !dbl_dy=(bl_out(1)-bl_out(2))/(wu_mor(link_out(1))+wu_mor(link_out(2))/2)
                             !
-                            !bed_slope_factor
-                            !qsy=qsa*(v/u-bed_slope_factor*dbl_dy)
-                            !e_sbcn(L,ised)=sb_in(inod, ised) / wu_mor(L)+qsy
+                            !u=Q_a/h_a/b_a
+                            !Q_y=Q_b-Q_a*(B_b/(B_b+B_c))
+                            !D_abc=0.5*((D_b+D_c)/2+D_a)
+                            !v=Q_y/D_abc/alpha*B_a
+                            !
+                            !call compute_ftheta(ftheta,ised,link_out(1))
+                            !
+                            !q_sa=Q_sa/B_a
+                            !q_sy=q_sa*(v/u-1/ftheta*dbl_dy)
+                            !e_sbcn(L,ised)=sb_out(inod, ised) / wu_mor(L)+q_sy
                         else
                            call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
                         end if
@@ -839,7 +904,7 @@ contains
          deallocate (width_out, stat=istat)
       end if
       if (istat == 0) then
-         deallocate (sb_in, stat=istat)
+         deallocate (sb_out, stat=istat)
       end if
       if (istat == 0) then
          deallocate (sb_dir, stat=istat)
