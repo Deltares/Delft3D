@@ -571,7 +571,7 @@ contains
    !! Declarations
    !!
 
-      use Messagehandling
+      use Messagehandling, only: SetMessage, LEVEL_FATAL, errmsg
       use message_module, only: writemessages, write_error
       use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
       use m_flowgeom, only: nd, wu_mor
@@ -593,6 +593,10 @@ contains
 
       integer :: inod, j, istat, ised, ifrac, k1, k3, nrd_idx, L
 
+      integer :: link_in
+      integer, dimension(2) :: link_out
+      integer, dimension(2) :: node_out
+      
       integer, dimension(:), allocatable :: branInIDLn !< ID of Incoming Branch (If there is only one) (nnod)
 
       integer, dimension(:, :, :), allocatable :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
@@ -609,13 +613,13 @@ contains
       !                                           /            
       !      discharge                      1    /             
       !      -------->        _______[]_____^___[]             
-      !                                         \              
-      !                                          \ -1          
-      !                                           \^           
-      !                                            \           
-      !                                             \          
-      !                                              \         
-      !                                               []       
+      !                                          \              
+      !                                           \-1          
+      !                                            \^           
+      !                                             \           
+      !                                              \          
+      !                                               \         
+      !                                                []       
       !                                                        
       real(fp), dimension(:), allocatable :: qb_out !< sum of outgoing discharge at 1d node
       real(fp), dimension(:), allocatable :: width_out !< sum of outgoing main channel widths
@@ -629,7 +633,7 @@ contains
       real(kind=dp) :: facQ
       real(kind=dp) :: facW
       real(kind=dp) :: qb1d, wb1d, sb1d
-      real(kind=dp) :: sbrratio, qbrratio, Qbr1, Qbr2
+      real(kind=dp) :: sbrratio, qbrratio, Qbr1, Qbr2 !q_sb
 
       type(t_nodefraction), pointer :: pFrac
       type(t_noderelation), pointer :: pNodRel
@@ -819,53 +823,17 @@ contains
                            end if
 
                         elseif (pNodRel%Method == 'BollaPittaluga') then
-                            !if (pnod%numberofconnections /= 3) then
-                            !    call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
-                            !endif
-                            !!
-                            !!Find the link number of the outgoing branches.
-                            !!Ouput: `link_out`
-                            !!
-                            !!One of the is the one we are processing (index `j`) 
-                            !link_out(1)=nd(k3)%ln(j)
-                            !!There must be another one whth direction -1 and different than `j`.
-                            !j2 = -1
-                            !do idx = 1, nd(k3)%lnx
-                            !   if (sb_dir(inod, ised, idx) == -1 .and. idx /= j) then
-                            !      j2 = idx
-                            !      exit
-                            !   end if
-                            !end do
-                            !if (j2 == -1) then
-                            !   call SetMessage(LEVEL_FATAL, 'There must be two outgoing branches for applying the nodal point relation by BollaPittaluga.')
-                            !end if
-                            !link_out(2)=nd(k3)%ln(j2)
-                            !!
-                            !!Get bed level of node downstream of the outgoing links.
-                            !!Output: `bl_out`
-                            !!
-                            !bl_out=0.0_fp
-                            !!Find the flownode connected to a downstream link `idx_node_ds` which is not the junction flownode (with index `k3`)
-                            !do kl=1,2 !loop on the two downstream links
-                            !   if (link_out(1,L1) == k3) then
-                            !       idx_node_ds = ln(2,L1)
-                            !   else
-                            !       idx_node_ds = ln(1,L1)
-                            !   end if
-                            !   bl_out(kl)=bl(idx_node_ds)
-                            !end do
-                            !dbl_dy=(bl_out(1)-bl_out(2))/(wu_mor(link_out(1))+wu_mor(link_out(2))/2)
-                            !
-                            !u=Q_a/h_a/b_a
-                            !Q_y=Q_b-Q_a*(B_b/(B_b+B_c))
-                            !D_abc=0.5*((D_b+D_c)/2+D_a)
-                            !v=Q_y/D_abc/alpha*B_a
-                            !
-                            !call compute_ftheta(ftheta,ised,link_out(1))
-                            !
-                            !q_sa=Q_sa/B_a
-                            !q_sy=q_sa*(v/u-1/ftheta*dbl_dy)
-                            !e_sbcn(L,ised)=sb_out(inod, ised) / wu_mor(L)+q_sy
+                            !V: We could check this in initialization and avoid doing it at every time step. 
+                            if (pnod%numberofconnections /= 3) then
+                                call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
+                            endif
+                            call nodal_point_relation_indices( &
+                                 link_in,link_out,node_out, & !output
+                                 k3,j,sb_dir,inod,ised   & !input
+                                 )
+                            call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,sb_out(inod, ised),link_in,link_out,node_out,ised)
+                            
+                            !e_sbcn(L,ised)=q_sb
                         else
                            call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
                         end if
@@ -2280,4 +2248,149 @@ contains
 
    end subroutine fm_diffusion_active_layer
 
+   !> Apply the nodal point relation by Bolla and Pittaluga et al. (2003) to compute the sediment transport 
+   !rate at the node of a bifurcation. The relation is applied at the junction flownode of a bifurcation, 
+   !which has one incoming and two outgoing branches. The sediment transport rate at the node is computed 
+   !based on the sediment transport rates and widths of the three branches, as well as the bed levels of the
+   !nodes downstream of the outgoing branches. The relation also requires a parameter `alpha_BP` which is 
+   !provided in the input file and can be set by the user.
+   !
+   subroutine nodal_point_relation_BollaPittaluga(sq_sb,pNodRel_in,Q_sa,link_in,link_out,node_out,ised)
+
+   use precision, only: dp
+   use m_flowgeom, only: wu_mor, bl
+   use m_flow, only: u1, q1_main, u_to_umain
+   use morphology_data_module, only: t_noderelation
+   use Messagehandling, only: SetMessage, LEVEL_FATAL
+
+   implicit none
+
+   ! Output
+   real(kind=dp), intent(out) :: sq_sb
+   
+   ! Input
+   type(t_noderelation), target, intent(in) :: pNodRel_in
+   real(kind=dp), intent(in) :: Q_sa
+   integer, intent(in) :: link_in
+   integer, dimension(2), intent(in) :: link_out
+   integer, dimension(2), intent(in) :: node_out
+   integer, intent(in) :: ised
+
+   ! Local variables
+
+   real(kind=dp) :: dbl_dy
+   real(kind=dp) :: B_a, B_b, B_c
+   real(kind=dp) :: D_a, D_b, D_c, D_abc
+   real(kind=dp) :: Q_a, Q_b, Q_c, Q_y
+   real(kind=dp) :: Q_sy, Q_sb !<sediment transport 
+   real(kind=dp) :: sq_sa, sq_sy !specific sediment transport
+   real(kind=dp) :: L_a
+   real(kind=dp) :: u, v
+   real(kind=dp) :: ftheta
+   
+   type(t_noderelation), pointer :: pNodRel
+
+   pNodRel => pNodRel_in
+
+   dbl_dy=(bl(node_out(1))-bl(node_out(2)))/(wu_mor(link_out(1))+wu_mor(link_out(2))/2)                           
+   
+   B_a=wu_mor(link_in)
+   B_b=wu_mor(link_out(1))
+   B_c=wu_mor(link_out(2))
+   
+   D_a=q1_main(link_in)/(u1(link_in) * u_to_umain(link_in))
+   D_b=q1_main(link_out(1))/(u1(link_out(1)) * u_to_umain(link_out(1)))
+   D_c=q1_main(link_out(2))/(u1(link_out(2)) * u_to_umain(link_out(2)))
+   
+   Q_a=q1_main(link_in)*B_a
+   Q_b=q1_main(link_out(1))*B_b
+   Q_c=q1_main(link_out(2))*B_c
+   
+   !Q_sa=sb_out(inod, ised)
+   
+   L_a=pNodRel%alpha_BP*B_a
+   
+   !u=Q_a/D_a/B_a
+   u = u1(link_in) * u_to_umain(link_in) 
+   
+   Q_y=Q_b-Q_a*(B_b/(B_b+B_c))
+   D_abc=0.5*((D_b+D_c)/2+D_a)
+   v=Q_y/D_abc/L_a
+   
+   call compute_ftheta(ftheta,ised,link_out(1))
+   
+   sq_sa=Q_sa/B_a
+   sq_sy=q_sa*(v/u-1/ftheta*dbl_dy)
+   Q_sy=sq_sy*L_a
+   
+   Q_sb=Q_sa+Q_sy
+   sq_sb=Q_sb/B_b
+
+   end subroutine
+
+   !> Compute the indices of the incoming and outgoing links and the downstream nodes.
+   !
+   subroutine nodal_point_relation_indices( &
+                                 link_in,link_out,node_out,& !output
+                                 k3,j,sb_dir,inod,ised  & !input
+           )
+   
+   ! Modules
+   use precision, only: dp
+   use m_flowgeom, only: ln, nd
+   use Messagehandling, only: SetMessage, LEVEL_FATAL
+   
+   implicit none
+
+   ! Output variables
+   integer, intent(out) :: link_in
+   integer, dimension(2), intent(out) :: link_out
+   integer, dimension(2), intent(out) :: node_out
+
+   ! Input variables
+   integer, intent(in) :: k3    ! Junction flownode index
+   integer, intent(in) :: j     ! Current link index
+   integer, intent(in) :: sb_dir(:,:,:)
+   integer, intent(in) :: inod  ! Node index
+   integer, intent(in) :: ised  ! Sediment fraction index
+
+   ! Local variables
+   integer :: j2, j3, idx, kl
+   
+   !
+   !Find the link number of the outgoing branches.
+   !Ouput: `link_out`
+   !
+   !One of the is the one we are processing (index `j`) 
+   link_out(1)=nd(k3)%ln(j)
+   !There must be another one whth direction -1 and different than `j`.
+   j2 = -1
+   j3 = -1
+   do idx = 1, nd(k3)%lnx
+      if (sb_dir(inod, ised, idx) == -1 .and. idx /= j) then
+         j2 = idx
+      else
+         j3 = idx 
+      end if
+   end do
+   if (j2 == -1) then
+      call SetMessage(LEVEL_FATAL, 'There must be two outgoing branches for applying the nodal point relation by BollaPittaluga.')
+   end if
+   if (j3 == -1) then
+      call SetMessage(LEVEL_FATAL, 'There must be an incomming branch for applying the nodal point relation by BollaPittaluga.')
+   end if
+   link_out(2)=nd(k3)%ln(j2)
+   link_in=nd(k3)%ln(j3)
+   
+   !Find the flownode connected to a downstream link `node_out` which is not the junction flownode (with index `k3`)
+   do kl=1,2 !loop on the two downstream links
+      if (ln(1,link_out(1)) == k3) then
+          node_out(kl) = ln(2,link_out(1))
+      else
+          node_out(kl) = ln(1,link_out(1))
+      end if
+   end do
+                            
+   end subroutine
+   
 end module m_fm_bott3d

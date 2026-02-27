@@ -555,6 +555,7 @@ type t_noderelation
    character(len=CHARLEN)                         :: Method     = ' '
    real(fp)                                       :: expQ       = -1.0_fp
    real(fp)                                       :: expW       = -1.0_fp
+   real(fp)                                       :: alpha_BP   = 2.5_fp
    type(t_table), pointer                         :: Table
 end type t_noderelation
 
