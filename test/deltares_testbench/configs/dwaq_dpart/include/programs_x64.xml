@@ -60,4 +60,20 @@
             <from>teamcity_artifacts/plct</from>
         </location>
     </program>
+
+    <program name="waqpb_export" logOutputToFile="true" addSearchPaths="true">
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/x64</from>
+        </location>
+        <path>bin/run_waqpb_export.bat</path>
+    </program>
+
+    <program name="waqpb_import" logOutputToFile="true" addSearchPaths="true">
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/x64</from>
+        </location>
+        <path>bin/run_waqpb_import.bat</path>
+    </program>
+
+
 </programs>
