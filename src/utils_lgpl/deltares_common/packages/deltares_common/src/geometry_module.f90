@@ -281,8 +281,9 @@ contains
       integer, intent(in) :: n !< number of polygon points
       real(kind=dp), dimension(n), intent(in) :: x, y !< polygon coordinates (at least n elements)
       logical :: is_inside !< result: true if inside (respecting jins mode)
-
+      
       ! locals
+      real(kind=dp), parameter :: EPS = 1e-12_dp
       integer :: i, j, crossings
       real(kind=dp) :: x_intersect
 
@@ -308,7 +309,7 @@ contains
          end if
 
          ! check if point is exactly on a vertex
-         if (xl == x(j) .and. yl == y(j)) then
+         if (abs(xl - x(j)) < EPS .and. abs(yl - y(j)) < EPS) then
             is_inside = .true.
             if (jins == 0) then
                is_inside = .not. is_inside
@@ -324,7 +325,7 @@ contains
             if (xl < x_intersect) then
                ! ray crosses edge to the right of point
                crossings = crossings + 1
-            else if (xl == x_intersect) then
+            else if (abs(xl - x_intersect) < EPS) then
                ! point is exactly on the edge
                is_inside = .true.
                if (jins == 0) then
