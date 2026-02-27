@@ -3580,8 +3580,10 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
       ! Store with correct orientation
       if (is_column_major) then
          hframe%phases = transpose(data_block)
+         hframe%phase_dims = [dim_sizes(2), dim_sizes(1)]
       else
          hframe%phases = data_block
+         hframe%phase_dims = dim_sizes
       end if
       if (.not. success) then
          call setECMessage('ERROR: ec_provider::ecNetcdfInitializeHarmonicsFrame: Failed to initialize harmonics frame.')
