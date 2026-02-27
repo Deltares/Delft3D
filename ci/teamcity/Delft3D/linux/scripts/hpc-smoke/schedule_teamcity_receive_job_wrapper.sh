@@ -18,6 +18,7 @@ VCS_HASH_SHORT="${VCS_COMMIT_HASH:0:7}"
 
 # Check if required arguments are provided
 if [ -z "$CONFIGURATION_ID" ] || [ -z "$DEPENDENCY_BUILD_ID" ] || [ -z "$VCS_COMMIT_HASH" ] || [ -z "$BRANCH_NAME" ]; then
+    echo "Usage: $0 <configuration_id> <dependency_build_id> <vcs_commit_hash> <branch_name>"
     echo "Error: All four arguments are required and cannot be empty"
     echo "  CONFIGURATION_ID: '$CONFIGURATION_ID'"
     echo "  DEPENDENCY_BUILD_ID: '$DEPENDENCY_BUILD_ID'"
