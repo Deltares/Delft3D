@@ -1,9 +1,9 @@
 # Preparing a Linux development environment using Docker
 Back to [Linux development page](../../../doc/compiling_Linux.md).
 
-There are currently two dockerfiles in this directory to prepare a container with the build environment:
-1. `buildtools.Dockerfile`
-2. `third-party-libs.Dockerfile`
+The build environment is built in two steps:
+1. `buildtools.Dockerfile` to build a container containing the Intel compilers, CMake and other basic build tools.
+2. `third-party-libs.Dockerfile` to extend the container with all third party libraries required by one or more Delft3D components.
 
 To run these build instructions and build the docker images, you should have `docker` installed and configured to build Linux docker images.
 Using another container platform `podman` should also work.
@@ -14,13 +14,18 @@ Using another container platform `podman` should also work.
 - Delft3D FM depends on PETSc; the version of the PETSc library that we are currently using is not compatible with OneAPI 2025.
   We are adjusting the code to use the updated Fortran API of the latest PETSc version.
 
-## Buildtools
+## Buildtools container
 The `buildtools.Dockerfile` contains build instructions to build the `buildtools` container image. 
 It uses a 'base' almalinux 8 image copied from [dockerhub](https://hub.docker.com/_/almalinux) and  pushed to our own [Harbor registry](https://containers.deltares.nl/harbor/projects/21/repositories/almalinux/artifacts-tab).
-Outside Deltares, you may replace the first line by `FROM almalinux:8 as buildtools`.
-It installs a few essential tools and programs using `dnf` (including `make` and `wget`) along with the C, C++ and Fortran compilers, MPI tools and libraries and the math kernel library from Intel.
+Outside Deltares, you may need to point to the original image.
+In that case replace the first line of the Dockerfile starting with `FROM` by
+```
+FROM almalinux:8 as buildtools
+```
+The Dockerfile continues by installing a few essential tools and programs using `dnf` (including `make` and `wget`) along with the C, C++ and Fortran compilers, MPI tools and libraries and the math kernel library from Intel.
 Unfortunately we need quite a lot of tools to be able to build all of the third party libraries required.
-Some libraries have a complex configuration set-up. For instance, PETSc requires `python3` to be configured and built.
+Some libraries have a complex configuration set-up.
+For instance, PETSc requires `python3` to be configured and built.
 
 In addition, we fetch the source code of recent versions of autotools (autoconf, automake and libtool) and cmake and build them from source.
 These can also be installed using `dnf`, but unfortunately even the most recent versions of these packages installed with `dnf` are outdated.
