@@ -317,6 +317,18 @@ contains
             return
          end if
 
+         ! check for an exactly horizontal edge at test point's y-level
+         if (abs(y(j) - yl) <= EPS .and. abs(y(i) - yl) <= EPS) then
+            ! horizontal edge - check if point's x is between edge endpoints
+            if (xl >= min(x(j), x(i)) .and. xl <= max(x(j), x(i))) then
+               is_inside = .true.
+               if (jins == 0) then
+                  is_inside = .not. is_inside
+               end if
+               return
+            end if
+         end if
+
          ! check if ray crosses this edge
          ! edge crosses horizontal line through test point if one endpoint is above and one below
          if ((y(j) > yl) .neqv. (y(i) > yl)) then
