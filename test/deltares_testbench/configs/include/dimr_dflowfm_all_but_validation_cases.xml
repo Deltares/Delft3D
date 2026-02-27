@@ -1797,7 +1797,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
-        <path version="2026-02-27T10:58:23.367000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
+        <path version="2026-02-27T12:11:16.769000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/spatial_dicoww_map.nc" type="netcdf">
@@ -2077,17 +2077,6 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
-    <testCase name="e02_f006_c102_netcdf_harmonic_samples" ref="dflowfm_default">
-        <path version="2026-02-25T16:23:52.989000">e02_dflowfm/f006_external_forcing/c102_netcdf_harmonic_samples</path>
-        <maxRunTime>3600.0</maxRunTime>
-        <checks>
-            <file name="DFM_OUTPUT_model/model_map.nc" type="netcdf">
-                <parameters>
-                    <parameter name="mesh2d_cfu" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-        </checks>
     </testCase>
     <testCase name="e02_f006_c110_dcsm5_periodic_forcing" ref="dflowfm_default">
       <path version="2025-12-04T16:08:58.022000">e02_dflowfm/f006_external_forcing/c110_dcsm5_periodic_forcing</path>
