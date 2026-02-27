@@ -31,6 +31,7 @@ echo "Configuration ID: $CONFIGURATION_ID"
 echo "Dependency Build ID: $DEPENDENCY_BUILD_ID"
 echo "VCS Commit Hash: $VCS_COMMIT_HASH"
 echo "VCS Commit Hash short: $VCS_HASH_SHORT"
+echo "Branch Name: $BRANCH_NAME"
 
 # Execute the TeamCity scheduler script
 ./schedule_teamcity_receive_job.sh "$CONFIGURATION_ID" --depend-on-build "$DEPENDENCY_BUILD_ID" \
