@@ -1,126 +1,127 @@
-<?xml version='1.0' encoding='ISO-8859-1'?>
-<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xi="http://www.w3.org/2001/XInclude" xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-3.00.xsd">
-  <config>
-    <localPaths>
-      <testCasesDir>./data/cases</testCasesDir>
-      <enginesDir>./data/engines</enginesDir>
-      <referenceDir>./data/cases</referenceDir>
-    </localPaths>
-    <locations>
-      <location name="reference_results">
-        <credential ref="commandline"/>
-        <root>./data/cases</root>
-      </location>
-      <location name="cases">
-        <credential ref="commandline"/>
-        <root>./data/cases</root>
-      </location>
-      <location name="reference_engines">
-        <credential ref="commandline"/>
-        <root>{server_base_url}/references/bin</root>
-      </location>
-      <location name="engines_to_compare">
-        <credential ref="commandline"/>
-        <root>{server_base_url}/references</root>
-      </location>
-      <location name="local">
-        <root>./data/cases</root>
-      </location>
-    </locations>
-  </config>
-  <!--
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-3.00.xsd">
+    <config>
+        <localPaths>
+            <testCasesDir>./data/cases</testCasesDir>
+            <enginesDir>./data/engines</enginesDir>
+            <referenceDir>./data/reference_results</referenceDir>
+        </localPaths>
+        <locations>
+            <location name="reference_results">
+                <credential ref="commandline"/>
+                <root>{server_base_url}/references</root>
+            </location>
+            <location name="cases">
+                <credential ref="commandline"/>
+                <root>{server_base_url}/cases</root>
+            </location>
+            <location name="reference_engines">
+                <credential ref="commandline"/>
+                <root>{server_base_url}/references/bin</root>
+            </location>
+            <location name="engines_to_compare">
+                <credential ref="commandline"/>
+                <root>{server_base_url}/references</root>
+            </location>
+            <location name="local">
+                <root>./data/engines</root>
+            </location>
+        </locations>
+    </config>
+    <!--
     Programs
     -->
-  <programs>
-    <!--
+    <programs>
+        <!--
         The order is important. Start with the following programs:
             command_prompt
             mpi
         -->
-    <program name="command_prompt">
-      <path>/bin/bash</path>
-      <arguments>
-        <argument>-c</argument>
-      </arguments>
-    </program>
-    <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-      <location ref="reference_engines" type="reference">
-        <from>win64</from>
-      </location>
-      <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from>
-        <!-- just the first part of the directory structure, wil be file by TeamCity -->
-      </location>
-      <path>bin/run_dimr.sh</path>
-      <environments>
-        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
-      </environments>
-    </program>
-    <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-      <shell ref="command_prompt"/>
-      <path>thirdparty/vs/lnx64/vs</path>
-      <environments>
-        <environment name="PAGER" type="raw">more</environment>
-      </environments>
-    </program>
-    <program name="dimr_plain" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-      <location ref="reference_engines" type="reference">
-        <from>lnx64</from>
-      </location>
-      <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from>
-        <!-- just the first part of the directory structure, wil be file by TeamCity -->
-      </location>
-      <path>bin/run_dimr.sh</path>
-      <environments>
-        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
-      </environments>
-      <arguments>
-        <argument>-m dimr_config.xml</argument>
-      </arguments>
-    </program>
-    <program name="dimr_partitioned" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-      <location ref="reference_engines" type="reference">
-        <from>lnx64</from>
-      </location>
-      <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from>
-        <!-- just the first part of the directory structure, wil be file by TeamCity -->
-      </location>
-      <path>bin/run_dimr.sh</path>
-      <environments>
-        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-        <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
-      </environments>
-    </program>
-    <program name="dimr_opl" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
-      <location ref="reference_engines" type="reference">
-        <from>lnx64</from>
-      </location>
-      <location ref="local" type="check">
-        <from>teamcity_artifacts/lnx64</from>
-        <!-- just the first part of the directory structure, wil be file by TeamCity -->
-      </location>
-      <path>bin/run_dimr.sh</path>
-      <environments>
-        <environment name="LIBEXT" type="string">.so</environment>
-      </environments>
-    </program>
-  </programs>
-  <!--
+        <program name="command_prompt">
+            <path>/bin/bash</path>
+            <arguments>
+                <argument>-c</argument>
+            </arguments>
+        </program>
+        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <location ref="reference_engines" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            </location>
+            <path>bin/run_dimr.sh</path>
+            <environments>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+            </environments>
+        </program>
+        <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <shell ref="command_prompt"/>
+            <path>thirdparty/vs/lnx64/vs</path>
+            <environments>
+                <environment name="PAGER" type="raw">more</environment>
+            </environments>
+        </program>
+
+        <program name="dimr_plain" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            </location>
+            <path>bin/run_dimr.sh</path>
+            <environments>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+            </environments>
+            <arguments>
+                <argument>-m dimr_config.xml</argument>
+            </arguments>
+        </program>
+        <program name="dimr_partitioned" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            </location>
+            <path>bin/run_dimr.sh</path>
+            <environments>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+            </environments>
+        </program>
+
+        <program name="dimr_opl" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            </location>
+            <path>bin/run_dimr.sh</path>
+            <environments>
+                <environment name="LIBEXT" type="string">.so</environment>
+            </environments>
+        </program>
+    </programs>
+    <!--
     default testCases
     -->
-  <defaultTestCases>
+    <defaultTestCases>
     <testCase name="dflowfm_default">
-      <programs>
+    <programs>
         <program ref="dimr">
-          <arguments>
-            <argument>-m dimr.xml</argument>
-          </arguments>
+            <arguments>
+                <argument>-m dimr.xml</argument>
+            </arguments>
         </program>
-      </programs>
+    </programs>
       <location ref="cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
@@ -135,18 +136,18 @@
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_default_restart">
-      <programs>
+    <programs>
         <program ref="dimr" seq="1">
-          <arguments>
-            <argument>-m dimr.xml</argument>
-          </arguments>
+            <arguments>
+                <argument>-m dimr.xml</argument>
+            </arguments>
         </program>
         <program ref="dimr" seq="2">
           <arguments>
-            <argument>-m dimr_restart.xml</argument>
+              <argument>-m dimr_restart.xml</argument>
           </arguments>
-        </program>
-      </programs>
+      </program>
+    </programs>
       <location ref="cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
@@ -161,13 +162,13 @@
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_platform_specific_refs">
-      <programs>
+    <programs>
         <program ref="dimr">
-          <arguments>
-            <argument>-m dimr.xml</argument>
-          </arguments>
+            <arguments>
+                <argument>-m dimr.xml</argument>
+            </arguments>
         </program>
-      </programs>
+    </programs>
       <location ref="cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
@@ -182,18 +183,18 @@
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_platform_specific_refs_restart">
-      <programs>
+    <programs>
         <program ref="dimr" seq="1">
-          <arguments>
-            <argument>-m dimr.xml</argument>
-          </arguments>
+            <arguments>
+                <argument>-m dimr.xml</argument>
+            </arguments>
         </program>
         <program ref="dimr" seq="2">
           <arguments>
-            <argument>-m dimr_restart.xml</argument>
+              <argument>-m dimr_restart.xml</argument>
           </arguments>
-        </program>
-      </programs>
+      </program>
+    </programs>
       <location ref="cases" type="input">
         <!-- if "to" is not specified, "from" is used as target -->
         <from>.</from>
