@@ -571,7 +571,7 @@ contains
    !! Declarations
    !!
 
-      use Messagehandling, only: SetMessage, LEVEL_FATAL, errmsg
+      use Messagehandling, only: SetMessage, LEVEL_FATAL, errmsg, mess
       use message_module, only: writemessages, write_error
       use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
       use m_flowgeom, only: nd, wu_mor
@@ -2262,7 +2262,8 @@ contains
    use m_flow, only: u1, q1_main, u_to_umain
    use morphology_data_module, only: t_noderelation
    use Messagehandling, only: SetMessage, LEVEL_FATAL
-
+   use m_fm_adjust_bedload, only: compute_ftheta
+   
    implicit none
 
    ! Output

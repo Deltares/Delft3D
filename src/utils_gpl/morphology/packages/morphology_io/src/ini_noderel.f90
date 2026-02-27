@@ -199,6 +199,8 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
                elseif (pNodRel%Method == 'function') then
                   call prop_get(block_ptr, '*', 'k', pNodRel%expQ)
                   call prop_get(block_ptr, '*', 'm', pNodRel%expW)
+               elseif (pNodRel%Method == 'BollaPittaluga') then   
+                   call prop_get(block_ptr, '*', 'alpha_BP', pNodRel%alpha_BP)
                else
                  call SetMessage(LEVEL_FATAL, 'Unknown Method Specified in File: '//trim(fileName))
                endif
