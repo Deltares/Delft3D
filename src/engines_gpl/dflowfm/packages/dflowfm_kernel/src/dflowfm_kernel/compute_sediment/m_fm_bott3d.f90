@@ -822,7 +822,7 @@ contains
                               e_sbct(L, ised) = 0.0
                            end if
 
-                        elseif (pNodRel%Method == 'BollaPittaluga') then
+                        elseif (pNodRel%Method == 'bollapittaluga') then
                             !V: We could check this in initialization and avoid doing it at every time step. 
                             if (pnod%numberofconnections /= 3) then
                                 call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
@@ -2291,6 +2291,8 @@ contains
    
    type(t_noderelation), pointer :: pNodRel
 
+   real(kind=dp), parameter :: U_THRESH = 1.0e-3_dp ! threshold velocity for computing D_a to avoid numerical issues when u is close to zero. 
+   
    pNodRel => pNodRel_in
 
    dbl_dy=(bl(node_out(1))-bl(node_out(2)))/(wu_mor(link_out(1))+wu_mor(link_out(2))/2)                           
@@ -2299,9 +2301,9 @@ contains
    B_b=wu_mor(link_out(1))
    B_c=wu_mor(link_out(2))
    
-   D_a=q1_main(link_in)/(u1(link_in) * u_to_umain(link_in))
-   D_b=q1_main(link_out(1))/(u1(link_out(1)) * u_to_umain(link_out(1)))
-   D_c=q1_main(link_out(2))/(u1(link_out(2)) * u_to_umain(link_out(2)))
+   D_a=q1_main(link_in)/(max(u1(link_in) * u_to_umain(link_in),U_THRESH))
+   D_b=q1_main(link_out(1))/(max(u1(link_out(1)) * u_to_umain(link_out(1)),U_THRESH))
+   D_c=q1_main(link_out(2))/(max(u1(link_out(2)) * u_to_umain(link_out(2)),U_THRESH))
    
    Q_a=q1_main(link_in)*B_a
    Q_b=q1_main(link_out(1))*B_b
@@ -2363,7 +2365,7 @@ contains
    !Ouput: `link_out`
    !
    !One of the is the one we are processing (index `j`) 
-   link_out(1)=nd(k3)%ln(j)
+   link_out(1)=abs(nd(k3)%ln(j))
    !There must be another one whth direction -1 and different than `j`.
    j2 = -1
    j3 = -1
@@ -2380,8 +2382,8 @@ contains
    if (j3 == -1) then
       call SetMessage(LEVEL_FATAL, 'There must be an incomming branch for applying the nodal point relation by BollaPittaluga.')
    end if
-   link_out(2)=nd(k3)%ln(j2)
-   link_in=nd(k3)%ln(j3)
+   link_out(2)=abs(nd(k3)%ln(j2))
+   link_in=abs(nd(k3)%ln(j3))
    
    !Find the flownode connected to a downstream link `node_out` which is not the junction flownode (with index `k3`)
    do kl=1,2 !loop on the two downstream links
