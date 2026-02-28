@@ -2510,7 +2510,8 @@ contains
       do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
          xctemp = connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n)
          yctemp = connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n)
-         if (trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone) /= 'nil') then
+         if (trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone) /= 'nil' .and.  &
+             trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%gridunit) == 'degree') then
             call utm2deg(xctemp, yctemp, trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone), xc, yc)
          else
             xc = xctemp

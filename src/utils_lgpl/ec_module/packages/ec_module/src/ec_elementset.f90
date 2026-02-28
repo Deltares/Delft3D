@@ -968,11 +968,12 @@ module m_ec_elementSet
       end function ecElementSetSetRadius
       
       !> Set the spiderweb target grid utm zone
-      function ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone) result(success)
+      function ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone,gridunit) result(success)
          logical                               :: success      !< function status
          type(tEcInstance), pointer            :: instancePtr  !< intent(in)
          integer,                   intent(in) :: elementSetId !< unique ElementSet id
          character(len=maxNameLen), intent(in) :: utmzone      !< utmzone target grid
+         character(len=maxNameLen), intent(in) :: gridunit     !< only do this for spherical grids
          !
          type(tEcElementSet), pointer :: elementSetPtr !< ElementSet corresponding to elementSetId
          !
@@ -983,6 +984,7 @@ module m_ec_elementSet
          if (associated(elementSetPtr)) then
             if (elementSetPtr%ofType == elmSetType_spw) then
                elementSetPtr%utmzone = utmzone
+               elementSetPtr%gridunit = gridunit
                success = .true.
             else
                call setECMessage("WARNING: ec_elementSet::ecElementSetSetUTMzone: Won't set UTM zone of target grid for this ElementSet type.")

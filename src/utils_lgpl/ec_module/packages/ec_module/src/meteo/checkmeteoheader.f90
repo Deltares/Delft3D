@@ -325,6 +325,13 @@ function checkmeteoheader(meteoitem) result(success)
           return
        endif
        !
+       if (trim(meteoitem%grid_unit) /= 'degree'  .and. &
+         & trim(meteoitem%spw_utm_zone_target) /= 'nil') then
+          write(meteomessage, '(a)') 'Meteo input: spw_utm_target_zone must be nil when specifying spiderweb grid coordinates in m.'
+          success = .false.
+          return
+       endif
+       !
        ! Check quantity names
        !
        if (meteoitem%quantities(1) /= 'wind_speed' ) then

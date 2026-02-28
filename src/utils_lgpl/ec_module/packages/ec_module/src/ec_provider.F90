@@ -2193,6 +2193,7 @@ contains
       type(tEcItem), pointer :: item3 !< Item containing quantity3
       character(len=maxNameLen) :: rec !< helper variable
       character(len=maxNameLen) :: utmzone
+      character(len=maxNameLen) :: gridunit
       !
       success = .false.
       item1 => null()
@@ -2217,13 +2218,16 @@ contains
       utmzone = 'nil'
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_utm_zone_target')
       if (len_trim(rec) > 0) read (rec, *) utmzone
+      gridunit = 'degree'
+      rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'grid_unit')
+      if (len_trim(rec) > 0) read (rec, *) gridunit
       !
       ! One common ElementSet.
       elementSetId = ecInstanceCreateElementSet(instancePtr)
       if (.not. (ecElementSetSetType(instancePtr, elementSetId, elmSetType_spw) .and. &
                  ecElementSetSetRadius(instancePtr, elementSetId, radius, spw_merge_frac, radius_unit) .and. &
                  ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols)) .and. &
-                 ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone)) then
+                 ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone, gridunit)) then
          success = .false.
       end if
       !

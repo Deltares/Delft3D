@@ -66,6 +66,7 @@ module meteo
 !!--declarations----------------------------------------------------------------
    use precision
    use meteo_data
+   use m_ec_utm_inverse
 
 
    real(fp), private :: pi
@@ -303,7 +304,7 @@ function addmeteoitem(runid, inputfile, gridsferic, num_columns, num_rows) resul
     !
     ! Only for space varying meteo input on a separate grid
     !
-    if (meteoitem%filetype /= uniuvp .and. meteoitem%filetype /= meteo_on_computational_grid) then
+    if (meteoitem%filetype /= uniuvp .and. meteoitem%filetype /= meteo_on_computational_grid .and. meteoitem%filetype /= meteo_on_spiderweb_grid) then
        if (meteogridsferic .neqv. gridsferic) then
           success = .false.
           meteomessage = 'Meteo grid and hydrodynamic grid must be of the same type: Cartesian or spherical'
@@ -531,7 +532,7 @@ function meteoupdateitem(meteoitem, flow_itdate, flow_tzone, tim) result(success
                return
             endif
             meteoitem%field(it1)%x_spw_eye  = x_spw_eye
-            meteoitem%field(it1)%y_spw_eye  = y_spw_eye            
+            meteoitem%field(it1)%y_spw_eye  = y_spw_eye
             meteoitem%field(it1)%all_nodata = all_nodata
             !
       end select
@@ -828,6 +829,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
    real(fp)                              :: wdir
    real(fp)                              :: wdir0
    real(fp)                              :: wdir1
+   real(dp)                              :: lo
+   real(dp)                              :: la
    real(fp), dimension(3)                :: z         ! spiderweb wind_speed (1), wind_from_direction (2) and air_pressure (3)
    real(fp), dimension(4)                :: f
    real(fp), dimension(4)                :: u
@@ -1217,10 +1220,20 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            enddo
                            x  = meteo%flowgrid%xz(n,m)
                            y  = meteo%flowgrid%yz(n,m)
-                           xx = x
-                           yy = y
-                           dx = x - x01
-                           dy = y - y01
+                           if (meteoitem%spw_utm_zone_target /= 'nil') then
+                              call utm2deg(x, y, meteoitem%spw_utm_zone_target, lo, la)
+                              xx = lo
+                              yy = la
+                              x  = lo
+                              y  = la
+                              dx = lo - x01
+                              dy = la - y01
+                           else
+                              xx = x
+                              yy = y
+                              dx = x - x01
+                              dy = y - y01
+                           end if
                            !
                            ! Distance to centre
                            !
