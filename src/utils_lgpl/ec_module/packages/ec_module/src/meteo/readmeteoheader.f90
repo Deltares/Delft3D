@@ -76,6 +76,7 @@ function readmeteoheader(minp, meteoitem) result(success)
     meteoitem%nodata_value     = 0.0_fp
     meteoitem%spw_radius       = 0.0_fp
     meteoitem%spw_merge_frac   = 0.5_fp
+    meteoitem%spw_utm_zone_target   = 'nil'
     meteoitem%dx               = 0.0_hp
     meteoitem%dy               = 0.0_hp
     meteoitem%x_llcorner       = -9.990e+20_hp
@@ -166,6 +167,9 @@ function readmeteoheader(minp, meteoitem) result(success)
        elseif ( index(rec(1:il-2), 'spw_rad_unit'    ) /=0)  then
           read( rec(il:ir),'(a)', iostat = ierr      )             meteoitem%spw_rad_unit
           meteoitem%spw_rad_unit     = adjustl(meteoitem%spw_rad_unit    )
+       elseif ( index(rec(1:il-2), 'spw_utm_zone_target'    ) /=0)  then
+          read( rec(il:ir),'(a)', iostat = ierr      )             meteoitem%spw_utm_zone_target
+          meteoitem%spw_utm_zone_target     = adjustl(meteoitem%spw_utm_zone_target    )
        elseif ( index(rec(1:il-2), 'air_pressure_reference') /=0)  then
           if (index(rec(il:ir), 'air_pressure_default_from_computational_engine') /= 0) then
              meteoitem%pref_option = opt_use_from_kernel

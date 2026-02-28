@@ -1488,8 +1488,10 @@ contains
                if (ierr /= nf90_noerr) then
                   ierr = nf90_get_att(datasets(ioncid)%ncid, id_crs, 'EPSG_code', tmpstring)
                end if
+               ! tempstring might not be filled if epsg_code is not found, then model errors.
+               ! This now happens with our native grid writer in eg interacter
                if (ierr == nf90_noerr) then
-               read (tmpstring(index(tmpstring, ':') + 1:len_trim(tmpstring)), *) datasets(ioncid)%crs%epsg_code ! 'EPSG:99999'
+                  read (tmpstring(index(tmpstring, ':') + 1:len_trim(tmpstring)), *) datasets(ioncid)%crs%epsg_code ! 'EPSG:99999'
                end if
             end if
          end if
