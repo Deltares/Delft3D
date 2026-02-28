@@ -39,6 +39,7 @@ module m_ec_converter
    use m_ec_alloc
    use m_ec_parameters
    use m_ec_spatial_extrapolation
+   use m_ec_utm_inverse
    use time_class
    use, intrinsic :: ieee_arithmetic
 
@@ -2408,6 +2409,7 @@ contains
       real(dp) :: dlat
       real(dp) :: dlon
       real(dp) :: xc, yc
+      real(dp) :: xctemp, yctemp
       real(dp) :: spwradhat
       real(dp) :: spwphihat
       real(dp) :: uintp
@@ -2510,8 +2512,14 @@ contains
       yeye = cyclic_interpolation(yeye0, yeye1, a0, a1) ! cyclic inteprolation (spheric coord)
       !
       do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-         xc = connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n)
-         yc = connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n)
+         xctemp = connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n)
+         yctemp = connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n)
+         if (trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone) /= 'nil') then
+            call utm2deg(xctemp, yctemp, trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone), xc, yc)
+         else
+            xc = xctemp
+            yc = yctemp
+         end if
          dlat = modulo(yc, 360.0_dp) - yeye
          dlon = modulo(xc, 360.0_dp) - xeye
          h1 = (sin(dlat / 2.0_dp * fa))**2 + cos(yeye * fa) * cos(yc * fa) * (sin(dlon / 2.0_dp * fa))**2

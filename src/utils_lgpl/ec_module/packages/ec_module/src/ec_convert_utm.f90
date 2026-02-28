@@ -1,31 +1,29 @@
 module m_ec_utm_inverse
-  implicit none
-  private
-  public :: latlon_t, utm2deg
-
-  type :: latlon_t
-    real :: la   ! latitude  (deg)
-    real :: lo   ! longitude (deg)
-  end type latlon_t
+   
+   use precision
+   
+   implicit none
+   private
+   public :: utm2deg
 
 contains
 
-  pure elemental function utm2deg(xx, yy, utmzone) result(ll)
-    real, intent(in)            :: xx, yy
-    character(len=3), intent(in):: utmzone
-    type(latlon_t)              :: ll
+  subroutine utm2deg(xx, yy, utmzone, lo, la)
+    real(kind=dp),    intent(in)  :: xx, yy
+    character(len=3), intent(in)  :: utmzone
+    real(kind=dp),    intent(out) :: lo, la
 
-    real, parameter :: pi = 3.14159265358979323846
-    real, parameter :: sa = 6378137.0
-    real, parameter :: sb = 6356752.314245
-    real, parameter :: k0 = 0.9996
+    real(kind=dp), parameter :: pi = 3.14159265358979323846
+    real(kind=dp), parameter :: sa = 6378137.0
+    real(kind=dp), parameter :: sb = 6356752.314245
+    real(kind=dp), parameter :: k0 = 0.9996
 
     integer :: huso
     character(len=1) :: hemi
-    real :: x, y, lon0
-    real :: e2, e4, e6, ep2, e1
-    real :: m, mu, phi1, c1, t1, n1, r1, d
-    real :: j1, j2, j3, j4
+    real(kind=dp) :: x, y, lon0
+    real(kind=dp) :: e2, e4, e6, ep2, e1
+    real(kind=dp) :: m, mu, phi1, c1, t1, n1, r1, d
+    real(kind=dp) :: j1, j2, j3, j4
 
     huso = zone_number(utmzone)
     if (len_trim(utmzone) >= 1) then
@@ -59,20 +57,21 @@ contains
     r1 = sa * (1.0 - e2) / (1.0 - e2*sin(phi1)**2)**1.5
     d  = x / (n1 * k0)
 
-    ll%la = phi1 - (n1*tan(phi1)/r1) * ( &
+    la = phi1 - (n1*tan(phi1)/r1) * ( &
             d**2/2.0 - (5.0 + 3.0*t1 + 10.0*c1 - 4.0*c1**2 - 9.0*ep2)*d**4/24.0 + &
             (61.0 + 90.0*t1 + 298.0*c1 + 45.0*t1**2 - 252.0*ep2 - 3.0*c1**2)*d**6/720.0 )
 
     lon0  = ((real(huso) * 6.0) - 183.0) * pi/180.0
-    ll%lo = lon0 + ( d - (1.0 + 2.0*t1 + c1)*d**3/6.0 + &
+    lo = lon0 + ( d - (1.0 + 2.0*t1 + c1)*d**3/6.0 + &
             (5.0 - 2.0*c1 + 28.0*t1 - 3.0*c1**2 + 8.0*ep2 + 24.0*t1**2)*d**5/120.0 ) / cos(phi1)
 
-    ll%la = ll%la * 180.0/pi
-    ll%lo = ll%lo * 180.0/pi
-  end function utm2deg
+    la = la * 180.0/pi
+    lo = lo * 180.0/pi
+  end subroutine utm2deg
 
-  pure elemental integer function zone_number(utmzone) result(huso)
+  pure function zone_number(utmzone) result(huso)
     character(len=*), intent(in) :: utmzone
+    integer :: huso
     integer :: i, n
     huso = 0
     n = min(2, len_trim(utmzone))
