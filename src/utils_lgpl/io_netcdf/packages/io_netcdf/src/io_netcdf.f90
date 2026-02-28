@@ -1488,7 +1488,9 @@ contains
                if (ierr /= nf90_noerr) then
                   ierr = nf90_get_att(datasets(ioncid)%ncid, id_crs, 'EPSG_code', tmpstring)
                end if
+               if (ierr == nf90_noerr) then
                read (tmpstring(index(tmpstring, ':') + 1:len_trim(tmpstring)), *) datasets(ioncid)%crs%epsg_code ! 'EPSG:99999'
+               end if
             end if
          end if
 
