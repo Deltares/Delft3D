@@ -42,6 +42,11 @@ module m_turbulence
    real(kind=dp) :: c1e
    real(kind=dp) :: c3e_stable
    real(kind=dp) :: c3e_unstable
+   integer :: baroc_weight_flip
+   logical :: Prandtl_Richardson = .false.
+   real(kind=dp) :: Prt0 = 0.74_dp
+   real(kind=dp) :: Prt_max = huge(1.0_dp)
+   real(kind=dp) :: Ri_inf = 0.25_dp
    real(kind=dp) :: c2e
    real(kind=dp) :: sigdif
    real(kind=dp) :: sigtke, sigtkei
@@ -86,6 +91,7 @@ module m_turbulence
    real(kind=dp), parameter :: MINIMUM_VALUE_K_EPS_TAU = 1e-32_dp
    real(kind=dp) :: tke_min
    real(kind=dp) :: eps_min
+   integer :: eps_limit_method = 1
 
    real(kind=dp), allocatable, dimension(:) :: turkin0 ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
    real(kind=dp), allocatable, dimension(:), target :: turkin1 !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
@@ -119,11 +125,18 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
    real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
-   real(kind=dp), allocatable, dimension(:) :: turkinws !< k   at layer interface at c , horizontal transport of k and eps
-   real(kind=dp), allocatable, dimension(:) :: turepsws !< eps at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turkinws0 !< k old              at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turkinws !< k                   at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turepsws !< eps                 at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turepsws0 !< eps old            at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:, :) :: turkinepsws !< k and eps,1,2 at layer interface at c , horizontal transport of k and eps
+
    real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
+
+   real(kind=dp), allocatable, dimension(:) :: ustbs ! ustb in cell centre (m/s) only iturbulencemodel 5,6
+   real(kind=dp), allocatable, dimension(:) :: ustws ! ustw in cell centre (m/s) only iturbulencemodel 5,6
 
    integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers
 
@@ -147,6 +160,8 @@ contains
 
       c3e_stable = 0.0_dp
       c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
+
+      baroc_weight_flip = 2
 
       tke_min = MINIMUM_VALUE_K_EPS_TAU
       eps_min = MINIMUM_VALUE_K_EPS_TAU

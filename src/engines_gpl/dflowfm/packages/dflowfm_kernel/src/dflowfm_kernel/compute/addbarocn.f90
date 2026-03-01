@@ -53,7 +53,7 @@ contains
    !! Uses linear interpolation of density at vertical interfaces and precomputes the density at the layer interfaces.
    !! This method is used for backward compatibility with existing models, but the other methods are investigated as more accurate alternatives.
    subroutine add_baroclinic_pressure_cell_original(cell_index_2d)
-      use m_turbulence, only: integrated_baroclinic_pressures, baroclinic_pressures, kmxx
+      use m_turbulence, only: integrated_baroclinic_pressures, baroclinic_pressures, kmxx, baroc_weight_flip
       use m_flowparameters, only: epshu
       use m_flow, only: zws
       use m_physcoef, only: rhomean
@@ -84,6 +84,10 @@ contains
          do cell_index_3d = k_bot, k_top - 1
             weight_down = (zws(cell_index_3d + 1) - zws(cell_index_3d)) / (zws(cell_index_3d + 1) - zws(cell_index_3d - 1))
             weight_up = 1.0_dp - weight_down
+            if (baroc_weight_flip == 1) then
+               weight_down = weight_up
+               weight_up = 1.0_dp - weight_down
+            end if
             density_at_layer_interface(cell_index_3d - k_bot + 1) = weight_up * density(cell_index_3d + 1) + weight_down * density(cell_index_3d) - rhomean
          end do
          density_at_layer_interface(0) = 2.0_dp * (density(k_bot) - rhomean) - density_at_layer_interface(1)
@@ -113,7 +117,7 @@ contains
    !> Computes baroclinic pressure gradients across layers for a horizontal cell.
    !! Density is based on linear interpolation of density at vertical interfaces.
    subroutine add_baroclinic_pressure_cell(cell_index_2d)
-      use m_turbulence, only: integrated_baroclinic_pressures, baroclinic_pressures
+      use m_turbulence, only: integrated_baroclinic_pressures, baroclinic_pressures, baroc_weight_flip
       use m_flowparameters, only: epshu
       use m_flow, only: zws
       use m_physcoef, only: rhomean
@@ -154,18 +158,32 @@ contains
             rho_up_weight_up = 1.0_dp - rho_up_weight_down
             rho_down_weight_down = delta_z / (delta_z_down + delta_z)
             rho_down_weight_up = 1.0_dp - rho_down_weight_down
+            if (baroc_weight_flip == 1) then
+               rho_up_weight_down = rho_up_weight_up
+               rho_up_weight_up = 1.0_dp - rho_up_weight_down
+               rho_down_weight_down = rho_down_weight_up
+               rho_down_weight_up = 1.0_dp - rho_down_weight_down
+            end if
             rho_up = rho_up_weight_up * density(cell_index_3d + 1) + rho_up_weight_down * density(cell_index_3d) - rhomean
             rho_down = rho_down_weight_up * density(cell_index_3d) + rho_down_weight_down * density(cell_index_3d - 1) - rhomean
          else if (cell_index_3d == k_bot) then
             delta_z_up = zws(cell_index_3d + 1) - zws(cell_index_3d)
             rho_up_weight_down = delta_z_up / (delta_z_up + delta_z)
             rho_up_weight_up = 1.0_dp - rho_up_weight_down
+            if (baroc_weight_flip == 1) then
+               rho_up_weight_down = rho_up_weight_up
+               rho_up_weight_up = 1.0_dp - rho_up_weight_down
+            end if
             rho_up = rho_up_weight_up * density(cell_index_3d + 1) + rho_up_weight_down * density(cell_index_3d) - rhomean
             rho_down = 2.0_dp * (density(cell_index_3d) - rhomean) - rho_up
          else if (cell_index_3d == k_top) then
             delta_z_down = zws(cell_index_3d - 1) - zws(cell_index_3d - 2)
             rho_down_weight_down = delta_z / (delta_z_down + delta_z)
             rho_down_weight_up = 1.0_dp - rho_down_weight_down
+            if (baroc_weight_flip == 1) then
+               rho_down_weight_down = rho_down_weight_up
+               rho_down_weight_up = 1.0_dp - rho_down_weight_down
+            end if
             rho_down = rho_down_weight_up * density(cell_index_3d) + rho_down_weight_down * density(cell_index_3d - 1) - rhomean
             rho_up = 2.0_dp * (density(cell_index_3d) - rhomean) - rho_down
          end if
@@ -181,7 +199,7 @@ contains
    !> Computes baroclinic pressure gradients across layers for a horizontal cell.
    !! Density is based on linear interpolation of recomputed density (from salinity, temperature (and pressure)) at vertical interfaces.
    subroutine add_baroclinic_pressure_cell_interface(cell_index_2d)
-      use m_turbulence, only: integrated_baroclinic_pressures, baroclinic_pressures, kmxx, rhosww
+      use m_turbulence, only: integrated_baroclinic_pressures, baroclinic_pressures, kmxx, rhosww, baroc_weight_flip
       use m_flowparameters, only: epshu
       use m_flow, only: zws
       use m_transport, only: ISALT, ITEMP, constituents
@@ -207,6 +225,10 @@ contains
          do cell_index_3d = k_bot, k_top - 1
             weight_down = (zws(cell_index_3d + 1) - zws(cell_index_3d)) / (zws(cell_index_3d + 1) - zws(cell_index_3d - 1))
             weight_up = 1.0_dp - weight_down
+             if (baroc_weight_flip == 1) then
+               weight_down = weight_up
+               weight_up = 1.0_dp - weight_down
+            end if
             salinity_at_interface(cell_index_3d - k_bot + 1) = weight_up * constituents(isalt, cell_index_3d + 1) + weight_down * constituents(isalt, cell_index_3d)
             temperature_at_interface(cell_index_3d - k_bot + 1) = weight_up * constituents(itemp, cell_index_3d + 1) + weight_down * constituents(itemp, cell_index_3d)
          end do
