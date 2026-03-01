@@ -1,10 +1,11 @@
 ARG INTEL_ONEAPI_VERSION=2024
 ARG INTEL_FORTRAN_COMPILER=ifort
 ARG BUILD_TYPE=release
-ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-third-party-libs
+ARG THIRDPARTYLIBS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-third-party-libs
+ARG BASE_IMAGE_URL=containers.deltares.nl/base_linux_containers/8-base:latest
 ARG BASE_TAG=oneapi-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${BUILD_TYPE}
 
-FROM ${BUILDTOOLS_IMAGE_URL}:${BASE_TAG} AS build
+FROM ${THIRDPARTYLIBS_IMAGE_URL}:${BASE_TAG} AS build
 
 ARG INTEL_ONEAPI_VERSION
 ARG INTEL_FORTRAN_COMPILER
@@ -32,6 +33,6 @@ cmake ./src/cmake -G "Unix Makefiles" -B build \
 cmake --build build --parallel $(nproc) --target install --config ${BUILD_TYPE}
 EOF
 
-FROM containers.deltares.nl/delft3d-dev/almalinux:8.10-minimal
+FROM ${BASE_IMAGE_URL}
 
 COPY --from=build /delft3d/ /delft3d/
