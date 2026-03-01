@@ -39,7 +39,7 @@ Valid values for `INTEL_ONEAPI_VERSION` are `2023` and `2024`.
 This build argument allows you to choose which versions of the C, C++ and Fortran compilers you want to install in the `buildtools` image.
 
 ### Build
-From the delft3d repository root:
+From the Delft3D repository root:
 ```bash
 export TAG=oneapi-2024
 sudo docker build . -f ci/dockerfiles/linux/buildtools.Dockerfile -t localhost/buildtools:$TAG --build-arg INTEL_ONEAPI_VERSION=2024
@@ -56,7 +56,7 @@ sudo docker push containers.deltares.nl/delft3d-dev/delft3d-buildtools:$TAG
 This is not necessary for the next step.
 
 
-## Third-party-libs
+## Third-party-libs container
 The `third-party-libs.Dockerfile` contains build instructions to build the `third-party-libs` container image.
 The image uses the `buildtools` image as a base image.
 You can control which version of the intel compilers are used to compile all of the third-party-libs using build arguments.
@@ -81,17 +81,7 @@ So this list is not complete.
 
 The `third-party-libs` container image is built on the `buildtools` image.
 So it includes everything from `buildtools`.
-The standard `third-party-libs.Dockerfile` points to the `buildtools` image in our repository:
-```
-ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-buildtools
-```
-You can replace that by
-```
-ARG BUILDTOOLS_IMAGE_URL=localhost/buildtools
-```
-for your local builds (note that the `$TAG` is added automatically further down in the Dockerfile).
-In addition it should include all the third party libraries required to start building the software in this repository.
-
+It extends the image by installing and building all the third party libraries required to start building the software in this repository.
 The build instructions in the `third-party-libs.Dockerfile` fetch the source code, configure, build and install the third party libraries one by one.
 Each library has its own configuration options, but most of the time the build steps consists of setting a few environment variables so the right compiler is used, and:
 ```bash
@@ -122,18 +112,23 @@ Any value other than `0` will turn on the `DEBUG` flag.
 
 The `BUILDTOOLS_IMAGE_URL` points to the repository where the `buildtools` images are located.
 This URL can be set to `localhost/buildtools` when you would like to use a `buildtools` image that was built locally.
+Note that the `$TAG` is added automatically by the Dockerfile (see the `BUILDTOOLS_IMAGE_TAG` argument if you want to deviate from the default).
 
 The `BUILDTOOLS_IMAGE_TAG` ensures that the `third-party-libs` image is based on the `buildtools` image with that tag.
 
 ### Build
-From the delft3d repository root:
+From the Delft3D repository root:
 ```bash
 sudo docker build . -f ci/dockerfiles/linux/third-party-libs.Dockerfile -t localhost/third-party-libs:$TAG \
+    --build-arg BUILDTOOLS_IMAGE_URL=localhost/buildtools \
     --build-arg INTEL_ONEAPI_VERSION=2024 \
     --build-arg INTEL_FORTRAN_COMPILER=ifx \
     --build-arg DEBUG=0
 ```
-Note: Passing the build arguments is not necessary if the default value is required.
+Note:
+- Passing the build arguments is not necessary if the default value is required.
+- In case you get an invalid tag message referring to `"localhost/third-party-libs:"` as invalid reference format, you may have lost the definition of `TAG`.
+  The value of `TAG` was set just before the building of the buildtools container. 
 
 ### Push
 Optionally push the Docker container to a repository:

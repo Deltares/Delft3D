@@ -27,7 +27,6 @@ See the following sub-pages:
 
 - Prerequisites and compilation steps for **Windows** can be found [here](compiling_Windows.md).
 - Prerequisites and compilation steps for **Linux** can be found [here](compiling_Linux.md).
-- The build steps are described [here](compiling_Linux.md).
-- How to **debug** the code on [Windows](debugging.md) and Linux (to be added).
+- How to **debug** the code on [Windows](debugging.md) and [Linux using WSL](../.devcontainer/delft3d/README.md).
 - Various ways of testing the functionality: [**Unit testing**](unit-testing.md), **regression testing** and **validation** (latter sections to be added).
 - How to [**contribute**](contributing.md) to the development?
