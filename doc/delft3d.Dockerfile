@@ -1,9 +1,10 @@
 ARG INTEL_ONEAPI_VERSION=2024
 ARG INTEL_FORTRAN_COMPILER=ifort
 ARG BUILD_TYPE=release
+ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-third-party-libs
 ARG BASE_TAG=oneapi-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${BUILD_TYPE}
 
-FROM containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:${BASE_TAG} AS build
+FROM ${BUILDTOOLS_IMAGE_URL}:${BASE_TAG} AS build
 
 ARG INTEL_ONEAPI_VERSION
 ARG INTEL_FORTRAN_COMPILER
