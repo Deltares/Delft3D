@@ -67,7 +67,7 @@ contains
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx, lnx, ln, ndxi, ndx2d, ndx1db, lnx1d, lnx1db, lnxi
 
-      class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+      class(t_output_mask), intent(inout) :: this !< Polygon variables object
 
       integer :: k
 
@@ -149,7 +149,7 @@ contains
       use geometry_module, only: dbpinpol
       use m_alloc, only: realloc
 
-      class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+      class(t_output_mask), intent(inout) :: this !< Polygon variables object
 
       if (allocated(this%cell_indices)) then
          deallocate (this%cell_indices)
@@ -248,7 +248,7 @@ contains
       use m_polygon, only: npl, xpl, ypl, zpl, savepol, restorepol
       use m_filez, only: oldfil, doclose
 
-      class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+      class(t_output_mask), intent(inout) :: this !< Polygon variables object
       integer :: k, inside, minp
       call savepol()
       call oldfil(minp, this%filename)
@@ -288,7 +288,7 @@ contains
    subroutine find_vertices_inside_polygon(this)
       use m_flowgeom, only: lnx, ln
 
-      class(t_variables_inside_polygon), intent(inout) :: this
+      class(t_output_mask), intent(inout) :: this
 
       integer :: L
 
@@ -326,7 +326,7 @@ contains
       use m_flowgeom, only: nd
       use network_data, only: numk
 
-      class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+      class(t_output_mask), intent(inout) :: this !< Polygon variables object
 
       integer :: i, k, max_netnodes
 
@@ -368,7 +368,7 @@ contains
    subroutine find_netlinks_inside_polygon(this)
       use network_data, only: numL, kn
 
-      class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+      class(t_output_mask), intent(inout) :: this !< Polygon variables object
 
       integer :: L, node1, node2, max_netlinks
 
@@ -422,7 +422,7 @@ contains
       use network_data, only: kn
       implicit none
 
-      class(t_variables_inside_polygon), intent(in) :: this
+      class(t_output_mask), intent(in) :: this
       integer :: numk2d
 
       integer :: L, k, nn
@@ -450,7 +450,7 @@ contains
    !module function remap_integer_impl(this, input_array, start_index, end_index, loc_type) result(remapped_array)
    !   implicit none
    !
-   !   class(t_variables_inside_polygon), target, intent(in) :: this
+   !   class(t_output_mask), target, intent(in) :: this
    !   integer, dimension(:), intent(in) :: input_array
    !   integer, intent(in) :: start_index
    !   integer, intent(in) :: end_index
@@ -490,7 +490,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       implicit none
 
-      class(t_variables_inside_polygon), target, intent(in) :: this !< Polygon variables object
+      class(t_output_mask), target, intent(in) :: this !< Polygon variables object
       real(kind=dp), dimension(:), target, intent(in) :: input_array !< Input array to remap
       integer, intent(in) :: start_index !< Starting index for remapping
       integer, intent(in) :: end_index !< Ending index for remapping
@@ -533,7 +533,7 @@ contains
 
       implicit none
 
-      class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+      class(t_output_mask), intent(inout) :: this !< Polygon variables object
 
       call realloc(this%cell_indices, this%ndx, keepExisting=.true.)
       call realloc(this%link_indices, this%lnx, keepExisting=.true.)

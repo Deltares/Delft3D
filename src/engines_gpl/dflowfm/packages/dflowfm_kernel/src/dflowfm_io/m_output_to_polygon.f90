@@ -50,7 +50,7 @@ module m_output_to_polygon
    !! model variables that fall within a specified polygon boundary. It includes
    !! indices for cells, links, nodes, and associated masking arrays.
    !! @ingroup output_to_polygon
-   type, public :: t_variables_inside_polygon
+   type, public :: t_output_mask
       character(len=idLen) :: filename !< Polygon file name.
       logical :: is_polygon_file_defined !< Flag indicating if there is an output polygon defined.
       integer, allocatable, dimension(:) :: cell_indices !< Global indices of cells inside the polygon.
@@ -115,14 +115,14 @@ module m_output_to_polygon
       !! @details Provides a generic interface that automatically selects
       !! the appropriate remapping procedure based on data type
       generic :: remap => remap_double
-   end type t_variables_inside_polygon
+   end type t_output_mask
 
    !> @brief Interface for create_mask_arrays implementation
    !! @details Creates and initializes all mask arrays for polygon regions
    interface
       module subroutine create_mask_arrays_impl(this)
          implicit none
-         class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+         class(t_output_mask), intent(inout) :: this !< Polygon variables object
       end subroutine create_mask_arrays_impl
    end interface
 
@@ -131,7 +131,7 @@ module m_output_to_polygon
    interface
       module subroutine reset_mask_arrays_impl(this)
          implicit none
-         class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+         class(t_output_mask), intent(inout) :: this !< Polygon variables object
       end subroutine reset_mask_arrays_impl
    end interface
 
@@ -140,7 +140,7 @@ module m_output_to_polygon
    interface
       module subroutine findcells_inside_polygon_impl(this)
          implicit none
-         class(t_variables_inside_polygon), intent(inout) :: this !< Polygon variables object
+         class(t_output_mask), intent(inout) :: this !< Polygon variables object
       end subroutine findcells_inside_polygon_impl
    end interface
 
@@ -149,29 +149,18 @@ module m_output_to_polygon
    interface
       module function count_2d_netnodes_impl(this) result(numk2d)
          implicit none
-         class(t_variables_inside_polygon), intent(in) :: this !< Polygon variables object
+         class(t_output_mask), intent(in) :: this !< Polygon variables object
          integer :: numk2d !< Number of 2D network nodes
       end function count_2d_netnodes_impl
 
    end interface
-
-   !interface
-   !   module function remap_integer_impl(this, input_array, start_index, end_index, loc_type) result(remapped_array)
-   !      implicit none
-   !      class(t_variables_inside_polygon), target, intent(in) :: this
-   !      integer, dimension(:), intent(in) :: input_array
-   !      integer, intent(in) :: start_index, end_index, loc_type
-   !      integer, dimension(:), pointer :: remapped_array
-   !   end function remap_integer_impl
-   !
-   !end interface
 
    !> @brief Interface for remap_double implementation
    !! @details Remaps double precision arrays from full domain to polygon region
    interface
       module function remap_double_impl(this, input_array, start_index, end_index, loc_type) result(remapped_array)
          implicit none
-         class(t_variables_inside_polygon), target, intent(in) :: this !< Polygon variables object
+         class(t_output_mask), target, intent(in) :: this !< Polygon variables object
          real(kind=dp), dimension(:), target, intent(in) :: input_array !< Input array to remap
          integer, intent(in) :: start_index !< Starting index for remapping
          integer, intent(in) :: end_index !< Ending index for remapping

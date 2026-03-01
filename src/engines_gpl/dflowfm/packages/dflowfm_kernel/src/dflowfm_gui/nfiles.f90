@@ -546,7 +546,6 @@ contains
                NUM = 1
             else
                call doclose(mtek)
-               call output_mask_full%create_mask_arrays() ! Ensure mask arrays are created before writing net file
                if (nwhat == 21) then
                   if (index(filnam, '.net') > 0) then
                      call NEWFIL(MTEK, filnam)

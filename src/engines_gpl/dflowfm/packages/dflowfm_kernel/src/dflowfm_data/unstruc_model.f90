@@ -1948,12 +1948,7 @@ contains
       call prop_get(md_ptr, 'output', 'FlowGeomFile', md_flowgeomfile, success)
 
       call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
-      call prop_get(md_ptr, 'output', 'mapMaskFile', output_mask_map%filename, success)
-      if (success) then
-         output_mask_map%is_polygon_file_defined = .true.
-      else
-         output_mask_map%is_polygon_file_defined = .false.
-      end if
+      call prop_get(md_ptr, 'output', 'mapMaskFile', output_mask_map%filename, output_mask_map%is_polygon_file_defined)
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)

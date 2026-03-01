@@ -256,7 +256,6 @@ contains
       if (ndim == 0) then
 
          ierr = ug_addglobalatts(wavids%ncid, ug_meta_fm)
-         call output_mask_full%create_mask_arrays()
          call unc_write_flowgeom_filepointer_ugrid(wavids%ncid, wavids%id_tsp, output_mask_full)
 
          ! Current time t1

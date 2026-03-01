@@ -54,7 +54,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
-      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for the variable.
+      type(t_output_mask), intent(in) :: output_mask !< Output mask for the variable.
       real(kind=dp), intent(in) :: values(:) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
       real(kind=dp), optional, intent(in) :: default_value !< Optional default value, used for writing dummy data on closed edges (i.e. netlinks with no flowlink). NOTE: is not a _FillValue!
       integer, optional, intent(in) :: jabndnd
@@ -346,7 +346,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable)
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_S, UNC_LOC_U, UNC_LOC_W).
-      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for the variable.
+      type(t_output_mask), intent(in) :: output_mask !< Output mask for the variable.
       integer, dimension(:), intent(in) :: integers
       real(kind=dp), optional :: default_value
       integer, optional, intent(in) :: jabndnd
@@ -378,7 +378,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable)
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_S, UNC_LOC_U, UNC_LOC_W).
-      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for the variable.
+      type(t_output_mask), intent(in) :: output_mask !< Output mask for the variable.
       real(kind=4), dimension(:), intent(in) :: reals
       real(kind=dp), optional :: default_value
       integer, optional, intent(in) :: jabndnd
@@ -412,7 +412,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
-      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for the variable.
+      type(t_output_mask), intent(in) :: output_mask !< Output mask for the variable.
       real(kind=dp), intent(in) :: values(:, :) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
       real(kind=dp), optional, intent(in) :: default_value !< Optional default value, used for writing dummy data on closed edges (i.e. netlinks with no flowlink). NOTE: is not a _FillValue!
       integer, optional, intent(in) :: locdim !< Optional index of the location dimension (default = 1)
@@ -1150,7 +1150,7 @@ contains
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
-      type(t_variables_inside_polygon), intent(in) :: output_mask !< Mask specifying which nodes are inside the polygon for which values are written.
+      type(t_output_mask), intent(in) :: output_mask !< Mask specifying which nodes are inside the polygon for which values are written.
       real(kind=dp), intent(in) :: values(:) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
       integer, intent(in) :: jabndnd_
 
