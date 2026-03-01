@@ -1948,7 +1948,7 @@ contains
       call prop_get(md_ptr, 'output', 'FlowGeomFile', md_flowgeomfile, success)
 
       call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
-      call prop_get(md_ptr, 'output', 'mapMaskFile', output_mask_map%filename, output_mask_map%is_polygon_file_defined)
+      call prop_get(md_ptr, 'output', 'MapMaskFile', output_mask_map%filename, output_mask_map%is_polygon_file_defined)
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
@@ -3823,6 +3823,10 @@ contains
 
       call prop_set(prop_ptr, 'output', 'HisFile', trim(md_hisfile), 'HisFile name *_his.nc')
       call prop_set(prop_ptr, 'output', 'MapFile', trim(md_mapfile), 'MapFile name *_map.nc')
+      if (output_mask_map%is_polygon_file_defined) then
+         call prop_set(prop_ptr, 'output', 'MapMaskFile', trim(output_mask_map%filename), 'Polygon mask file for map output. Restricts ' // &
+         'the output of the map file to the region inside the polygon.')
+      end if
 
       ti_his_array(1) = ti_his
       ti_his_array(2) = ti_hiss
