@@ -30,7 +30,7 @@
 !> Wrapper around cellmask_from_polygon_set that uses OpenMP to parallelize the loop over all points if not in MPI mode
 module m_pol_to_cellmask
    use precision, only: dp
-   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
+   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, init_geom_cache
 
    implicit none
 
@@ -52,6 +52,7 @@ contains
 
       call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
 
+      call init_geom_cache(NPL, xpl, ypl, zpl)
       call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
