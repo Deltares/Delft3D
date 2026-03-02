@@ -1,6 +1,9 @@
 name: Cancel testbench
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       commit_sha:
