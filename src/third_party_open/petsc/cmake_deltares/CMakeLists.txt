@@ -1,5 +1,5 @@
-if(intel_version LESS 23)
-    message(FATAL_ERROR "PETSc was compiled with Intel OneAPI 2023 or 2024, not with older versions. Please update your compiler.")
+if(intel_version LESS 24)
+    message(FATAL_ERROR "PETSc was compiled with Intel OneAPI 2024, not with older versions. Please update your compiler.")
 endif()
 
 if(NOT TARGET petsc)

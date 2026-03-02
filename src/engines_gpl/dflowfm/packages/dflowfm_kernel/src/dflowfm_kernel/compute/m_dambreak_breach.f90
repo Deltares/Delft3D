@@ -150,6 +150,8 @@ module m_dambreak_breach
 
    end interface
 
+   ! This type was moved to the module level to work around a linker issue with intel oneapi 2025.3.2 and the gfortran linker on linux.
+   ! The symbols were not correctly exported when this was in a submodule.
    type :: t_dambreak !< data for a single dambreak
       integer :: algorithm = 0 !< algorithm for the dambreak breach growth
       integer :: breach_start_link = -1 !< index of the starting link in the breach growth
