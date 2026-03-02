@@ -1012,7 +1012,7 @@
 
    if (intri == 1) then
       if ( jasfer3D == 0 ) then
-         call interpolate_linear_from_triangle(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+         call interpolate_linear_from_triangle(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, dmiss, jsferic)
       else
          call interpolate_linear_from_triangle_3D(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, jsferic, jasfer3D, dmiss)
       end if
@@ -1094,7 +1094,7 @@
             ZT(idim,2) = ZS(idim,INDX(2,K))
             ZT(idim,3) = ZS(idim,INDX(3,K))
          end do
-         call interpolate_linear_from_triangle(XT, YT, ZT, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+         call interpolate_linear_from_triangle(XT, YT, ZT, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
          ind(1) = ik1
          ind(2) = ik2
          ind(3) = ik3
@@ -1113,19 +1113,21 @@
    END subroutine FINDTRI
 
 
-   subroutine interpolate_linear_from_triangle( X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+   !> return the linear interpolation at a point based on the plane defined by the points on a triangle
+   subroutine interpolate_linear_from_triangle( X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
    implicit none
-   integer      , intent(in)    :: NDIM   !< sample vector dimension
-   real(kind=hp), intent(in)    :: X(:),Y(:),Z(:,:)
-   real(kind=hp), intent(out)   :: wf(:)
-   real(kind=hp), intent(out)   :: zp(:)
-   real(kind=hp), intent(inout) :: slo(:)
-   real(kind=hp), intent(in)    :: dmiss
-   integer,       intent(in)    :: jsferic
-   integer,       intent(in)    :: jatek
-   integer,       intent(in)    :: jslo
-   real(kind=hp), intent(in)    :: xp
-   real(kind=hp), intent(in)    :: yp
+   real(kind=hp), intent(in)    :: X(:)    !> x-coordinates of triangle (3)
+   real(kind=hp), intent(in)    :: Y(:)    !> y-coordinates of triangle (3)
+   real(kind=hp), intent(in)    :: Z(:,:)  !> z-coordinates of triangle (NDIM, 3)
+   integer      , intent(in)    :: NDIM    !> sample vector dimension
+   real(kind=hp), intent(in)    :: xp      !> x-coordinate of sample point
+   real(kind=hp), intent(in)    :: yp      !> y-coordinate of sample point
+   real(kind=hp), intent(out)   :: zp(:)   !> interpolated values at sample point (NDIM)
+   integer,       intent(in)    :: jslo    !> interpolate slopes (1=yes, 0=no)
+   real(kind=hp), intent(out)   :: slo(:)  !> output for slope interpolation (NDIM)
+   real(kind=hp), intent(out)   :: wf(:)   !> interpolation weights (3)
+   real(kind=hp), intent(in)    :: dmiss   !> missing value
+   integer,       intent(in)    :: jsferic !> spheric coordinates (1=yes, 0=no)
 
    integer          :: idim
    real(kind=hp)    :: a11
@@ -1154,6 +1156,7 @@
    real(kind=hp), parameter :: EPS_BARY = 1.0e-11_hp ! snapping distance to points in the mapped triangle space
 
    ZP  = dmiss
+   SLO = dmiss
    A11 = getdx(x(1),y(1),x(2),y(2),jsferic)   ! X(2) - X(1)
    A21 = getdy(x(1),y(1),x(2),y(2),jsferic)   ! Y(2) - Y(1)
    A12 = getdx(x(1),y(1),x(3),y(3),jsferic)   ! X(3) - X(1)
@@ -1169,21 +1172,19 @@
    RLAM = ( A22 * B1  - A12 * B2) / DET
    RMHU = (-A21 * B1  + A11 * B2) / DET
    
-   ! For points on the triangle vertices and edge, apply rounding
-   if ((RLAM + RMHU > -EPS_BARY) .and. (RLAM + RMHU < 1.0_hp + EPS_BARY)) then
-      if (abs(RLAM) < EPS_BARY) then 
-          RLAM = 0.0_hp
-      end if
-      if (abs(RMHU) < EPS_BARY) then 
-          RMHU = 0.0_hp
-      end if
-      if (abs(1.0_hp - RLAM - RMHU) < EPS_BARY) then
-         ! Renormalize to ensure exact sum = 1
-         sum_weights = RLAM + RMHU
-         if (sum_weights > 0.0_hp) then
-            RLAM = RLAM / sum_weights
-            RMHU = RMHU / sum_weights
-         end if
+   ! For points on the triangle edges and their extension, apply rounding
+   if (abs(RLAM) < EPS_BARY) then 
+       RLAM = 0.0_hp
+   end if
+   if (abs(RMHU) < EPS_BARY) then 
+       RMHU = 0.0_hp
+   end if
+   if (abs(1.0_hp - RLAM - RMHU) < EPS_BARY) then
+      ! Renormalize to ensure exact sum = 1
+      sum_weights = RLAM + RMHU
+      if (sum_weights > 0.0_hp) then
+         RLAM = RLAM / sum_weights
+         RMHU = RMHU / sum_weights
       end if
    end if
 
@@ -1192,11 +1193,6 @@
    wf(1) = 1.0_hp - rlam - rmhu
 
    ZP = wf(1)*Z(:,1) + wf(2)*Z(:,2) + wf(3)*Z(:,3)
-   IF (JATEK == 1) THEN
-      IF (MAX(ABS(A21),ABS(A22))  >  500) THEN
-         DUM = 0
-      ENDIF
-   ENDIF
 
    IF (JSLO == 1) THEN
       do idim = 1,NDIM
@@ -1213,11 +1209,7 @@
             XY = SQRT(XN*XN + YN*YN)
             IF (ZN  /=  0) THEN
                SLO(idim) = ABS(XY/ZN)
-            ELSE
-               SLO(idim) = dmiss
             ENDIF
-         ELSE
-            SLO(idim) = dmiss
          ENDIF
       end do
    endif

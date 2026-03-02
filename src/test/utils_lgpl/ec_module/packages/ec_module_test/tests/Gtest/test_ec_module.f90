@@ -17,7 +17,6 @@ contains
       real(kind=dp) :: wf(3) !< weights for each point in the triangle
       real(kind=dp) :: slo(NDIM)
       integer :: jsferic
-      integer :: jatek
       integer :: jslo
       real(kind=dp) :: xp !< x coordinate to be interpolated
       real(kind=dp) :: yp !< y coordinate to be interpolated
@@ -31,22 +30,21 @@ contains
       XP = 809699.760677868_dp
       YP = 179654.755887270_dp
 
-      jatek = 0
       jsferic = 0
       jslo = 0
-      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
       call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 1: Point on corner fails")
 
       X = cshift(X, 1)
       Y = cshift(Y, 1)
       Z = cshift(Z, 1, 2)
-      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
       call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 2: Point on corner fails")
 
       X = cshift(X, 1)
       Y = cshift(Y, 1)
       Z = cshift(Z, 1, 2)
-      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
       call f90_assert_eq(zp(1), 1.420180850975200e-063_dp, "test 3: Point on corner fails")
 
       X = [0.0_dp, 1.0_dp, 0.0_dp]
@@ -54,7 +52,7 @@ contains
       Z = reshape([0.0_dp, 1.0_dp, 1.0_dp], [NDIM, 3])
       XP = 1.0_dp
       YP = 1.0_dp
-      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
       call f90_assert_eq(zp(1), 2.0_dp, "test4: Point outside triangle fails")
 
    end subroutine test_interpolate_linear_from_triangle
