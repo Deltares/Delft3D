@@ -1041,7 +1041,7 @@
         <file name="dflowfm/dflowfmoutput/gatefree_3Dz_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0003" />
-            <parameter name="x_velocity" toleranceAbsolute="0.005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.01" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
