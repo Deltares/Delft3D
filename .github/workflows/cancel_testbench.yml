@@ -1,0 +1,120 @@
+name: Cancel testbench
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Commit hash"
+        required: true
+        default: ""
+        type: string
+
+jobs:
+  cancel-testbench:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Find PR for current branch
+        id: find-pr
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+        run: |
+          set -eou pipefail
+
+          pr_list=$(
+            curl \
+              --silent \
+              --fail \
+              --show-error \
+              --request "GET" \
+              --header "Authorization: Bearer ${TOKEN}" \
+              --header "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${OWNER}/${REPO}/pulls?state=open&head=${OWNER}:${BRANCH_NAME}"
+          )
+
+          pr_count=$(echo "${pr_list}" | jq 'length')
+
+          if [ "${pr_count}" -eq 0 ]; then
+            echo "No open PR found for branch ${BRANCH_NAME}"
+            exit 0
+          fi
+
+          if [ "${pr_count}" -gt 1 ]; then
+            echo "Multiple PRs found for branch ${BRANCH_NAME}. Cannot proceed further."
+            exit 1
+          fi
+
+          pr_number=$(echo "$pr_list" | jq -r '.[0].number')
+
+          echo "Found PR #${pr_number}"
+          echo "pr_number=$pr_number}" >> "$GITHUB_OUTPUT"
+
+      - name: Display pull request ref
+        if: steps.find-pr.outputs.pr_number != ''
+        run: |
+          echo "PR ref: refs/pull/${{ steps.find-pr.outputs.pr_number }}"
+
+      - name: Retrieve KSM credentials
+        id: retrieve-ksm-credentials
+        env:
+          KSM_APP_CONFIG: ${{ secrets.KSM_APP_CONFIG }}
+          KSM_RECORD_UID: ${{ secrets.KSM_RECORD_UID }}
+        uses: Keeper-Security/ksm-action@v1.1.0
+        with:
+          keeper-secret-config: ${{ KSM_APP_CONFIG }}
+          secrets: |-
+            keeper://${{ KSM_RECORD_UID }}/field/password > token
+
+      - name: Cancel testbench
+        if: steps.retrieve-ksm-credentials.outcome == 'success'
+        run: |
+          set -eou pipefail
+
+          teamcity_builds="https://dpcbuild.deltares.nl/app/rest/builds"
+          teamcity_project_id="Delft3D"
+          branch="pull/${{ steps.find-pr.outputs.pr_number }}"
+          commit_sha="${{ github.event.inputs.commit_sha }}"
+          platforms=("Linux" "Windows")
+
+          for platform in "${platforms[@]}"; do
+            build_type="${teamcity_project_id}_${platform}Test"
+
+            request_url=$(
+              printf \
+                '%s?locator=project:%s,buildType:%s,branch:%s,revision:%s,state:any,count:100' \
+                "$teamcity_builds" \
+                "$teamcity_project_id" \
+                "$build_type" \
+                "$branch" \
+                "$commit_sha"
+            )
+
+            builds=$(
+              curl \
+               --silent \
+                --fail \
+                --show-error \
+                --request "GET" \
+                --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.token }}" \
+                --header "Accept: application/json" \
+                "${request_url}"
+            )
+
+            # get state and status of last build
+            state=$(echo "${builds}" | jq -r '.build[0].state')
+            if [ "${state}" != "finished" ]; then
+              # it is either running, queued or pending so cancel it
+              echo "On ${branch} at ${{ github.event.inputs.commit_sha }}: state=${state}"
+              echo "Cancelling ${build_type}..."
+              id=$(echo "${builds}" | jq -r '.build[0].id')
+              curl \
+                --request "POST" \
+                --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.token }}" \
+                --header "Accept: application/json" \
+                "${teamcity_builds}/id:${id}" \
+                -d '{"comment":"Cancel build from GitHub","readdIntoQueue":false}'
+            fi
+          done
