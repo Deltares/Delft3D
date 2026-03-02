@@ -595,18 +595,18 @@ contains
       integer, dimension(:), allocatable :: networknodes_with_nodal_relation ![number_nodes_with_nodal_relation]
       !integer, dimension(:), allocatable :: total_water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
       !real(kind=dp), dimension(:,:), allocatable :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-      !real(kind=dp), dimension(:), allocatable :: total_width_out ![number_nodes_with_nodal_relation]
-      !real(kind=dp), dimension(:), allocatable :: width_out ![number_nodes_with_nodal_relation]
-      !integer, dimension (:), allocatable :: link_out ![number_nodes_with_nodal_relation]
-      !integer, dimension (:), allocatable :: link_dir_out ![number_nodes_with_nodal_relation,link]
-      !integer, dimension (:), allocatable :: number_links_out ![number_nodes_with_nodal_relation]
+      real(kind=dp), dimension(:), allocatable :: total_width_out ![number_nodes_with_nodal_relation]
+!      real(kind=dp), dimension(:,:), allocatable :: width_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+      integer, dimension (:,:), allocatable :: link_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+      integer, dimension (:,:), allocatable :: link_dir_out ![number_nodes_with_nodal_relation,link]
+      integer, dimension (:), allocatable :: number_links_out ![number_nodes_with_nodal_relation]
       !integer, dimension (:), allocatable :: link_in ![number_nodes_with_nodal_relation]
       !integer, dimension (:), allocatable :: flownode_junction ![number_nodes_with_nodal_relation]
       !sb_out -> real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node
       
-      integer :: link_in
-      integer, dimension(2) :: link_out
-      integer, dimension(2) :: node_out
+      !integer :: link_in
+      !integer, dimension(2) :: link_out
+      !integer, dimension(2) :: node_out
       
       integer, dimension(:), allocatable :: branInIDLn !< ID of Incoming Branch (If there is only one) (nnod)
 
@@ -633,7 +633,7 @@ contains
       !                                                []       
       !                                                        
       real(fp), dimension(:), allocatable :: qb_out !< sum of outgoing discharge at 1d node
-      real(fp), dimension(:), allocatable :: width_out !< sum of outgoing main channel widths
+    
 
       real(fp), dimension(:, :), allocatable :: sb_out !< sum of incoming sediment transport at 1d node
 
@@ -663,7 +663,7 @@ contains
 
       
       call nodal_point_relation_data( &
-qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation)
+qb_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out)
       !
       ! Determining sediment redistribution
       !
@@ -684,11 +684,15 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,n
    
             ! loop over branches and determine redistribution of incoming sediment
             k3 = pnod%gridnumber
-            do j = 1, nd(k3)%lnx
-               L = abs(nd(k3)%ln(j))
-               Ldir = sign(1, nd(k3)%ln(j))
+            !do j = 1, nd(k3)%lnx
+            do j = 1, number_links_out(kinod)
+               L = link_out(kinod,j) 
+               !L = abs(nd(k3)%ln(j))
+               !Ldir = sign(1, nd(k3)%ln(j))
+               Ldir=link_dir_out(kinod,j)
                qb1d = -qa(L) * Ldir
                wb1d = wu_mor(L)
+               !wb1d = width_out(kinod, j)
    
                ! Get Nodal Point Relation Data
                !V: move outside of j-loop, no data is passed to `get_noderel_idx`
@@ -696,7 +700,7 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,n
    
                pNodRel => pFrac%noderelations(nrd_idx)
    
-               if (sb_dir(inod, ised, j) == -1) then ! is outgoing
+               !if (sb_dir(inod, ised, j) == -1) then ! is outgoing
    
                   if (qb_out(inod) > 0.0_fp) then
    
@@ -706,7 +710,7 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,n
                         expW = pNodRel%expW
    
                         facQ = (qb1d / qb_out(inod))**expQ
-                        facW = (wb1d / width_out(inod))**expW
+                        facW = (wb1d / total_width_out(inod))**expW
    
                         facCheck = facCheck + facQ * facW
    
@@ -739,17 +743,17 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,n
                         end if
    
                      elseif (pNodRel%Method == 'bollapittaluga') then
-                         !V: We could check this in initialization and avoid doing it at every time step. 
-                         if (pnod%numberofconnections /= 3) then
-                             call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
-                         endif
-                         call nodal_point_relation_indices( &
-                              link_in,link_out,node_out, & !output
-                              k3,j,sb_dir,inod,ised   & !input
-                              )
-                         call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,sb_out(inod, ised),link_in,link_out,node_out,ised)
-                         
-                         !e_sbcn(L,ised)=q_sb
+                         !!V: We could check this in initialization and avoid doing it at every time step. 
+                         !if (pnod%numberofconnections /= 3) then
+                         !    call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
+                         !endif
+                         !call nodal_point_relation_indices( &
+                         !     link_in,link_out,node_out, & !output
+                         !     k3,j,sb_dir,inod,ised   & !input
+                         !     )
+                         !call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,sb_out(inod, ised),link_in,link_out,node_out,ised)
+                         !
+                         !!e_sbcn(L,ised)=q_sb
                      else
                         call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
                      end if
@@ -759,7 +763,7 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,n
                      e_sbct(L, ised) = 0.0
                   end if
    
-               end if
+               !end if
    
             end do ! Branches
    
@@ -775,32 +779,6 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,n
             end if !`facCheck`
          end do ! Nodes
       end do ! Fractions
-
-   !!
-   !! Deallocate
-   !!
-
-      !if (istat == 0) then
-      !   deallocate (qb_out, stat=istat)
-      !end if
-      !if (istat == 0) then
-      !   deallocate (width_out, stat=istat)
-      !end if
-      !if (istat == 0) then
-      !   deallocate (sb_out, stat=istat)
-      !end if
-      !if (istat == 0) then
-      !   deallocate (sb_dir, stat=istat)
-      !end if
-      !if (istat == 0) then
-      !   deallocate (BranInIDLn, stat=istat)
-      !end if
-      !
-      !if (istat /= 0) then
-      !   error = .true.
-      !   write (errmsg, '(a)') 'fm_bott3d::error deallocating memory.'
-      !   call mess(LEVEL_FATAL, errmsg)
-      !end if
 
    end subroutine apply_nodal_point_relation
 
@@ -2315,7 +2293,7 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,n
            end subroutine
 
 subroutine nodal_point_relation_data( &
-qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation)
+qb_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out)
 
 !Modules
 use precision, only: dp
@@ -2351,11 +2329,14 @@ integer, dimension(:, :, :), allocatable, intent(out) :: sb_dir !< direction of 
 !                                                []       
 !                                                        
 real(fp), dimension(:), allocatable, intent(out) :: qb_out !< sum of outgoing discharge at 1d node
-real(fp), dimension(:), allocatable, intent(out) :: width_out !< sum of outgoing main channel widths
+real(fp), dimension(:), allocatable, intent(out) :: total_width_out !< sum of outgoing main channel widths
 real(fp), dimension(:, :), allocatable, intent(out) :: sb_out !< sum of incoming sediment transport at 1d node
 integer, dimension(:), allocatable, intent(out) :: networknodes_with_nodal_relation !< index of the netweork nodes in which a nodal point relation has to be applied
 integer, intent(out) :: number_nodes_with_nodal_relation !< number of nodes with nodal relation [-]
-
+integer, dimension (:,:), allocatable, intent(out) :: link_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+integer, dimension (:,:), allocatable, intent(out) :: link_dir_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+integer, dimension (:), allocatable, intent(out) :: number_links_out ![number_nodes_with_nodal_relation]
+      
 !Locals
 logical :: error
 integer :: inod, j, L, Ldir, k1, ised, istat
@@ -2369,7 +2350,7 @@ if (istat == 0) then
    allocate (qb_out(network%nds%Count), stat=istat)
 end if
 if (istat == 0) then
-   allocate (width_out(network%nds%Count), stat=istat)
+   allocate (total_width_out(network%nds%Count), stat=istat)
 end if
 if (istat == 0) then
    allocate (sb_out(network%nds%Count, lsedtot), stat=istat)
@@ -2383,6 +2364,15 @@ end if
 if (istat == 0) then
    allocate (networknodes_with_nodal_relation(network%nds%Count), stat=istat)
 end if
+if (istat == 0) then
+   allocate (number_links_out(network%nds%Count), stat=istat)
+end if
+if (istat == 0) then
+   allocate (link_out(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
+end if
+if (istat == 0) then
+   allocate (link_dir_out(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
+end if
 
 if (istat /= 0) then
    error = .true.
@@ -2392,7 +2382,7 @@ end if
 
 !Initialize
 qb_out(:) = 0_dp !Total water discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches.
-width_out(:) = 0_dp !Width of the downstream branches.
+total_width_out(:) = 0_dp !Width of the downstream branches.
 sb_out(:, :) = 0_dp !Total sediment discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. 
 sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometry (flow) node. 
 BranInIDLn(:) = 0
@@ -2414,7 +2404,8 @@ do inod = 1, network%nds%Count
       number_nodes_with_nodal_relation=number_nodes_with_nodal_relation+1
       networknodes_with_nodal_relation(number_nodes_with_nodal_relation)=inod
       k1 = pnod%gridnumber
-      do j = 1, nd(k1)%lnx
+      number_links_out=0
+      do j = 1, nd(k1)%lnx 
          L = abs(nd(k1)%ln(j))
          Ldir = sign(1, nd(k1)%ln(j))
          !
@@ -2422,8 +2413,11 @@ do inod = 1, network%nds%Count
          
          if (u1(L) * Ldir < 0_dp) then
             ! Outgoing discharge
+            number_links_out=number_links_out+1 
+            link_out(number_nodes_with_nodal_relation,number_links_out)=L
+            link_dir_out(number_nodes_with_nodal_relation,number_links_out)=Ldir
             qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
-            width_out(inod) = width_out(inod) + wb1d
+            total_width_out(inod) = total_width_out(inod) + wb1d
             qb_out(inod) = qb_out(inod) + qb1d
             do ised = 1, lsedtot
                sb_dir(inod, ised, j) = -1 ! set direction to outgoing
