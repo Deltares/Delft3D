@@ -72,6 +72,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use globaldata
     use dfparall
     use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
     !
     implicit none
     !
@@ -399,7 +400,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 !       & 0.0375, 0.0300/
 !    data sig2d/-0.1122,-0.3140,-0.4754,-0.6045,-0.7077,-0.7902,-0.8563,-0.9090, &
 !       & -0.9512,-0.9850/
-    
+    integer, parameter :: KFROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
+    integer, parameter :: KTO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
 !
 !! executable statements -------------------------------------------------------
 !
@@ -630,7 +632,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                   & mudfrac     ,gdp%d%nmlb,gdp%d%nmub)
        if (ihidexptrcrs == 1) then 
           call getfrac(gdp%gdmorlyr,frache    ,anymud    ,mudcnt    , &
-                     & mudfrache   ,gdp%d%nmlb,gdp%d%nmub, 1, 2)
+                     & mudfrache   ,gdp%d%nmlb,gdp%d%nmub, KFROM, KTO)
        endif 
     endif
     !

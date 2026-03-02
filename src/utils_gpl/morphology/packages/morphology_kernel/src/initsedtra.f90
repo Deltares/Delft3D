@@ -46,6 +46,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     use morphology_data_module, only: sedtra_type, sedpar_type, trapar_type, morpar_type
     use bedcomposition_module, only: getfrac, bedcomp_data
     use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
     !
     implicit none
     !
