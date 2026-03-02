@@ -225,6 +225,7 @@ contains
       end if
       MP = MPS
       NPL = NPH
+      NPH = 0
 
       return
    end subroutine restorepol
