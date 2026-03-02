@@ -637,10 +637,6 @@ contains
 
       real(kind=dp) :: ldir
       real(kind=dp) :: faccheck
-      real(kind=dp) :: expQ
-      real(kind=dp) :: expW
-      real(kind=dp) :: facQ
-      real(kind=dp) :: facW
       real(kind=dp) :: qb1d, wb1d
       real(kind=dp) :: sbrratio, qbrratio, Qbr1, Qbr2 !q_sb
 
@@ -696,17 +692,7 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
                if (total_water_discharge_out(kinod) > 0.0_fp) then
                
                   if (pNodRel%Method == 'function') then
-               
-                     expQ = pNodRel%expQ
-                     expW = pNodRel%expW
-               
-                     facQ = (qb1d / total_water_discharge_out(kinod))**expQ
-                     facW = (wb1d / total_width_out(kinod))**expW
-               
-                     facCheck = facCheck + facQ * facW
-               
-                     e_sbcn(L, ised) = -Ldir * facQ * facW * sb_out(kinod, ised) / wb1d
-               
+                     call nodal_point_relation_function(facCheck,e_sbcn(L, ised),pNodRel,link_dir_out,width_out,total_width_out,water_discharge_out,total_water_discharge_out,sb_out,kinod,j,ised)                  
                   elseif (pNodRel%Method == 'table') then
                
                      facCheck = 1.0_dp
@@ -2461,4 +2447,38 @@ do inod = 1, network%nds%Count
 end do
 
 end subroutine nodal_point_relation_data
+
+subroutine nodal_point_relation_function(facCheck,sediment_transport_rate,pNodRel,link_dir_out,width_out,total_width_out,water_discharge_out,total_water_discharge_out,sb_out,kinod,j,ised)   
+
+use precision, only: dp
+use morphology_data_module, only: t_noderelation
+
+real(kind=dp), intent(inout) :: facCheck
+
+real(kind=dp), intent(out) :: sediment_transport_rate
+
+type(t_noderelation), target, intent(in) :: pNodRel
+integer, dimension (:,:), allocatable, intent(in) :: link_dir_out ![number_nodes_with_nodal_relation,link]
+real(kind=dp), dimension(:,:), allocatable, intent(in) :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+real(kind=dp), dimension(:), allocatable, intent(in) :: total_width_out ![number_nodes_with_nodal_relation]
+real(kind=dp), dimension(:,:), allocatable, intent(in) :: width_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+real(fp), dimension(:), allocatable, intent(in) :: total_water_discharge_out !< sum of outgoing discharge at 1d node
+real(fp), dimension(:, :), allocatable, intent(in) :: sb_out !< sum of incoming sediment transport at 1d node
+integer, intent(in) :: kinod
+integer, intent(in) :: j
+integer, intent(in) :: ised
+
+!Local variables
+real(kind=dp) :: facQ
+real(kind=dp) :: facW
+      
+facQ = (water_discharge_out(kinod, j)  / total_water_discharge_out(kinod))**pNodRel%expQ
+facW = (width_out(kinod, j) / total_width_out(kinod))**pNodRel%expW
+
+facCheck = facCheck + facQ * facW
+
+sediment_transport_rate = -link_dir_out(kinod,j) * facQ * facW * sb_out(kinod, ised) / width_out(kinod, j)
+
+end subroutine nodal_point_relation_function
+
 end module m_fm_bott3d
