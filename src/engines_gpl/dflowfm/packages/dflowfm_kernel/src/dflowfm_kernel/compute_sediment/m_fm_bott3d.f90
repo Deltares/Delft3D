@@ -591,8 +591,8 @@ contains
 
       integer :: inod, j, ised, ifrac, k3, nrd_idx, L
 
-      !integer :: number_nodes_with_nodal_relation ![1]
-      !integer, dimension(:), allocatable :: networknodes_with_nodal_relation ![1, number_nodes_with_nodal_relation]
+      integer :: number_nodes_with_nodal_relation ![1]
+      integer, dimension(:), allocatable :: networknodes_with_nodal_relation ![number_nodes_with_nodal_relation]
       !integer, dimension(:), allocatable :: total_water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
       !real(kind=dp), dimension(:,:), allocatable :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
       !real(kind=dp), dimension(:), allocatable :: total_width_out ![number_nodes_with_nodal_relation]
@@ -663,7 +663,7 @@ contains
 
       
       call nodal_point_relation_data( &
-qb_out, width_out, sb_out, sb_dir, branInIDLn)
+qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation)
       !
       ! Determining sediment redistribution
       !
@@ -2319,133 +2319,152 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn)
            end subroutine
 
 subroutine nodal_point_relation_data( &
-qb_out, width_out, sb_out, sb_dir, branInIDLn)
+qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation)
 
-
+!Modules
 use precision, only: dp
 use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
 use m_flowgeom, only: nd, wu_mor
 use m_flow, only: u1, qa
 use m_fm_erosed, only: lsedtot, e_sbcn
 use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
+use Messagehandling, only: LEVEL_FATAL, mess, errmsg
 
-      integer, dimension(:), allocatable :: branInIDLn !< ID of Incoming Branch (If there is only one) (nnod)
+!Output
+integer, dimension(:), allocatable, intent(out) :: branInIDLn !< ID of Incoming Branch (If there is only one) (nnod)
+integer, dimension(:, :, :), allocatable, intent(out) :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
+                                                   !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
+                                                   !  1: Sediment enters the flow node.
+                                                   ! -1: Sediment exits the flow node.                       
+!                                                        
+!                               sb_dir                   
+!                                                        
+!                                               []       
+!                                              /         
+!                                          -1 /          
+!                                           ^/           
+!                                           /            
+!      discharge                      1    /             
+!      -------->        _______[]_____^___[]             
+!                                          \              
+!                                           \-1          
+!                                            \^           
+!                                             \           
+!                                              \          
+!                                               \         
+!                                                []       
+!                                                        
+real(fp), dimension(:), allocatable, intent(out) :: qb_out !< sum of outgoing discharge at 1d node
+real(fp), dimension(:), allocatable, intent(out) :: width_out !< sum of outgoing main channel widths
+real(fp), dimension(:, :), allocatable, intent(out) :: sb_out !< sum of incoming sediment transport at 1d node
+integer, dimension(:), allocatable, intent(out) :: networknodes_with_nodal_relation !< index of the netweork nodes in which a nodal point relation has to be applied
+integer, intent(out) :: number_nodes_with_nodal_relation !< number of nodes with nodal relation [-]
 
-      integer, dimension(:, :, :), allocatable :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
-                                                         !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
-                                                         !  1: Sediment enters the flow node.
-                                                         ! -1: Sediment exits the flow node.                       
-      !                                                        
-      !                               sb_dir                   
-      !                                                        
-      !                                               []       
-      !                                              /         
-      !                                          -1 /          
-      !                                           ^/           
-      !                                           /            
-      !      discharge                      1    /             
-      !      -------->        _______[]_____^___[]             
-      !                                          \              
-      !                                           \-1          
-      !                                            \^           
-      !                                             \           
-      !                                              \          
-      !                                               \         
-      !                                                []       
-      !                                                        
-      real(fp), dimension(:), allocatable :: qb_out !< sum of outgoing discharge at 1d node
-      real(fp), dimension(:), allocatable :: width_out !< sum of outgoing main channel widths
-
-      real(fp), dimension(:, :), allocatable :: sb_out !< sum of incoming sediment transport at 1d node
-      
+!Locals
+logical :: error
 integer :: inod, j, L, Ldir, k1, ised, istat
 
 type(t_node), pointer :: pnod
 real(kind=dp) :: qb1d, wb1d, sb1d
 
-      istat = 0
-      if (istat == 0) then
-         allocate (qb_out(network%nds%Count), stat=istat)
-      end if
-      if (istat == 0) then
-         allocate (width_out(network%nds%Count), stat=istat)
-      end if
-      if (istat == 0) then
-         allocate (sb_out(network%nds%Count, lsedtot), stat=istat)
-      end if
-      if (istat == 0) then
-         allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
-      end if
-      if (istat == 0) then
-         allocate (branInIDLn(network%nds%Count), stat=istat)
-      end if
+!Allocate
+istat = 0
+if (istat == 0) then
+   allocate (qb_out(network%nds%Count), stat=istat)
+end if
+if (istat == 0) then
+   allocate (width_out(network%nds%Count), stat=istat)
+end if
+if (istat == 0) then
+   allocate (sb_out(network%nds%Count, lsedtot), stat=istat)
+end if
+if (istat == 0) then
+   allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
+end if
+if (istat == 0) then
+   allocate (branInIDLn(network%nds%Count), stat=istat)
+end if
+if (istat == 0) then
+   allocate (networknodes_with_nodal_relation(network%nds%Count), stat=istat)
+end if
 
-      qb_out(:) = 0_dp !Total water discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches.
-      width_out(:) = 0_dp !Width of the downstream branches.
-      sb_out(:, :) = 0_dp !Total sediment discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. 
-      sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometry (flow) node. 
-      BranInIDLn(:) = 0
-      
-      !
-      ! Apply nodal relations to transport
-      !
-      !Output = `sb_out`
-      !`sb_out` is the sediment that exits the flow node and must be redistributed over the downstream branches. 
-      !The sediment that is redistributed to the downstream branches is computed as the sum of the sediment that
-      !exits the geometry (flow) node at the junction. 
-      do inod = 1, network%nds%Count
-         pnod => network%nds%node(inod)
-         if (pnod%numberofconnections == 1) then
-            cycle
-         end if
-         if (pnod%nodeType == nt_LinkNode) then ! connection node
-            k1 = pnod%gridnumber
-            do j = 1, nd(k1)%lnx
-               L = abs(nd(k1)%ln(j))
-               Ldir = sign(1, nd(k1)%ln(j))
-               !
-               wb1d = wu_mor(L)
-               
-               if (u1(L) * Ldir < 0_dp) then
-                  ! Outgoing discharge
-                  qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
-                  width_out(inod) = width_out(inod) + wb1d
-                  qb_out(inod) = qb_out(inod) + qb1d
-                  do ised = 1, lsedtot
-                     sb_dir(inod, ised, j) = -1 ! set direction to outgoing
-                  end do
-               else
-                  ! Incoming discharge
-                  if (branInIDLn(inod) == 0) then
-                     branInIDLn(inod) = L
-                  else
-                     branInIDLn(inod) = -444 ! multiple incoming branches
-                  end if
-               end if
-               
-               do ised = 1, lsedtot
-                  sb1d = e_sbcn(L, ised) * Ldir ! first compute all outgoing sed. transport.
-                  if (flow_solver == FLOW_SOLVER_FM .or. pnod%numberofconnections == 2) then !standard
-                     !V: In the standard scheme, at the <e_sbcn> of the outgoing links we have the upwind transport, i.e.,
-                     !part of the transport in the junction node. By summing over all of them we have the total transport at
-                     !the junction node, which we then redistribute.
-                     !We apply this to the standard scheme and to the nodes with only 2 connections, as in this second case
-                     !we have not modified the link direction and the same logic applies as for the standard scheme.
-                     ! this works for one incoming branch TO DO: WO
-                     if (sb_dir(inod, ised, j) == -1) then
-                        sb_out(inod, ised) = sb_out(inod, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
-                     end if
-                  else !FM1DIMP
-                     !V: In the FM1DIMP scheme at <e_sbcn> of the incoming links we have the upwind transport, i.e., the transport
-                     !in the ghost cell for multivaluedness of each branch. By summing over all of them we have the total
-                     !transport incoming to the junction, which we want to redistribute.
-                     if (sb_dir(inod, ised, j) == 1) then
-                        sb_out(inod, ised) = sb_out(inod, ised) + wb1d * sb1d ! incoming transport is positive
-                     end if
-                  end if
-               end do
+if (istat /= 0) then
+   error = .true.
+   write (errmsg, '(a)') 'fm_bott3d::error deallocating memory.'
+   call mess(LEVEL_FATAL, errmsg)
+end if
+
+!Initialize
+qb_out(:) = 0_dp !Total water discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches.
+width_out(:) = 0_dp !Width of the downstream branches.
+sb_out(:, :) = 0_dp !Total sediment discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. 
+sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometry (flow) node. 
+BranInIDLn(:) = 0
+
+!
+! Apply nodal relations to transport
+!
+!Output = `sb_out`
+!`sb_out` is the sediment that exits the flow node and must be redistributed over the downstream branches. 
+!The sediment that is redistributed to the downstream branches is computed as the sum of the sediment that
+!exits the geometry (flow) node at the junction. 
+number_nodes_with_nodal_relation=0
+do inod = 1, network%nds%Count
+   pnod => network%nds%node(inod)
+   if (pnod%numberofconnections == 1) then
+      cycle
+   end if
+   if (pnod%nodeType == nt_LinkNode) then ! connection node
+      number_nodes_with_nodal_relation=number_nodes_with_nodal_relation+1
+      networknodes_with_nodal_relation(number_nodes_with_nodal_relation)=inod
+      k1 = pnod%gridnumber
+      do j = 1, nd(k1)%lnx
+         L = abs(nd(k1)%ln(j))
+         Ldir = sign(1, nd(k1)%ln(j))
+         !
+         wb1d = wu_mor(L)
+         
+         if (u1(L) * Ldir < 0_dp) then
+            ! Outgoing discharge
+            qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
+            width_out(inod) = width_out(inod) + wb1d
+            qb_out(inod) = qb_out(inod) + qb1d
+            do ised = 1, lsedtot
+               sb_dir(inod, ised, j) = -1 ! set direction to outgoing
             end do
+         else
+            ! Incoming discharge
+            if (branInIDLn(inod) == 0) then
+               branInIDLn(inod) = L
+            else
+               branInIDLn(inod) = -444 ! multiple incoming branches
+            end if
          end if
+         
+         do ised = 1, lsedtot
+            sb1d = e_sbcn(L, ised) * Ldir ! first compute all outgoing sed. transport.
+            if (flow_solver == FLOW_SOLVER_FM .or. pnod%numberofconnections == 2) then !standard
+               !V: In the standard scheme, at the <e_sbcn> of the outgoing links we have the upwind transport, i.e.,
+               !part of the transport in the junction node. By summing over all of them we have the total transport at
+               !the junction node, which we then redistribute.
+               !We apply this to the standard scheme and to the nodes with only 2 connections, as in this second case
+               !we have not modified the link direction and the same logic applies as for the standard scheme.
+               ! this works for one incoming branch TO DO: WO
+               if (sb_dir(inod, ised, j) == -1) then
+                  sb_out(inod, ised) = sb_out(inod, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
+               end if
+            else !FM1DIMP
+               !V: In the FM1DIMP scheme at <e_sbcn> of the incoming links we have the upwind transport, i.e., the transport
+               !in the ghost cell for multivaluedness of each branch. By summing over all of them we have the total
+               !transport incoming to the junction, which we want to redistribute.
+               if (sb_dir(inod, ised, j) == 1) then
+                  sb_out(inod, ised) = sb_out(inod, ised) + wb1d * sb1d ! incoming transport is positive
+               end if
+            end if
+         end do
       end do
-      end subroutine nodal_point_relation_data
+   end if
+end do
+
+end subroutine nodal_point_relation_data
 end module m_fm_bott3d
