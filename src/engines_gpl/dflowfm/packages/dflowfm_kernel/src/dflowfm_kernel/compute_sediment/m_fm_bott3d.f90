@@ -697,15 +697,15 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
    
                pNodRel => pFrac%noderelations(nrd_idx)
       
-               if (total_water_discharge_out(inod) > 0.0_fp) then
+               if (total_water_discharge_out(kinod) > 0.0_fp) then
                
                   if (pNodRel%Method == 'function') then
                
                      expQ = pNodRel%expQ
                      expW = pNodRel%expW
                
-                     facQ = (qb1d / total_water_discharge_out(inod))**expQ
-                     facW = (wb1d / total_width_out(inod))**expW
+                     facQ = (qb1d / total_water_discharge_out(kinod))**expQ
+                     facW = (wb1d / total_width_out(kinod))**expW
                
                      facCheck = facCheck + facQ * facW
                
@@ -717,9 +717,9 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
                
                      if (L == pNodRel%BranchOut1Ln) then
                         Qbr1 = qb1d
-                        Qbr2 = total_water_discharge_out(inod) - qb1d
+                        Qbr2 = total_water_discharge_out(kinod) - qb1d
                      elseif (L == pNodRel%BranchOut2Ln) then
-                        Qbr1 = total_water_discharge_out(inod) - qb1d
+                        Qbr1 = total_water_discharge_out(kinod) - qb1d
                         Qbr2 = qb1d
                      else
                         call SetMessage(LEVEL_FATAL, 'Unknown Branch Out (This should never happen!)')
@@ -2421,8 +2421,8 @@ do inod = 1, network%nds%Count
             width_out(number_nodes_with_nodal_relation,number_links_out)=wb1d
             qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
             water_discharge_out(number_nodes_with_nodal_relation,number_links_out) = qb1d
-            total_width_out(inod) = total_width_out(inod) + wb1d
-            total_water_discharge_out(inod) = total_water_discharge_out(inod) + qb1d
+            total_width_out(number_nodes_with_nodal_relation) = total_width_out(number_nodes_with_nodal_relation) + wb1d
+            total_water_discharge_out(number_nodes_with_nodal_relation) = total_water_discharge_out(number_nodes_with_nodal_relation) + qb1d
             do ised = 1, lsedtot
                sb_dir(inod, ised, j) = -1 ! set direction to outgoing
             end do
