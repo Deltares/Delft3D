@@ -85,11 +85,11 @@ jobs:
             request_url=$(
               printf \
                 '%s?locator=project:%s,buildType:%s,branch:%s,revision:%s,state:any,count:100' \
-                "$teamcity_builds" \
-                "$teamcity_project_id" \
-                "$build_type" \
-                "$branch" \
-                "$commit_sha"
+                "${teamcity_builds}" \
+                "${teamcity_project_id}" \
+                "${build_type}" \
+                "${branch}" \
+                "${commit_sha}"
             )
 
             builds=$(
