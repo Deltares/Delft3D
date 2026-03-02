@@ -1188,12 +1188,12 @@ contains
             Y3 = -(A11 * A32 - A12 * A31)
             Z3 = (A11 * A22 - A12 * A21)
             R3 = sqrt(X3 * X3 + Y3 * Y3 + Z3 * Z3)
-            if (R3 /= 0) then
+            if (R3 > 0.0_hp) then
                XN = X3 / R3
                YN = Y3 / R3
                ZN = Z3 / R3
                XY = sqrt(XN * XN + YN * YN)
-               if (ZN /= 0) then
+               if (abs(ZN) > 0.0_hp) then
                   SLO(idim) = abs(XY / ZN)
                end if
             end if
