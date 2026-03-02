@@ -574,7 +574,7 @@ contains
       use Messagehandling, only: SetMessage, LEVEL_FATAL, mess
       use message_module, only: writemessages, write_error
       use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
-      use m_flowgeom, only: nd, wu_mor
+      use m_flowgeom, only: nd
       use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
       use m_sediment, only: stmpar
       use m_ini_noderel, only: get_noderel_idx
@@ -709,7 +709,7 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
                
                      facCheck = facCheck + facQ * facW
                
-                     e_sbcn(L, ised) = -Ldir * facQ * facW * sb_out(inod, ised) / wu_mor(L)
+                     e_sbcn(L, ised) = -Ldir * facQ * facW * sb_out(kinod, ised) / wb1d
                
                   elseif (pNodRel%Method == 'table') then
                
@@ -730,10 +730,10 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
                      SbrRatio = interpolate(pNodRel%Table, QbrRatio)
                
                      if (L == pNodRel%BranchOut1Ln) then
-                        e_sbcn(L, ised) = -Ldir * SbrRatio * sb_out(inod, ised) / (1 + SbrRatio) / wu_mor(L)
+                        e_sbcn(L, ised) = -Ldir * SbrRatio * sb_out(kinod, ised) / (1 + SbrRatio) / wb1d
                         e_sbct(L, ised) = 0.0
                      elseif (L == pNodRel%BranchOut2Ln) then
-                        e_sbcn(L, ised) = -Ldir * sb_out(inod, ised) / (1 + SbrRatio) / wu_mor(L)
+                        e_sbcn(L, ised) = -Ldir * sb_out(kinod, ised) / (1 + SbrRatio) / wb1d
                         e_sbct(L, ised) = 0.0
                      end if
                
@@ -746,7 +746,7 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
                       !     link_in,link_out,node_out, & !output
                       !     k3,j,sb_dir,inod,ised   & !input
                       !     )
-                      !call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,sb_out(inod, ised),link_in,link_out,node_out,ised)
+                      !call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,sb_out(kinod, ised),link_in,link_out,node_out,ised)
                       !
                       !!e_sbcn(L,ised)=q_sb
                   else
@@ -765,7 +765,7 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
                ! loop over branches and correct redistribution of incoming sediment
                do j = 1, nd(k3)%lnx
                   L = abs(nd(k3)%ln(j))
-                  if (sb_dir(inod, ised, j) == -1) then
+                  if (sb_dir(kinod, ised, j) == -1) then
                      e_sbcn(L, ised) = e_sbcn(L, ised) / facCheck
                   end if
                end do ! Branches
@@ -2424,7 +2424,7 @@ do inod = 1, network%nds%Count
             total_width_out(number_nodes_with_nodal_relation) = total_width_out(number_nodes_with_nodal_relation) + wb1d
             total_water_discharge_out(number_nodes_with_nodal_relation) = total_water_discharge_out(number_nodes_with_nodal_relation) + qb1d
             do ised = 1, lsedtot
-               sb_dir(inod, ised, j) = -1 ! set direction to outgoing
+               sb_dir(number_nodes_with_nodal_relation, ised, j) = -1 ! set direction to outgoing
             end do
          else
             ! Incoming discharge
@@ -2444,15 +2444,15 @@ do inod = 1, network%nds%Count
                !We apply this to the standard scheme and to the nodes with only 2 connections, as in this second case
                !we have not modified the link direction and the same logic applies as for the standard scheme.
                ! this works for one incoming branch TO DO: WO
-               if (sb_dir(inod, ised, j) == -1) then
-                  sb_out(inod, ised) = sb_out(inod, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
+               if (sb_dir(number_nodes_with_nodal_relation, ised, j) == -1) then
+                  sb_out(number_nodes_with_nodal_relation, ised) = sb_out(number_nodes_with_nodal_relation, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
                end if
             else !FM1DIMP
                !V: In the FM1DIMP scheme at <e_sbcn> of the incoming links we have the upwind transport, i.e., the transport
                !in the ghost cell for multivaluedness of each branch. By summing over all of them we have the total
                !transport incoming to the junction, which we want to redistribute.
-               if (sb_dir(inod, ised, j) == 1) then
-                  sb_out(inod, ised) = sb_out(inod, ised) + wb1d * sb1d ! incoming transport is positive
+               if (sb_dir(number_nodes_with_nodal_relation, ised, j) == 1) then
+                  sb_out(number_nodes_with_nodal_relation, ised) = sb_out(number_nodes_with_nodal_relation, ised) + wb1d * sb1d ! incoming transport is positive
                end if
             end if
          end do
