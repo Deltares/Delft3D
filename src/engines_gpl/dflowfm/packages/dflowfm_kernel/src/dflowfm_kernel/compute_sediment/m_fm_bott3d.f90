@@ -589,7 +589,7 @@ contains
    !!
 
 
-      integer :: inod, j, ised, ifrac, k3, nrd_idx, L
+      integer :: inod, j, ised, ifrac, k3, nrd_idx, L, kinod
 
       integer :: number_nodes_with_nodal_relation ![1]
       integer, dimension(:), allocatable :: networknodes_with_nodal_relation ![number_nodes_with_nodal_relation]
@@ -675,108 +675,104 @@ qb_out, width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,n
 
          pFrac => stmpar%nrd%nodefractions(iFrac)
 
-         do inod = 1, network%nds%Count
+         do kinod = 1, number_nodes_with_nodal_relation
+            inod=networknodes_with_nodal_relation(kinod)
             pnod => network%nds%node(inod)
-            if (pnod%nodeType == nt_LinkNode) then ! connection node
-
-               facCheck = 0._dp
-
-               if (pnod%numberofconnections == 1) then
-                  cycle
+   
+            facCheck = 0._dp
+   
+   
+            ! loop over branches and determine redistribution of incoming sediment
+            k3 = pnod%gridnumber
+            do j = 1, nd(k3)%lnx
+               L = abs(nd(k3)%ln(j))
+               Ldir = sign(1, nd(k3)%ln(j))
+               qb1d = -qa(L) * Ldir
+               wb1d = wu_mor(L)
+   
+               ! Get Nodal Point Relation Data
+               !V: move outside of j-loop, no data is passed to `get_noderel_idx`
+               nrd_idx = get_noderel_idx(inod, pFrac, pnod%gridnumber, branInIDLn(inod), pnod%numberofconnections)
+   
+               pNodRel => pFrac%noderelations(nrd_idx)
+   
+               if (sb_dir(inod, ised, j) == -1) then ! is outgoing
+   
+                  if (qb_out(inod) > 0.0_fp) then
+   
+                     if (pNodRel%Method == 'function') then
+   
+                        expQ = pNodRel%expQ
+                        expW = pNodRel%expW
+   
+                        facQ = (qb1d / qb_out(inod))**expQ
+                        facW = (wb1d / width_out(inod))**expW
+   
+                        facCheck = facCheck + facQ * facW
+   
+                        e_sbcn(L, ised) = -Ldir * facQ * facW * sb_out(inod, ised) / wu_mor(L)
+   
+                     elseif (pNodRel%Method == 'table') then
+   
+                        facCheck = 1.0_dp
+   
+                        if (L == pNodRel%BranchOut1Ln) then
+                           Qbr1 = qb1d
+                           Qbr2 = qb_out(inod) - qb1d
+                        elseif (L == pNodRel%BranchOut2Ln) then
+                           Qbr1 = qb_out(inod) - qb1d
+                           Qbr2 = qb1d
+                        else
+                           call SetMessage(LEVEL_FATAL, 'Unknown Branch Out (This should never happen!)')
+                        end if
+   
+                        QbrRatio = Qbr1 / Qbr2
+   
+                        SbrRatio = interpolate(pNodRel%Table, QbrRatio)
+   
+                        if (L == pNodRel%BranchOut1Ln) then
+                           e_sbcn(L, ised) = -Ldir * SbrRatio * sb_out(inod, ised) / (1 + SbrRatio) / wu_mor(L)
+                           e_sbct(L, ised) = 0.0
+                        elseif (L == pNodRel%BranchOut2Ln) then
+                           e_sbcn(L, ised) = -Ldir * sb_out(inod, ised) / (1 + SbrRatio) / wu_mor(L)
+                           e_sbct(L, ised) = 0.0
+                        end if
+   
+                     elseif (pNodRel%Method == 'bollapittaluga') then
+                         !V: We could check this in initialization and avoid doing it at every time step. 
+                         if (pnod%numberofconnections /= 3) then
+                             call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
+                         endif
+                         call nodal_point_relation_indices( &
+                              link_in,link_out,node_out, & !output
+                              k3,j,sb_dir,inod,ised   & !input
+                              )
+                         call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,sb_out(inod, ised),link_in,link_out,node_out,ised)
+                         
+                         !e_sbcn(L,ised)=q_sb
+                     else
+                        call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
+                     end if
+   
+                  else
+                     e_sbcn(L, ised) = 0.0_fp
+                     e_sbct(L, ised) = 0.0
+                  end if
+   
                end if
-
-               ! loop over branches and determine redistribution of incoming sediment
-               k3 = pnod%gridnumber
+   
+            end do ! Branches
+   
+            ! Correct Total Outflow
+            if ((facCheck /= 1.0_fp) .and. (facCheck > 0.0_fp)) then
+               ! loop over branches and correct redistribution of incoming sediment
                do j = 1, nd(k3)%lnx
                   L = abs(nd(k3)%ln(j))
-                  Ldir = sign(1, nd(k3)%ln(j))
-                  qb1d = -qa(L) * Ldir
-                  wb1d = wu_mor(L)
-
-                  ! Get Nodal Point Relation Data
-                  !V: move outside of j-loop, no data is passed to `get_noderel_idx`
-                  nrd_idx = get_noderel_idx(inod, pFrac, pnod%gridnumber, branInIDLn(inod), pnod%numberofconnections)
-
-                  pNodRel => pFrac%noderelations(nrd_idx)
-
-                  if (sb_dir(inod, ised, j) == -1) then ! is outgoing
-
-                     if (qb_out(inod) > 0.0_fp) then
-
-                        if (pNodRel%Method == 'function') then
-
-                           expQ = pNodRel%expQ
-                           expW = pNodRel%expW
-
-                           facQ = (qb1d / qb_out(inod))**expQ
-                           facW = (wb1d / width_out(inod))**expW
-
-                           facCheck = facCheck + facQ * facW
-
-                           e_sbcn(L, ised) = -Ldir * facQ * facW * sb_out(inod, ised) / wu_mor(L)
-
-                        elseif (pNodRel%Method == 'table') then
-
-                           facCheck = 1.0_dp
-
-                           if (L == pNodRel%BranchOut1Ln) then
-                              Qbr1 = qb1d
-                              Qbr2 = qb_out(inod) - qb1d
-                           elseif (L == pNodRel%BranchOut2Ln) then
-                              Qbr1 = qb_out(inod) - qb1d
-                              Qbr2 = qb1d
-                           else
-                              call SetMessage(LEVEL_FATAL, 'Unknown Branch Out (This should never happen!)')
-                           end if
-
-                           QbrRatio = Qbr1 / Qbr2
-
-                           SbrRatio = interpolate(pNodRel%Table, QbrRatio)
-
-                           if (L == pNodRel%BranchOut1Ln) then
-                              e_sbcn(L, ised) = -Ldir * SbrRatio * sb_out(inod, ised) / (1 + SbrRatio) / wu_mor(L)
-                              e_sbct(L, ised) = 0.0
-                           elseif (L == pNodRel%BranchOut2Ln) then
-                              e_sbcn(L, ised) = -Ldir * sb_out(inod, ised) / (1 + SbrRatio) / wu_mor(L)
-                              e_sbct(L, ised) = 0.0
-                           end if
-
-                        elseif (pNodRel%Method == 'bollapittaluga') then
-                            !V: We could check this in initialization and avoid doing it at every time step. 
-                            if (pnod%numberofconnections /= 3) then
-                                call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
-                            endif
-                            call nodal_point_relation_indices( &
-                                 link_in,link_out,node_out, & !output
-                                 k3,j,sb_dir,inod,ised   & !input
-                                 )
-                            call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,sb_out(inod, ised),link_in,link_out,node_out,ised)
-                            
-                            !e_sbcn(L,ised)=q_sb
-                        else
-                           call SetMessage(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
-                        end if
-
-                     else
-                        e_sbcn(L, ised) = 0.0_fp
-                        e_sbct(L, ised) = 0.0
-                     end if
-
+                  if (sb_dir(inod, ised, j) == -1) then
+                     e_sbcn(L, ised) = e_sbcn(L, ised) / facCheck
                   end if
-
                end do ! Branches
-
-               ! Correct Total Outflow
-               if ((facCheck /= 1.0_fp) .and. (facCheck > 0.0_fp)) then
-                  ! loop over branches and correct redistribution of incoming sediment
-                  do j = 1, nd(k3)%lnx
-                     L = abs(nd(k3)%ln(j))
-                     if (sb_dir(inod, ised, j) == -1) then
-                        e_sbcn(L, ised) = e_sbcn(L, ised) / facCheck
-                     end if
-                  end do ! Branches
-               end if !`facCheck`
-            end if
+            end if !`facCheck`
          end do ! Nodes
       end do ! Fractions
 
