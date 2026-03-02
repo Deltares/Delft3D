@@ -1,6 +1,9 @@
 name: Cancel testbench
 
 on:
+  push:
+    branches:
+      - tc/task/DEVOPSDSC-919-cancel-testbench-from-github
   workflow_dispatch:
     inputs:
       commit_sha:
