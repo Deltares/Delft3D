@@ -50,7 +50,7 @@ jobs:
           pr_number=$(echo "$pr_list" | jq -r '.[0].number')
 
           echo "Found PR #${pr_number}"
-          echo "pr_number=$pr_number}" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
 
       - name: Display pull request ref
         if: steps.find-pr.outputs.pr_number != ''
@@ -64,9 +64,9 @@ jobs:
           KSM_RECORD_UID: ${{ secrets.KSM_RECORD_UID }}
         uses: Keeper-Security/ksm-action@v1.1.0
         with:
-          keeper-secret-config: ${{ KSM_APP_CONFIG }}
+          keeper-secret-config: ${KSM_APP_CONFIG}
           secrets: |-
-            keeper://${{ KSM_RECORD_UID }}/field/password > token
+            keeper://${KSM_RECORD_UID}/field/password > token
 
       - name: Cancel testbench
         if: steps.retrieve-ksm-credentials.outcome == 'success'
