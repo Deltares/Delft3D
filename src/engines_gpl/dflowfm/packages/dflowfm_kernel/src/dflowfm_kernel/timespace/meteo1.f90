@@ -194,33 +194,33 @@ contains
 
       integer, parameter :: NUMGENERALKEYWRD_OLD = 26
       character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = [character(len=256) :: &
-                                                                        'widthleftW1', & ! ( 1)
-                                                                        'levelleftZb1', & ! ( 2)
-                                                                        'widthleftWsdl', & ! ( 3)
-                                                                        'levelleftZbsl', & ! ( 4)
-                                                                        'widthcenter', & ! ( 5)
-                                                                        'levelcenter', & ! ( 6)
-                                                                        'widthrightWsdr', & ! ( 7)
-                                                                        'levelrightZbsr', & ! ( 8)
-                                                                        'widthrightW2', & ! ( 9)
-                                                                        'levelrightZb2', & ! (10)
-                                                                        'gateheight', & ! (11)
-                                                                        'gateheightintervalcntrl', & ! (12)
-                                                                        'pos_freegateflowcoeff', & ! (13)
-                                                                        'pos_drowngateflowcoeff', & ! (14)
-                                                                        'pos_freeweirflowcoeff', & ! (15)
-                                                                        'pos_drownweirflowcoeff', & ! (16)
-                                                                        'pos_contrcoeffreegate', & ! (17)
-                                                                        'neg_freegateflowcoeff', & ! (18)
-                                                                        'neg_drowngateflowcoeff', & ! (19)
-                                                                        'neg_freeweirflowcoeff', & ! (20)
-                                                                        'neg_drownweirflowcoeff', & ! (21)
-                                                                        'neg_contrcoeffreegate', & ! (22)
-                                                                        'extraresistance', & ! (23)
-                                                                        'dynstructext', & ! (24)
-                                                                        'gatedoorheight', & ! (25)
-                                                                        'door_opening_width' & ! (26)
-                                                                        ]
+                                                                       'widthleftW1', & ! ( 1)
+                                                                       'levelleftZb1', & ! ( 2)
+                                                                       'widthleftWsdl', & ! ( 3)
+                                                                       'levelleftZbsl', & ! ( 4)
+                                                                       'widthcenter', & ! ( 5)
+                                                                       'levelcenter', & ! ( 6)
+                                                                       'widthrightWsdr', & ! ( 7)
+                                                                       'levelrightZbsr', & ! ( 8)
+                                                                       'widthrightW2', & ! ( 9)
+                                                                       'levelrightZb2', & ! (10)
+                                                                       'gateheight', & ! (11)
+                                                                       'gateheightintervalcntrl', & ! (12)
+                                                                       'pos_freegateflowcoeff', & ! (13)
+                                                                       'pos_drowngateflowcoeff', & ! (14)
+                                                                       'pos_freeweirflowcoeff', & ! (15)
+                                                                       'pos_drownweirflowcoeff', & ! (16)
+                                                                       'pos_contrcoeffreegate', & ! (17)
+                                                                       'neg_freegateflowcoeff', & ! (18)
+                                                                       'neg_drowngateflowcoeff', & ! (19)
+                                                                       'neg_freeweirflowcoeff', & ! (20)
+                                                                       'neg_drownweirflowcoeff', & ! (21)
+                                                                       'neg_contrcoeffreegate', & ! (22)
+                                                                       'extraresistance', & ! (23)
+                                                                       'dynstructext', & ! (24)
+                                                                       'gatedoorheight', & ! (25)
+                                                                       'door_opening_width' & ! (26)
+                                                                       ]
 
       if (minp == 0) then
          ja = 0
@@ -6655,7 +6655,7 @@ contains
       case (10)
          ec_method = interpolate_unknown ! Not yet supported: only initial vertical profiles
       case (NEAREST_NEIGHBOUR)
-         ec_method = interpolate_nearest_neighbour 
+         ec_method = interpolate_nearest_neighbour
       case (7) ! TODO: EB: FM method 7, where does this come from? ! see hrms method 7
          ec_method = interpolate_time_extrapolation_ok
       case default
@@ -6684,13 +6684,13 @@ contains
 
    !> Convert quantity names as given in user input (ini/ext file)
    !! to a consistent internal representation.
-   pure function quantity_name_config_file_to_internal_name(quantity_input_name) result (quantity_internal_name)
+   pure function quantity_name_config_file_to_internal_name(quantity_input_name) result(quantity_internal_name)
       character(len=*), intent(in) :: quantity_input_name !< given by the user in ini/ext file
       character(len=:), allocatable :: quantity_internal_name !< consistent internal name
-      
+
       ! it's not safe to assume that the internal representation is always lower case
       quantity_internal_name = trim(quantity_input_name)
-      select case(str_tolower(quantity_internal_name))
+      select case (str_tolower(quantity_internal_name))
       case ('seaiceareafraction')
          quantity_internal_name = 'sea_ice_area_fraction'
       case ('seaicethickness')
@@ -6700,7 +6700,7 @@ contains
       case default
          ! keep other names unchanged
       end select
-         
+
    end function quantity_name_config_file_to_internal_name
 
    !> Convert quantity names as given in user input (ext file)
@@ -7378,7 +7378,7 @@ contains
       ! C equals 240.97 in Eq (8) of Buck (1981)
       ! Eq (7.5) of ECMWF (2023) uses temperatures in Kelvin scale:
       ! with a1 * (td - t0) / (td - a4) where a1 = 17.502, t0 = 273.16, a4 = 32.19 (= 273.15 - 240.96)
-      
+
       rh = exp(B * td / (C + td) - B * tm / (C + tm)) * 100.0_dp
    end function calculate_relative_humidity
 
