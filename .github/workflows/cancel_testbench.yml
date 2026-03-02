@@ -67,7 +67,7 @@ jobs:
           KSM_RECORD_UID: ${{ secrets.KSM_RECORD_UID }}
         uses: Keeper-Security/ksm-action@v1.1.0
         with:
-          keeper-secret-config: ${KSM_APP_CONFIG}
+          keeper-secret-config: ${{ env.KSM_APP_CONFIG }}
           secrets: |-
             keeper://${KSM_RECORD_UID}/field/password > token
 
