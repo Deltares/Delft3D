@@ -803,9 +803,13 @@ class TestSetRunner(ABC):
         if os.path.exists(local_path):
             logger.info("Dependency directory already exists: Skipping download")
             return
-
-        remote_path = Paths().mergeFullPath(location.root, location.from_path, config.dependency.cases_path)
         dependency_version = config.dependency.version
+
+        if dependency_version == "DVC":
+            remote_path = Paths().mergeFullPath(location.root, config.dependency.cases_path + ".dvc")
+        else:
+            remote_path = Paths().mergeFullPath(location.root, location.from_path, config.dependency.cases_path)
+
         if dependency_version is None:
             logger.warning("The dependency version timestamp is missing, downloading the 'latest' version")
         else:

@@ -428,7 +428,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
 
 -->
   <testCase name="e05_f03_zlayers_c01_tracer" ref="part_default">
-    <dependency version="2024-05-07T13:35:00" local_dir="e05_f03_zlayers_hydro">e05_part/f03_zlayers/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f03_zlayers_hydro">e05_part/f03_zlayers/hydro</dependency>
     <path version="DVC">e05_part/f03_zlayers/c01_tracer</path>
     <checks>
       <file name="tracer_outside.out" type="NUMBERTEXT">
@@ -479,7 +479,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
     </checks>
   </testCase>
   <testCase name="e05_f03_zlayers_c02_tracer" ref="part_default">
-    <dependency version="2024-05-07T13:35:00" local_dir="e05_f03_zlayers_hydro_v2">e05_part/f03_zlayers/hydro_v2</dependency>
+    <dependency version="DVC" local_dir="e05_f03_zlayers_hydro_v2">e05_part/f03_zlayers/hydro_v2</dependency>
     <path version="DVC">e05_part/f03_zlayers/c02_tracer</path>
     <checks>
       <file name="tracer_outside.out" type="NUMBERTEXT">
@@ -530,7 +530,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
     </checks>
   </testCase>
   <testCase name="e05_f03_zlayers_c11_oil" ref="part_default">
-    <dependency version="2024-02-08T08:10:00" local_dir="e05_f03_zlayers_hydro">e05_part/f03_zlayers/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f03_zlayers_hydro">e05_part/f03_zlayers/hydro</dependency>
     <path version="DVC">e05_part/f03_zlayers/c11_oil</path>
     <checks>
       <file name="oil_outside.out" type="NUMBERTEXT">
@@ -605,7 +605,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
     </checks>
   </testCase>
   <testCase name="e05_f03_zlayers_c12_oil" ref="part_default">
-    <dependency version="2024-02-08T08:10:00" local_dir="e05_f03_zlayers_hydro_v2">e05_part/f03_zlayers/hydro_v2</dependency>
+    <dependency version="DVC" local_dir="e05_f03_zlayers_hydro_v2">e05_part/f03_zlayers/hydro_v2</dependency>
     <path version="DVC">e05_part/f03_zlayers/c12_oil</path>
     <checks>
       <file name="oil_outside.out" type="NUMBERTEXT">
@@ -680,7 +680,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
     </checks>
   </testCase>
   <testCase name="e05_f03_zlayers_c13_oil" ref="part_default">
-    <dependency version="2024-02-08T08:10:00" local_dir="e05_f03_zlayers_hydro_v2">e05_part/f03_zlayers/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f03_zlayers_hydro_v2">e05_part/f03_zlayers/hydro</dependency>
     <path version="DVC">e05_part/f03_zlayers/c13_oil</path>
     <checks>
       <file name="oil_outside.out" type="NUMBERTEXT">
@@ -755,7 +755,7 @@ e05_f03_zlayers_c14_oil                   e05_part/f03_zlayers/c14_oil
     </checks>
   </testCase>
   <testCase name="e05_f03_zlayers_c14_oil" ref="part_default">
-    <dependency version="2024-02-08T08:10:00" local_dir="e05_f03_zlayers_hydro_v2">e05_part/f03_zlayers/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f03_zlayers_hydro_v2">e05_part/f03_zlayers/hydro</dependency>
     <path version="DVC">e05_part/f03_zlayers/c14_oil</path>
     <checks>
       <file name="oil_outside.out" type="NUMBERTEXT">
@@ -2052,7 +2052,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
 
    -->
   <testCase name="e05_f08_leeway_p100" ref="part_default">
-    <dependency version="2024-09-12T12:18:00" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
     <path version="DVC">e05_part/f08_leeway/p100</path>
     <checks>
       <file name="p100.out" type="NUMBERTEXT">
@@ -2090,7 +2090,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
     </checks>
   </testCase>
   <testCase name="e05_f08_leeway_p101" ref="part_default">
-    <dependency version="2024-09-12T12:18:00" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
     <path version="DVC">e05_part/f08_leeway/p101</path>
     <checks>
       <file name="p101.out" type="NUMBERTEXT">
@@ -2128,7 +2128,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
     </checks>
   </testCase>
   <testCase name="e05_f08_leeway_p102" ref="part_default">
-    <dependency version="2024-09-12T12:18:00" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
     <path version="DVC">e05_part/f08_leeway/p102</path>
     <checks>
       <file name="p102.out" type="NUMBERTEXT">
@@ -2166,7 +2166,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
     </checks>
   </testCase>
   <testCase name="e05_f08_leeway_p103" ref="part_default">
-    <dependency version="2024-09-12T12:18:00" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
     <path version="DVC">e05_part/f08_leeway/p103</path>
     <checks>
       <file name="p103.out" type="NUMBERTEXT">
@@ -2204,7 +2204,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
     </checks>
   </testCase>
   <testCase name="e05_f08_leeway_zlayers_p100" ref="part_default">
-    <dependency version="2024-09-12T12:18:00" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
     <path version="DVC">e05_part/f08_leeway_zlayers/p100</path>
     <checks>
       <file name="p100.out" type="NUMBERTEXT">
@@ -2242,7 +2242,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
     </checks>
   </testCase>
   <testCase name="e05_f08_leeway_zlayers_p102" ref="part_default">
-    <dependency version="2024-09-12T12:18:00" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
     <path version="DVC">e05_part/f08_leeway_zlayers/p102</path>
     <checks>
       <file name="p102.out" type="NUMBERTEXT">
@@ -2280,7 +2280,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
     </checks>
   </testCase>
   <testCase name="e05_f08_leeway_zlayers_p103" ref="part_default">
-    <dependency version="2024-09-12T12:18:00" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
+    <dependency version="DVC" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
     <path version="DVC">e05_part/f08_leeway_zlayers/p103</path>
     <checks>
       <file name="p103.out" type="NUMBERTEXT">
