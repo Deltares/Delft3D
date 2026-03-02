@@ -133,6 +133,8 @@ contains
       vonkar = 0.41_dp
       vonkarw = 0.40_dp
       frcuni = 0.023_dp
+      frcuni1D = frcuni
+      frcuni1D2D = frcuni
       frcuni1Dgrounlay = 0.05_dp
       frcmax = 0.0_dp
       ifrctypuni = 1
