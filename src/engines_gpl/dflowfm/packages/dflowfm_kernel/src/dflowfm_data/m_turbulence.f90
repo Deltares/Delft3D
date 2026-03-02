@@ -41,17 +41,17 @@ module m_turbulence
    integer, parameter :: SIGDIF = 1
    integer, parameter :: SIGTKE = 1
    integer, parameter :: SIGTKEI = 1
-   real(kind=dp), parameter :: SIGEPS = 1.3_DP
-   real(kind=dp), parameter :: SIGEPSI = 1.0_DP/SIGEPS
-   real(kind=dp), parameter :: SIGRHO = 0.7_DP !< BOUYANCY
-   real(kind=dp), parameter :: C2E = 1.92_DP
-   real(kind=dp), parameter :: C2T = 1.0_DP - C2E
+   real(kind=dp), parameter :: SIGEPS = 1.3_dp
+   real(kind=dp), parameter :: SIGEPSI = 1.0_dp / SIGEPS
+   real(kind=dp), parameter :: SIGRHO = 0.7_dp !< BOUYANCY
+   real(kind=dp), parameter :: C2E = 1.92_dp
+   real(kind=dp), parameter :: C2T = 1.0_dp - C2E
    real(kind=dp), parameter :: C3T_STABLE = CMUKEP
-   real(kind=dp), parameter :: CDE = CMUKEP**0.75_DP
+   real(kind=dp), parameter :: CDE = CMUKEP**0.75_dp
    real(kind=dp) :: c1e
    real(kind=dp) :: c1t
    real(kind=dp) :: c3t_unstable
-   
+
    real(kind=dp) :: brunt_vaisala_coefficient
 
    integer, parameter :: kmxx = 2000 !< max dim of nr of vertical layers

@@ -80,7 +80,7 @@ module m_physcoef
    real(kind=dp), parameter :: viskin = 1e-6_dp !< kinematic  viscosity water in keps model
    real(kind=dp) :: vismol !< molecular viscosity (m2/s)
    real(kind=dp), parameter :: difmolsal = viskin / 700.0_dp !< molecular diffusivity of salinity
-   real(kind=dp), parameter :: difmoltem = viskin / 6.7_dp !<           diffusivity of temperature
+   real(kind=dp), parameter :: difmoltem = viskin / 6.7_dp !< diffusivity of temperature
    integer, parameter :: difmolsed = 0 !< diffusivity of sediment
    integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
 
