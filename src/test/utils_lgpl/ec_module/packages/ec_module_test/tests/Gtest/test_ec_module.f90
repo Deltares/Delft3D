@@ -27,26 +27,33 @@ contains
       Z = reshape([3.030621639573760e-040_dp, 1.420180850975200e-063_dp, 1.080075836864300e-062_dp], [NDIM, 3])
       slo = 0.0_dp
 
-      XP = 809699.760677868_dp
-      YP = 179654.755887270_dp
+      XP = X(2)
+      YP = Y(2)
 
+      ! This test checks that a sample point on the corner of the triangle gives the correct value from the triangle
       jsferic = 0
       jslo = 0
       call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
-      call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 1: Point on corner fails")
+      call f90_assert_ge(zp(1), Z(1,2), "test 1: Point on corner fails")
 
+      ! This test checks that a sample point on the corner of the triangle gives the correct value from the triangle 
+      ! Here the triangle indices have been shifted
       X = cshift(X, 1)
       Y = cshift(Y, 1)
       Z = cshift(Z, 1, 2)
       call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
-      call f90_assert_ge(zp(1), 1.420180850975200e-063_dp, "test 2: Point on corner fails")
+      call f90_assert_ge(zp(1), Z(1,1), "test 2: Point on corner fails")
 
+      ! This test checks that a sample point on the corner of the triangle gives the correct value from the triangle 
+      ! Here the triangle indices have been shifted
       X = cshift(X, 1)
       Y = cshift(Y, 1)
       Z = cshift(Z, 1, 2)
       call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
-      call f90_assert_eq(zp(1), 1.420180850975200e-063_dp, "test 3: Point on corner fails")
+      call f90_assert_eq(zp(1), Z(1,3), "test 3: Point on corner fails")
 
+      ! This test checks that a sample point outside the triangle gives the value imposed from the plane.
+      ! In this case the plane is defined as z = 1.0_dp+x+y, and hence the expected output is equal to 2.0_dp
       X = [0.0_dp, 1.0_dp, 0.0_dp]
       Y = [0.0_dp, 0.0_dp, 1.0_dp]
       Z = reshape([0.0_dp, 1.0_dp, 1.0_dp], [NDIM, 3])
