@@ -591,6 +591,19 @@ contains
 
       integer :: inod, j, ised, ifrac, k3, nrd_idx, L
 
+      !integer :: number_nodes_with_nodal_relation ![1]
+      !integer, dimension(:), allocatable :: networknodes_with_nodal_relation ![1, number_nodes_with_nodal_relation]
+      !integer, dimension(:), allocatable :: total_water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+      !real(kind=dp), dimension(:,:), allocatable :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+      !real(kind=dp), dimension(:), allocatable :: total_width_out ![number_nodes_with_nodal_relation]
+      !real(kind=dp), dimension(:), allocatable :: width_out ![number_nodes_with_nodal_relation]
+      !integer, dimension (:), allocatable :: link_out ![number_nodes_with_nodal_relation]
+      !integer, dimension (:), allocatable :: link_dir_out ![number_nodes_with_nodal_relation,link]
+      !integer, dimension (:), allocatable :: number_links_out ![number_nodes_with_nodal_relation]
+      !integer, dimension (:), allocatable :: link_in ![number_nodes_with_nodal_relation]
+      !integer, dimension (:), allocatable :: flownode_junction ![number_nodes_with_nodal_relation]
+      !sb_out -> real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node
+      
       integer :: link_in
       integer, dimension(2) :: link_out
       integer, dimension(2) :: node_out
@@ -2345,7 +2358,7 @@ use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
 
       real(fp), dimension(:, :), allocatable :: sb_out !< sum of incoming sediment transport at 1d node
       
-integer :: inod, j, L, Ldir, k1, k3, ised, istat
+integer :: inod, j, L, Ldir, k1, ised, istat
 
 type(t_node), pointer :: pnod
 real(kind=dp) :: qb1d, wb1d, sb1d
@@ -2374,38 +2387,6 @@ real(kind=dp) :: qb1d, wb1d, sb1d
       BranInIDLn(:) = 0
       
       !
-      ! Determine incoming discharge and transport at nodes
-      !
-      do inod = 1, network%nds%Count !loop on geometry nodes
-         pnod => network%nds%node(inod)
-         if (pnod%numberofconnections > 1) then !junction node
-            k3 = pnod%gridnumber
-            do j = 1, nd(k3)%lnx !number of links (i.e., branches) connected to that geometry (i.e., flow) node. 
-               L = abs(nd(k3)%ln(j))
-               Ldir = sign(1, nd(k3)%ln(j))
-               !
-               wb1d = wu_mor(L)
-               !
-               if (u1(L) * Ldir < 0_dp) then
-                  ! Outgoing discharge
-                  qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
-                  width_out(inod) = width_out(inod) + wb1d
-                  qb_out(inod) = qb_out(inod) + qb1d
-                  do ised = 1, lsedtot
-                     sb_dir(inod, ised, j) = -1 ! set direction to outgoing
-                  end do
-               else
-                  ! Incoming discharge
-                  if (branInIDLn(inod) == 0) then
-                     branInIDLn(inod) = L
-                  else
-                     branInIDLn(inod) = -444 ! multiple incoming branches
-                  end if
-               end if
-            end do
-         end if
-      end do
-      !
       ! Apply nodal relations to transport
       !
       !Output = `sb_out`
@@ -2424,6 +2405,24 @@ real(kind=dp) :: qb1d, wb1d, sb1d
                Ldir = sign(1, nd(k1)%ln(j))
                !
                wb1d = wu_mor(L)
+               
+               if (u1(L) * Ldir < 0_dp) then
+                  ! Outgoing discharge
+                  qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
+                  width_out(inod) = width_out(inod) + wb1d
+                  qb_out(inod) = qb_out(inod) + qb1d
+                  do ised = 1, lsedtot
+                     sb_dir(inod, ised, j) = -1 ! set direction to outgoing
+                  end do
+               else
+                  ! Incoming discharge
+                  if (branInIDLn(inod) == 0) then
+                     branInIDLn(inod) = L
+                  else
+                     branInIDLn(inod) = -444 ! multiple incoming branches
+                  end if
+               end if
+               
                do ised = 1, lsedtot
                   sb1d = e_sbcn(L, ised) * Ldir ! first compute all outgoing sed. transport.
                   if (flow_solver == FLOW_SOLVER_FM .or. pnod%numberofconnections == 2) then !standard
