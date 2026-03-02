@@ -90,13 +90,12 @@ contains
             source_sink_indices(3, n) = ku !
             if (source_sink_water_discharge(n) > 0) then ! Reduce if flux pos
 
-               do k = source_sink_indices(2, n), kt
+               do k = source_sink_indices(2, n), source_sink_indices(3, n)
                   source_sink_reduction(1, n) = source_sink_reduction(1, n) + vol1(k)
                   do L = 1, numconst
                      source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) + constituents(L, k) * vol1(k)
                   end do
-                  source_sink_indices(3, n) = k
-                  if (frac * source_sink_reduction(1, n) / dts > abs(source_sink_water_discharge(n))) then
+                  if (frac * source_sink_reduction(1, n) / dts < abs(source_sink_water_discharge(n))) then
                      exit
                   end if
                end do
@@ -147,13 +146,12 @@ contains
             source_sink_indices(6, n) = ku
             if (source_sink_water_discharge(n) < 0) then ! Reduce if flux neg
 
-               do k = source_sink_indices(5, n), kt
+               do k = source_sink_indices(5, n), source_sink_indices(6, n)
                   source_sink_reduction(1 + numconst + 1, n) = source_sink_reduction(1 + numconst + 1, n) + vol1(k)
                   do L = 1, numconst
                      source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) + constituents(L, k) * vol1(k)
                   end do
-                  source_sink_indices(6, n) = k
-                  if (frac * source_sink_reduction(1 + numconst + 1, n) / dts > abs(source_sink_water_discharge(n))) then
+                  if (frac * source_sink_reduction(1 + numconst + 1, n) / dts < abs(source_sink_water_discharge(n))) then
                      exit
                   end if
                end do

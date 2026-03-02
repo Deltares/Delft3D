@@ -413,6 +413,11 @@ contains
 
         source_sink_all_discharges(1, source_sink_index) = abs(discharge)
 
+        ! Set constituent discharges to zero for bubble screen source/sinks
+        if (numconst /= 0) then
+            source_sink_all_discharges(2:numconst+1, source_sink_index) = 0.0_dp 
+        end if
+
     end subroutine update_bubblescreen_source_sink_discharge
 
     !> Updates the vertical layer indices for a bubble screen linked source/sink
@@ -424,6 +429,9 @@ contains
         integer, intent(in) :: k_stop !< [-] Stop active layer index (top); in {m_flow::zws}
         integer, intent(in) :: k_max_velocity !< [-] Layer index with maximum downward velocity; in {m_flow::zws}
 
+        ! Local variables
+        ! real(kind=dp), parameter :: OFFSET = 1.0e-5_dp !< Offset to ensure that source_sink_z_[bottom,top] are no exactly at the layer interfaces
+
         ! Update source/sink indices
         source_sink_indices(1, source_sink_index) = n
         source_sink_indices(2, source_sink_index) = k_start + 1
@@ -433,10 +441,10 @@ contains
         source_sink_indices(6, source_sink_index) = k_stop
 
         ! Update source/sink top and bottom z-levels
-        source_sink_z_bottom(1, source_sink_index) = zws(k_start)
-        source_sink_z_bottom(2, source_sink_index) = zws(k_max_velocity)
-        source_sink_z_top(1, source_sink_index) = zws(k_max_velocity)
-        source_sink_z_top(2, source_sink_index) = zws(k_stop)
+        source_sink_z_bottom(1, source_sink_index) = (zws(k_start) + zws(k_start+1)) / 2.0_dp
+        source_sink_z_bottom(2, source_sink_index) = (zws(k_max_velocity) + zws(k_max_velocity-1)) / 2.0_dp
+        source_sink_z_top(1, source_sink_index) = (zws(k_max_velocity) + zws(k_max_velocity+1)) / 2.0_dp
+        source_sink_z_top(2, source_sink_index) = (zws(k_stop) + zws(k_stop-1)) / 2.0_dp
 
     end subroutine update_bubblescreen_source_sink_layer_indices
 
