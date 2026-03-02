@@ -69,7 +69,7 @@ jobs:
         with:
           keeper-secret-config: ${{ env.KSM_APP_CONFIG }}
           secrets: |-
-            keeper://${KSM_RECORD_UID}/field/password > token
+            keeper://${{ env.KSM_RECORD_UID }}/field/password > token
 
       - name: Cancel testbench
         if: steps.retrieve-ksm-credentials.outcome == 'success'
