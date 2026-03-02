@@ -1,4 +1,4 @@
-				<!--
+<!--
 				testCases
 				
 				Optional attributes:
@@ -24,78 +24,77 @@
 						ignore="true" Don't bother when this file is in the reference dir but absent in the check dir
 				
 				-->
-
-	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-		<testCase name="e23_f01_c09-bijker_bailard_wave_wind" ref="flow2d3d_wave_default">
-			<path version="2025-07-31T16:06:25.347000">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
-			<programs>
-				<program ref="FLOW2D3D_WAVE">
-					<arguments>
-						<argument>-w</argument>
-						<argument>setoverallw.mdw</argument>
-					</arguments>
-				</program>
-			</programs>
-			<maxRunTime>172.809000015</maxRunTime>
-			<checks>
-				<file name="trih-Setoverall.dat" type="NEFIS">
-					<parameters name="his-series">
-						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
-						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
-						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
-						<parameter name="GRO" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="trim-Setoverall.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.0001"/>
-						<parameter name="U1" toleranceAbsolute="0.0001"/>
-						<parameter name="V1" toleranceAbsolute="0.0001"/>
-						<parameter name="R1" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="wavm-setoverallw.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="DIR" toleranceAbsolute="400.0"/>
-						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
-						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
-					</parameters>
-				</file>
-			</checks>
-		</testCase>
-		<testCase name="e23_f27_c10-wave_klopman_wfc" ref="flow2d3d_wave_default">
-			<path version="2025-06-05T12:02:48.931000">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
-			<programs>
-				<program ref="FLOW2D3D_WAVE">
-					<arguments>
-						<argument>-w</argument>
-						<argument>wfc40.mdw</argument>
-					</arguments>
-				</program>
-			</programs>
-			<maxRunTime>18.5449998379</maxRunTime>
-			<checks>
-				<file name="trih-QH40.dat" type="NEFIS">
-					<parameters name="his-series">
-						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
-						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
-						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="trim-QH40.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.0001"/>
-						<parameter name="U1" toleranceAbsolute="0.0001"/>
-						<parameter name="V1" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="wavm-wfc40.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="DIR" toleranceAbsolute="400.0"/>
-						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
-						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
-					</parameters>
-				</file>
-			</checks>
-		</testCase>
-	</testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+  <testCase name="e23_f01_c09-bijker_bailard_wave_wind" ref="flow2d3d_wave_default">
+    <path version="DVC">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
+    <programs>
+      <program ref="FLOW2D3D_WAVE">
+        <arguments>
+          <argument>-w</argument>
+          <argument>setoverallw.mdw</argument>
+        </arguments>
+      </program>
+    </programs>
+    <maxRunTime>172.809000015</maxRunTime>
+    <checks>
+      <file name="trih-Setoverall.dat" type="NEFIS">
+        <parameters name="his-series">
+          <parameter name="ZWL" toleranceAbsolute="0.0001"/>
+          <parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+          <parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+          <parameter name="GRO" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="trim-Setoverall.dat" type="NEFIS">
+        <parameters name="map-series">
+          <parameter name="S1" toleranceAbsolute="0.0001"/>
+          <parameter name="U1" toleranceAbsolute="0.0001"/>
+          <parameter name="V1" toleranceAbsolute="0.0001"/>
+          <parameter name="R1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="wavm-setoverallw.dat" type="NEFIS">
+        <parameters name="map-series">
+          <parameter name="DIR" toleranceAbsolute="400.0"/>
+          <parameter name="HSIGN" toleranceAbsolute="0.01"/>
+          <parameter name="PERIOD" toleranceAbsolute="0.1"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e23_f27_c10-wave_klopman_wfc" ref="flow2d3d_wave_default">
+    <path version="DVC">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
+    <programs>
+      <program ref="FLOW2D3D_WAVE">
+        <arguments>
+          <argument>-w</argument>
+          <argument>wfc40.mdw</argument>
+        </arguments>
+      </program>
+    </programs>
+    <maxRunTime>18.5449998379</maxRunTime>
+    <checks>
+      <file name="trih-QH40.dat" type="NEFIS">
+        <parameters name="his-series">
+          <parameter name="ZWL" toleranceAbsolute="0.0001"/>
+          <parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+          <parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="trim-QH40.dat" type="NEFIS">
+        <parameters name="map-series">
+          <parameter name="S1" toleranceAbsolute="0.0001"/>
+          <parameter name="U1" toleranceAbsolute="0.0001"/>
+          <parameter name="V1" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+      <file name="wavm-wfc40.dat" type="NEFIS">
+        <parameters name="map-series">
+          <parameter name="DIR" toleranceAbsolute="400.0"/>
+          <parameter name="HSIGN" toleranceAbsolute="0.01"/>
+          <parameter name="PERIOD" toleranceAbsolute="0.1"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+</testCases>
