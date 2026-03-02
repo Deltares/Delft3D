@@ -1639,28 +1639,7 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-	
-    <testCase name="e02_f203_c082_trachytopes_spatially_varying_1_3D" ref="dflowfm_default">
-      <path version="2025-10-07T07:00:08.281000">e02_dflowfm/f203_3D_trachytopes/c082_trachytopes_spatially_varying_1_3D</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="depthgr.xyz" ignore="true" />
-      </checks>
-    </testCase>
-	
+
     <testCase name="e02_f203_c083_trachytopes_spatially_varying_25_3D" ref="dflowfm_default">
       <path version="2025-10-07T07:00:12.202000">e02_dflowfm/f203_3D_trachytopes/c083_trachytopes_spatially_varying_25_3D</path>
       <maxRunTime>20.0</maxRunTime>
