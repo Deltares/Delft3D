@@ -43,22 +43,38 @@ Containers are lightweight, isolated environments that package an application an
       -t localhost/delft3d:$TAG \
       --build-arg INTEL_ONEAPI_VERSION=2024 \
       --build-arg INTEL_FORTRAN_COMPILER=ifx \
-      --build-arg DEBUG=0 \
+      --build-arg BUILD_TYPE=Release \
       --build-arg THIRDPARTYLIBS_IMAGE_URL=localhost/third-party-libs \
       --build-arg BASE_TAG=$TAG
   ```
 
 ### Build arguments
-The dockerfile has three build argument:
+The dockerfile has seven build argument:
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
 - `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
-- `DEBUG` (default value: `0`)
+- `BUILD_TYPE` (default value: `Release`)
+- `CONFIGURATION` (default value: `all`)
 - `THIRDPARTYLIBS_IMAGE_URL` (default value: `containers.deltares.nl/delft3d-dev/delft3d-third-party-libs`)
-- `BASE_IMAGE_URL` (default value: `containers.deltares.nl/base_linux_contaners/8-base:latest`)
+- `BASE_IMAGE_URL` (default value: `containers.deltares.nl/base_linux_containers/8-base:latest`)
 - `BASE_TAG` (default value: `oneapi-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${BUILD_TYPE}`)
 
-The build arguments are the same as the ones used in the `third-party-libs` image.
-The build arguments are used to select  a suitable version of the `third-party-libs` image (One that contains the right version of the compilers and libraries).
+The `INTEL_ONEAPI_VERSION` build argument is used to select the right `buildtools` image.
+Valid values are `2023` and `2024`.
+
+The `INTEL_FORTRAN_COMPILER` selects which Fortran compiler is used to compile the Fortran libraries (there are just a few libraries for which this is relevant).
+Valid values are `ifort` and `ifx`.
+The `ifort` compiler in combination with an `INTEL_ONEAPI_VERSION` with value `2024` will result in a lot of warnings during compilation, since the `ifort` compiler has been deprecated and will no longer be included in the `2025` release of the intel compilers.
+
+The `BUILD_TYPE` should be `Release` for a regular optimized, release version of the code, `Debug` for debug version of the code, or `RelWithDebInfo` for something in between: a less optimized, release version of the code that still contains debug information.
+
+The `CONFIGURATION` determines whether to build Delft3D 4 (`d3d4-suite`), Delft3D FM (`fm-suite`) or both ( `all`).
+
+The `THIRDPARTYLIBS_IMAGE_URL` points to the repository where the `third-party-libs` images are located.
+This URL can be set to `localhost/third-party-libs` when you would like to use a `third-party-libs` image that was built locally.
+Note that the `BASE_TAG` is added automatically by the Dockerfile (see the `BASE_TAG` argument if you want to deviate from the default).
+
+The `BASE_TAG` ensures that the `delft3d` image is based on the `third-party-libs` image with that tag.
+Note that the default tag used here deviates from the one set in the prerequisites, so you will typically have to overrule it.
 
 ## Run
 Now, you should be able to run your first simulations.
@@ -76,7 +92,7 @@ sudo docker run --rm -v "$PWD":/work -w /work localhost/delft3d:oneapi-2024 /del
 ### Delft3D FM
 For a first Delft3D FM simulation, change to the examples folder:
 ```
-cd examples/dflowf/01_dflowfm_sequential
+cd examples/dflowfm/01_dflowfm_sequential
 ```
 Run the simulation
 ```

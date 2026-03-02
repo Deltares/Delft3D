@@ -1,11 +1,11 @@
-# Debugging DIMR in VisualStudio
+# Debugging DIMR in Visual Studio
 Note: in this section:
 Replace "..." by the actual path on your system to the checkout directory.
 
 - Use build.bat to prepare the "fm-suite" configuration
-- Open "...\build_fm-suite\fm-suite.sln" in VisualStudio and build the complete release version
+- Open "...\build_fm-suite\fm-suite.sln" in Visual Studio and build the complete release version
   Directory "...\build_fm-suite\x64\Release\share\bin" will be created
-- Build the debug versie of what you need (e.g. dimr and dflowfm, waq, wave)
+- Build the debug version of what you need (e.g. dimr and dflowfm, waq, wave)
 - dimr project -> Set as Startup Project
 - dimr project -> properties -> Debugging:
     -> Command Arguments: dimr_config.xml

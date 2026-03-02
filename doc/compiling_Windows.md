@@ -13,7 +13,7 @@ Back to main [development page](development.md).
 - [Intel oneAPI Fortran Compiler](https://www.intel.com/content/www/us/en/developer/tools/oneapi/fortran-compiler-download.html) Please make sure that it's integrated into the Visual Studio environment installed above.
   See the note below on the use of different versions.
 - [Intel oneAPI MPI Library](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html)
-- [Intel oneAPI Math Kernal Library](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html)
+- [Intel oneAPI Math Kernel Library](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html)
 - [CMake](https://cmake.org/download/) for configuring the build environment
 - [Git](https://gitforwindows.org/) for downloading the Delft3D source code from this repository.
 If you prefer user interfaces over command lines, you may want to additionally install [GitExtensions](https://gitextensions.github.io/) and/or [TortoiseGit](https://tortoisegit.org/).
@@ -51,7 +51,7 @@ The latter tool offers icon overlays for commit status.
   devenv build_fm-suite\fm-suite.slnx
   ```
   for Visual Studio 2026.
-  Most compilation steps work fine when the solution is opened outside the Intel oneAPI environment, but you will see some MSB3073 errors with a description `The command "setlocal`.
+  Most compilation steps work fine when the solution is opened outside the Intel oneAPI environment, but you will see some [MSB3073](https://learn.microsoft.com/en-us/visualstudio/msbuild/errors/msb3073) errors with a description starting with `The command "setlocal`.
   Those errors are related to the collection step for the GoogleTest framework.
 - Build from Visual Studio, or alternatively, use the command line to run
   ```

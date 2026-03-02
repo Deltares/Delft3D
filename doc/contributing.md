@@ -25,7 +25,7 @@ If you are entirely new to contributing to open source, [this generic guide](htt
 
 ## Branch naming
 For each issue or feature, a separate branch should be created from the main.
-To keep the branches organized each branch should be adhere to the following naming conventions.
+To keep the branches organized each branch should adhere to the following naming conventions.
 
 For branches aimed to be merged into the main line the following naming convention should be used:
 

@@ -6,7 +6,7 @@ Its successor, the Delft3D FM Suite, allows for unstructured grids including 1D 
 The simulation engines cover hydrodynamics (D-Flow FM, Delft3D-FLOW), hydrology (D-Hydrology), real-time control (D-Real Time Control), morphodynamics (D-Morphology), waves (D-Waves, Delft3D-WAVE), water quality (D-Water Quality, Delft3D-WAQ) and particle tracking (Delft3D-PART).
 
 <div align="center">
-<img src="doc/images/Delft3D_logo.png" width="20%">
+<img src="doc/images/Delft3D_logo.png" width="20%" alt="Delft3D logo">
 </div>
 
 ## Documentation
