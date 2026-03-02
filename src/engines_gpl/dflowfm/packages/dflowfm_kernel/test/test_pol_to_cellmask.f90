@@ -3,7 +3,7 @@ module test_pol_to_cellmask
    use precision, only: dp
    use m_missing, only: dmiss
    use network_data, only: cellmask, npl, nump, xzw, yzw, xpl, ypl, zpl
-   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup
+   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup, init_geom_cache
    use geometry_module, only: pinpok_legacy, pinpok_raycast
 
    implicit none(external)
@@ -85,6 +85,8 @@ contains
       zpl(15) = dmiss
 
       ! Initialize polygon data structures
+      call init_geom_cache(NPL, xpl, ypl, zpl)
+
       call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
 
       ! Process all cells
@@ -185,6 +187,7 @@ contains
       zpl(13) = dmiss
 
       ! Initialize polygon data structures
+      call init_geom_cache(NPL, xpl, ypl, zpl)
       call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
 
       ! Process all cells
