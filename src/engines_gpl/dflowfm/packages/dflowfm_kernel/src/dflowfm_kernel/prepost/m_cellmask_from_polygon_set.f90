@@ -351,7 +351,7 @@ contains
       error = ''
 
       npoly = size(xpoly)
-      if (any(xpoly == dmiss) .or. any(ypoly == dmiss) .or. npoly < 2) then
+      if (any(xpoly == dmiss) .or. any(ypoly == dmiss)) then
          error = 'Invalid polyline input'
          return
       end if

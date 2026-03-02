@@ -1142,7 +1142,7 @@ contains
       use m_reapol, only: reapol
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
-      use string_module, only: str_tolower
+      use string_module, only: strcmpi
       use m_polygon, only: npl
       use network_data
       use m_flow
@@ -1176,7 +1176,6 @@ contains
       character(len=:), allocatable :: id !< Bubblescreen id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character, dimension(:), allocatable :: error
-      integer :: ierr
 
       type(tree_data), pointer :: block_ptr
 
@@ -1194,7 +1193,7 @@ contains
          block_ptr => bnd_ptr%child_nodes(i)%node_ptr
          group_name = trim(tree_get_name(block_ptr))
 
-         if (str_tolower(group_name) == 'bubblescreen') then
+         if (strcmpi(group_name, 'bubblescreen')) then
             i_bubblescreen = i_bubblescreen + 1
             associate (bubblescreen => bubblescreens(i_bubblescreen))
 
@@ -1208,19 +1207,11 @@ contains
 
                   bubblescreen%num_polyline = npl
 
-                  allocate (bubblescreen%x_polyline(npl))
-                  allocate (bubblescreen%y_polyline(npl))
                   bubblescreen%x_polyline = xpl(1:npl)
                   bubblescreen%y_polyline = ypl(1:npl)
 
-                  if (bubblescreen%num_polyline > 1) then
+                  if (bubblescreen%num_polyline > 0) then
                      call find_cells_crossed_by_polyline(bubblescreen%x_polyline, bubblescreen%y_polyline, crossed_cells, error)
-                  else if (bubblescreen%num_polyline == 1) then
-                     ! restorepol should be called also for the case above, but find_cells_crossed_by_polyline does it also and then it breaks
-                     ! TODO: fix find_cells_crossed_by_polyline to use own cache
-                     call restorepol()
-                     call realloc(crossed_cells, 1, stat=ierr, fill=0, keepexisting=.false.)
-                     call find_nearest_flownodes(1, bubblescreen%x_polyline, bubblescreen%y_polyline, [''], crossed_cells, jakdtree, 0, INDTP_2D)
                   else
                      write (msgbuf, '(5a)') 'Bubblescreen with id='//trim(id)//' in file ''', trim(file_name), ''': [', trim(group_name), '] has no valid location information.'
                      call err_flush()
@@ -1241,10 +1232,6 @@ contains
                   end do
                end if              
             end associate
-
-            ! Readout [bubblescreen] attributes
-          
-
 
          end if
       end do 
