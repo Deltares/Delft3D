@@ -599,7 +599,7 @@ contains
       integer, dimension (:,:), allocatable :: link_dir_out ![number_nodes_with_nodal_relation,link]
       integer, dimension (:), allocatable :: number_links_out ![number_nodes_with_nodal_relation]
       !integer, dimension (:), allocatable :: link_in ![number_nodes_with_nodal_relation]
-      !integer, dimension (:), allocatable :: flownode_junction ![number_nodes_with_nodal_relation]
+      integer, dimension (:), allocatable :: flownode_junction ![number_nodes_with_nodal_relation]
       !sb_out -> real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node
       
       !integer :: link_in
@@ -661,7 +661,7 @@ contains
 
       
       call nodal_point_relation_data( &
-total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out)
+total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out,flownode_junction)
       !
       ! Determining sediment redistribution
       !
@@ -679,24 +679,20 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
    
             facCheck = 0._dp
    
-   
             ! loop over branches and determine redistribution of incoming sediment
-            k3 = pnod%gridnumber
-            !do j = 1, nd(k3)%lnx
+            !k3 = pnod%gridnumber
+            k3 = flownode_junction(kinod)
+            
+            ! Get Nodal Point Relation Data
+            nrd_idx = get_noderel_idx(inod, pFrac, k3, branInIDLn(inod), pnod%numberofconnections)
+            pNodRel => pFrac%noderelations(nrd_idx)
+            
             do j = 1, number_links_out(kinod)
                L = link_out(kinod,j) 
                Ldir=link_dir_out(kinod,j)
-               !qb1d = -qa(L) * Ldir
                qb1d = water_discharge_out(kinod, j) 
-               !wb1d = wu_mor(L)
                wb1d = width_out(kinod, j)
    
-               ! Get Nodal Point Relation Data
-               !V: move outside of j-loop, no data is passed to `get_noderel_idx`
-               nrd_idx = get_noderel_idx(inod, pFrac, pnod%gridnumber, branInIDLn(inod), pnod%numberofconnections)
-   
-               pNodRel => pFrac%noderelations(nrd_idx)
-      
                if (total_water_discharge_out(kinod) > 0.0_fp) then
                
                   if (pNodRel%Method == 'function') then
@@ -763,8 +759,8 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
             ! Correct Total Outflow
             if ((facCheck /= 1.0_fp) .and. (facCheck > 0.0_fp)) then
                ! loop over branches and correct redistribution of incoming sediment
-               do j = 1, nd(k3)%lnx
-                  L = abs(nd(k3)%ln(j))
+               do j = 1, nd(flownode_junction(kinod))%lnx
+                  L = abs(nd(flownode_junction(kinod))%ln(j))
                   if (sb_dir(kinod, ised, j) == -1) then
                      e_sbcn(L, ised) = e_sbcn(L, ised) / facCheck
                   end if
@@ -2286,7 +2282,7 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
            end subroutine
 
 subroutine nodal_point_relation_data( &
-total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out)
+total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out,flownode_junction)
 
 !Modules
 use precision, only: dp
@@ -2331,6 +2327,7 @@ integer, dimension (:,:), allocatable, intent(out) :: link_dir_out ![number_node
 integer, dimension (:), allocatable, intent(out) :: number_links_out ![number_nodes_with_nodal_relation]
 real(fp), dimension (:,:), allocatable, intent(out) :: width_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
 real(fp), dimension (:,:), allocatable, intent(out) :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+integer, dimension (:), allocatable, intent(out) :: flownode_junction ![number_nodes_with_nodal_relation]
       
 !Locals
 logical :: error
@@ -2374,6 +2371,9 @@ end if
 if (istat == 0) then
    allocate (water_discharge_out(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
 end if
+if (istat == 0) then
+   allocate (flownode_junction(network%nds%Count), stat=istat)
+end if
 
 if (istat /= 0) then
    error = .true.
@@ -2406,11 +2406,11 @@ do inod = 1, network%nds%Count
       number_nodes_with_nodal_relation=number_nodes_with_nodal_relation+1
       networknodes_with_nodal_relation(number_nodes_with_nodal_relation)=inod
       k1 = pnod%gridnumber
+      flownode_junction(number_nodes_with_nodal_relation)=k1
       number_links_out=0
       do j = 1, nd(k1)%lnx 
          L = abs(nd(k1)%ln(j))
          Ldir = sign(1, nd(k1)%ln(j))
-         !
          wb1d = wu_mor(L)
          
          if (u1(L) * Ldir < 0_dp) then
