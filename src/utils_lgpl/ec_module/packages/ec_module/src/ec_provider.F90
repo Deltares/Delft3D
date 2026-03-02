@@ -3557,6 +3557,7 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
          ierr = nf90_inquire_dimension(fileHandle, dimids(1), len=dim_sizes(1))
          call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire dimension length", fileName)
          dim_sizes(2) = 1
+         is_column_major = .false.
       else if (numids == 2) then
          ierr = nf90_inquire_dimension(fileHandle, dimids(1), len=dim_sizes(1))
          call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to inquire first dimension length", fileName)
@@ -3577,11 +3578,12 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
       call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase data", fileName)
 
       ! Store with correct orientation
-      hframe%phase_dims = merge([dim_sizes(2), dim_sizes(1)], dim_sizes, is_column_major)
       if (is_column_major) then
          hframe%phases = transpose(data_block)
+         hframe%phase_dims = [dim_sizes(2), dim_sizes(1)]
       else
          hframe%phases = data_block
+         hframe%phase_dims = dim_sizes
       end if
       if (.not. success) then
          call setECMessage('ERROR: ec_provider::ecNetcdfInitializeHarmonicsFrame: Failed to initialize harmonics frame.')
