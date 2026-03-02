@@ -971,7 +971,7 @@ contains
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use fm_external_forcings_data, only: numsrc, qstss
+      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
@@ -1071,8 +1071,8 @@ contains
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
-                                                    1, qstss)
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), num_source_sink, &
+                                                    1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
@@ -1084,18 +1084,18 @@ contains
       ! Constituents (salinity, temperature, sediments, tracers) may have a timeseries file
       ! specifying the difference in concentration added by the source/sink.
       ! All these files are optional, so no check on 'is_read' can be present below.
-      if (NUMCONST > 0) then
-         allocate (constituent_delta_file(NUMCONST), stat=ierr)
-         do i_const = 1, NUMCONST
+      if (numconst > 0) then
+         allocate (constituent_delta_file(numconst), stat=ierr)
+         do i_const = 1, numconst
             is_read = .false.
             const_name_with_prefix = const_names(i_const)
-            if (i_const == ISALT) then
+            if (i_const == isalt) then
                ! Rename 'salt' constituent to 'salinity' for source-sink input.
                const_name_with_prefix = 'salinity'
-            else if (i_const == ITEMP) then
+            else if (i_const == itemp) then
                ! temperature name is correct already
                continue
-            else if (i_const == ISPIR) then
+            else if (i_const == ispir) then
                ! Spiral flow intensity "constituent" not relevant for source-sinks.
                cycle
             else
@@ -1103,9 +1103,9 @@ contains
                call ncu_sanitize_name(const_name_with_prefix)
 
                ! Add correct "group" prefix to constituent name.
-               if (i_const >= ISED1 .and. i_const <= ISEDN) then
+               if (i_const >= ised1 .and. i_const <= isedn) then
                   const_name_with_prefix = 'sedFrac'//trim(const_name_with_prefix)
-               else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
+               else if (i_const >= itra1 .and. i_const <= itran) then
                   const_name_with_prefix = 'tracer'//trim(const_name_with_prefix)
                end if
             end if
@@ -1116,8 +1116,8 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1) * (numsrc - 1) + 1 + i_const, &
-                                                              1, qstss)
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), num_source_sink, &
+                                                              1, source_sink_all_discharges(1 + i_const, :))
                continue
             end if
          end do
@@ -1136,7 +1136,7 @@ contains
    !! Input is a loaded .ext file tree structure.
    !! Returns the resulting number of source sinks
    function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(num_source_sinks)
-      use fm_external_forcings_data, only: numsrc
+      use fm_external_forcings_data, only: num_source_sink
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1293,7 +1293,7 @@ contains
                tmsx = xzw(bubblescreen%flow_cells(cidx)%flownode_nr)
                tmsy = yzw(bubblescreen%flow_cells(cidx)%flownode_nr)
 
-               bubblescreen%flow_cells(cidx)%start_index = numsrc + 1
+               bubblescreen%flow_cells(cidx)%start_index = num_source_sink + 1
                do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
                         bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
                   write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
