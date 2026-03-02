@@ -2291,7 +2291,10 @@ contains
    
    type(t_noderelation), pointer :: pNodRel
 
-   real(kind=dp), parameter :: U_THRESH = 1.0e-3_dp ! threshold velocity for computing D_a to avoid numerical issues when u is close to zero. 
+   real(kind=dp), parameter :: U_THRESH = 1.0e-5_dp ! threshold velocity for computing `D` to avoid numerical issues when `u` is close to zero. 
+   real(kind=dp), parameter :: Q_THRESH = 1.0e-5_dp ! threshold dischare for computing `D` to avoid numerical issues when `q` is close to zero. 
+                                                    !    Note that the problem is that if `q` is zero, `D` is zero and `v` is infinite. Hence, 
+                                                    !    we only apply the threshold when computing `D`.
    
    pNodRel => pNodRel_in
 
@@ -2301,9 +2304,9 @@ contains
    B_b=wu_mor(link_out(1))
    B_c=wu_mor(link_out(2))
    
-   D_a=q1_main(link_in)/(max(u1(link_in) * u_to_umain(link_in),U_THRESH))
-   D_b=q1_main(link_out(1))/(max(u1(link_out(1)) * u_to_umain(link_out(1)),U_THRESH))
-   D_c=q1_main(link_out(2))/(max(u1(link_out(2)) * u_to_umain(link_out(2)),U_THRESH))
+   D_a=max(q1_main(link_in),Q_THRESH)/(max(u1(link_in) * u_to_umain(link_in),U_THRESH))
+   D_b=max(q1_main(link_out(1)),Q_THRESH)/(max(u1(link_out(1)) * u_to_umain(link_out(1)),U_THRESH))
+   D_c=max(q1_main(link_out(2)),Q_THRESH)/(max(u1(link_out(2)) * u_to_umain(link_out(2)),U_THRESH))
    
    Q_a=q1_main(link_in)*B_a
    Q_b=q1_main(link_out(1))*B_b
@@ -2314,7 +2317,7 @@ contains
    L_a=pNodRel%alpha_BP*B_a
    
    !u=Q_a/D_a/B_a
-   u = u1(link_in) * u_to_umain(link_in) 
+   u = max(u1(link_in) * u_to_umain(link_in),U_THRESH) !we later divide by `u`
    
    Q_y=Q_b-Q_a*(B_b/(B_b+B_c))
    D_abc=0.5*((D_b+D_c)/2+D_a)
@@ -2366,7 +2369,7 @@ contains
    !
    !One of the is the one we are processing (index `j`) 
    link_out(1)=abs(nd(k3)%ln(j))
-   !There must be another one whth direction -1 and different than `j`.
+   !There must be another one with direction -1 and different than `j`.
    j2 = -1
    j3 = -1
    do idx = 1, nd(k3)%lnx
@@ -2387,10 +2390,10 @@ contains
    
    !Find the flownode connected to a downstream link `node_out` which is not the junction flownode (with index `k3`)
    do kl=1,2 !loop on the two downstream links
-      if (ln(1,link_out(1)) == k3) then
-          node_out(kl) = ln(2,link_out(1))
+      if (ln(1,link_out(kl)) == k3) then
+          node_out(kl) = ln(2,link_out(kl))
       else
-          node_out(kl) = ln(1,link_out(1))
+          node_out(kl) = ln(1,link_out(kl))
       end if
    end do
                             
