@@ -197,7 +197,7 @@ RUN --mount=type=cache,target=/var/cache/src/,id=petsc-${CACHE_ID_SUFFIX} <<"EOF
 source /etc/bashrc
 set -eo pipefail
 
-URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.24.4.tar.gz'
+URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.24.5.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
