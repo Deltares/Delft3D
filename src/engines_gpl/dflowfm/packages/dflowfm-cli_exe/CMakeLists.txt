@@ -74,7 +74,7 @@ if(WIN32)
 endif(WIN32)
 
 if(UNIX AND OPENMP)
-    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+    target_compile_options(${executable_name} PRIVATE ${openmp_flag})
     target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif()
 
