@@ -354,7 +354,7 @@ contains
 !> Find all cells crossed by polyline using brute force on cached geometry. The routine is inclusive of edge cases (touching edges or vertices).
    subroutine find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
       use m_alloc, only: realloc
-      use network_data, only: cellmask, nump
+      use network_data, only: nump
       use m_missing, only: dmiss
 
       implicit none
@@ -365,6 +365,7 @@ contains
       character, dimension(:), allocatable, intent(out) :: error !> Error message, empty if no error, to be handled at call site
 
       integer :: npoly, i
+      integer, allocatable :: cellmask(:) !< (nump) Mask array for net cells
 
       error = ''
 
@@ -373,9 +374,7 @@ contains
          error = 'Invalid polyline input'
          return
       end if
-
-      call init_cell_geom_as_polylines()
-
+      
       call realloc(cellmask, nump, keepexisting=.false., fill=0)
 
       ! Process each segment and put the result in cellmask

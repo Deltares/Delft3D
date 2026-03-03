@@ -828,8 +828,6 @@ contains
       nump = 9
       call setup_grid_netcells(3, 3, 10.0_dp)
 
-      ! Initialize cache
-      call init_cell_geom_as_polylines()
 
       ! Create polyline from (1, 3) to (29, 27)
       ! This goes slightly off-diagonal, crossing cells: 1, 4, 5, 6, 9
@@ -839,6 +837,9 @@ contains
       ypoly(1) = 3.0_dp
       xpoly(2) = 29.0_dp
       ypoly(2) = 27.0_dp
+
+      ! Initialize cache
+      call init_cell_geom_as_polylines()      
 
       ! Call the function
       call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
@@ -850,19 +851,19 @@ contains
       call f90_expect_eq(size(crossed_cells), 5, "Should cross 5 cells")
 
       ! Check that cells 1, 2, 5, 6, 9 are in the result
-      call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
-      call f90_expect_true(cellmask(4) == 1, "Cell 4 should be crossed")
-      call f90_expect_true(cellmask(5) == 1, "Cell 5 should be crossed")
-      call f90_expect_true(cellmask(6) == 1, "Cell 6 should be crossed")
-      call f90_expect_true(cellmask(9) == 1, "Cell 9 should be crossed")
+      call f90_expect_true(any(crossed_cells == 1), "Cell 1 should be crossed")
+      call f90_expect_true(any(crossed_cells == 4), "Cell 4 should be crossed")
+      call f90_expect_true(any(crossed_cells == 5), "Cell 5 should be crossed")
+      call f90_expect_true(any(crossed_cells == 6), "Cell 6 should be crossed")
+      call f90_expect_true(any(crossed_cells == 9), "Cell 9 should be crossed")
 
       ! Check that cells 3, 4, 7, 8 are NOT in the result
-      call f90_expect_true(cellmask(3) == 0, "Cell 3 should not be crossed")
-      call f90_expect_true(cellmask(2) == 0, "Cell 2 should not be crossed")
-      call f90_expect_true(cellmask(7) == 0, "Cell 7 should not be crossed")
-      call f90_expect_true(cellmask(8) == 0, "Cell 8 should not be crossed")
+      call f90_expect_true(.not. any(crossed_cells == 3), "Cell 3 should not be crossed")
+      call f90_expect_true(.not. any(crossed_cells == 2), "Cell 2 should not be crossed")
+      call f90_expect_true(.not. any(crossed_cells == 7), "Cell 7 should not be crossed")
+      call f90_expect_true(.not. any(crossed_cells == 8), "Cell 8 should not be crossed")
 
-      call f90_expect_true(count(cellmask > 0) == size(crossed_cells), "Exactly 5 cells should be crossed")
+      call f90_expect_true(5 == size(crossed_cells), "Exactly 5 cells should be crossed")
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
@@ -897,9 +898,6 @@ contains
       nump = 9
       call setup_grid_netcells(3, 3, 10.0_dp)
 
-      ! Initialize cache
-      call init_cell_geom_as_polylines()
-
       !edge case: Create polyline that goes exactly along cell edges from (0,0) to (30,30) to (30,0)
       allocate (xpoly(3), ypoly(3))
       xpoly(1) = 0.0_dp
@@ -909,23 +907,26 @@ contains
       xpoly(3) = 30.0_dp
       ypoly(3) = 0.0_dp
 
+      ! Initialize cache
+      call init_cell_geom_as_polylines()
+
       ! Call the function
       call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
       ! Check for errors
       call f90_expect_true(.not. allocated(error), "No error should occur")
 
-      call f90_expect_true(cellmask(1) == 1, "Cell 1 should be crossed")
-      call f90_expect_true(cellmask(2) == 1, "Cell 2 should be crossed")
-      call f90_expect_true(cellmask(3) == 1, "Cell 3 should be crossed")
-      call f90_expect_true(cellmask(4) == 1, "Cell 4 should be crossed")
-      call f90_expect_true(cellmask(5) == 1, "Cell 5 should be crossed")
-      call f90_expect_true(cellmask(6) == 1, "Cell 6 should be crossed")
-      call f90_expect_true(cellmask(7) == 0, "Cell 7 should not be crossed")
-      call f90_expect_true(cellmask(8) == 1, "Cell 8 should be crossed")
-      call f90_expect_true(cellmask(9) == 1, "Cell 9 should be crossed")
+      call f90_expect_true(any(crossed_cells == 1), "Cell 1 should be crossed")
+      call f90_expect_true(any(crossed_cells == 2), "Cell 2 should be crossed")
+      call f90_expect_true(any(crossed_cells == 3), "Cell 3 should be crossed")
+      call f90_expect_true(any(crossed_cells == 4), "Cell 4 should be crossed")
+      call f90_expect_true(any(crossed_cells == 5), "Cell 5 should be crossed")
+      call f90_expect_true(any(crossed_cells == 6), "Cell 6 should be crossed")
+      call f90_expect_true(.not. any(crossed_cells == 7), "Cell 7 should not be crossed")
+      call f90_expect_true(any(crossed_cells == 8), "Cell 8 should be crossed")
+      call f90_expect_true(any(crossed_cells == 9), "Cell 9 should be crossed")
 
-      call f90_expect_true(count(cellmask > 0) == size(crossed_cells), "cellmask should equal crossed cells")
+      call f90_expect_true(8 == size(crossed_cells), "8 crossed cells in total")
       ! Cleanup
       deallocate (xpoly, ypoly)
       if (allocated(crossed_cells)) deallocate (crossed_cells)
@@ -967,6 +968,8 @@ contains
       xpoly(2) = 6.0_dp
       ypoly(2) = 6.0_dp
 
+      ! Initialize cache
+      call init_cell_geom_as_polylines()
       ! Call the function
       call find_cells_crossed_by_polyline(xpoly, ypoly, crossed_cells, error)
 
