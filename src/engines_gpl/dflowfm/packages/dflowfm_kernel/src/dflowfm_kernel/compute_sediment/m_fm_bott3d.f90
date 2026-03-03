@@ -574,7 +574,6 @@ contains
       use Messagehandling, only: SetMessage, LEVEL_FATAL, mess
       use message_module, only: writemessages, write_error
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
-      use m_flowgeom, only: nd
       use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
       use m_ini_noderel, only: get_noderel_idx
       use m_tables, only: interpolate
@@ -699,16 +698,17 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
       
             end do ! Branches
    
+            !
             ! Correct Total Outflow
+            !
             if ((facCheck /= 1.0_fp) .and. (facCheck > 0.0_fp)) then
                ! loop over branches and correct redistribution of incoming sediment
-               do j = 1, nd(flownode_junction(kinod))%lnx
-                  L = abs(nd(flownode_junction(kinod))%ln(j))
-                  if (sb_dir(kinod, ised, j) == -1) then
-                     e_sbcn(L, ised) = e_sbcn(L, ised) / facCheck
-                  end if
+               do j = 1, n_links_out(kinod)
+                  L = links_out(kinod,j) 
+                  e_sbcn(L, ised) = e_sbcn(L, ised) / facCheck
                end do ! Branches
             end if !`facCheck`
+            
          end do ! Nodes
       end do ! Fractions
 
