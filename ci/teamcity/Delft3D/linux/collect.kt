@@ -12,6 +12,7 @@ object LinuxCollect : BuildType({
     description = "Prepping the binaries for testing/release."
 
     templates(
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance
@@ -71,7 +72,7 @@ object LinuxCollect : BuildType({
         }
         step {
             name = "Upload artifact to Nexus"
-            type = "RawUploadNexusLinux1_1"
+            type = "RawUploadNexusLinux2"
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("file_path", "%file_path%")
             param("nexus_username", "%nexus_username%")
@@ -122,8 +123,5 @@ object LinuxCollect : BuildType({
                 artifactRules = "oss_artifacts_lnx64_*.tar.gz!lnx64/** => lnx64"
             }
         }
-    }
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })
