@@ -250,7 +250,7 @@ contains
       integer :: k, n, k1, total_points, ipoint
 
       if (cellmask_initialized) then !> reuse cellmask cache boolean
-         return
+         call cleanup_cell_geom_polylines
       end if
 
       call savepol()
@@ -351,14 +351,12 @@ contains
       error = ''
 
       npoly = size(xpoly)
-      if (any(xpoly == dmiss) .or. any(ypoly == dmiss) .or. npoly < 2) then
+      if (any(xpoly == dmiss) .or. any(ypoly == dmiss)) then
          error = 'Invalid polyline input'
          return
       end if
 
-      if (.not. cellmask_initialized) then
-         call init_cell_geom_as_polylines()
-      end if
+      call init_cell_geom_as_polylines()
 
       call realloc(cellmask, nump, keepexisting=.false., fill=0)
 
@@ -368,6 +366,12 @@ contains
       end do
 
       crossed_cells = pack([(i, i=1, nump)], mask=(cellmask == 1))
+      if (size(crossed_cells) == 0) then !> check whether the whole polyline lies in a single cell if no boundaries were crossed
+         i = point_find_netcell(xpoly(1),ypoly(1))
+         if (i > 0) then
+            crossed_cells = [i]
+         end if
+      end if
 
    end subroutine find_cells_crossed_by_polyline
 
@@ -383,7 +387,6 @@ contains
       real(kind=dp) :: seg_xmin, seg_xmax, seg_ymin, seg_ymax
       integer :: i_poly, i_point, i_start, i_end, n_points
       integer :: i, ip1
-      real(kind=dp) :: x1, y1, x2, y2
       logical :: intersects
 
       ! Segment bounding box
@@ -392,7 +395,7 @@ contains
       seg_ymin = min(ya, yb)
       seg_ymax = max(ya, yb)
 
-      !$OMP PARALLEL DO SCHEDULE(GUIDED)
+      !$OMP PARALLEL DO SCHEDULE(GUIDED) PRIVATE(i_start, i_end, n_points, i, i_point, ip1, intersects)
       do i_poly = 1, polygons
          ! Skip if already marked
          if (cellmask(i_poly) == 1) then
@@ -416,12 +419,7 @@ contains
             ip1 = i_point + 1
             if (ip1 > i_end) ip1 = i_start ! Wrap around
 
-            x1 = xpl(i_point)
-            y1 = ypl(i_point)
-            x2 = xpl(ip1)
-            y2 = ypl(ip1)
-
-            intersects = line_segments_intersect(xa, ya, xb, yb, x1, y1, x2, y2)
+            intersects = line_segments_intersect(xa, ya, xb, yb, xpl(i_point), ypl(i_point), xpl(ip1), ypl(ip1))
 
             if (intersects) then
                cellmask(i_poly) = 1

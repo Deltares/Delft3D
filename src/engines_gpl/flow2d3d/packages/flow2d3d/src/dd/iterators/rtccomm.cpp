@@ -86,13 +86,13 @@ Rtc_Function (
         int blobtype;
         part[i]->Receive (initBlob, &blobtype);
         if (blobtype != RTC::F2RC_init)
-            throw new Exception (true, "Unexpected message (%d) from Flow %s",blobtype,part[i]->name);
+            throw new Exception("Unexpected message (%d) from Flow %s",blobtype,part[i]->name);
 
         if (inimesg[0] == -1)
             part[i] = NULL;  // This neighbor has nothing to do with RTC; remove from list
         else {
             if (! firstRtc && numelements != inimesg[0])
-                throw new Exception (true, "Inconsistent number of dredging elements received by RtcFunction");
+                throw new Exception("Inconsistent number of dredging elements received by RtcFunction");
 
             numelements = inimesg[0];
             firstRtc = false;
@@ -151,17 +151,17 @@ Rtc_Function (
             int blobtype;
             part[ipart]->Receive (sblob, &blobtype);
             if (blobtype != RTC::F2RC_values && blobtype != RTC::F2RC_strings)
-                throw new Exception (true, "Unexpected message (%d) from Flow %s",blobtype,part[ipart]->name);
+                throw new Exception("Unexpected message (%d) from Flow %s",blobtype,part[ipart]->name);
 
             if (ipart == 0) {
                 currentblobtype = blobtype;
                 numelements = numeldomain;
                 }
             else if (numeldomain != numelements)
-                throw new Exception (true, "RTC array size (%d) from Flow %s deviates from size (%d) from Flow %s",
+                throw new Exception("RTC array size (%d) from Flow %s deviates from size (%d) from Flow %s",
                                             numeldomain, part[ipart]->name, numelements, part[0]->name);
             else if (currentblobtype != blobtype)
-                throw new Exception (true, "RTC blob type (%d) from Flow %s deviates from blob type (%d) from Flow %s",
+                throw new Exception("RTC blob type (%d) from Flow %s deviates from blob type (%d) from Flow %s",
                                             blobtype, part[ipart]->name, currentblobtype, part[0]->name);
             }
 
@@ -179,7 +179,7 @@ Rtc_Function (
                 int blobtype;
                 part[ipart]->Receive (mblob, &blobtype);
                 if (blobtype != RTC::F2RC_values)
-                    throw new Exception (true, "Unexpected message (%d) from Flow %s", blobtype, part[ipart]->name);
+                    throw new Exception("Unexpected message (%d) from Flow %s", blobtype, part[ipart]->name);
                 for (iarr = 0 ; iarr < numelements ; iarr++)
                     mergedvalues[iarr] += mesg[iarr];
                 }
@@ -210,7 +210,7 @@ Rtc_Function (
                 int blobtype;
                 part[ipart]->Receive (mblob, &blobtype);
                 if (blobtype != RTC::F2RC_strings)
-                    throw new Exception (true, "Unexpected message (%d) from Flow %s", blobtype, part[ipart]->name);
+                    throw new Exception("Unexpected message (%d) from Flow %s", blobtype, part[ipart]->name);
                 for (iarr = 0 ; iarr < numelements ; iarr++)
                     if (mesg[iarr] != ' ')
                         mergedvalues[iarr] = mesg[iarr];
@@ -248,11 +248,11 @@ DD_RTCSTARTCOMMUNICATION (
 
     Iterator * self = IteratorSelf ();
     if (self == NULL)
-        throw new Exception (true, "Cannot get iterator self in RtcStartCommunicate");
+        throw new Exception("Cannot get iterator self in RtcStartCommunicate");
 
     SubdomGlobals * subdomglobals = NULL;
     if ((subdomglobals = (SubdomGlobals *) self->GetValue ()) == NULL)
-        throw new Exception (true, "Cannot get subdomain globals pointer in RtcStartCommunicate");
+        throw new Exception("Cannot get subdomain globals pointer in RtcStartCommunicate");
 
     Iterator * rtcIterator = FLOW2D3D->dd->rtc;
 
@@ -271,7 +271,7 @@ DD_RTCSTARTCOMMUNICATION (
     int blobtype;
     rtcIterator->Receive (initBlob, &blobtype);
     if (blobtype != RTC::RC2F_init)
-        throw new Exception (true, "Unexpected message (%d) in %s from Rtc",blobtype,self->name);
+        throw new Exception("Unexpected message (%d) in %s from Rtc",blobtype,self->name);
 
     *domainnumber = inimesg[0];
     *numdomains = inimesg[1];
@@ -297,11 +297,11 @@ DD_RTCCOMMUNICATE (
 
     Iterator * self = IteratorSelf ();
     if (self == NULL)
-        throw new Exception (true, "Cannot get iterator self in RtcCommunicate");
+        throw new Exception("Cannot get iterator self in RtcCommunicate");
 
     SubdomGlobals *subdomglobals = NULL;
     if ((subdomglobals = (SubdomGlobals *) self->GetValue ()) == NULL)
-        throw new Exception (true, "Cannot get subdomain globals pointer in RtcCommunicate");
+        throw new Exception("Cannot get subdomain globals pointer in RtcCommunicate");
 
     // Return when rtccommunicate is explicitly switched to false
 
@@ -330,7 +330,7 @@ DD_RTCCOMMUNICATE (
     int blobtype;
     rtcIterator->Receive (mblob, &blobtype);
     if (blobtype != RTC::RC2F_values)
-        throw new Exception (true, "Unexpected message (%d) in %s from Rtc",blobtype,self->name);
+        throw new Exception("Unexpected message (%d) in %s from Rtc",blobtype,self->name);
 
     for (int i = 0 ; i < mesgsize ; i++)
        values[i] = mesg[i];
@@ -355,11 +355,11 @@ DD_RTCCHARCOMMUNICATE (
 
     Iterator * self = IteratorSelf ();
     if (self == NULL)
-        throw new Exception (true, "Cannot get iterator self in RtcCharCommunicate");
+        throw new Exception("Cannot get iterator self in RtcCharCommunicate");
 
     SubdomGlobals * subdomglobals = NULL;
     if ((subdomglobals = (SubdomGlobals *) self->GetValue ()) == NULL)
-        throw new Exception (true, "Cannot get subdomain globals pointer in RtcCharCommunicate");
+        throw new Exception("Cannot get subdomain globals pointer in RtcCharCommunicate");
 
     // Return when rtccommunicate is explicitly switched to false
 
@@ -387,7 +387,7 @@ DD_RTCCHARCOMMUNICATE (
     int blobtype;
     rtcIterator->Receive (mblob, &blobtype);
     if (blobtype != RTC::RC2F_strings)
-        throw new Exception (true, "Unexpected message (%d) in %s from Rtc",blobtype,self->name);
+        throw new Exception("Unexpected message (%d) in %s from Rtc",blobtype,self->name);
 
     for (int i = 0 ; i < mesgsize ; i++)
        strings[i] = mesg[i];

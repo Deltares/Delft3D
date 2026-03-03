@@ -11,7 +11,7 @@ module test_compute_horton_infiltration
    use precision_basics, only: comparereal
    use m_horton
 
-   implicit none(external)
+   implicit none(type, external)
 
    ! Conversion factors
    real(kind=dp), parameter :: SECOND_TO_HOUR = 1.0_dp / 3600.0_dp !< Number of seconds per hour

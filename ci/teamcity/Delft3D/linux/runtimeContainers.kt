@@ -12,6 +12,7 @@ object LinuxRuntimeContainers : BuildType({
     description = "Build two separate container images: one for running the Delft3D software and the other for executing its tests."
 
     templates(
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
@@ -46,15 +47,14 @@ object LinuxRuntimeContainers : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         step {
             name = "Download artifact from Nexus"
-            type = "RawDownloadNexusLinux"
+            type = "RawDownloadNexusLinux2"
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("artifact_path", "/07_day_retention/dimrset/%file_path%")
             param("nexus_repo", "/delft3d-dev")
             param("nexus_username", "%nexus_username%")
-            param("download_to", ".")
+            param("download_to", "/downloads")
             param("nexus_password", "%nexus_password%")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
         }

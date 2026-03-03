@@ -57,9 +57,9 @@ Log::Log (
     this->mask      = mask;
 
     if (pthread_key_create (&this->thkey, NULL) != 0)
-        throw new Exception (true, "Pthreads error in Log: Cannot create thread-specific key: %s", strerror (errno));
+        throw new Exception("Pthreads error in Log: Cannot create thread-specific key: %s", strerror (errno));
     if (pthread_setspecific (this->thkey, NULL) != 0)
-        throw new Exception (true, "Pthreads error in Log constructor: Cannot set thread-specific key: %s", strerror (errno));
+        throw new Exception("Pthreads error in Log constructor: Cannot set thread-specific key: %s", strerror (errno));
     }
 
 
@@ -100,7 +100,7 @@ Log::RegisterThread (
 
     char * idCopy = strdup (id);
     if (pthread_setspecific (this->thkey, (void *) idCopy) != 0)
-        throw new Exception (true, "Pthreads error in Log::RegisterThread: Cannot set thread-specific key: %s", strerror (errno));
+        throw new Exception("Pthreads error in Log::RegisterThread: Cannot set thread-specific key: %s", strerror (errno));
     }
 
 
@@ -121,7 +121,7 @@ Log::UnregisterThread (
 
     char * id = (char *) pthread_getspecific (this->thkey);
     if (id == NULL)
-        throw new Exception (true, "Log thread key not set in UnregisterThread");
+        throw new Exception("Log thread key not set in UnregisterThread");
 
     free (id);
     }
@@ -150,7 +150,7 @@ Log::Write (
     clock[0] = '\0';
     this->clock->Now (clock);
 
-    char * threadID = (char *) pthread_getspecific (this->thkey);
+    const char * threadID = (const char *) pthread_getspecific (this->thkey);
     if (threadID == NULL)
         threadID = "<anonymous>";
 
