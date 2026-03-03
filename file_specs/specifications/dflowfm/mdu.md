@@ -673,7 +673,6 @@ This section contains the settings for various output files.
 | `wriMap_interception` | Write interception to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `wriMap_windstress` | Write wind stress to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `wriMap_cdWind` | Write wind friction coeffs to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
-| `wriMap_dtCell` | Write time step per cell based on CFL. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `wriMap_bnd` | Write boundary points to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `wriMap_Qin` | Write sum of all influxes to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `wriMap_dtCell` | Write time step per cell based on CFL. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |

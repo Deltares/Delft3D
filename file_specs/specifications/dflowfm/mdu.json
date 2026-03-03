@@ -3976,12 +3976,6 @@
                     "description": "Write wind friction coeffs to map file."
                 },
                 {
-                    "key": "wriMap_dtCell",
-                    "default_value": 0,
-                    "value_type": "intbool",
-                    "description": "Write time step per cell based on CFL."
-                },
-                {
                     "key": "wriMap_bnd",
                     "default_value": 0,
                     "value_type": "intbool",
