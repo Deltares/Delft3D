@@ -507,6 +507,30 @@
         {
             "file": "lib\\boost_filesystem-vc143-mt-x64-1_90.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_thread-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\libxml2d.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_log_setup-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_log-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\precice.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_program_options-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
         }
     ],
     "notSigned": [

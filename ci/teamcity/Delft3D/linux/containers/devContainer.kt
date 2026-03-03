@@ -16,6 +16,7 @@ object LinuxDevContainer : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
+        TemplateLinuxAgent,
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
@@ -49,7 +50,6 @@ object LinuxDevContainer : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         exportJiraIssueId {
             paramName = "env.JIRA_ISSUE_ID"
         }
@@ -82,9 +82,5 @@ object LinuxDevContainer : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })

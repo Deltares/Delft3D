@@ -11,5 +11,30 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e03_f15_c02_waqpb_export" ref="waqpb_export">
+        <path version="2026-02-09T12:31:24.013000">e03_waq/f15_openpl/c02_waqpb_export</path>
+        <checks>
+            <file name="processes_overview_exported.asc" type="NUMBERTEXT"/>
+        </checks>
+    </testCase>
+    <testCase name="e03_f15_c03_waqpb_import" ref="waqpb_import">
+        <path version="2026-02-09T12:31:25.707000">e03_waq/f15_openpl/c03_waqpb_import</path>
+        <checks>
+            <file name="csvFiles/con_pro.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/con_sub.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/config.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/disps.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/fortran.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/grpsub.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/inputs.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/items.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/old_items.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/outpflx.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/outputs.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/proces.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/stochi.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/table5.csv" type="NUMBERTEXT"/>
+            <file name="csvFiles/velocs.csv" type="NUMBERTEXT"/>
+        </checks>
+    </testCase>
 </testCases>
-

@@ -161,11 +161,11 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target :: s1(:) !< [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: s1max(:) !< [m] maximum waterlevel (m ) at end   of timestep for Fourier output {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable :: s00(:) !< waterlevel    (m ) for checking iteration in nonlin
-   real(kind=dp), allocatable, target :: a0(:) !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: a1(:) !< [m2] storage area at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol1(:) !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol0(:) !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol1_f(:) !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: a0(:) !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target :: a1(:) !< [m2] storage area at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target :: vol1(:) !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target :: vol0(:) !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target :: vol1_f(:) !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
    real(kind=dp), allocatable :: sq(:) !< total  influx (m3/s) at water level point
    real(kind=dp), allocatable :: sqa(:) !< total  out! flux (m3/s) at s point, u1 based, non-conservative for iadvec == 38
    real(kind=dp), allocatable, target :: hs(:) !< [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}
@@ -187,8 +187,6 @@ module m_flow ! flow arrays-999
    !< Note: these variables are real(kind=dp) (in stead of integers) because post processing is
    !<       based on real(kind=dp) variables.
    real(kind=dp), allocatable :: flowCourantNumber(:) !< Courant number
-
-! node related, dim = ndkx
 
    real(kind=dp), allocatable :: volau(:) !< trial, au based cell volume (m3)
    real(kind=dp), allocatable, target :: ucx(:) !< [m/s] cell center velocity, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}
@@ -356,7 +354,7 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target :: viusp(:) !< [m2/s] user defined spatial eddy viscosity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    real(kind=dp), allocatable, target :: diusp(:) !< [m2/s] user defined spatial eddy diffusivity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    !< so in transport, total diffusivity = viu*sigdifi + diusp
-   real, allocatable :: fcori(:) !< spatially variable fcorio coeff at u point (1/s)
+   real(kind=dp), allocatable :: fcori(:) !< spatially variable fcorio coeff at u point (1/s)
    real(kind=dp), allocatable :: fvcoro(:) !< 3D adamsbashford u point (m/s2)
 
    real(kind=dp), allocatable :: plotlin(:) !< for plotting on u points

@@ -55,7 +55,7 @@ contains
                             iadv_original_lateral_overflow, dx, dxi, bai, ba, lnx1d
       use m_flow, only: kmxx, japiaczek33, ifixedweirscheme, u0, ucx, ucy, jabarrieradvection, ngatesg, l1gatesg, l2gatesg, kgate, &
                         ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, uqcx, uqcy, sqa, kmx, qa, ucxu, ucyu, lbot, ltop, javau, &
-                        jarhoxu, qw, zws, kbot, ktop, rho, numsrc, arsrc, qsrc, ksrc, epshs, rhomean, cssrc, snsrc, hu, u1, vol1_f, &
+                        jarhoxu, qw, zws, kbot, ktop, rho, num_source_sink, source_sink_area, source_sink_water_discharge, source_sink_indices, epshs, rhomean, source_sink_discharge_cosine, source_sink_discharge_sine, hu, u1, vol1_f, &
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
                         hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
       use m_sferic, only: jasfer3d
@@ -315,21 +315,21 @@ contains
          sqa = sqa * rho
       end if
 
-      do n = 1, numsrc ! momentum
-         if (arsrc(n) > 0) then ! if momentum desired
-            if (qsrc(n) > 0) then
-               kk = ksrc(4, n) ! 2D pressure cell nr TO
-               ksb = ksrc(5, n) ! cell nr
-               kst = ksrc(6, n) ! cell nr
+      do n = 1, num_source_sink ! momentum
+         if (source_sink_area(n) > 0) then ! if momentum desired
+            if (source_sink_water_discharge(n) > 0) then
+               kk = source_sink_indices(4, n) ! 2D pressure cell nr TO
+               ksb = source_sink_indices(5, n) ! cell nr
+               kst = source_sink_indices(6, n) ! cell nr
             else
-               kk = ksrc(1, n) ! 2D pressure cell nr FROM
-               ksb = ksrc(2, n) ! cell nr
-               kst = ksrc(3, n) ! cell nr
+               kk = source_sink_indices(1, n) ! 2D pressure cell nr FROM
+               ksb = source_sink_indices(2, n) ! cell nr
+               kst = source_sink_indices(3, n) ! cell nr
             end if
 
             if (kk > 0 .and. ksb > 0) then
 
-               qnn = qsrc(n)
+               qnn = source_sink_water_discharge(n)
                do k = ksb, kst
                   qn = qnn
                   if (kmx > 0) then
@@ -340,7 +340,7 @@ contains
                         qn = qnn / (kst - ksb + 1)
                      end if
                   end if
-                  uqn = qn * qnn / arsrc(n)
+                  uqn = qn * qnn / source_sink_area(n)
 
                   if (jarhoxu > 0) then
                      rhoinsrc = rhomean ! just for now
@@ -348,13 +348,13 @@ contains
                      uqn = uqn * rhoinsrc
                   end if
 
-                  if (qsrc(n) > 0) then ! from 1 to 2
-                     uqcx(k) = uqcx(k) - uqn * cssrc(2, n)
-                     uqcy(k) = uqcy(k) - uqn * snsrc(2, n)
+                  if (source_sink_water_discharge(n) > 0) then ! from 1 to 2
+                     uqcx(k) = uqcx(k) - uqn * source_sink_discharge_cosine(2, n)
+                     uqcy(k) = uqcy(k) - uqn * source_sink_discharge_sine(2, n)
                      sqa(k) = sqa(k) - qn ! sqa : out - in
                   else ! from 2 to 1
-                     uqcx(k) = uqcx(k) + uqn * cssrc(1, n)
-                     uqcy(k) = uqcy(k) + uqn * snsrc(1, n)
+                     uqcx(k) = uqcx(k) + uqn * source_sink_discharge_cosine(1, n)
+                     uqcy(k) = uqcy(k) + uqn * source_sink_discharge_sine(1, n)
                      sqa(k) = sqa(k) + qn ! sqa : out - in
                   end if
 

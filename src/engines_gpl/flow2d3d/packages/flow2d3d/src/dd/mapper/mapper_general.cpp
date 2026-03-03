@@ -209,7 +209,7 @@ int D3dFlowMapper::Setup(
 
         if ( updateHeader.numMessages != 0 )
         {
-            throw new Exception (true, "D3dFlowMapper::Setup: # incoming messages must be zero");
+            throw new Exception("D3dFlowMapper::Setup: # incoming messages must be zero");
         }
 
     }
@@ -349,7 +349,7 @@ int D3dFlowMapper::NextStep(
 
             if ( updateHeader.numMessages < 0 )
             {
-                throw new Exception (true, "D3dFlowMapper::NextStep: # incoming messages must >= 0");
+                throw new Exception("D3dFlowMapper::NextStep: # incoming messages must >= 0");
             }
 
             nextStep = updateHeader.nextStep;
@@ -373,7 +373,7 @@ int D3dFlowMapper::NextStep(
              || ( nextStep     != myNxtStepAlt ) )
         {
 #if 0       // TODORE: CHECK
-            throw new Exception (true, "Unexpected step (%d) after step %d; UNEXPECT %s after %s",
+            throw new Exception("Unexpected step (%d) after step %d; UNEXPECT %s after %s",
                             nextStep,
                             myStep,
                             PrintNextStepName(nextStep),
@@ -392,7 +392,7 @@ int D3dFlowMapper::NextStep(
     {
         if ( totNumIn != NR_CNTXTS )
         {
-            throw new Exception (true, "D3dFlowMapper::NextStep: #inmessages inconsistent with #flow processes");
+            throw new Exception("D3dFlowMapper::NextStep: #inmessages inconsistent with #flow processes");
         }
         else
         {
@@ -439,7 +439,7 @@ void D3dFlowMapper::FMapLog(
             logFile = fopen(name,"w");
             if (logFile == NULL)
             {
-                throw new Exception (true, "Couldn't open logfile %s", name);
+                throw new Exception("Couldn't open logfile %s", name);
             }
         }
         if ( logFile != NULL )
@@ -563,7 +563,7 @@ int D3dFlowMapper::ReceiveDataFromFlow(void)
 
         if ( updateHeader.numMessages < 0 )
         {
-            throw new Exception (true, "D3dFlowMapper::NextStep: # incoming messages must >= 0");
+            throw new Exception("D3dFlowMapper::NextStep: # incoming messages must >= 0");
         }
 
         nextStep = updateHeader.nextStep;
@@ -591,7 +591,7 @@ int D3dFlowMapper::ReceiveDataFromFlow(void)
     {
         if ( totNumIn != NR_CNTXTS )
         {
-            throw new Exception (true, "D3dFlowMapper::NextStep: #inmessages inconsistent with #flow processes");
+            throw new Exception("D3dFlowMapper::NextStep: #inmessages inconsistent with #flow processes");
         }
         else
         {

@@ -16,4 +16,4 @@ echo "    lib dir           : %libdir%"
 echo executing in this window: "%bindir%\waqpb_import.exe %*"
 "%bindir%\waqpb_import.exe" %*
 
-pause
+rem pause

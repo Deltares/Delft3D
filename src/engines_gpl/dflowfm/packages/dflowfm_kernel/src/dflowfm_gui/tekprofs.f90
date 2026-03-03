@@ -74,6 +74,7 @@ contains
       real(kind=dp) :: zmin, zmax
       real(kind=dp) :: h0, b0, z00, zinc, cz, ustbref, ustwref, zint, z1, dz2, zz
       real(kind=dp) :: tkebot, tkesur, tkewin
+      real(kind=dp) :: cewall
       real(kind=dp) :: epsbot, epssur, dzkap, sqcf, ulx, sg
       real(kind=dp) :: VMAX2, VMIN2
       integer :: is, Ls, LLs, Lbs, Lts
