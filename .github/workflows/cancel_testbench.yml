@@ -30,8 +30,8 @@ jobs:
           # do not allow running this workflow on the default and release branches
           default_branch="${{ github.event.repository.default_branch }}"
           release_branch_regex='^all/release/\d{4}\.\d+$'
-          if [[ "${{ emv.BRANCH }}" == "${default_branch}" || \
-                "${{ emv.BRANCH }}" =~ ${release_branch_regex} ]]; then
+          if [[ "${{ env.BRANCH }}" == "${default_branch}" || \
+                "${{ env.BRANCH }}" =~ ${release_branch_regex} ]]; then
             echo "This workflow may not run on ${default_branch} and release branches."
             exit 1
           fi
