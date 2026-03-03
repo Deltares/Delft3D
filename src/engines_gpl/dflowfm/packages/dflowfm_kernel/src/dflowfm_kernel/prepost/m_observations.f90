@@ -138,9 +138,10 @@ contains
       IVAL_ZWU = 0
       IVAL_BRUV = 0
       IVAL_BRUV_U = 0
-      IVAL_U1 = 0
       IVAL_TKIN = 0
       IVAL_TEPS = 0
+      IVAL_TKINS = 0
+      IVAL_TEPSS = 0
       IVAL_VIU = 0
       IVAL_VICWWS = 0
       IVAL_DIFWWS = 0
@@ -388,14 +389,14 @@ contains
       if (kmx > 0) then
          IVAL_BRUV = next_index(i)
          IVAL_BRUV_U = next_index(i)
-         IVAL_U1 = next_index(i)
          if (iturbulencemodel > 0 .and. jahistur > 0) then
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
+            IVAL_TKINS = next_index(i)
+            IVAL_TEPSS = next_index(i)
             IVAL_VICWWS = next_index(i)
             IVAL_DIFWWS = next_index(i)
             IVAL_VICWWU = next_index(i)
-            IVAL_ZCU = next_index(i)
          end if
          if (idensform > 0) then
             IVAL_RICH = next_index(i)
@@ -465,12 +466,12 @@ contains
       IPNT_ZCS = ivalpoint(IVAL_ZCS, kmx, nlyrs)
       IPNT_ZWS = ivalpoint(IVAL_ZWS, kmx, nlyrs)
       IPNT_ZWU = ivalpoint(IVAL_ZWU, kmx, nlyrs)
-      IPNT_ZCU = ivalpoint(IVAL_ZCU, kmx, nlyrs)
       IPNT_BRUV = ivalpoint(IVAL_BRUV, kmx, nlyrs)
       IPNT_BRUV_U = ivalpoint(IVAL_BRUV_U, kmx, nlyrs)
-      IPNT_U1 = ivalpoint(IVAL_U1, kmx, nlyrs)
       IPNT_TKIN = ivalpoint(IVAL_TKIN, kmx, nlyrs)
       IPNT_TEPS = ivalpoint(IVAL_TEPS, kmx, nlyrs)
+      IPNT_TKINS = ivalpoint(IVAL_TKINS, kmx, nlyrs)
+      IPNT_TEPSS = ivalpoint(IVAL_TEPSS, kmx, nlyrs)
       IPNT_VIU = ivalpoint(IVAL_VIU, kmx, nlyrs)
       IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
       IPNT_DIFWWS = ivalpoint(IVAL_DIFWWS, kmx, nlyrs)

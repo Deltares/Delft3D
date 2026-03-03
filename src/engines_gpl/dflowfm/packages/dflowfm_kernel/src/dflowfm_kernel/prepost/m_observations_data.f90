@@ -116,6 +116,8 @@ module m_observations_data
    integer :: IVAL_U1
    integer :: IVAL_TKIN
    integer :: IVAL_TEPS
+   integer :: IVAL_TKINS
+   integer :: IVAL_TEPSS
    integer :: IVAL_VIU
    integer :: IVAL_VICWWS
    integer :: IVAL_DIFWWS
@@ -232,12 +234,12 @@ module m_observations_data
    integer :: IPNT_ZCS
    integer :: IPNT_ZWS
    integer :: IPNT_ZWU
-   integer :: IPNT_ZCU
    integer :: IPNT_BRUV
    integer :: IPNT_BRUV_U
-   integer :: IPNT_U1
    integer :: IPNT_TKIN
    integer :: IPNT_TEPS
+   integer :: IPNT_TKINS
+   integer :: IPNT_TEPSS
    integer :: IPNT_VIU
    integer :: IPNT_VICWWS
    integer :: IPNT_DIFWWS

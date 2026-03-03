@@ -25,7 +25,6 @@ module fm_statistical_output
 
    type(t_station_nc_dimensions), parameter :: station_nc_dims_2D = t_station_nc_dimensions(statdim=.true., timedim=.true.)
    type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_center = t_station_nc_dimensions(laydim=.true., statdim=.true., timedim=.true.)
-   type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_edge = t_station_nc_dimensions(laydim_edge=.true., statdim=.true., timedim=.true.)
    type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_interface_center = t_station_nc_dimensions(laydim_interface_center=.true., statdim=.true., timedim=.true.)
    type(t_station_nc_dimensions), parameter :: station_nc_dims_3D_interface_edge = t_station_nc_dimensions(laydim_interface_edge=.true., statdim=.true., timedim=.true.)
 
@@ -1334,6 +1333,14 @@ contains
                              'Wrihis_turbulence', 'vicwwu', 'turbulent vertical eddy viscosity at nearest velocity point', '', &
                              'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_edge)
+      call add_output_config(config_set_his, IDX_HIS_TKINS, &
+                             'Wrihis_turbulence', 'tkes', 'turbulent kinetic energy at pressure point', '', &
+                             'm2 s-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write k, eps and viscosity to his-file', &
+                             nc_dim_ids=station_nc_dims_3D_interface_center)
+      call add_output_config(config_set_his, IDX_HIS_EPSS, &
+                             'Wrihis_turbulence', 'epss', 'turbulent energy dissipation at pressure point', '', &
+                             'm2 s-3', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_TKIN, &
                              'Wrihis_turbulence', 'tke', 'turbulent kinetic energy at nearest velocity point', '', &
                              'm2 s-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write k, eps and viscosity to his-file', &
@@ -1384,10 +1391,6 @@ contains
                              'Wrihis_density', 'Brunt_Vaisala_N2_U', 'Brunt_Vaisala_N2 at nearest velocity point', '', &
                              '1/s2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_edge)
-      call add_output_config(config_set_his, IDX_HIS_U1, &
-                             'Wrihis_velocity', 'U1_velocity', 'Horizontal velocity magnitude at nearest velocity point', '', &
-                             'm/s', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-                             nc_dim_ids=station_nc_dims_3D_edge)
 
       ! Wave model
       call add_output_config(config_set_his, IDX_HIS_HWAV, &
@@ -2571,19 +2574,21 @@ contains
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TKIN:IPNT_TKIN + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TKIN), temp_pointer)
                end if
-               if (iturbulencemodel == 3) then
+               if (iturbulencemodel == 3 .or. iturbulencemodel == 5) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPS:IPNT_TEPS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPS), temp_pointer)
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TKINS:IPNT_TKINS + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TKINS), temp_pointer)
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPSS:IPNT_TEPSS + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPSS), temp_pointer)
                end if
                if (iturbulencemodel >= 2) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWS:IPNT_VICWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWS), temp_pointer)
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_DIFWWS:IPNT_DIFWWS + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DIFWWS), temp_pointer)
-                  if (iturbulencemodel < 5) then
-                     temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWU:IPNT_VICWWU + kmx)
-                     call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
-                  end if
+                  temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_VICWWU:IPNT_VICWWU + kmx)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWWU), temp_pointer)
                end if
                if (iturbulencemodel == 4) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TEPS:IPNT_TEPS + kmx)
@@ -2634,8 +2639,6 @@ contains
                if (iturbulencemodel == 3) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_BRUV_U:IPNT_BRUV_U + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRUNT_VAISALA_N2_U), temp_pointer)
-                  temp_pointer(1:kmx * ntot) => valobs(:, IPNT_U1:IPNT_U1 + kmx - 1)
-                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_U1), temp_pointer)
                end if
             else
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POTENTIAL_DENSITY), valobs(:, IPNT_RHOP))

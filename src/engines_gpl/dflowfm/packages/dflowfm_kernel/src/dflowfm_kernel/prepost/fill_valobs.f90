@@ -52,7 +52,7 @@ contains
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
                         rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
-                        use_density, bruva_u, u1
+                        use_density, bruva_u, turkinws, turepsws
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
@@ -65,11 +65,11 @@ contains
                                      ipnt_lyrfrac1, ipnt_poros, ipnt_thlyr, ival_frac1, ival_fracn, ipnt_frac1, ipnt_mudfrac, ipnt_sandfrac, &
                                      ival_mfluff1, ival_mfluffn, ipnt_mfluff1, ival_fixfac1, ival_fixfacn, ipnt_fixfac1, ival_hidexp1, ival_hidexpn, &
                                      ipnt_hidexp1, ival_sour1, ival_sourn, ipnt_sour1, ival_sink1, ival_sinkn, ipnt_sink1, ival_wqb1, ival_wqbn, &
-                                     ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_zcu, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, &
+                                     ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, &
                                      ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, &
                                      ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, &
-                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_bruv_u, ipnt_u1, ipnt_richs, ival_seddif1, &
-                                     ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
+                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_bruv_u, ipnt_richs, ival_seddif1, &
+                                     ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_tkins, ipnt_tepss, ipnt_rich, ipnt_rain, ipnt_airdensity, &
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
                                      ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs
       use m_sediment, only: jahissigwav, stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
@@ -568,6 +568,10 @@ contains
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
                   end if
+                  if ((iturbulencemodel == 3 .or. iturbulencemodel == 5) .and. jahistur > 0) then
+                     valobs(i, IPNT_TKINS + klay - 1) = turkinws(kk)
+                     valobs(i, IPNT_TEPSS + klay - 1) = turepsws(kk)
+                  end if
                   if (use_density() .and. jahisrho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
                         valobs(i, IPNT_BRUV + klay - 1) = drhodz(kk) * brunt_vaisala_coefficient
@@ -606,10 +610,6 @@ contains
                      end if
                      if (iturbulencemodel == 3 .and. L > Lb - 1 .and. L < Lt) then
                         valobs(i, IPNT_BRUV_U + klay - 1) = bruva_u(L)
-                     end if
-                     if (L > Lb - 1) then
-                        valobs(i, IPNT_U1 + klay - 2) = u1(L)
-                        valobs(i, IPNT_ZCU + klay - 2) = (valobs(i, IPNT_ZWU + klay - 2) + valobs(i, IPNT_ZWU + klay - 1))/2
                      end if
                      if (idensform > 0 .and. jaRichardsononoutput > 0) then
                         valobs(i, IPNT_RICH + klay - 1) = rich(L)

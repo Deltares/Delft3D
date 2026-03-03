@@ -44,7 +44,7 @@ module m_unc_write_his
               id_statdim, id_strlendim, id_crsdim, &
               id_statx, id_staty, id_stat_id, id_statname, id_time, id_timestep, &
               id_statlon, id_statlat, id_crs_id, id_varb, id_nlyrdim, &
-              id_zcs, id_zws, id_zwu, id_zcu, id_checkmon, &
+              id_zcs, id_zws, id_zwu, id_checkmon, &
               id_pumpdim, id_pump_id, &
               id_gatedim, id_gate_id, &
               id_cdamdim, id_cdam_id, &
@@ -301,7 +301,7 @@ contains
             ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
                                                   add_latlon, jawrizc, jawrizw, &
                                                   id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
-                                                  id_zcs, id_zws, id_zwu, id_zcu)
+                                                  id_zcs, id_zws, id_zwu)
 
          end if
 
@@ -845,7 +845,7 @@ contains
       ! Write x/y-, lat/lon- and z-coordinates for the observation stations every time (needed for moving observation stations)
       ierr = unc_put_his_station_coord_vars(ihisfile, numobs, nummovobs, add_latlon, jawrizc, jawrizw, &
                                             id_statx, id_staty, id_statlat, id_statlon, &
-                                            id_zcs, id_zws, id_zwu, id_zcu, it_his, &
+                                            id_zcs, id_zws, id_zwu, it_his, &
                                             id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
                                             id_statgeom_node_lon, id_statgeom_node_lat)
 
@@ -945,7 +945,7 @@ contains
       function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
                                               add_latlon, jawrizc, jawrizw, &
                                               id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
-                                              id_zcs, id_zws, id_zwu, id_zcu) result(ierr)
+                                              id_zcs, id_zws, id_zwu) result(ierr)
          use dfm_error, only: DFM_NOERR
 
          integer, intent(in) :: ihisfile !< NetCDF id of already open dataset
@@ -964,7 +964,6 @@ contains
          integer, intent(out) :: id_zcs !< NetCDF variable id created for the station zcoordinate_c
          integer, intent(out) :: id_zws !< NetCDF variable id created for the station zcoordinate_w
          integer, intent(out) :: id_zwu !< NetCDF variable id created for the station zcoordinate_wu
-         integer, intent(out) :: id_zcu !< NetCDF variable id created for the station zcoordinate_cu
 
          integer :: ierr !< Result status (NF90_NOERR if successful)
 
@@ -989,7 +988,7 @@ contains
 
          ! If so specified, add the z coordinates
          ierr = unc_def_his_station_coord_vars_z(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
-                                                 jawrizc, jawrizw, id_zcs, id_zws, id_zwu, id_zcu)
+                                                 jawrizc, jawrizw, id_zcs, id_zws, id_zwu)
          if (ierr /= DFM_NOERR) then
             call mess(LEVEL_ERROR, 'Programming error, please report: unc_def_his_station_coord_vars_z returned non-zero error code')
          end if
@@ -1053,7 +1052,7 @@ contains
 
       !> Define the z-coordinate variables for the station type.
       function unc_def_his_station_coord_vars_z(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
-                                                jawrizc, jawrizw, id_zcs, id_zws, id_zwu, id_zcu) result(ierr)
+                                                jawrizc, jawrizw, id_zcs, id_zws, id_zwu) result(ierr)
          use dfm_error, only: DFM_NOERR
 
          integer, intent(in) :: ihisfile !< NetCDF id of already open dataset
@@ -1066,7 +1065,6 @@ contains
          integer, intent(out) :: id_zcs !< NetCDF variable id created for the station zcoordinate_c
          integer, intent(out) :: id_zws !< NetCDF variable id created for the station zcoordinate_w
          integer, intent(out) :: id_zwu !< NetCDF variable id created for the station zcoordinate_wu
-         integer, intent(out) :: id_zcu !< NetCDF variable id created for the station zcoordinate_cu
 
          integer :: ierr !< Result status (NF90_NOERR if successful)
          type(ug_nc_attribute) :: extra_attributes(1)
@@ -1092,17 +1090,13 @@ contains
             call definencvar(ihisfile, id_zwu, nc_precision, [id_laydimw, id_statdim, id_timedim], &
                              'zcoordinate_wu', 'vertical coordinate at nearest edge of flow element and at layer interface', 'm', &
                              trim(statcoordstring)//' zcoordinate_wu', geometry='station_geom', fillVal=dmiss, extra_attributes=extra_attributes)
-         
-            call definencvar(ihisfile, id_zcu, nc_precision, [id_laydim, id_statdim, id_timedim], &
-                             'zcoordinate_cu', 'vertical coordinate at nearest edge of flow element and at center of layer', 'm', &
-                             trim(statcoordstring)//' zcoordinate_cu', geometry='station_geom', fillVal=dmiss, extra_attributes=extra_attributes)
          end if
       end function unc_def_his_station_coord_vars_z
 
       !> Write (put) the x/y-, lat/lon- and z-coordinate variables for the station type.
       function unc_put_his_station_coord_vars(ihisfile, numobs, nummovobs, add_latlon, jawrizc, jawrizw, &
                                               id_statx, id_staty, id_statlat, id_statlon, &
-                                              id_zcs, id_zws, id_zwu, id_zcu, it_his, &
+                                              id_zcs, id_zws, id_zwu, it_his, &
                                               id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
                                               id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
          use dfm_error, only: DFM_NOERR
@@ -1120,7 +1114,6 @@ contains
          integer, intent(in) :: id_zcs !< NetCDF variable id for the station zcoordinate_c
          integer, intent(in) :: id_zws !< NetCDF variable id for the station zcoordinate_w
          integer, intent(in) :: id_zwu !< NetCDF variable id for the station zcoordinate_wu
-         integer, intent(in) :: id_zcu !< NetCDF variable id for the station zcoordinate_wu
          integer, intent(in) :: it_his !< Timeframe to write to in the his file
          integer, intent(in) :: id_geom_node_count !< NetCDF variable id created for the node count of the structures of this type
          integer, intent(in) :: id_geom_node_coordx !< NetCDF variable id created for the station geometry node x-coordinate
@@ -1144,7 +1137,7 @@ contains
          end if
 #endif
 
-         ierr = unc_put_his_station_coord_vars_z(ihisfile, numobs, nummovobs, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, id_zcu, it_his)
+         ierr = unc_put_his_station_coord_vars_z(ihisfile, numobs, nummovobs, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his)
 
          ierr = unc_put_his_station_geom_coord_vars_xy(ihisfile, numobs, it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
                                                        add_latlon, id_geom_node_coordlon, id_geom_node_coordlat)
@@ -1217,7 +1210,7 @@ contains
       end function unc_put_his_station_coord_vars_latlon
 
       !> Write (put) the z-coordinate variables for the station type.
-      function unc_put_his_station_coord_vars_z(ihisfile, numobs, nummovobs, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, id_zcu, it_his) result(ierr)
+      function unc_put_his_station_coord_vars_z(ihisfile, numobs, nummovobs, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his) result(ierr)
          use dfm_error, only: DFM_NOERR
 
          integer, intent(in) :: ihisfile !< NetCDF id of already open dataset
@@ -1228,7 +1221,6 @@ contains
          integer, intent(in) :: id_zcs !< NetCDF variable id for the station zcoordinate_c
          integer, intent(in) :: id_zws !< NetCDF variable id for the station zcoordinate_w
          integer, intent(in) :: id_zwu !< NetCDF variable id for the station zcoordinate_wu
-         integer, intent(in) :: id_zcu !< NetCDF variable id for the station zcoordinate_cu
          integer, intent(in) :: it_his !< Timeframe to write to in the his file
 
          integer :: ierr !< Result status (NF90_NOERR if successful)
@@ -1240,7 +1232,6 @@ contains
          if (jawrizc == 1) then
             do layer = 1, max(kmx,1)
                call check_netcdf_error(nf90_put_var(ihisfile, id_zcs, valobs(:, IPNT_ZCS + layer - 1), start=[layer, 1, it_his], count=[1, numobs + nummovobs, 1]))
-               call check_netcdf_error(nf90_put_var(ihisfile, id_zcu, valobs(:, IPNT_ZCU + layer - 1), start=[layer, 1, it_his], count=[1, numobs + nummovobs, 1]))
             end do
          end if
 
