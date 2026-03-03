@@ -6,22 +6,23 @@ on:
     inputs:
       commit_sha:
         description: "Commit hash"
-        required: true
-        default: "ec510b46aaba4b6d0a4599273023c66a4e69319a"
+        required: false
+        default: ""
         type: string
 
 jobs:
   cancel-testbench:
     runs-on: ubuntu-latest
 
+    env:
+      BRANCH_NAME: ${{ github.ref_name }}
+      OWNER: ${{ github.repository_owner }}
+      REPO: ${{ github.event.repository.name }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+
     steps:
       - name: Find PR for current branch
         id: find-pr
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
-          OWNER: ${{ github.repository_owner }}
-          REPO: ${{ github.event.repository.name }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN  }}
         run: |
           set -eou pipefail
 
@@ -30,21 +31,21 @@ jobs:
               --silent \
               --fail \
               --show-error \
-              --request "GET" \
-              --header "Authorization: Bearer ${TOKEN}" \
+              --request GET \
+              --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
               --header "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/${OWNER}/${REPO}/pulls?state=open&head=${OWNER}:${BRANCH_NAME}"
+              "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/pulls?state=open&head=${{ env.OWNER}}:${{ env.BRANCH_NAME}}"
           )
 
           pr_count=$(echo "${pr_list}" | jq 'length')
 
           if [ "${pr_count}" -eq 0 ]; then
-            echo "No open PR found for branch ${BRANCH_NAME}"
+            echo "No open PR found for branch ${{ env.BRANCH_NAME }}"
             exit 0
           fi
 
           if [ "${pr_count}" -gt 1 ]; then
-            echo "Multiple PRs found for branch ${BRANCH_NAME}. Cannot proceed further."
+            echo "Multiple PRs found for branch ${{ env.BRANCH_NAME }}. Cannot proceed further."
             exit 1
           fi
 
@@ -67,7 +68,7 @@ jobs:
         with:
           keeper-secret-config: ${{ env.KSM_APP_CONFIG }}
           secrets: |-
-            keeper://${{ env.KSM_RECORD_UID }}/field/password > token
+            keeper://${{ env.KSM_RECORD_UID }}/field/password > teamcity_token
 
       - name: Cancel testbench
         if: steps.retrieve-ksm-credentials.outcome == 'success'
@@ -78,6 +79,32 @@ jobs:
           teamcity_project_id="Delft3D"
           branch="pull/${{ steps.find-pr.outputs.pr_number }}"
           commit_sha="${{ github.event.inputs.commit_sha }}"
+          # if the commit sha is not provided, default to latest on branch
+          if [[ -z "${commit_sha}" ]]; then
+            commit_sha=$(
+              curl \
+                --silent \
+                --fail \
+                --show-error \
+                --request GET \
+                --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
+                --header "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/branches/${{ env.BRANCH }}" \
+              | jq -r .commit.sha
+            )
+            # also possible form the commits end point
+            # commit_sha=$(
+            #   curl \
+            #     --silent \
+            #     --fail \
+            #     --show-error \
+            #     --request GET \
+            #     --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
+            #     --header "Accept: application/vnd.github+json" \
+            #     "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/commits/${{ env.BRANCH }}" \
+            #   | jq -r .sha
+            # )
+          fi
           platforms=("Linux" "Windows")
 
           for platform in "${platforms[@]}"; do
@@ -98,8 +125,8 @@ jobs:
                --silent \
                 --fail \
                 --show-error \
-                --request "GET" \
-                --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.token }}" \
+                --request GET \
+                --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
                 --header "Accept: application/json" \
                 "${request_url}"
             )
@@ -112,8 +139,8 @@ jobs:
               echo "Cancelling ${build_type}..."
               id=$(echo "${builds}" | jq -r '.build[0].id')
               curl \
-                --request "POST" \
-                --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.token }}" \
+                --request POST \
+                --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
                 --header "Accept: application/json" \
                 "${teamcity_builds}/id:${id}" \
                 -d '{"comment":"Cancel build from GitHub","readdIntoQueue":false}'
