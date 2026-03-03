@@ -48,6 +48,7 @@ contains
       use m_poshcheck
       use m_furu
       use m_flow ! when entering this subroutine, s1=s0, u1=u0, etc
+      use m_laterals, only: qlatwaq, qlatwaq0
       use precision, only: dp
       use m_flowgeom
       use Timers
@@ -80,9 +81,9 @@ contains
       last_iteration = .false.
 
       if (wrwaqon) then
-         ! store current cumulative qsrc and qlat for waq at the beginning of this time step
-         if (allocated(qsrcwaq)) then
-            qsrcwaq0 = qsrcwaq
+         ! store current cumulative source_sink_water_discharge and qlat for waq at the beginning of this time step
+         if (allocated(source_sink_cumulative_discharge_waq)) then
+            source_sink_cumulative_discharge_waq_previous = source_sink_cumulative_discharge_waq
          end if
          if (allocated(qlatwaq)) then
             qlatwaq0 = qlatwaq
@@ -180,10 +181,10 @@ contains
                      end if
 
                      if (wrwaqon) then
-                        ! restore cumulative qsrc and qlat for waq from start of this time step to avoid
+                        ! restore cumulative source_sink_water_discharge and qlat for waq from start of this time step to avoid
                         ! double accumulation and use of incorrect dts in case of time step reduction
-                        if (allocated(qsrcwaq)) then
-                           qsrcwaq = qsrcwaq0
+                        if (allocated(source_sink_cumulative_discharge_waq)) then
+                           source_sink_cumulative_discharge_waq = source_sink_cumulative_discharge_waq_previous
                         end if
                         if (allocated(qlatwaq)) then
                            qlatwaq = qlatwaq0

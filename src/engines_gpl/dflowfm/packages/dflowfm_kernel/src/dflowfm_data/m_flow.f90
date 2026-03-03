@@ -191,8 +191,6 @@ module m_flow ! flow arrays-999
    !<       based on real(kind=dp) variables.
    real(kind=dp), allocatable :: flowCourantNumber(:) !< Courant number
 
-! node related, dim = ndkx
-
    real(kind=dp), allocatable :: volau(:) !< trial, au based cell volume (m3)
    real(kind=dp), allocatable, target :: ucx(:) !< [m/s] cell center velocity, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target :: ucy(:) !< [m/s] cell center velocity, global y-dir (m/s) {"location": "face", "shape": ["ndkx"]}
@@ -359,7 +357,7 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target :: viusp(:) !< [m2/s] user defined spatial eddy viscosity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    real(kind=dp), allocatable, target :: diusp(:) !< [m2/s] user defined spatial eddy diffusivity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    !< so in transport, total diffusivity = viu*sigdifi + diusp
-   real, allocatable :: fcori(:) !< spatially variable fcorio coeff at u point (1/s)
+   real(kind=dp), allocatable :: fcori(:) !< spatially variable fcorio coeff at u point (1/s)
    real(kind=dp), allocatable :: fvcoro(:) !< 3D adamsbashford u point (m/s2)
 
    real(kind=dp), allocatable :: plotlin(:) !< for plotting on u points
