@@ -565,12 +565,12 @@ contains
    !flow node, and this is the transport redistributed by the nodal point relation.
    !
    subroutine apply_nodal_point_relation()
-      use precision, only: dp
 
    !!
    !! Declarations
    !!
 
+      use precision, only: dp
       use Messagehandling, only: SetMessage, LEVEL_FATAL, mess
       use message_module, only: writemessages, write_error
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -586,28 +586,20 @@ contains
    !! Local variables
    !!
 
-
       integer :: j, ised, L, kinod
 
-      integer :: number_nodes_with_nodal_relation ![1]
-      integer, dimension(:), allocatable :: networknodes_with_nodal_relation ![number_nodes_with_nodal_relation]
-      real(kind=dp), dimension(:,:), allocatable :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-      real(kind=dp), dimension(:), allocatable :: total_width_out ![number_nodes_with_nodal_relation]
-      real(kind=dp), dimension(:,:), allocatable :: width_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-      integer, dimension (:,:), allocatable :: link_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-      integer, dimension (:,:), allocatable :: link_dir_out ![number_nodes_with_nodal_relation,link]
-      integer, dimension (:), allocatable :: number_links_out ![number_nodes_with_nodal_relation]
-      integer, dimension (:), allocatable :: number_links_in ![number_nodes_with_nodal_relation]
-      integer, dimension (:,:), allocatable :: link_in ![number_nodes_with_nodal_relation]
-      integer, dimension (:), allocatable :: flownode_junction ![number_nodes_with_nodal_relation]
-      real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node
-      
-      !integer :: link_in
-      !integer, dimension(2) :: link_out
-      !integer, dimension(2) :: node_out
-      
-      integer, dimension(:), allocatable :: branInIDLn !< ID of Incoming Branch (If there is only one) (nnod)
-
+      integer :: n_junctions !< Number of junctions in the domain (i.e., number of geometry nodes with more than two connections)
+      integer, dimension(:), allocatable :: idx_junctions !< Indices of the geometry nodes which are junctions [n_junctions]
+      real(kind=dp), dimension(:,:), allocatable :: water_discharge_out !< Water discharge out of each branch for a junction [n_junctions,maxnumberofconnections]
+      real(kind=dp), dimension(:), allocatable :: total_width_out ![n_junctions]
+      real(kind=dp), dimension(:,:), allocatable :: width_out ![n_junctions,maxnumberofconnections]
+      integer, dimension (:,:), allocatable :: links_out ![n_junctions,maxnumberofconnections]
+      integer, dimension (:,:), allocatable :: link_dir_out ![n_junctions,link]
+      integer, dimension (:), allocatable :: n_links_out ![n_junctions]
+      integer, dimension (:), allocatable :: n_links_in ![n_junctions]
+      integer, dimension (:,:), allocatable :: links_in ![n_junctions]
+      integer, dimension (:), allocatable :: flownode_junction ![n_junctions]
+      real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node      
       integer, dimension(:, :, :), allocatable :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
                                                          !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
                                                          !  1: Sediment enters the flow node.
@@ -632,9 +624,7 @@ contains
       !                                                        
       real(fp), dimension(:), allocatable :: total_water_discharge_out !< sum of outgoing discharge at 1d node
 
-      real(kind=dp) :: ldir
       real(kind=dp) :: faccheck
-      real(kind=dp) :: qb1d, wb1d
       real(kind=dp) :: sbrratio, qbrratio, Qbr1, Qbr2 !q_sb
 
       type(t_noderelation), pointer :: pNodRel
@@ -649,7 +639,7 @@ contains
    !! Execute
    !!
       call nodal_point_relation_data( &
-total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out,flownode_junction,number_links_in,link_in)
+total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir,idx_junctions,n_junctions,n_links_out,links_out,link_dir_out,width_out,water_discharge_out,flownode_junction,n_links_in,links_in)
       !
       ! Determining sediment redistribution
       !
@@ -659,34 +649,34 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
          ! mor%nrd%nFractions = or 1 (One for All Fractions) or lsedtot (One for Every Fraction)
 
 
-         do kinod = 1, number_nodes_with_nodal_relation
+         do kinod = 1, n_junctions
              
             call get_nodal_point_relation_parameters(&
-                pNodRel, &
-                flownode_junction,number_links_out,number_links_in,link_in,ised,kinod)
+                pNodRel, & !output
+                flownode_junction,n_links_out,n_links_in,links_in,ised,kinod) !input
             
             facCheck = 0._dp
             
-            do j = 1, number_links_out(kinod)
-               L = link_out(kinod,j) 
-               Ldir=link_dir_out(kinod,j)
-               qb1d = water_discharge_out(kinod, j) 
-               wb1d = width_out(kinod, j)
+            do j = 1, n_links_out(kinod)
+               L = links_out(kinod,j) 
    
                if (total_water_discharge_out(kinod) > 0.0_fp) then
                
                   if (pNodRel%Method == 'function') then
-                     call nodal_point_relation_function(facCheck,e_sbcn(L, ised),pNodRel,link_dir_out,width_out,total_width_out,water_discharge_out,total_water_discharge_out,total_sediment_transport_out,kinod,j,ised)                  
+                     call nodal_point_relation_function(&
+                         facCheck,e_sbcn(L, ised),& !output
+                         pNodRel,link_dir_out,width_out,total_width_out,water_discharge_out,& !input
+                         total_water_discharge_out,total_sediment_transport_out,kinod,j,ised) !input                 
                   elseif (pNodRel%Method == 'table') then
                
                      facCheck = 1.0_dp
                
                      if (L == pNodRel%BranchOut1Ln) then
-                        Qbr1 = qb1d
-                        Qbr2 = total_water_discharge_out(kinod) - qb1d
+                        Qbr1 = water_discharge_out(kinod, j) 
+                        Qbr2 = total_water_discharge_out(kinod) - water_discharge_out(kinod, j) 
                      elseif (L == pNodRel%BranchOut2Ln) then
-                        Qbr1 = total_water_discharge_out(kinod) - qb1d
-                        Qbr2 = qb1d
+                        Qbr1 = total_water_discharge_out(kinod) - water_discharge_out(kinod, j) 
+                        Qbr2 = water_discharge_out(kinod, j) 
                      else
                         call SetMessage(LEVEL_FATAL, 'Unknown Branch Out (This should never happen!)')
                      end if
@@ -696,10 +686,10 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
                      SbrRatio = interpolate(pNodRel%Table, QbrRatio)
                
                      if (L == pNodRel%BranchOut1Ln) then
-                        e_sbcn(L, ised) = -Ldir * SbrRatio * total_sediment_transport_out(kinod, ised) / (1 + SbrRatio) / wb1d
+                        e_sbcn(L, ised) = -link_dir_out(kinod,j) * SbrRatio * total_sediment_transport_out(kinod, ised) / (1 + SbrRatio) / width_out(kinod, j)
                         e_sbct(L, ised) = 0.0
                      elseif (L == pNodRel%BranchOut2Ln) then
-                        e_sbcn(L, ised) = -Ldir * total_sediment_transport_out(kinod, ised) / (1 + SbrRatio) / wb1d
+                        e_sbcn(L, ised) = -link_dir_out(kinod,j) * total_sediment_transport_out(kinod, ised) / (1 + SbrRatio) / width_out(kinod, j)
                         e_sbct(L, ised) = 0.0
                      end if
                
@@ -709,10 +699,10 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
                       !    call SetMessage(LEVEL_FATAL, 'Only 3 branches can connect to a node when using the nodal point relation `BollaPittaluga`')
                       !endif
                       !call nodal_point_relation_indices( &
-                      !     link_in,link_out,node_out, & !output
+                      !     links_in,links_out,node_out, & !output
                       !     k3,j,sb_dir,inod,ised   & !input
                       !     )
-                      !call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,total_sediment_transport_out(kinod, ised),link_in,link_out,node_out,ised)
+                      !call nodal_point_relation_BollaPittaluga(e_sbcn(L,ised),pNodRel,total_sediment_transport_out(kinod, ised),links_in,links_out,node_out,ised)
                       !
                       !!e_sbcn(L,ised)=q_sb
                   else
@@ -2107,7 +2097,7 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
    !nodes downstream of the outgoing branches. The relation also requires a parameter `alpha_BP` which is 
    !provided in the input file and can be set by the user.
    !
-   subroutine nodal_point_relation_BollaPittaluga(sq_sb,pNodRel_in,Q_sa,link_in,link_out,node_out,ised)
+   subroutine nodal_point_relation_BollaPittaluga(sq_sb,pNodRel_in,Q_sa,links_in,links_out,node_out,ised)
 
    use precision, only: dp
    use m_flowgeom, only: wu_mor, bl
@@ -2124,8 +2114,8 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
    ! Input
    type(t_noderelation), target, intent(in) :: pNodRel_in
    real(kind=dp), intent(in) :: Q_sa
-   integer, intent(in) :: link_in
-   integer, dimension(2), intent(in) :: link_out
+   integer, intent(in) :: links_in
+   integer, dimension(2), intent(in) :: links_out
    integer, dimension(2), intent(in) :: node_out
    integer, intent(in) :: ised
 
@@ -2150,32 +2140,32 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
    
    pNodRel => pNodRel_in
 
-   dbl_dy=(bl(node_out(1))-bl(node_out(2)))/(wu_mor(link_out(1))+wu_mor(link_out(2))/2)                           
+   dbl_dy=(bl(node_out(1))-bl(node_out(2)))/(wu_mor(links_out(1))+wu_mor(links_out(2))/2)                           
    
-   B_a=wu_mor(link_in)
-   B_b=wu_mor(link_out(1))
-   B_c=wu_mor(link_out(2))
+   B_a=wu_mor(links_in)
+   B_b=wu_mor(links_out(1))
+   B_c=wu_mor(links_out(2))
    
-   D_a=max(q1_main(link_in),Q_THRESH)/(max(u1(link_in) * u_to_umain(link_in),U_THRESH))
-   D_b=max(q1_main(link_out(1)),Q_THRESH)/(max(u1(link_out(1)) * u_to_umain(link_out(1)),U_THRESH))
-   D_c=max(q1_main(link_out(2)),Q_THRESH)/(max(u1(link_out(2)) * u_to_umain(link_out(2)),U_THRESH))
+   D_a=max(q1_main(links_in),Q_THRESH)/(max(u1(links_in) * u_to_umain(links_in),U_THRESH))
+   D_b=max(q1_main(links_out(1)),Q_THRESH)/(max(u1(links_out(1)) * u_to_umain(links_out(1)),U_THRESH))
+   D_c=max(q1_main(links_out(2)),Q_THRESH)/(max(u1(links_out(2)) * u_to_umain(links_out(2)),U_THRESH))
    
-   Q_a=q1_main(link_in)*B_a
-   Q_b=q1_main(link_out(1))*B_b
-   Q_c=q1_main(link_out(2))*B_c
+   Q_a=q1_main(links_in)*B_a
+   Q_b=q1_main(links_out(1))*B_b
+   Q_c=q1_main(links_out(2))*B_c
    
    !Q_sa=total_sediment_transport_out(inod, ised)
    
    L_a=pNodRel%alpha_BP*B_a
    
    !u=Q_a/D_a/B_a
-   u = max(u1(link_in) * u_to_umain(link_in),U_THRESH) !we later divide by `u`
+   u = max(u1(links_in) * u_to_umain(links_in),U_THRESH) !we later divide by `u`
    
    Q_y=Q_b-Q_a*(B_b/(B_b+B_c))
    D_abc=0.5*((D_b+D_c)/2+D_a)
    v=Q_y/D_abc/L_a
    
-   call compute_ftheta(ftheta,ised,link_out(1))
+   call compute_ftheta(ftheta,ised,links_out(1))
    
    sq_sa=Q_sa/B_a
    sq_sy=q_sa*(v/u-1/ftheta*dbl_dy)
@@ -2189,7 +2179,7 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
    !> Compute the indices of the incoming and outgoing links and the downstream nodes.
    !
    subroutine nodal_point_relation_indices( &
-                                 link_in,link_out,node_out,& !output
+                                 links_in,links_out,node_out,& !output
                                  k3,j,sb_dir,inod,ised  & !input
            )
    
@@ -2201,8 +2191,8 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
    implicit none
 
    ! Output variables
-   integer, intent(out) :: link_in
-   integer, dimension(2), intent(out) :: link_out
+   integer, intent(out) :: links_in
+   integer, dimension(2), intent(out) :: links_out
    integer, dimension(2), intent(out) :: node_out
 
    ! Input variables
@@ -2217,10 +2207,10 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
    
    !
    !Find the link number of the outgoing branches.
-   !Ouput: `link_out`
+   !Ouput: `links_out`
    !
    !One of the is the one we are processing (index `j`) 
-   link_out(1)=abs(nd(k3)%ln(j))
+   links_out(1)=abs(nd(k3)%ln(j))
    !There must be another one with direction -1 and different than `j`.
    j2 = -1
    j3 = -1
@@ -2237,22 +2227,22 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
    if (j3 == -1) then
       call SetMessage(LEVEL_FATAL, 'There must be an incomming branch for applying the nodal point relation by BollaPittaluga.')
    end if
-   link_out(2)=abs(nd(k3)%ln(j2))
-   link_in=abs(nd(k3)%ln(j3))
+   links_out(2)=abs(nd(k3)%ln(j2))
+   links_in=abs(nd(k3)%ln(j3))
    
    !Find the flownode connected to a downstream link `node_out` which is not the junction flownode (with index `k3`)
    do kl=1,2 !loop on the two downstream links
-      if (ln(1,link_out(kl)) == k3) then
-          node_out(kl) = ln(2,link_out(kl))
+      if (ln(1,links_out(kl)) == k3) then
+          node_out(kl) = ln(2,links_out(kl))
       else
-          node_out(kl) = ln(1,link_out(kl))
+          node_out(kl) = ln(1,links_out(kl))
       end if
    end do
                             
            end subroutine
 
 subroutine nodal_point_relation_data( &
-total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out,flownode_junction,number_links_in,link_in)
+total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir,idx_junctions,n_junctions,n_links_out,links_out,link_dir_out,width_out,water_discharge_out,flownode_junction,n_links_in,links_in)
 
 !Modules
 use precision, only: dp
@@ -2264,7 +2254,6 @@ use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
 use Messagehandling, only: LEVEL_FATAL, mess, errmsg
 
 !Output
-integer, dimension(:), allocatable, intent(out) :: branInIDLn !< ID of Incoming Branch (If there is only one) (nnod)
 integer, dimension(:, :, :), allocatable, intent(out) :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
                                                    !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
                                                    !  1: Sediment enters the flow node.
@@ -2287,20 +2276,19 @@ integer, dimension(:, :, :), allocatable, intent(out) :: sb_dir !< direction of 
 !                                               \         
 !                                                []       
 !                                                        
-real(fp), dimension(:), allocatable, intent(out) :: total_water_discharge_out !< sum of outgoing discharge at 1d node
-real(fp), dimension(:), allocatable, intent(out) :: total_width_out !< sum of outgoing main channel widths
-real(fp), dimension(:, :), allocatable, intent(out) :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node
-integer, dimension(:), allocatable, intent(out) :: networknodes_with_nodal_relation !< index of the netweork nodes in which a nodal point relation has to be applied
-integer, intent(out) :: number_nodes_with_nodal_relation !< number of nodes with nodal relation [-]
-integer, dimension (:,:), allocatable, intent(out) :: link_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-integer, dimension (:,:), allocatable, intent(out) :: link_dir_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-integer, dimension (:), allocatable, intent(out) :: number_links_out ![number_nodes_with_nodal_relation]
-integer, dimension (:,:), allocatable, intent(out) :: link_in ![number_nodes_with_nodal_relation,maxnumberofconnections]
-!integer, dimension (:,:), allocatable, intent(out) :: link_dir_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-integer, dimension (:), allocatable, intent(out) :: number_links_in ![number_nodes_with_nodal_relation]
-real(fp), dimension (:,:), allocatable, intent(out) :: width_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-real(fp), dimension (:,:), allocatable, intent(out) :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-integer, dimension (:), allocatable, intent(out) :: flownode_junction ![number_nodes_with_nodal_relation]
+real(fp), dimension(:), allocatable, intent(out) :: total_water_discharge_out 
+real(fp), dimension(:), allocatable, intent(out) :: total_width_out 
+real(fp), dimension(:, :), allocatable, intent(out) :: total_sediment_transport_out 
+integer, dimension(:), allocatable, intent(out) :: idx_junctions 
+integer, intent(out) :: n_junctions 
+integer, dimension (:,:), allocatable, intent(out) :: links_out ![n_junctions,maxnumberofconnections]
+integer, dimension (:,:), allocatable, intent(out) :: link_dir_out ![n_junctions,maxnumberofconnections]
+integer, dimension (:), allocatable, intent(out) :: n_links_out ![n_junctions]
+integer, dimension (:,:), allocatable, intent(out) :: links_in ![n_junctions,maxnumberofconnections]
+integer, dimension (:), allocatable, intent(out) :: n_links_in ![n_junctions]
+real(fp), dimension (:,:), allocatable, intent(out) :: width_out ![n_junctions,maxnumberofconnections]
+real(fp), dimension (:,:), allocatable, intent(out) :: water_discharge_out ![n_junctions,maxnumberofconnections]
+integer, dimension (:), allocatable, intent(out) :: flownode_junction ![n_junctions]
       
 !Locals
 logical :: error
@@ -2324,16 +2312,13 @@ if (istat == 0) then
    allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
 end if
 if (istat == 0) then
-   allocate (branInIDLn(network%nds%Count), stat=istat)
+   allocate (idx_junctions(network%nds%Count), stat=istat)
 end if
 if (istat == 0) then
-   allocate (networknodes_with_nodal_relation(network%nds%Count), stat=istat)
+   allocate (n_links_out(network%nds%Count), stat=istat)
 end if
 if (istat == 0) then
-   allocate (number_links_out(network%nds%Count), stat=istat)
-end if
-if (istat == 0) then
-   allocate (link_out(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
+   allocate (links_out(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
 end if
 if (istat == 0) then
    allocate (link_dir_out(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
@@ -2345,10 +2330,10 @@ if (istat == 0) then
    allocate (water_discharge_out(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
 end if
 if (istat == 0) then
-   allocate (link_in(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
+   allocate (links_in(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
 end if
 if (istat == 0) then
-   allocate (number_links_in(network%nds%Count), stat=istat)
+   allocate (n_links_in(network%nds%Count), stat=istat)
 end if
 if (istat == 0) then
    allocate (flownode_junction(network%nds%Count), stat=istat)
@@ -2366,11 +2351,10 @@ total_water_discharge_out(:) = 0_dp !Total water discharge that exits the geomet
 total_width_out(:) = 0_dp !Width of the downstream branches.
 total_sediment_transport_out(:, :) = 0_dp !Total sediment discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. 
 sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometry (flow) node. 
-BranInIDLn(:) = 0
 width_out = 0_dp
 water_discharge_out = 0_dp
-number_links_out=0
-number_links_in=0
+n_links_out=0
+n_links_in=0
 !
 ! Apply nodal relations to transport
 !
@@ -2378,17 +2362,17 @@ number_links_in=0
 !`total_sediment_transport_out` is the sediment that exits the flow node and must be redistributed over the downstream branches. 
 !The sediment that is redistributed to the downstream branches is computed as the sum of the sediment that
 !exits the geometry (flow) node at the junction. 
-number_nodes_with_nodal_relation=0
+n_junctions=0
 do inod = 1, network%nds%Count
    pnod => network%nds%node(inod)
    if (pnod%numberofconnections == 1) then
       cycle
    end if
    if (pnod%nodeType == nt_LinkNode) then ! connection node
-      number_nodes_with_nodal_relation=number_nodes_with_nodal_relation+1
-      networknodes_with_nodal_relation(number_nodes_with_nodal_relation)=inod
+      n_junctions=n_junctions+1
+      idx_junctions(n_junctions)=inod
       k1 = pnod%gridnumber
-      flownode_junction(number_nodes_with_nodal_relation)=k1
+      flownode_junction(n_junctions)=k1
 
       do j = 1, nd(k1)%lnx 
          L = abs(nd(k1)%ln(j))
@@ -2397,26 +2381,21 @@ do inod = 1, network%nds%Count
          
          if (u1(L) * Ldir < 0_dp) then
             ! Outgoing discharge
-            number_links_out(number_nodes_with_nodal_relation)=number_links_out(number_nodes_with_nodal_relation)+1 
-            link_out(number_nodes_with_nodal_relation,number_links_out(number_nodes_with_nodal_relation))=L
-            link_dir_out(number_nodes_with_nodal_relation,number_links_out(number_nodes_with_nodal_relation))=Ldir
-            width_out(number_nodes_with_nodal_relation,number_links_out(number_nodes_with_nodal_relation))=wb1d
+            n_links_out(n_junctions)=n_links_out(n_junctions)+1 
+            links_out(n_junctions,n_links_out(n_junctions))=L
+            link_dir_out(n_junctions,n_links_out(n_junctions))=Ldir
+            width_out(n_junctions,n_links_out(n_junctions))=wb1d
             qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
-            water_discharge_out(number_nodes_with_nodal_relation,number_links_out(number_nodes_with_nodal_relation)) = qb1d
-            total_width_out(number_nodes_with_nodal_relation) = total_width_out(number_nodes_with_nodal_relation) + wb1d
-            total_water_discharge_out(number_nodes_with_nodal_relation) = total_water_discharge_out(number_nodes_with_nodal_relation) + qb1d
+            water_discharge_out(n_junctions,n_links_out(n_junctions)) = qb1d
+            total_width_out(n_junctions) = total_width_out(n_junctions) + wb1d
+            total_water_discharge_out(n_junctions) = total_water_discharge_out(n_junctions) + qb1d
             do ised = 1, lsedtot
-               sb_dir(number_nodes_with_nodal_relation, ised, j) = -1 ! set direction to outgoing
+               sb_dir(n_junctions, ised, j) = -1 ! set direction to outgoing
             end do
          else
             ! Incoming discharge
-            number_links_in=number_links_in+1 
-            if (branInIDLn(inod) == 0) then
-               branInIDLn(inod) = L
-            else
-               branInIDLn(inod) = -444 ! multiple incoming branches
-            end if
-            link_in(number_nodes_with_nodal_relation,number_links_in)=L
+            n_links_in=n_links_in+1 
+            links_in(n_junctions,n_links_in)=L
          end if
          
          do ised = 1, lsedtot
@@ -2428,15 +2407,15 @@ do inod = 1, network%nds%Count
                !We apply this to the standard scheme and to the nodes with only 2 connections, as in this second case
                !we have not modified the link direction and the same logic applies as for the standard scheme.
                ! this works for one incoming branch TO DO: WO
-               if (sb_dir(number_nodes_with_nodal_relation, ised, j) == -1) then
-                  total_sediment_transport_out(number_nodes_with_nodal_relation, ised) = total_sediment_transport_out(number_nodes_with_nodal_relation, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
+               if (sb_dir(n_junctions, ised, j) == -1) then
+                  total_sediment_transport_out(n_junctions, ised) = total_sediment_transport_out(n_junctions, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
                end if
             else !FM1DIMP
                !V: In the FM1DIMP scheme at <e_sbcn> of the incoming links we have the upwind transport, i.e., the transport
                !in the ghost cell for multivaluedness of each branch. By summing over all of them we have the total
                !transport incoming to the junction, which we want to redistribute.
-               if (sb_dir(number_nodes_with_nodal_relation, ised, j) == 1) then
-                  total_sediment_transport_out(number_nodes_with_nodal_relation, ised) = total_sediment_transport_out(number_nodes_with_nodal_relation, ised) + wb1d * sb1d ! incoming transport is positive
+               if (sb_dir(n_junctions, ised, j) == 1) then
+                  total_sediment_transport_out(n_junctions, ised) = total_sediment_transport_out(n_junctions, ised) + wb1d * sb1d ! incoming transport is positive
                end if
             end if
          end do
@@ -2456,10 +2435,10 @@ real(kind=dp), intent(inout) :: facCheck
 real(kind=dp), intent(out) :: sediment_transport_rate
 
 type(t_noderelation), target, intent(in) :: pNodRel
-integer, dimension (:,:), allocatable, intent(in) :: link_dir_out ![number_nodes_with_nodal_relation,link]
-real(kind=dp), dimension(:,:), allocatable, intent(in) :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
-real(kind=dp), dimension(:), allocatable, intent(in) :: total_width_out ![number_nodes_with_nodal_relation]
-real(kind=dp), dimension(:,:), allocatable, intent(in) :: width_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+integer, dimension (:,:), allocatable, intent(in) :: link_dir_out ![n_junctions,link]
+real(kind=dp), dimension(:,:), allocatable, intent(in) :: water_discharge_out ![n_junctions,maxnumberofconnections]
+real(kind=dp), dimension(:), allocatable, intent(in) :: total_width_out ![n_junctions]
+real(kind=dp), dimension(:,:), allocatable, intent(in) :: width_out ![n_junctions,maxnumberofconnections]
 real(fp), dimension(:), allocatable, intent(in) :: total_water_discharge_out !< sum of outgoing discharge at 1d node
 real(fp), dimension(:, :), allocatable, intent(in) :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node
 integer, intent(in) :: kinod
@@ -2487,7 +2466,7 @@ end subroutine nodal_point_relation_function
 !!
 subroutine get_nodal_point_relation_parameters(&
     pNodRel, & !output
-    flownode_junction,number_links_out,number_links_in,link_in,ised,kinod) !input
+    flownode_junction,n_links_out,n_links_in,links_in,ised,kinod) !input
 
 use morphology_data_module, only: t_nodefraction, t_noderelation
 use m_sediment, only: stmpar
@@ -2500,9 +2479,9 @@ type(t_noderelation), pointer, intent(out) :: pNodRel !< pointer to the nodal po
 
 !Input
 integer, intent(in) :: flownode_junction(:) !< array of junction node indices
-integer, intent(in) :: number_links_out(:) !< array of number of outgoing links per junction node
-integer, intent(in) :: number_links_in(:) !< array of number of incoming links per junction node
-integer, intent(in) :: link_in(:,:) !< array of incoming link indices per junction node
+integer, intent(in) :: n_links_out(:) !< array of number of outgoing links per junction node
+integer, intent(in) :: n_links_in(:) !< array of number of incoming links per junction node
+integer, intent(in) :: links_in(:,:) !< array of incoming link indices per junction node
 integer, intent(in) :: ised !< sediment fraction index
 integer, intent(in) :: kinod !< index of the current junction node in the arrays
 
@@ -2514,7 +2493,7 @@ type(t_nodefraction), pointer :: pFrac
 !Execute   
 iFrac = min(ised, stmpar%nrd%nFractions)
 pFrac => stmpar%nrd%nodefractions(iFrac)
-nrd_idx = get_noderel_idx(pFrac, flownode_junction(kinod), number_links_out(kinod),number_links_in(kinod),link_in(kinod,1))
+nrd_idx = get_noderel_idx(pFrac, flownode_junction(kinod), n_links_out(kinod),n_links_in(kinod),links_in(kinod,1))
 pNodRel => pFrac%noderelations(nrd_idx)
             
 end subroutine get_nodal_point_relation_parameters
