@@ -270,7 +270,7 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
    
 end subroutine ini_noderel
 
-integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, number_links_out, number_links_in, link_in)
+integer function get_noderel_idx(pFrac, nodeIDIdx, number_links_out, number_links_in, link_in)
 !
 !    Function: - Get the Nodal Point Relation for the Current Node/Branch
 !                If nothing Found return 0 (zero which means default)
@@ -279,7 +279,6 @@ integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, number_links_out, numbe
    use messageHandling
    
    ! Global variables
-   integer                                :: iNod     !< Index of Actual Node
    type(t_nodefraction)                   :: pFrac
    integer                                :: nodeIDIdx
    integer                                :: number_links_out

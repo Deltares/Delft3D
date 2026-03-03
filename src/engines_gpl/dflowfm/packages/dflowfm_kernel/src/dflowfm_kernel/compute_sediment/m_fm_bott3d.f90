@@ -573,7 +573,7 @@ contains
 
       use Messagehandling, only: SetMessage, LEVEL_FATAL, mess
       use message_module, only: writemessages, write_error
-      use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
+      use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
       use m_flowgeom, only: nd
       use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
       use m_sediment, only: stmpar
@@ -643,7 +643,6 @@ contains
 
       type(t_nodefraction), pointer :: pFrac
       type(t_noderelation), pointer :: pNodRel
-      type(t_node), pointer :: pnod
 
    !!
    !! Allocate and initialize
@@ -677,9 +676,8 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
             iFrac = min(ised, stmpar%nrd%nFractions)
             pFrac => stmpar%nrd%nodefractions(iFrac)
             inod=networknodes_with_nodal_relation(kinod)
-            pnod => network%nds%node(inod)
             !link_in non-contiguous data but small array so not a problem for cache performance
-            nrd_idx = get_noderel_idx(inod, pFrac, flownode_junction(kinod), number_links_out(kinod),number_links_in(kinod),link_in(kinod,1))
+            nrd_idx = get_noderel_idx(pFrac, flownode_junction(kinod), number_links_out(kinod),number_links_in(kinod),link_in(kinod,1))
             pNodRel => pFrac%noderelations(nrd_idx)
             
             facCheck = 0._dp
