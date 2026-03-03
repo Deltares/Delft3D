@@ -576,7 +576,6 @@ contains
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
       use m_flowgeom, only: nd
       use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
-      use m_sediment, only: stmpar
       use m_ini_noderel, only: get_noderel_idx
       use m_tables, only: interpolate
       use morphology_data_module, only: t_nodefraction, t_noderelation
@@ -588,7 +587,7 @@ contains
    !!
 
 
-      integer :: inod, j, ised, ifrac, nrd_idx, L, kinod
+      integer :: j, ised, L, kinod
 
       integer :: number_nodes_with_nodal_relation ![1]
       integer, dimension(:), allocatable :: networknodes_with_nodal_relation ![number_nodes_with_nodal_relation]
@@ -641,7 +640,6 @@ contains
       real(kind=dp) :: qb1d, wb1d
       real(kind=dp) :: sbrratio, qbrratio, Qbr1, Qbr2 !q_sb
 
-      type(t_nodefraction), pointer :: pFrac
       type(t_noderelation), pointer :: pNodRel
 
    !!
@@ -669,16 +667,9 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
 
          do kinod = 1, number_nodes_with_nodal_relation
              
-            !call get_nodal_point_relation_parameters(&
-            !    pNodRel, &
-            !    networknodes_with_nodal_relation,flownode_junction,ised,kinod)
-            
-            iFrac = min(ised, stmpar%nrd%nFractions)
-            pFrac => stmpar%nrd%nodefractions(iFrac)
-            inod=networknodes_with_nodal_relation(kinod)
-            !link_in non-contiguous data but small array so not a problem for cache performance
-            nrd_idx = get_noderel_idx(pFrac, flownode_junction(kinod), number_links_out(kinod),number_links_in(kinod),link_in(kinod,1))
-            pNodRel => pFrac%noderelations(nrd_idx)
+            call get_nodal_point_relation_parameters(&
+                pNodRel, &
+                flownode_junction,number_links_out,number_links_in,link_in,ised,kinod)
             
             facCheck = 0._dp
             
@@ -2494,4 +2485,35 @@ sediment_transport_rate = -link_dir_out(kinod,j) * facQ * facW * sb_out(kinod, i
 
 end subroutine nodal_point_relation_function
 
+subroutine get_nodal_point_relation_parameters(&
+                pNodRel, &
+                flownode_junction,number_links_out,number_links_in,link_in,ised,kinod)
+
+   use morphology_data_module, only: t_nodefraction, t_noderelation
+   use m_sediment, only: stmpar
+   use m_ini_noderel, only: get_noderel_idx
+
+   implicit none
+
+   ! Arguments
+   type(t_noderelation), pointer, intent(out) :: pNodRel
+   integer, intent(in) :: flownode_junction(:)
+   integer, intent(in) :: number_links_out(:)
+   integer, intent(in) :: number_links_in(:)
+   integer, intent(in) :: link_in(:,:)
+   integer, intent(in) :: ised
+   integer, intent(in) :: kinod
+
+   ! Local variables
+   integer :: iFrac
+   integer :: nrd_idx
+   type(t_nodefraction), pointer :: pFrac
+
+   
+iFrac = min(ised, stmpar%nrd%nFractions)
+pFrac => stmpar%nrd%nodefractions(iFrac)
+nrd_idx = get_noderel_idx(pFrac, flownode_junction(kinod), number_links_out(kinod),number_links_in(kinod),link_in(kinod,1))
+pNodRel => pFrac%noderelations(nrd_idx)
+            
+end subroutine get_nodal_point_relation_parameters
 end module m_fm_bott3d
