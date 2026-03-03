@@ -668,7 +668,8 @@ total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir
                      call nodal_point_relation_function(&
                          facCheck,e_sbcn(L, ised),& !output
                          pNodRel,link_dir_out,width_out,total_width_out,water_discharge_out,& !input
-                         total_water_discharge_out,total_sediment_transport_out,kinod,j,ised) !input                 
+                         total_water_discharge_out,total_sediment_transport_out,kinod,j,ised) !input  
+                     e_sbct(L, ised) = 0.0                     
                   elseif (pNodRel%Method == 'table') then
                      call nodal_point_relation_table(&
                         facCheck,e_sbcn(L, ised),& !output
@@ -2514,27 +2515,27 @@ integer, intent(in) :: ised !< Sediment fraction index
 ! Local variables
 real(kind=dp) :: Qbr1, Qbr2, QbrRatio, SbrRatio
     
-                     facCheck = 1.0_dp
-               
-                     if (links_out(kinod,j) == pNodRel%BranchOut1Ln) then
-                        Qbr1 = water_discharge_out(kinod, j) 
-                        Qbr2 = total_water_discharge_out(kinod) - water_discharge_out(kinod, j) 
-                     elseif (links_out(kinod,j) == pNodRel%BranchOut2Ln) then
-                        Qbr1 = total_water_discharge_out(kinod) - water_discharge_out(kinod, j) 
-                        Qbr2 = water_discharge_out(kinod, j) 
-                     else
-                        call SetMessage(LEVEL_FATAL, 'Unknown Branch Out (This should never happen!)')
-                     end if
-               
-                     QbrRatio = Qbr1 / Qbr2
-               
-                     SbrRatio = interpolate(pNodRel%Table, QbrRatio)
-               
-                     if (links_out(kinod,j) == pNodRel%BranchOut1Ln) then
-                        sediment_transport_rate = -link_dir_out(kinod,j) * SbrRatio * total_sediment_transport_out(kinod, ised) / (1 + SbrRatio) / width_out(kinod, j)
-                     elseif (links_out(kinod,j) == pNodRel%BranchOut2Ln) then
-                        sediment_transport_rate = -link_dir_out(kinod,j) * total_sediment_transport_out(kinod, ised) / (1 + SbrRatio) / width_out(kinod, j)
-                     end if
+facCheck = 1.0_dp
+
+if (links_out(kinod,j) == pNodRel%BranchOut1Ln) then
+   Qbr1 = water_discharge_out(kinod, j) 
+   Qbr2 = total_water_discharge_out(kinod) - water_discharge_out(kinod, j) 
+elseif (links_out(kinod,j) == pNodRel%BranchOut2Ln) then
+   Qbr1 = total_water_discharge_out(kinod) - water_discharge_out(kinod, j) 
+   Qbr2 = water_discharge_out(kinod, j) 
+else
+   call SetMessage(LEVEL_FATAL, 'Unknown Branch Out (This should never happen!)')
+end if
+
+QbrRatio = Qbr1 / Qbr2
+
+SbrRatio = interpolate(pNodRel%Table, QbrRatio)
+
+if (links_out(kinod,j) == pNodRel%BranchOut1Ln) then
+   sediment_transport_rate = -link_dir_out(kinod,j) * SbrRatio * total_sediment_transport_out(kinod, ised) / (1 + SbrRatio) / width_out(kinod, j)
+elseif (links_out(kinod,j) == pNodRel%BranchOut2Ln) then
+   sediment_transport_rate = -link_dir_out(kinod,j) * total_sediment_transport_out(kinod, ised) / (1 + SbrRatio) / width_out(kinod, j)
+end if
                      
 end subroutine nodal_point_relation_table
                           
