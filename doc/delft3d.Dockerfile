@@ -1,6 +1,6 @@
 ARG INTEL_ONEAPI_VERSION=2024
 ARG INTEL_FORTRAN_COMPILER=ifort
-# CMake build type (case-sensitive): e.g. Release, Debug, RelWithDebInfo, MinSizeRel
+# CMake build type (case-sensitive): e.g. Release, Debug, RelWithDebInfo
 ARG BUILD_TYPE=Release
 ARG CONFIGURATION=all
 ARG THIRDPARTYLIBS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-third-party-libs
