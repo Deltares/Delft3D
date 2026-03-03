@@ -60,7 +60,6 @@ contains
         discharge_water = 0.0_dp
         discharge_constituents = 0.0_dp
 
-        ! ====================================================================================================
         water_discharge = convert_discharge_air_to_water(air_discharge)
 
         total_area = compute_bubblescreen_area(bubblescreen)
