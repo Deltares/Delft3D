@@ -588,7 +588,7 @@ contains
    !!
 
 
-      integer :: inod, j, ised, ifrac, k3, nrd_idx, L, kinod
+      integer :: inod, j, ised, ifrac, nrd_idx, L, kinod
 
       integer :: number_nodes_with_nodal_relation ![1]
       integer, dimension(:), allocatable :: networknodes_with_nodal_relation ![number_nodes_with_nodal_relation]
@@ -598,7 +598,8 @@ contains
       integer, dimension (:,:), allocatable :: link_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
       integer, dimension (:,:), allocatable :: link_dir_out ![number_nodes_with_nodal_relation,link]
       integer, dimension (:), allocatable :: number_links_out ![number_nodes_with_nodal_relation]
-      !integer, dimension (:), allocatable :: link_in ![number_nodes_with_nodal_relation]
+      integer, dimension (:), allocatable :: number_links_in ![number_nodes_with_nodal_relation]
+      integer, dimension (:,:), allocatable :: link_in ![number_nodes_with_nodal_relation]
       integer, dimension (:), allocatable :: flownode_junction ![number_nodes_with_nodal_relation]
       !sb_out -> real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node
       
@@ -657,7 +658,7 @@ contains
 
       
       call nodal_point_relation_data( &
-total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out,flownode_junction)
+total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out,flownode_junction,number_links_in,link_in)
       !
       ! Determining sediment redistribution
       !
@@ -665,23 +666,22 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
       do ised = 1, lsedtot
 
          ! mor%nrd%nFractions = or 1 (One for All Fractions) or lsedtot (One for Every Fraction)
-         iFrac = min(ised, stmpar%nrd%nFractions)
 
-         pFrac => stmpar%nrd%nodefractions(iFrac)
 
          do kinod = 1, number_nodes_with_nodal_relation
+             
+            !call get_nodal_point_relation_parameters(&
+            !    pNodRel, &
+            !    networknodes_with_nodal_relation,flownode_junction,ised,kinod)
+            
+            iFrac = min(ised, stmpar%nrd%nFractions)
+            pFrac => stmpar%nrd%nodefractions(iFrac)
             inod=networknodes_with_nodal_relation(kinod)
             pnod => network%nds%node(inod)
-   
-            facCheck = 0._dp
-   
-            ! loop over branches and determine redistribution of incoming sediment
-            !k3 = pnod%gridnumber
-            k3 = flownode_junction(kinod)
-            
-            ! Get Nodal Point Relation Data
-            nrd_idx = get_noderel_idx(inod, pFrac, k3, branInIDLn(inod), pnod%numberofconnections)
+            nrd_idx = get_noderel_idx(inod, pFrac, flownode_junction(kinod), branInIDLn(inod), pnod%numberofconnections)
             pNodRel => pFrac%noderelations(nrd_idx)
+            
+            facCheck = 0._dp
             
             do j = 1, number_links_out(kinod)
                L = link_out(kinod,j) 
@@ -2268,7 +2268,7 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
            end subroutine
 
 subroutine nodal_point_relation_data( &
-total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out,flownode_junction)
+total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networknodes_with_nodal_relation,number_nodes_with_nodal_relation,number_links_out,link_out,link_dir_out,width_out,water_discharge_out,flownode_junction,number_links_in,link_in)
 
 !Modules
 use precision, only: dp
@@ -2311,6 +2311,9 @@ integer, intent(out) :: number_nodes_with_nodal_relation !< number of nodes with
 integer, dimension (:,:), allocatable, intent(out) :: link_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
 integer, dimension (:,:), allocatable, intent(out) :: link_dir_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
 integer, dimension (:), allocatable, intent(out) :: number_links_out ![number_nodes_with_nodal_relation]
+integer, dimension (:,:), allocatable, intent(out) :: link_in ![number_nodes_with_nodal_relation,maxnumberofconnections]
+!integer, dimension (:,:), allocatable, intent(out) :: link_dir_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
+integer, dimension (:), allocatable, intent(out) :: number_links_in ![number_nodes_with_nodal_relation]
 real(fp), dimension (:,:), allocatable, intent(out) :: width_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
 real(fp), dimension (:,:), allocatable, intent(out) :: water_discharge_out ![number_nodes_with_nodal_relation,maxnumberofconnections]
 integer, dimension (:), allocatable, intent(out) :: flownode_junction ![number_nodes_with_nodal_relation]
@@ -2358,8 +2361,15 @@ if (istat == 0) then
    allocate (water_discharge_out(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
 end if
 if (istat == 0) then
+   allocate (link_in(network%nds%Count,network%nds%maxnumberofconnections), stat=istat)
+end if
+if (istat == 0) then
+   allocate (number_links_in(network%nds%Count), stat=istat)
+end if
+if (istat == 0) then
    allocate (flownode_junction(network%nds%Count), stat=istat)
 end if
+
 
 if (istat /= 0) then
    error = .true.
@@ -2375,6 +2385,8 @@ sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometr
 BranInIDLn(:) = 0
 width_out = 0_dp
 water_discharge_out = 0_dp
+number_links_out=0
+number_links_in=0
 !
 ! Apply nodal relations to transport
 !
@@ -2393,7 +2405,7 @@ do inod = 1, network%nds%Count
       networknodes_with_nodal_relation(number_nodes_with_nodal_relation)=inod
       k1 = pnod%gridnumber
       flownode_junction(number_nodes_with_nodal_relation)=k1
-      number_links_out=0
+
       do j = 1, nd(k1)%lnx 
          L = abs(nd(k1)%ln(j))
          Ldir = sign(1, nd(k1)%ln(j))
@@ -2401,12 +2413,12 @@ do inod = 1, network%nds%Count
          
          if (u1(L) * Ldir < 0_dp) then
             ! Outgoing discharge
-            number_links_out=number_links_out+1 
-            link_out(number_nodes_with_nodal_relation,number_links_out)=L
-            link_dir_out(number_nodes_with_nodal_relation,number_links_out)=Ldir
-            width_out(number_nodes_with_nodal_relation,number_links_out)=wb1d
+            number_links_out(number_nodes_with_nodal_relation)=number_links_out(number_nodes_with_nodal_relation)+1 
+            link_out(number_nodes_with_nodal_relation,number_links_out(number_nodes_with_nodal_relation))=L
+            link_dir_out(number_nodes_with_nodal_relation,number_links_out(number_nodes_with_nodal_relation))=Ldir
+            width_out(number_nodes_with_nodal_relation,number_links_out(number_nodes_with_nodal_relation))=wb1d
             qb1d = -qa(L) * Ldir ! replace with junction advection: to do WO
-            water_discharge_out(number_nodes_with_nodal_relation,number_links_out) = qb1d
+            water_discharge_out(number_nodes_with_nodal_relation,number_links_out(number_nodes_with_nodal_relation)) = qb1d
             total_width_out(number_nodes_with_nodal_relation) = total_width_out(number_nodes_with_nodal_relation) + wb1d
             total_water_discharge_out(number_nodes_with_nodal_relation) = total_water_discharge_out(number_nodes_with_nodal_relation) + qb1d
             do ised = 1, lsedtot
@@ -2414,11 +2426,13 @@ do inod = 1, network%nds%Count
             end do
          else
             ! Incoming discharge
+            number_links_in=number_links_in+1 
             if (branInIDLn(inod) == 0) then
                branInIDLn(inod) = L
             else
                branInIDLn(inod) = -444 ! multiple incoming branches
             end if
+            link_in(number_nodes_with_nodal_relation,number_links_in)=L
          end if
          
          do ised = 1, lsedtot
