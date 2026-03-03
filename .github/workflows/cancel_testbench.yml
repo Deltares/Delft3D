@@ -1,15 +1,13 @@
 name: Cancel testbench
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
   workflow_dispatch:
     inputs:
       commit_sha:
         description: "Commit hash"
         required: true
-        default: ""
+        default: "ec510b46aaba4b6d0a4599273023c66a4e69319a"
         type: string
 
 jobs:
