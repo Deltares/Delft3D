@@ -106,7 +106,7 @@ jobs:
         if: steps.retrieve-ksm-credentials.outcome == 'success'
         run: |
           set -eou pipefail
-
+          set -x
           teamcity_builds="https://dpcbuild.deltares.nl/app/rest/builds"
           teamcity_project_id="Delft3D"
           branch="pull/${{ steps.find-pr.outputs.pr_number }}"
