@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      BRANCH_NAME: ${{ github.ref_name }}
+      BRANCH: ${{ github.ref_name }}
       OWNER: ${{ github.repository_owner }}
       REPO: ${{ github.event.repository.name }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
@@ -30,8 +30,8 @@ jobs:
           # do not allow running this workflow on the default and release branches
           default_branch="${{ github.event.repository.default_branch }}"
           release_branch_regex='^all/release/\d{4}\.\d+$'
-          if [[ "${branch_name}" == "${default_branch}" || \
-                "${branch_name}" =~ ${release_branch_regex} ]]; then
+          if [[ "${{ emv.BRANCH }}" == "${default_branch}" || \
+                "${{ emv.BRANCH }}" =~ ${release_branch_regex} ]]; then
             echo "This workflow may not run on ${default_branch} and release branches."
             exit 1
           fi
@@ -66,18 +66,18 @@ jobs:
               --request GET \
               --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
               --header "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/pulls?state=open&head=${{ env.OWNER}}:${{ env.BRANCH_NAME}}"
+              "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/pulls?state=open&head=${{ env.OWNER}}:${{ env.BRANCH}}"
           )
 
           pr_count=$(echo "${pr_list}" | jq 'length')
 
           if [ "${pr_count}" -eq 0 ]; then
-            echo "No open PR found for branch ${{ env.BRANCH_NAME }}"
+            echo "No open PR found for branch ${{ env.BRANCH }}"
             exit 0
           fi
 
           if [ "${pr_count}" -gt 1 ]; then
-            echo "Multiple PRs found for branch ${{ env.BRANCH_NAME }}. Cannot proceed further."
+            echo "Multiple PRs found for branch ${{ env.BRANCH }}. Cannot proceed further."
             exit 1
           fi
 
