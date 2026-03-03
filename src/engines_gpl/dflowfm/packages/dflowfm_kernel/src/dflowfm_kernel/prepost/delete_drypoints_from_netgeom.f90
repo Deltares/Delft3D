@@ -53,7 +53,8 @@ contains
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_sferic, only: jsferic
       use string_module
-      use m_polygon, only: NPL, ZPL, savepol, restorepol
+      use m_polygon, only: NPL,  xpl, ypl, zpl, savepol, restorepol
+      use network_data, only: cellmask, nump1d2d, nump, xzw, yzw
       use m_tpoly
       use m_samples
       use m_wall_clock_time
@@ -62,7 +63,8 @@ contains
       use m_delsam
       use m_reasam
       use m_filez, only: oldfil
-
+      use m_alloc, only: realloc
+      
       character(*), intent(inout) :: dryptsfilelist !< List of file names to process for deleting dry parts. (Supported formats: .xyz, .pol)
       integer, intent(in) :: jaconfirm !< Whether (1) or not (0) to interactively prompt for inclusion of each individual file from the list.
       integer, intent(in) :: jinside !< Override the inside check of polygon files. 0: use ZPL polygon (no override), 1: Always delete inside polygon, -1: always delete outside polygon.
@@ -88,6 +90,8 @@ contains
 
       type(tpoly), dimension(:), allocatable :: pli_save !< tpoly-type polygons
       integer :: numpols_save
+
+      integer, dimension(:), allocatable :: local_cell_mask
 
 !  store global polygon
       numpols = 0
@@ -154,7 +158,9 @@ contains
                      call fix_global_polygons(1, 0)
                   end if
 
-                  call pol_to_cellmask() ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
+                  call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
+                  local_cell_mask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw) ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
+                  cellmask(1:nump) = local_cell_mask(1:nump)
                   call delpol()
                   call restorepol()
 

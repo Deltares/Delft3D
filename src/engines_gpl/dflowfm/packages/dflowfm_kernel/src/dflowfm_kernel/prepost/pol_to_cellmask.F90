@@ -40,30 +40,35 @@ module m_pol_to_cellmask
 
 contains
 
-   subroutine pol_to_cellmask()
-      use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
+   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, mask_points, xcenters, ycenters) result(mask)
       use m_alloc, only: realloc
+
+      integer, intent(in) :: polygon_points !< Number of polygon points
+      integer, intent(in) :: mask_points !< Number of points to mask
+      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
+      real(kind=dp), intent(in), dimension(:) :: xcenters, ycenters !< Point coordinates
+      integer, dimension(:), allocatable :: mask !< Output mask array (1 if inside polygon, 0 if outside)
 
       integer :: k
 
-      if (NPL == 0) then
+      if (polygon_points == 0) then
          return
       end if
 
-      call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
+      call realloc(mask, mask_points, keepexisting=.false., fill=0)
 
-      call init_geom_cache(NPL, xpl, ypl, zpl)
-      call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
+      call init_geom_cache(polygon_points, x_poly, y_poly, z_poly)
+      call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly)
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
-      do k = 1, nump
-         cellmask(k) = cellmask_from_polygon_set(xzw(k), yzw(k))
+      do k = 1, mask_points
+         mask(k) = cellmask_from_polygon_set(xcenters(k), ycenters(k))
       end do
       !$OMP END PARALLEL DO
 
       call cellmask_from_polygon_set_cleanup()
 
-   end subroutine pol_to_cellmask
+   end function pol_to_cellmask
 
 end module m_pol_to_cellmask
