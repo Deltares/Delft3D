@@ -24,6 +24,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure
+        id: configure
+        run: |
+          # do not allow running this workflow on the default and release branches
+          default_branch="${{ github.event.repository.default_branch }}"
+          release_branch_regex='^all/release/\d{4}\.\d+$'
+          if [[ "${branch_name}" == "${default_branch}" || \
+                "${branch_name}" =~ ${release_branch_regex} ]]; then
+            echo "This workflow may not run on ${default_branch} and release branches."
+            exit 1
+          fi
+
+          # if the commit sha is not provided, default it to latest on branch
+          commit_sha="${{ github.event.inputs.commit_sha }}"
+          if [[ -z "${commit_sha}" ]]; then
+            commit_sha=$(
+              curl \
+                --silent \
+                --fail \
+                --show-error \
+                --request GET \
+                --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
+                --header "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/branches/${{ env.BRANCH }}" \
+              | jq -r .commit.sha
+            )
+          fi
+          echo "commit_sha=${commit_sha}" >> $GITHUB_OUTPUT
+
       - name: Find PR for current branch
         id: find-pr
         run: |
@@ -81,33 +110,7 @@ jobs:
           teamcity_builds="https://dpcbuild.deltares.nl/app/rest/builds"
           teamcity_project_id="Delft3D"
           branch="pull/${{ steps.find-pr.outputs.pr_number }}"
-          commit_sha="${{ github.event.inputs.commit_sha }}"
-          # if the commit sha is not provided, default to latest on branch
-          if [[ -z "${commit_sha}" ]]; then
-            commit_sha=$(
-              curl \
-                --silent \
-                --fail \
-                --show-error \
-                --request GET \
-                --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
-                --header "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/branches/${{ env.BRANCH }}" \
-              | jq -r .commit.sha
-            )
-            # also possible form the commits end point
-            # commit_sha=$(
-            #   curl \
-            #     --silent \
-            #     --fail \
-            #     --show-error \
-            #     --request GET \
-            #     --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
-            #     --header "Accept: application/vnd.github+json" \
-            #     "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/commits/${{ env.BRANCH }}" \
-            #   | jq -r .sha
-            # )
-          fi
+          commit_sha="${{ steps.configure.outputs.commit_sha }}"
           platforms=("Linux" "Windows")
 
           for platform in "${platforms[@]}"; do
