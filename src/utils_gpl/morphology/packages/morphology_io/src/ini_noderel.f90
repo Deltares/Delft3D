@@ -270,7 +270,7 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
    
 end subroutine ini_noderel
 
-integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, branInIDLn, nodbrt)
+integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, number_links_out, number_links_in, link_in)
 !
 !    Function: - Get the Nodal Point Relation for the Current Node/Branch
 !                If nothing Found return 0 (zero which means default)
@@ -282,8 +282,9 @@ integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, branInIDLn, nodbrt)
    integer                                :: iNod     !< Index of Actual Node
    type(t_nodefraction)                   :: pFrac
    integer                                :: nodeIDIdx
-   integer                                :: branInIDLn
-   integer                                :: nodbrt
+   integer                                :: number_links_out
+   integer                                :: number_links_in
+   integer                                :: link_in
 
    ! Local variables
    integer                                :: iNodeRel
@@ -296,14 +297,14 @@ integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, branInIDLn, nodbrt)
    getFunctionRelation = .true.
    
    
-   if (branInIDLn .ne. 0 .and. branInIDLn .ne. -444 .and. nodbrt == 3) then
+   if (number_links_in == 1 .and. number_links_out == 2) then
       
       ! Only One Incoming Branch at a Real Bifurcation
       do iNodeRel = 1, pFrac%nNodeRelations
       
          pNodRel => pFrac%noderelations(iNodeRel)
          
-         if (pNodRel%NodeIdx == nodeIDIdx .and. pNodRel%BranchInLn == branInIDLn) then
+         if (pNodRel%NodeIdx == nodeIDIdx .and. pNodRel%BranchInLn == link_in) then
          
             ! Found/Bingo
             get_noderel_idx = iNodeRel

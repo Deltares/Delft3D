@@ -678,7 +678,8 @@ total_water_discharge_out, total_width_out, sb_out, sb_dir, branInIDLn,networkno
             pFrac => stmpar%nrd%nodefractions(iFrac)
             inod=networknodes_with_nodal_relation(kinod)
             pnod => network%nds%node(inod)
-            nrd_idx = get_noderel_idx(inod, pFrac, flownode_junction(kinod), branInIDLn(inod), pnod%numberofconnections)
+            !link_in non-contiguous data but small array so not a problem for cache performance
+            nrd_idx = get_noderel_idx(inod, pFrac, flownode_junction(kinod), number_links_out(kinod),number_links_in(kinod),link_in(kinod,1))
             pNodRel => pFrac%noderelations(nrd_idx)
             
             facCheck = 0._dp
