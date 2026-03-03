@@ -21,6 +21,9 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Find PR for current branch
         id: find-pr
         run: |
