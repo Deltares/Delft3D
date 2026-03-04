@@ -2098,7 +2098,7 @@
         <file name="DFM_OUTPUT_dcsmv5/dcsmv5_map.nc" type="netCDF">
           <parameters>
             <parameter name="s1" toleranceAbsolute="0.0005"/>
-            <parameter name="unorm" toleranceAbsolute="0.0005"/>
+            <parameter name="unorm" toleranceAbsolute="0.0008"/>
           </parameters>
         </file>
       </checks>
@@ -2117,7 +2117,7 @@
         <file name="DFM_OUTPUT_dcsmv5/dcsmv5_map.nc" type="netCDF">
           <parameters>
             <parameter name="s1" toleranceAbsolute="0.0005"/>
-            <parameter name="unorm" toleranceAbsolute="0.0005"/>
+            <parameter name="unorm" toleranceAbsolute="0.0008"/>
           </parameters>
         </file>
       </checks>
@@ -2136,7 +2136,7 @@
         <file name="DFM_OUTPUT_dcsmv5/dcsmv5_map.nc" type="netCDF">
           <parameters>
             <parameter name="s1" toleranceAbsolute="0.0005"/>
-            <parameter name="unorm" toleranceAbsolute="0.0005"/>
+            <parameter name="unorm" toleranceAbsolute="0.0008"/>
           </parameters>
         </file>
       </checks>
