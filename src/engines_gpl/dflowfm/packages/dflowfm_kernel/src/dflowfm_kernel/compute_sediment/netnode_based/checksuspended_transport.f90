@@ -45,19 +45,17 @@ contains
       use precision, only: dp
       use m_check_einstein_garcia, only: check_einstein_garcia
       use m_filez, only: doclose, newfil
+      use m_physcoef, only: ag, vonkar
 
       real(kind=dp) :: hsk
       real(kind=dp) :: ucr, ueff, Ucur, Pmob, sster, wster, ws
       real(kind=dp) :: aref, Tmob, crefa, ustar, rouse, sqcf, z0k, dks, hdune, qssevr84
       real(kind=dp) :: qsseqcheck, eincheck, eincheck2
-      real(kind=dp) :: D50, D90, dstar, ag, sag, vonkar, ee, rhomean, rhosed, sqsgd50, temp, vismol, c1, c2
+      real(kind=dp) :: D50, D90, dstar, ee, rhomean, rhosed, sqsgd50, temp, vismol, c1, c2
       real(kind=dp) :: Accr, rhodelta, wschk, ff, hf, df, D50a, hska
 
       integer :: j, i, mout, nx = 4
 
-      ag = 9.81_dp
-      sag = sqrt(ag)
-      vonkar = 0.41_dp
       ee = exp(1.0_dp)
 
       ucur = 1.0_dp ! depth avaraged flow velocity
