@@ -16,6 +16,14 @@ target_link_libraries(csumo_precice PRIVATE
     Boost::program_options
 )
 
+if(CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/csumo_precice.vcxproj.$ENV{USERNAME}.user")
+    configure_file(
+    "${CMAKE_BINARY_DIR}/template.vcxproj.user"
+    "${CMAKE_CURRENT_BINARY_DIR}/csumo_precice.vcxproj.user"
+    @ONLY
+    )
+endif()
+
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files} main.cpp)
 set_target_properties(csumo_precice csumo_precice_lib PROPERTIES FOLDER tools_gpl/csumo_precice)
