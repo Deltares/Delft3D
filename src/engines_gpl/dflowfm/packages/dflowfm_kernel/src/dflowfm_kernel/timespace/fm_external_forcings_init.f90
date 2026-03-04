@@ -1000,11 +1000,11 @@ contains
       real(kind=dp) :: area
       integer :: i_const
       integer :: ierr
-      integer :: pli_lun
+      integer :: polyline_file_lun ! polyline file logical unit number
       logical :: is_successful
       logical :: is_read
-      logical :: is_source_in_ext_file, is_sink_in_ext_file
-      logical :: source_has_z_range, sink_has_z_range
+      logical :: source_z_in_ext_file, sink_z_in_ext_file
+      logical :: source_z_size, sink_z_size
       logical :: have_location_file, have_location_coordinates
 
       is_successful = .false.
@@ -1014,48 +1014,52 @@ contains
       sourcesink_id = ' '
       call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
       if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Field ''id'' is missing.'
          call err_flush()
          return
       end if
       call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
 
       
-      ! Read source/sink z range information from ext file. If it's missing well attempt to load it from the polyline file later on as a fallback.
-      is_source_in_ext_file = .false.
-      is_sink_in_ext_file = .false.
-      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, is_source_in_ext_file)
-      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, is_sink_in_ext_file)
+      ! Read source/sink z range information from ext file, load it from the polyline file later on as a fallback.
+      source_z_in_ext_file = .false.
+      sink_z_in_ext_file = .false.
+      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, source_z_in_ext_file)
+      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, sink_z_in_ext_file)
       
       call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
       if (have_location_file) then
          ! Read data from polyline file
          call resolvePath(location_file, base_dir)
          
-         call oldfil(pli_lun, location_file)
-         call reapol(pli_lun, 0)
+         call oldfil(polyline_file_lun, location_file)
+         call reapol(polyline_file_lun, 0)
 
          if (npl == 0) then
-            write (msgbuf, '(A)') "Failed to read polyline file (or it contains no data) '", trim(location_file), "'"
+            write (msgbuf, '(a)') "Failed to read polyline file (or it contains no data) '" // trim(location_file) // "'"
             call err_flush()
             return
          end if
          
          ! Avoid having two places specifying the same (and potentially conflicting) z data.
-         if (colpl > 2 .and. (is_source_in_ext_file .or. is_sink_in_ext_file)) then
-            write (msgbuf, '(A)') 'Source/sink z information cannot be specified both in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
+         if (colpl > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
+            write (msgbuf, '(a)') 'Source/sink z information cannot be specified both in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
             call err_flush()
             return
          end if
          
-         if (.not. is_source_in_ext_file) then
+         if (.not. source_z_in_ext_file) then
             z_range_source(1) = zpl(npl)
-            if (colpl > 3) z_range_source(2) = dzL(npl) ! 3rd and 4th column contain z range
+            if (colpl > 3) then 
+               z_range_source(2) = dzL(npl) ! 3rd and 4th column contain z range
+            end if
          end if
          
-         if (.not. is_sink_in_ext_file) then
+         if (.not. sink_z_in_ext_file) then
             z_range_sink(1) = zpl(1)
-            if (colpl > 3) z_range_sink(2) = dzL(1) ! 3rd and 4th column contain z range
+            if (colpl > 3) then 
+               z_range_sink(2) = dzL(1) ! 3rd and 4th column contain z range
+            end if
          end if
          
          allocate (x_coordinates(npl), stat=ierr)
@@ -1067,7 +1071,7 @@ contains
          call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
          if (is_read) then
             if (num_coordinates <= 0) then
-               write (msgbuf, '(3a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
+               write (msgbuf, '(a)') 'SourceSink ''' // trim(sourcesink_id) // ''': numCoordinates must be greater than 0.'
                call err_flush()
                return
             end if
@@ -1082,14 +1086,14 @@ contains
       end if
       
       if (.not. have_location_file .and. .not. have_location_coordinates) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Location information is incomplete or missing.'
          call err_flush()
          return
       end if
       
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
@@ -1099,12 +1103,12 @@ contains
       call prop_get(block_ptr, '', 'area', area, is_read)
       
       ! Create the actual source/sink based on the parsed data
-      source_has_z_range = abs(z_range_source(2) - dmiss) > 1.0e-12_dp
-      sink_has_z_range = abs(z_range_sink(2) - dmiss) > 1.0e-12_dp
-      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source(1:merge(2, 1, source_has_z_range)), z_range_sink(1:merge(2, 1, sink_has_z_range)), area, ierr)
+      source_z_size = merge(2, 1, abs(z_range_source(2) - dmiss) > epsilon(z_range_source(2)))
+      sink_z_size = merge(2, 1, abs(z_range_sink(2) - dmiss) > epsilon(z_range_source(2)))
+      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source(1:source_z_size), z_range_sink(1:sink_z_size), area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
+         write (msgbuf, '(a)') 'Error while processing ''' // trim(file_name) // ''': [' // trim(group_name), ']. ' &
+            // 'Source sink with id=' //trim(sourcesink_id) //'. could not be added.'
          call err_flush()
          return
       end if
@@ -1115,8 +1119,8 @@ contains
                                                     1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
+         write (msgbuf, '(a)') 'Error while processing ''' // trim(file_name) // ''': [' // trim(group_name) // ']. ' &
+            // 'Could not initialize discharge data in ''' // trim(discharge_input) // ''' for source sink with id=' // trim(sourcesink_id)//'.'
          call err_flush()
          return
       end if
