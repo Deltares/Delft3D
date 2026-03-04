@@ -1249,14 +1249,14 @@ contains
          A(1, :) = xx2 - xx1
          A(2, :) = xx3 - xx1
          A(3, :) = s123
-         rhs = 0_hp ! not used
+         rhs = 0.0_hp ! not used
 
 !        compute inverse
          call gaussj(A, 3, 3, rhs, 1, 1)
 
 !        compute weights
-         w(2) = min(max(inprod(xxp - xx1, A(:, 1)), 0.0_hp), 1.0_hp)
-         w(3) = min(max(inprod(xxp - xx1, A(:, 2)), 0.0_hp), 1.0_hp - w(2))
+         w(2) = inprod(xxp - xx1, A(:, 1))
+         w(3) = inprod(xxp - xx1, A(:, 2))
          w(1) = 1.0_hp - w(2) - w(3)
 
       else
