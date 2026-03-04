@@ -123,7 +123,7 @@ contains
 
          return
 
-      else if ((abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5) .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
+      else if (abs(kcu(ll)) == 1 .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
          cz = 0.0_dp
 
          if (japerim == 0) then ! calculate total area and volume
