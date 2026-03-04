@@ -26,7 +26,7 @@ if(WIN32)
         MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
     )
     set(Boost_USE_STATIC_LIBS OFF)
-    find_package(Boost REQUIRED COMPONENTS log log_setup program_options thread PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../boost/boost_1_90_0/lib/cmake")
+    find_package(Boost REQUIRED COMPONENTS log log_setup program_options thread PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../boost/boost_1_90_0/lib/cmake" GLOBAL)
     find_package(LibXml2 REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../libxml2/libxml2-v2.15.1/lib/cmake/libxml2")
 
     # Add Boost libraries as public interface link libraries to precice::precice to make them available through TARGET_RUNTIME_DLLS

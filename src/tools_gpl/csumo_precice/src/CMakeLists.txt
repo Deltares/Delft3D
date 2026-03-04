@@ -13,6 +13,7 @@ add_executable(csumo_precice main.cpp)
 target_link_libraries(csumo_precice PRIVATE
     compiler_warnings_settings
     csumo_precice_lib
+    Boost::program_options
 )
 
 # Define how the files should be structured within Visual Studio
