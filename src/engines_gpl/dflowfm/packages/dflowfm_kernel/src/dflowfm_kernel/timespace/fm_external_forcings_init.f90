@@ -1003,8 +1003,8 @@ contains
       integer :: pli_lun
       logical :: is_successful
       logical :: is_read
-      logical :: is_source_in_ext_file = .false., is_sink_in_ext_file = .false.
-      logical :: source_has_z_range = .false., sink_has_z_range = .false.
+      logical :: is_source_in_ext_file, is_sink_in_ext_file
+      logical :: source_has_z_range, sink_has_z_range
       logical :: have_location_file, have_location_coordinates
 
       is_successful = .false.
@@ -1022,6 +1022,8 @@ contains
 
       
       ! Read source/sink z range information from ext file. If it's missing well attempt to load it from the polyline file later on as a fallback.
+      is_source_in_ext_file = .false.
+      is_sink_in_ext_file = .false.
       call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, is_source_in_ext_file)
       call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, is_sink_in_ext_file)
       
