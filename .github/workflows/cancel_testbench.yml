@@ -144,14 +144,16 @@ jobs:
               echo "On ${branch} at ${{ github.event.inputs.commit_sha }}: state=${state}"
               echo "Cancelling ${build_type}..."
               id=$(echo "${builds}" | jq -r '.build[0].id')
+              request_url="${teamcity_builds}/id:${id}"
+              payload='{"comment": "Cancel build from GitHub", "readdIntoQueue": false}'
               response_code=$(
                 curl \
                   --request POST \
                   --write-out "%{response_code}" \
                   --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
                   --header "Accept: application/json" \
-                  "${teamcity_builds}/id:${id}" \
-                  --data '{"comment":"Cancel build from GitHub", "readdIntoQueue":false}'
+                  --data "${payload}" \
+                  "${request_url}"
               )
               if [ "${response_code}" -ge 400 ]; then
                 echo "Cancellation failed. Request failed with status ${response_code}."
