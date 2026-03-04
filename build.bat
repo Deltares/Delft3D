@@ -5,6 +5,7 @@ rem Default arguments.
 rem No default value means that the option is a flag that is either on or off.
 rem A variable that can have arguments requires a default value (can be "")
 set config=fm-suite
+set sln_extension=sln
 set build=
 set vs=0
 set coverage=
@@ -74,7 +75,7 @@ if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 
 echo.
-echo Generated Visual Studio solution file: %root%\build_%config%\%config%.sln
+echo Generated Visual Studio solution file: %root%\build_%config%\%config%.%sln_extension%
 echo Finished
 goto :end
 
@@ -239,6 +240,12 @@ rem =================================
     if "%vs2022_found%" == "true" (
         set vs=2022
         echo Found: VisualStudio 17 2022
+    )
+
+    if "%VisualStudioVersion%" == "18.0" (
+        set vs=2026
+        set sln_extension=slnx
+        echo Found: VisualStudio 18 2026
     )
 
     if "!vs!" == "0" (
