@@ -152,6 +152,7 @@ jobs:
                   --write-out "%{response_code}" \
                   --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
                   --header "Accept: application/json" \
+                  --header "Content-Type: application/json" \
                   --data "${payload}" \
                   "${request_url}"
               )
