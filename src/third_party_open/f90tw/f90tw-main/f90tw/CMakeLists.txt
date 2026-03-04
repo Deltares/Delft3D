@@ -135,6 +135,8 @@ function(F90TWTEST NAME)
         target_compile_options(${FLIBNAME} PRIVATE "-ffree-line-length-none")
     endif()
     target_link_libraries( ${FLIBNAME} PRIVATE ${FTW_LIBRARIES} f90tw_gtest)
+
+
     if(NOT "${FTW_F2HFILES}" STREQUAL "")
         add_dependencies(${FLIBNAME} ${F2HTRGNAME})
     endif()
@@ -145,6 +147,28 @@ function(F90TWTEST NAME)
     target_link_libraries(${NAME} PRIVATE ${FLIBNAME} f90tw_gtest)
     target_compile_definitions(${NAME} PUBLIC ${FTW_DEFINITIONS})
     add_dependencies(${NAME} ${FLIBNAME})
+    
+    # Add OpenMP for C++ if enabled
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(${NAME} PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+    
+    # Add Intel Fortran OpenMP runtime for Fortran libraries compiled with OpenMP
+    # Hardcoded approach - link libiomp5.so directly
+    if(OPENMP AND UNIX)
+
+        find_library(IOMP5_LIB iomp5
+            PATHS
+                "/opt/intel/oneapi/compiler/2024.2/lib"
+                "/opt/intel/oneapi/compiler/latest/lib"
+                "/opt/intel/oneapi/compiler/latest/linux/compiler/lib/intel64_lin"
+            NO_DEFAULT_PATH
+        )
+        if(IOMP5_LIB)
+            target_link_libraries(${NAME} PRIVATE ${IOMP5_LIB})
+        endif()
+    endif()
+    
     set_target_properties(${NAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)
 
     if(WIN32)

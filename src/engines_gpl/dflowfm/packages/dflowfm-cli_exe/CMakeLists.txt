@@ -66,17 +66,16 @@ if(UNIX)
     target_compile_definitions(${executable_name} PRIVATE "HAVE_DISPLAY=0;HAVE_MPI;HAVE_PETSC")
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
     set_target_properties(${executable_name} PROPERTIES OUTPUT_NAME dflowfm)
+    find_package(OpenMP REQUIRED COMPONENTS Fortran)
+    if(OpenMP_Fortran_FOUND)
+        target_link_libraries(${executable_name} PRIVATE OpenMP::OpenMP_Fortran)
+    endif()
 endif(UNIX)
 
 
 if(WIN32)
     set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
 endif(WIN32)
-
-if(UNIX AND OPENMP)
-    target_compile_options(${executable_name} PRIVATE ${openmp_flag})
-    target_link_options(${executable_name} PRIVATE ${openmp_flag})
-endif()
 
 
 # Define additional compilation flags

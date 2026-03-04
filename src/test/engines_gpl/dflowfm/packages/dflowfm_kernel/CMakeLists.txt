@@ -47,6 +47,21 @@ if(UNIX)
          Threads::Threads)
 
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
+
+    if(OPENMP)
+
+        find_library(IOMP5_LIB iomp5
+            PATHS
+                "/opt/intel/oneapi/compiler/2024.2/lib"
+                "/opt/intel/oneapi/compiler/latest/lib"
+                "/opt/intel/oneapi/compiler/latest/linux/compiler/lib/intel64_lin"
+            NO_DEFAULT_PATH
+        )
+        if(IOMP5_LIB)
+            target_link_libraries(${executable_name} PRIVATE ${IOMP5_LIB})
+        endif()
+    endif()
+
 endif(UNIX)
 
 

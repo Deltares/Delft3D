@@ -1,6 +1,9 @@
 set(googletest_module third_party_open/googletest)
 set(f90tw_module third_party_open/f90tw)
 
+# Find OpenMP before creating test targets
+find_package(OpenMP COMPONENTS Fortran CXX)
+
 if (NOT TARGET googletest)
     add_subdirectory(${checkout_src_root}/${googletest_module} googletest)
 endif()

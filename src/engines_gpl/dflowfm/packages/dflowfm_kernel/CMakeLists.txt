@@ -253,8 +253,8 @@ set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Define preprocessor definitions
+set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
 if (WIN32)
-    set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
         target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
@@ -267,26 +267,6 @@ endif(WIN32)
 
 if (UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
-    if (OPENMP)
-        target_compile_options(${library_name} PRIVATE ${openmp_flag})
-        target_link_options(${library_name} PRIVATE ${openmp_flag})
-        get_filename_component(_compiler_dir "${CMAKE_Fortran_COMPILER}" DIRECTORY)
-        find_library(IOMP5_LIB iomp5
-            PATHS
-                "/opt/intel/oneapi/compiler/2024.2/lib"
-                "/opt/intel/oneapi/compiler/latest/linux/compiler/lib/intel64_lin"
-                "/opt/intel/oneapi/compiler/latest/lib"
-                "${_compiler_dir}/../lib" 
-                "${_compiler_dir}/../../lib"
-            NO_DEFAULT_PATH
-        )
-        if(IOMP5_LIB)
-            message(STATUS "Found Intel OpenMP runtime: ${IOMP5_LIB}")
-            target_link_libraries(${library_name} PRIVATE ${IOMP5_LIB})
-        else()
-            message(FATAL_ERROR "Intel OpenMP runtime (libiomp5) not found; linker may fail with __kmpc_* symbols")
-        endif()    
-    endif()
 endif(UNIX)
 
 # Create the folder structure in vfproj
