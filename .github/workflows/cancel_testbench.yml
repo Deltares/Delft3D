@@ -112,6 +112,7 @@ jobs:
           branch="pull/${{ steps.find-pr.outputs.pr_number }}"
           commit_sha="${{ steps.configure.outputs.commit_sha }}"
           platforms=("Linux" "Windows")
+          payload='{ "buildCancelRequest": { "comment": "Build cancelled from GitHub", "readdIntoQueue": false } }'
 
           for platform in "${platforms[@]}"; do
             build_type="${teamcity_project_id}_${platform}Test"
@@ -137,28 +138,33 @@ jobs:
                 "${request_url}"
             )
 
-            # get state and status of last build
-            state=$(echo "${builds}" | jq -r '.build[0].state')
-            if [ "${state}" != "finished" ]; then
-              # it is either running, queued or pending so cancel it
-              echo "On ${branch} at ${{ github.event.inputs.commit_sha }}: state=${state}"
-              echo "Cancelling ${build_type}..."
-              id=$(echo "${builds}" | jq -r '.build[0].id')
-              request_url="${teamcity_builds}/id:${id}"
-              payload='{"comment": "Cancel build from GitHub", "readdIntoQueue": false}'
-              response_code=$(
-                curl \
-                  --request POST \
-                  --write-out "%{response_code}" \
-                  --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
-                  --header "Accept: application/json" \
-                  --header "Content-Type: application/json" \
-                  --data "${payload}" \
-                  "${request_url}"
-              )
-              if [ "${response_code}" -ge 400 ]; then
-                echo "Cancellation failed. Request failed with status ${response_code}."
-                exit 1
+            # loop over all builds
+            echo "${builds}" | jq -c '.build[]' | while read -r build; do
+              state=$(echo "${build}" | jq -r '.state')
+
+              if [[ "${state}" == "running" || "${state}" == "queued" ]]; then
+                id=$(echo "${build}" | jq -r '.id')
+                echo "Cancelling ${build_type} (id=${id})..."
+                request_url="${teamcity_builds}/id:${id}"
+
+                response_code=$(
+                  curl \
+                    --silent \
+                    --show-error \
+                    --write-out "%{response_code}" \
+                    --output /dev/null \
+                    --request POST \
+                    --header "Authorization: Bearer ${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
+                    --header "Accept: application/json" \
+                    --header "Content-Type: application/json" \
+                    --data "${payload}" \
+                    "${request_url}"
+                )
+
+                if [ "${response_code}" -ge 400 ]; then
+                  echo "Cancellation failed for build id=${id}. Status ${response_code}."
+                  exit 1
+                fi
               fi
-            fi
+            done
           done
