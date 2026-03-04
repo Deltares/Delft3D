@@ -1146,7 +1146,7 @@ contains
       use m_polygon, only: npl
       use network_data
       use m_flow
-      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline, init_cell_geom_as_polylines, cleanup_cell_geom_polylines
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
@@ -1188,7 +1188,9 @@ contains
       num_bubblescreens = tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
       allocate (bubblescreens(num_bubblescreens))
       allocate (bubblescreen_air_discharge(num_bubblescreens))
-         
+      ! Initialize cache
+      call init_cell_geom_as_polylines()
+
       do i = 1, num_items_in_file
          block_ptr => bnd_ptr%child_nodes(i)%node_ptr
          group_name = trim(tree_get_name(block_ptr))
@@ -1235,6 +1237,8 @@ contains
 
          end if
       end do 
+
+      call cleanup_cell_geom_polylines()
 
       
    end function compute_and_preinit_bubblescreens_sourcesinks
