@@ -1004,7 +1004,7 @@ contains
       logical :: is_successful
       logical :: is_read
       logical :: source_z_in_ext_file, sink_z_in_ext_file
-      logical :: source_z_size, sink_z_size
+      integer :: source_z_size, sink_z_size
       logical :: have_location_file, have_location_coordinates
 
       is_successful = .false.
