@@ -1357,7 +1357,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c082_qhbnd_refined_twice" ref="dflowfm_default">
-      <path version="2026-03-04T11:46:50.124000">e02_dflowfm/f005_boundary_conditions/c082_qhbnd_refined_twice</path>
+      <path version="2026-03-04T11:49:46.745000">e02_dflowfm/f005_boundary_conditions/c082_qhbnd_refined_twice</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
@@ -1433,7 +1433,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c086_qhbnd_bc_refined_twice" ref="dflowfm_default">
-      <path version="2026-03-04T11:46:53.788000">e02_dflowfm/f005_boundary_conditions/c086_qhbnd_bc_refined_twice</path>
+      <path version="2026-03-04T11:49:09.946000">e02_dflowfm/f005_boundary_conditions/c086_qhbnd_bc_refined_twice</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
