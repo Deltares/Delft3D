@@ -38,7 +38,6 @@ module m_cellmask_from_polygon_set
    public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set, pinpok_elemental
    public :: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
    public :: find_cells_crossed_by_polyline
-   public :: init_geom_cache
 
    real(kind=dp), allocatable, dimension(:) :: xpl_cache
    real(kind=dp), allocatable, dimension(:) :: ypl_cache
@@ -55,7 +54,7 @@ module m_cellmask_from_polygon_set
 
 contains
 
-   !> Initialize module-level cellmask polygon data structures, such as the bounding boxes and iistart/iiend
+   !> Initialize module-level cellmask polygon data structures, such as the bounding boxes, cache and iistart/iiend
    ! this keeps the actual calculation routines elemental.
    subroutine cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly)
       use m_alloc
@@ -69,6 +68,8 @@ contains
       if (cellmask_initialized) then
          call cellmask_from_polygon_set_cleanup()
       end if
+
+      call init_geom_cache(polygon_points, x_poly, y_poly, z_poly)
 
       if (polygon_points == 0) then
          cellmask_initialized = .true.
@@ -271,6 +272,7 @@ contains
       use m_alloc
 
       integer :: k, n, k1, total_points, ipoint
+      real(kind=dp), allocatable, dimension(:) :: xpl_init, ypl_init, zpl_init      
 
       if (cellmask_initialized) then !> reuse cellmask cache boolean
          call cleanup_cell_geom_polylines()
@@ -284,9 +286,9 @@ contains
       end do
 
       ! allocate or reallocate xpl, ypl, zpl
-      call realloc(xpl_cache, total_points, keepexisting=.false.)
-      call realloc(ypl_cache, total_points, keepexisting=.false.)
-      call realloc(zpl_cache, total_points, keepexisting=.false.)
+      call realloc(xpl_init, total_points, keepexisting=.false.)
+      call realloc(ypl_init, total_points, keepexisting=.false.)
+      call realloc(zpl_init, total_points, keepexisting=.false.)
 
       ! fill arrays with netcell geometry
       ipoint = 0
@@ -294,23 +296,23 @@ contains
          do n = 1, netcell(k)%n
             ipoint = ipoint + 1
             k1 = netcell(k)%nod(n)
-            xpl_cache(ipoint) = xk(k1)
-            ypl_cache(ipoint) = yk(k1)
-            zpl_cache(ipoint) = real(k, dp) ! store cell index as z-value
+            xpl_init(ipoint) = xk(k1)
+            ypl_init(ipoint) = yk(k1)
+            zpl_init(ipoint) = real(k, dp) ! store cell index as z-value
          end do
 
          ! add separator
          ipoint = ipoint + 1
-         xpl_cache(ipoint) = dmiss
-         ypl_cache(ipoint) = dmiss
-         zpl_cache(ipoint) = dmiss
+         xpl_init(ipoint) = dmiss
+         ypl_init(ipoint) = dmiss
+         zpl_init(ipoint) = dmiss
       end do
 
       npl_cache = ipoint
 
       ! initialize the cellmask module with these polygons
       ! this builds bounding boxes and polygon indices
-      call cellmask_from_polygon_set_init(npl_cache, xpl_cache, ypl_cache, zpl_cache)
+      call cellmask_from_polygon_set_init(npl_cache, xpl_init, ypl_init, zpl_init)
 
    end subroutine init_cell_geom_as_polylines
 
