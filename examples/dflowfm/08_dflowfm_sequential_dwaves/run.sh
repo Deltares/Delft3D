@@ -16,9 +16,6 @@ else
 fi
 
 
-# select queue; one of : normal-e3-c7 , normal-e5-c7
-queue=normal-e3-c7
-
 nPart=$((nNodes * nProc))
 
 # DIMR input-file; must already exist!
