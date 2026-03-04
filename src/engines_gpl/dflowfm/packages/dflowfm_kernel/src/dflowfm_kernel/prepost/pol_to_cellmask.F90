@@ -40,11 +40,11 @@ module m_pol_to_cellmask
 
 contains
 
-   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, mask_points, xcenters, ycenters) result(mask)
+   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, num_netcells, xcenters, ycenters) result(mask)
       use m_alloc, only: realloc
 
       integer, intent(in) :: polygon_points !< Number of polygon points
-      integer, intent(in) :: mask_points !< Number of points to mask
+      integer, intent(in) :: num_netcells !< Number of points to mask
       real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
       real(kind=dp), intent(in), dimension(:) :: xcenters, ycenters !< Point coordinates
       integer, dimension(:), allocatable :: mask !< Output mask array (1 if inside polygon, 0 if outside)
@@ -55,14 +55,14 @@ contains
          return
       end if
 
-      call realloc(mask, mask_points, keepexisting=.false., fill=0)
+      call realloc(mask, num_netcells, keepexisting=.false., fill=0)
 
       call init_geom_cache(polygon_points, x_poly, y_poly, z_poly)
       call cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly)
 
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
-      do k = 1, mask_points
+      do k = 1, num_netcells
          mask(k) = cellmask_from_polygon_set(xcenters(k), ycenters(k))
       end do
       !$OMP END PARALLEL DO

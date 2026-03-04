@@ -157,7 +157,9 @@ contains
                   if (jsferic == 1) then
                      call fix_global_polygons(1, 0)
                   end if
-
+                  ! cellmask somehow needs to contain both 2d and 1d points (even if 1d points are not masked / mask is 0)
+                  ! if you know why this is the case it would be nice to change the behaviour so that cellmask only has nump entries
+                  ! and get rid of local_cell_mask
                   call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
                   local_cell_mask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw) ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
                   cellmask(1:nump) = local_cell_mask(1:nump)
