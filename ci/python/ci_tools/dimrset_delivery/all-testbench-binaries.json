@@ -217,10 +217,6 @@
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "lib\\libifcoremdd.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
             "file": "lib\\libifportmd.dll",
             "issuedTo": "Intel Corporation"
         },
@@ -229,15 +225,7 @@
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "lib\\libiomp5md_db.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
             "file": "lib\\libmmd.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
-            "file": "lib\\libmmdd.dll",
             "issuedTo": "Intel Corporation"
         },
         {
