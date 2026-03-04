@@ -94,6 +94,8 @@ module precision_basics
    interface equal
       module procedure real_dp_equal
       module procedure real_sp_equal
+      module procedure real_dp_equal_eps
+      module procedure real_sp_equal_eps
    end interface
 
    public :: comparereal
@@ -123,6 +125,28 @@ contains
 
       res = abs(a - b) < 2.0_sp * epsilon(a) * max(abs(a), abs(b), 1.0_sp)
    end function real_sp_equal
+
+   !> Returns .true. if two double precision numbers are equal within a given epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_dp_equal_eps(a, b, eps) result(res)
+      logical :: res
+      real(kind=dp), intent(in) :: a   !< First double precision number to compare
+      real(kind=dp), intent(in) :: b   !< Second double precision number to compare
+      real(kind=dp), intent(in) :: eps !< Tolerance to use instead of machine epsilon
+
+      res = abs(a - b) < eps * max(abs(a), abs(b), 1.0_dp)
+   end function real_dp_equal_eps
+
+   !> Returns .true. if two single precision numbers are equal within a given epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_sp_equal_eps(a, b, eps) result(res)
+      logical :: res
+      real(kind=sp), intent(in) :: a   !< First single precision number to compare
+      real(kind=sp), intent(in) :: b   !< Second single precision number to compare
+      real(kind=sp), intent(in) :: eps !< Tolerance to use instead of machine epsilon
+
+      res = abs(a - b) < eps * max(abs(a), abs(b), 1.0_sp)
+   end function real_sp_equal_eps
 
    pure function comparerealdouble(val1, val2, eps)
 !!--description-----------------------------------------------------------------
