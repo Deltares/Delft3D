@@ -35,7 +35,8 @@ object WindowsBuildDflowfmInteracter : BuildType({
         param("enable_code_coverage_flag", "OFF")
         param("generator", """"Visual Studio 17 2022"""")
         param("env.PATH", """%env.PATH%;"C:/Program Files/CMake/bin/"""")
-        select("build_type", "Debug", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
+        select("build_type", "Release", display = ParameterDisplay.PROMPT,
+                options = listOf("Release", "Debug"))
     }
 
     vcs {
