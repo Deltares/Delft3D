@@ -47,6 +47,24 @@ Containers are lightweight, isolated environments that package an application an
       --build-arg THIRDPARTYLIBS_IMAGE_URL=localhost/third-party-libs \
       --build-arg BASE_TAG=$TAG
   ```
+- Alternatively, you can open the build container interactively while making the current folder (root of the repository) available as `/delft3d`:
+  ```
+  # Optionally repeat: export TAG=oneapi-2024
+  docker run -it -v .:/delft3d localhost/third-party-libs:$TAG
+  ```
+  and subsequently inside the container go to that folder, and run the build script.
+  Unfortunately, you have to make sure that some paths have been properly set such that the build process can find all dependencies.
+  In the build container only the last two have not yet been set.
+  ```
+  #export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+  #export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  #export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
+  export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
+  export CMAKE_LIBRARY_PATH=/usr/local/lib:CMAKE_LIBRARY_PATH
+  
+  cd /delft3d
+  ./build.sh all
+  ```
 
 ### Build arguments
 The dockerfile has seven build argument:

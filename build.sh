@@ -61,15 +61,18 @@ function CheckUtils () {
 # === CreateCMakedir    ===
 # =========================
 function CreateCMakedir () {
-    echo
-    echo "Create build dir for $1 ..."
-    
     cd $root
-    if [ -z "keep_build" ]; then
+    
+    if [ "$keep_build" = "0" ]; then
+       echo
+       echo "Remove old build dir for $1 ..."
        rm -rf $build_dir
        rm -rf $install_dir
     fi
+    
     if [ ! -d "$build_dir" ]; then
+       echo
+       echo "Create build dir for $1 ..."
        mkdir  $build_dir
     fi
     if [ ! -d "$install_dir" ]; then
