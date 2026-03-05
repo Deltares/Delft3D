@@ -54,22 +54,22 @@ contains
       real(kind=dp) :: perim, hp ! wet perimeter
       logical, intent(in) :: closed !< Whether the rectangle shape is closed (ceiling can be included in wet perimeter)
 
-      ! if (japerim == 1) then
-      !    hp = min(hpr, hr)
-      ! else
-      !    hp = hpr
-      ! end if
-      hp = min(hpr, hr)
+      if (japerim == 1) then
+         hp = min(hpr, hr)
+      else
+         hp = hpr
+      end if
+
       area = hp * br
       width = br
       perim = 2.0_dp * hp + br
-      if (hpr >= hr .and. closed) then ! .and. newculverts
+      if (hpr >= hr .and. closed .and. newculverts) then
          perim = perim + br
       end if
 
-      if (slotw1D > 0 .and. japerim == 0 .and. hpr > hp) then
-         width = slotw1D
-         area = area + slotw1D * (hpr - hp)
+      if (slotw1D > 0 .and. japerim == 0) then
+         width = width + slotw1D
+         area = area + slotw1D * hpr
       end if
    end subroutine rectan
 
