@@ -51,7 +51,7 @@ contains
       use m_physcoef, only: dicouv, constant_dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
-      use fm_external_forcings_data, only: wstracers, numsrc, ksrc, qsrc, ccsrc
+      use fm_external_forcings_data, only: wstracers, num_source_sink, source_sink_indices, source_sink_water_discharge, source_sink_constituents
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
@@ -290,10 +290,10 @@ contains
          goto 1234 ! no sources from initialise
       end if
 
-      do n = 1, numsrc
-         kk = ksrc(1, n) ! 2D pressure cell nr FROM
-         kk2 = ksrc(4, n) ! 2D pressure cell nr TO
-         qsrckk = qsrc(n)
+      do n = 1, num_source_sink
+         kk = source_sink_indices(1, n) ! 2D pressure cell nr FROM
+         kk2 = source_sink_indices(4, n) ! 2D pressure cell nr TO
+         qsrckk = source_sink_water_discharge(n)
          qsrck = qsrckk
 
          jamba_src = jamba
@@ -314,14 +314,17 @@ contains
          end if
 
          if (kk > 0) then ! FROM Point
-            do k = ksrc(2, n), ksrc(3, n)
+            do k = source_sink_indices(2, n), source_sink_indices(3, n)
+               if (k == 0) then
+                  cycle
+               end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
-                  dzss = zws(ksrc(3, n)) - zws(ksrc(2, n) - 1)
+                  dzss = zws(source_sink_indices(3, n)) - zws(source_sink_indices(2, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (ksrc(3, n) - ksrc(2, n) + 1)
+                     qsrck = qsrckk / (source_sink_indices(3, n) - source_sink_indices(2, n) + 1)
                   end if
                end if
                if (qsrck > 0) then ! FROM k to k2
@@ -333,14 +336,17 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            do k = ksrc(5, n), ksrc(6, n)
+            do k = source_sink_indices(5, n), source_sink_indices(6, n)
+               if (k == 0) then
+                  cycle
+               end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
-                  dzss = zws(ksrc(6, n)) - zws(ksrc(5, n) - 1)
+                  dzss = zws(source_sink_indices(6, n)) - zws(source_sink_indices(5, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (ksrc(6, n) - ksrc(5, n) + 1)
+                     qsrck = qsrckk / (source_sink_indices(6, n) - source_sink_indices(5, n) + 1)
                   end if
                end if
                if (qsrck > 0) then
@@ -378,8 +384,8 @@ contains
 
          do iconst = 1, numconst
             if (i1 == i2) then ! on outflow side
-               const_sour(iconst, k) = const_sour(iconst, k) + qsrck * ccsrc(iconst, n) * dvoli
-               flux = qsrck * ccsrc(iconst, n)
+               const_sour(iconst, k) = const_sour(iconst, k) + qsrck * source_sink_constituents(iconst, n) * dvoli
+               flux = qsrck * source_sink_constituents(iconst, n)
             else ! on inflow side
                const_sour(iconst, k) = const_sour(iconst, k) + qsrck * constituents(iconst, k) * dvoli
                flux = qsrck * constituents(iconst, k)

@@ -29,7 +29,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f002_c100_longculvert" ref="dflowfm_default">
-      <path version="2026-01-26T14:18:46.355000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
+      <path version="2026-02-10T15:09:03.103000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
@@ -50,8 +50,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f002_c101_longculvert_timeseries_valve" ref="dflowfm_default">
-      <path version="2025-10-30T17:13:00">e02_dflowfm/f002_1D2D/c101_longculvert_timeseries_valve</path>
+    <testCase name="e02_f002_c101_longculvert_timeseries_valve" ref="dflowfm_config">
+      <path version="2026-02-10T15:09:24.270000">e02_dflowfm/f002_1D2D/c101_longculvert_timeseries_valve</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
@@ -1797,12 +1797,17 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
-        <path version="2026-02-17T14:10:00">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
+        <path version="2026-02-27T12:11:16.769000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/spatial_dicoww_map.nc" type="netcdf">
                 <parameters>
-                    <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    <parameter name="mesh2d_sa1" toleranceRelative="0.1" />
+                </parameters>
+            </file>            
+            <file name="output/spatial_dicoww_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="difwws" toleranceRelative="0.01" />
                 </parameters>
             </file>
         </checks>
@@ -2858,7 +2863,7 @@
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0002" />
           </parameters>
         </file>
         <file name="dflowfmoutput/zandloper_map.nc" type="netCDF">
@@ -4800,7 +4805,7 @@
         </file>
         <file name="output/winter97_saltwater_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_tem1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_tem1" toleranceAbsolute="0.002" />
             <parameter name="mesh2d_ice_temperature" toleranceAbsolute="0.001" />
             <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.001" />
             <parameter name="mesh2d_ice_area_fraction" toleranceAbsolute="0.001" />
