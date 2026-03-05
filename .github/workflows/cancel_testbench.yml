@@ -4,7 +4,16 @@ on:
   push:
   workflow_dispatch:
     inputs:
-      commit_sha:
+      target_commit:
+        description: "Target commit(s)"
+        required: true
+        default: "latest"
+        type: choice
+        options:
+          - all
+          - latest
+          - specific
+      commit_hash:
         description: "Commit hash"
         required: false
         default: ""
@@ -32,14 +41,14 @@ jobs:
           release_branch_regex='^all/release/\d{4}\.\d+$'
           if [[ "${{ env.BRANCH }}" == "${default_branch}" || \
                 "${{ env.BRANCH }}" =~ ${release_branch_regex} ]]; then
-            echo "This workflow may not run on ${default_branch} and release branches."
+            echo "This workflow was dispatched on branch {{ env.BRANCH }}."
+            echo "Dispatching this workflow on ${default_branch} and release branches is forbidden."
             exit 1
           fi
 
-          # if the commit sha is not provided, default it to latest on branch
-          commit_sha="${{ github.event.inputs.commit_sha }}"
-          if [[ -z "${commit_sha}" ]]; then
-            commit_sha=$(
+          commit_hash=""
+          if [[ "${{ github.event.inputs.target_commit }}" == "latest" ]]; then
+            commit_hash=$(
               curl \
                 --silent \
                 --fail \
@@ -50,8 +59,20 @@ jobs:
                 "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/branches/${{ env.BRANCH }}" \
               | jq -r .commit.sha
             )
+          elif [[ "${{ github.event.inputs.target_commit }}" == "specific" ]]; then
+            commit_hash="${{ github.event.inputs.commit_hash }}"
+            if [[ -z "${commit_hash}" ]]; then
+              echo "An attempt to cancel the build of a specific commit was made but no hash was provided."
+              exit 1
+            fi
+
+            if ! git merge-base --is-ancestor "${commit_hash}" "${{ env.BRANCH }}"; then
+              echo "Commit ${commit_hash} does not exist on branch ${{ env.BRANCH }}."
+              exit 1
+            fi
+
           fi
-          echo "commit_sha=${commit_sha}" >> $GITHUB_OUTPUT
+          echo "commit_hash=${commit_hash}" >> $GITHUB_OUTPUT
 
       - name: Find PR for current branch
         id: find-pr
@@ -72,18 +93,18 @@ jobs:
           pr_count=$(echo "${pr_list}" | jq 'length')
 
           if [ "${pr_count}" -eq 0 ]; then
-            echo "No open PR found for branch ${{ env.BRANCH }}"
+            echo "No open pull request found for branch ${{ env.BRANCH }}."
             exit 0
           fi
 
           if [ "${pr_count}" -gt 1 ]; then
-            echo "Multiple PRs found for branch ${{ env.BRANCH }}. Cannot proceed further."
+            echo "Multiple pil;l requests found for branch ${{ env.BRANCH }}. Cannot proceed further."
             exit 1
           fi
 
           pr_number=$(echo "$pr_list" | jq -r '.[0].number')
 
-          echo "Found PR #${pr_number}"
+          echo "Found pull request #${pr_number}."
           echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
 
       - name: Retrieve KSM credentials
@@ -105,7 +126,7 @@ jobs:
           teamcity_builds="https://dpcbuild.deltares.nl/app/rest/builds"
           teamcity_project_id="Delft3D"
           branch="pull/${{ steps.find-pr.outputs.pr_number }}"
-          commit_sha="${{ steps.configure.outputs.commit_sha }}"
+          commit_hash="${{ steps.configure.outputs.commit_hash }}"
           platforms=("Linux" "Windows")
           payload='{ "buildCancelRequest": { "comment": "Build cancelled from GitHub", "readdIntoQueue": false } }'
 
@@ -114,13 +135,17 @@ jobs:
 
             request_url=$(
               printf \
-                '%s?locator=affectedProject:%s,buildType:%s,branch:%s,revision:%s,state:any,count:100' \
+                '%s?locator=affectedProject:%s,buildType:%s,branch:%s,state:any,count:100' \
                 "${teamcity_builds}" \
                 "${teamcity_project_id}" \
                 "${build_type}" \
-                "${branch}" \
-                "${commit_sha}"
+                "${branch}"
             )
+
+
+            if [[ -z "${commit_hash}" ]]; then
+              request_url=$(printf '${request_url},revision:%s "${commit_hash}")
+            fi
 
             builds=$(
               curl \
@@ -137,10 +162,13 @@ jobs:
             echo "${builds}" | jq -c '.build[]' | while read -r build; do
               state=$(echo "${build}" | jq -r '.state')
 
-              if [[ "${state}" == "running" || "${state}" == "queued" ]]; then
+              if [[ "${state}" == "pending" ||
+                    "${state}" == "queued" ||
+                    "${state}" == "running" ]]; then # this is equivalent to != "finished"
                 id=$(echo "${build}" | jq -r '.id')
-                echo "Cancelling ${build_type} (id=${id})..."
                 request_url="${teamcity_builds}/id:${id}"
+
+                echo "Cancelling ${build_type} (id=${id})..."
 
                 response_code=$(
                   curl \
