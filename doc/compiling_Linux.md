@@ -51,7 +51,7 @@ Containers are lightweight, isolated environments that package an application an
 ### Build arguments
 The dockerfile has seven build argument:
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
-- `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
+- `INTEL_FORTRAN_COMPILER` (default value: `ifx`)
 - `BUILD_TYPE` (default value: `Release`)
 - `CONFIGURATION` (default value: `all`)
 - `THIRDPARTYLIBS_IMAGE_URL` (default value: `containers.deltares.nl/delft3d-dev/delft3d-third-party-libs`)

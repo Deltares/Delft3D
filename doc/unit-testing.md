@@ -1,4 +1,7 @@
 # Unit Tests
+Back to main [development page](development.md).
+
+**This page is draft and not yet fully consistent with the current working procedure.**
 
 ## 1. Create Unit tests
 
@@ -308,7 +311,7 @@ ctest -C debug
 
 ### 2.2 Run specific test
 
-- To run a specific test you can the flag `-R` to specify a regex pattern that matches the test name(s) you want to run.
+- To run a specific test you can use the flag `-R` to specify a regex pattern that matches the test name(s) you want to run.
   For example, if your test is named MyTest, you can run:
 
 ```bash
@@ -364,17 +367,19 @@ use model_a_target, only : global_var1, global_var2
 The current work directory for any unit test is under
 
 ```bash
-<build-dir>/test_delwaq/test_<engine-name>/<build-type>/<test-name>
+<install-dir>/test
 ```
-and the test data that can be accessed by the `DATA_PATH` environment variable is under
+or one of the subdirectories, and the test data that can be accessed by the `DATA_PATH` environment variable is copied to
 
 ```bash
-<build-dir>/test_data
+<install-dir>/test/test_data
 ```
-Therefore if you refere to data in your files it has to be prepended by 
+Therefore, if you refer to data in your files it has to be prepended by 
 
 ```bash
-../../test_data/<test-name>/<file-name>
+../test_data/<test-name>/<file-name>
 ```
+
+with possibly one or more additional `../` levels in case your binary is configured to be copied to one of the subdirectories of `test`.
 
 ![relative_paths](images/relative-paths.PNG)

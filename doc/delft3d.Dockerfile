@@ -1,5 +1,5 @@
 ARG INTEL_ONEAPI_VERSION=2024
-ARG INTEL_FORTRAN_COMPILER=ifort
+ARG INTEL_FORTRAN_COMPILER=ifx
 # CMake build type (case-sensitive): e.g. Release, Debug, RelWithDebInfo
 ARG BUILD_TYPE=Release
 ARG CONFIGURATION=all

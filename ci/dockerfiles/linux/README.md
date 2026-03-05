@@ -95,7 +95,7 @@ make install
 ### Build arguments
 The dockerfile has several build arguments:
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
-- `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
+- `INTEL_FORTRAN_COMPILER` (default value: `ifx`)
 - `DEBUG` (default value: `0`)
 - `BUILDTOOLS_IMAGE_URL` (default value: `containers.deltares.nl/delft3d-dev/delft3d-buildtools`)
 - `BUILDTOOLS_IMAGE_TAG` (default value: `oneapi-${INTEL_ONEAPI_VERSION}`)
