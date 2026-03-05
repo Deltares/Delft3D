@@ -191,15 +191,12 @@ if (WIN32)
 
     target_link_directories(${library_name} PUBLIC
                                 "${mpi_library_path}"
-                                "${petsc_libdir}"
     )
 
     target_link_libraries(${library_name} PUBLIC
                             "${mpi_fortran_library}"
                             petsc
     )
-
-    include_directories(${petsc_path})
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"

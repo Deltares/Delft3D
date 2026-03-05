@@ -77,6 +77,13 @@ if(NOT TARGET precice::precice)
     add_subdirectory(${checkout_src_root}/${precice_module} precice)
 endif()
 
+# petsc
+if(WIN32)
+    if(NOT TARGET petsc)
+        add_subdirectory(${checkout_src_root}/${petsc_module} petsc)
+    endif()
+endif(WIN32)
+
 # Dflowfm modules
 add_subdirectory(${checkout_src_root}/${dflowfm_kernel_module} dflowfm_kernel)
 add_subdirectory(${checkout_src_root}/${dflowfm_cli_exe_module} dflowfm_cli_exe)
@@ -125,13 +132,6 @@ endif()
 if(NOT TARGET metisoptions)
     add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
 endif()
-
-# petsc
-if(WIN32)
-    if(NOT TARGET petsc)
-        add_subdirectory(${checkout_src_root}/${petsc_module} petsc)
-    endif()
-endif(WIN32)
 
 # triangle
 if(NOT TARGET triangle_c)

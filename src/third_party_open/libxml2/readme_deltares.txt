@@ -2,7 +2,7 @@
 Download sources (this version: v2.15.1)
 
 Build steps from source folder:
-    cmake -S . -B build -G "Ninja" -D CMAKE_C_COMPILER=cl -D CMAKE_CXX_COMPILER=cl -D CMAKE_INSTALL_PREFIX=<PREFIX>\src\third_party_open\libxml2\libxml2-v2.15.1 -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_PYTHON=OFF
+    cmake -S . -B build -G "Ninja" -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_COMPILER=cl -D CMAKE_CXX_COMPILER=cl -D CMAKE_INSTALL_PREFIX=<PREFIX>\src\third_party_open\libxml2\libxml2-v2.15.1 -D LIBXML2_WITH_ICONV=OFF -D LIBXML2_WITH_LZMA=OFF -D LIBXML2_WITH_PYTHON=OFF
     cmake --build build --config Release --parallel
     cmake --install build --config Release
 
