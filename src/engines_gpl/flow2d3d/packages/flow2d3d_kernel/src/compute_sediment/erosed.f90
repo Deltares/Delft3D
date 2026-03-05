@@ -400,8 +400,9 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 !       & 0.0375, 0.0300/
 !    data sig2d/-0.1122,-0.3140,-0.4754,-0.6045,-0.7077,-0.7902,-0.8563,-0.9090, &
 !       & -0.9512,-0.9850/
-    integer, parameter :: KFROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
-    integer, parameter :: KTO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
+    integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
+    integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
+    integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
 !
 !! executable statements -------------------------------------------------------
 !
@@ -630,10 +631,6 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     if (lsedtot > 1) then
        call getfrac(gdp%gdmorlyr,frac      ,anymud    ,mudcnt    , &
                   & mudfrac     ,gdp%d%nmlb,gdp%d%nmub)
-       if (ihidexptrcrs == 1) then 
-          call getfrac(gdp%gdmorlyr,frache    ,anymud    ,mudcnt    , &
-                     & mudfrache   ,gdp%d%nmlb,gdp%d%nmub, KFROM, KTO)
-       endif 
     endif
     !
     ! Calculate velocity components and magnitude at the zeta points
@@ -702,25 +699,33 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! calculate geometric mean sediment diameter Dg
        ! calculate percentiles Dxx
        !
-       if (ihidexptrcrs == 1) then 
+
+       
+       call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+                   & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
+                   & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+                   & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
+
+       !
+       ! determine hiding & exposure factors
+       !
+       if (ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+          !In this case, the hiding and exposure factors are computed based on the mean grain
+          !size of the sediment in both the active layer (which is the top layer in the bed) and
+          !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
+          !in the second layer (the coarse layer) will influence the sediment transport rate. 
+          !`frac` is used for computing the sediment transport rate for each fraction. This should
+          !depend only on the sediment in the active layer, and therefore `frac` is not overwritten. 
+          call getfrac(gdp%gdmorlyr,frache    ,anymud    ,mudcnt    , &
+                     & mudfrache   ,gdp%d%nmlb,gdp%d%nmub, BED_LAYER_FROM, BED_LAYER_TO)
           call compdiam(frache    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                       & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
                       & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
                       & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
-       else 
-          call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
-                      & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
-                      & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
-                      & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
-       endif
-       !
-       ! determine hiding & exposure factors
-       !
-       if (ihidexptrcrs == 1) then 
           call comphidexp(frache   ,dm_he     ,nmmax     ,lsedtot   , &
                         & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                         & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
-       else 
+       else
           call comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
                         & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                         & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)

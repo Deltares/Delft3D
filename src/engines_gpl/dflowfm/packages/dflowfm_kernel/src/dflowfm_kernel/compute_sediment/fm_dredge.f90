@@ -162,7 +162,7 @@ contains
          if (stmpar%morpar%moroutput%morstats) then
             call morstats(dbodsd)
          end if
-         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy, mtd%messages) /= 0) then
+         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,dunelngth, sbot, dtmor, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             error = .true.
             return
