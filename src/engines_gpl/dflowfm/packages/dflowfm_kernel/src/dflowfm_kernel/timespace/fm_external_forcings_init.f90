@@ -1033,17 +1033,23 @@ contains
          call resolvePath(location_file, base_dir)
          
          call oldfil(polyline_file_lun, location_file)
+         if (polyline_file_lun == 0) then
+            write (msgbuf, '(a)') "Error in source sink initialization, failed to read polyline file '" // trim(location_file) // "'"
+            call err_flush()
+            return
+         end if
+         
          call reapol(polyline_file_lun, 0)
-
          if (npl == 0) then
-            write (msgbuf, '(a)') "Failed to read polyline file (or it contains no data) '" // trim(location_file) // "'"
+            write (msgbuf, '(a)') "Error in source sink initialization, no data in polyline file '" // trim(location_file) // "'"
             call err_flush()
             return
          end if
          
          ! Avoid having two places specifying the same (and potentially conflicting) z data.
          if (colpl > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
-            write (msgbuf, '(a)') 'Source/sink z information cannot be specified both in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
+            write (msgbuf, '(a)') 'Error in source sink initialization, source/sink z information cannot be specified both' &
+               // 'in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
             call err_flush()
             return
          end if
@@ -1104,7 +1110,7 @@ contains
       
       ! Create the actual source/sink based on the parsed data
       source_z_size = merge(2, 1, abs(z_range_source(2) - dmiss) > epsilon(z_range_source(2)))
-      sink_z_size = merge(2, 1, abs(z_range_sink(2) - dmiss) > epsilon(z_range_source(2)))
+      sink_z_size = merge(2, 1, abs(z_range_sink(2) - dmiss) > epsilon(z_range_sink(2)))
       call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source(1:source_z_size), z_range_sink(1:sink_z_size), area, ierr)
       if (ierr /= DFM_NOERR) then
          write (msgbuf, '(a)') 'Error while processing ''' // trim(file_name) // ''': [' // trim(group_name), ']. ' &
