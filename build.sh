@@ -89,10 +89,12 @@ function DoCMake () {
     echo "Executing CMake for $1 ..."
     
     cd $root
-    echo 'cmake ./src/cmake -G "$generator" -B $build_dir \\'
-    echo '    -D CONFIGURATION_TYPE="$1" \\'
-    echo '    -D CMAKE_BUILD_TYPE=$build_type \\'
-    echo '    -D CMAKE_INSTALL_PREFIX="$install_dir"'
+    echo
+    echo "cmake ./src/cmake -G \"$generator\" -B $build_dir \\"
+    echo "    -D CONFIGURATION_TYPE="$1" \\"
+    echo "    -D CMAKE_BUILD_TYPE=$build_type \\"
+    echo "    -D CMAKE_INSTALL_PREFIX=\"$install_dir\""
+    echo
     
     cmake ./src/cmake -G "$generator" -B $build_dir \
         -D CONFIGURATION_TYPE="$1" \
@@ -117,8 +119,10 @@ function BuildCMake () {
     echo "Building $1 ..."
     
     cd $build_dir
-    echo "cmake --build . --parallel --target install --config $build_type"
-          cmake --build . --parallel --target install --config $build_type
+    echo
+    echo "cmake --build . --parallel --target install"
+    echo
+          cmake --build . --parallel --target install
     
     if [ $? -ne 0 ]; then
         echo "CMake build resulted in an error. Check log files."
@@ -143,6 +147,7 @@ compiler=ifx
 build_type=Release
 build_dir_postfix=""
 build=0
+keep_build=0
 build_dir=""
 install_dir=""
 
@@ -179,6 +184,10 @@ case $key in
     --install_dir)
     shift
     install_dir="$1"
+    shift
+    ;;
+    --keep_build)
+    keep_build=1
     shift
     ;;
     all)
