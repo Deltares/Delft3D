@@ -1004,7 +1004,6 @@ contains
       logical :: is_successful
       logical :: is_read
       logical :: source_z_in_ext_file, sink_z_in_ext_file
-      integer :: source_z_size, sink_z_size
       logical :: have_location_file, have_location_coordinates
 
       is_successful = .false.
@@ -1109,9 +1108,7 @@ contains
       call prop_get(block_ptr, '', 'area', area, is_read)
       
       ! Create the actual source/sink based on the parsed data
-      source_z_size = merge(2, 1, abs(z_range_source(2) - dmiss) > epsilon(z_range_source(2)))
-      sink_z_size = merge(2, 1, abs(z_range_sink(2) - dmiss) > epsilon(z_range_sink(2)))
-      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source(1:source_z_size), z_range_sink(1:sink_z_size), area, ierr)
+      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
          write (msgbuf, '(a)') 'Error while processing ''' // trim(file_name) // ''': [' // trim(group_name), ']. ' &
             // 'Source sink with id=' //trim(sourcesink_id) //'. could not be added.'
@@ -1310,6 +1307,7 @@ contains
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
       use m_bubblescreen
       use m_setsorsin
+      use m_missing, only: dmiss
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1363,7 +1361,7 @@ contains
                   write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
 
                   tmsz = (zws(i) + zws(i-1)) / 2.0_dp
-                  call addsorsin(srcid, [tmsx], [tmsy], [tmsz], [tmsz], 0.0_dp, ierr)
+                  call addsorsin(srcid, [tmsx], [tmsy], [tmsz, dmiss], [tmsz, dmiss], 0.0_dp, ierr)
                                     
                   write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, tmsz
                   call msg_flush()
