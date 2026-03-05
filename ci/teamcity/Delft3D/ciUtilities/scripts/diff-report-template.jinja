@@ -13,7 +13,7 @@
 <summary><h4>{{ file.path }}</h4></summary>
 
 ```{% if file.lang and file.lang != 'plain' %}{{file.lang|trim}}{% endif %} 
-{{file.diff | trim }}
+{{file.diff | trim |truncate(5000)}}
 ```
 
 </details>
@@ -35,7 +35,7 @@
 <summary><h4>{{ file.path }}</h4></summary>
 
 ```diff
-{{file.diff | trim }}
+{{file.diff | trim |truncate(5000)}}
 ```
 
 </details>
