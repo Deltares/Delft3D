@@ -117,6 +117,7 @@ module m_polygon
    real(kind=dp), allocatable, dimension(:), private :: yph
    real(kind=dp), allocatable, dimension(:), private :: zph
    integer, allocatable, dimension(:) :: iweirt
+   integer :: colpl ! Number of columns
    integer :: npl
    integer :: nph
    integer :: maxpol
@@ -225,6 +226,7 @@ contains
       end if
       MP = MPS
       NPL = NPH
+      NPH = 0
 
       return
    end subroutine restorepol

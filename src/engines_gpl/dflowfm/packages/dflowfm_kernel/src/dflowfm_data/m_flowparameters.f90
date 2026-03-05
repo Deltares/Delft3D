@@ -61,10 +61,10 @@ module m_flowparameters
    integer :: lincontin !< 0 = no, 1 = yes linear continuity
 
    integer :: Perot_type !< Perot weigthing type of cell center velocities ucx, ucy
-                                                        !! in vectors:
-                                                        !! 0 : uc*sum(w) = sum (u W)
-                                                        !! 1 : uc*A      = sum(u dxa W)
-                                                        !! 2 : uc*A*hs   = sum(u dxa W hu ), ie waterdepth dependent
+                        !! in vectors:
+                        !! 0 : uc*sum(w) = sum (u W)
+                        !! 1 : uc*A      = sum(u dxa W)
+                        !! 2 : uc*A*hs   = sum(u dxa W hu ), ie waterdepth dependent
    ! To do: Check unused options (UNST-8641)
    ! 2 : uc*V      = sum(q dxa      ), ie waterdepth dependent
    ! 3 : uc*A*humx = sum(u dxa W hu ), humx = max(hu)
@@ -192,16 +192,16 @@ module m_flowparameters
    integer :: iuvfield !< intialise this velocityfield: 0 = no
                                                         !! 1:u=y**2, 2:idem, 60 deg, 3:rotation, 4=lin, 5=lin 60 deg
 
-   integer :: istresstyp !< 1 : full stress tensor, semi  link oriented horvic2
-                                                        !! 2 : full stress tensor, fully link oriented dvxc = ok and fast
-                                                        !! 3 : 2, volume weighted
-                                                        !! 4 : full node oriented
-                                                        !! 5 : 4, volume weighted
+   integer, parameter :: istresstyp = 3 !< 1 : full stress tensor, semi  link oriented horvic2
+                                        !! 2 : full stress tensor, fully link oriented dvxc = ok and fast
+                                        !! 3 : 2, volume weighted
+                                        !! 4 : full node oriented
+                                        !! 5 : 4, volume weighted
 
    integer :: irov !< 0 : free slip
-                                                        !! 1 : partial slip
-                                                        !! 2 : no slip
-                                                        !! 3 : glass  (mind you, in D3DFLOW 3 means free slip)
+                   !! 1 : partial slip
+                   !! 2 : no slip
+                   !! 3 : glass  (mind you, in D3DFLOW 3 means free slip)
 
    integer :: ibedlevmode !< 1 : See BLMODE_DFM
                                                         !! 2 : See BLMODE_D3D
@@ -209,9 +209,9 @@ module m_flowparameters
    integer, parameter :: BLMODE_D3D = 2 !< ibedlevmode value: Compute bed levels as D3D, i.e., derived from corner point depths. Currently always deepest (== DPSOPT=MAX).
 
    integer :: ibedlevtyp !< 1 : Bed levels at waterlevel cells (=flow nodes), like tiles xz, yz, bl , bob = max(bl left, bl right)
-                                                        !! 2 : Bed levels at velocity points  (=flow links),            xu, yu, blu, bob = blu,    bl = lowest connected link
-                                                        !! 3 : Bed levels at velocity points  (=flow links), using mean network levels xk, yk, zk  bl = lowest connected link
-                                                        !! 4 : Bed levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link
+                         !! 2 : Bed levels at velocity points  (=flow links),            xu, yu, blu, bob = blu,    bl = lowest connected link
+                         !! 3 : Bed levels at velocity points  (=flow links), using mean network levels xk, yk, zk  bl = lowest connected link
+                         !! 4 : Bed levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link
    integer, parameter :: BEDLEV_TYPE_WATERLEVEL = 1
    integer, parameter :: BEDLEV_TYPE_VELOCITY = 2
    integer, parameter :: BEDLEV_TYPE_MEAN = 3
@@ -346,12 +346,12 @@ module m_flowparameters
    real(kind=dp) :: chktempdep !< check heatfluxes for 'drying' below this waterdepth
    real(kind=dp) :: trsh_u1Lb = 0.0_dp
    integer :: jposhchk !< check for positive waterdepth; 0 = no
-                                                        !!                               -1 = 1.0*dts, only check for dry cells and report back, restart Nested Newton, not timestep.
-                                                        !!                                1 = 0.7*dts, just redo
-                                                        !!                                2 = 1.0*dts, close all links
-                                                        !!                                3 = 0.7*dts, close all links
-                                                        !!                                4 = 1.0*dts, reduce au
-                                                        !!                                5 = 0.7*dts, reduce au
+   !                                                    -1 = 1.0*dts, only check for dry cells and report back, restart Nested Newton, not timestep.
+   !                                                     1 = 0.7*dts, just redo
+   !                                                     2 = 1.0*dts, close all links
+   !                                                     3 = 0.7*dts, close all links
+   !                                                     4 = 1.0*dts, reduce au
+   !                                                     5 = 0.7*dts, reduce au
    integer :: jsolpos !< in iterative solver force solution above bottom level
    integer :: Icgsolver !< 'Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS '
    integer :: ipre !< Preconditioner, 0=rowscaling, 1=GS, 2=trial
@@ -785,12 +785,6 @@ contains
 
       iuvfield = 0 ! intialise this velocityfield: 0 = no
       ! 1:u=y**2, 2:idem, 60 deg, 3:rotation, 4=lin, 5=lin 60 deg
-
-      istresstyp = 3 ! 1 : full stress tensor, semi  link oriented horvic2
-      ! 2 : full stress tensor, fully link oriented dvxc = ok and fast
-      ! 3 : 2, volume weighted
-      ! 4 : full node oriented
-      ! 5 : 4, volume weighted
 
       irov = 0 ! 0 : free slip
       ! 1 : partial slip
