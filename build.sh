@@ -230,9 +230,9 @@ if [ -z "$config" ]; then
 fi
 
 # Check build_type
-if [ "$build_type" == "Debug" ]; then
+if [ "$build_type" = "Debug" ]; then
     build_dir_postfix="_debug"
-elif [ "$build_type" == "Release" ]; then
+elif [ "$build_type" = "Release" ]; then
     build_dir_postfix=""
 else
     echo ERROR: Unknown build type ${build_type}; should be "Release" or "Debug".
@@ -260,11 +260,19 @@ echo "    build_dir       : $build_dir"
 echo "    install_dir     : $install_dir"
 echo
 
+# check required utilities
+chkutils=$(CheckUtils)
+if [ -n "$chkutils" ]; then
+    echo "$chkutils"
+    echo "Install missing programs and retry."
+    exit 1
+fi
+
 CreateCMakedir ${config}
 
 DoCMake ${config}
 
-if [ "$build"=="1" ]; then
+if [ "$build" = "1" ]; then
     BuildCMake ${config}
 fi
 
