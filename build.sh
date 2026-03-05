@@ -65,7 +65,7 @@ function CreateCMakedir () {
     echo "Create build dir for $1 ..."
     
     cd $root
-    if [ -z "keep_build ]; then
+    if [ -z "keep_build" ]; then
        rm -rf $build_dir
        rm -rf $install_dir
     fi
@@ -114,7 +114,7 @@ function DoCMake () {
 # =====================
 function BuildCMake () {
     echo
-    echo "Building (make) based on CMake preparations for $1 ..."
+    echo "Building $1 ..."
     
     cd $build_dir
     echo "cmake --build . --parallel --target install --config $build_type"
@@ -224,6 +224,11 @@ case $key in
 esac
 done
 
+# Check config parameter
+if [ -z "$config" ]; then
+    print_usage_info
+fi
+
 # Check build_type
 if [ "$build_type" == "Debug" ]; then
     build_dir_postfix="_debug"
@@ -233,6 +238,10 @@ else
     echo ERROR: Unknown build type ${build_type}; should be "Release" or "Debug".
 fi
 
+scriptdirname=`readlink \-f \$0`
+scriptdir=`dirname $scriptdirname`
+root=$scriptdir
+
 # set directories for build and install
 if [ -z "$build_dir" ]; then
     build_dir=$root/build_${config}${build_dir_postfix}
@@ -240,15 +249,6 @@ fi
 if [ -z "$install_dir" ]; then
     install_dir=$root/install_${config}${build_dir_postfix}
 fi
-#
-# Check config parameter
-if [ -z "$config" ]; then
-    print_usage_info
-fi
-
-scriptdirname=`readlink \-f \$0`
-scriptdir=`dirname $scriptdirname`
-root=$scriptdir
 
 echo
 echo "    config          : $config"
@@ -260,18 +260,12 @@ echo "    build_dir       : $build_dir"
 echo "    install_dir     : $install_dir"
 echo
 
-# check required utilities
-chkutils=$(CheckUtils)
-if [ -n "$chkutils" ]; then
-    echo "$chkutils"
-    echo "Install missing programs and retry."
-    exit 1
-fi
-
 CreateCMakedir ${config}
 
 DoCMake ${config}
 
-BuildCMake ${config}
+if [ "$build"=="1" ]; then
+    BuildCMake ${config}
+fi
 
 echo Finished
