@@ -276,6 +276,7 @@ object Trigger : BuildType({
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+            contains("teamcity.build.branch", "pull")
             }
 
             scriptContent = """
