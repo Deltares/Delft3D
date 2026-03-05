@@ -434,16 +434,16 @@ contains
 
         ! Update source/sink indices
         source_sink_indices(1, source_sink_index) = n
-        source_sink_indices(2, source_sink_index) = k_start + 1
-        source_sink_indices(3, source_sink_index) = k_max_velocity
+        ! source_sink_indices(2, source_sink_index) = k_start + 1
+        ! source_sink_indices(3, source_sink_index) = k_max_velocity
         source_sink_indices(4, source_sink_index) = n
-        source_sink_indices(5, source_sink_index) = k_max_velocity + 1
-        source_sink_indices(6, source_sink_index) = k_stop
+        ! source_sink_indices(5, source_sink_index) = k_max_velocity + 1
+        ! source_sink_indices(6, source_sink_index) = k_stop
 
         ! Update source/sink top and bottom z-levels
         source_sink_z_bottom(1, source_sink_index) = (zws(k_start) + zws(k_start+1)) / 2.0_dp
-        source_sink_z_bottom(2, source_sink_index) = (zws(k_max_velocity) + zws(k_max_velocity-1)) / 2.0_dp
-        source_sink_z_top(1, source_sink_index) = (zws(k_max_velocity) + zws(k_max_velocity+1)) / 2.0_dp
+        source_sink_z_bottom(2, source_sink_index) = (zws(k_max_velocity) + zws(k_max_velocity+1)) / 2.0_dp
+        source_sink_z_top(1, source_sink_index) = (zws(k_max_velocity) + zws(k_max_velocity-1)) / 2.0_dp
         source_sink_z_top(2, source_sink_index) = (zws(k_stop) + zws(k_stop-1)) / 2.0_dp
 
     end subroutine update_bubblescreen_source_sink_layer_indices
