@@ -445,13 +445,12 @@ rem =======================
     echo -coverage: Instrument object files for code-coverage tool (codecov).                  Example: -coverage
     echo -build: Run build and install steps after running cmake.                              Example: -build
     echo -vs: desired visual studio version.                                                   Example: -vs 2019
-    echo -compiler: desired Intel compiler, either ifort (default) or ifx.                     Example: -compiler ifx
+    echo -compiler: desired Intel compiler, either ifort or ifx (default).                     Example: -compiler ifx
     echo -build_type: build optimization level.                                                Example: -build_type Release
 rem extra four spaces required for aligning Example, compensating for ^ characters:
     echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
     echo.
-    echo More info  : https://oss.deltares.nl/web/delft3d/source-code
-    echo About CMake: https://github.com/Deltares/Delft3D/tree/main/src/cmake/doc/README
+    echo More info  : https://github.com/Deltares/Delft3D
     echo.
     set ERRORLEVEL=1
     goto :end

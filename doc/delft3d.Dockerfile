@@ -9,8 +9,6 @@ ARG BASE_TAG=oneapi-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${BUILD_TY
 
 FROM ${THIRDPARTYLIBS_IMAGE_URL}:${BASE_TAG} AS build
 
-ARG INTEL_ONEAPI_VERSION
-ARG INTEL_FORTRAN_COMPILER
 ARG BUILD_TYPE
 ARG CONFIGURATION
 
@@ -28,13 +26,7 @@ export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
 export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
 export CMAKE_LIBRARY_PATH=/usr/local/lib:CMAKE_LIBRARY_PATH
 
-mkdir --parents /delft3d
-cmake ./src/cmake -G "Unix Makefiles" -B build \
-    -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-    -DCONFIGURATION_TYPE=${CONFIGURATION} \
-    -DCMAKE_INSTALL_PREFIX=/delft3d
-
-cmake --build build --parallel --target install --config ${BUILD_TYPE}
+build.sh ${CONFIGURATION} --build --build_type=${BUILD_TYPE} --build_dir=${PWD}/build --install_dir=/delft3d
 EOF
 
 FROM ${BASE_IMAGE_URL}
