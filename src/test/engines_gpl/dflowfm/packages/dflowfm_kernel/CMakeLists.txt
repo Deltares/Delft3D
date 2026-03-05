@@ -48,11 +48,6 @@ if(UNIX)
 
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 
-    #manually add the fortran OpenMP runtime library for the test executable to prevent linking errors on kernel lib
-    if(OpenMP_FOUND)
-        target_link_libraries(${executable_name} PRIVATE ${OpenMP_Fortran_LIBRARIES})
-    endif()
-
 
 endif(UNIX)
 

@@ -153,11 +153,6 @@ function(F90TWTEST NAME)
         target_link_libraries(${NAME} PRIVATE OpenMP::OpenMP_CXX)
     endif()
     
-    # Add also Intel Fortran OpenMP runtime for Fortran libraries compiled with OpenMP
-    # This is needed to prevent linking errors on the test executable when the kernel library is compiled with OpenMP.
-    if(OpenMP_Fortran_FOUND AND UNIX)
-            target_link_libraries(${NAME} PRIVATE ${OpenMP_Fortran_LIBRARIES})
-    endif()
     
     set_target_properties(${NAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)
 
