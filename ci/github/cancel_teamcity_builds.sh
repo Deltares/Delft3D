@@ -43,7 +43,7 @@ Options:
   --teamcity-token TOKEN         TeamCity access token
   --teamcity-project-id ID       TeamCity project ID
   --branch BRANCH                Branch name to monitor (will be URL-encoded automatically)
-  --commit-hash HASH             Commit HASH
+  --commit-hash HASH             Commit HASH (Optional: if not specified all builds on the branch wil be cancelled)
   --help                         Show this help message
 EOF
 }
