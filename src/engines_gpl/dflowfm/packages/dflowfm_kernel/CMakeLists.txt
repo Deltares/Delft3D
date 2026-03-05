@@ -267,6 +267,10 @@ endif(WIN32)
 
 if (UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
+    find_package(OpenMP COMPONENTS Fortran)
+    if(OpenMP_Fortran_FOUND)
+         target_link_libraries(${library_name} PRIVATE ${OpenMP_Fortran_LIBRARIES})
+    endif()    
 endif(UNIX)
 
 # Create the folder structure in vfproj
