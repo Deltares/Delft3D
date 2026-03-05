@@ -34,23 +34,23 @@ contains
       jsferic = 0
       jslo = 0
       call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
-      call f90_assert_ge(zp(1), Z(1,2), "test 1: Point on corner fails")
+      call f90_assert_ge(zp(1), Z(1, 2), "test 1: Point on corner fails")
 
-      ! This test checks that a sample point on the corner of the triangle gives the correct value from the triangle 
+      ! This test checks that a sample point on the corner of the triangle gives the correct value from the triangle
       ! Here the triangle indices have been shifted
       X = cshift(X, 1)
       Y = cshift(Y, 1)
       Z = cshift(Z, 1, 2)
       call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
-      call f90_assert_ge(zp(1), Z(1,1), "test 2: Point on corner fails")
+      call f90_assert_ge(zp(1), Z(1, 1), "test 2: Point on corner fails")
 
-      ! This test checks that a sample point on the corner of the triangle gives the correct value from the triangle 
+      ! This test checks that a sample point on the corner of the triangle gives the correct value from the triangle
       ! Here the triangle indices have been shifted
       X = cshift(X, 1)
       Y = cshift(Y, 1)
       Z = cshift(Z, 1, 2)
       call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
-      call f90_assert_eq(zp(1), Z(1,3), "test 3: Point on corner fails")
+      call f90_assert_eq(zp(1), Z(1, 3), "test 3: Point on corner fails")
 
       ! This test checks that a sample point outside the triangle gives the value imposed from the plane.
       ! In this case the plane is defined as z = 1.0_dp+x+y, and hence the expected output is equal to 2.0_dp
