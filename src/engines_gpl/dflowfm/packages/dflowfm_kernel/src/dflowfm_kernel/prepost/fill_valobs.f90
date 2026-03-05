@@ -219,6 +219,12 @@ contains
             neighbour_weights_obs(1,i) = 1.0
             neighbour_weights_obs(2,i) = 0.0
             neighbour_weights_obs(3,i) = 0.0
+        else
+            ! You can have a station were interpolation is requested but outside the triangulation network through cel centres but
+            ! within the network (hence with a snapped location!). To avoid interplation set kobs to 0
+            if (neighbour_nodes_obs(1,i) == 0) then
+                kobs(i) = 0
+            end if
          end if
 
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
@@ -244,7 +250,7 @@ contains
             !
             ! Water levels
             
-            call interpolate_and_fill_valobs (s1,i,IPNT_S1,UNC_LOC_S) 
+            call interpolate_and_fill_valobs (s1,i,IPNT_S1,UNC_LOC_S)
             
            if (nshiptxy > 0) then
                if (allocated(zsp)) then

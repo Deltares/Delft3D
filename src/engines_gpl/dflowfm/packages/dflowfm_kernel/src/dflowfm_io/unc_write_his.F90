@@ -256,10 +256,10 @@ contains
 
          call check_netcdf_error(nf90_def_dim(ihisfile, 'name_len', strlen_netcdf, id_strlendim))
 
-         if (jahiszcor > 0) then
+!         if (jahiszcor > 0) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'laydim', max(kmx,1)    , id_laydim))
             call check_netcdf_error(nf90_def_dim(ihisfile, 'laydimw',max(kmx,1) + 1, id_laydimw))
-         end if
+!         end if
 
          if (stm_included .and. jahissed > 0) then
             if (ISED1 > 0) then

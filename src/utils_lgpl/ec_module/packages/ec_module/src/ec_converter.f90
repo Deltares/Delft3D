@@ -1647,6 +1647,7 @@ contains
       !! meteo1 : polyint
    function ecConverterPolytim(connection, timesteps) result(success)
       use m_ec_elementset, only: ecElementSetGetAbsZ
+      use m_missing,       only: dmiss
       use m_ec_message
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
@@ -1673,6 +1674,8 @@ contains
       integer :: idx !< helper variable
       integer :: vectormax
       integer :: from, thru !< contiguous range of indices in the target array
+      integer :: iVal
+      logical :: oneSided
       character(maxMessageLen) :: errormsg
 
       !
@@ -1745,7 +1748,26 @@ contains
                ! Are the subproviders 3D or 2D?
                if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                    associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
-
+                  
+                  kbeginL = maxlay_src * (kL - 1) + 1 ! refers to source left column
+                  kendL   = maxlay_src * kL
+                  kbeginR = maxlay_src * (kR - 1) + 1 ! refers to source right column
+                  kendR = maxlay_src * kR
+                  
+                  ! TK_Temp: Check if left has at leat one valid z coordinate
+                  oneSided = .true.
+                  do iVal = kbeginL, kendL
+                     if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(iVal),dmiss) /=0) oneSided = .false.
+                  end do
+              
+                  if (oneSided) kL = 0
+                  ! TK_Temp: Check if right has at leat one valid z coordinate
+                  oneSided = .true.
+                  do iVal = kbeginR, kendR
+                     if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(iVal),dmiss) /=0) oneSided = .false.
+                  end do
+                  if (oneSided) kR = 0
+                                    
                   ! deal with one-sided interpolation
                   if (kL == 0 .and. kR /= 0) then
                      kL = kR
@@ -1900,8 +1922,8 @@ contains
                         end if ! are we averaging the source in the vertical direction ?
                      end if ! kR > 0: right support point exists
                   end if ! kL > 0: left support point exists
-               else ! no vertical coordinate assigned to this source item, i.e. 3D source
-                  ! 2D subproviders
+              else ! no vertical coordinate assigned to this source item, i.e. 3D source
+                  ! 2D subproviders   
                   connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps !!!!! ???????
                   ! Determine value
                   if (kL > 0) then
