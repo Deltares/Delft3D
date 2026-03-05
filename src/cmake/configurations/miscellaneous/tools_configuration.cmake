@@ -79,11 +79,6 @@ if (NOT TARGET csumo_precice)
     add_subdirectory(${checkout_src_root}/${csumo_precice_module} csumo_precice)
 endif()
 
-# precicef (preCICE fortran bindings)
-if (NOT TARGET precicef)
-    add_subdirectory(${checkout_src_root}/${precicef_module} precicef)
-endif()
-
 # Third party
 # FLAP
 if(NOT TARGET FLAP)
