@@ -72,25 +72,25 @@ contains
          logtwo = log(2.0_dp)
          nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999_dp))
          dtmin = dts / real(nsubsteps, kind=dp)
-!     get number of substeps
-         do kk = 1, Ndxi
-            dt = dtmax(kk)
-            if (dt < dts) then
-               ndeltasteps(kk) = min(2**int(log(dt / dtmin) / logtwo), nsubsteps)
-               numnonglobal = numnonglobal + 1
-            else
-               ndeltasteps(kk) = nsubsteps
-            end if
-         end do
-
-!     fictitious boundary cells
-         do LL = Lnxi + 1, Lnx
-            ndeltasteps(ln(1, LL)) = ndeltasteps(ln(2, LL))
-         end do
-
          if (ja_transport_local_time_step==2) then
-             ndeltasteps = nsubsteps
-             numnonglobal = ndxi
+            ! apply substeps everywhere
+            ndeltasteps = nsubsteps
+            numnonglobal = ndxi
+         else
+            ! get number of substeps
+            do kk = 1, Ndxi
+               dt = dtmax(kk)
+               if (dt < dts) then
+                  ndeltasteps(kk) = min(2**int(log(dt / dtmin) / logtwo), nsubsteps)
+                  numnonglobal = numnonglobal + 1
+               else
+                  ndeltasteps(kk) = nsubsteps
+               end if
+            end do
+            ! fictitious boundary cells
+            do LL = Lnxi + 1, Lnx
+               ndeltasteps(ln(1, LL)) = ndeltasteps(ln(2, LL))
+            end do
          end if
       end if
 
