@@ -3,4 +3,5 @@ outs:
   size: 5839106
   nfiles: 12
   hash: md5
-  path: p101
+  path: input
+

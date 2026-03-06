@@ -3,4 +3,4 @@ outs:
   size: 19610243
   nfiles: 40
   hash: md5
-  path: hydro
+  path: input
