@@ -385,7 +385,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c012_schematized_lake" ref="dflowfm_default">
-      <path version="2025-12-16T10:32:08.261000">e02_dflowfm/f011_wind/c012_schematized_lake</path>
+      <path version="2026-03-06T15:14:52.229000">e02_dflowfm/f011_wind/c012_schematized_lake</path>
       <maxRunTime>20.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/windoverlake_his.nc" type="netCDF">
