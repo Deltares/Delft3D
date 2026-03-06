@@ -85,6 +85,22 @@ object LinuxTest : BuildType({
     }
 
     steps {
+        script {
+            name = "Create lnx64 symlink (needed for mormerge)"
+            workingDir = "test/deltares_testbench"
+            scriptContent = """
+                #!/bin/bash
+                set -euo pipefail
+
+                echo "=== Creating symbolic link for TestBench.py (on agent) ==="
+                mkdir -p data/engines/teamcity_artifacts
+                ln -sfn /opt/dimrset data/engines/teamcity_artifacts/lnx64
+
+                echo "✅ Symlink successfully created on agent:"
+                ls -ld data/engines/teamcity_artifacts/lnx64
+                echo "→ resolves to: $(readlink -f data/engines/teamcity_artifacts/lnx64 || echo 'N/A')"
+            """.trimIndent()
+        }
         python {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
