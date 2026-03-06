@@ -72,6 +72,16 @@ if(NOT TARGET dhydrology_kernel)
     add_subdirectory(${checkout_src_root}/${hydrology_kernel_module} dhydrology_kernel)
 endif()
 
+# PreCICE
+if(NOT TARGET precice::precice)
+    add_subdirectory(${checkout_src_root}/${precice_module} precice)
+endif()
+
+# precicef (preCICE fortran bindings)
+if (NOT TARGET precicef)
+    add_subdirectory(${checkout_src_root}/${precicef_module} precicef)
+endif()
+
 # petsc
 if(WIN32)
     if(NOT TARGET petsc)
