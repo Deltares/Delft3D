@@ -2,7 +2,7 @@ if(UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(precice REQUIRED IMPORTED_TARGET libprecice GLOBAL)
     add_library(precice::precice ALIAS PkgConfig::precice)
-    find_package(Boost REQUIRED COMPONENTS log log_setup program_options thread)
+    find_package(Boost REQUIRED COMPONENTS log log_setup program_options thread GLOBAL)
     find_package(LibXml2 REQUIRED)
     install(FILES
             ${precice_LINK_LIBRARIES}

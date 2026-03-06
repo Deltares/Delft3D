@@ -41,7 +41,7 @@ namespace csumo_precice
         }
 
         // Get mesh dimensions and set up vertices
-        const std::size_t dimensions = participant.getMeshDimensions(meshName);
+        const std::size_t dimensions = static_cast<std::size_t>(participant.getMeshDimensions(meshName));
         constexpr std::size_t numberOfVertices = 3;
 
         participant.startProfilingSection("Define mesh");
