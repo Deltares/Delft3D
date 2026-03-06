@@ -27,7 +27,6 @@
 !
 !  This module contains basic interpolation routines
 !
-!Global modules
 module m_ec_triangle ! original name : m_triangle
    use precision, only: hp
    implicit none
