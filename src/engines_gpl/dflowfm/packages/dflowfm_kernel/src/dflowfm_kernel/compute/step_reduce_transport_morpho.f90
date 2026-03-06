@@ -53,6 +53,7 @@ contains
    subroutine step_reduce_transport_morpho()
       use m_equili_spiralintensity
       use m_flow
+      use m_laterals, only: qlatwaq, qlatwaq0
       use m_flowgeom
       use m_sediment, only: stm_included
       use Timers
@@ -82,9 +83,9 @@ contains
 
       numnodneg = 0
       if (wrwaqon) then
-         ! store current cumulative qsrc and qlat for waq at the beginning of this time step
-         if (allocated(qsrcwaq)) then
-            qsrcwaq0 = qsrcwaq
+         ! store current cumulative source_sink_water_discharge and qlat for waq at the beginning of this time step
+         if (allocated(source_sink_cumulative_discharge_waq)) then
+            source_sink_cumulative_discharge_waq_previous = source_sink_cumulative_discharge_waq
          end if
          if (allocated(qlatwaq)) then
             qlatwaq0 = qlatwaq

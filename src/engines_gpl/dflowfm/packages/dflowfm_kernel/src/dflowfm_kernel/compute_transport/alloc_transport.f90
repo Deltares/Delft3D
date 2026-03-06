@@ -49,7 +49,7 @@ contains
       use m_transport
       use m_alloc
       use m_meteo, only: numtracers, numfracs, item_sourcesink_constituent_delta
-      use fm_external_forcings_data, only: numsrc, qcsrc, vcsrc, wstracers
+      use fm_external_forcings_data, only: wstracers
       use m_sediment, only: stm_included
       use m_ec_module, only: ec_undef_int
       implicit none
@@ -130,9 +130,6 @@ contains
 !  tracer boundary condition
       call realloc(itrac2const, numtracers, keepExisting=KeepExisting, fill=0)
       call realloc(ifrac2const, numfracs, keepExisting=KeepExisting, fill=0)
-
-      call realloc(qcsrc, [NUMCONST, numsrc], keepExisting=.false., fill=0.0_dp)
-      call realloc(vcsrc, [2 * NUMCONST, numsrc], keepExisting=.false., fill=0.0_dp)
 
       if (jawaqproc > 0) then
 !     WAQ

@@ -314,7 +314,7 @@ class Rewinder:
                 etag = self.__etag(path, part_size)
                 yield (str(path.relative_to(src_dir).as_posix()), etag)  # Make sure to use unix path separators.
             elif self.__dir_is_empty(path):  # `path` is an empty directory.
-                etag = hashlib.md5(b"").hexdigest()
+                etag = hashlib.md5(b"", usedforsecurity=False).hexdigest()
                 yield (str((path.relative_to(src_dir) / ".miniokeep").as_posix()), etag)
 
     def execute_plan(self, plan: Plan) -> None:
@@ -532,15 +532,15 @@ class Rewinder:
                 chunk = f.read(size)
 
         with open(path, "rb") as f:
-            hashes = [hashlib.md5(chunk) for chunk in chunker(f, part_size)]
+            hashes = [hashlib.md5(chunk, usedforsecurity=False) for chunk in chunker(f, part_size)]
 
         if not hashes:
-            return hashlib.md5(b"").hexdigest()  # Emtpy file
+            return hashlib.md5(b"", usedforsecurity=False).hexdigest()  # Emtpy file
         elif len(hashes) == 1:
             return hashes[0].hexdigest()  # Regular file
         else:
             digests = b"".join(h.digest() for h in hashes)  # Files split in multiple parts
-            return hashlib.md5(digests).hexdigest() + f"-{len(hashes)}"
+            return hashlib.md5(digests, usedforsecurity=False).hexdigest() + f"-{len(hashes)}"
 
     def __add_object_tags(self, obj: MinioObject) -> MinioObject:
         if obj.is_delete_marker:

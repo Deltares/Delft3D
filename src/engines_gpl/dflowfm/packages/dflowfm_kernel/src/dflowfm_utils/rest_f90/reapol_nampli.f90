@@ -42,7 +42,7 @@ contains
       !! A dmiss line starts a new polyline without a name. Multiple dmiss lines are skipped.
    module subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
       use precision, only: dp
-      use m_polygon, only: xpl, ypl, zpl, npl, nampli, jakol45, increasepol, dzl, maxpol, dzr, iweirt, dcrest, dtl, dtr, dveg
+      use m_polygon, only: xpl, ypl, zpl, npl, colpl, nampli, jakol45, increasepol, dzl, maxpol, dzr, iweirt, dcrest, dtl, dtr, dveg
       use m_alloc, only: realloc
       use m_readyy, only: readyy
       use m_qnerror, only: qnerror
@@ -57,7 +57,6 @@ contains
       integer, intent(inout) :: ipli
 
       integer :: i
-      integer :: nkol
       integer :: nrow
       integer :: nmiss
       integer :: ierr
@@ -76,6 +75,7 @@ contains
          YPL = XYMIS
          ZPL = XYMIS
          NPL = 0
+         colpl = 0
          call realloc(nampli, 20, keepExisting=.false., fill=' ')
       end if
 
@@ -86,17 +86,17 @@ contains
          goto 10
       end if
       read (MPOL, '(A)', end=999) REC
-      read (REC, *, iostat=ierr) NROW, NKOL
+      read (REC, *, iostat=ierr) nrow, colpl
       if (ierr /= 0) then
          goto 888
       end if
       jaKol45 = 0
-      if (nkol < 2) then
-         call QNERROR('File should contain at least 2 or 3 columns, but got:', ' ', ' ') ! nkol)
+      if (colpl < 2) then
+         call QNERROR('File should contain at least 2 or 3 columns, but got:', ' ', ' ')
          goto 999
-      else if (nkol > 3 .and. nkol <= 8) then
+      else if (colpl > 3 .and. colpl <= 8) then
          jaKol45 = 1
-      else if (nkol >= 9) then
+      else if (colpl >= 9) then
          jaKol45 = 2
       end if
       call INCREASEPOL(NPL + NROW + 1, 1) ! previous pols (if any) + 1 dmiss + new polyline
@@ -133,29 +133,29 @@ contains
             ZZ = DMISS
             dz1 = dmiss
             dz2 = dmiss
-            if (nkol == 10) then
+            if (colpl == 10) then
                read (REC, *, iostat=ierr) XX, YY, zcrest, sillup, silldown, crestl, taludl, taludr, veg, weirtype ! read weir data from Baseline format plus weirtype
                if (ierr /= 0) then
                   goto 777
                end if
                ZZ = zcrest ! dummy value for zz to guarantee that ZPL will be filled
-            else if (nkol == 9) then
+            else if (colpl == 9) then
                read (REC, *, iostat=ierr) XX, YY, zcrest, sillup, silldown, crestl, taludl, taludr, veg ! read weir data from Baseline format
                if (ierr /= 0) then
                   goto 777
                end if
                ZZ = zcrest ! dummy value for zz to guarantee that ZPL will be filled
-            else if (nkol == 5) then
+            else if (colpl == 5) then
                read (REC, *, iostat=ierr) XX, YY, ZZ, dz1, dz2
                if (ierr /= 0) then
                   goto 777
                end if
-            else if (nkol == 4) then
+            else if (colpl == 4) then
                read (REC, *, iostat=ierr) XX, YY, ZZ, dz1
                if (ierr /= 0) then
                   goto 777
                end if
-            else if (nkol == 3) then
+            else if (colpl == 3) then
                read (REC, *, iostat=ierr) XX, YY, ZZ
                if (ierr /= 0) then
                   goto 777
@@ -211,13 +211,13 @@ contains
                DTR(NPL) = taludr
                DVEG(NPL) = veg
                IWEIRT(NPL) = -999 ! if no weirtype has been specified
-               if (nkol == 10) then
+               if (colpl == 10) then
                   if (weirtype == 't' .or. weirtype == 'T') then
                      IWEIRT(NPL) = 1
                   elseif (weirtype == 'v' .or. weirtype == 'V') then
                      IWEIRT(NPL) = 2
                   end if
-               else if (nkol == 9) then
+               else if (colpl == 9) then
                   if (ifixedweirscheme == 8) then
                      IWEIRT(NPL) = 1
                   elseif (ifixedweirscheme == 9) then
