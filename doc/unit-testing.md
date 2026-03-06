@@ -1,14 +1,16 @@
 # Unit Tests
 Back to main [development page](development.md).
 
-**This page is draft and not yet fully consistent with the current working procedure.**
+Note: This page is *draft*.
+We have unit tests located in `test/unit_test/` (described below) and unit tests located in `src/test/` (not yet described).
+The former tests are configured to be executed in the build folder, whereas the latter tests should run in the installation folder.
 
 ## 1. Create Unit tests
 
 ### 1.1 Folder structure
 
-- The unit tests are located in the `test/unit_test` directory. The subdirectories are structured in the
-  same way as the src directory.
+- The unit tests are located in the `test/unit_test` directory.
+  The subdirectories are structured in the same way as the src directory.
 - To test a certain subroutine or function located in a module, create a file with the same name as the
   subroutine or function in the `test/unit_test` directory.
 
@@ -55,7 +57,7 @@ Back to main [development page](development.md).
     │   │   ├── data
     │   │   │    └── file_1.txt
     │   │   ├── CMakeLists.txt
-    │   │   ├── tests_sub_routine_1.f90
+    │   │   ├── tests_sub_routine_2.f90
             ...
 ```
 
@@ -73,13 +75,16 @@ create_test(
         include_dir ${CMAKE_CURRENT_SOURCE_DIR}/data/
         test_list test_1 test_2
 )
+```
+in the first folder marked by (Here), and a similar CMakeLists.txt file in the folder of the second package.
 
+```cmake
 set(dependencies target1 target2 ftnunit)
 
 create_test(
         tests_sub_routine_2
         dependencies ${dependencies}
-        visual_studio_folder tests/unit_test/engines_gpl/waq/package_1
+        visual_studio_folder tests/unit_test/engines_gpl/waq/package_2
         test_files tests_sub_routine_2.f90
         include_dir ${CMAKE_CURRENT_SOURCE_DIR}/data/
         test_list test_3 test_4
@@ -93,12 +98,12 @@ Use the `create_test` cmake function to create the test by providing the followi
 - The test name should include be descriptive so that it is easy to identify what is the purpose of the test and what it is
   testing. The test name does not have to contain the module name it is testing, however, can do so to be able
   to filter the tests using regex.
-- The `visual_studio_folder` argument defines the folder in which the test will be located in the visual studio
+- The `visual_studio_folder` argument defines the folder in which the test will be located in the Visual Studio
   solution.
 - The `test_files` argument defines the files that will be compiled to create the test.
 - `test_list`: [separate multiple values/ list]
-  if you have one fortran file that contains multiple tests, and you want to execute each test separately, you have to
-  implement the tests in the fortran file as following.
+  if you have one Fortran file that contains multiple tests, and you want to execute each test separately, you have to
+  implement the tests in the Fortran file as following.
 
 ```fortran
 program test_file_1
@@ -221,7 +226,7 @@ Then in the `create_test` function use the argument `test_list` followed by the 
 
 ### 1.3 Test Data
 
-Put all the files that are needed for the test tn the data folder.
+Put all the files that are needed for the test in the data folder.
 In the Fortran code to access the data you stored in the `data/` folder, you can use the
 `get_environment_variable` function. This function will return the absolute path to the directory where the data is
 during test runtime.
@@ -365,4 +370,19 @@ use model_a_target, only : global_var1, global_var2
 
 ### 3.2 Paths and directories
 
-To be (re)written.
+The unit tests will be run within the <build-dir>.
+The work directory for any unit test is under
+
+```bash
+<build-dir>/tests_unit_<engine-name>/<package>/<build-type>/<test-name>
+```
+and the test data that can be accessed by the `DATA_PATH` environment variable is under
+
+```bash
+<build-dir>/tests_unit_<engine-name>/<package>/test_data
+```
+Therefore if you refer to data in your files it has to be prepended by 
+
+```bash
+../test_data/
+```

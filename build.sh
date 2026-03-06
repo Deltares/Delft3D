@@ -43,7 +43,7 @@ function print_usage_info {
     echo
     echo "More info  : https://github.com/Deltares/Delft3D"
     echo
-    exit 1
+    exit $help_exit_code
 }
 
 # =========================
@@ -151,6 +151,7 @@ build=0
 keep_build=0
 build_dir=""
 install_dir=""
+help_exit_code=0
 
 # Make sure that root is defined when calling print_usage_info
 scriptdirname=$(readlink -f "$0")
@@ -234,6 +235,7 @@ done
 
 # Check config parameter
 if [ -z "$config" ]; then
+    help_exit_code=1
     print_usage_info
 fi
 
