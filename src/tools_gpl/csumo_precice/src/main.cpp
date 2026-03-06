@@ -39,18 +39,18 @@ int main(int argc, char** argv)
 
     try
     {
-        boost::program_options::variables_map vm;
+        boost::program_options::variables_map variables_map;
         boost::program_options::store(
             boost::program_options::command_line_parser(argc, argv).options(description).positional(positionals).run(),
-            vm);
+            variables_map);
 
-        if (vm.count("help"))
+        if (variables_map.count("help"))
         {
             std::print("{}", usage);
             return EXIT_SUCCESS;
         }
 
-        boost::program_options::notify(vm);
+        boost::program_options::notify(variables_map);
     }
     catch (const boost::program_options::error& e)
     {
