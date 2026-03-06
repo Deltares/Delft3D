@@ -7,11 +7,10 @@ on:
       target_commit:
         description: "Target commit(s)"
         required: true
-        default: "latest"
+        default: "all"
         type: choice
         options:
           - all
-          - latest
           - specific
       commit_hash:
         description: "Commit hash"
@@ -47,20 +46,9 @@ jobs:
           fi
 
           commit_hash=""
-          if [[ "${{ github.event.inputs.target_commit }}" == "latest" ]]; then
-            commit_hash=$(
-              curl \
-                --silent \
-                --fail \
-                --show-error \
-                --request GET \
-                --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
-                --header "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/branches/${{ env.BRANCH }}" \
-              | jq -r .commit.sha
-            )
-          elif [[ "${{ github.event.inputs.target_commit }}" == "specific" ]]; then
+          if [[ "${{ github.event.inputs.target_commit }}" == "specific" ]]; then
             commit_hash="${{ github.event.inputs.commit_hash }}"
+
             if [[ -z "${commit_hash}" ]]; then
               echo "An attempt to cancel the build of a specific commit was made but no hash was provided."
               exit 1
@@ -70,7 +58,6 @@ jobs:
               echo "Commit ${commit_hash} does not exist on branch ${{ env.BRANCH }}."
               exit 1
             fi
-
           fi
           echo "commit_hash=${commit_hash}" >> $GITHUB_OUTPUT
 
@@ -98,7 +85,7 @@ jobs:
           fi
 
           if [ "${pr_count}" -gt 1 ]; then
-            echo "Multiple pil;l requests found for branch ${{ env.BRANCH }}. Cannot proceed further."
+            echo "Multiple pull requests found for branch ${{ env.BRANCH }}. Cannot proceed further."
             exit 1
           fi
 
@@ -134,4 +121,4 @@ jobs:
             --teamcity-token "${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
             --teamcity-project-id "${teamcity_project_id}" \
             --branch "${branch}" \
-            ${commit_hash_arg}
+            "${commit_hash_arg}"

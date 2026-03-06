@@ -142,6 +142,7 @@ function teamcity_post_request() {
 
 function get_build_ids() {
   local locator="$1"
+  #echo "${TEAMCITY_BUILDS}?locator=${locator}" >&2
   teamcity_get_request "${TEAMCITY_BUILDS}?locator=${locator}" | jq -r '.build[]?.id'
 }
 
@@ -153,14 +154,14 @@ function get_build_state() {
 function cancel_build() {
   local build_id="$1"
   local payload='{ "buildCancelRequest": { "comment": "Build cancelled from GitHub", "readdIntoQueue": false } }'
-  printf "Stopping build %d... " "${build_id}"
+  printf "Stopping build %d... " "${build_id}" >&2
   teamcity_post_request "${TEAMCITY_BUILDS}/id:${build_id}" "${payload}"
-  printf "done.\n"
+  printf "done.\n" >&2
 }
 
 function cancel_all_builds() {
-  printf "Looking up root builds for project %s on branch %s... " "${PROJECT_ID}" "${BRANCH}"
-  local locator="project:${PROJECT_ID},branch:${BRANCH},state:any"
+  printf "Looking up root builds for project %s on branch %s... " "${TEAMCITY_PROJECT_ID}" "${BRANCH}"
+  local locator="project:${TEAMCITY_PROJECT_ID},branch:${BRANCH},state:any"
   if [[ -n "${COMMIT_HASH}" ]]; then
     locator="${locator},revision:${COMMIT_HASH}"
   fi
@@ -175,8 +176,10 @@ function cancel_all_builds() {
   printf "Root builds:\n%s\n" "${root_build_ids}"
 
   for root_build_id in $root_build_ids; do
+    root_build_id="${root_build_id%$'\r'}"
+    printf "\nprocessing: %s\n" "${root_build_id}" >&2
     state=$(get_build_state "${root_build_id}")
-    printf "Build %d is in state: %s.\n" "${root_build_id}" "${state}"
+    printf "Build %d state: %s.\n" "${root_build_id}" "${state}"
 
     case "${state}" in
     queued | pending)
@@ -184,7 +187,7 @@ function cancel_all_builds() {
       ;;
 
     running | finished)
-      dep_build_ids=$(get_build_ids "snapshotDependency:(from:(id:${root_build_id}),state:any,defaultFilter:false")
+      dep_build_ids=$(get_build_ids "snapshotDependency:(from:(id:${root_build_id}),includeInitial:true),state:any,defaultFilter:false")
 
       if [[ -z "${dep_build_ids}" ]]; then
         printf "No dependent builds for %d.\n" "${root_build_id}"
@@ -194,6 +197,7 @@ function cancel_all_builds() {
       printf "Dependent builds for root build with id %d: \n%s\n" "${root_build_id}" "${dep_build_ids}"
 
       for dep_build_id in ${dep_build_ids}; do
+        dep_build_id="${dep_build_id%$'\r'}"
         dep_state=$(get_build_state "${dep_build_id}")
 
         if [[ "${dep_state}" == "running" ||
