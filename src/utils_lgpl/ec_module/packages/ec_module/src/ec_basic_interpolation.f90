@@ -116,7 +116,6 @@ module m_ec_basic_interpolation
    use mathconsts, only: degrad_hp
    use kdtree2Factory
    use m_alloc, only: aerr, realloc
-   !use gridgeom
 
    implicit none(type, external)
 
@@ -148,6 +147,7 @@ module m_ec_basic_interpolation
    public :: bilin_interp_loc
    public :: triinterp2
    public :: TerrorInfo
+   public :: interpolate_linear_from_triangle
 
 contains
 
@@ -1151,8 +1151,12 @@ contains
       real(kind=hp) :: yn
       real(kind=hp) :: z3
       real(kind=hp) :: zn
+      real(kind=hp) :: sum_weights
+
+      real(kind=hp), parameter :: EPS_BARY = 1.0e-11_hp ! snapping distance to points in the mapped triangle space
 
       ZP = dmiss
+      SLO = dmiss
       A11 = getdx(x(1), y(1), x(2), y(2), jsferic) ! X(2) - X(1)
       A21 = getdy(x(1), y(1), x(2), y(2), jsferic) ! Y(2) - Y(1)
       A12 = getdx(x(1), y(1), x(3), y(3), jsferic) ! X(3) - X(1)
@@ -1172,7 +1176,23 @@ contains
       if (abs(RLAM) < EPS_BARY) then
          RLAM = 0.0_hp
          end if
+      if (abs(RMHU) < EPS_BARY) then
+         RMHU = 0.0_hp
       end if
+      if (abs(1.0_hp - RLAM - RMHU) < EPS_BARY) then
+         ! Renormalize to ensure exact sum = 1
+         sum_weights = RLAM + RMHU
+         if (sum_weights > 0.0_hp) then
+            RLAM = RLAM / sum_weights
+            RMHU = RMHU / sum_weights
+         end if
+      end if
+
+      wf(3) = rmhu
+      wf(2) = rlam
+      wf(1) = 1.0_hp - rlam - rmhu
+
+      ZP = wf(1) * Z(:, 1) + wf(2) * Z(:, 2) + wf(3) * Z(:, 3)
 
       if (JSLO == 1) then
          do idim = 1, NDIM
