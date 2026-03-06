@@ -119,6 +119,8 @@
    use m_alloc, only : aerr, realloc
    !use gridgeom
  
+   implicit none(type,external)
+
    interface triinterp2
       module procedure triinterp2_dbldbl
       module procedure triinterp2_realdbl
@@ -723,10 +725,28 @@
 
    integer              :: maxtri
    integer, parameter   :: nh= 1   ! SPvdP: too small if jatri == 0
-   integer              :: nsm
+   integer              :: nsm, one
    real(kind=hp)        :: trisize
    real(kind=hp)        :: XH(NH), YH(NH)
    integer, allocatable :: idum(:)
+
+   interface
+      subroutine TRICALL(jatri, xs, ys, ns, indx, numtri, edgeidx, numedge, triedge, xs3, ys3, ns3, trisize) &
+         bind(C, name='TRICALL')
+         use iso_c_binding
+         integer(c_int), intent(in)    :: jatri    ! C reads *jatri only, never writes back
+         real(c_double), intent(in)    :: xs(*), ys(*)
+         integer(c_int), intent(in)    :: ns
+         integer(c_int), intent(inout) :: indx(*)
+         integer(c_int), intent(inout) :: numtri
+         integer(c_int), intent(inout) :: edgeidx(*)
+         integer(c_int), intent(inout) :: numedge
+         integer(c_int), intent(inout) :: triedge(*)
+         real(c_double), intent(inout) :: xs3(*), ys3(*)
+         integer(c_int), intent(inout) :: ns3
+         real(c_double), intent(inout) :: trisize
+      end subroutine TRICALL
+   end interface
 
    !     check memory
    allocate ( idum(50*Ns) ,stat=ierr)     ! probably not enough
@@ -768,8 +788,10 @@
       end if
       MAXTRI = NSM !?
 
+
       numtri = NSM ! Input value should specify max nr of triangles in indx.
-      CALL TRICALL(jatri,XS,YS,NS,INDX,NUMTRI,EDGEINDX,NUMEDGE,TRIEDGE,XH,YH,NH,trisize)
+      one = 1
+      CALL TRICALL(jatri,XS,YS,NS,INDX,NUMTRI,EDGEINDX,NUMEDGE,TRIEDGE,XH,YH,one,trisize)
       if ( numtri < 0 ) nsm = -numtri
    end do
 
@@ -777,7 +799,7 @@
 
    !>    find triangle for interpolation with kdtree
    !>       will initialize kdtree and triangulation connectivity
-   subroutine findtri_kdtree(XP,YP,ZP,XS,YS,ZS,NS,NDIM,NRFIND,INTRI,JSLO,SLO,JATEK,jadum,ierror,ind, wf, dmiss, jsferic, jins, jasfer3D)
+   subroutine findtri_kdtree(XP,YP,ZP,XS,YS,ZS,NS,NDIM,NRFIND,INTRI,JSLO,SLO,JATEK,jadum,ierror,ind, wf, dmiss, jsferic_input, jins, jasfer3D)
    implicit none
 
    real(kind=hp)   , intent(in)                :: xp, yp    !< node coordinates
@@ -807,7 +829,7 @@
 
    integer                             :: i, inod, ii, inext, k
    integer                             :: jacros, iothertriangle
-   integer                             :: jsferic_store, ierr
+   integer                             :: ierr
    integer                             :: iedge, k1, k2, numsearched
 
    real(kind=hp)   , parameter         :: dtol = 1d-8
@@ -817,9 +839,9 @@
    real(kind=hp)   , external          :: dcosphi
    real(kind=hp)   , intent(in)        :: dmiss
    integer,          intent(in)        :: jins
-   integer                             :: jsferic
+   integer,          intent(in)        :: jsferic_input
    integer,          intent(in)        :: jasfer3D
-
+   integer :: jsferic
    real(kind=hp)   , parameter         :: dfac = 1.000001d0  ! enlargement factor for pinpok3D
 
    ierror = 1
@@ -830,9 +852,6 @@
       !            call qnerror('findtri_kdtree: numtri<=1', ' ', ' ')
       goto 1234
    end if
-
-   ! store jsferic
-   jsferic_store = jsferic
 
    if ( treeglob%itreestat /= ITREE_OK ) then
 
@@ -872,7 +891,7 @@
 
          !              compute triangle circumcenter
          if ( jasfer3D == 1 ) then
-            call ave3D(3,xv,yv, xx(i), yy(i),jsferic_store,jasfer3D)
+            call ave3D(3,xv,yv, xx(i), yy(i),jsferic_input,jasfer3D)
          else
             xx(i) = sum(xv(1:3)) / 3d0
             yy(i) = sum(yv(1:3)) / 3d0
@@ -880,7 +899,7 @@
       end do
 
       !        restore jsferic
-      jsferic = jsferic_store
+      jsferic = jsferic_input
 
       call build_kdtree(treeglob, numtri, xx, yy, ierror,jsferic, dmiss)
 
@@ -972,7 +991,7 @@
             if ( jasfer3D == 0 ) then
                call CROSS(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), JACROS,SL,SM,XCR,YCR,CRP, jsferic, dmiss)
             else
-               call cross3D(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), jacros, sL, sm, xcr, ycr, jsferic_store, dmiss)
+               call cross3D(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), jacros, sL, sm, xcr, ycr, jsferic_input, dmiss)
             end if
 
             !              use tolerance
@@ -996,9 +1015,6 @@
                exit
             end if
          end do
-
-         !        restore jsferic
-         jsferic = jsferic_store
 
       end do
 
