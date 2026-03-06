@@ -1813,7 +1813,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c021_basinnofriction_squaresfine" ref="dflowfm_default">
-      <path version="2025-10-15T15:14:58.722000">e02_dflowfm/f006_external_forcing/c021_basinnofriction_squaresfine</path>
+      <path version="2026-03-06T15:35:48.826000">e02_dflowfm/f006_external_forcing/c021_basinnofriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basinsquaresfine_his.nc" type="netCDF">
@@ -1851,7 +1851,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c024_basinwithfriction_squaresfine" ref="dflowfm_default">
-      <path version="2025-10-15T15:15:02.419000">e02_dflowfm/f006_external_forcing/c024_basinwithfriction_squaresfine</path>
+      <path version="2026-03-06T15:35:53.413000">e02_dflowfm/f006_external_forcing/c024_basinwithfriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basinsquaresfine_his.nc" type="netCDF">
