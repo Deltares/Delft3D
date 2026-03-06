@@ -232,43 +232,50 @@ type bedcomp_settings
                                                      !  3: simple loading model (Terzaghi)
                                                      !  4: simple loading including peat (Terzaghi)
                                                      !  5: No Compaction
-    integer :: idiffusion     !  switch for diffusion between layers
-                              !  0: no diffusion
-                              !  1: diffusion
-    integer :: iporosity      !  switch for porosity (simulate porosity if iporosity > 0)
-                              !  0: porosity included in densities, set porosity to 0
-                              !  1: Frings (May 2009)
-                              !  2: Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
-                              !  3: svfrac0
-                              !  4: weight average
-    integer :: iunderlyr      !  switch for underlayer concept
-                              !  1: standard fully mixed concept
-                              !  2: graded sediment concept
-    integer :: keuler         !  index of first Eulerian (i.e. non-moving) layer
-                              !  2   : standard Eulerian, only top layer moves with bed level
-                              !  nlyr: fully Lagrangian (all layers move with bed level)
-    integer :: max_mud_sedtyp ! highest sediment type number that is considered a mud fraction
-    integer :: nfrac          !  number of sediment fractions
-    integer :: neulyr         !  number of Eulerian underlayers
-    integer :: nlalyr         !  number of Lagrangian underlayers
-    integer :: nlyr           !  number of layers (transport + exchange + under layers)
-    integer :: ndiff          !  number of diffusion coefficients in vertical direction
-    integer :: nmlb           !  start index of segments
-    integer :: nmub           !  nm end index
-    integer :: updtoplyr      !  switch for top layer porosity updating
-                              !  1: top layer porosity is recomputed based on new mixture
-                              !  2: top layer porosity is updated based on newly added sediment
-    integer :: updbaselyr     !  switch for computing composition of base layer
-                              !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
-                              !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
-                              !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
-                              !  4: base layer composition and thickness constant (no change whatsoever)
-                              !  5: base lyaer composition is updated, but thickness is kept constant
-   integer  :: peatfrac       !  peat flag (no peat growth, peat thickness is homogeneous)
-   integer  :: max_mud_sedtyp !  highest sediment type number that is considered a mud fraction
-   integer  :: active_layer_diffusion !  switch for applying diffusion in the active layer model
-                                      !   0: no diffusion (default)
-                                      !   1: x-y-diffusion file
+    integer :: idiffusion                            !< switch for diffusion between layers
+                                                     !  0: no diffusion
+                                                     !  1: diffusion
+    integer :: ierosion                              !< switch for cohesive sediment erodibility
+                                                     !  0: cohesive sediment erodibility doesn't depend on bed composition
+                                                     !  1: Whitehouse (2001)
+                                                     !  2: Le Hir (2011)
+                                                     !  3: Winterwerp (2013)
+    integer :: ifractions                            !< switch for fractions returned by getfrac
+                                                     !  1: mass fractions (sum of all fractions equals 1)
+                                                     !  2: solid volume fractions (sum of all fractions equals 1)
+    integer :: iporosity                             !< switch for porosity (simulate porosity if iporosity > 0)
+                                                     !  0: porosity included in densities, set porosity to 0
+                                                     !  1: Frings (May 2009)
+                                                     !  2: Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
+                                                     !  3: svfrac0
+                                                     !  4: weight average
+    integer :: iunderlyr                             !< switch for underlayer concept
+                                                     !  1: standard fully mixed concept
+                                                     !  2: graded sediment concept
+    integer :: keuler                                !< index of first Eulerian (i.e. non-moving) layer
+                                                     !  2   : standard Eulerian, only top layer moves with bed level
+                                                     !  nlyr: fully Lagrangian (all layers move with bed level)
+    integer :: nfrac                                 !< number of sediment fractions
+    integer :: neulyr                                !< number of Eulerian underlayers
+    integer :: nlalyr                                !< number of Lagrangian underlayers
+    integer :: nlyr                                  !< number of layers (transport + exchange + under layers)
+    integer :: ndiff                                 !< number of diffusion coefficients in vertical direction
+    integer :: nmlb                                  !< start index of segments
+    integer :: nmub                                  !< nm end index
+    integer :: updtoplyr                             !< switch for top layer porosity updating
+                                                     !  1: top layer porosity is recomputed based on new mixture
+                                                     !  2: top layer porosity is updated based on newly added sediment
+    integer :: updbaselyr                            !< switch for computing composition of base layer
+                                                     !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
+                                                     !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
+                                                     !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
+                                                     !  4: base layer composition and thickness constant (no change whatsoever)
+                                                     !  5: base lyaer composition is updated, but thickness is kept constant
+   integer  :: peatfrac                              !< peat flag (no peat growth, peat thickness is homogeneous)
+   integer  :: max_mud_sedtyp                        !< highest sediment type number that is considered a mud fraction
+   integer  :: active_layer_diffusion                !< switch for applying diffusion in the active layer model
+                                                     !  0: no diffusion (default)
+                                                     !  1: x-y-diffusion file
     !
     ! pointers
     !

@@ -2218,9 +2218,8 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     enddo
     !
     if (iflufflyr==1) then
-        !
-        call prop_get(mor_ptr, 'FluffLayer', 'BurType', flufflyr%iburtype)
-        if (flufflyr%iburtype == 1) then
+       !
+       call prop_get(mor_ptr, 'FluffLayer', 'BurType', flufflyr%iburtype)
        do i = 0, 1 ! loop over burial terms
           if (i==0) then ! is this mixing of 0/1-based indexing clear for the user?
              key = 'BurFluff0'

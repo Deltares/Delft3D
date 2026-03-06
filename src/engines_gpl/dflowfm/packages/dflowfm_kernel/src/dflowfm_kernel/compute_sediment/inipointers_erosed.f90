@@ -44,23 +44,23 @@ contains
    ! ========================================================================================
    !
    subroutine inipointers_erosed()
-      use m_fm_erosed, only : stm_included, dzbdt, mtd, seddif, blchg, ws, uau, lsed, stmpar, lsedtot, nmudfrac, max_mud_sedtyp, cmpupdfrac, rhosol, cdryb, logseddia, logsedsig, sedd10, sedd50, sedd90, sedd50fld, dstar, taucr, tetacr, mudcnt, pmcrit, nseddia, sedtyp, tratyp, anymud, sedtrcfac, bsskin, thcmud, tpsnumber, dss, min_dxx_sedtyp, flocmod, nflocpop, nflocsizes, floclist, tbreakup, tfloc, thresh, sus, suscorfac, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, xx, multi, eqmbcsand, eqmbcmud, factcr, factsd, ihidexp, asklhe, mwwjhe, ffthresh, morfac, varyingmorfac, morft, hydrt, espir, epspar, camax, aksfac, rdc, iopkcw, oldmudfrac, sinkf, sourf, iflufflyr, depfac, mfluff, alfabs, alfabn, wetslope, avaltime, duneavalan, dryslope, hswitch, dzmaxdune, ashld, bshld, cshld, dshld, alfpa, thcrpa, islope, ti_sedtrans, tmor, tcmp, itmor, bedupd, neglectentrainment, dzmax, hmaxth, thetsd, eulerisoglm, l_suscor, bermslopetransport, bermslopebed, bermslopesus, bermslope, bermslopefac, bermslopegamma, bermslopedepth, iform, par, npar, max_integers, max_reals, max_strings, dll_function, dll_handle, dll_integers, dll_reals, dll_strings, dll_usrfil, aks, sedtra, bc_mor_array, dbodsd, dcwwlc, dm, dg, dgsd, dxx, e_dzdn, e_dzdt, epsclc, epswlc, fixfac, frac, kfsed, kmxsed, mudfrac, sandfrac, hidexp, rsdqlc, rsedeq, sbcx, sbcy, e_sbcn, e_sbct, e_sbn, e_sbt, e_ssn, e_sst, e_sbnc, e_sbtc, e_ssnc, e_scrn, e_scrt, sbwx, sbwy, sscx, sscy, e_sbwn, e_sbwt, sddflc, sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt
-
+      use m_fm_erosed, only : stm_included, dzbdt, mtd, seddif, blchg, ws, uau, lsed, stmpar, lsedtot, nmudfrac, max_mud_sedtyp, cmpupdfrac, rhosol, cdryb, logseddia, logsedsig, sedd10, sedd50, sedd90, sedd50fld, dstar, taucr, tetacr, mudcnt, pmcrit, nseddia, sedtyp, tratyp, anymud, sedtrcfac, bsskin, thcmud, tpsnumber, dss, min_dxx_sedtyp, flocmod, nflocpop, nflocsizes, floclist, tbreakup, tfloc, thresh, sus, suscorfac, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, xx, multi, eqmbcsand, eqmbcmud, factcr, factsd, ihidexp, asklhe, mwwjhe, ffthresh, morfac, varyingmorfac, morft, hydrt, espir, epspar, camax, aksfac, rdc, iopkcw, oldmudfrac, sinkf, sourf, iflufflyr, depfac, mfluff, alfabs, alfabn, wetslope, avaltime, duneavalan, dryslope, hswitch, dzmaxdune, ashld, bshld, cshld, dshld, alfpa, thcrpa, islope, ti_sedtrans, tmor, tcmp, itmor, bedupd, neglectentrainment, dzmax, hmaxth, thetsd, eulerisoglm, l_suscor, bermslopetransport, bermslopebed, bermslopesus, bermslope, bermslopefac, bermslopegamma, bermslopedepth, iform, par, npar, max_integers, max_reals, max_strings, dll_function, dll_handle, dll_integers, dll_reals, dll_strings, dll_usrfil, aks, sedtra, bc_mor_array, dbodsd, dcwwlc, dm, dg, dgsd, dxx, e_dzdn, e_dzdt, epsclc, epswlc, fixfac, frac, kfsed, kmxsed, mudfrac, sandfrac, hidexp, poros, rsdqlc, rsedeq, sbcx, sbcy, e_sbcn, e_sbct, e_sbn, e_sbt, e_ssn, e_sst, e_sbnc, e_sbtc, e_ssnc, e_scrn, e_scrt, sbwx, sbwy, sscx, sscy, e_sbwn, e_sbwt, sddflc, sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, tcrero_bed, eropar_bed, ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, iconsolidate
+   
       if (.not. stm_included) then
          return
       end if
-
+   
       ! mtd: Pointer to dummies to fill later
       dzbdt => mtd%dzbdt
       seddif => mtd%seddif
       blchg => mtd%blchg
       ws => mtd%ws
       uau => mtd%uau
-
+   
       ! stmpar
       lsed => stmpar%lsedsus
       lsedtot => stmpar%lsedtot
-
+   
       ! sedpar
       nmudfrac => stmpar%sedpar%nmudfrac
       max_mud_sedtyp => stmpar%sedpar%max_mud_sedtyp
@@ -96,7 +96,7 @@ contains
       floclist => stmpar%sedpar%floclist
       tbreakup => stmpar%sedpar%tbreakup
       tfloc => stmpar%sedpar%tfloc
-
+   
       ! morpar
       thresh => stmpar%morpar%thresh
       sus => stmpar%morpar%sus
@@ -169,7 +169,7 @@ contains
       bermslopefac => stmpar%morpar%bermslopefac
       bermslopegamma => stmpar%morpar%bermslopegamma
       bermslopedepth => stmpar%morpar%bermslopedepth
-
+   
       ! trapar
       iform => stmpar%trapar%iform
       par => stmpar%trapar%par
@@ -183,83 +183,80 @@ contains
       dll_reals => stmpar%trapar%dll_reals
       dll_strings => stmpar%trapar%dll_strings
       dll_usrfil => stmpar%trapar%dll_usrfil
-
-   ! sedtra
-   aks                 => sedtra%aks
-   bc_mor_array        => sedtra%bc_mor_array
-   dbodsd              => sedtra%dbodsd
-   dcwwlc              => sedtra%dcwwlc
-   dm                  => sedtra%dm
-   dg                  => sedtra%dg
-   dgsd                => sedtra%dgsd
-   dxx                 => sedtra%dxx
-   e_dzdn              => sedtra%e_dzdn
-   e_dzdt              => sedtra%e_dzdt
-   epsclc              => sedtra%epsclc
-   epswlc              => sedtra%epswlc
-   fixfac              => sedtra%fixfac
-   frac                => sedtra%frac
-   kfsed               => sedtra%kfsed
-   kmxsed              => sedtra%kmxsed
-   mudfrac             => sedtra%mudfrac
-   sandfrac            => sedtra%sandfrac
-   hidexp              => sedtra%hidexp
-   poros               => sedtra%poros
-   rsdqlc              => sedtra%rsdqlc
-   rsedeq              => sedtra%rsedeq
-   sbcx                => sedtra%sbcx
-   sbcy                => sedtra%sbcy
-   e_sbcn              => sedtra%e_sbcn
-   e_sbct              => sedtra%e_sbct
-   e_sbn               => sedtra%e_sbn
-   e_sbt               => sedtra%e_sbt
-   e_ssn               => sedtra%e_ssn
-   e_sst               => sedtra%e_sst
-   e_sbnc              => sedtra%e_sbnc
-   e_sbtc              => sedtra%e_sbtc
-   e_ssnc              => sedtra%e_ssnc
-   e_scrn              => sedtra%e_scrn
-   e_scrt              => sedtra%e_scrt
-   sbwx                => sedtra%sbwx
-   sbwy                => sedtra%sbwy
-   sscx                => sedtra%sscx
-   sscy                => sedtra%sscy
-   e_sbwn              => sedtra%e_sbwn
-   e_sbwt              => sedtra%e_sbwt
-   sddflc              => sedtra%sddflc
-   sswx                => sedtra%sswx
-   sswy                => sedtra%sswy
-   e_sswn              => sedtra%e_sswn        ! add correction part later on e_scrn, e_scrt
-   e_sswt              => sedtra%e_sswt
-   sxtot               => sedtra%sxtot
-   sytot               => sedtra%sytot
-   sbxcum              => sedtra%sbxcum
-   sbycum              => sedtra%sbycum
-   ssxcum              => sedtra%ssxcum
-   ssycum              => sedtra%ssycum
-   sinkse              => sedtra%sinkse
-   sourse              => sedtra%sourse
-   sour_im             => sedtra%sour_im
-   srcmax              => sedtra%srcmax
-   taub                => sedtra%taub
-   taurat              => sedtra%taurat
-   tcrero_bed          => sedtra%tcrero_bed
-   eropar_bed          => sedtra%eropar_bed
-   ust2                => sedtra%ust2
-   umod                => sedtra%umod
-   uuu                 => sedtra%uuu
-   vvv                 => sedtra%vvv
-   wslc                => sedtra%wslc
-   zumod               => sedtra%zumod
-   rca                 => sedtra%rca
-   statqnt             => sedtra%statqnt
-
-   ! morlyr
-   iconsolidate        => stmpar%morlyr%settings%iconsolidate
-
-   allocate(q_zeta(2,lnx), stat=ierr)
-   q_zeta = 0d0
-
+   
+      ! sedtra
+      aks                 => sedtra%aks
+      bc_mor_array        => sedtra%bc_mor_array
+      dbodsd              => sedtra%dbodsd
+      dcwwlc              => sedtra%dcwwlc
+      dm                  => sedtra%dm
+      dg                  => sedtra%dg
+      dgsd                => sedtra%dgsd
+      dxx                 => sedtra%dxx
+      e_dzdn              => sedtra%e_dzdn
+      e_dzdt              => sedtra%e_dzdt
+      epsclc              => sedtra%epsclc
+      epswlc              => sedtra%epswlc
+      fixfac              => sedtra%fixfac
+      frac                => sedtra%frac
+      kfsed               => sedtra%kfsed
+      kmxsed              => sedtra%kmxsed
+      mudfrac             => sedtra%mudfrac
+      sandfrac            => sedtra%sandfrac
+      hidexp              => sedtra%hidexp
+      poros               => sedtra%poros
+      rsdqlc              => sedtra%rsdqlc
+      rsedeq              => sedtra%rsedeq
+      sbcx                => sedtra%sbcx
+      sbcy                => sedtra%sbcy
+      e_sbcn              => sedtra%e_sbcn
+      e_sbct              => sedtra%e_sbct
+      e_sbn               => sedtra%e_sbn
+      e_sbt               => sedtra%e_sbt
+      e_ssn               => sedtra%e_ssn
+      e_sst               => sedtra%e_sst
+      e_sbnc              => sedtra%e_sbnc
+      e_sbtc              => sedtra%e_sbtc
+      e_ssnc              => sedtra%e_ssnc
+      e_scrn              => sedtra%e_scrn
+      e_scrt              => sedtra%e_scrt
+      sbwx                => sedtra%sbwx
+      sbwy                => sedtra%sbwy
+      sscx                => sedtra%sscx
+      sscy                => sedtra%sscy
+      e_sbwn              => sedtra%e_sbwn
+      e_sbwt              => sedtra%e_sbwt
+      sddflc              => sedtra%sddflc
+      sswx                => sedtra%sswx
+      sswy                => sedtra%sswy
+      e_sswn              => sedtra%e_sswn        ! add correction part later on e_scrn, e_scrt
+      e_sswt              => sedtra%e_sswt
+      sxtot               => sedtra%sxtot
+      sytot               => sedtra%sytot
+      sbxcum              => sedtra%sbxcum
+      sbycum              => sedtra%sbycum
+      ssxcum              => sedtra%ssxcum
+      ssycum              => sedtra%ssycum
+      sinkse              => sedtra%sinkse
+      sourse              => sedtra%sourse
+      sour_im             => sedtra%sour_im
+      srcmax              => sedtra%srcmax
+      taub                => sedtra%taub
+      taurat              => sedtra%taurat
+      tcrero_bed          => sedtra%tcrero_bed
+      eropar_bed          => sedtra%eropar_bed
+      ust2                => sedtra%ust2
+      umod                => sedtra%umod
+      uuu                 => sedtra%uuu
+      vvv                 => sedtra%vvv
+      wslc                => sedtra%wslc
+      zumod               => sedtra%zumod
+      rca                 => sedtra%rca
+      statqnt             => sedtra%statqnt
+   
+      ! morlyr
+      iconsolidate        => stmpar%morlyr%settings%iconsolidate
+   
    end subroutine inipointers_erosed
 
 end module m_inipointers_erosed

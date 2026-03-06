@@ -233,7 +233,7 @@ contains
       write (lundia, '(2a,i20)') txtput1, ':', iunderlyr
       !
       call set_default_fractions(morlyr)
-      call prop_get_integer(mor_ptr, 'Underlayer', 'IFractions', ifractions)
+      call prop_get(mor_ptr, 'Underlayer', 'IFractions', ifractions)
       if (ifractions < 1 .or. ifractions > 2) then
          errmsg = 'IFractions should be 1 or 2 in ' // trim(filmor)
          call write_error(errmsg, unit=lundia)
@@ -1000,7 +1000,7 @@ contains
               txtput1 = 'DECON consolidation update time step (s)'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%dtdecon
   
-              call prop_get_integer(mor_ptr, 'Consolidate', 'NConLyr', nconlyr)
+              call prop_get(mor_ptr, 'Consolidate', 'NConLyr', nconlyr)
               txtput1 = 'Number of consolidating layers'
               write (lundia, '(2a,i3)') txtput1, ':', nconlyr
               if (nconlyr<1 .or. nconlyr>mxnulyr) then
@@ -1014,7 +1014,7 @@ contains
               txtput1 = 'Resolution density profile, dzprofile'
               write (lundia, '(2a,ES20.4)') txtput1, ':', morlyr%settings%dzprofile 
   
-              call prop_get_string(mor_ptr, 'Consolidate', 'plyrstr', morlyr%settings%plyrstr)
+              call prop_get(mor_ptr, 'Consolidate', 'plyrstr', morlyr%settings%plyrstr)
               txtput1 = 'Percentage of each layer'
               plyrstr = morlyr%settings%plyrstr
               write (lundia, '(2a,999a)') txtput1, ':', plyrstr

@@ -107,6 +107,7 @@ contains
       use m_fm_erosed, only: i10, i15, i50, i90
       use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, &
                              factsd, pmcrit, uau
+      use m_fm_erosed, only: poros, tcrero_bed, eropar_bed, iconsolidate
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -898,7 +899,7 @@ contains
          if (iconsolidate > 0) then
             dll_reals(RP_POROS) = real(poros(nm) ,hp)
          else
-            dll_reals(RP_POROS) = 0d0 ! RP_POROS will be set later
+            dll_reals(RP_POROS) = 0.0_dp ! RP_POROS will be set later
          endif
          dll_reals(RP_BLCHG) = real(dzbdt(nm), hp) ! for dilatancy
          dll_reals(RP_DZDX) = real(dzdx(nm), hp) ! for dilatancy
@@ -1103,7 +1104,7 @@ contains
             ! Calculate bed porosity for dilatancy
             !
             if (iconsolidate == 0) then
-               tporos = 1d0 - cdryb(l)/rhosol(l)
+               tporos = 1.0_dp - cdryb(l)/rhosol(l)
                dll_reals(RP_POROS) = real(tporos  ,hp)
             endif
             !

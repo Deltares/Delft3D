@@ -286,7 +286,6 @@ type moroutputtype
     logical :: taurat
     logical :: tcrero
     logical :: td
-    logical :: preload
     logical :: umod
     logical :: ustar
     logical :: uuuvvv

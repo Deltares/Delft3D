@@ -87,6 +87,7 @@ contains
       use Timers
       use m_reconstruct_sed_transports
       use m_waveconst
+      use m_get_kbot_ktop, only: getkbotktop
 
       implicit none
 
@@ -107,7 +108,7 @@ contains
 
       logical :: error
 
-      integer :: ierror, ll
+      integer :: ierror, nm, ll
       integer :: kb, kt
 
       real(kind=dp) :: dtmor
