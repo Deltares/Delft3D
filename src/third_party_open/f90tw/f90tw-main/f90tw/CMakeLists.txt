@@ -135,8 +135,6 @@ function(F90TWTEST NAME)
         target_compile_options(${FLIBNAME} PRIVATE "-ffree-line-length-none")
     endif()
     target_link_libraries( ${FLIBNAME} PRIVATE ${FTW_LIBRARIES} f90tw_gtest)
-
-
     if(NOT "${FTW_F2HFILES}" STREQUAL "")
         add_dependencies(${FLIBNAME} ${F2HTRGNAME})
     endif()
@@ -147,12 +145,6 @@ function(F90TWTEST NAME)
     target_link_libraries(${NAME} PRIVATE ${FLIBNAME} f90tw_gtest)
     target_compile_definitions(${NAME} PUBLIC ${FTW_DEFINITIONS})
     add_dependencies(${NAME} ${FLIBNAME})
-    
-    # Add OpenMP for C++ if enabled
-    if(OpenMP_CXX_FOUND)
-        target_link_libraries(${NAME} PRIVATE OpenMP::OpenMP_CXX)
-    endif()
-    
     
     set_target_properties(${NAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)
 

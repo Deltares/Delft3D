@@ -47,8 +47,6 @@ if(UNIX)
          Threads::Threads)
 
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
-
-
 endif(UNIX)
 
 
