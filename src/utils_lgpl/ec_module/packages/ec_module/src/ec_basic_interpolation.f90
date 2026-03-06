@@ -1015,7 +1015,7 @@ contains
 
       if (intri == 1) then
          if (jasfer3D == 0) then
-            call linear(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+            call interpolate_linear_from_triangle(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, dmiss, jsferic)
          else
             call interpolate_linear_from_triangle_3D(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, jsferic, jasfer3D, dmiss)
          end if
@@ -1096,7 +1096,7 @@ contains
                   ZT(idim, 2) = ZS(idim, INDX(2, K))
                   ZT(idim, 3) = ZS(idim, INDX(3, K))
                end do
-               call LINEAR(XT, YT, ZT, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+               call interpolate_linear_from_triangle(XT, YT, ZT, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
                ind(1) = ik1
                ind(2) = ik2
                ind(3) = ik3
@@ -1114,19 +1114,21 @@ contains
       return
    end subroutine FINDTRI
 
-   subroutine LINEAR(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, JATEK, wf, dmiss, jsferic)
+   !> return the linear interpolation at a point based on the plane defined by the points on a triangle
+   subroutine interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
       implicit none
-      integer, intent(in) :: NDIM !< sample vector dimension
-      real(kind=hp), intent(in) :: X(:), Y(:), Z(:, :)
-      real(kind=hp), intent(out) :: wf(:)
-      real(kind=hp), intent(out) :: zp(:)
-      real(kind=hp), intent(inout) :: slo(:)
-      real(kind=hp), intent(in) :: dmiss
-      integer, intent(in) :: jsferic
-      integer, intent(in) :: jatek
-      integer, intent(in) :: jslo
-      real(kind=hp), intent(in) :: xp
-      real(kind=hp), intent(in) :: yp
+      real(kind=hp), intent(in) :: X(:) !> x-coordinates of triangle (3)
+      real(kind=hp), intent(in) :: Y(:) !> y-coordinates of triangle (3)
+      real(kind=hp), intent(in) :: Z(:, :) !> z-coordinates of triangle (NDIM, 3)
+      integer, intent(in) :: NDIM !> sample vector dimension
+      real(kind=hp), intent(in) :: xp !> x-coordinate of sample point
+      real(kind=hp), intent(in) :: yp !> y-coordinate of sample point
+      real(kind=hp), intent(out) :: zp(:) !> interpolated values at sample point (NDIM)
+      integer, intent(in) :: jslo !> interpolate slopes (1=yes, 0=no)
+      real(kind=hp), intent(out) :: slo(:) !> output for slope interpolation (NDIM)
+      real(kind=hp), intent(out) :: wf(:) !> interpolation weights (3)
+      real(kind=hp), intent(in) :: dmiss !> missing value
+      integer, intent(in) :: jsferic !> spheric coordinates (1=yes, 0=no)
 
       integer :: idim
       real(kind=hp) :: a11
@@ -1165,15 +1167,10 @@ contains
 
       RLAM = (A22 * B1 - A12 * B2) / DET
       RMHU = (-A21 * B1 + A11 * B2) / DET
-      wf(3) = rmhu
-      wf(2) = rlam
-      wf(1) = 1d0 - rlam - rmhu
 
-      ZP = Z(:, 1) + RLAM * (Z(:, 2) - Z(:, 1)) + RMHU * (Z(:, 3) - Z(:, 1))
-
-      if (JATEK == 1) then
-         if (max(abs(A21), abs(A22)) > 500) then
-            DUM = 0
+      ! For points on the triangle edges and their extension, apply rounding
+      if (abs(RLAM) < EPS_BARY) then
+         RLAM = 0.0_hp
          end if
       end if
 
@@ -1185,23 +1182,19 @@ contains
             Y3 = -(A11 * A32 - A12 * A31)
             Z3 = (A11 * A22 - A12 * A21)
             R3 = sqrt(X3 * X3 + Y3 * Y3 + Z3 * Z3)
-            if (R3 /= 0) then
+            if (R3 > 0.0_hp) then
                XN = X3 / R3
                YN = Y3 / R3
                ZN = Z3 / R3
                XY = sqrt(XN * XN + YN * YN)
-               if (ZN /= 0) then
+               if (abs(ZN) > 0.0_hp) then
                   SLO(idim) = abs(XY / ZN)
-               else
-                  SLO(idim) = dmiss
                end if
-            else
-               SLO(idim) = dmiss
             end if
          end do
       end if
       return
-   end subroutine LINEAR
+   end subroutine interpolate_linear_from_triangle
 
    subroutine interpolate_linear_from_triangle_3D(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, w, jsferic, jasfer3D, dmiss)
       implicit none
@@ -1250,7 +1243,7 @@ contains
          A(1, :) = xx2 - xx1
          A(2, :) = xx3 - xx1
          A(3, :) = s123
-         rhs = 0d0 ! not used
+         rhs = 0.0_hp ! not used
 
 !        compute inverse
          call gaussj(A, 3, 3, rhs, 1, 1)
@@ -1258,7 +1251,7 @@ contains
 !        compute weights
          w(2) = inprod(xxp - xx1, A(:, 1))
          w(3) = inprod(xxp - xx1, A(:, 2))
-         w(1) = 1d0 - w(2) - w(3)
+         w(1) = 1.0_hp - w(2) - w(3)
 
       else
          !zp = DMISS
