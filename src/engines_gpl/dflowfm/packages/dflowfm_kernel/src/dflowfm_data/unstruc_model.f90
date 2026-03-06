@@ -510,7 +510,8 @@ contains
       ! set administration arrays and fill cross section list. So getbobs for 1d can be called.
       call timstrt('Initialise 1d administration', timerHandle)
       call initialize_1dadmin(network, network%numl, numl)
-      call set_default_1d2d_crs(network)
+      ! The default_1d2d_crs was added in UNST-9384, but it is currently not used.
+      ! call set_default_1d2d_crs(network)
       call timstop(timerHandle)
 
       if (getMaxErrorLevel() >= LEVEL_ERROR) then

@@ -59,7 +59,6 @@ contains
       else
          hp = hpr
       end if
-
       area = hp * br
       width = br
       perim = 2.0_dp * hp + br
