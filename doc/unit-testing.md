@@ -362,24 +362,21 @@ and in your test code (test_model_a.f90) you can access the global variables as 
 ```fortran
 use model_a_target, only : global_var1, global_var2
 ```
+
 ### 3.2 Paths and directories
 
-The current work directory for any unit test is under
+The unit test binaries are installed in
 
 ```bash
-<install-dir>/test
+CMAKE_CURRENT_BINARY_DIR=<install-dir>/test
 ```
 or one of the subdirectories, and the test data that can be accessed by the `DATA_PATH` environment variable is copied to
 
 ```bash
-<install-dir>/test/test_data
+${CMAKE_CURRENT_BINARY_DIR}/test_data
 ```
 Therefore, if you refer to data in your files it has to be prepended by 
 
 ```bash
-../test_data/<test-name>/<file-name>
+./test_data/
 ```
-
-with possibly one or more additional `../` levels in case your binary is configured to be copied to one of the subdirectories of `test`.
-
-![relative_paths](images/relative-paths.PNG)

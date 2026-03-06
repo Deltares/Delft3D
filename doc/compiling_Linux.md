@@ -63,7 +63,7 @@ Containers are lightweight, isolated environments that package an application an
   export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
   
   cd /delft3d
-  ./build.sh all
+  ./build.sh --build all
   ```
 
 ### Build arguments
