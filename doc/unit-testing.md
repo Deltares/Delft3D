@@ -365,18 +365,4 @@ use model_a_target, only : global_var1, global_var2
 
 ### 3.2 Paths and directories
 
-The unit test binaries are installed in
-
-```bash
-CMAKE_CURRENT_BINARY_DIR=<install-dir>/test
-```
-or one of the subdirectories, and the test data that can be accessed by the `DATA_PATH` environment variable is copied to
-
-```bash
-${CMAKE_CURRENT_BINARY_DIR}/test_data
-```
-Therefore, if you refer to data in your files it has to be prepended by 
-
-```bash
-./test_data/
-```
+To be (re)written.

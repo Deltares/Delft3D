@@ -61,22 +61,22 @@ function CheckUtils () {
 # === CreateCMakedir    ===
 # =========================
 function CreateCMakedir () {
-    cd $root
+    cd "$root"
     
     if [ "$keep_build" = "0" ]; then
        echo
        echo "Remove old build dir for $1 ..."
-       rm -rf $build_dir
-       rm -rf $install_dir
+       rm -rf "$build_dir"
+       rm -rf "$install_dir"
     fi
     
     if [ ! -d "$build_dir" ]; then
        echo
        echo "Create build dir for $1 ..."
-       mkdir  $build_dir
+       mkdir "$build_dir"
     fi
     if [ ! -d "$install_dir" ]; then
-       mkdir  $install_dir
+       mkdir "$install_dir"
     fi
 
     return
@@ -91,15 +91,15 @@ function DoCMake () {
     echo
     echo "Executing CMake for $1 ..."
     
-    cd $root
+    cd "$root"
     echo
-    echo "cmake ./src/cmake -G \"$generator\" -B $build_dir \\"
+    echo "cmake ./src/cmake -G \"$generator\" -B \"$build_dir\" \\"
     echo "    -D CONFIGURATION_TYPE=\"$1\" \\"
     echo "    -D CMAKE_BUILD_TYPE=$build_type \\"
     echo "    -D CMAKE_INSTALL_PREFIX=\"$install_dir\""
     echo
     
-    cmake ./src/cmake -G "$generator" -B $build_dir \
+    cmake ./src/cmake -G "$generator" -B "$build_dir" \
         -D CONFIGURATION_TYPE="$1" \
         -D CMAKE_BUILD_TYPE=$build_type \
         -D CMAKE_INSTALL_PREFIX="$install_dir"
@@ -121,7 +121,7 @@ function BuildCMake () {
     echo
     echo "Building $1 ..."
     
-    cd $build_dir
+    cd "$build_dir"
     echo
     echo "cmake --build . --parallel --target install"
     echo
@@ -153,8 +153,8 @@ build_dir=""
 install_dir=""
 
 # Make sure that root is defined when calling print_usage_info
-scriptdirname=`readlink \-f \$0`
-scriptdir=`dirname $scriptdirname`
+scriptdirname=$(readlink -f "$0")
+scriptdir=$(dirname "$scriptdirname")
 root=$scriptdir
 
 # Start processing command line options:
@@ -249,10 +249,10 @@ fi
 
 # set directories for build and install
 if [ -z "$build_dir" ]; then
-    build_dir=$root/build_${config}${build_dir_postfix}
+    build_dir="$root/build_${config}${build_dir_postfix}"
 fi
 if [ -z "$install_dir" ]; then
-    install_dir=$root/install_${config}${build_dir_postfix}
+    install_dir="$root/install_${config}${build_dir_postfix}"
 fi
 
 echo
