@@ -30,14 +30,14 @@ function print_usage_info {
     echo "       Run build and install steps after running cmake."
     echo "--build_dir <DIR_NAME>"
     echo "       Absolute path to build directory equal to"
-    echo "       '${PWD}/build_<CONFIG>' for Release builds and"
-    echo "       '${PWD}/build_<CONFIG>_debug' for Debug builds."
+    echo "       '${root}/build_<CONFIG>' for Release builds and"
+    echo "       '${root}/build_<CONFIG>_debug' for Debug builds."
     echo "--build_type <BUILD_TYPE>"
     echo "       Build optimization level with <BUILD_TYPE> equal to 'Release' or 'Debug'."
     echo "--install_dir <DIR_NAME>"
-    echo "       Absolute path to build directory equal to"
-    echo "       '${PWD}/install_<CONFIG>' for Release builds and"
-    echo "       '${PWD}/install_<CONFIG>_debug' for Debug builds."
+    echo "       Absolute path to install directory equal to"
+    echo "       '${root}/install_<CONFIG>' for Release builds and"
+    echo "       '${root}/install_<CONFIG>_debug' for Debug builds."
     echo "--keep_build"
     echo "       Do not delete the 'build_<CONFIG>' and 'install_<CONFIG>' folders."
     echo
@@ -94,7 +94,7 @@ function DoCMake () {
     cd $root
     echo
     echo "cmake ./src/cmake -G \"$generator\" -B $build_dir \\"
-    echo "    -D CONFIGURATION_TYPE="$1" \\"
+    echo "    -D CONFIGURATION_TYPE=\"$1\" \\"
     echo "    -D CMAKE_BUILD_TYPE=$build_type \\"
     echo "    -D CMAKE_INSTALL_PREFIX=\"$install_dir\""
     echo
@@ -141,12 +141,10 @@ function BuildCMake () {
 # === MAIN ===
 # ============
 
-#
-## Defaults
+# Defaults
 mode=quiet
 config=
 generator="Unix Makefiles"
-compiler=ifx
 build_type=Release
 build_dir_postfix=""
 build=0
@@ -154,19 +152,17 @@ keep_build=0
 build_dir=""
 install_dir=""
 
-#
-## Start processing command line options:
+# Make sure that root is defined when calling print_usage_info
+scriptdirname=`readlink \-f \$0`
+scriptdir=`dirname $scriptdirname`
+root=$scriptdir
 
+# Start processing command line options:
 while [[ $# -ge 1 ]]
 do
 key="$1"
 
 case $key in
-    -c|--compiler)
-    shift
-    compiler="$1"
-    shift
-    ;;
     --build)
     build=1
     shift
@@ -248,11 +244,8 @@ elif [ "$build_type" = "Release" ]; then
     build_dir_postfix=""
 else
     echo ERROR: Unknown build type ${build_type}; should be "Release" or "Debug".
+    exit 1
 fi
-
-scriptdirname=`readlink \-f \$0`
-scriptdir=`dirname $scriptdirname`
-root=$scriptdir
 
 # set directories for build and install
 if [ -z "$build_dir" ]; then

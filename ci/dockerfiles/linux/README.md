@@ -29,7 +29,7 @@ These can also be installed using `dnf`, but unfortunately even the most recent 
 Some libraries that we want to compile from source code can't be built using the outdated versions of this software.
 
 ### Build arguments
-The dockerfile has a two build arguments: 
+The dockerfile has two build arguments: 
 - `BASE_IMAGE_URL` (default value: `containers.deltares.nl/base_linux_containers/8-base:latest`)
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
 

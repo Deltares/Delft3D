@@ -370,7 +370,7 @@ rem =======================
 :insert_coverage
     rem Insert options to implement the build objects with hooks for the code-coverage tool.
     rem This code is running from within build_%~1
-    python %root%\src\scripts_lgpl\win64\testcoverage\addcovoptions.py %~1.sln
+    python %root%\src\scripts_lgpl\win64\testcoverage\addcovoptions.py %~1.%sln_extension%
 
 rem =======================
 rem === Build =============
@@ -421,7 +421,7 @@ rem =======================
     echo     The following actions will be executed:
     echo     - Create directory 'build_^<CONFIG^>', where ^<CONFIG^> can be specified by the -config option.
     echo       Delete it first when it already exists, unless -keep_build is specified
-    echo     - Execute 'CMake ^<CONFIG^>' to create file '^<CONFIG^>.sln' inside 'build_^<CONFIG^>'
+    echo     - Execute 'CMake ^<CONFIG^>' to create file '^<CONFIG^>.sln(x)' inside 'build_^<CONFIG^>'
     echo.
     echo [OPTIONS]: space separated list of options, sometimes followed by a value, in any order
     echo.

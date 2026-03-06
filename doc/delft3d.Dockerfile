@@ -24,7 +24,7 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
 export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
-export CMAKE_LIBRARY_PATH=/usr/local/lib:CMAKE_LIBRARY_PATH
+export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
 
 ./build.sh ${CONFIGURATION} --build --build_type ${BUILD_TYPE} --build_dir "${PWD}/build" --install_dir /delft3d
 EOF
