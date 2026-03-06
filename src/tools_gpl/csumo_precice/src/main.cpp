@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     std::string configFileName;
     std::string solverName;
 
-    boost::program_options::options_description description("csumo_precice options");
+    boost::program_options::options_description description("Options");
     // clang-format off
     description.add_options()
         ("help,h",
@@ -31,9 +31,11 @@ int main(int argc, char** argv)
 
     const auto usage = [&description] {
         std::ostringstream oss;
-        oss << "Usage: csumo_precice [options] configFile solverName\n\n" << description << '\n';
+        oss << "Usage: csumo_precice -c <configFile> -s <solverName> [options]\n"
+            << "       csumo_precice <configFile> <solverName> [options]\n\n"
+            << description << '\n';
         return oss.str();
-    };
+    }();
 
     try
     {
@@ -44,7 +46,7 @@ int main(int argc, char** argv)
 
         if (vm.count("help"))
         {
-            std::print("{}", usage());
+            std::print("{}", usage);
             return EXIT_SUCCESS;
         }
 
@@ -53,7 +55,7 @@ int main(int argc, char** argv)
     catch (const boost::program_options::error& e)
     {
         std::println(stderr, "Error: {}\n", e.what());
-        std::print(stderr, "{}", usage());
+        std::print(stderr, "{}", usage);
         return EXIT_FAILURE;
     }
 
