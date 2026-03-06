@@ -254,8 +254,8 @@ set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Define preprocessor definitions
+set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
 if (WIN32)
-    set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
         target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
@@ -268,6 +268,10 @@ endif(WIN32)
 
 if (UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
+    find_package(OpenMP COMPONENTS Fortran)
+    if(OpenMP_Fortran_FOUND)
+         target_link_libraries(${library_name} PRIVATE ${OpenMP_Fortran_LIBRARIES})
+    endif()    
 endif(UNIX)
 
 # Create the folder structure in vfproj

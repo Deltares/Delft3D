@@ -1017,7 +1017,7 @@ contains
          if (jasfer3D == 0) then
             call linear(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, JATEK, wf, dmiss, jsferic)
          else
-            call linear3D(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, jsferic, jasfer3D, dmiss)
+            call interpolate_linear_from_triangle_3D(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, jsferic, jasfer3D, dmiss)
          end if
          do k = 1, 3
             ind(k) = indx(k, nrfind)
@@ -1203,7 +1203,7 @@ contains
       return
    end subroutine LINEAR
 
-   subroutine linear3D(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, w, jsferic, jasfer3D, dmiss)
+   subroutine interpolate_linear_from_triangle_3D(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, w, jsferic, jasfer3D, dmiss)
       implicit none
 
       integer, intent(in) :: NDIM !< sample vector dimension
@@ -1277,7 +1277,7 @@ contains
          zp(idim) = w(1) * z(idim, 1) + w(2) * z(idim, 2) + w(3) * z(idim, 3)
       end do
 
-   end subroutine linear3D
+   end subroutine interpolate_linear_from_triangle_3D
 
    !---------------------------------------------------------------------------!
    !   nearest_neighbour
