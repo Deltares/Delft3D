@@ -795,18 +795,33 @@ class TestSetRunner(ABC):
         )
         logger.debug(f"Dependency local_dir: {config.dependency.local_dir}, cases_path: {config.dependency.cases_path}")
 
-        # For DVC dependencies, place them relative to the test case directory
+        # For DVC dependencies, download data and create a working copy at the dependency source location
         if dependency_version == "DVC" and config.path and config.path.version == "DVC":
             logger.debug("Using DVC-specific dependency download logic")
-            # Use the full test case path to place dependencies alongside input/reference
-            local_path = Paths().rebuildToLocalPath(
-                Paths().mergeFullPath(
-                    self.__settings.local_paths.cases_path,
-                    config.path.prefix,
-                    config.dependency.local_dir,
-                )
+            source_input_path = Paths().rebuildToLocalPath(
+                Paths().mergeFullPath(self.__settings.local_paths.cases_path, config.dependency.cases_path, "input")
             )
             remote_path = Paths().mergeFullPath(location.root, config.dependency.cases_path, "input.dvc")
+
+            logger.debug(f"Dependency download - remote: {remote_path}, source: {source_input_path}")
+
+            # Ensure the DVC dependency source data is downloaded
+            if not os.path.exists(source_input_path) or not os.listdir(source_input_path):
+                self.__download_files(
+                    location, remote_path, source_input_path, PathType.DEPENDENCY, dependency_version, logger
+                )
+
+            # Create input_work copy for the test run to use
+            work_path = source_input_path + "_work"
+            if not os.path.exists(work_path):
+                if os.path.exists(source_input_path) and os.listdir(source_input_path):
+                    logger.debug(f"Creating dependency work folder: {work_path}")
+                    self.__copy_to_work_folder(Path(source_input_path), logger)
+                else:
+                    logger.warning(f"DVC dependency source not found at {source_input_path}")
+            else:
+                logger.debug(f"Dependency work folder already exists: {work_path}")
+            return
         else:
             logger.debug("Using legacy dependency download logic")
             # Use existing logic for non-DVC dependencies
@@ -836,41 +851,3 @@ class TestSetRunner(ABC):
             logger.info(f"Dependency version timestamp: {dependency_version}")
 
         self.__download_files(location, remote_path, local_path, PathType.DEPENDENCY, dependency_version, logger)
-
-        # For DVC dependencies, copy content from source to target location
-        if dependency_version == "DVC" and config.path and config.path.version == "DVC":
-            source_content_path = Paths().mergeFullPath(
-                self.__settings.local_paths.cases_path, config.dependency.cases_path, "input"
-            )
-            if os.path.exists(source_content_path):
-                logger.debug(f"Copying DVC content from {source_content_path} to {local_path}")
-                try:
-                    # Ensure target directory exists
-                    os.makedirs(local_path, exist_ok=True)
-                    # Copy all contents from source to target
-                    for item in os.listdir(source_content_path):
-                        source_item = os.path.join(source_content_path, item)
-                        target_item = os.path.join(local_path, item)
-                        if os.path.isdir(source_item):
-                            shutil.copytree(source_item, target_item, symlinks=True, ignore_dangling_symlinks=True)
-                        else:
-                            shutil.copy2(source_item, target_item)
-                    logger.debug("DVC content copy completed successfully")
-                except Exception as e:
-                    logger.error(f"Failed to copy DVC content: {e}")
-            else:
-                logger.warning(f"DVC source content not found at {source_content_path}")
-
-        # Copy dependencies to work folder to prevent mixing input and output files
-        if os.path.exists(local_path) and os.listdir(local_path):
-            logger.debug(f"Copying dependency to work folder to prevent input/output mixing")
-            self.__copy_to_work_folder(Path(local_path), logger)
-
-            # Remove original folder and rename work folder to original name
-            # This prevents contamination of DVC input while making dependency available to simulation
-            work_folder_path = local_path + "_work"
-            if os.path.exists(work_folder_path):
-                logger.debug(f"Replacing original dependency folder with work folder")
-                shutil.rmtree(local_path)  # Remove pristine DVC copy
-                os.rename(work_folder_path, local_path)  # Rename work folder to original name
-                logger.debug(f"Dependency work folder in place: {local_path}")
