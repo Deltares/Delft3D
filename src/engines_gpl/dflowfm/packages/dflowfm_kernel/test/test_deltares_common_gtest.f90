@@ -94,11 +94,9 @@ contains
     !$f90tw)
 
         !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_triinterp2_pointcloud_boundary_regression, test_triinterp2_pointcloud_boundary_regression,
-    !> Regression test for EC-module triangulation boundary case reported by Tim.
+    !> Regression test for EC-module triangulation boundary case
     !! PointCloud corners: (0,0)=10, (0,30)=20, (40,30)=30, (40,0)=40
     !! Grid: 2 cells x 3 cells -> 3x4 vertices at x=0,20,40 and y=0,10,20,30
-    !! Previously vertex (40,10) returned dmiss (-999); bilinear interpolation gives 36.666...
-    !! Expected values computed from z(x,y) = 10 + x*(30/40) + y*(10/30) - x*y*(10/1200)
     subroutine test_triinterp2_pointcloud_boundary_regression() bind(C)
         use m_ec_basic_interpolation, only: triinterp2
         use m_alloc, only: realloc
@@ -123,7 +121,6 @@ contains
         zs = [10.0_dp, 20.0_dp, 40.0_dp, 30.0_dp]
 
         ! Target grid vertices: x in {0,20,40}, y in {0,10,20,30}, row-major (x varies fastest)
-        ! Expected values from bilinear surface z(x,y) = 10 + x*(30/40) + y*(10/30) - x*y*(10/1200)
         i = 0
         do iy = 0, 3
             do ix = 0, 2
@@ -134,9 +131,6 @@ contains
         end do
 
        ! Expected values from triangulation interpolation of the 4 corner samples.
-        ! Corners: (0,0)=10, (40,0)=40, (0,30)=20, (40,30)=30.
-        ! Values at exact sample corners are exact; interior points are barycentric interpolants.
-        ! These were established from a verified run after the jsferic uninitialised-variable crash fix.
         expected = [ 10.0_dp,              &  ! (x=0,  y=0)
                      25.0_dp,              &  ! (x=20, y=0)
                      40.0_dp,              &  ! (x=40, y=0)
