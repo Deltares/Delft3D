@@ -1,85 +1,100 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE MAKEPLOTAREAS(NUMROW,NUMCOL,nsize)
-      implicit none
-      double precision :: dx
-      double precision :: dy
+module m_makeplotareas
+
+   implicit none
+
+   private
+
+   public :: makeplotareas
+
+contains
+
+   subroutine MAKEPLOTAREAS(NUMROW, NUMCOL, nsize)
+      use precision, only: dp
+      use m_dscreens, only: x1sc, x2sc, y1sc, y2sc, numsc
+
+      real(kind=dp) :: dx
+      real(kind=dp) :: dy
       integer :: i, nsize
       integer :: j
       integer :: nsc
-      integer :: numcol
-      integer :: numrow
-      integer :: numsc
-      double precision :: x1sc
-      double precision :: x2sc
-      double precision :: xb
-      double precision :: xm
-      double precision :: xz
-      double precision :: y1sc
-      double precision :: y2sc
-      double precision :: yb
-      double precision :: ym
-      double precision :: yz
-      COMMON /GSCREENS/ X1SC(100),Y1SC(100),X2SC(100),Y2SC(100),NUMSC
-      NSC  = 0
+      integer, intent(in) :: numcol
+      integer, intent(in) :: numrow
+      real(kind=dp) :: xb
+      real(kind=dp) :: xm
+      real(kind=dp) :: xz
+      real(kind=dp) :: yb
+      real(kind=dp) :: ym
+      real(kind=dp) :: yz
+
+      NSC = 0
 
       if (numrow == 1) then
-         yz = 0.4d0 ; yb = 0.8d0*(1d0-yz)
+         yz = 0.4_dp
+         yb = 0.8_dp * (1.0_dp - yz)
       else
-         yz = 0.7d0 ; yb = 0.8d0*(1d0-yz)
-      endif
+         yz = 0.7_dp
+         yb = 0.8_dp * (1.0_dp - yz)
+      end if
 
       if (numcol < 3) then
-         xz = 0.7d0 ; xb = 0.5d0*(1d0-xz)
+         xz = 0.7_dp
+         xb = 0.5_dp * (1.0_dp - xz)
       else
-         xz = 0.9d0 ; xb = 0.001d0 ! 05d0*(1d0-xz)
-      endif
+         xz = 0.9_dp
+         xb = 0.001_dp ! 05d0*(1d0-xz)
+      end if
 
       if (nsize == 2) then
-         yz = 0.45d0 ; yb = 0.8d0*(1d0-yz)
-      endif
+         yz = 0.45_dp
+         yb = 0.8_dp * (1.0_dp - yz)
+      end if
       DY = yz / NUMROW
       DX = xz / NUMCOL
       XM = DX / 40
       YM = DY / 40
-      DO 10 J = 1,NUMROW
-         DO 10 I = 1,NUMCOL
+      do J = 1, NUMROW
+         do I = 1, NUMCOL
             NSC = NSC + 1
-            X1SC(NSC) = xb + (I-1)*DX + XM
-            X2SC(NSC) = xb + (I  )*DX - XM
-            Y1SC(NSC) = 1d0-yb - (J  )*DY + YM
-            Y2SC(NSC) = 1d0-yb - (J-1)*DY - YM
-   10 CONTINUE
+            X1SC(NSC) = xb + (I - 1) * DX + XM
+            X2SC(NSC) = xb + (I) * DX - XM
+            Y1SC(NSC) = 1.0_dp - yb - (J) * DY + YM
+            Y2SC(NSC) = 1.0_dp - yb - (J - 1) * DY - YM
+         end do
+      end do
       NUMSC = NSC
-      RETURN
-      END
+      return
+   end
+
+end module m_makeplotareas

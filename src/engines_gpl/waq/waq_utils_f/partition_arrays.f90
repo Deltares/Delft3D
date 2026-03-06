@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module partition_arrays
-    use m_srstop
+    use m_logger_helper, only : stop_with_error
 
 
     !     Deltares Software Centre
@@ -86,7 +86,7 @@ contains
             write(*, *) &
                     'Fatal error in MAKPTR: variable type not implemented: ', &
                     vtype
-            call srstop(1)
+            call stop_with_error()
         end select
 
     end function makptr

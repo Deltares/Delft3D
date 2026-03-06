@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,9 +28,9 @@ module m_simph
 contains
 
 
-    subroutine simph  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine simph  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Simple calculation of pH
 
@@ -67,19 +67,19 @@ contains
 
         !     Name     Type   Library
         !     ------   -----  ------------
-        use m_monsys
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        use m_logger_helper
+        USE PHYSICALCONSTS, ONLY : celsius_to_kelvin
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations, constants in source
         !
-        PARAMETER (MC = 12.0, MCO2 = 44.0, &
-                MHCO3 = 61.0, M3TOL = 1.0E-3, KELVIN = real(CtoKelvin))
+        REAL(kind = real_wp), PARAMETER :: MC = 12.0, MCO2 = 44.0, &
+                MHCO3 = 61.0, M3TOL = 1.0E-3
         integer(kind = int_wp), save :: nr_mes = 0     ! message count negative total carbonate
         integer(kind = int_wp), save :: nrmes2 = 0     ! message count negative salinity
         integer(kind = int_wp), save :: nrmes3 = 0     ! message count high salinity
@@ -97,7 +97,7 @@ contains
         !
         !     Loop over de segmenten
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
             !     Eerste kenmerk actief of inactief segment
             !
@@ -105,19 +105,19 @@ contains
             !
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                !     Map PMSA on local variables
+                !     Map process_space_real on local variables
                 !
-                SAL = PMSA(IP1)
-                CARBTOT = PMSA(IP2)
-                ALKA = PMSA(IP3)
-                TEMP = PMSA(IP4)
-                PH_MIN = PMSA(IP5)
-                PH_MAX = PMSA(IP6)
+                SAL = process_space_real(IP1)
+                CARBTOT = process_space_real(IP2)
+                ALKA = process_space_real(IP3)
+                TEMP = process_space_real(IP4)
+                PH_MIN = process_space_real(IP5)
+                PH_MAX = process_space_real(IP6)
                 !
                 !     Error messages
 
                 IF (CARBTOT < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NR_MES < 10) THEN
                         NR_MES = NR_MES + 1
                         WRITE (ILUMON, *) 'WARNING :total carbonate <= 0', &
@@ -131,7 +131,7 @@ contains
                     CARBTOT = 1E-30
                 ENDIF
                 IF (SAL < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES2 < 10) THEN
                         NRMES2 = NRMES2 + 1
                         WRITE (ILUMON, *) 'WARNING :salinity <= 0', &
@@ -145,7 +145,7 @@ contains
                     SAL = 1E-30
                 ENDIF
                 IF (SAL > 50.) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES4 < 10) THEN
                         NRMES4 = NRMES4 + 1
                         WRITE (ILUMON, *) 'WARNING :salinity => 50.', &
@@ -159,7 +159,7 @@ contains
                     SAL = 50.
                 ENDIF
                 IF (ALKA < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES3 < 10) THEN
                         NRMES3 = NRMES3 + 1
                         WRITE (ILUMON, *) 'WARNING: alkalinity <= 0', &
@@ -172,7 +172,7 @@ contains
                     ENDIF
                     ALKA = 1E-30
                 ENDIF
-                IF (TEMP <= -KELVIN) THEN
+                IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) THEN
                     WRITE (ILUMON, *) ' WARNING: Temperature drops below 0 Kelvin', &
                             ' segment=', ISEG, ' Temp set to 15 oC (288.15 K)'
                     TEMP = 15
@@ -181,7 +181,7 @@ contains
                 !---- Procesformuleringen ---------------------------------------
                 ! ********************************
                 ! Dissociatieconstanten afhankelijk van temperatuur en saliniteit
-                TEMPK = TEMP + KELVIN
+                TEMPK = celsius_to_kelvin(TEMP)
 
                 ! Roy et al (1993), Millero (1995)
                 LNK1 = 290.9097 - 14554.21 / TEMPK - 45.0575 * log(TEMPK) + &
@@ -222,14 +222,14 @@ contains
                 C = K2 * (ALKA - 2 * CARBTOT)
                 D = B**2 - 4 * A * C
                 IF (D < 0) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     WRITE (ILUMON, *) 'No solution for pH: discriminant<0'
                     goto 10
                 ENDIF
 
                 AHPLUS = (-B + SQRT (D)) / (2 * A)
                 IF (AHPLUS <= 0) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES5 < 10) THEN
                         NRMES5 = NRMES5 + 1
                         WRITE (ILUMON, *) 'WARNING: H+ negative: ', AHPLUS, ' in segment ', ISEG
@@ -253,8 +253,8 @@ contains
                 !
                 !---- Output: voorzover van toepassing --------------------
                 !
-                PMSA(IP7) = PH
-                PMSA(IP8) = CO2
+                process_space_real(IP7) = PH
+                process_space_real(IP8) = CO2
                 !
             ENDIF
             !

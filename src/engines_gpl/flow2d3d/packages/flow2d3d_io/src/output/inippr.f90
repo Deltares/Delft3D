@@ -6,7 +6,7 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
                 & runtxt    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -98,7 +98,7 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     integer(pntrsize)                , pointer :: cfurou
     integer(pntrsize)                , pointer :: cfvrou
     integer(pntrsize)                , pointer :: dis
-    integer(pntrsize)                , pointer :: dp
+    integer(pntrsize)                , pointer :: dpd
     integer(pntrsize)                , pointer :: dps
     integer(pntrsize)                , pointer :: dpu
     integer(pntrsize)                , pointer :: dpv
@@ -221,7 +221,7 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     cfurou      => gdp%gdr_i_ch%cfurou
     cfvrou      => gdp%gdr_i_ch%cfvrou
     dis         => gdp%gdr_i_ch%dis
-    dp          => gdp%gdr_i_ch%dp
+    dpd         => gdp%gdr_i_ch%dpd
     dps         => gdp%gdr_i_ch%dps
     dpu         => gdp%gdr_i_ch%dpu
     dpv         => gdp%gdr_i_ch%dpv
@@ -281,7 +281,7 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
                  & r(gvv)    ,r(guv)    ,r(gvu)    ,r(gsqs)   ,r(gsqd)   , &
                  & r(alfas)  ,r(thick)  ,r(sig)    ,ch(namsrc),i(mnksrc) , &
                  & r(xyzsrc) ,i(irocol) ,i(mnbnd)  ,i(nob)    ,i(kcu)    , &
-                 & i(kcv)    ,i(kcs)    ,r(dp)     ,d(dps)    ,r(cfurou) , &
+                 & i(kcv)    ,i(kcs)    ,r(dpd)    ,d(dps)    ,r(cfurou) , &
                  & r(cfvrou) ,i(ibuff)  ,r(rbuff)  ,r(rbuff)  ,sferic    , &
                  & gdp       )
        if (error) goto 9999

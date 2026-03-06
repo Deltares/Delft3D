@@ -1,92 +1,101 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
+
+module m_soltest
+
+   implicit none
+
+   private
+
+   public :: soltest
+
+contains
 
    !> test iterative solver (as "mpitest")
-   subroutine soltest(iCFL,icgsolver_loc,maxsubmatvecs,iepsdiff,iepscg)
-      use m_partitioninfo
-      use m_timer
-      use unstruc_messages
-      use m_flowgeom
+   subroutine soltest(iCFL, icgsolver_loc, maxsubmatvecs, iepsdiff, iepscg)
+      use m_make_matrix, only: make_matrix
+      use m_solve_guus, only: solve_matrix, pack_matrix
+      use precision, only: dp
+      use m_update_matrix, only: update_matrix
+      use m_partitioninfo, only: jampi, jaoverlap, update_ghosts, itype_sall, idomain, my_rank, nghostlist_sall, ndomains, ighostlist_sall
+      use m_timer, only: jatimer, starttimer, itotal, stoptimer, gettimer, itotalsol, impicomm
+      use m_flowgeom, only: jarenumber, ndx, ndxi, nd
+      use m_flowparameters, only: icgsolver, epshu
+      use m_reduce, only: epsdiff, epscg, maxmatvecs, ccrsav, ccr
+      use m_flow, only: hu, realloc, s1, itsol
       use network_data, only: xzw
-      use m_flowparameters
-      use m_reduce
-      use m_flow
-      use m_alloc
-      use unstruc_model, only: md_findcells
-      implicit none
+      use m_flow_modelinit, only: flow_modelinit
 
-      integer,                          intent(in)  :: iCFL            !< wave-based Courant number
-      integer,                          intent(in)  :: icgsolver_loc   ! icgsolver (if > 0)
-      integer,                          intent(in)  :: maxsubmatvecs   ! maximum number of subiterations in Schwarz solver (if > 0)
-      integer,                          intent(in)  :: iepsdiff        ! -10log(tolerance in Schwarz iterations) (if > 0)
-      integer,                          intent(in)  :: iepscg          ! -10log(tolerance in inner iterations) (if > 0)
+      integer, intent(in) :: iCFL !< wave-based Courant number
+      integer, intent(in) :: icgsolver_loc ! icgsolver (if > 0)
+      integer, intent(in) :: maxsubmatvecs ! maximum number of subiterations in Schwarz solver (if > 0)
+      integer, intent(in) :: iepsdiff ! -10log(tolerance in Schwarz iterations) (if > 0)
+      integer, intent(in) :: iepscg ! -10log(tolerance in inner iterations) (if > 0)
 
-      double precision, dimension(:),   allocatable :: sex   ! exact solution at cell centers
-      double precision, dimension(:),   allocatable :: dmask ! used for masking ghost cells that are not being updated
+      real(kind=dp), dimension(:), allocatable :: sex ! exact solution at cell centers
+      real(kind=dp), dimension(:), allocatable :: dmask ! used for masking ghost cells that are not being updated
 
-      double precision                              :: CFL
-      double precision                              :: diffmax
+      real(kind=dp) :: CFL
+      real(kind=dp) :: diffmax
 
-      integer                                       :: NRUNS
-      integer                                       :: i, ii, irun
-      integer                                       :: ierror
-
-      integer, external :: flow_modelinit
+      integer :: NRUNS
+      integer :: i, ii, irun
+      integer :: ierror
 
       jarenumber = 0
-      CFL = 10d0
+      CFL = 10.0_dp
 !      maxdge = 0d0
 !      icgsolver = 4
 !      ipre = 0
       Nruns = 1
 
-      if ( iCFL.gt.0d0 ) then
-         CFL = dble(iCFL)
+      if (iCFL > 0.0_dp) then
+         CFL = real(iCFL, kind=dp)
       end if
 
 !     settings from command line
-      if ( icgsolver_loc.gt.0 ) then
+      if (icgsolver_loc > 0) then
          icgsolver = icgsolver_loc
       end if
 
-      if ( iepsdiff.gt.0 ) then
-         epsdiff = 10d0**(-iepsdiff)
+      if (iepsdiff > 0) then
+         epsdiff = 10.0_dp**(-iepsdiff)
       end if
 
-      if ( iepscg.gt.0 ) then
-         epscg = 10d0**(-iepscg)
+      if (iepscg > 0) then
+         epscg = 10.0_dp**(-iepscg)
       end if
 
-      if ( maxsubmatvecs.gt.0 ) then
+      if (maxsubmatvecs > 0) then
          maxmatvecs = maxsubmatvecs
       end if
 
@@ -133,17 +142,18 @@
 !      call flow_allocflow()
 
 !     allocate solution and mask
-      allocate(sex(Ndx))
-      allocate(dmask(Ndx))
+      allocate (sex(Ndx))
+      allocate (dmask(Ndx))
 
 !     activate all cells
-      hu = epshu+1d0
-
+      hu = epshu + 1.0_dp
 
 !     set exact solution
       sex = xzw
 
-      if ( jatimer.eq.1 ) call starttimer(ITOTAL)
+      if (jatimer == 1) then
+         call starttimer(ITOTAL)
+      end if
 
 !!     prepare matrix
 !      if ( jatimer.eq.1 ) call starttimer(IREDUCE)
@@ -154,80 +164,82 @@
       call make_matrix(CFL, sex)
 
 !     update overlapping ghost-parts of matrix
-      if ( jampi.eq.1 .and. jaoverlap.eq.1 ) then
+      if (jampi == 1 .and. jaoverlap == 1) then
          call update_matrix(ierror)
       end if
 
 !     pack matrix
       call pack_matrix()
 
-      call realloc(ccrsav, ubound(ccr,1), lbound(ccr,1), keepExisting=.false., fill=0d0)
+      call realloc(ccrsav, ubound(ccr, 1), lbound(ccr, 1), keepExisting=.false., fill=0.0_dp)
       ccrsav = ccr
 
 !     solve system
-      do irun=1,Nruns
-         s1 = 0d0
+      do irun = 1, Nruns
+         s1 = 0.0_dp
          ccr = ccrsav
 
 !         if (icgsolver.eq.6) call setPETSCmatrixEntries()
 !         call createPETSCPreconditioner(iprecond)
 
-         call solve_matrix(s1,Ndx,itsol)
+         call solve_matrix(s1, Ndx, itsol)
 
       end do
-      if ( jatimer.eq.1 ) call stoptimer(ITOTAL)
+      if (jatimer == 1) then
+         call stoptimer(ITOTAL)
+      end if
 
 !     unmask all cells
-      dmask = 0d0
+      dmask = 0.0_dp
 
-      if ( jampi.eq.1 ) then
-         call update_ghosts(ITYPE_SALL,1,Ndx,s1,ierror)
+      if (jampi == 1) then
+         call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
 
 !        mask all ghost cells
-         do i=1,Ndx
-            if ( idomain(i).ne.my_rank ) then
-               dmask(i) = 1d0
+         do i = 1, Ndx
+            if (idomain(i) /= my_rank) then
+               dmask(i) = 1.0_dp
             end if
          end do
 
 !        unmask ghost cells with updated values
-         call update_ghosts(ITYPE_SALL,1,Ndx,dmask,ierror)
+         call update_ghosts(ITYPE_SALL, 1, Ndx, dmask, ierror)
       end if
 
-      diffmax = 0d0
-      do i=1,Ndxi
-         if ( nd(i)%lnx.gt.0 .and. dmask(i).eq.0d0 ) then
-            if ( abs(s1(i)-sex(i)).gt.1d-10 ) then
+      diffmax = 0.0_dp
+      do i = 1, Ndxi
+         if (nd(i)%lnx > 0 .and. dmask(i) == 0.0_dp) then
+            if (abs(s1(i) - sex(i)) > 1.0e-10_dp) then
                continue
             end if
-            diffmax = max(diffmax, abs(s1(i)-sex(i)))
+            diffmax = max(diffmax, abs(s1(i) - sex(i)))
          end if
       end do
 
-      do ii=1,nghostlist_sall(ndomains-1)
+      do ii = 1, nghostlist_sall(ndomains - 1)
          i = ighostlist_sall(ii)
-         if ( abs(s1(i)-sex(i)).gt.1d-10 ) then
+         if (abs(s1(i) - sex(i)) > 1.0e-10_dp) then
             continue
          end if
       end do
 
-      write(6,'("rank", I2, ", number of iterations: ", I4, ", max diff: ", E7.2)') my_rank, itsol, diffmax
+      write (6, '("rank", I2, ", number of iterations: ", I4, ", max diff: ", E9.2)') my_rank, itsol, diffmax
 
-      if ( my_rank.eq.0 ) then
-         write(6,'(a,E8.2,a,E8.2)') ' WC-time solver   [s]: ' , gettimer(1,ITOTALSOL), ' CPU-time solver   [s]: ' , gettimer(0,ITOTALSOL)
-         write(6,'(a,E8.2,a,E8.2)') ' WC-time MPI comm [s]: ' , gettimer(1,IMPICOMM),  ' CPU-time MPI comm [s]: ' , gettimer(0,IMPICOMM)
+      if (my_rank == 0) then
+         write (6, '(a,E9.2,a,E9.2)') ' WC-time solver   [s]: ', gettimer(1, ITOTALSOL), ' CPU-time solver   [s]: ', gettimer(0, ITOTALSOL)
+         write (6, '(a,E9.2,a,E9.2)') ' WC-time MPI comm [s]: ', gettimer(1, IMPICOMM), ' CPU-time MPI comm [s]: ', gettimer(0, IMPICOMM)
       end if
-!         call mpi_barrier(DFM_COMM_DFMWORLD,ierr)
 
-!      call writemesg('Wallclock times')
-!      call printall(numt, t(3,:), tnams)
-!      call writemesg('CPU times')
-!      call printall(numt, tcpu(3,:), tnams)
+1234  continue
 
- 1234 continue
-
-      if ( allocated(sex)   ) deallocate(sex)
-      if ( allocated(dmask) ) deallocate(dmask)
+      if (allocated(sex)) then
+         deallocate (sex)
+      end if
+      if (allocated(dmask)) then
+         deallocate (dmask)
+      end if
 
       return
    end subroutine soltest
+
+end module m_soltest

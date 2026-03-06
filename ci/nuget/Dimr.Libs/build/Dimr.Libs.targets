@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="DimrLibsPostBuild" AfterTargets="Build">
+    <ItemGroup>
+      <_FilesToCopyDIMRLibs Include="$(MSBuildThisFileDirectory)..\content\native\**\*"/>      
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(_FilesToCopyDIMRLibs)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+  </Target>
+  
+  <Target Name="DimrLibsClean" AfterTargets="Clean">
+    <ItemGroup>
+      <_OriginalFilesDimrLibs Include="$(MSBuildThisFileDirectory)..\content\native\**\*"/>
+      <_FilesToCleanDimrLibs Include="$(OutDir)\%(_OriginalFilesDimrLibs.RecursiveDir)%(_OriginalFilesDimrLibs.FileName)%(_OriginalFilesDimrLibs.Extension)"/>
+      
+    </ItemGroup>
+    
+    <Delete Files="@(_FilesToCleanDimrLibs)"/>    
+  </Target>
+</Project>

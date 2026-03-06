@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 sp2 (http://www.altova.com) by WL | Delft Hydraulics (WL | Delft Hydraulics) -->
+<!--  Delft FEWS Published Interface (Copyright 2003 WL | Delft Hydraulics) -->
+<schema xmlns:fews="http://www.wldelft.nl/fews/PI" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.wldelft.nl/fews/PI" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="pi_sharedtypes.xsd"/>
+	<element name="parameters" type="fews:ModelParametersComplexType">
+		<!--<unique name="UniqueGroupId">-->
+			<!--<selector xpath="fews:group"/>-->
+			<!--<field xpath="@id"/>-->
+		<!--</unique>-->
+		<unique name="UniqueParamId">
+			<selector xpath="fews:group/parameter"/>
+			<field xpath="@id"/>
+		</unique>
+		<unique name="UniqueEnsembleParamId">
+			<selector xpath="fews:group/ensemble/ensembleMember/parameter"/>
+			<field xpath="@id"/>
+		</unique>
+	</element>
+	<complexType name="ModelParametersComplexType">
+		<annotation>
+			<documentation>Model parameters , grouped</documentation>
+		</annotation>
+		<sequence>
+		    <element name="modifierType" type="fews:idString" minOccurs="0" maxOccurs="unbounded"/>
+			<element name="group" type="fews:ModelParameterGroupComplexType" maxOccurs="unbounded">
+				<annotation>
+					<documentation>A group of parameters. e.g. default, catchmentOne, catchmentTwo, summer, winter etc.</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="version" type="fews:versionString" use="required" fixed="1.5"/>
+	</complexType>
+	<complexType name="ModelParameterGroupComplexType">
+		<annotation>
+			<documentation>Group of parameters</documentation>
+		</annotation>
+		<sequence>
+			<element name="description" type="fews:commentString" minOccurs="0">
+				<annotation>
+					<documentation>Used to describe this group of parameters</documentation>
+				</annotation>
+			</element>
+			<element name="locationId" type="fews:idString" minOccurs="0">
+				<annotation>
+					<documentation>Optional location id for this group of parameters. If used externally this is the external locationId</documentation>
+				</annotation>
+			</element>
+			<element name="model" type="fews:idString" minOccurs="0">
+				<annotation>
+					<documentation>Optional element to identify the model (algorithm)  the parameters are configured for</documentation>
+				</annotation>
+			</element>
+			<element name="validPeriod" type="fews:PeriodConditionComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Period the parameters are valid in.</documentation>
+				</annotation>
+			</element>
+			<choice>
+				<element name="parameter" type="fews:ModelParameterComplexType" maxOccurs="unbounded">
+					<annotation>
+						<documentation>Any number of parameters > 0</documentation>
+					</annotation>
+				</element>
+				<element name="ensemble" type="fews:EnsembleComplexType" maxOccurs="unbounded">
+					<annotation>
+						<documentation>Any number of ensembles > 0</documentation>
+					</annotation>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="id" type="fews:idString" use="required">
+			<annotation>
+				<documentation>Unique id for for this group. Id is required and must be used to retrieve the group of parameters.</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="name" type="fews:idString">
+			<annotation>
+				<documentation>Optional name for this group of parameters</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="readonly" type="boolean" default="false">
+			<annotation>
+				<documentation>Optional Attribute to indicate that this group may not be changed  (e.g. by a GUI) Default = false. </documentation>
+			</annotation>
+		</attribute>
+		<attribute name="modified" type="boolean" default="false">
+			<annotation>
+				<documentation>When set to True it means  at least one parameter from the the group  has been modified from the original version. Default = false</documentation>
+			</annotation>
+		</attribute>
+	</complexType>
+	<complexType name="ModelParameterComplexType">
+		<annotation>
+			<documentation>Any number of parameters > 0</documentation>
+		</annotation>
+		<sequence>
+			<element name="description" type="fews:commentString" minOccurs="0">
+				<annotation>
+					<documentation>Optional field to describe the parameter. May be used as notebook for comments annotations etc</documentation>
+				</annotation>
+			</element>
+			<choice>
+				<annotation>
+					<documentation>Actual value/content of the parameter.</documentation>
+				</annotation>
+				<element name="dblValue" type="fews:doubleStringType">
+					<annotation>
+						<documentation>Holds one floating point value</documentation>
+					</annotation>
+				</element>
+				<element name="intValue" type="fews:intStringType">
+					<annotation>
+						<documentation>Holds one integer value</documentation>
+					</annotation>
+				</element>
+				<element name="boolValue" type="fews:booleanStringType">
+					<annotation>
+						<documentation>Holds one boolean value</documentation>
+					</annotation>
+				</element>
+				<element name="stringValue" type="string">
+					<annotation>
+						<documentation>Holds one string</documentation>
+					</annotation>
+				</element>
+				<element name="dateTimeValue" type="fews:DateTimeComplexType">
+					<annotation>
+						<documentation>Holds one dateTime value.</documentation>
+					</annotation>
+				</element>
+				<element name="table" type="fews:GlobalTableComplexType">
+					<annotation>
+						<documentation>Holds one table.  The values are entered  as strings, however the value-type in each column should match the type as specified with columnTypes for this column. This will be checked while reading the xml-file.  If no column-type specified, 'String' type is assumed. Use columnId for entering column name.</documentation>
+					</annotation>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="id" type="fews:idString" use="required">
+			<annotation>
+				<documentation>Id of the parameter</documentation>
+			</annotation>
+		</attribute>
+		<attribute name="name" type="fews:idString">
+			<annotation>
+				<documentation>Optional name of the parameter. </documentation>
+			</annotation>
+		</attribute>
+	</complexType>
+	<complexType name="EnsembleComplexType">
+		<annotation>
+			<documentation>Defines ensemble of model parameters</documentation>
+		</annotation>
+		<sequence>
+			<choice minOccurs="0">
+				<element name="ensembleMember" type="fews:EnsembleMemberComplexType">
+					<annotation>
+						<documentation>Optional field to specify one particular ensemble member  the parameters are configured for                      </documentation>
+					</annotation>
+				</element>
+				<element name="ensembleMemberRange" type="fews:EnsembleMemberRangeComplexType">
+					<annotation>
+						<documentation>Optional field to specify a particular range of ensemble members  the parameters are configured for. </documentation>
+					</annotation>
+				</element>
+			</choice>
+			<element name="parameter" type="fews:ModelParameterComplexType" maxOccurs="unbounded">
+				<annotation>
+					<documentation>Parameters for this ensemble</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="id" type="fews:idString" use="required">
+			<annotation>
+				<documentation>Id of ensemble the parameters are specified for</documentation>
+			</annotation>
+		</attribute>
+	</complexType>
+</schema>

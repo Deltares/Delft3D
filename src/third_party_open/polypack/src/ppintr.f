@@ -1393,7 +1393,11 @@ C
 C
 C End of internal procedure to process a list of intersections.
 C
-      GO TO (10117,10148) , L10118
+       if (L10118 == 1) then
+          goto 10117
+       else if (L10118 == 2) then
+          goto 10148
+       end if
 C
 C The following internal procedure processes an edge in the AET that is
 C terminating at the top of the current scanbeam.  The variable ITMP
@@ -1604,9 +1608,13 @@ C Adjust the pointer into the AET so as to continue looping properly.
 C
           ITMP=IWRK(ITMP+6)
 C
-10218   CONTINUE
+10218 CONTINUE
 C
-      GO TO (10119,10152) , L10120
+      if (L10120 == 1) then
+         goto 10119
+      else if (L10120 == 2) then
+         goto 10152
+      end if
 C
 C Error exits.
 C

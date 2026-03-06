@@ -1,7 +1,7 @@
     subroutine wave2com (fof,sr)
     !----- GPL ---------------------------------------------------------------------
     !
-    !  Copyright (C)  Stichting Deltares, 2011-2024.
+    !  Copyright (C)  Stichting Deltares, 2011-2026.
     !
     !  This program is free software: you can redistribute it and/or modify
     !  it under the terms of the GNU General Public License as published by
@@ -34,18 +34,19 @@
     !!--declarations----------------------------------------------------------------
     use swan_flow_grid_maps
     use swan_input
+    use m_transform_wave_physics
     implicit none
     type (output_fields) :: fof
     type (swan_type)     :: sr
     ! global variables
     integer :: ierr
 
-    call transform_wave_physics(  fof%hs             ,fof%dir           ,fof%period         ,fof%depth          , &
-                                & fof%fx             ,fof%fy            ,fof%mx             ,fof%my             , &
-                                & fof%dissip(:,:,1)  ,fof%dissip(:,:,2) ,fof%dissip(:,:,3)                      , &
-                                & fof%mmax           ,fof%nmax          ,fof%hrms           ,fof%tp             , &
-                                & sr%grav            ,sr%swflux         ,sr%swdis                               , &
-                                & sr%gamma0          ,fof%wsbodyu       ,fof%wsbodyv        ,ierr )
+    call transform_wave_physics_sp(  fof%hs             ,fof%dir           ,fof%period         ,fof%depth          , &
+                                   & fof%fx             ,fof%fy            ,fof%mx             ,fof%my             , &
+                                   & fof%dissip(:,:,1)  ,fof%dissip(:,:,2) ,fof%dissip(:,:,3)                      , &
+                                   & fof%mmax           ,fof%nmax          ,fof%hrms           ,fof%tp             , &
+                                   & sr%grav            ,sr%swflux         ,sr%swdis                               , &
+                                   & sr%gamma0          ,fof%wsbodyu       ,fof%wsbodyv        ,ierr )
 
     if (ierr < 0) then
         call wavestop(1, 'ERROR: gamma0 lies outside allowed range [1,20]')

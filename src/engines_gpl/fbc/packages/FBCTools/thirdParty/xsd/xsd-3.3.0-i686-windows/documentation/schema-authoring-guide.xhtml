@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+  <title>XML Schema Authoring Guide</title>
+
+  <meta name="copyright" content="&copy; 2005-2010 Code Synthesis Tools CC"/>
+  <meta name="keywords" content="xsd,xml,schema,c++,mapping,data,binding,authoring,guide"/>
+  <meta name="description" content="XML Schema Authoring Guide"/>
+
+  <link rel="stylesheet" type="text/css" href="default.css" />
+
+<style type="text/css">
+  pre {
+    background : #cde8f6;
+
+    padding    : 0 0 0 1em;
+    margin     : 2em 0em 2em 0;
+
+    font-size  : 95%
+  }
+
+  body {
+    min-width: 46em;
+  }
+
+  ul.toc li {
+    padding    : .4em 0em 0em 0em;
+    list-style : none;
+  }
+
+</style>
+
+
+</head>
+
+<body>
+<div id="container">
+  <div id="content">
+
+  <h1>Table of Contents</h1>
+
+  <ul class="toc">
+    <li>1. <a href="#intro">Introduction</a></li>
+
+    <li>2. <a href="#global_element">Don't define a global element which
+        is not a valid document root</a></li>
+
+    <li>3. <a href="#same_local">Don't name a type and an element/attribute
+        of this type with the same name</a></li>
+
+    <li>3. <a href="#integer">Don't use <code>xsd:integer</code> and
+        friends</a></li>
+
+    <li>4. <a href="#int">Use <code>xsd:int/xsd:unsignedInt</code> for 32 bit
+        integers</a></li>
+  </ul>
+
+  <h1><a name="intro">Introduction</a></h1>
+
+  <p>Making it possible to cleanly map W3C XML Schema to programming languages
+     was never a goal of the XML Schema Working Group. As a result there
+     is a number of Schema constructs, techniques, and styles that don't
+     have appropriate counterparts in C++. This document presents a list
+     of do's and don'ts that will help ensure your schemas, when translated
+     by XSD, result in C++ code that is enjoyable to work with.</p>
+
+
+  <h1><a name="global_element">Don't define a global element which is not
+      a valid document root</a></h1>
+
+  <p>Instead of</p>
+
+  <pre>
+&lt;xsd:element name="author" type="Author"/>
+
+&lt;xsd:complexType name="Book">
+  &lt;xsd:sequence>
+    &lt;xsd:element ref="author"/>
+  &lt;/xsd:sequence>
+&lt;/xsd:complexType>
+  </pre>
+
+  <p>Write</p>
+
+  <pre>
+&lt;xsd:complexType name="Book">
+  &lt;xsd:sequence>
+    &lt;xsd:element name="author" type="Author"/>
+  &lt;/xsd:sequence>
+&lt;/xsd:complexType>
+  </pre>
+
+  <p>Any globally-defined element is a potential document root. For every
+     such element XSD generates a set of overloaded parsing
+     functions. If you cannot change your schema, consider using the
+     <code>--root-element-*</code> options to specify which global
+     element(s) are actual document root(s).</p>
+
+
+
+  <h1><a name="same_local">Don't name a type and an element/attribute of
+      this type with the same name</a></h1>
+
+  <p>Instead of</p>
+
+  <pre>
+&lt;xsd:complexType name="name">
+  &lt;xsd:sequence>
+    &lt;xsd:element name="name" type="xsd:string"/>
+  &lt;/xsd:sequence>
+  &lt;xsd:attribute name="lang" type="xsd:language"/>
+&lt;/xsd:complexType>
+  </pre>
+
+  <p>Write</p>
+
+  <pre>
+&lt;xsd:complexType name="Name">
+  &lt;xsd:sequence>
+    &lt;xsd:element name="name" type="xsd:string"/>
+  &lt;/xsd:sequence>
+  &lt;xsd:attribute name="lang" type="xsd:language"/>
+&lt;/xsd:complexType>
+  </pre>
+
+  <p>Use of a class name as a member function name within this class is
+     illegal in C++. XSD will resolve such conflicts by renaming
+     the conflicting member function. In the example above, you will end
+     up with the following generated code:</p>
+
+  <pre>
+  class name
+  {
+  public:
+    string
+    name1 () const;
+
+    language
+    lang () const;
+
+    ...
+
+  };
+  </pre>
+
+  <h1><a name="integer">Don't use <code>xsd:integer</code> and
+      friends</a></h1>
+
+  <p>XML Schema built-in types <code>integer</code>,
+     <code>nonPositiveInteger</code>, <code>nonNegativeInteger</code>,
+     <code>positiveInteger</code>, and <code>negativeInteger</code>
+     are arbitrary-length integral types. XSD maps them to the
+     <code>long long</code> and <code>unsigned long long</code> C++
+     types. In most cases you would prefer to use either
+     <code>xsd:int/xsd:unsignedInt</code> (32 bit, maps to C++
+     <code>int/unsigned int</code>) or
+     <code>xsd:long/xsd:unsignedLong</code> (64 bit, maps to C++
+     <code>long long/unsigned long long</code>).
+     </p>
+
+  <h1><a name="int">Use <code>xsd:int/xsd:unsignedInt</code> for 32 bit
+      integers</a></h1>
+
+  <p>XML Schema built-in types <code>long</code> and
+     <code>unsignedLong</code> are 64 bit wide so use 32 bit <code>int</code>
+     and <code>unsignedInt</code> unless you meant 64 bit.</p>
+
+  </div>
+  <div id="footer">
+    &copy;2005-2010 <a href="http://codesynthesis.com">CODE SYNTHESIS TOOLS CC</a>
+
+    <div id="terms">
+      Permission is granted to copy, distribute and/or modify this
+      document under the terms of the
+      <a href="http://codesynthesis.com/licenses/fdl-1.2.txt">GNU Free
+      Documentation License, version 1.2</a>; with no Invariant Sections,
+      no Front-Cover Texts and no Back-Cover Texts.
+    </div>
+  </div>
+
+</div>
+
+
+</body>
+</html>

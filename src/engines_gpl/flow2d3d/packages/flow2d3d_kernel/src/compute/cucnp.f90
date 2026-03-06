@@ -17,7 +17,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                & ub        ,ustokes   ,mom_output,u1        ,s1        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -589,7 +589,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
           ! weir. 
           ! Gates are excluded
           !
-          if (dpsopt == 'DP  ' .or. slplim) then
+          if (dpsopt == 'DP' .or. slplim) then
              if (kfu(nm) == 1 .and. abs(u0(nm,kmax)) <= 1.0e-15 .and. kspu(nm, 0) /= 4 .and. kspu(nm, 0) /= 10) then
                 !
                 ! cfurou(nm,1) contains u/u*

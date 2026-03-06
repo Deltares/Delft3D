@@ -1,46 +1,58 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE ADJUST( X, Y, mmax, nmax, MC, NC)
-      USE m_missing
-      implicit none
+module m_adjust
+   use m_nums, only: nums
+
+   implicit none
+
+   private
+
+   public :: adjust
+
+contains
+
+   subroutine ADJUST(X, Y, mmax, nmax, MC, NC)
+      use precision, only: dp
+      use m_missing, only: xymis
+
       integer :: mmax, nmax, mc, nc
-      double precision :: X(MMAX,NMAX), Y(MMAX,NMAX)
+      real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
 ! TODO: Z not present, no filling with dmiss [AvD]
 !     schuif data naar links en of beneden en geef nieuwe MC,NC
 
       integer :: i, j, ifirst, jfirst
-      double precision, allocatable :: XH(:,:), YH(:,:)
-      allocate(xh(MMAX,NMAX), YH(MMAX,NMAX))
+      real(kind=dp), allocatable :: XH(:, :), YH(:, :)
+      allocate (xh(MMAX, NMAX), YH(MMAX, NMAX))
 
       xh = x
       yh = y
@@ -48,31 +60,40 @@
       y = xymis
 
       IFIRST = 0
-      DO 10 I = 1,MC
-         DO 10 J = 1,NC
-            IF (XH(I,J) .NE. XYMIS .AND. IFIRST .EQ. 0) IFIRST = I
-    10 CONTINUE
+      do J = 1, NC
+         do I = 1, MC
+            if (XH(I, J) /= XYMIS .and. IFIRST == 0) then
+               IFIRST = I
+            end if
+         end do
+      end do
 
       JFIRST = 0
-      DO 20 J = 1,NC
-         DO 20 I = 1,MC
-            IF (XH(I,J) .NE. XYMIS .AND. JFIRST .EQ. 0) JFIRST = J
-    20 CONTINUE
+      do J = 1, NC
+         do I = 1, MC
+            if (XH(I, J) /= XYMIS .and. JFIRST == 0) then
+               JFIRST = J
+            end if
+         end do
+      end do
 
-      IF (IFIRST .EQ. 0 .OR. JFIRST .EQ. 0) THEN
+      if (IFIRST == 0 .or. JFIRST == 0) then
          MC = 0
          NC = 0
-      ELSE
+      else
          IFIRST = IFIRST - 1
          JFIRST = JFIRST - 1
-         DO 30 I = 1,MC-IFIRST
-            DO 30 J = 1,NC-JFIRST
-               X(I,J) = XH(I+IFIRST,J+JFIRST)
-               Y(I,J) = YH(I+IFIRST,J+JFIRST)
-    30   CONTINUE
-         CALL NUMS(X,mmax, nmax, MC,NC)
-      ENDIF
+         do J = 1, NC - JFIRST
+            do I = 1, MC - IFIRST
+               X(I, J) = XH(I + IFIRST, J + JFIRST)
+               Y(I, J) = YH(I + IFIRST, J + JFIRST)
+            end do
+         end do
+         call NUMS(X, mmax, nmax, MC, NC)
+      end if
 
-      deallocate(xh, yh)
-      RETURN
-      END
+      deallocate (xh, yh)
+      return
+   end
+
+end module m_adjust

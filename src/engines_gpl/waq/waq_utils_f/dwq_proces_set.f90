@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,8 +23,7 @@
 
 module ProcesSet
     use m_string_utils
-    use m_monsys
-    use m_srstop
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
 
     ! module contains everything for proces definition and proces input-output
     !
@@ -104,17 +103,17 @@ module ProcesSet
     integer, parameter :: ITEM_ACTION_PPEQUAL2 = 10     ! for internal use, the conditions for ITEM_ACTION_PPEQUAL are met
 
     type ItemProp
-        character(len = ITEM_NAME_SIZE) :: name            ! item name
-        character(len = ITEM_TEXT_SIZE) :: text            ! item description
-        character(len = ITEM_NAME_SIZE) :: unit            ! item unit
-        character(len = ITEM_STDN_SIZE) :: stdn            ! item standard name
-        character(len = ITEM_STDU_SIZE) :: stdu            ! item standar unit
+        character(len = ITEM_NAME_SIZE) :: name = ' '      ! item name
+        character(len = ITEM_TEXT_SIZE) :: text = ' '      ! item description
+        character(len = ITEM_NAME_SIZE) :: unit = ' '      ! item unit
+        character(len = ITEM_STDN_SIZE) :: stdn = ' '      ! item standard name
+        character(len = ITEM_STDU_SIZE) :: stdu = ' '      ! item standar unit
         real :: default         ! default value
-        character(len = ITEM_NAME_SIZE) :: aggrega         ! aggregation wheight variable
-        character(len = ITEM_NAME_SIZE) :: disaggr         ! dis-aggregation wheight variable
-        character(len = ITEM_TEXT_SIZE) :: groupid         ! groupid
-        character :: segx            ! defined on segment or exchange
-        character :: wk              ! wk
+        character(len = ITEM_NAME_SIZE) :: aggrega = ' '   ! aggregation wheight variable
+        character(len = ITEM_NAME_SIZE) :: disaggr = ' '   ! dis-aggregation wheight variable
+        character(len = ITEM_TEXT_SIZE) :: groupid = ' '   ! groupid
+        character :: segx   = ' '                          ! defined on segment or exchange
+        character :: wk     = ' '                          ! wk
         integer :: waqtype         ! indication were the value can be found
         integer :: index           ! index in the array
     end type ItemProp
@@ -126,14 +125,14 @@ module ProcesSet
     type ItemPropColl
         type(ItemPropPnt), pointer :: ItemPropPnts(:) ! pointer
         integer :: maxsize         ! maximum size of the current array
-        integer :: cursize         ! filled up to this size
+        integer :: current_size         ! filled up to this size
     end type ItemPropColl
 
     type IOitemProp
         character(len = ITEM_NAME_SIZE) :: name            ! IO item name
         integer :: type            ! IO item type
         real :: actdef          ! actual default
-        integer :: indx            ! index number in io list pmsa or flux array
+        integer :: indx            ! index number in io list process_space_real or flux array
         integer :: ip_val          ! pointer in the waq array space
         type(ItemProp), pointer :: item            ! general item properties
     end type IOitemProp
@@ -141,7 +140,7 @@ module ProcesSet
     type IOitemPropColl
         type(IOitemProp), pointer :: IOitemProps(:)  ! pointer
         integer :: maxsize         ! maximum size of the current array
-        integer :: cursize         ! filled up to this size
+        integer :: current_size         ! filled up to this size
     end type IOitemPropColl
 
     type StochiProp
@@ -155,7 +154,7 @@ module ProcesSet
     type StochiPropColl
         type(StochiProp), pointer :: StochiProps(:)  ! pointer
         integer :: maxsize         ! maximum size of the current array
-        integer :: cursize         ! filled up to this size
+        integer :: current_size         ! filled up to this size
     end type StochiPropColl
 
     type ProcesProp
@@ -186,7 +185,7 @@ module ProcesSet
     type ProcesPropColl
         type(ProcesProp), pointer :: ProcesProps(:)  ! array with proces properties
         integer :: maxsize         ! maximum size of the current array
-        integer :: cursize         ! filled up to this size
+        integer :: current_size         ! filled up to this size
     end type ProcesPropColl
 
     type ArrayProp
@@ -196,7 +195,7 @@ module ProcesSet
     type ArrayPropColl
         type(ArrayProp), pointer :: ArrayProps(:)   ! array with proces properties
         integer :: maxsize         ! maximum size of the current array
-        integer :: cursize         ! filled up to this size
+        integer :: current_size         ! filled up to this size
     end type ArrayPropColl
 
     type sfracsprop
@@ -220,7 +219,7 @@ module ProcesSet
         type(old_item), pointer :: old_items(:)     ! pointer
         integer :: target_serial    ! target serial number for changing certain items
         integer :: maxsize          ! maximum size of the current array
-        integer :: cursize          ! filled up to this size
+        integer :: current_size          ! filled up to this size
     end type old_item_coll
 
 contains
@@ -234,7 +233,7 @@ contains
         integer :: iret
 
         iret = 0
-        do i = 1, aItemPropColl%cursize         ! search by name, case insesitive
+        do i = 1, aItemPropColl%current_size         ! search by name, case insesitive
             if (string_equals(aItemProp%name, aItemPropColl%ItemPropPnts(i)%pnt%name)) then
                 iret = i
                 return
@@ -245,15 +244,15 @@ contains
 
     ! function to add to a collection of items
 
-    function ItemPropCollAdd(aItemPropColl, aItemProp) result (cursize)
+    function ItemPropCollAdd(aItemPropColl, aItemProp) result (current_size)
 
         type(ItemPropColl) :: aItemPropColl
         type(ItemProp) :: aItemProp
         type(ItemProp), pointer :: aPropPnt           ! should be a pointer to preserve space
         type(ItemPropPnt), pointer :: aItemPropPnts(:)   ! should be a pointer for the resize operation
-        integer :: cursize
+        integer :: current_size
         ! this is the standard procedure to enlarge collections
-        if (aItemPropColl%cursize == aItemPropColl%maxsize) then
+        if (aItemPropColl%current_size == aItemPropColl%maxsize) then
             allocate (aItemPropPnts (aItemPropColl%maxsize + MAX_NUM_MAX))
             do i = 1, aItemPropColl%maxsize
                 aItemPropPnts(i) = aItemPropColl%ItemPropPnts (i)        ! copies the pointers
@@ -262,30 +261,30 @@ contains
             aItemPropColl%ItemPropPnts => aItemPropPnts                   ! attaches this new array of pointers
             aItemPropColl%maxsize = aItemPropColl%maxsize + MAX_NUM_MAX
         endif
-        aItemPropColl%cursize = aItemPropColl%cursize + 1
+        aItemPropColl%current_size = aItemPropColl%current_size + 1
         allocate (aPropPnt)                                  ! this is important, allocate space to
         aPropPnt = aItemProp                                   !                    preserve argument
-        aItemPropColl%ItemPropPnts(aItemPropColl%cursize)%pnt => aPropPnt       ! put referenc eto space in array
-        cursize = aItemPropColl%cursize
+        aItemPropColl%ItemPropPnts(aItemPropColl%current_size)%pnt => aPropPnt       ! put referenc eto space in array
+        current_size = aItemPropColl%current_size
         return
 
     end function ItemPropCollAdd
 
     ! function to add to a collection of ProcesProp
 
-    function ProcesPropCollAdd(aProcesPropColl, aProcesProp) result (cursize)
+    function ProcesPropCollAdd(aProcesPropColl, aProcesProp) result (current_size)
 
         type(ProcesPropColl) :: aProcesPropColl
         type(ProcesProp) :: aProcesProp
 
         type(ProcesProp), pointer :: aProcesProps(:)   ! should be a pointer for the resize operation
-        integer :: cursize
+        integer :: current_size
         ! this is the standard procedure to enlarge collections
-        if (aProcesPropColl%cursize == aProcesPropColl%maxsize) then
+        if (aProcesPropColl%current_size == aProcesPropColl%maxsize) then
             allocate (aProcesProps (aProcesPropColl%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call stop_with_error()
             endif
             do i = 1, aProcesPropColl%maxsize
                 aProcesProps(i) = aProcesPropColl%ProcesProps (i)        ! copies the contents
@@ -294,26 +293,26 @@ contains
             aProcesPropColl%ProcesProps => aProcesProps                   ! attaches this new array of pointers
             aProcesPropColl%maxsize = aProcesPropColl%maxsize + MAX_NUM
         endif
-        aProcesPropColl%cursize = aProcesPropColl%cursize + 1
-        aProcesPropColl%ProcesProps(aProcesPropColl%cursize) = aProcesProp
-        cursize = aProcesPropColl%cursize
+        aProcesPropColl%current_size = aProcesPropColl%current_size + 1
+        aProcesPropColl%ProcesProps(aProcesPropColl%current_size) = aProcesProp
+        current_size = aProcesPropColl%current_size
         return
 
     end function ProcesPropCollAdd
 
-    function IOitemPropCollAdd(aIOitemPropColl, aIOitemProp) result (cursize)
+    function IOitemPropCollAdd(aIOitemPropColl, aIOitemProp) result (current_size)
 
         type(IOitemPropColl) :: aIOitemPropColl
         type(IOitemProp) :: aIOitemProp
 
         type(IOitemProp), pointer :: aIOitemProps(:)   ! should be a pointer for the resize operation
-        integer :: cursize
+        integer :: current_size
 
-        if (aIOitemPropColl%cursize == aIOitemPropColl%maxsize) then
+        if (aIOitemPropColl%current_size == aIOitemPropColl%maxsize) then
             allocate (aIOitemProps (aIOitemPropColl%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call stop_with_error()
             endif
             do i = 1, aIOitemPropColl%maxsize
                 aIOitemProps(i) = aIOitemPropColl%IOitemProps (i)        ! copies the contents
@@ -322,28 +321,28 @@ contains
             aIOitemPropColl%IOitemProps => aIOitemProps                   ! attaches this new array of pointers
             aIOitemPropColl%maxsize = aIOitemPropColl%maxsize + MAX_NUM
         endif
-        aIOitemPropColl%cursize = aIOitemPropColl%cursize + 1
-        aIOitemPropColl%IOitemProps(aIOitemPropColl%cursize) = aIOitemProp
-        cursize = aIOitemPropColl%cursize
+        aIOitemPropColl%current_size = aIOitemPropColl%current_size + 1
+        aIOitemPropColl%IOitemProps(aIOitemPropColl%current_size) = aIOitemProp
+        current_size = aIOitemPropColl%current_size
         return
 
     end function IOitemPropCollAdd
 
-    function IOitemPropCollAddIndx(aIOitemPropColl, aIOitemProp, indx) result (cursize)
+    function IOitemPropCollAddIndx(aIOitemPropColl, aIOitemProp, indx) result (current_size)
 
         type(IOitemPropColl) :: aIOitemPropColl
         type(IOitemProp) :: aIOitemProp
         integer :: indx
-        integer :: cursize
+        integer :: current_size
 
         type(IOitemProp), pointer :: aIOitemProps(:)   ! should be a pointer for the resize operation
 
         if (indx <= 0) then
-            call getmlu(lunrep)
+            call get_log_unit_number(lunrep)
             write(lunrep, *) 'ERROR : in IOitemPropCollAddIndx'
             write(lunrep, *) 'requested index not allowed :', indx
             write(*, *) 'ERROR : internal error'
-            call srstop(1)
+            call stop_with_error()
         endif
 
         if (indx > aIOitemPropColl%maxsize) then
@@ -352,16 +351,16 @@ contains
 
             allocate (aIOitemProps (indx + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
-                call getmlu(lunrep)
+                call get_log_unit_number(lunrep)
                 write(lunrep, *) 'ERROR : allocating IOitemPropColl array'
                 write(lunrep, *) 'requested size :', indx + MAX_NUM
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call stop_with_error()
             endif
 
             ! copy the old items
 
-            do i = 1, aIOitemPropColl%cursize
+            do i = 1, aIOitemPropColl%current_size
                 aIOitemProps(i) = aIOitemPropColl%IOitemProps (i)        ! copies the contents
             enddo
             if (aIOitemPropColl%maxsize /= 0) deallocate (aIOitemPropColl%IOitemProps)
@@ -369,7 +368,7 @@ contains
 
             ! empty the newly added items
 
-            do i = aIOitemPropColl%cursize + 1, aIOitemPropColl%maxsize
+            do i = aIOitemPropColl%current_size + 1, aIOitemPropColl%maxsize
                 aIOitemProps(i)%name = ' '
                 aIOitemProps(i)%type = IOTYPE_UNKNOWN
                 aIOitemProps(i)%actdef = -999.
@@ -386,27 +385,27 @@ contains
         ! add the new item at requested index
 
         aIOitemPropColl%IOitemProps(indx) = aIOitemProp
-        if (indx > aIOitemPropColl%cursize) then
-            aIOitemPropColl%cursize = indx
+        if (indx > aIOitemPropColl%current_size) then
+            aIOitemPropColl%current_size = indx
         endif
-        cursize = aIOitemPropColl%cursize
+        current_size = aIOitemPropColl%current_size
         return
 
     end function IOitemPropCollAddIndx
 
-    function StochiPropCollAdd(aStochiPropColl, aStochiProp) result (cursize)
+    function StochiPropCollAdd(aStochiPropColl, aStochiProp) result (current_size)
 
         type(StochiPropColl) :: aStochiPropColl
         type(StochiProp) :: aStochiProp
 
         type(StochiProp), pointer :: aStochiProps(:)   ! should be a pointer for the resize operation
-        integer :: cursize
+        integer :: current_size
 
-        if (aStochiPropColl%cursize == aStochiPropColl%maxsize) then
+        if (aStochiPropColl%current_size == aStochiPropColl%maxsize) then
             allocate (aStochiProps (aStochiPropColl%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call stop_with_error()
             endif
             do i = 1, aStochiPropColl%maxsize
                 aStochiProps(i) = aStochiPropColl%StochiProps (i)        ! copies the contents
@@ -415,26 +414,26 @@ contains
             aStochiPropColl%StochiProps => aStochiProps                   ! attaches this new array of pointers
             aStochiPropColl%maxsize = aStochiPropColl%maxsize + MAX_NUM
         endif
-        aStochiPropColl%cursize = aStochiPropColl%cursize + 1
-        aStochiPropColl%StochiProps(aStochiPropColl%cursize) = aStochiProp
-        cursize = aStochiPropColl%cursize
+        aStochiPropColl%current_size = aStochiPropColl%current_size + 1
+        aStochiPropColl%StochiProps(aStochiPropColl%current_size) = aStochiProp
+        current_size = aStochiPropColl%current_size
         return
 
     end function StochiPropCollAdd
 
-    function ArrayPropCollAdd(aArrayPropColl, aArrayProp) result (cursize)
+    function ArrayPropCollAdd(aArrayPropColl, aArrayProp) result (current_size)
 
         type(ArrayPropColl) :: aArrayPropColl
         type(ArrayProp) :: aArrayProp
 
         type(ArrayProp), pointer :: aArrayProps(:)   ! should be a pointer for the resize operation
-        integer :: cursize
+        integer :: current_size
 
-        if (aArrayPropColl%cursize == aArrayPropColl%maxsize) then
+        if (aArrayPropColl%current_size == aArrayPropColl%maxsize) then
             allocate (aArrayProps (aArrayPropColl%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call stop_with_error()
             endif
             do i = 1, aArrayPropColl%maxsize
                 aArrayProps(i) = aArrayPropColl%ArrayProps (i)        ! copies the contents
@@ -443,26 +442,26 @@ contains
             aArrayPropColl%ArrayProps => aArrayProps                   ! attaches this new array of pointers
             aArrayPropColl%maxsize = aArrayPropColl%maxsize + MAX_NUM
         endif
-        aArrayPropColl%cursize = aArrayPropColl%cursize + 1
-        aArrayPropColl%ArrayProps(aArrayPropColl%cursize) = aArrayProp
-        cursize = aArrayPropColl%cursize
+        aArrayPropColl%current_size = aArrayPropColl%current_size + 1
+        aArrayPropColl%ArrayProps(aArrayPropColl%current_size) = aArrayProp
+        current_size = aArrayPropColl%current_size
         return
 
     end function ArrayPropCollAdd
 
-    function old_item_coll_add(a_old_item_coll, a_old_item) result (cursize)
+    function old_item_coll_add(a_old_item_coll, a_old_item) result (current_size)
 
         type(old_item_coll) :: a_old_item_coll
         type(old_item) :: a_old_item
-        integer :: cursize
+        integer :: current_size
 
         type(old_item), pointer :: a_old_items(:)    ! should be a pointer for the resize operation
 
-        if (a_old_item_coll%cursize == a_old_item_coll%maxsize) then
+        if (a_old_item_coll%current_size == a_old_item_coll%maxsize) then
             allocate (a_old_items(a_old_item_coll%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call stop_with_error()
             endif
             do i = 1, a_old_item_coll%maxsize
                 a_old_items(i) = a_old_item_coll%old_items (i)        ! copies the contents
@@ -471,9 +470,9 @@ contains
             a_old_item_coll%old_items => a_old_items                    ! attaches this new array of pointers
             a_old_item_coll%maxsize = a_old_item_coll%maxsize + MAX_NUM
         endif
-        a_old_item_coll%cursize = a_old_item_coll%cursize + 1
-        a_old_item_coll%old_items(a_old_item_coll%cursize) = a_old_item
-        cursize = a_old_item_coll%cursize
+        a_old_item_coll%current_size = a_old_item_coll%current_size + 1
+        a_old_item_coll%old_items(a_old_item_coll%current_size) = a_old_item
+        current_size = a_old_item_coll%current_size
         return
 
     end function old_item_coll_add

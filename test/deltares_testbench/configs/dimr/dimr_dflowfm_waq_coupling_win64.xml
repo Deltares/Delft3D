@@ -30,9 +30,6 @@
         <argument>/C</argument>
       </arguments>
     </program>
-    <program name="svn" addSearchPaths="false">
-      <path>thirdparty/svn/win64/svn.exe</path>
-    </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
       <shell ref="command_prompt"/>
       <location ref="local" type="check">
@@ -41,7 +38,6 @@
       <path>bin/run_dimr.bat</path>
       <arguments>
         <argument>dimr.xml</argument>
-        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
       </arguments>
     </program>
     <program name="dimr-mpi" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -60,7 +56,6 @@
       <arguments>
         <argument>3</argument>
         <argument>dimr.xml</argument>
-        <!-- <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument> -->
       </arguments>
     </program>
     <program name="waqmerge" addSearchPaths="false" logOutputToFile="true" >

@@ -5,6 +5,7 @@
 !     M_WCAP             information for whitecapping
 !     OUTP_DATA          information for output data
 !     M_SNL4             information for quadruplets
+!     M_SNL3             information for triads
 !     M_BNDSPEC          information for boundary conditions
 !     M_OBSTA            information for obstacles
 !     M_GENARR           contains a number of general arrays
@@ -16,7 +17,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -25,22 +26,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -139,7 +138,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -148,22 +147,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -171,6 +168,8 @@
 !     40.13: Nico Booij
 !     40.31: Marcel Zijlema
 !     40.51: Andre van der Westhuysen
+!     41.78: Bert Jagers
+!     41.95: Marcel Zijlema
 !
 !  1. Updates
 !
@@ -179,6 +178,8 @@
 !     40.31, Dec. 03: derive types OPSDAT, ORQDAT added
 !     40.51, Mar. 08: Number of decimals for spectral output increased 
 !                      to improve accuracy of hotfile output
+!     41.78, Mar. 21: delete linked lists
+!     41.95, Jul. 22: introduction VTK and PVD attributes
 !
 !  2. Purpose
 !
@@ -206,9 +207,9 @@
 
       INTEGER, PARAMETER :: MAX_OUTP_REQ = 250 ! max. number of output requests
 
-      INTEGER, PARAMETER :: POS_FHSWE = 79 ! pos. for extra output of FHSWELL
-      INTEGER, PARAMETER :: POS_FTM01 = 80 ! pos. for extra output of FTM01
-      INTEGER, PARAMETER :: POS_FDIR  = 81 ! pos. for extra output of FDIR
+      INTEGER, PARAMETER :: POS_FHSWE = 83 ! pos. for extra output of FHSWELL
+      INTEGER, PARAMETER :: POS_FTM01 = 84 ! pos. for extra output of FTM01
+      INTEGER, PARAMETER :: POS_FDIR  = 85 ! pos. for extra output of FDIR
 
       CHARACTER (LEN=1)  :: OUT_COMMENT = '%' ! comment sign for heading lines
 
@@ -234,6 +235,31 @@
 
       INTEGER, SAVE :: NREOQ = 0         ! actual number of requests saved
 
+
+!     unit number PVD files
+      INTEGER :: UPVDF(1:MAX_OUTP_REQ)
+
+!     timestep counter for time-varying VTK files
+      INTEGER, SAVE :: NTVTK(1:MAX_OUTP_REQ) = -1
+
+!     output directory containing a series of time-varying VTK files
+      CHARACTER (LEN=LENFNM) :: VTKDIR(1:MAX_OUTP_REQ)
+
+!     textline containing VTK line in XML format
+      CHARACTER(LEN=1024) :: VTKLINE
+
+!     XML header lines
+      CHARACTER(LEN=25) :: XMLLIN1 = '<?xml version="1.0"?>'
+      CHARACTER(LEN= 5) :: XMLLIN2 = '<!--'
+      CHARACTER(LEN= 5) :: XMLLIN3 = '-->'
+
+!     default lines of PVD file
+      CHARACTER(LEN=80) :: PVDLIN1 = '<VTKFile type="Collection" '//
+     &                        'version="0.1" byte_order="LittleEndian">'
+      CHARACTER(LEN=15) :: PVDLIN2 = '  <Collection>'
+      CHARACTER(LEN=15) :: PVDLIN3 = '  </Collection>'
+      CHARACTER(LEN=10) :: PVDLIN4 = '</VTKFile>'
+
       TYPE OPSDAT
          CHARACTER (LEN=1)     :: PSTYPE                     ! type (F, C, P, ...)
          CHARACTER (LEN=8)     :: PSNAME                     ! name of point set
@@ -241,6 +267,7 @@
          REAL                  :: OPR(5)                     ! real coefficients
          INTEGER               :: MIP                        ! number of points
          REAL, POINTER         :: XP(:), YP(:), XQ(:), YQ(:) ! point coordinates
+         CHARACTER (LEN=80), ALLOCATABLE :: ID(:)            ! point id
          TYPE(OPSDAT), POINTER :: NEXTOPS
       END TYPE OPSDAT
 
@@ -259,14 +286,16 @@
       END TYPE ORQDAT
 
       TYPE(ORQDAT), SAVE, TARGET  :: FORQ
-      LOGICAL                     :: LORQ=.FALSE.                         BJXX
+      LOGICAL                     :: LORQ=.FALSE.
                                                                           BJXX
       LOGICAL, SAVE :: SwanBndStruc_done =.FALSE.                         BJXX
-      LOGICAL, SAVE :: RUNMADE           =.FALSE.                         BJXX
 !
 !  8. Subroutines and functions used
 !
-!     ---
+      INTERFACE DELETE
+        MODULE PROCEDURE DELETEOPS
+        MODULE PROCEDURE DELETEORQ
+      END INTERFACE
 !
 !  9. Subroutines and functions calling
 !
@@ -380,6 +409,62 @@
       ENDIF                                                               BJXX
       END SUBROUTINE DESTRUCTOR_ORQ                                       BJXX
                                                                           BJXX
+!
+      RECURSIVE SUBROUTINE DELETEOPS ( OPS )
+
+      TYPE(OPSDAT) :: OPS
+
+      IF ( LOPS ) THEN
+         IF ( ASSOCIATED( OPS%XP ) ) THEN
+            DEALLOCATE( OPS%XP )
+            NULLIFY( OPS%XP )
+         ENDIF
+         IF ( ASSOCIATED( OPS%YP ) ) THEN
+            DEALLOCATE( OPS%YP )
+            NULLIFY( OPS%YP )
+         ENDIF
+         IF ( ALLOCATED( OPS%ID ) ) THEN
+            DEALLOCATE( OPS%ID )
+         ENDIF
+         IF ( OPS%PSTYPE.EQ.'R' .AND. ASSOCIATED( OPS%XQ ) ) THEN
+            DEALLOCATE( OPS%XQ )
+            NULLIFY( OPS%XQ )
+         ENDIF
+         IF ( OPS%PSTYPE.EQ.'R' .AND. ASSOCIATED( OPS%YQ ) ) THEN
+            DEALLOCATE( OPS%YQ )
+            NULLIFY( OPS%YQ )
+         ENDIF
+         IF ( ASSOCIATED( OPS%NEXTOPS ) ) THEN
+            CALL DELETEOPS ( OPS%NEXTOPS )
+            DEALLOCATE( OPS%NEXTOPS )
+            NULLIFY( OPS%NEXTOPS )
+         ENDIF
+      ENDIF
+
+      END SUBROUTINE
+!
+      RECURSIVE SUBROUTINE DELETEORQ ( ORQ )
+
+      TYPE(ORQDAT) :: ORQ
+
+      IF ( LORQ ) THEN
+         IF ( ASSOCIATED( ORQ%IVTYP ) ) THEN
+            DEALLOCATE( ORQ%IVTYP )
+            NULLIFY( ORQ%IVTYP )
+         ENDIF
+         IF ( ASSOCIATED( ORQ%FAC ) ) THEN
+            DEALLOCATE( ORQ%FAC )
+            NULLIFY( ORQ%FAC )
+         ENDIF
+         IF ( ASSOCIATED( ORQ%NEXTORQ ) ) THEN
+            CALL DELETEORQ ( ORQ%NEXTORQ )
+            DEALLOCATE( ORQ%NEXTORQ )
+            NULLIFY( ORQ%NEXTORQ )
+         ENDIF
+      ENDIF
+
+      END SUBROUTINE
+
       END MODULE OUTP_DATA
 
       MODULE M_SNL4
@@ -387,7 +472,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -396,22 +481,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -484,7 +567,7 @@
 !
       END MODULE M_SNL4
 
-      MODULE M_BNDSPEC
+      MODULE M_SNL3
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -498,31 +581,142 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
+!
+!
+!  0. Authors
+!
+!     42.01: Marcel Zijlema
+!
+!  1. Updates
+!
+!     November 2022: New module
+!
+!  2. Purpose
+!
+!     creates variables and arrays used for triad interactions
+!
+!  3. Method
+!
+!     MODULE construct
+!
+!  4. Modules used
+!
+!     ---
+!
+      IMPLICIT NONE
+!
+!  5. Argument variables
+!
+!     ---
+!
+!  6. Parameter variables
+!
+!     ---
+!
+!  7. Local variables
+!
+!     BPHTMP: store unfiltered De Wit's biphase temporarily
+!     ISM   : negative range for IS
+!     ISM1  : negative range for IS
+!     ISP   : positive range for IS
+!     ISP1  : positive range for IS
+!     MSC4D : dimension for QTRI arrays
+!     QTRI1 : frequency-dependent interpolation data
+!     QTRI2 : frequency- and space-dependent scaling factors
+!     TCOLL : true if collinear, otherwise noncollinear
+!     WISM  : interpolation weight factor corresponding to lower harmonic
+!     WISM1 : interpolation weight factor corresponding to lower harmonic
+!     WISP  : interpolation weight factor corresponding to higher harmonic
+!     WISP1 : interpolation weight factor corresponding to higher harmonic
+!
+      INTEGER MSC4D
+!
+      INTEGER  ISM(3,2),  ISM1(3,2),  ISP(3),  ISP1(3)
+      REAL    WISM(3,2), WISM1(3,2), WISP(3), WISP1(3)
+!
+      REAL   , DIMENSION(:)    , SAVE, ALLOCATABLE :: BPHTMP
+      REAL   , DIMENSION(:,:)  , SAVE, ALLOCATABLE :: QTRI1
+      REAL   , DIMENSION(:,:,:), SAVE, ALLOCATABLE :: QTRI2
+!
+      LOGICAL :: TCOLL
+
+!  8. Subroutines and functions used
+!
+!     ---
+!
+!  9. Subroutines and functions calling
+!
+!     ---
+!
+! 10. Error messages
+!
+!     ---
+!
+! 11. Remarks
+!
+!     ---
+!
+! 12. Structure
+!
+!     ---
+!
+! 13. Source text
+!
+      END MODULE M_SNL3
+
+      MODULE M_BNDSPEC
+!
+!
+!   --|-----------------------------------------------------------|--
+!     | Delft University of Technology                            |
+!     | Faculty of Civil Engineering and Geosciences              |
+!     | Environmental Fluid Mechanics Section                     |
+!     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
+!     |                                                           |
+!     | Programmers: The SWAN team                                |
+!   --|-----------------------------------------------------------|--
+!
+!
+!     SWAN (Simulating WAves Nearshore); a third generation wave model
+!     Copyright (C) 1993-2024  Delft University of Technology
+!
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
+!
+!     This program is distributed in the hope that it will be useful,
+!     but WITHOUT ANY WARRANTY; without even the implied warranty of
+!     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+!     GNU General Public License for more details.
+!
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
 !
 !     40.31: Marcel Zijlema
+!     41.78: Bert Jagers
 !
 !  1. Updates
 !
-!     Nov. 03: New Module
+!     40.31, Nov. 03: New Module
+!     41.78, Mar. 21: delete linked lists
 !
 !  2. Purpose
 !
@@ -549,6 +743,7 @@
 !
 !  7. Local variables
 !
+!     ALOBND  : if true, user has specified boundary conditions
 !     BFILED  : data concerning boundary condition files
 !     BGP     : array containing data w.r.t. boundary grid points
 !     BSPLOC  : place in array BSPECS where to store interpolated spectra
@@ -579,6 +774,8 @@
 !               3: average wave direction
 !               4: directional distribution coefficient
 
+      LOGICAL :: ALOBND
+
       TYPE BSPCDAT
          INTEGER                :: BFILED(20) = 0
          INTEGER, POINTER       :: BSPLOC(:)
@@ -588,7 +785,7 @@
 
       TYPE(BSPCDAT), SAVE, TARGET :: FBNDFIL
       TYPE(BSPCDAT), SAVE, POINTER :: CUBFL                               BJXX
-      LOGICAL, SAVE :: LBFILS = .FALSE.                                   BJXX
+      LOGICAL, SAVE :: LBFILS = .FALSE.
 
       TYPE BSDAT
          INTEGER                :: NBS
@@ -599,7 +796,7 @@
 
       TYPE(BSDAT), SAVE, TARGET :: FBS
       TYPE(BSDAT), SAVE, POINTER :: CUBS                                  BJXX
-      LOGICAL, SAVE :: LBS    = .FALSE.                                   BJXX
+      LOGICAL, SAVE :: LBS    = .FALSE.
 
       TYPE BGPDAT
          INTEGER                :: BGP(6)
@@ -608,11 +805,15 @@
 
       TYPE(BGPDAT), SAVE, TARGET  :: FBGP
       TYPE(BGPDAT), SAVE, POINTER :: CUBGP
-      LOGICAL, SAVE :: LBGP   = .FALSE.                                   BJXX
+      LOGICAL, SAVE :: LBGP = .FALSE.
 
 !  8. Subroutines and functions used
 !
-!     ---
+      INTERFACE DELETE
+        MODULE PROCEDURE DELETEBSPC
+        MODULE PROCEDURE DELETEBS
+        MODULE PROCEDURE DELETEBGP
+      END INTERFACE
 !
 !  9. Subroutines and functions calling
 !
@@ -722,6 +923,61 @@
       NULLIFY(BGP%NEXTBGP)                                                BJXX
       END SUBROUTINE DESTRUCTOR_BGPDAT                                    BJXX
                                                                           BJXX
+!
+      RECURSIVE SUBROUTINE DELETEBSPC ( BSPC )
+
+      TYPE(BSPCDAT) :: BSPC
+
+      IF ( LBFILS ) THEN
+         IF ( ASSOCIATED( BSPC%BSPLOC ) ) THEN
+            DEALLOCATE( BSPC%BSPLOC )
+            NULLIFY( BSPC%BSPLOC )
+         ENDIF
+         IF ( ASSOCIATED( BSPC%BSPDIR ) ) THEN
+            DEALLOCATE( BSPC%BSPDIR )
+            NULLIFY( BSPC%BSPDIR )
+         ENDIF
+         IF ( ASSOCIATED( BSPC%BSPFRQ ) ) THEN
+            DEALLOCATE( BSPC%BSPFRQ )
+            NULLIFY( BSPC%BSPFRQ )
+         ENDIF
+         IF ( ASSOCIATED( BSPC%NEXTBSPC ) ) THEN
+            CALL DELETEBSPC ( BSPC%NEXTBSPC )
+            DEALLOCATE( BSPC%NEXTBSPC )
+            NULLIFY( BSPC%NEXTBSPC )
+         ENDIF
+      ENDIF
+
+      END SUBROUTINE
+!
+      RECURSIVE SUBROUTINE DELETEBS ( BS )
+
+      TYPE(BSDAT) :: BS
+
+      IF ( LBS ) THEN
+         IF ( ASSOCIATED( BS%NEXTBS ) ) THEN
+            CALL DELETEBS ( BS%NEXTBS )
+            DEALLOCATE( BS%NEXTBS )
+            NULLIFY( BS%NEXTBS )
+         ENDIF
+      ENDIF
+
+      END SUBROUTINE
+!
+      RECURSIVE SUBROUTINE DELETEBGP ( BGP )
+
+      TYPE(BGPDAT) :: BGP
+
+      IF ( LBGP ) THEN
+         IF ( ASSOCIATED( BGP%NEXTBGP ) ) THEN
+            CALL DELETEBGP ( BGP%NEXTBGP )
+            DEALLOCATE( BGP%NEXTBGP )
+            NULLIFY( BGP%NEXTBGP )
+         ENDIF
+      ENDIF
+
+      END SUBROUTINE
+
       END MODULE M_BNDSPEC
 
       MODULE M_OBSTA
@@ -738,22 +994,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -792,8 +1046,12 @@
 !     FBCOEF  : freeboard dependent coefficients
 !     FBTYP1  : freeboard type: freeboard or not
 !     FBTYP2  : freeboard type: includes quay or not
+!     IGCOEF  : FIG coefficients
+!     IGFRQD  : frequency distribution for FIG source
+!     IGTYP   : FIG type: FIG source term or not
 !     NCRPTS  : number of corner points in obstacle
 !     NEXTOBST: pointer to next obstacle in list
+!     OBSTDONE: check handling obstacles done or not
 !     RFCOEF  : reflection coefficients
 !     RFTYP1  : reflection type: standard (REFL)
 !     RFTYP2  : reflection type: diffusive/specular (RDIFF/RSPEC)
@@ -805,6 +1063,8 @@
 !     XCRP    : x-coordinate of corner point
 !     YCRP    : y-coordinate of corner point
 
+      LOGICAL, SAVE             :: OBSTDONE
+!
       TYPE OBSTDAT
          INTEGER                :: TRTYPE
          REAL                   :: TRCOEF(3)
@@ -813,6 +1073,9 @@
          REAL                   :: RFCOEF(6)
          INTEGER                :: FBTYP1, FBTYP2
          REAL                   :: FBCOEF(3)
+         INTEGER                :: IGTYP
+         REAL                   :: IGCOEF(7)
+         REAL, POINTER          :: IGFRQD(:)
          INTEGER                :: NCRPTS
          REAL, POINTER          :: XCRP(:), YCRP(:)
          TYPE(OBSTDAT), POINTER :: NEXTOBST
@@ -858,22 +1121,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -906,6 +1167,7 @@
 !     NPLAF, TURBF
 !     MUDLF
 !     AICEF, HICEF
+!     HSSF, TSSF, DSSF
 !
 !  4. Modules used
 !
@@ -927,8 +1189,10 @@
 !     AICEF : input field containing ice concentration (fraction)
 !     ASTDF : input field of air-sea temperature difference
 !     DEPTH : input field of depth
+!     DSSF  : input field containing sea-swell mean wave direction
 !     FRIC  : input field of friction
 !     HICEF : input field containing ice thickness (meters)
+!     HSSF  : input field containing sea-swell sig wave height
 !     KGRBND: array containing all boundary points
 !             (+ 2 extra zeros as area separator for all separated areas)
 !     KGRPNT: array containing indirect addresses for grid points
@@ -942,6 +1206,7 @@
 !             (*,5); cosine*sine of spectral directions
 !             (*,6); sine^2 of spectral directions
 !     SPCSIG: Relative frequencies in computational domain in sigma-space
+!     TSSF  : input field containing sea-swell mean wave period
 !     TURBF : input field containing turbulent viscosity
 !     UXB   : input field of contravariant U-velocity
 !     UYB   : input field of contravariant V-velocity
@@ -969,6 +1234,7 @@
       REAL   , SAVE, ALLOCATABLE :: AICEF(:) , HICEF(:)
       REAL   , SAVE, ALLOCATABLE :: LAYH(:), VEGDIL(:), VEGDRL(:),
      &                              VEGNSL(:)
+      REAL   , SAVE, ALLOCATABLE :: HSSF(:)  , TSSF(:), DSSF(:)
 !ESMF!
 !ESMF!     added to save Sin exponential growth term for coupling
 !ESMF      LOGICAL, SAVE :: SAVE_SINBAC
@@ -1012,22 +1278,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1091,6 +1355,7 @@
 !     INODE   : rank of present node
 !     NPROC   : number of nodes
 !     PARLL   : flag to denote run as parallel (.TRUE.) or not (.FALSE.)
+!     SWCHAR  : MPI datatype for characters
 !     SWINT   : MPI datatype for integers
 !     SWMAX   : MPI collective maximum operation
 !     SWMIN   : MPI collective minimum operation
@@ -1098,18 +1363,12 @@
 !     SWSUM   : MPI collective summation
 !
       INTEGER INODE, NPROC
-      INTEGER SWINT, SWREAL
+      INTEGER SWCHAR, SWINT, SWREAL
       INTEGER SWMAX, SWMIN, SWSUM
       LOGICAL IAMMASTER, PARLL
 !
 #ifndef SWANEXE
-!COH!     *** variables for coupling with COHERENS
-!COH!
-!COH!     COMM    : communicator for the wave subgroup
-!COH!
-!COH      INTEGER COMM
       INTEGER COMM
-!COH!
 #endif
 !     *** information related to global domain and subdomains
 !
@@ -1207,7 +1466,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1216,22 +1475,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1305,8 +1562,4 @@
 !/impi      MODULE MPI
 !/impi      INCLUDE 'mpif.h'
 !/impi      END MODULE MPI
-!PUN!/impi
-!PUN!/impi      MODULE MPI
-!PUN!/impi      INCLUDE 'mpif.h'
-!PUN!/impi      END MODULE MPI
 !/impi!D3D#endif

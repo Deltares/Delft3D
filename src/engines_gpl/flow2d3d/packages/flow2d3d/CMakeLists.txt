@@ -55,8 +55,6 @@ if (UNIX)
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
     set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
-
-    include_directories(${NETCDF_INCLUDEDIR})
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 
@@ -90,7 +88,6 @@ set_source_files_properties(${fortran_version_files}
 # WARNING: the order is important: first the call, then the definition
 set(oss_dependencies_general flow2d3d_manager
                              flow2d3d_io
-                             flow2d3d_io_dol_f
                              flow2d3d_kernel
                              flow2d3d_kernel_dd_f
                              flow2d3d_plugin_culvert_c
@@ -123,27 +120,19 @@ set(oss_dependencies_general flow2d3d_manager
                              kdtree2)
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
     set(oss_dependencies ${oss_dependencies_general}
                          netcdff)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF)
+    )
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
                         netcdff)
 
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)
-oss_include_libraries(${library_name} oss_dependencies)
 
 if (WIN32)
     # Set linker properties
@@ -186,10 +175,17 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${header_files}
 source_group(Resources FILES    ${rc_version_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib)
+install(TARGETS ${library_name} RUNTIME DESTINATION lib
+                                LIBRARY DESTINATION lib
+)
+
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)
+    
+    # Add scripts for running coupled Delft3D4 - C-SUMO computations. These .sh scripts make sure that C-SUMO is started in the background
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d_AL8_csumo.sh                DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d_AL8_csumo.sh      DESTINATION bin)
 endif(UNIX)
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d.${platform_extension}                   DESTINATION bin)
@@ -204,4 +200,4 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/tabmom     
 
 
 # Change project flags at the end of this file
-# target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
+# target_compile_options(${library_name} PRIVATE {qauto_threaded_flags})

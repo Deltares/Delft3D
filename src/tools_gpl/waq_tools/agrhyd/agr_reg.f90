@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,18 +23,17 @@
 
       subroutine agr_reg(input_hyd, output_hyd, m_fact, n_fact, m_offset, n_offset, ipnt   )
 
-      use m_srstop
-      use m_monsys
-      use hydmod
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
+      use m_hydmod
       implicit none
 
-      type(t_hyd)          :: input_hyd                           ! description of the input hydrodynamics
-      type(t_hyd)          :: output_hyd                          ! description of the output hydrodynamics
+      type(t_hydrodynamics)          :: input_hyd                           ! description of the input hydrodynamics
+      type(t_hydrodynamics)          :: output_hyd                          ! description of the output hydrodynamics
       integer              :: m_fact        ! aggregation factor m direction
       integer              :: n_fact        ! aggregation factor n direction
       integer              :: m_offset      ! offset aggregation m direction
       integer              :: n_offset      ! offset aggregation n direction
-      integer              :: ipnt(input_hyd%nmax,input_hyd%mmax) ! aggregation pointer
+      integer              :: ipnt(input_hyd%num_rows,input_hyd%num_columns) ! aggregation pointer
 
       ! local declarations
 
@@ -48,10 +47,10 @@
       integer              :: n_left_new    ! number of rows to the left in the new grid
       integer              :: m_right_new   ! number of columns to the right in the new grid
       integer              :: n_right_new   ! number of rows to the right in the new grid
-      integer              :: mmax          ! mmax
-      integer              :: nmax          ! nmax
-      integer              :: mmax_new      ! new mmax after aggregation
-      integer              :: nmax_new      ! new nmax after aggregation
+      integer              :: num_columns          ! num_columns
+      integer              :: num_rows          ! num_rows
+      integer              :: mmax_new      ! new num_columns after aggregation
+      integer              :: nmax_new      ! new num_rows after aggregation
       integer              :: m             ! m index
       integer              :: n             ! n index
       integer              :: m_new         ! m index in the new grid
@@ -76,10 +75,10 @@
       real   , allocatable :: x_tmp(:,:)    ! temporary x depth coordinate
       real   , allocatable :: y_tmp(:,:)    ! temporary y depth coordinate
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
-      mmax = input_hyd%mmax
-      nmax = input_hyd%nmax
+      num_columns = input_hyd%num_columns
+      num_rows = input_hyd%num_rows
       fact_m = m_fact
       fact_n = n_fact
 
@@ -88,26 +87,26 @@
       if ( m_offset .eq. 1 ) then
          m_offset = m_offset + m_fact
       endif
-      if ( m_offset .eq. mmax ) then
+      if ( m_offset .eq. num_columns ) then
          m_offset = m_offset - m_fact
       endif
-      if ( m_offset .lt. 1 .or. m_offset .gt. mmax ) then
+      if ( m_offset .lt. 1 .or. m_offset .gt. num_columns ) then
          write(*,*) ' error m_offset out of range'
          write(*,*) ' m_offset =',m_offset
-         call srstop(1)
+         call stop_with_error()
       endif
       m_offset2 = mod(m_offset-2,m_fact)
 
       if ( n_offset .eq. 1 ) then
          n_offset = n_offset + n_fact
       endif
-      if ( n_offset .eq. nmax ) then
+      if ( n_offset .eq. num_rows ) then
          n_offset = n_offset - n_fact
       endif
-      if ( n_offset .lt. 1 .or. n_offset .gt. nmax ) then
+      if ( n_offset .lt. 1 .or. n_offset .gt. num_rows ) then
          write(*,*) ' error n_offset out of range'
          write(*,*) ' n_offset =',n_offset
-         call srstop(1)
+         call stop_with_error()
       endif
       n_offset2 = mod(n_offset-2,n_fact)
 
@@ -115,19 +114,19 @@
       ! buitenste rij blijft altijd bestaan om (in het uiterste geval) ruimte te hebben voor de boundaries
 
       m_left      = m_offset-2
-      m_right     = mmax-m_offset
+      m_right     = num_columns-m_offset
       m_left_new  = int((m_left-1.)/m_fact+1.0)
       m_right_new = int((m_right-1.)/m_fact+1.0)
       mmax_new    = m_left_new + m_right_new + 2
 
       n_left      = n_offset-2
-      n_right     = nmax-n_offset
+      n_right     = num_rows-n_offset
       n_left_new  = int((n_left-1.)/n_fact+1.0)
       n_right_new = int((n_right-1.)/n_fact+1.0)
       nmax_new    = n_left_new + n_right_new + 2
 
-      output_hyd%mmax   = mmax_new
-      output_hyd%nmax   = nmax_new
+      output_hyd%num_columns   = mmax_new
+      output_hyd%num_rows   = nmax_new
       output_hyd%nosegl = mmax_new*nmax_new
 
       ! alloceer arrays op nieuwe dimensies
@@ -150,18 +149,18 @@
       ipnt             = 0
       output_hyd%lgrid = 0
 
-      do m = 1 , mmax
-         do n = 1 , nmax
+      do m = 1 , num_columns
+         do n = 1 , num_rows
             if ( m .eq. 1 ) then
                m_new = 1
-            elseif ( m .eq. mmax ) then
+            elseif ( m .eq. num_columns ) then
                m_new = mmax_new
             else
                m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
             endif
             if ( n .eq. 1 ) then
                n_new = 1
-            elseif ( n .eq. nmax ) then
+            elseif ( n .eq. num_rows ) then
                n_new = nmax_new
             else
                n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
@@ -188,18 +187,18 @@
 
       ! extra sweep back for missing cco values
 
-      do m = mmax, 2 , -1
-         do n = nmax, 2 , -1
+      do m = num_columns, 2 , -1
+         do n = num_rows, 2 , -1
             if ( m .eq. 1 ) then
                m_new = 1
-            elseif ( m .eq. mmax ) then
+            elseif ( m .eq. num_columns ) then
                m_new = mmax_new
             else
                m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
             endif
             if ( n .eq. 1 ) then
                n_new = 1
-            elseif ( n .eq. nmax ) then
+            elseif ( n .eq. num_rows ) then
                n_new = nmax_new
             else
                n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
@@ -227,53 +226,18 @@
          enddo
       enddo
 
-!     ! extra sweep back for missing cco values
-!
-!     do m = 2 , mmax
-!        do n = 2 , nmax
-!           if ( m .eq. 1 ) then
-!              m_new = 1
-!           elseif ( m .eq. mmax ) then
-!              m_new = mmax_new
-!           else
-!              m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
-!           endif
-!           if ( n .eq. 1 ) then
-!              n_new = 1
-!           elseif ( n .eq. nmax ) then
-!              n_new = nmax_new
-!           else
-!              n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
-!           endif
-!
-!           ! prik cco over
-!
-!           if ( abs(input_hyd%xdepth(n,m)) .gt. 1.e-20 ) then
-!              if ( abs(output_hyd%xdepth(n_new-1,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%xdepth(n_new-1,m_new-1) = input_hyd%xdepth(n,m)
-!              endif
-!           endif
-!           if ( abs(input_hyd%ydepth(n,m)) .gt. 1.e-20 ) then
-!              if ( abs(output_hyd%ydepth(n_new-1,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%ydepth(n_new-1,m_new-1) = input_hyd%ydepth(n,m)
-!              endif
-!           endif
-!
-!        enddo
-!     enddo
-
-      do m = 2 , mmax
-         do n = 2 , nmax
+      do m = 2 , num_columns
+         do n = 2 , num_rows
             if ( m .eq. 1 ) then
                m_new = 1
-            elseif ( m .eq. mmax ) then
+            elseif ( m .eq. num_columns ) then
                m_new = mmax_new
             else
                m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
             endif
             if ( n .eq. 1 ) then
                n_new = 1
-            elseif ( n .eq. nmax ) then
+            elseif ( n .eq. num_rows ) then
                n_new = nmax_new
             else
                n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
@@ -305,67 +269,21 @@
       deallocate(x_tmp)
       deallocate(y_tmp)
 
-!     do m = 2 , mmax
-!        do n = 2 , nmax
-!           if ( m .eq. 1 ) then
-!              m_new = 1
-!           elseif ( m .eq. mmax ) then
-!              m_new = mmax_new
-!           else
-!              m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
-!           endif
-!           if ( n .eq. 1 ) then
-!              n_new = 1
-!           elseif ( n .eq. nmax ) then
-!              n_new = nmax_new
-!           else
-!              n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
-!           endif
-!
-!           ! prik cco over
-!
-!           if ( abs(input_hyd%xdepth(n,m)) .gt. 1.e-20 ) then
-!              if ( abs(output_hyd%xdepth(n_new-1,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%xdepth(n_new-1,m_new-1) = input_hyd%xdepth(n,m)
-!              endif
-!              if ( abs(output_hyd%xdepth(n_new,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%xdepth(n_new,m_new-1) = input_hyd%xdepth(n,m)
-!              endif
-!              if ( abs(output_hyd%xdepth(n_new-1,m_new)) .lt. 1.e-20 ) then
-!                 output_hyd%xdepth(n_new-1,m_new) = input_hyd%xdepth(n,m)
-!              endif
-!           endif
-!           if ( abs(input_hyd%ydepth(n,m)) .gt. 1.e-20 ) then
-!              if ( abs(output_hyd%ydepth(n_new-1,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%ydepth(n_new-1,m_new-1) = input_hyd%ydepth(n,m)
-!              endif
-!              if ( abs(output_hyd%ydepth(n_new,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%ydepth(n_new,m_new-1) = input_hyd%ydepth(n,m)
-!              endif
-!              if ( abs(output_hyd%ydepth(n_new-1,m_new)) .lt. 1.e-20 ) then
-!                 output_hyd%ydepth(n_new-1,m_new) = input_hyd%ydepth(n,m)
-!              endif
-!           endif
-!
-!        enddo
-!     enddo
-
       ! boundaries
-
       nobnd_new = 0
       ierr      = 0
-      do m = 1 , mmax
-         do n = 1 , nmax
+      do m = 1 , num_columns
+         do n = 1 , num_rows
             if ( m .eq. 1 ) then
                m_new = 1
-            elseif ( m .eq. mmax ) then
+            elseif ( m .eq. num_columns ) then
                m_new = mmax_new
             else
                m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
             endif
             if ( n .eq. 1 ) then
                n_new = 1
-            elseif ( n .eq. nmax ) then
+            elseif ( n .eq. num_rows ) then
                n_new = nmax_new
             else
                n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
@@ -458,17 +376,9 @@
 
       ! write lga table on old grid
 
-!      write(lunrep,'(''     m->'',<mmax>(i4,1x))') (m,m=1,mmax)
-!      write(lunrep,'('' n  *** '',<mmax>(''****'',1x),'' ***  n'')')
-!      do n = nmax , 1 , -1
-!          write(lunrep,'(i3,'' *** '',<mmax>(i4,1x),'' *** '',i3)') n,(ipnt(n,m),m=1,mmax),n
-!      enddo
-!      write(lunrep,'('' n  *** '',<mmax>(''****'',1x))')
-!      write(lunrep,'(''     m->'',<mmax>(i4,1x))') (m,m=1,mmax)
-
       if ( ierr .ne. 0 ) then
          write(lunrep,*) 'stopped because of errors'
-         call srstop(1)
+         call stop_with_error()
       endif
 
       return

@@ -21,7 +21,7 @@
 #define modname_company COMPANY_NAME
 #define modname_company_url COMPANY_URL
 
-#define modname_sourcecode_url "@(#)"BRANCH
+#define modname_sourcecode_url "@(#) BRANCH"
 
 #define modname_version modname_major "." modname_minor "." modname_build
 #define modname_version_short modname_major "." modname_minor
@@ -30,11 +30,11 @@
 
 /*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE ===================================================================== */
 
-char * getversionstring_d_hydro(void);
-char * getfullversionstring_d_hydro(void);
-char * getshortversionstring_d_hydro(void);
-char * geturlstring_d_hydro(void);
-char * getversionidstring_d_hydro(void);
+const char * getversionstring_d_hydro(void);
+const char * getfullversionstring_d_hydro(void);
+const char * getshortversionstring_d_hydro(void);
+const char * geturlstring_d_hydro(void);
+const char * getversionidstring_d_hydro(void);
 
 #endif /* DIMR_EXE_VERSION */
 

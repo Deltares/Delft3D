@@ -1,6 +1,6 @@
 !----AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -26,36 +26,37 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
-!> keeps parameters for map/his writing of data in double/single precision 
+!> keeps parameters for map/his writing of data in double/single precision
 module m_map_his_precision
-    implicit none
-    private
-    public netcdf_data_type
+   implicit none(type, external)
 
-    character(len=128), public :: md_nc_map_precision = 'double' !< NetCDF data precision in map files ('double', 'single' or 'float')
-    character(len=128), public :: md_nc_his_precision = 'double' !< NetCDF data precision in his files ('double', 'single' or 'float')
+   private
+   
+   public netcdf_data_type
 
-    contains
+   character(len=128), public :: md_nc_map_precision = 'single' !< NetCDF data precision in map files ('double', 'single' or 'float')
+   character(len=128), public :: md_nc_his_precision = 'single' !< NetCDF data precision in his files ('double', 'single' or 'float')
 
-    !> Extract the NetCDF data type from the user provided string.
-    function netcdf_data_type(nc_precision_string) result(nc_data_type)
-        use netcdf, only: nf90_float, nf90_double
-        use MessageHandling, only: mess, LEVEL_ERROR
-        use string_module, only: str_lower
-        character(len=*), value, intent(in) :: nc_precision_string !< Description of the data type
-        integer :: nc_data_type !< Result type as used by the NetCDF library
+contains
 
-        call str_lower(nc_precision_string)
-        select case (trim(nc_precision_string))
-            case ('double')
-                nc_data_type = nf90_double
-            case ('float', 'single')
-                nc_data_type = nf90_float
-            case default
-                call mess(LEVEL_ERROR, 'Did not recognise NetCDF precision string ' // trim(nc_precision_string) // '. It must be double or single.')
-        end select
-    end function netcdf_data_type
+   !> Extract the NetCDF data type from the user provided string.
+   function netcdf_data_type(nc_precision_string) result(nc_data_type)
+      use netcdf, only: nf90_float, nf90_double
+      use MessageHandling, only: mess, LEVEL_ERROR
+      use string_module, only: str_tolower
+
+      character(len=*), value, intent(in) :: nc_precision_string !< Description of the data type
+
+      integer :: nc_data_type !< Result type as used by the NetCDF library
+
+      select case (trim(str_tolower(nc_precision_string)))
+      case ('double')
+         nc_data_type = nf90_double
+      case ('float', 'single')
+         nc_data_type = nf90_float
+      case default
+         call mess(LEVEL_ERROR, 'Did not recognise NetCDF precision string '//trim(nc_precision_string)//'. It must be double or single.')
+      end select
+   end function netcdf_data_type
 
 end module m_map_his_precision

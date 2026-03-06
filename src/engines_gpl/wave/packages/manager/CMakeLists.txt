@@ -20,10 +20,9 @@ set(oss_dependencies    wave_data
                         wave_io
                         wave_kernel) 
 
-oss_include_libraries(${library_name} oss_dependencies)
 target_link_libraries(${library_name} ${oss_dependencies})
 
-include_directories(${mpi_include_path})
+include_directories(${mpi_module_path})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})

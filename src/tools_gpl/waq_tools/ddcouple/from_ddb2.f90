@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,13 +27,13 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)               :: hyd                    ! description of the hydrodynamics
-      type(t_hyd_coll)          :: domain_hyd_coll        ! description of all domain hydrodynamics
+      type(t_hydrodynamics)               :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)    :: domain_hyd_coll        ! description of all domain hydrodynamics
       logical                   :: parallel               ! parallel option, extra m lines are removed
       logical                   :: n_mode                 ! stack domains in the n direction
 
@@ -41,7 +41,7 @@
 
       integer                   :: n_domain               ! number of domains
       integer                   :: i_domain               ! index in collection
-      type(t_hyd), pointer      :: domain_hyd             ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer      :: domain_hyd             ! description of one domain hydrodynamics
       integer                   :: ilay                   ! index in layers
       integer                   :: iwaste                 ! wasteload index
       integer                   :: i_wasteload            ! index in collection
@@ -68,12 +68,13 @@
       hyd%tem_present    = .true.
       hyd%tau_present    = .true.
       hyd%vdf_present    = .true.
-      hyd%wasteload_coll%cursize = 0
+      hyd%vel_present    = .true.
+      hyd%wasteload_coll%current_size = 0
       hyd%wasteload_coll%maxsize = 0
 
       ! get properties from the domains
 
-      n_domain = hyd%domain_coll%cursize
+      n_domain = hyd%domain_coll%current_size
       moffset  = 0
       noffset  = 0
       do i_domain = 1 , n_domain
@@ -95,14 +96,14 @@
             hyd%cnv_step           = domain_hyd%cnv_step
             hyd%cnv_step_sec       = domain_hyd%cnv_step_sec
 
-            hyd%kmax               = domain_hyd%kmax
-            allocate(hyd%hyd_layers(hyd%kmax))
-            do ilay = 1 , hyd%kmax
+            hyd%num_layers_grid               = domain_hyd%num_layers_grid
+            allocate(hyd%hyd_layers(hyd%num_layers_grid))
+            do ilay = 1 , hyd%num_layers_grid
                hyd%hyd_layers(ilay) = domain_hyd%hyd_layers(ilay)
             enddo
-            hyd%nolay              = domain_hyd%nolay
-            allocate(hyd%waq_layers(hyd%nolay))
-            do ilay = 1 , hyd%nolay
+            hyd%num_layers              = domain_hyd%num_layers
+            allocate(hyd%waq_layers(hyd%num_layers))
+            do ilay = 1 , hyd%num_layers
                hyd%waq_layers(ilay) = domain_hyd%waq_layers(ilay)
             enddo
 
@@ -110,17 +111,17 @@
 
          ! fill in the domain specifics in the overall hyd
 
-         hyd%domain_coll%domain_pnts(i_domain)%mmax = domain_hyd%mmax
-         hyd%domain_coll%domain_pnts(i_domain)%nmax = domain_hyd%nmax
+         hyd%domain_coll%domain_pnts(i_domain)%num_columns = domain_hyd%num_columns
+         hyd%domain_coll%domain_pnts(i_domain)%num_rows = domain_hyd%num_rows
          hyd%domain_coll%domain_pnts(i_domain)%aggr = domain_hyd%file_dwq%name
 
          ! waste loads
 
-         do iwaste = 1, domain_hyd%wasteload_coll%cursize
+         do iwaste = 1, domain_hyd%wasteload_coll%current_size
             wasteload   = domain_hyd%wasteload_coll%wasteload_pnts(iwaste)
             wasteload%m = wasteload%m + moffset
             wasteload%n = wasteload%n + noffset
-            i_wasteload = wasteload_coll_add(hyd%wasteload_coll, wasteload)
+            i_wasteload = hyd%wasteload_coll%add(wasteload)
          enddo
 
 
@@ -128,18 +129,19 @@
          if ( .not. domain_hyd%tem_present ) hyd%tem_present = .false.
          if ( .not. domain_hyd%tau_present ) hyd%tau_present = .false.
          if ( .not. domain_hyd%vdf_present ) hyd%vdf_present = .false.
+         if ( .not. domain_hyd%vel_present ) hyd%vdf_present = .false.
 
          if ( n_mode ) then
             if ( parallel ) then
-               noffset = noffset + domain_hyd%nmax - 6
+               noffset = noffset + domain_hyd%num_rows - 6
             else
-               noffset = noffset + domain_hyd%nmax
+               noffset = noffset + domain_hyd%num_rows
             endif
          else
             if ( parallel ) then
-               moffset = moffset + domain_hyd%mmax - 6
+               moffset = moffset + domain_hyd%num_columns - 6
             else
-               moffset = moffset + domain_hyd%mmax
+               moffset = moffset + domain_hyd%num_columns
             endif
          endif
 

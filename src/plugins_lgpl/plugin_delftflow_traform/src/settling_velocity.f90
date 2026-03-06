@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -78,7 +78,6 @@ subroutine core_function()
 !
 ! Local variables for input parameters
 !
-integer            :: i
 integer            :: k
 integer            :: l
 integer            :: m
@@ -146,7 +145,7 @@ vicmol  = dll_reals(17)    ! molecular viscosity of water [m2/s]
 h       = dll_reals(18)    ! water depth [m]
 um      = dll_reals(19)    ! m component of effective depth-averaged velocity [m/s]
 vm      = dll_reals(20)    ! n component of effective depth-averaged velocity [m/s]
-chezy   = dll_reals(21)    ! local Chézy value [m1/2/s]
+chezy   = dll_reals(21)    ! local ChÃ©zy value [m1/2/s]
 !
 if (max_strings < 2) then
    error_message = 'Insufficient strings provided by delftflow'

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,9 +28,9 @@ module m_phcarb
 contains
 
 
-    subroutine phcarb  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine phcarb  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Integrated calculation of pH and CO2 system
 
@@ -90,19 +90,19 @@ contains
 
         !     Modules called : -
         !
-        use m_monsys
+        use m_logger_helper
         USE MOD_CHEMCONST
         USE MOD_ACBW_PHSOLVERS
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        use physicalconsts, only : celsius_to_kelvin
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
         DOUBLE PRECISION AHPLUSD, P_VAL
 
         INTEGER(kind = int_wp) :: ILUMON
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, ISEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, ISEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14
 
@@ -120,7 +120,6 @@ contains
         REAL(kind = real_wp), PARAMETER :: CM3TOM3 = 1.0E-6
         REAL(kind = real_wp), PARAMETER :: ATMTOMICROATM = 1.0E+6
         REAL(kind = real_wp), PARAMETER :: ATMTOPA = 101325.0
-        REAL(kind = real_wp), PARAMETER :: KELVIN = real(CtoKelvin)
         REAL(kind = real_wp), PARAMETER :: R = 8.314
 
         REAL(kind = real_wp) :: SAL, TEMP, TIC, ALKA, PH_MIN, PH_MAX
@@ -154,7 +153,7 @@ contains
         !
         !     Loop over de segmenten
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
             !     Eerste kenmerk actief of inactief segment
             !
@@ -162,17 +161,17 @@ contains
             !
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                !     Map PMSA on local variables
+                !     Map process_space_real on local variables
                 !
-                SAL = PMSA(IP1)
-                TIC = PMSA(IP2)
-                ALKA = PMSA(IP3)
-                TEMP = PMSA(IP4)
-                PH_MIN = PMSA(IP5)
-                PH_MAX = PMSA(IP6)
+                SAL = process_space_real(IP1)
+                TIC = process_space_real(IP2)
+                ALKA = process_space_real(IP3)
+                TEMP = process_space_real(IP4)
+                PH_MIN = process_space_real(IP5)
+                PH_MAX = process_space_real(IP6)
 
                 !     Try to get the old value, this is a good initial value for our solvers.
-                PH_OLD = PMSA(IP7)
+                PH_OLD = process_space_real(IP7)
                 !     Because the value might not exist, if it is outside the range start neutral with pH = 7.0
                 IF (PH_OLD<PH_MIN .OR. PH_OLD>PH_MAX) THEN
                     PH_OLD = 7.0e0
@@ -181,7 +180,7 @@ contains
                 !     Error messages
 
                 IF (TIC < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NR_MES < 10) THEN
                         NR_MES = NR_MES + 1
                         WRITE (ILUMON, *) 'WARNING :total carbonate <= 0', &
@@ -195,7 +194,7 @@ contains
                     TIC = 1E-30
                 ENDIF
                 IF (SAL < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES2 < 10) THEN
                         NRMES2 = NRMES2 + 1
                         WRITE (ILUMON, *) 'WARNING :salinity <= 0', &
@@ -209,7 +208,7 @@ contains
                     SAL = 1E-30
                 ENDIF
                 IF (SAL > 50.) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES4 < 10) THEN
                         NRMES4 = NRMES4 + 1
                         WRITE (ILUMON, *) 'WARNING :salinity => 50.', &
@@ -223,7 +222,7 @@ contains
                     SAL = 50.
                 ENDIF
                 IF (ALKA < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES3 < 10) THEN
                         NRMES3 = NRMES3 + 1
                         WRITE (ILUMON, *) 'WARNING: alkalinity <= 0', &
@@ -236,7 +235,7 @@ contains
                     ENDIF
                     ALKA = 1E-30
                 ENDIF
-                IF (TEMP <= -KELVIN) THEN
+                IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) THEN
                     WRITE (ILUMON, *) ' WARNING: Temperature drops below 0 Kelvin', &
                             ' segment=', ISEG, ' Temp set to 15 oC (288.15 K)'
                     TEMP = 15.0E0
@@ -245,7 +244,7 @@ contains
                 !---- Process formulation ---------------------------------------
                 ! ********************************
                 ! Dissociation constants depending on temperature and salinity
-                TEMPK = TEMP + KELVIN
+                TEMPK = celsius_to_kelvin(TEMP)
 
                 ! Dissociation constant of water. DOE (1994), Zeebe and Wolf-Gladrow (2001). Total pH scale. [mol^2/kg^2 solution]
                 LNKW = 148.96502 - 13847.26 / TEMPK - 23.6521 * log(TEMPK) + &
@@ -360,13 +359,13 @@ contains
                 ! Set temperature and salinity
                 CALL SETUP_API4PHTOT(DBLE(TEMPK), DBLE(SAL), 1.0D0)
                 ! First try the fast poly solver
-                AHPLUS = SNGL(SOLVE_ACBW_POLYFAST(DBLE(ALK), DBLE(TICM), DBLE(BT)))
+                AHPLUS = real(SOLVE_ACBW_POLYFAST(DBLE(ALK), DBLE(TICM), DBLE(BT)))
                 IF (AHPLUS < 0.0d0) THEN
                     ! If not succesfull try the normal poly solver
-                    AHPLUS = SNGL(SOLVE_ACBW_POLY(DBLE(ALK), DBLE(TICM), DBLE(BT)))
+                    AHPLUS = real(SOLVE_ACBW_POLY(DBLE(ALK), DBLE(TICM), DBLE(BT)))
                     IF (AHPLUS < 0.0d0) THEN
                         ! If still not succesfull use the robust solver
-                        AHPLUS = SNGL(SOLVE_ACBW_GENERAL(DBLE(ALK), DBLE(TICM), DBLE(BT)))
+                        AHPLUS = real(SOLVE_ACBW_GENERAL(DBLE(ALK), DBLE(TICM), DBLE(BT)))
                     ENDIF
                 ENDIF
                 PH = -LOG10(AHPLUS)
@@ -420,14 +419,14 @@ contains
                 !
                 !---- Output --------------------
                 !
-                PMSA(IP7) = PH
-                PMSA(IP8) = CO2
-                PMSA(IP9) = pCO2water
-                PMSA(IP10) = HCO3
-                PMSA(IP11) = CO3
-                PMSA(IP12) = Satcal
-                PMSA(IP13) = Satarg
-                PMSA(IP14) = BOH4
+                process_space_real(IP7) = PH
+                process_space_real(IP8) = CO2
+                process_space_real(IP9) = pCO2water
+                process_space_real(IP10) = HCO3
+                process_space_real(IP11) = CO3
+                process_space_real(IP12) = Satcal
+                process_space_real(IP13) = Satarg
+                process_space_real(IP14) = BOH4
                 !
             ENDIF
             !

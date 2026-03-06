@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,9 +28,9 @@ module m_vervlu
 contains
 
 
-    subroutine vervlu (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine vervlu (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Atmospheric exchange OMPs (volatilization/intake)
 
@@ -40,7 +40,7 @@ contains
         ! Name    T   L I/O   Description                                    Uni
         ! ----    --- -  -    -------------------                             --
         ! ATMC    R*4 1 I  Concentration OMV in atmosphere                [g.m3]
-        ! CONC    R*4 1 I  Total concentration OMV in water               [g.m3]
+        ! CONC    R*4 1 I  Concentration dissolved OMV in water           [g.m3]
         ! C1      R*4 1 I  Constant in temperature dependance of Henrys
         !                  value represents delta S0 (entropy) / R           [-]
         ! C2      R*4 1 L  Constant in temperature dependence of Henrys
@@ -56,7 +56,6 @@ contains
         ! KL      R*4 1 I  Mass transport coefficient liquid phase         [m/d]
         ! KG      R*4 1 I  Mass transport coefficient gas phase            [m/d]
         ! KV      R*4 1 O  volatilization rate constant                    [m/d]
-        ! KELVIN  R*4 1 LC absolute temperature reference                    [-]
         ! NG      R*4 1 L  amount moles in 1m3 gas                     [mole/m3]
         ! NL      R*4 1 LC amount moles in 1m3 water                   [mole/m3]
         ! P       R*4 1 LC atmospheric pressure                             [Pa]
@@ -71,23 +70,22 @@ contains
 
         !     Name     Type   Library
         !     ------   -----  ------------
-        use m_write_error_message
-        use m_evaluate_waq_attribute
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        use m_logger_helper
+        use m_extract_waq_attribute
+        use physicalconsts, only : celsius_to_kelvin
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations, constants in source
         !
-        PARAMETER (E = 2.718, &
-                KELVIN = real(CtoKelvin), &
+        REAL(kind = real_wp), PARAMETER :: E = 2.718, &
                 NL = 55510., &
                 P = 1.01E+5, &
-                R = 8.314)
+                R = 8.314
         !
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -102,29 +100,29 @@ contains
         IP11 = IPOINT(11)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
                     !
                     !
-                    !     Map PMSA on local variables
+                    !     Map process_space_real on local variables
                     !
-                    CONC = MAX (0.0, PMSA(IP1))
-                    ATMC = PMSA(IP2)
-                    KL = PMSA(IP3)
-                    KG = PMSA(IP4)
-                    H0TREF = PMSA(IP5)
-                    TREF = PMSA(IP6)
-                    C1 = PMSA(IP7)
-                    TEMP = PMSA(IP8)
-                    DEPTH = PMSA(IP9)
+                    CONC = MAX (0.0, process_space_real(IP1))
+                    ATMC = process_space_real(IP2)
+                    KL = process_space_real(IP3)
+                    KG = process_space_real(IP4)
+                    H0TREF = process_space_real(IP5)
+                    TREF = process_space_real(IP6)
+                    C1 = process_space_real(IP7)
+                    TEMP = process_space_real(IP8)
+                    DEPTH = process_space_real(IP9)
                     !
                     !
                     !     Error messages
                     IF (H0TREF < 1E-30)  CALL write_error_message ('H0TREF in VERVLU =<0')
-                    IF (TEMP <= -KELVIN) CALL &
+                    IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) CALL &
                             write_error_message ('TEMP in VERVLU < 0 DEG KELVIN')
                     IF (KL < 1E-30) CALL write_error_message ('KL in VERVLU zero')
                     IF (KG < 1E-30) CALL write_error_message ('KG in VERVLU zero')
@@ -132,11 +130,11 @@ contains
                     !     Calculation of temperarure dependence of Henry
                     H2TREF = H0TREF * NL / P
                     !
-                    C2 = (KELVIN + TREF) * (LOG(H2TREF) - C1)
+                    C2 = celsius_to_kelvin(TREF) * (LOG(H2TREF) - C1)
                     !
-                    NG = P / (R * (KELVIN + TEMP))
+                    NG = P / (R * celsius_to_kelvin(TEMP))
                     !
-                    H1TEMP = NG / NL * E**(C2 / (KELVIN + TEMP) + C1)
+                    H1TEMP = NG / NL * E**(C2 / celsius_to_kelvin(TEMP) + C1)
                     !
                     !     Calculation of volatilization rate constant
                     !
@@ -147,8 +145,8 @@ contains
                     FL (1 + IFLUX) = (CONC - ATMC / H1TEMP) * KV / DEPTH
                     !
                     !     Output
-                    PMSA(IP10) = KV
-                    PMSA(IP11) = H1TEMP
+                    process_space_real(IP10) = KV
+                    process_space_real(IP11) = H1TEMP
                     !
                 ENDIF
             ENDIF

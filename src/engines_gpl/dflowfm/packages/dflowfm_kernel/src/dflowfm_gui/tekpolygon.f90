@@ -1,165 +1,190 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-   subroutine tekpolygon()
-   use m_polygon
-   use unstruc_display
-   use m_missing
+module m_tekpolygon
+   use m_sincosdis, only: sincosdis
 
    implicit none
 
-   integer           :: k,ncol,kk, key,k2
-   double precision  :: a,b,f,x,y,z,s,c,d,dx,dy,dz,dc,dl,dr,ds,dxL,dyL,dxR,dyR,sL,sR, dcxR, dcyR, dcxL, dcyL
-   logical inview
+contains
 
-   if (ndrawpol == 2) then
+   subroutine tekpolygon()
+      use precision, only: dp
+      use m_rcirc
+      use m_polygon
+      use unstruc_display
+      use m_missing, only: dmiss
+      use m_halt2
+      use m_htext
+      use m_disp2c
+      use m_isoline
+      use m_set_col
+      use m_inview
 
-      CALL DISP2C(XPL, YPL, NPL, RCIR, NCOLPL)
+      implicit none
 
-   else if (ndrawpol == 3) then
+      integer :: k, kk, key, k2
+      real(kind=dp) :: a, b, x, y, z, s, c, d, dx, dy, dc, dl, dr, dxL, dyL, dxR, dyR, sL, sR, dcxR, dcyR, dcxL, dcyL
 
-      CALL DISP2C(XPL, YPL, NPL, 0d0, NCOLPL)
+      if (ndrawpol == 2) then
 
-   else if (ndrawpol == 4) then
+         call DISP2C(XPL, YPL, NPL, RCIR, NCOLPL)
 
-      do k = 1,npl-1
-         if (zpl(k) .ne. dmiss .and. zpl(k+1) .ne. dmiss) then
-            call isoline( xpl(k), ypl(k), zpl(k), xpl(k+1), ypl(k+1), zpl(k+1) )
-            endif
-      enddo
+      else if (ndrawpol == 3) then
 
-   else if (ndrawpol >= 5 .and. ndrawpol <= 10) then
+         call DISP2C(XPL, YPL, NPL, 0.0_dp, NCOLPL)
 
-      CALL DISP2C(XPL, YPL, NPL, 0d0, NCOLPL)
-      CALL SETCOL(NCOLBLACK)
-      do k = 1,npl
-         if ( inview(xpl(k), ypl(k) ) ) then
-            if ( ndrawpol == 5) then
-               call HTEXT(Zpl(k),Xpl(k),Ypl(k))
-            else if ( ndrawpol == 6 .and. jakol45 > 0) then
-               call HTEXT(dcrest(k),Xpl(k),Ypl(k))
-            else if ( ndrawpol == 7 .and. jakol45 > 0) then
-               call HTEXT(dzL(k),Xpl(k),Ypl(k))
-            else if ( ndrawpol == 8 .and. jakol45 > 0) then
-               call HTEXT(dzr(k),Xpl(k),Ypl(k))
-            else if ( ndrawpol == 9 .and. jakol45 > 0) then
-               call HTEXT(dtL(k),Xpl(k),Ypl(k))
-            else if ( ndrawpol == 10 .and. jakol45 > 0) then
-               call HTEXT(dtR(k),Xpl(k),Ypl(k))
+      else if (ndrawpol == 4) then
 
-            endif
-         endif
-      enddo
+         do k = 1, npl - 1
+            if (zpl(k) /= dmiss .and. zpl(k + 1) /= dmiss) then
+               call isoline(xpl(k), ypl(k), zpl(k), xpl(k + 1), ypl(k + 1), zpl(k + 1))
+            end if
+         end do
 
-     else if (ndrawpol == 11 .and. jakol45 > 0) then
+      else if (ndrawpol >= 5 .and. ndrawpol <= 10) then
 
-      do k = 1,npl-1
+         call DISP2C(XPL, YPL, NPL, 0.0_dp, NCOLPL)
+         call SETCOL(NCOLBLACK)
+         do k = 1, npl
+            if (inview(xpl(k), ypl(k))) then
+               if (ndrawpol == 5) then
+                  call HTEXT(Zpl(k), Xpl(k), Ypl(k))
+               else if (ndrawpol == 6 .and. jakol45 > 0) then
+                  call HTEXT(dcrest(k), Xpl(k), Ypl(k))
+               else if (ndrawpol == 7 .and. jakol45 > 0) then
+                  call HTEXT(dzL(k), Xpl(k), Ypl(k))
+               else if (ndrawpol == 8 .and. jakol45 > 0) then
+                  call HTEXT(dzr(k), Xpl(k), Ypl(k))
+               else if (ndrawpol == 9 .and. jakol45 > 0) then
+                  call HTEXT(dtL(k), Xpl(k), Ypl(k))
+               else if (ndrawpol == 10 .and. jakol45 > 0) then
+                  call HTEXT(dtR(k), Xpl(k), Ypl(k))
 
-         IF (MOD(k,100) ==  0) THEN
-             CALL HALT2(KEY)
-             IF (KEY .EQ. 1) RETURN
-         ENDIF
+               end if
+            end if
+         end do
 
-         if (xpl(k) .ne. dmiss .and. xpl(k+1) .ne. dmiss ) then
-            if ( inview( xpl(k), ypl(k) ) .or. inview ( xpl(k+1), ypl(k+1) )  ) then
-               call isoline( xpl(k), ypl(k), zpl(k), xpl(k+1), ypl(k+1), zpl(k+1) )
+      else if (ndrawpol == 11 .and. jakol45 > 0) then
 
-               call sincosdis (xpl(k), ypl(k), xpl(k+1), ypl(k+1), s, c, d)
+         do k = 1, npl - 1
 
-               dy = rcir*c
-               dx = -rcir*s
+            if (mod(k, 100) == 0) then
+               call HALT2(KEY)
+               if (KEY == 1) then
+                  return
+               end if
+            end if
 
-               k2 = max(2, int (d /(3d0*rcir)) )
-               do kk = 1, k2
-                  a  = 1d0 - dble(kk)/dble(k2)
-                  b = 1d0-a
-                  x  = a*xpl(k) + b*xpl(k+1)
-                  y  = a*ypl(k) + b*ypl(k+1)
-                  z  = a*zpl(k) + b*zpl(k+1)
+            if (xpl(k) /= dmiss .and. xpl(k + 1) /= dmiss) then
+               if (inview(xpl(k), ypl(k)) .or. inview(xpl(k + 1), ypl(k + 1))) then
+                  call isoline(xpl(k), ypl(k), zpl(k), xpl(k + 1), ypl(k + 1), zpl(k + 1))
 
-                  dc = a*dcrest(k) + b*dcrest(k+1) ; dc = 0.5d0*dc ! crest width
-                  dy =  dc*c ; dcyR = dy ; dcyL = dy
-                  dx = -dc*s ; dcxR = dx ; dcxL = dx
+                  call sincosdis(xpl(k), ypl(k), xpl(k + 1), ypl(k + 1), s, c, d)
 
-                  dL = a*dzL(k) + b*dzL(k+1)  ! step left
-                  dR = a*dzR(k) + b*dzR(k+1)  ! step right
+                  dy = rcir * c
+                  dx = -rcir * s
 
-                  sL = a*dtL(k) + b*dtL(k+1)  ! slope left
-                  sR = a*dtR(k) + b*dtR(k+1)  ! slope right
+                  k2 = max(2, int(d / (3.0_dp * rcir)))
+                  do kk = 1, k2
+                     a = 1.0_dp - real(kk, kind=dp) / real(k2, kind=dp)
+                     b = 1.0_dp - a
+                     x = a * xpl(k) + b * xpl(k + 1)
+                     y = a * ypl(k) + b * ypl(k + 1)
+                     z = a * zpl(k) + b * zpl(k + 1)
 
-                  if (dL > 0d0 .and. dR == 0d0) then ! baseline is probably wrong with slope, set 1 instead of 10
-                     sL = 1d0 ; dcxL = 0 ; dcyL = 0d0
-                  endif
+                     dc = a * dcrest(k) + b * dcrest(k + 1)
+                     dc = 0.5_dp * dc ! crest width
+                     dy = dc * c
+                     dcyR = dy
+                     dcyL = dy
+                     dx = -dc * s
+                     dcxR = dx
+                     dcxL = dx
 
-                 if (dR > 0d0 .and. dL == 0d0) then ! baseline is probably wrong with slope, set 1 instead of 10
-                     sR = 1d0 ; dcxR = 0 ; dcyR = 0d0
-                  endif
+                     dL = a * dzL(k) + b * dzL(k + 1) ! step left
+                     dR = a * dzR(k) + b * dzR(k + 1) ! step right
 
+                     sL = a * dtL(k) + b * dtL(k + 1) ! slope left
+                     sR = a * dtR(k) + b * dtR(k + 1) ! slope right
 
-                  dc  = dR*sR
-                  dyR =  dc*c
-                  dxR = -dc*s
-                  call isoline( x-dcxR, y-dcyR, z, x         , y         , z   ) ! half crest width to right
-                  if (dR == 0d0) then
-                      call rcirc(x-dcxR, y-dcyR)
-                  else
-                      call isoline( x-dcxR, y-dcyR, z, x-dcxR-dxR, y-dcyR-dyR, z-dR) ! slope to right
-                  endif
+                     if (dL > 0.0_dp .and. dR == 0.0_dp) then ! baseline is probably wrong with slope, set 1 instead of 10
+                        sL = 1.0_dp
+                        dcxL = 0
+                        dcyL = 0.0_dp
+                     end if
 
-                  dc  = dL*sL
-                  dyL =  dc*c
-                  dxL = -dc*s
-                  call isoline( x+dcxL, y+dcyL, z, x         , y         , z   ) ! half crest width to left
-                  if (dL == 0d0) then
-                      call rcirc(x+dcxL, y+dcyL)
-                  else
-                      call isoline( x+dcxL, y+dcyL, z, x+dcxL+dxL, y+dcyL+dyL, z-dL)
-                  endif
+                     if (dR > 0.0_dp .and. dL == 0.0_dp) then ! baseline is probably wrong with slope, set 1 instead of 10
+                        sR = 1.0_dp
+                        dcxR = 0
+                        dcyR = 0.0_dp
+                     end if
 
-               enddo
-            endif
-         endif
-      enddo
+                     dc = dR * sR
+                     dyR = dc * c
+                     dxR = -dc * s
+                     call isoline(x - dcxR, y - dcyR, z, x, y, z) ! half crest width to right
+                     if (dR == 0.0_dp) then
+                        call rcirc(x - dcxR, y - dcyR)
+                     else
+                        call isoline(x - dcxR, y - dcyR, z, x - dcxR - dxR, y - dcyR - dyR, z - dR) ! slope to right
+                     end if
 
+                     dc = dL * sL
+                     dyL = dc * c
+                     dxL = -dc * s
+                     call isoline(x + dcxL, y + dcyL, z, x, y, z) ! half crest width to left
+                     if (dL == 0.0_dp) then
+                        call rcirc(x + dcxL, y + dcyL)
+                     else
+                        call isoline(x + dcxL, y + dcyL, z, x + dcxL + dxL, y + dcyL + dyL, z - dL)
+                     end if
 
-    else if ( ndrawpol == 12 ) then
+                  end do
+               end if
+            end if
+         end do
 
-         CALL DISP2C(XPL, YPL, NPL, RCIR, NCOLPL)
-         do k = 1,npl
-            if ( inview(xpl(k), ypl(k) ) ) then
-               call HTEXT(dble(k),Xpl(k),Ypl(k))
-            endif
-         enddo
-         call hTEXT(dble(k),Xpl(k),Ypl(k))
+      else if (ndrawpol == 12) then
 
-   endif
+         call DISP2C(XPL, YPL, NPL, RCIR, NCOLPL)
+         do k = 1, npl
+            if (inview(xpl(k), ypl(k))) then
+               call HTEXT(real(k, kind=dp), Xpl(k), Ypl(k))
+            end if
+         end do
+         call hTEXT(real(k, kind=dp), Xpl(k), Ypl(k))
+
+      end if
    end subroutine tekpolygon
+
+end module m_tekpolygon

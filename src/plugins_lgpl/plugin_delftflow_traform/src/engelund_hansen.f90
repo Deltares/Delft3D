@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -93,7 +93,6 @@ subroutine core_function()
 !
 ! Local variables for input parameters
 !
-integer            :: i
 integer            :: l
 integer            :: m
 integer            :: n, nm
@@ -144,7 +143,7 @@ vvv     = dll_reals( 6)    ! n component of characteristic velocity [m/s]
 umod    = dll_reals( 7)    ! magnitude of characteristic velocity [m/s]
 zumod   = dll_reals( 8)    ! height above bed of characteristic velocity [m]
 h       = dll_reals( 9)    ! water depth [m]
-chezy   = dll_reals(10)    ! local Chézy value [m1/2/s]
+chezy   = dll_reals(10)    ! local ChÃ©zy value [m1/2/s]
 hrms    = dll_reals(11)    ! wave height [m]
 tp      = dll_reals(12)    ! wave period [s]
 teta    = dll_reals(13)    ! angle between wave dir and local grid orientation [deg]

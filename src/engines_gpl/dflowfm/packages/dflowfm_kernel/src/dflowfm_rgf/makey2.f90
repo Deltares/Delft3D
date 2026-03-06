@@ -1,57 +1,68 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE MAKEY2(XR,YR,XO,YO,MMAX,NMAX)  ! Voor tekenen bij JSFERIC SUBROUTINE MAKEY2
-      USE M_SFERIC
-      USE M_MISSING
-      implicit none
-      DOUBLE PRECISION :: XR(MMAX,NMAX), YR(MMAX,NMAX), &
-                          XO(MMAX,NMAX), YO(MMAX,NMAX), FI2
-      integer :: mmax,nmax
-      integer :: i,j
+module m_makey2
 
+   implicit none
 
+   private
 
-      DO I = 1,MMAX
-         DO J = 1,NMAX
-            IF (XR(I,J) .NE. XYMIS) THEN
-               FI2     = ATAN(SINH(YR(I,J) ) )
-               YO(I,J) = RD2DG*FI2
-               XO(I,J) = RD2DG*XR(I,J)
-            ELSE
-               XO(I,J) = XYMIS
-               YO(I,J) = XYMIS
-            ENDIF
-         ENDDO
-      ENDDO
-      RETURN
-      END SUBROUTINE MAKEY2
+   public :: makey2
+
+contains
+
+   subroutine MAKEY2(XR, YR, XO, YO, MMAX, NMAX) ! Voor tekenen bij JSFERIC SUBROUTINE MAKEY2
+      use precision, only: dp
+      use M_SFERIC, only: rd2dg
+      use M_MISSING, only: xymis
+
+      integer :: mmax, nmax
+      real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
+                       XO(MMAX, NMAX), YO(MMAX, NMAX), FI2
+      integer :: i, j
+
+      do I = 1, MMAX
+         do J = 1, NMAX
+            if (XR(I, J) /= XYMIS) then
+               FI2 = atan(sinh(YR(I, J)))
+               YO(I, J) = RD2DG * FI2
+               XO(I, J) = RD2DG * XR(I, J)
+            else
+               XO(I, J) = XYMIS
+               YO(I, J) = XYMIS
+            end if
+         end do
+      end do
+      return
+   end subroutine MAKEY2
+
+end module m_makey2

@@ -23,10 +23,6 @@ set(waqmerge_module ${tools_gpl_path}/waq_tools/waqmerge)
 # Ddcouple
 set(ddcouple_module ${tools_gpl_path}/waq_tools/ddcouple)
 
-
-# Duprol2delwaq
-set(duprol2delwaq_module ${tools_gpl_path}/duprol2delwaq/packages/parse)
-
 # Datsel
 set(datsel_module_path "${tools_gpl_path}/datsel/packages")
 set(datsel_version_number_module ${datsel_module_path}/datsel_version_number)
@@ -60,7 +56,16 @@ set(agrhyd_module ${tools_gpl_path}/waq_tools/agrhyd)
 set(maptonetcdf_module ${tools_gpl_path}/waq_tools/maptonetcdf)
 
 # Calcage
-set(calcage_module ${tools_gpl_path}/waq_tools/calcage)
+set(calcage_module ${tools_gpl_path}/waq_tools/internal/calcage)
+
+# Checkhydbal
+set(checkhydbal_module ${tools_gpl_path}/waq_tools/internal/checkhydbal)
 
 # cosumo_bmi
 set(cosumo_bmi_module "${tools_gpl_path}/cosumo_bmi")
+
+# csumo_nfio
+set(csumo_nfio_module "${tools_gpl_path}/csumo_nfio")
+
+# csumo_precice
+set(csumo_precice_module "${tools_gpl_path}/csumo_precice")

@@ -49,7 +49,6 @@
         implicit none 
         integer(kind=8)             ::      fptr 
         character(len=*),intent(in) ::      fname 
-        integer(kind=4)             :: ret_val
         integer(kind=8)             :: CUTIL_MF_OPEN
         logical :: exist
 

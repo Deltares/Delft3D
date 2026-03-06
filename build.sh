@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # ================
 # === Usage    ===
 # ================
@@ -18,14 +17,14 @@ function print_usage_info {
     echo
     echo "<CONFIG>:"
     echo "- If <CONFIG> is missing, this usage will be print"
-    echo "- all: All CMaked projects, currently D-Flow FM, DWAQ and DIMR"
-    echo "- dflowfm"
+    echo "- all: All CMaked products that are in fm-suite and d3d4-suite combined"
+    echo "- fm-suite"
+    echo "- d3d4-suite"
     echo "- dwaq"
     echo "- dwaves"
     echo "- dimr"
     echo "- tests"
     echo "- swan"
-    echo "- delft3d4"
     echo "- flow2d3d"
     echo
     echo "Options:"
@@ -36,7 +35,7 @@ function print_usage_info {
     echo "      Compile in debug mode"
     echo
     echo "More info  : https://oss.deltares.nl/web/delft3d/source-code"
-    echo "About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/README"
+    echo "About CMake: https://github.com/Deltares/Delft3D/tree/main/src/cmake/README"
     echo
     exit 1
 }

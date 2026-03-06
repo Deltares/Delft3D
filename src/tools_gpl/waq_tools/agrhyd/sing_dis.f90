@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -29,12 +29,12 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
 
       ! local declarations
 
@@ -45,7 +45,7 @@
 
       ! some init
 
-      nowast = hyd%wasteload_coll%cursize
+      nowast = hyd%wasteload_coll%current_size
       if ( nowast .le. 0 ) return
 
       ! loop over the wasteloads

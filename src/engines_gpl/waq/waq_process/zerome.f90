@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -29,18 +29,17 @@ contains
 
 
     SUBROUTINE ZEROME (NAME)
-        use m_srstop
-        use m_monsys
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
-        CHARACTER*(*) NAME
+        character(len=*) NAME
         INTEGER(kind = int_wp) :: LUNREP
 
-        CALL GETMLU(LUNREP)
+        CALL get_log_unit_number(LUNREP)
         WRITE (LUNREP, *) ' Coefficient ', NAME, ' = 0'
         WRITE (LUNREP, *) ' Please supply value not equal to zero'
         WRITE (*, *) ' Coefficient ', NAME, ' = 0'
         WRITE (*, *) ' Please supply value not equal to zero'
-        CALL SRSTOP(1)
+        CALL stop_with_error()
         RETURN
     END
 

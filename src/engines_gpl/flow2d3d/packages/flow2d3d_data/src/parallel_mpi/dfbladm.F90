@@ -1,7 +1,7 @@
 subroutine dfbladm(ipown, icom, mmax, nmax, runid, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -120,7 +120,6 @@ subroutine dfbladm(ipown, icom, mmax, nmax, runid, gdp)
     integer                              :: m              ! current M-index of point in computational row
     integer                              :: moff           ! offset in x-direction
     integer                              :: n              ! current N-index of point in computational column
-    integer,external                     :: newlun
     integer                              :: nneigh         ! number of neighbouring subdomains
     integer                              :: noff           ! offset in y-direction
     integer                              :: novlu          ! number of overlapping unknowns
@@ -202,7 +201,7 @@ subroutine dfbladm(ipown, icom, mmax, nmax, runid, gdp)
                 ! The index of the boundary to be coupled is the last non-halo index:
                 ! nlg               for partition 1
                 ! nlg-(nfg-1)+halo  for the other partitions:
-                !                   the lines 1 to “nfg-1” are not active in this partition, the model will be shifted
+                !                   the lines 1 to nfg-1 are not active in this partition, the model will be shifted
                 !                   take into account that a halo will be added in front
                 !
                 if (i == 1) then

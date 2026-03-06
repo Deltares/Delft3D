@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+
+    <!-- general setup -->
+    <xi:include href="../include/configuration.xml"/>
+    <xi:include href="../include/programs_lnx64.xml"/>
+    <xi:include href="../include/default_testcases.xml"/>
+
+    <!-- testCases -->
+    <xi:include href="../include/test_configs/dwaq.xml"/>
+</deltaresTestbench_v3>

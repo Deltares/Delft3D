@@ -1,14 +1,13 @@
-"""
-Description: Enum for runner mode
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Enum for runner mode.
+
+Copyright (C)  Stichting Deltares, 2026
 """
 
 from enum import Enum
 
 
 class ModeType(Enum):
-    """Enum for run mode"""
+    """Enum for run mode."""
 
     REFERENCE = 1
     COMPARE = 2

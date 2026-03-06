@@ -5,7 +5,7 @@ subroutine findnmk(nlb    ,nub    ,mlb    ,mub    ,xz     , &
                  & zmodel ,in_col ,gdp    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -145,7 +145,7 @@ subroutine findnmk(nlb    ,nub    ,mlb    ,mub    ,xz     , &
        enddo
        if (k_jet == 0) k_jet = kfsmn0(n_jet,m_jet)
     endif
-    if (z_jet > real(dps(n_jet,m_jet),fp)+s1(n_jet,m_jet)) then
+    if (z_jet > real(dps(n_jet,m_jet),fp)) then
        in_col = .false.
     endif
 end subroutine findnmk

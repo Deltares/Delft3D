@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -124,6 +124,7 @@
 #   define PUT_REAL_ATTRIBUTE      FC_FUNC(putrat,PUTRAT)
 #   define PUT_STRING_ATTRIBUTE    FC_FUNC(putsat,PUTSAT)
 #   define RESET_FILE_VERSION      FC_FUNC(resnfv,RESNFV)
+#   define RESET_ERROR_COUNT       FC_FUNC(reserr,RESERR)
 #else
 /* WIN32 or WIN64 */
 #if defined(STDCALL)
@@ -180,6 +181,7 @@
 #   define PUT_REAL_ATTRIBUTE      PUTRAT
 #   define PUT_STRING_ATTRIBUTE    PUTSAT
 #   define RESET_FILE_VERSION      RESNFV
+#   define RESET_ERROR_COUNT       RESERR
 #endif
 
 
@@ -1408,7 +1410,7 @@ DLLEXPORT BInt4 FTN_CALL INQUIRE_FIRST_ELEMENT( BInt4 * fd                 ,/* I
   BChar   elm_unity   [MAX_NAME+1];
   BChar   elm_desc    [MAX_DESC+1];
   BInt4   elm_dimens  [MAX_DIM]   ;
-  BInt4   elm_num_bytes = 0       ;
+  BUInt8  elm_num_bytes = 0       ;
   BInt4   elm_num_dim   = 0       ;
   BInt4   i       ;
 
@@ -1547,7 +1549,7 @@ DLLEXPORT BInt4 FTN_CALL INQUIRE_NEXT_ELEMENT ( BInt4 * fd                 ,/* I
   BChar   elm_unity   [MAX_NAME+1];
   BChar   elm_desc    [MAX_DESC+1];
   BInt4   elm_dimens  [MAX_DIM]   ;
-  BInt4   elm_num_bytes = 0       ;
+  BUInt8   elm_num_bytes = 0       ;
   BInt4   elm_num_dim   = 0       ;
   BInt4   i       ;
 
@@ -3003,5 +3005,13 @@ DLLEXPORT BInt4 FTN_CALL RESET_FILE_VERSION  ( BInt4 fd, BInt4 file_version)
   nefis_errno = OC_reset_file_version(fd, file_version);
 
   return nefis_errno;
+}
+
+DLLEXPORT BInt4 FTN_CALL RESET_ERROR_COUNT ( )
+{
+    nefis_errno = 0;
+    nefis_errcnt = 0;
+
+    return nefis_errno;
 }
 

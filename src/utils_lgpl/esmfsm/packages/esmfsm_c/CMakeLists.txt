@@ -34,12 +34,11 @@ add_library(${library_name} ${esm_files}
 
 # Set dependencies
 set(oss_dependencies    esmfsm_version_number) 
-oss_include_libraries(${library_name} oss_dependencies)
 
 if(UNIX)
     target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})        
-    target_link_libraries(${library_name} ${oss_dependencies})
 endif(UNIX)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${esm_files}

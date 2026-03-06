@@ -39,7 +39,6 @@
     <!--
     The order is important. Start with the following programs:
         command_prompt
-        svn
         mpi
     -->
     <programs>
@@ -48,9 +47,6 @@
             <arguments>
                 <argument>/C</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="coupsds" logOutputToFile="true" programStringRemoveQuotes="true">
             <shell ref="command_prompt"/>
@@ -88,7 +84,7 @@
     -->
     <testCases>
         <testCase name="e52_f01_c01" ref="coupsds_default">
-            <path>e52_coupsds/f01_general/c01_test_01</path>
+            <path version="2024-01-11T11:10:00">e52_coupsds/f01_general/c01_test_01</path>
             <programs>
                 <program ref="coupsds">
                     <arguments>
@@ -107,7 +103,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e52_f01_c02" ref="coupsds_default">
-            <path>e52_coupsds/f01_general/c02_test_02</path>
+            <path version="2024-01-11T11:10:00">e52_coupsds/f01_general/c02_test_02</path>
             <programs>
                 <program ref="coupsds">
                     <arguments>
@@ -147,7 +143,7 @@
         </testCase>
 		-->
         <testCase name="e52_f01_c04" ref="coupsds_default">
-            <path>e52_coupsds/f01_general/c04_test_04</path>
+            <path version="2024-01-11T11:10:00">e52_coupsds/f01_general/c04_test_04</path>
             <programs>
                 <program ref="coupsds">
                     <arguments>

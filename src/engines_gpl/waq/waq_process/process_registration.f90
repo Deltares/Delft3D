@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,8 +23,7 @@
 
 module process_registration
     use m_waq_precision
-    use m_srstop
-    use m_monsys
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
     use m_protistcm
     use m_propsg
     use m_heteroagg
@@ -56,6 +55,7 @@ module process_registration
     use m_caltau
     use m_d40blo
     use m_consbl
+    use m_averad
     use m_dayrad
     use m_ddepth
     use m_covmac
@@ -63,7 +63,6 @@ module process_registration
     use m_clcrad
     use m_dayl
     use m_debgrz
-    use m_debgrz_protist
     use m_cascad
     use m_denwat
     use m_depave
@@ -141,6 +140,8 @@ module process_registration
     use m_totdep
     use m_sulfox
     use m_stadsc
+    use m_stamea
+    use m_stadev
     use m_specfe
     use m_sedsod
     use m_resant
@@ -189,8 +190,6 @@ module process_registration
     use m_sedaap
     use m_plastc
     use m_s12tim
-    use m_varsal
-    use m_respup
     use m_stox3d
     use m_mpbllm
     use m_sulfpr
@@ -206,6 +205,7 @@ module process_registration
     use m_nlalg
     use m_ssedph
     use m_phcarb
+    use m_protist_mortality_salinity, only : protist_mortality_salinity
 
     implicit none
 
@@ -267,9 +267,9 @@ contains
                             process_routine_info('EMERSI', EMERSI), &
                             process_routine_info('METEO', METEO), &
                             process_routine_info('HEATFL', HEATFL), &
+                            process_routine_info('AVERAD', AVERAD), &
                             process_routine_info('DAYRAD', DAYRAD), &
                             process_routine_info('TEMPER', TEMPER), &
-                            process_routine_info('VARSAL', VARSAL), &
                             process_routine_info('VELOC', VELOC), &
                             process_routine_info('RESTIM', RESTIM), &
                             process_routine_info('STOX3D', STOX3D), &
@@ -381,6 +381,8 @@ contains
                             process_routine_info('STADAY', STADAY), &
                             process_routine_info('STADPT', STADPT), &
                             process_routine_info('STADSC', STADSC), &
+                            process_routine_info('STAMEA', STAMEA), &
+                            process_routine_info('STADEV', STADEV), &
                             process_routine_info('STAGEO', STAGEO), &
                             process_routine_info('STAPRC', STAPRC), &
                             process_routine_info('STAQTL', STAQTL), &
@@ -400,7 +402,6 @@ contains
                             process_routine_info('DEBGRZ', DEBGRZ), &
                             process_routine_info('FLOCEQ', FLOCEQ), &
                             process_routine_info('DREDGE', dredge_process), &
-                            process_routine_info('RESPUP', RESPUP), &
                             process_routine_info('RESBUF', RESBUF), &
                             process_routine_info('SEDIM ', SEDIM), &
                             process_routine_info('S12TIM', S12TIM), &
@@ -441,7 +442,7 @@ contains
                             process_routine_info('PHPROT', PHPROT), &
                             process_routine_info('FLOCSD', FLOCSD), &
                             process_routine_info('AGECAR', AGECART), &
-                            process_routine_info('DEBGRP', DEBGRZ_PROTIST) &
+                            process_routine_info( 'PRTMRT', protist_mortality_salinity) &
                     ]
 
             max_processes = size(process_routine)
@@ -456,10 +457,10 @@ contains
 
     end subroutine pronrs
 
-    subroutine procal (pmsa, imodul, flux, ipoint, increm, &
-            noseg, noflux, iexpnt, iknmrk, noq1, &
-            noq2, noq3, noq4, pronam, pronvr, &
-            prvtyp, iproc, dll_opb)
+    subroutine procal (process_space_real, imodul, flux, ipoint, increm, &
+            num_cells, noflux, iexpnt, iknmrk, num_exchanges_u_dir, &
+            num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, pronam, &
+            iproc, dll_opb)
         !>\file
         !>       Calls the process modules
 
@@ -471,22 +472,20 @@ contains
 
         !     kind           function                 name          description
 
-        real(kind = real_wp), intent(inout) :: pmsa  (*) ! Process module status array
+        real(kind = real_wp), intent(inout) :: process_space_real  (:) ! Process module status array
         integer(kind = int_wp), intent(in) :: imodul      ! Process module number
-        real(kind = real_wp), intent(out) :: flux  (*) ! Process fluxes
-        integer(kind = int_wp), intent(in) :: ipoint(*) ! Pointer to process data
-        integer(kind = int_wp), intent(in) :: increm(*) ! Increment in pointer process data
-        integer(kind = int_wp), intent(in) :: noseg       ! Number of computational volumes
+        real(kind = real_wp), intent(out) :: flux  (:) ! Process fluxes
+        integer(kind = int_wp), intent(in) :: ipoint(:) ! Pointer to process data
+        integer(kind = int_wp), intent(in) :: increm(:) ! Increment in pointer process data
+        integer(kind = int_wp), intent(in) :: num_cells       ! Number of computational volumes
         integer(kind = int_wp), intent(in) :: noflux      ! Number of process fluxes
-        integer(kind = int_wp), intent(in) :: iexpnt(4, *) ! Exchange pointers
-        integer(kind = int_wp), intent(in) :: iknmrk(*) ! Tag array
-        integer(kind = int_wp), intent(in) :: noq1        ! Number of exchanges in first direction
-        integer(kind = int_wp), intent(in) :: noq2        ! Number of exchanges in second direction
-        integer(kind = int_wp), intent(in) :: noq3        ! Number of exchanges in third direction
-        integer(kind = int_wp), intent(in) :: noq4        ! Number of exchanges in the water bed
+        integer(kind = int_wp), intent(in) :: iexpnt(:) ! Exchange pointers
+        integer(kind = int_wp), intent(in) :: iknmrk(:) ! Tag array
+        integer(kind = int_wp), intent(in) :: num_exchanges_u_dir        ! Number of exchanges in first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_v_dir        ! Number of exchanges in second direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_z_dir        ! Number of exchanges in third direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_bottom_dir        ! Number of exchanges in the water bed
         character(10), intent(in) :: pronam      ! Name of this process
-        integer(kind = int_wp), intent(in) :: pronvr      ! Not used
-        integer(kind = int_wp), intent(in) :: prvtyp(*) ! Not used
         integer(kind = int_wp), intent(in) :: iproc       ! Process number
         integer(c_intptr_t), intent(in) :: dll_opb     ! open proces library dll handle
 
@@ -505,17 +504,17 @@ contains
         endif
 
         if (imodul > 0 .and. imodul <= max_processes) then
-            call process_routine(imodul)%procpnt (pmsa, flux, ipoint, increm, noseg, &
-                    noflux, iexpnt, iknmrk, noq1, noq2, &
-                    noq3, noq4)
+            call process_routine(imodul)%procpnt (process_space_real, flux, ipoint, increm, num_cells, &
+                    noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    num_exchanges_z_dir, num_exchanges_bottom_dir)
         else
 
             !       assumed from dll
 
-            call getmlu(lunrep)
+            call get_log_unit_number(lunrep)
             if (dll_opb /= 0) then
-                ierror = perf_function(dll_opb, pronam, pmsa, flux, ipoint, increm, noseg, &
-                        noflux, iexpnt, iknmrk, noq1, noq2, noq3, noq4)
+                ierror = perf_function(dll_opb, pronam, process_space_real, flux, ipoint, increm, num_cells, &
+                        noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir)
                 if (ierror /= 0) then
                     write(*, *) ' '
                     write(*, *) 'ERROR        : requested module not in open process library dll/so'
@@ -525,7 +524,7 @@ contains
                     write(lunrep, *) 'ERROR        : requested module not in open process library dll/so'
                     write(lunrep, *) 'module       : ', pronam
                     write(lunrep, *) 'dll/so handle: ', dll_opb
-                    call srstop(1)
+                    call stop_with_error()
                 endif
             else
                 write(*, *) ' '
@@ -534,7 +533,7 @@ contains
                 write(lunrep, *) ' '
                 write(lunrep, *) 'ERROR  : requested module not available, no open process library dll/so loaded'
                 write(lunrep, *) 'module       : ', pronam
-                call srstop(1)
+                call stop_with_error()
             endif
         endif
 

@@ -1,55 +1,73 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE POLTOLAND(L1,L2)               ! SHIFT POLYGON TO LANDBOUNDARY
-      USE M_POLYGON
-      USE M_MISSING
-      USE M_LANDBOUNDARY
-      implicit none
+module m_poltoland
+   use m_toland, only: toland
+
+   implicit none
+
+   private
+
+   public :: poltoland
+
+contains
+
+   subroutine POLTOLAND(L1, L2) ! SHIFT POLYGON TO LANDBOUNDARY
+      use precision, only: dp
+      use M_POLYGON, only: xpl, ypl
+      use M_MISSING, only: xymis
+      use M_LANDBOUNDARY, only: mxlan
+
       integer :: l1
       integer :: l2
 
-      integer :: in, jn
+      integer :: in
       integer :: l, j
-      double precision :: xp, yp, xpn, ypn, dis, rL
+      real(kind=dp) :: xp, yp, xpn, ypn, dis, rL
 
-      IN = 1 ; IF (L2 < L1) IN = -1
-      DO L = L1,L2, IN
+      IN = 1
+      if (L2 < L1) then
+         IN = -1
+      end if
+      do L = L1, L2, IN
          XP = XPL(L)
-         IF (XP .NE. XYMIS) THEN
+         if (XP /= XYMIS) then
             YP = YPL(L)
-            CALL TOLAND(XP,YP, 1, MXLAN, 1, xpn, ypn, dis, j, rL)
-            XPL(L) = xpn ; YPL(L) = ypn
-         ENDIF
-      ENDDO
+            call TOLAND(XP, YP, 1, MXLAN, 1, xpn, ypn, dis, j, rL)
+            XPL(L) = xpn
+            YPL(L) = ypn
+         end if
+      end do
 
-      END SUBROUTINE POLTOLAND
+   end subroutine POLTOLAND
+
+end module m_poltoland

@@ -1,5 +1,4 @@
 set(executable_name waqpb_import)
-
 # Define include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
@@ -32,6 +31,3 @@ endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_waqpb_import.${platform_extension}  DESTINATION bin)
-if (WIN32)    
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../../../../engines_gpl/waq/resources/scripts/import_procesasc_changes.bat  DESTINATION bin)
-endif(WIN32)

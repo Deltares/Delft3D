@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -451,14 +451,13 @@ module m_ec_module
          type(tEcFileReader)   , pointer :: fileReaderPtr  => null() !< 
          
          logical                   :: success
-         integer, external         :: findname
          type (tEcMask)            :: srcmask
          logical                   :: res
          integer                   :: i, itgt
          integer                   :: fieldId
          real(hp)                  :: tgt_mjd
    
-         success = .False.
+      success = .false.
    
  ! ============================== Setting up the SOURCE side of the connection ===================================
          ! Construct the FileReader, which constructs the source Items.
@@ -481,7 +480,7 @@ module m_ec_module
                if (.not. res) return
                if (ecAtLeastOnePointIsCorrection) then       ! TODO: Refactor this shortcut (UNST-180).
                      ecAtLeastOnePointIsCorrection = .false. ! TODO: Refactor this shortcut (UNST-180).
-                     success = .True.
+               success = .true.
                      return
                end if
             else
@@ -643,7 +642,7 @@ module m_ec_module
 
          if (.not. ecSetConnectionIndexWeights(InstancePtr, connectionId)) return
 
-         success = .True.
+      success = .true.
       end function ecModuleAddTimeSpaceRelation
                                                
                                                
@@ -671,10 +670,10 @@ module m_ec_module
          success = .true.                    ! in which case we simply ignore the Get-request
          return
       else
-         success = .false.
          call clearECMessage()
          tUnitFactor = ecSupportTimeUnitConversionFactor(tgt_tunit)
-         ierr = ymd2modified_jul(tgt_refdate, tgt_mjd)
+         success = ymd2modified_jul(tgt_refdate, tgt_mjd)
+         success = .false.
          call ecReqTime%set2(tgt_mjd, timesteps * tUnitFactor / 86400.0_hp - tgt_tzone / 24.0_hp)        
          if (.not. ecGetValues(instancePtr, itemId, ecReqTime, target_array)) then
             datestring = datetime_to_string(ecReqTime%mjd(), ierr)
@@ -714,7 +713,7 @@ module m_ec_module
          integer :: sourceItemId
          integer :: i, isrc
          !
-         success = .False. 
+      success = .false.
          do isrc = 1, size(qnames)
             sourceItemId = ecFindItemInFileReader(instancePtr, fileReaderId, trim(qnames(i)))
             if (sourceItemId==ec_undef_int) then
@@ -722,7 +721,7 @@ module m_ec_module
             endif
             if (.not.ecAddConnectionSourceItem(instancePtr, connectionId, sourceItemId)) return
          enddo
-         success = .True. 
+      success = .true.
       end function ecModuleConnectSrc      
       
       ! ==========================================================================

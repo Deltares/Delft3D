@@ -1,7 +1,7 @@
 module bedcomposition_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -232,47 +232,43 @@ type bedcomp_settings
                                                      !  3: simple loading model (Terzaghi)
                                                      !  4: simple loading including peat (Terzaghi)
                                                      !  5: No Compaction
-    integer :: idiffusion                            !< switch for diffusion between layers
-                                                     !  0: no diffusion
-                                                     !  1: diffusion
-    integer :: ierosion                              !< switch for cohesive sediment erodibility
-                                                     !  0: cohesive sediment erodibility doesn't depend on bed composition
-                                                     !  1: Whitehouse (2001)
-                                                     !  2: Le Hir (2011)
-                                                     !  3: Winterwerp (2013)
-    integer :: ifractions                            !< switch for fractions returned by getfrac
-                                                     !  1: mass fractions (sum of all fractions equals 1)
-                                                     !  2: solid volume fractions (sum of all fractions equals 1)
-    integer :: iporosity                             !< switch for porosity (simulate porosity if iporosity > 0)
-                                                     !  0: porosity included in densities, set porosity to 0
-                                                     !  1: Frings (May 2009)
-                                                     !  2: Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
-                                                     !  3: svfrac0
-                                                     !  4: weight average
-    integer :: iunderlyr                             !< switch for underlayer concept
-                                                     !  1: standard fully mixed concept
-                                                     !  2: graded sediment concept
-    integer :: keuler                                !< index of first Eulerian (i.e. non-moving) layer
-                                                     !  2   : standard Eulerian, only top layer moves with bed level
-                                                     !  nlyr: fully Lagrangian (all layers move with bed level)
-    integer :: nfrac                                 !< number of sediment fractions
-    integer :: neulyr                                !< number of Eulerian underlayers
-    integer :: nlalyr                                !< number of Lagrangian underlayers
-    integer :: nlyr                                  !< number of layers (transport + exchange + under layers)
-    integer :: ndiff                                 !< number of diffusion coefficients in vertical direction
-    integer :: nmlb                                  !< start index of segments
-    integer :: nmub                                  !< nm end index
-    integer :: updtoplyr                             !< switch for top layer porosity updating
-                                                     !  1: top layer porosity is recomputed based on new mixture
-                                                     !  2: top layer porosity is updated based on newly added sediment
-    integer :: updbaselyr                            !< switch for computing composition of base layer
-                                                     !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
-                                                     !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
-                                                     !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
-                                                     !  4: base layer composition and thickness constant (no change whatsoever)
-                                                     !  5: base layer composition is updated, but thickness is kept constant
-    integer  :: peatfrac                             !< peat flag (no peat growth, peat thickness is homogeneous)
-    integer  :: max_mud_sedtyp                       !< highest sediment type number that is considered a mud fraction
+    integer :: idiffusion     !  switch for diffusion between layers
+                              !  0: no diffusion
+                              !  1: diffusion
+    integer :: iporosity      !  switch for porosity (simulate porosity if iporosity > 0)
+                              !  0: porosity included in densities, set porosity to 0
+                              !  1: Frings (May 2009)
+                              !  2: Weltje based on data by Beard & Weyl (AAPG Bull., 1973)
+                              !  3: svfrac0
+                              !  4: weight average
+    integer :: iunderlyr      !  switch for underlayer concept
+                              !  1: standard fully mixed concept
+                              !  2: graded sediment concept
+    integer :: keuler         !  index of first Eulerian (i.e. non-moving) layer
+                              !  2   : standard Eulerian, only top layer moves with bed level
+                              !  nlyr: fully Lagrangian (all layers move with bed level)
+    integer :: max_mud_sedtyp ! highest sediment type number that is considered a mud fraction
+    integer :: nfrac          !  number of sediment fractions
+    integer :: neulyr         !  number of Eulerian underlayers
+    integer :: nlalyr         !  number of Lagrangian underlayers
+    integer :: nlyr           !  number of layers (transport + exchange + under layers)
+    integer :: ndiff          !  number of diffusion coefficients in vertical direction
+    integer :: nmlb           !  start index of segments
+    integer :: nmub           !  nm end index
+    integer :: updtoplyr      !  switch for top layer porosity updating
+                              !  1: top layer porosity is recomputed based on new mixture
+                              !  2: top layer porosity is updated based on newly added sediment
+    integer :: updbaselyr     !  switch for computing composition of base layer
+                              !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
+                              !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
+                              !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
+                              !  4: base layer composition and thickness constant (no change whatsoever)
+                              !  5: base lyaer composition is updated, but thickness is kept constant
+   integer  :: peatfrac       !  peat flag (no peat growth, peat thickness is homogeneous)
+   integer  :: max_mud_sedtyp !  highest sediment type number that is considered a mud fraction
+   integer  :: active_layer_diffusion !  switch for applying diffusion in the active layer model
+                                      !   0: no diffusion (default)
+                                      !   1: x-y-diffusion file
     !
     ! pointers
     !
@@ -290,6 +286,7 @@ type bedcomp_settings
     real(fp) , dimension(:)   , pointer :: plyrthk
     real(fp) , dimension(:)   , pointer :: ymod
     real(fp) , dimension(:)   , pointer :: cc
+    real(fp) , dimension(:)   , pointer :: aldiff    ! diffusion coefficient of the active layer at cell centres, units : m/s2
     ! 
     ! logicals
     !
@@ -826,7 +823,6 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     !
     ! Local variables
     !
-    integer                                 :: k
     integer                                 :: l
     integer                                 :: nm
     real(fp)                                :: dz
@@ -1048,7 +1044,6 @@ subroutine lyrerosion(this, nm, dzini, dmi) ! TODO: may collect porosity, preloa
     real(fp)                                           :: dz
     real(fp)                                           :: dm
     real(fp)                                           :: fac
-    real(fp)                                           :: thick
     real(fp)                                           :: thbaselyr
     real(fp), dimension(this%settings%nfrac)           :: mbaselyr  
     real(fp)                                 , pointer :: thlalyr
@@ -1261,18 +1256,11 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)
     integer                                     :: k
     integer                                     :: k2
     integer                                     :: kmin
-    integer                                     :: kne
     integer                                     :: l
-    real(fp)                                    :: depfrac
     real(fp)                                    :: dm
     real(fp)                                    :: dz
-    real(fp)                                    :: dz2
     real(fp)                                    :: dzc
-    real(fp)                                    :: dzk
-    real(fp)                                    :: dzlmax
     real(fp)                                    :: fac
-    real(fp)                                    :: newthlyr
-    real(fp)                                    :: thick
     real(fp)                  , pointer         :: thlalyr
     integer                   , pointer         :: keuler
     integer                   , pointer         :: nlyr
@@ -1457,12 +1445,10 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep, preloaddep
     integer                                     :: kne
     integer                                     :: l
 
-    real(fp)                                    :: depfrac
     real(fp)                                    :: dm
     real(fp)                                    :: dz
     real(fp)                                    :: fac
     real(fp)                                    :: newthlyr
-    real(fp)                                    :: thick
     real(fp)                  , pointer         :: theulyr
     integer                   , pointer         :: keuler
     integer                   , pointer         :: nlyr
@@ -1704,7 +1690,6 @@ subroutine lyrdiffusion(this, dt)
     ! Local variables
     !
     integer                                            :: k
-    integer                                            :: l
     integer                                            :: nd
     integer                                            :: nlyrloc
     integer                                            :: nm
@@ -1889,7 +1874,6 @@ subroutine getalluvthick(this, seddep, nmfrom, nmto, nval)
     integer, pointer                     :: nlyr
     real(prec), dimension(:,:) , pointer :: bodsed
     real(fp)  , dimension(:,:) , pointer :: thlyr
-    real(fp)                   , pointer :: thresh
     real(fp)  , dimension(:)   , pointer :: rhofrac
 !
 !! executable statements -------------------------------------------------------
@@ -2632,12 +2616,13 @@ function initmorlyr(this) result (istat)
     settings%iporosity  = POROS_IN_DENSITY
     settings%exchlyr    = .false.
     settings%max_mud_sedtyp = SEDTYP_SILT
-    settings%neulyr     = 0
-    settings%nlalyr     = 0
-    settings%theulyr    = rmissval
-    settings%thlalyr    = rmissval
+    settings%neulyr         = 0
+    settings%nlalyr         = 0
+    settings%theulyr        = rmissval
+    settings%thlalyr        = rmissval
     settings%updtoplyr  = TOPLYR_POR_RESET         ! by default, the top layer porosity is reset
     settings%updbaselyr = BASELYR_UPDATED          ! 
+    settings%active_layer_diffusion = 0
     
     !!  --> default values, based on Merckelbach et al. (2000, 2004a, b)
     settings%iconsolidate = CONSOL_NONE            ! by default, consolidation is switched off
@@ -2882,6 +2867,12 @@ function allocmorlyr(this) result (istat)
     if (istat == 0) allocate (state%sedshort(nfrac,nmlb:nmub), stat = istat)
     if (istat == 0) state%sedshort = 0.0_fp
     !
+    if (settings%active_layer_diffusion > 0) then
+       if (istat == 0) allocate (settings%aldiff(nmlb:nmub), stat = istat)
+       if (istat == 0) settings%aldiff = 0.0_fp
+    endif 
+    !    
+    !
     ! WARNING: Do not allocate this%work here
     ! For some reason it needs to be allocated/deallocated in updmorlyr/gettoplyr
     !
@@ -3020,6 +3011,8 @@ function clrmorlyr(this) result (istat)
        if (associated(settings%rhofrac))   deallocate(settings%rhofrac  , STAT = istat)
        if (associated(settings%sigphi))    deallocate(settings%sigphi   , STAT = istat)
        if (associated(settings%plyrthk))   deallocate(settings%plyrthk  , STAT = istat)
+       !
+       if (associated(settings%aldiff))   deallocate(settings%aldiff  , STAT = istat)
        !
        deallocate(this%settings, STAT = istat)
        nullify(this%settings)
@@ -3182,6 +3175,8 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%updbaselyr
     case ('erosion_type','ierosion','iero')
         val => this%settings%ierosion
+    case ('active_layer_diffusion')
+       val => this%settings%active_layer_diffusion
     case default
        val => NULL()
     end select
@@ -3266,6 +3261,8 @@ function bedcomp_getpointer_fp_1darray(this, variable, val) result (istat)
        val => this%settings%zdiff
     case ('percentage_layerthk','plyrthk')
        val => this%settings%plyrthk
+    case ('active_layer_diffusion','aldiff')
+       val => this%settings%aldiff
     case default
        val => NULL()
     end select
@@ -3404,7 +3401,6 @@ subroutine bedcomp_use_bodsed(this)
     real(fp)  , dimension(this%settings%nfrac) :: mfrac
     real(fp)                                   :: poros
     real(fp)                                   :: sedthick
-    real(fp)                                   :: sedthicklim
     real(fp)                                   :: svf
     real(fp)                                   :: thsed
     real(fp)                                   :: totsed
@@ -3454,7 +3450,7 @@ subroutine bedcomp_use_bodsed(this)
        do nm = this%settings%nmlb, this%settings%nmub
           !if (kcs(nm)<1 .or. kcs(nm)>2) cycle  !TODO: find a solution for this line
           !
-          ! nm = (m-1)*nmax + n
+          ! nm = (m-1)*num_rows + n
           !
           totsed = 0.0_fp
           do ised = 1, this%settings%nfrac

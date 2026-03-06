@@ -1,0 +1,24 @@
+[ObstacleFileInformation]
+   FileVersion  = 02.00                        
+   PolylineFile = breakwater.pol               
+[Obstacle]
+   Name        = Breakwater                   
+   Type        = dam                          
+   Height      =  5.0000000e+000              
+   Alpha       =  2.5999999e+000              
+   Beta        =  1.5000001e-001              
+   Reflections = no                           
+[Obstacle]
+   Name        = ThinDam_1                    
+   Type        = dam                          
+   Height      =  0.0000000e+000              
+   Alpha       =  2.5999999e+000              
+   Beta        =  1.5000001e-001              
+   Reflections = no                           
+[Obstacle]
+   Name        = ThinDam_2                    
+   Type        = dam                          
+   Height      =  0.0000000e+000              
+   Alpha       =  2.5999999e+000              
+   Beta        =  1.5000001e-001              
+   Reflections = no                           

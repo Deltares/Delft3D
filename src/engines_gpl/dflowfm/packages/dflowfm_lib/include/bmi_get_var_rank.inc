@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2024.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -36,7 +36,7 @@
      rank = 1
   case("twav")
      rank = 1
-  case("Uorb")
+  case("uorb")
      rank = 1
   case("bodsed")
      rank = 2
@@ -78,19 +78,9 @@
      rank = 1
   case("infilt")
      rank = 1
-  case("infiltcap0")
-     rank = 1
   case("infiltcap")
      rank = 1
-  case("HortonMinInfCap")
-     rank = 1
-  case("HortonMaxInfCap")
-     rank = 1
-  case("HortonDecreaseRate")
-     rank = 1
-  case("HortonRecoveryRate")
-     rank = 1
-  case("HortonState")
+  case("horton_state")
      rank = 1
   case("shx")
      rank = 1
@@ -140,12 +130,20 @@
      rank = 1
   case("evap")
      rank = 1
+  case("qext")
+     rank = 1
+  case("qextreal")
+     rank = 1
+  case("vextcum")
+     rank = 1
+  case("rainuni")
+     rank = 0
   case("numlatsg")
      rank = 0
   case("qplat")
-     rank = 1
+     rank = 2
   case("qqlat")
-     rank = 1
+     rank = 3
   case("balat")
      rank = 1
   case("qplatCum")
@@ -170,14 +168,6 @@
      rank = 1
   case("kclat")
      rank = 1
-  case("qext")
-     rank = 1
-  case("qextreal")
-     rank = 1
-  case("vextcum")
-     rank = 1
-  case("rainuni")
-     rank = 0
   case("Qsunmap")
      rank = 1
   case("zbndz")
@@ -277,8 +267,6 @@
   case("viusp")
      rank = 1
   case("diusp")
-     rank = 1
-  case("taus")
      rank = 1
   case("ndxi")
      rank = 0

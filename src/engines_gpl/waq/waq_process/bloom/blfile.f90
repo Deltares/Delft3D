@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -30,7 +30,7 @@ contains
 
     subroutine blfile (lunrep)
 
-        use m_srstop
+        use m_logger_helper, only : stop_with_error
         use bloom_data_io
 
         implicit none
@@ -46,7 +46,7 @@ contains
         if (iost /= 0) then
             write (*, *) 'blfile: error opening .frm file'
             write (lunrep, *) 'blfile: error opening .frm file'
-            call srstop(1)
+            call stop_with_error()
         endif
 
         ! Open statement for BLOOM II debug file.
@@ -55,7 +55,7 @@ contains
         if (iost /= 0) then
             write (*, *) 'blfile: error opening .dbg file'
             write (lunrep, *) 'blfile: error opening .dbg file'
-            call srstop(1)
+            call stop_with_error()
         endif
 
         return

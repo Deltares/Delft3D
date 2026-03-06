@@ -1,15 +1,17 @@
-"""
-Description: Manager for running test case sets
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Manager for running test case sets.
+
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import multiprocessing
 import os
+import shutil
 import sys
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from multiprocessing.pool import AsyncResult
+from multiprocessing.synchronize import Condition
+from pathlib import Path
 from typing import Iterable, List, Optional
 
 from src.config.location import Location
@@ -35,76 +37,109 @@ from src.utils.paths import Paths
 
 
 class TestSetRunner(ABC):
-    """Run test cases in reference or compare mode"""
+    """Run test cases in reference or compare mode."""
 
     def __init__(self, settings: TestBenchSettings, logger: IMainLogger) -> None:
         self.__settings = settings
         self.__logger = logger
         self.__duration = None
         self.programs: List[Program] = []
+        self.skip_download = settings.command_line_settings.skip_download
         self.finished_tests: int = 0
 
     @property
     def settings(self) -> TestBenchSettings:
-        """Settings used for running tests
+        """Settings used for running tests.
 
-        Returns:
-            TestBenchSettings: Used test settings
+        Returns
+        -------
+        TestBenchSettings
+            Used test settings.
         """
         return self.__settings
 
     @property
     def duration(self) -> Optional[timedelta]:
-        """Time it took to run the testbench
+        """Time it took to run the testbench.
 
-        Returns:
-            Optional[timedelta]: elapsed time
+        Returns
+        -------
+        Optional[timedelta]
+            Elapsed time.
         """
         return self.__duration
 
-    def run(self):
-        """Run test cases to generate reference data"""
+    def run(self) -> None:
+        """Run test cases to generate reference data."""
         start_time = datetime.now()
+
+        if len(self.settings.configs_to_run) == 0:
+            logline = (
+                f"There are no test cases in '{self.settings.command_line_settings.config_file}' "
+                f"with applied filter '{self.settings.command_line_settings.filter}'."
+            )
+            self.__logger.error(logline)
+            raise ValueError(logline)
 
         try:
             self.programs = list(self.__update_programs())
         except Exception:
-            if self.__settings.teamcity:
+            if self.__settings.command_line_settings.teamcity:
                 sys.stderr.write("##teamcity[testStarted name='Update programs']\n")
-                sys.stderr.write(
-                    "##teamcity[testFailed name='Update programs' message='Exception occurred']\n"
-                )
+                sys.stderr.write("##teamcity[testFailed name='Update programs' message='Exception occurred']\n")
 
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
 
+        # Prepare cases (download input and reference data, validate etc.)
+        # Parallel download is not supported by DVC.
+        for config in self.__settings.configs_to_run:
+            if config.path and config.path.version == "DVC":
+                log_sub_header(
+                    f"Preparing test case name = '{config.name}' (skipping download of input and reference data due to DVC version)",
+                    self.__logger,
+                )
+                try:
+                    self.prepare_test_case(config, self.__logger)
+                except Exception as exception:
+                    self.__logger.error(f"Failed to prepare test case '{config.name}': {exception}")
+                    self.cleanup_failed_preparation(config)
+                log_separator(self.__logger, char="-")
+
         results = (
             self.run_tests_in_parallel()
-            if self.__settings.parallel
+            if self.__settings.command_line_settings.parallel
             else self.run_tests_sequentially()
         )
 
         log_separator(self.__logger, char="-", with_new_line=True)
 
-        self.show_summary(results, self.__logger)
+        if results:
+            if not self.__settings.command_line_settings.skip_post_processing:
+                self.show_summary(results, self.__logger)
+            else:
+                self.__logger.info("No summary, because postprocessing is skipped due to argument.")
+        else:
+            raise ValueError("ERROR: There are no results, which is unexpected.")
+
         self.__duration = datetime.now() - start_time
 
     def run_tests_sequentially(self) -> List[TestCaseResult]:
-        """Runs the test configurations sequentially and
-        returns the results
+        """Run the test configurations sequentially and returns the results.
 
-        Returns:
-            List[TestCaseResult]: list of test results
+        Returns
+        -------
+        List[TestCaseResult]
+            List of test results.
         """
-        n_testcases = len(self.__settings.configs)
+        n_testcases = len(self.__settings.configs_to_run)
         results: List[TestCaseResult] = []
 
-        for i_testcase, config in enumerate(self.__settings.configs):
+        for i_testcase, config in enumerate(self.__settings.configs_to_run):
             run_data = RunData(i_testcase + 1, n_testcases)
-            logger = self.__logger.create_test_case_logger(config.name)
 
             try:
-                result = self.run_test_case(config, run_data, logger)
+                result = self.run_test_case(config, run_data)
             except Exception as exception:
                 self.__log_failed_test(exception)
                 continue
@@ -115,16 +150,18 @@ class TestSetRunner(ABC):
         return results
 
     def run_tests_in_parallel(self) -> List[TestCaseResult]:
-        """Runs the test configurations in parallel and
-        returns the results
+        """Run the test configurations in parallel and returns the results.
 
-        Returns:
-            List[TestCaseResult]: list of test results
+        Returns
+        -------
+        List[TestCaseResult]
+            List of test results.
         """
-        n_testcases = len(self.__settings.configs)
+        n_testcases = len(self.__settings.configs_to_run)
 
-        config_process_count = sum(config.process_count for config in self.__settings.configs)
+        config_process_count = sum(config.process_count for config in self.__settings.configs_to_run)
         max_processes = min(config_process_count, multiprocessing.cpu_count())
+
         self.__logger.info(f"Creating {max_processes} processes to run test cases on.")
         process_manager = multiprocessing.Manager()
 
@@ -132,12 +169,11 @@ class TestSetRunner(ABC):
             self.finished_tests = 0
 
             result_futures: List[AsyncResult] = []
-            in_use = process_manager.Value('i', 0)
+            in_use = process_manager.Value("i", 0)
             idle_process = process_manager.Condition()
 
-            for i_testcase, config in enumerate(self.__settings.configs):
+            for i_testcase, config in enumerate(self.__settings.configs_to_run):
                 run_data = RunData(i_testcase + 1, n_testcases)
-                logger = self.__logger.create_test_case_logger(config.name)
 
                 with idle_process:
                     while in_use.value + config.process_count > max_processes:
@@ -146,7 +182,7 @@ class TestSetRunner(ABC):
 
                 config_result_future = pool.apply_async(
                     self.run_test_case,
-                    [config, run_data, logger, in_use, idle_process],
+                    [config, run_data, in_use, idle_process],
                     callback=self.__log_successful_test,
                     error_callback=self.__log_failed_test,
                 )
@@ -162,16 +198,26 @@ class TestSetRunner(ABC):
         return results
 
     def run_test_case(
-        self, config: TestCaseConfig, run_data: RunData, logger: ITestLogger, in_use=None, idle_process=None
+        self,
+        config: TestCaseConfig,
+        run_data: RunData,
+        in_use: Optional[int] = None,
+        idle_process: Optional[Condition] = None,
     ) -> TestCaseResult:
-        """Runs one test configuration (in a separate process)
+        """Run one test configuration (in a separate process).
 
-        Args:
-            config (TestCaseConfig): configuration to run
-            run_data (RunData): Data related to the test run
-            in_use (Integer): Amount of processes that are currently in use with testcases
-            idle_process (Condition): Sends a notification to evaluate available cores for new testcase
+        Parameters
+        ----------
+        config : TestCaseConfig
+            Configuration to run.
+        run_data : RunData
+            Data related to the test run.
+        in_use : Optional[int], default: None
+            Amount of processes that are currently in use with testcases.
+        idle_process : Optional[Condition], default: None
+            Sends a notification to evaluate available cores for new testcase.
         """
+        logger = self.__logger.create_test_case_logger(config.name)
         run_data.start_time = datetime.now()
         curr_process = multiprocessing.current_process()
         if curr_process and curr_process.ident:
@@ -188,19 +234,23 @@ class TestSetRunner(ABC):
 
         log_header(
             f"Testcase {run_data.test_number} of {run_data.number_of_tests} "
-            + "(process id {run_data.process_id}): {config.name} ...",
+            + f"(process id {run_data.process_id}): {config.name} ...",
             logger,
         )
 
         try:
-            log_sub_header(f"Updating test case name = '{config.name}'", logger)
-            self.__prepare_test_case(config, logger)
-            log_separator(logger, char="-")
+            # DVC will not download data as part of the run.
+            if not config.path or config.path.version != "DVC":
+                log_sub_header(f"Preparing test case name = '{config.name}'", logger)
+                self.prepare_test_case(config, logger)
+                log_separator(logger, char="-")
 
             # Run testcase
+            if not config.absolute_test_case_path or not config.absolute_test_case_reference_path:
+                raise TestBenchError("Test case paths are not prepared.")
             testcase = TestCase(config, logger)
 
-            if self.__settings.only_post:
+            if self.__settings.command_line_settings.skip_run:
                 logger.info("Skipping execution of testcase (postprocess only)...\n")
             else:
                 if not skip_testcase:
@@ -218,15 +268,10 @@ class TestSetRunner(ABC):
 
             # Postprocessing
             if not skip_postprocessing:
-                log_sub_header(
-                    "Postprocessing testcase, checking directories...", logger
-                )
+                log_sub_header("Postprocessing testcase, checking directories...", logger)
 
                 if not os.path.exists(config.absolute_test_case_path):
-                    raise TestCaseFailure(
-                        "Could not locate case data at: "
-                        + str(config.absolute_test_case_path)
-                    )
+                    raise TestCaseFailure("Could not locate case data at: " + str(config.absolute_test_case_path))
 
                 # execute concrete method in subclass
                 test_result = self.post_process(config, logger, run_data)
@@ -236,7 +281,7 @@ class TestSetRunner(ABC):
                 logger.test_Result(TestResultType.Passed)
 
         except Exception as exception:
-            logger.error(str(exception))
+            logger.exception(f"Could not run test case: {repr(exception)}")
             test_result = self.create_error_result(config, run_data)
 
             if not skip_testcase:
@@ -257,44 +302,53 @@ class TestSetRunner(ABC):
         logger: ITestLogger,
         run_data: RunData,
     ) -> TestCaseResult:
-        """Post process run results (files)
+        """Post process run results (files).
 
-        Args:
-            test_case_config (TestCaseConfig): configuration of the run
-            logger (ITestLogger): logger to log to
+        Parameters
+        ----------
+        test_case_config : TestCaseConfig
+            Configuration of the run.
+        logger : ITestLogger
+            Logger to log to.
 
-        Returns:
-            TestCaseResult: Result of the post processing
+        Returns
+        -------
+        TestCaseResult
+            Result of the post processing.
         """
-        logger.debug(
-            f"Reference directory:{test_case_config.absolute_test_case_reference_path}"
-        )
+        logger.debug(f"Reference directory:{test_case_config.absolute_test_case_reference_path}")
         logger.debug(f"Results   directory:{test_case_config.absolute_test_case_path}")
 
     @abstractmethod
     def show_summary(self, results: List[TestCaseResult], logger: ILogger):
-        """Shows a summery showing the results of all tests that were run
+        """Show a summery showing the results of all tests that were run.
 
-        Args:
-            results (List[TestCaseResult]): list of test results to summarize
-            logger (ILogger): logger to log to
+        Parameters
+        ----------
+        results : List[TestCaseResult]
+            List of test results to summarize.
+        logger : ILogger
+            Logger to log to.
         """
 
     @abstractmethod
-    def create_error_result(
-        self, test_case_config: TestCaseConfig, run_data: RunData
-    ) -> TestCaseResult:
-        """Creates an error result
+    def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:
+        """Create an error result.
 
-        Args:
-            testCaseConfig (TestCaseConfig): test case to use
-            run_data (RunData): Data related to the run
+        Parameters
+        ----------
+        test_case_config : TestCaseConfig
+            Test case to use.
+        run_data : (RunData)
+            Data related to the run.
 
-        Returns:
-            TestCaseResult: Error result
+        Returns
+        -------
+        TestCaseResult
+            Error result.
         """
 
-    def __log_successful_test(self, test_case_result: TestCaseResult):
+    def __log_successful_test(self, test_case_result: TestCaseResult) -> None:
         self.finished_tests += 1
         run_data = test_case_result.run_data
 
@@ -307,10 +361,10 @@ class TestSetRunner(ABC):
             + f"{run_data.timing_str()} -> process {run_data.process_id_str()}"
         )
 
-    def __log_failed_test(self, exception: BaseException):
+    def __log_failed_test(self, exception: BaseException) -> None:
         self.finished_tests += 1
-        self.__logger.error(
-            f"Error running ({self.finished_tests}/{len(self.__settings.configs)}): {str(exception)}"
+        self.__logger.exception(
+            f"Error running ({self.finished_tests}/{len(self.__settings.configs_to_run)}): {repr(exception)}"
         )
 
     def __check_for_skipping(self, config: TestCaseConfig):
@@ -331,10 +385,41 @@ class TestSetRunner(ABC):
                 skip_testcase = True
                 skip_postprocessing = True
 
+        if self.settings.command_line_settings.skip_post_processing:
+            skip_postprocessing = True
+
         return skip_testcase, skip_postprocessing
 
-    def __download_dependencies(self):
-        configs_to_handle = [c for c in self.__settings.configs if c.dependency]
+    def cleanup_failed_preparation(self, config: TestCaseConfig) -> None:
+        """Clean up partially downloaded files after preparation failure.
+
+        Parameters
+        ----------
+        config : TestCaseConfig
+            Configuration of the test case that failed to prepare.
+        """
+        # Clean up input directory (without _work suffix)
+        if config.absolute_test_case_path:
+            input_path = Path(config.absolute_test_case_path)
+            if input_path.name.endswith("_work"):
+                original_input = input_path.with_name(input_path.name[:-5])  # Remove "_work"
+                if original_input.exists():
+                    self.__logger.debug(f"Cleaning up input directory: {original_input}")
+                    try:
+                        shutil.rmtree(original_input)
+                    except Exception as e:
+                        self.__logger.warning(f"Failed to remove input directory: {e}")
+
+        # Clean up reference directory if it was created
+        if config.absolute_test_case_reference_path and os.path.exists(config.absolute_test_case_reference_path):
+            self.__logger.debug(f"Cleaning up reference directory: {config.absolute_test_case_reference_path}")
+            try:
+                shutil.rmtree(config.absolute_test_case_reference_path)
+            except Exception as e:
+                self.__logger.warning(f"Failed to remove reference directory: {e}")
+
+    def __download_dependencies(self) -> None:
+        configs_to_handle = [c for c in self.__settings.configs_to_run if c.dependency]
         if len(configs_to_handle) == 0:
             return
 
@@ -346,8 +431,7 @@ class TestSetRunner(ABC):
         log_separator(self.__logger, char="-", with_new_line=True)
 
     def __update_programs(self) -> Iterable[Program]:
-        """Update network programs and initialize the stack"""
-
+        """Update network programs and initialize the stack."""
         log_sub_header("Updating programs", self.__logger)
 
         for program_configuration in self.__settings.programs:
@@ -361,28 +445,21 @@ class TestSetRunner(ABC):
                 for loc in program_configuration.locations:
                     # check type of program
                     if (
-                        self.__settings.run_mode == ModeType.REFERENCE
-                        and loc.type == PathType.REFERENCE
+                        self.__settings.command_line_settings.run_mode == ModeType.REFERENCE
+                        and loc.type == PathType.CHECK
                     ) or (
-                        self.__settings.run_mode == ModeType.COMPARE
+                        self.__settings.command_line_settings.run_mode == ModeType.COMPARE
                         and loc.type == PathType.CHECK
                     ):
                         # if the program is local, use the existing location
                         sourceLocation = Paths().mergeFullPath(loc.root, loc.from_path)
                         if Paths().isPath(sourceLocation):
                             absLocation = os.path.abspath(
-                                Paths().mergeFullPath(
-                                    sourceLocation, program_configuration.path
-                                )
+                                Paths().mergeFullPath(sourceLocation, program_configuration.path)
                             )
-                            if (
-                                ResolveHandler.detect(absLocation, self.__logger, None)
-                                == HandlerType.PATH
-                            ):
+                            if ResolveHandler.detect(absLocation, self.__logger, None) == HandlerType.PATH:
                                 if not os.path.exists(absLocation):
-                                    self.__logger.warning(
-                                        f"could not yet detect specified program {absLocation}"
-                                    )
+                                    self.__logger.warning(f"could not yet detect specified program {absLocation}")
                                 #                                   raise SystemExit("Program does not exist")
                                 else:
                                     self.__logger.debug(
@@ -396,9 +473,7 @@ class TestSetRunner(ABC):
                             else:
                                 to = loc.to_path
                             program_local_path = Paths().rebuildToLocalPath(
-                                os.path.join(
-                                    self.__settings.local_paths.engines_path, to
-                                )
+                                os.path.join(self.__settings.local_paths.engines_path, to)
                             )
 
                             # if the program is remote (network or other) and it does not exist locally, download it
@@ -415,9 +490,7 @@ class TestSetRunner(ABC):
                                     loc.version,
                                 )
                             program_configuration.absolute_bin_path = os.path.abspath(
-                                Paths().mergeFullPath(
-                                    program_local_path, program_configuration.path
-                                )
+                                Paths().mergeFullPath(program_local_path, program_configuration.path)
                             )
 
             # If a program does not have a network path, and path is not a relative or absolute path, we assume the system can find it
@@ -426,18 +499,13 @@ class TestSetRunner(ABC):
             # Otherwise we need to construct the path from the given information
             else:
                 # Construct the absolute binary path for the program
-                absbinpath = os.path.abspath(
-                    Paths().rebuildToLocalPath(program_configuration.path)
-                )
+                absbinpath = os.path.abspath(Paths().rebuildToLocalPath(program_configuration.path))
                 if os.path.exists(absbinpath):
                     program_configuration.absolute_bin_path = absbinpath
                 # If the local program does not exist, and a network path is not given we are going to crash
                 else:
                     raise SystemExit(
-                        "Could not find "
-                        + program_configuration.name
-                        + " at given location "
-                        + absbinpath
+                        "Could not find " + program_configuration.name + " at given location " + absbinpath
                     )
             self.__logger.debug(
                 f"Binary path for program {program_configuration.name}: {program_configuration.absolute_bin_path}"
@@ -449,16 +517,11 @@ class TestSetRunner(ABC):
             # they will be replaced later on
             envparams = program_configuration.environment_variables
             for envparam in envparams:
-                if (
-                    envparams[envparam][0] == "path"
-                    and str(envparams[envparam][1]).find("[") == -1
-                ):
+                if envparams[envparam][0] == "path" and str(envparams[envparam][1]).find("[") == -1:
                     pp = Paths().rebuildToLocalPath(envparams[envparam][1])
                     if not Paths().isAbsolute(pp):
                         if program_local_path:
-                            pp = os.path.abspath(
-                                Paths().mergeFullPath(program_local_path, pp)
-                            )
+                            pp = os.path.abspath(Paths().mergeFullPath(program_local_path, pp))
                         envparams[envparam] = [envparams[envparam][0], pp]
                     else:
                         envparams[envparam] = [
@@ -482,9 +545,7 @@ class TestSetRunner(ABC):
                         program_configuration.absolute_bin_path[pltIndex:].find("\\"),
                         program_configuration.absolute_bin_path[pltIndex:].find("/"),
                     )
-                    pltPath = program_configuration.absolute_bin_path[
-                        : pltIndex + separatorIndex
-                    ]
+                    pltPath = program_configuration.absolute_bin_path[: pltIndex + separatorIndex]
                     self.__logger.debug("Path: " + pltPath)
                     searchPaths = Paths().findAllSubFolders(
                         pltPath, program_configuration.exclude_search_paths_containing
@@ -500,9 +561,7 @@ class TestSetRunner(ABC):
                 for aPath in program_configuration.search_paths:
                     aRebuildPath = Paths().rebuildToLocalPath(aPath)
                     if not Paths().isAbsolute(aRebuildPath) and program_local_path:
-                        aRebuildPath = Paths().mergeFullPath(
-                            program_local_path, aRebuildPath
-                        )
+                        aRebuildPath = Paths().mergeFullPath(program_local_path, aRebuildPath)
                     searchPaths.append(aRebuildPath)
                 program_configuration.search_paths = searchPaths
 
@@ -510,110 +569,189 @@ class TestSetRunner(ABC):
             yield Program(program_configuration, self.settings)
         log_separator(self.__logger, char="-", with_new_line=True)
 
-    def __prepare_test_case(self, config: TestCaseConfig, logger: ILogger):
-        """Prepare test case based on provided config
-        (download input & reference data)
+    def prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
+        """Prepare test case based on provided config (download input & reference data).
 
-        Args:
-            config (TestCaseConfig): test configuration to prepare
+        Parameters
+        ----------
+        config : TestCaseConfig
+            Test configuration to prepare.
 
-        Raises:
-             TestBenchError : if test can not be prepared
+        Raises
+        ------
+        TestBenchError
+            If test can not be prepared.
         """
-        logger.info(f"Updating case: {config.name}")
+        self.__validate_test_case_preparation(config)
+        self.__log_preparation_info(config, logger)
+        self.__process_test_case_locations(config, logger)
 
+    def __validate_test_case_preparation(self, config: TestCaseConfig) -> None:
+        """Validate that test case has all required configuration for preparation."""
+        if self.__settings.local_paths is None:
+            raise TestBenchError("Local paths are missing from the testbench settings")
         if not config.locations:
             raise TestBenchError(f"Could not update case {config.name}, no network paths given")
 
+    def __log_preparation_info(self, config: TestCaseConfig, logger: ILogger) -> None:
+        """Log information about test case preparation."""
+        logger.info(f"Preparing case: {config.name}")
+        if config.path and config.path.version is None:
+            logger.warning("The case path version timestamp is missing, downloading the 'latest' version")
+        elif config.path and config.path.version:
+            logger.info(f"Path version timestamp: {config.path.version}")
+
+    def __process_test_case_locations(self, config: TestCaseConfig, logger: ILogger) -> None:
+        """Process all locations for a test case, downloading files as needed."""
         for location in config.locations:
-            if not location.root or not location.from_path:
-                error_message: str = (
-                    f"Could not update case {config.name}"
-                    + f", invalid network input path part (root:{location.root},"
-                    + f" from:{location.from_path}) given"
+            self.__validate_location(config, location)
+            remote_path = self.__build_remote_path(config, location)
+            local_path = self.__build_local_path(config, location)
+            self.__download_location_with_retries(config, location, remote_path, local_path, logger)
+            if location.type == PathType.INPUT:
+                self.__copy_to_work_folder(Path(local_path), logger)
+
+            self.__set_absolute_paths(config, location.type, local_path)
+
+    def __validate_location(self, config: TestCaseConfig, location: Location) -> None:
+        """Validate that a location has required configuration."""
+        if not location.root or not location.from_path:
+            error_message = (
+                f"Could not prepare case {config.name}"
+                f", invalid network input path part (root:{location.root},"
+                f" from:{location.from_path}) given"
+            )
+            raise TestBenchError(error_message)
+
+    def __build_remote_path(self, config: TestCaseConfig, location: Location) -> str:
+        """Build the remote path to download from."""
+        if config.path.version == "DVC":
+            remote_path = Paths().mergeFullPath(location.root, config.path.prefix)
+            if location.type == PathType.INPUT:
+                remote_path = Paths().mergeFullPath(remote_path, "input.dvc")
+            elif location.type == PathType.REFERENCE and location.from_path != "":
+                remote_path = Paths().mergeFullPath(remote_path, f"reference_{location.from_path}.dvc")
+            else:
+                error_message = (
+                    f"Could not build remote path for {config.name}"
+                    f", only input and reference (with OS spec) paths are supported for DVC downloads."
                 )
                 raise TestBenchError(error_message)
+        elif config.path:
+            remote_path = Paths().mergeFullPath(location.root, location.from_path, config.path.prefix)
+        else:
+            # For input_path/reference_path cases, use location paths directly
+            remote_path = Paths().mergeFullPath(location.root, location.from_path)
 
-            # Build the path to download from: Root+From+testcasePath:
-            remote_path = Paths().mergeFullPath(location.root, location.from_path, config.path)
+        if Paths().isPath(remote_path):
+            remote_path = os.path.abspath(remote_path)
 
-            if Paths().isPath(remote_path):
-                remote_path = os.path.abspath(remote_path)
+        return remote_path
 
-            # Downloading the testcase input/refdata may fail when it is already present and have to be
-            # deleted first. This probably has to do with TortoiseSVNCache, accessing that directory.
-            # When trying a second time it normally works. Safe side: try 3 times.
-            success = False
-            attempts = 0
-            
-            while attempts < 3 and not success:
-                attempts += 1
-                
-                try:
-                    destination_dir = None
-                    input_description = ""
+    def __build_local_path(self, config: TestCaseConfig, location: Location) -> str:
+        """Build the local path to download to."""
+        base_path = self.__get_destination_directory(location.type)
+        if config.path.version == "DVC":
+            local_path = Paths().mergeFullPath(location.root, config.path.prefix)
+            if location.type == PathType.INPUT:
+                local_path = Paths().mergeFullPath(local_path, "input")
+            elif location.type == PathType.REFERENCE and location.from_path != "":
+                local_path = Paths().mergeFullPath(local_path, f"reference_{location.from_path}")
+            else:
+                error_message = (
+                    f"Could not build local path for {config.name}"
+                    f", only input and reference (with OS spec) paths are supported for DVC downloads."
+                )
+                raise TestBenchError(error_message)
+        else:
+            local_path = Paths().rebuildToLocalPath(Paths().mergeFullPath(base_path, location.to_path, config.name))
 
-                    if location.type == PathType.INPUT:
-                        destination_dir = self.__settings.local_paths.cases_path
-                        input_description = "input of case"
-                    elif location.type == PathType.REFERENCE:
-                        destination_dir = self.__settings.local_paths.reference_path
-                        input_description = "reference result"
+        return local_path
 
-                    if destination_dir is not None:
-                        # Build localPath to download to: To+testcasePath
-                        localPath = Paths().rebuildToLocalPath(
-                            Paths().mergeFullPath(
-                                destination_dir,
-                                location.to_path,
-                                config.name,
-                                #config.path,
-                            )
-                        )
+    def __download_location_with_retries(
+        self, config: TestCaseConfig, location: Location, remote_path: str, local_path: str, logger: ILogger
+    ) -> None:
+        """Download files for a location with retry logic."""
+        attempts = 0
+        max_attempts = 3
 
-                        handler_type = ResolveHandler.detect(remote_path, logger, location.credentials)
+        for _ in range(max_attempts):
+            try:
+                self.__download_single_location(config, location, remote_path, local_path, logger)
+                break
+            except Exception as e:
+                error_message = f"Unable to download testcase (attempt {attempts})"
 
-                        if handler_type == HandlerType.MINIO:
-                            self.__SetupVersionForDownload(config, location)
+                if attempts < max_attempts:
+                    logger.warning(error_message)
+                else:
+                    error = getattr(e, "message", repr(e))
+                    error_message = f"Unable to download testcase: {error}"
+                    raise TestBenchError(error_message) from e
 
-                        self.__download_file(location, remote_path, localPath, input_description, logger)
+    def __copy_to_work_folder(self, local_path: Path, logger: ILogger) -> None:
+        """Copy downloaded files to work folder if needed."""
+        if not local_path.is_dir():
+            raise NotADirectoryError(f"Expected a directory to copy to work folder, but got: {local_path}")
 
-                        if location.type == PathType.INPUT:
-                            config.absolute_test_case_path = localPath
-                        elif location.type == PathType.REFERENCE:
-                            config.absolute_test_case_reference_path = localPath
+        # Add "_work" suffix.
+        copy_path = local_path.with_name(f"{local_path.name}_work")
 
-                    success = True
+        # Clean work directory if it exists
+        if copy_path.exists():
+            shutil.rmtree(copy_path)
 
-                except Exception as e:
-                    error_message = (
-                        f"Unable to download testcase (attempt {attempts + 1})"
-                    )
+        # copy input to work directory
+        logger.debug(f"Copying input from {local_path} to {copy_path}")
+        shutil.copytree(local_path, copy_path, symlinks=False, ignore_dangling_symlinks=True)
 
-                    if attempts < 3:
-                        logger.warning(error_message)
-                    else:
-                        logger.error(error_message)
-                        raise TestBenchError("Unable to download testcase " + str(e))
+    def __download_single_location(
+        self, config: TestCaseConfig, location: Location, remote_path: str, local_path: str, logger: ILogger
+    ) -> None:
+        """Download files for a single location attempt."""
+        version = config.path.version if config.path else None
+        self.__download_files(location, remote_path, local_path, location.type, version, logger)
 
-    def __SetupVersionForDownload(self, config, location):
-        if location.version is None and config.version is not None:
-            location.version = config.version
+    def __get_destination_directory(self, location_type: PathType) -> Optional[str]:
+        """Get the destination directory based on location type."""
+        if location_type == PathType.INPUT:
+            return self.__settings.local_paths.cases_path
+        elif location_type == PathType.REFERENCE:
+            return self.__settings.local_paths.reference_path
+        return None
 
-    def __download_file(
+    def __set_absolute_paths(self, config: TestCaseConfig, location_type: PathType, local_path: str) -> None:
+        """Set absolute paths on the config based on location type."""
+        if location_type == PathType.INPUT:
+            input_path = Path(local_path)
+            config.absolute_test_case_path = str(input_path.with_name(f"{input_path.name}_work"))
+        elif location_type == PathType.REFERENCE:
+            config.absolute_test_case_reference_path = local_path
+
+    def __download_files(
         self,
-        location_data: Location,
+        location: Location,
         remote_path: str,
         local_path: str,
-        location_description: str,
+        location_type: PathType,
+        version: Optional[str],
         logger: ILogger,
-    ):
-        if self.__settings.only_post:
-            logger.info("Skipping testcase download (postprocess only)")
+    ) -> None:
+        version = location.version or version
+        if location_type == PathType.INPUT:
+            location_description = "input of case"
+        elif location_type == PathType.REFERENCE:
+            location_description = "reference result"
+        elif location_type == PathType.DEPENDENCY:
+            location_description = "dependency"
+
+        if location_type in self.skip_download:
+            logger.info(f"Skipping {location_description} download (skip download argument)")
+            return
+        elif version == "DVC":
+            logger.debug(f"Downloading {location_description}, from DVC file at {remote_path}")
         else:
-            logger.debug(
-                f"Downloading {location_description}, {local_path} from {remote_path}"
-            )
+            logger.debug(f"Downloading {location_description}, {local_path} from {remote_path}")
 
         # Download location on local system is always cleaned before start
         try:
@@ -622,22 +760,26 @@ class TestSetRunner(ABC):
                 local_path,
                 self.programs,
                 logger,
-                location_data.credentials,
-                location_data.version,
+                location.credentials,
+                version,
             )
         except Exception as exception:
             # We need always case input data
-            logger.error(f"Could not download from {remote_path}")
+            logger.exception(f"Could not download from {remote_path}")
             raise exception
 
-    def __download_config_dependencies(self, config: TestCaseConfig, logger: ILogger):
+    def __download_config_dependencies(self, config: TestCaseConfig, logger: ILogger) -> None:
         if not config.dependency:
+            return
+
+        if self.__settings.local_paths is None:
+            logger.error("Could not download dependency: Local paths are missing from the testbench settings")
             return
 
         location = next(loc for loc in config.locations if loc.type == PathType.INPUT)
         destination_dir = self.__settings.local_paths.cases_path
 
-        localPath = Paths().rebuildToLocalPath(
+        local_path = Paths().rebuildToLocalPath(
             Paths().mergeFullPath(
                 destination_dir,
                 location.to_path,
@@ -645,10 +787,15 @@ class TestSetRunner(ABC):
             )
         )
 
-        if os.path.exists(localPath):
+        if os.path.exists(local_path):
+            logger.info("Dependency directory already exists: Skipping download")
             return
 
-        remote_path = Paths().mergeFullPath(
-            location.root, location.from_path, config.dependency.cases_path
-        )
-        self.__download_file(location, remote_path, localPath, "dependency", logger)
+        remote_path = Paths().mergeFullPath(location.root, location.from_path, config.dependency.cases_path)
+        dependency_version = config.dependency.version
+        if dependency_version is None:
+            logger.warning("The dependency version timestamp is missing, downloading the 'latest' version")
+        else:
+            logger.info(f"Dependency version timestamp: {dependency_version}")
+
+        self.__download_files(location, remote_path, local_path, PathType.DEPENDENCY, dependency_version, logger)

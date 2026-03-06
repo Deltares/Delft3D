@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -113,7 +113,6 @@ contains
         character(len = *) :: test_description  !! Description of the test being run
 
         integer :: log_unit
-        integer :: ierr
 
         ! Check if the test should run
         testno = testno + 1
@@ -440,7 +439,7 @@ contains
         if (abs(value1 - value2) > 0.5 * margin * (abs(value1) + abs(value2))) then
             nofails = nofails + 1
             write(*, *) '    Values not comparable: "', trim(test_description), '" - assertion failed'
-            write(*, *) '    Values: ', value1, ' and ', value2
+            write(*, *) '    Values: actual = ', value1, ' and expected = ', value2
             call ftnunit_hook_test_assertion_failed(testname, test_description, "One or more values differ more than the margin")
             call ftnunit_write_html_failed_real(test_description, value1, value2)
         endif
@@ -1130,7 +1129,6 @@ contains
     !
     subroutine ftnunit_write_html_failed_equivalent(test_description)
         character(len = *) :: test_description
-        logical :: expected
 
         integer :: log_unit
 
@@ -1267,9 +1265,9 @@ contains
 
         write(log_unit, '(a)') &
                 '<td><span class="indent">', trim(test_description), '</span></td>', &
-                '<td>Values: '
-        write(log_unit, '(e15.7,a,e15.7,a)') &
-                value1, ' -- ', value2, '</td>'
+                '<td>Difference in values: '
+        write(log_unit, '(a,e15.7,a,e15.7,a)') &
+                'Actual = ', value1, ' vs Expected = ', value2, '</td>'
         close(log_unit)
 
     end subroutine ftnunit_write_html_failed_real
@@ -1470,7 +1468,6 @@ contains
 
     subroutine ftnunit_write_html_failed_files(test_description, string1, string2, string3)
         character(len = *) :: test_description
-        integer :: type
         character(len = *) :: string1
         character(len = *) :: string2
         character(len = *) :: string3

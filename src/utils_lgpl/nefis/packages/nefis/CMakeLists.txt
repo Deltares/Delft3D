@@ -27,10 +27,11 @@ list(REMOVE_ITEM source ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/nef-xdr.c)
 
 # Define library
 set(library_name nefis)
+add_subdirectory(test)
+
 add_library(${library_name} ${headers}
                             ${source}
                             ${ini_version_file})
-
 
 # Set additional dependencies
 target_include_directories(${library_name}  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include" ${version_include_dir})
@@ -63,6 +64,8 @@ endif ()
 ###############
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 if ( ${configuration_type} STREQUAL "DELFT3D4" OR 
+     ${configuration_type} STREQUAL "D3D4-TESTBENCH" OR
+     ${configuration_type} STREQUAL "D3D4-SUITE" OR
      ${configuration_type} STREQUAL "TOOLS" )    
     set(library_name nefis_dll)
 

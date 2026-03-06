@@ -41,7 +41,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -49,12 +48,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-			<environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
         <program name="mpi" shellStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
             <!-- <path>/opt/intel/parallel_studio_cluster_2016_up3/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin/mpiexec</path> -->
@@ -155,6 +148,6 @@
         </testCase>
     </defaultTestCases>
     <!-- testCases -->
-<xi:include href="../include/dimr_dflowfm_rws_acceptance_parallel_lnx64.xml"/>
+<xi:include href="../include/dimr_dflowfm_rws_acceptance_parallel.xml"/>
 
 </deltaresTestbench_v3>

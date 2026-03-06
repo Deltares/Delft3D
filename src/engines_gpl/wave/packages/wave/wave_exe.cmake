@@ -10,9 +10,6 @@ add_executable(${executable_name}   ${executable_files}
                                     ${rc_version_file}
                                     ${icon_file})
 
-# Set additional compilation properties
-target_compile_options(${executable_name} PRIVATE "${extend_source132_flag}")
-
 # Set dependencies
 if (WIN32)
     set(exe_dependencies    wave_data
@@ -27,13 +24,11 @@ if (WIN32)
                             wave_kernel
                             wave_manager
                             nefis
-                            netcdf4
                             netcdff
                             triangle_c
                             swan
                             ) 
 
-    oss_include_libraries(${executable_name} exe_dependencies)
     target_link_libraries(${executable_name} ${exe_dependencies})
 
 endif(WIN32)
@@ -63,8 +58,6 @@ if(UNIX)
                             esmfsm
                             netcdff
                             )
-    
-    oss_include_libraries(${executable_name} exe_dependencies)
 
     target_link_libraries(${executable_name}
          ${exe_dependencies}
@@ -72,7 +65,7 @@ if(UNIX)
          )
 endif(UNIX)
 
-include_directories(${mpi_include_path} ${version_include_dir})
+include_directories(${mpi_module_path} ${version_include_dir})
 
 if (WIN32)
     # Set linker properties
@@ -112,7 +105,6 @@ set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/wave)
 # Change the name of the target library to wave.exe
 set_target_properties (${executable_name} PROPERTIES OUTPUT_NAME wave_exe)
 if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
 	configure_file(
     ${userfilename}
@@ -130,6 +122,8 @@ endif()
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/wave/scripts/run_dwaves.${platform_extension}  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh DESTINATION bin)
+    find_program(ESMF_REGRIDWEIGHTGEN_EXECUTABLE ESMF_RegridWeightGen REQUIRED)
+    install(PROGRAMS ${ESMF_REGRIDWEIGHTGEN_EXECUTABLE} DESTINATION bin)
 endif(UNIX)
 if(WIN32)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.bat DESTINATION bin)

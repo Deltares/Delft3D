@@ -1,11 +1,10 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f029_c001_frisianinlet_schematized_2D" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c001_frisianinlet_schematized_2D</path>
+      <path version="2025-10-16T07:21:25.592000">e02_dflowfm/f029_hyd_file/c001_frisianinlet_schematized_2D</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -30,12 +29,11 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c002_frisianinlet_schematized_3D_s" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c002_frisianinlet_schematized_3D_s</path>
+      <path version="2025-10-16T07:21:36.171000">e02_dflowfm/f029_hyd_file/c002_frisianinlet_schematized_3D_s</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -60,12 +58,11 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c003_frisianinlet_schematized_3D_z" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c003_frisianinlet_schematized_3D_z</path>
+      <path version="2025-10-16T07:21:46.505000">e02_dflowfm/f029_hyd_file/c003_frisianinlet_schematized_3D_z</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -91,12 +88,11 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c010_sourcesink_2D" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c010_sourcesink_2D</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c010_sourcesink_2D</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -121,12 +117,11 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c011_sourcesink_3D_s" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c011_sourcesink_3D_s</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c011_sourcesink_3D_s</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -151,12 +146,11 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c012_sourcesink_3D_z" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c012_sourcesink_3D_z</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c012_sourcesink_3D_z</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">

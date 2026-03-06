@@ -2,10 +2,10 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
                 & nmaxus    ,kmax      ,lstsci    ,ltur      , &
                 & s1        ,u1        ,v1        ,r1        ,rtur1     , &
                 & umnldf    ,vmnldf    ,kfu       ,kfv       , &
-                & dp        ,namcon    ,coninit   ,gdp       )
+                & dpd       ,namcon    ,coninit   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -80,7 +80,7 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
     integer , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                            :: kfv    !  Description and declaration in esm_alloc_int.f90
     integer , dimension(lstsci)                                                              :: coninit ! Flag=1 if constituent is initialized, all 0 upon entry
     logical                                                                                  :: error  !!  Flag=TRUE if an error is encountered
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: s1     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: umnldf !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: vmnldf !  Description and declaration in esm_alloc_real.f90
@@ -106,7 +106,6 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
     integer                                              :: luntmp  ! Unit number file 
     integer                                              :: m       ! Help var. 
     integer                                              :: n       ! Help var. 
-    integer                                              :: newlun
     logical                                              :: ex
     logical                                              :: ex_nfs
     character(16)                                        :: datetime
@@ -185,7 +184,7 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
                                & nmaxus    ,kmax      ,lstsci    ,ltur      , &
                                & s1        ,u1        ,v1        ,r1        ,rtur1     , &
                                & umnldf    ,vmnldf    ,kfu       ,kfv       , &
-                               & dp        ,ex_nfs    ,namcon    ,coninit   ,rdum      , &
+                               & dpd       ,ex_nfs    ,namcon    ,coninit   ,rdum      , &
                                & idum      ,gdp       )
           if (error .and. .not.ex_nfs) then
              call prterr(lundia    ,'G004'    , &

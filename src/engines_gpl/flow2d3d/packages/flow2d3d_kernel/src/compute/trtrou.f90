@@ -4,7 +4,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
                 & z0rou     ,deltadir  ,idir      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -739,7 +739,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
              ! Quadratic combination of bedform heights (Van Rijn 2004)
              !
              rkmain   = sqrt(rksru**2 + rksmru**2 + rksdu**2)
-             kn_icode = min(rkmain,0.5_fp*depth)
+             kn_icode = max(min(rkmain,0.5_fp*depth),1e-6_fp)
              rgh_geom = area_rgh
           elseif (ircod==106) then
              !

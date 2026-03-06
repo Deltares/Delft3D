@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -60,7 +60,7 @@
  *  Function names for FORTRAN-C interface.
  */
 
-#if defined(linux)
+#if defined(__linux__)
 #   include "config.h"
 #   define STDCALL  /* nothing */
 #   define CREATESTREAM FC_FUNC(createstream,CREATESTREAM)

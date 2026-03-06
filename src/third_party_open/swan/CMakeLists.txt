@@ -18,35 +18,25 @@ list(FILTER swan_sourcefiles EXCLUDE REGEX ".*swanhcat.for$")
 set(library_name swan)
 set(library_source_list     ${headers}
                             ${swan_sourcefiles})
-add_library(${library_name} ${library_source_list})  
+add_library(${library_name} ${library_source_list})
+
+target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
 
 # Add dependencies
 if (UNIX)
- # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-    target_link_libraries(${library_name}
-         PkgConfig::NETCDF
+    target_link_libraries(${library_name} PRIVATE
          netcdff)
-
-    message (${CMAKE_BINARY_DIR}/netcdff)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
-                        ${version_include_dir}
-                        ${CMAKE_BINARY_DIR}/netcdff)
+                        ${version_include_dir})
 
     add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies    netcdf4
-                            netcdff)
-    oss_include_libraries(${library_name} ${oss_dependencies})
-    target_link_libraries(${library_name} ${oss_dependencies})
+    set(oss_dependencies netcdff)
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
-                        ${mpi_include_path}
+                        ${mpi_module_path}
                         ${version_include_dir})
 endif(WIN32)
 
@@ -60,7 +50,22 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/ocpids.F
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+target_compile_options(${library_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+
+# Set additional compilation flags to match with Deltares-SWAN outside Delft3D
+if (WIN32)
+    target_compile_options(${library_name} PRIVATE
+                                                  "${avx2_flag}"
+                                                  "${traceback_flag}"
+                                                  "${heap_arrays_20_flag}"
+                                                  "${automatic_local_variable_storage_flag}"
+                                                  "${floating_point_source_flag}"
+                                                  "${floating_point_speculation_safe_flag}")
+endif(WIN32)
+if (UNIX)
+    target_compile_options(${library_name} PRIVATE
+                                                  "SHELL:${avx2_flag}")
+endif(UNIX)
 
 # Define preprocessor definitions 
 if (WIN32)

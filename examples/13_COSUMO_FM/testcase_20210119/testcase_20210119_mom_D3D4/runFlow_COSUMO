@@ -1,6 +1,0 @@
-#! /bin/sh
-#
-# Run with: . runFlow
-
-
-qsub -V -q test -N D3D4_COSUMO_mom run_flow2d3d_parallel.sh

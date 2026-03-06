@@ -1,7 +1,7 @@
 module gridgeom_version_module
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,7 @@ implicit none
 	                                                            
     character(*),  public, parameter :: gridgeom_company      = COMPANY_NAME
     character(*),  public, parameter :: gridgeom_company_url  = COMPANY_URL
-    character(*),  public, parameter :: gridgeom_program      = PROGRAM
+    character(*),  public, parameter :: gridgeom_program      = PROGRAM_NAME
 
 
 #if defined(WIN32)

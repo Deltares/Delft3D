@@ -5,11 +5,11 @@ If you require a printed version of this Software License Agreement, e.g. prior 
 Read this software license agreement carefully
 
 This is a legal agreement between the prospective user, either an individual or an entity, (hereafter: “Licensee”) and Deltares (hereafter “Deltares”) to license the computer program subject to this contracting-procedure (hereafter “Computer Program”).
- 
+
 By clicking on (y)es:
 
 1.	you expressly declare being authorized to act on behalf of Licensee for the purposes of accepting this software license agreement (hereafter “License Agreement”);
-2.	Licensee expressly accepts this License Agreement and accepts to be legally bound by the terms and conditions contained therein. 
+2.	Licensee expressly accepts this License Agreement and accepts to be legally bound by the terms and conditions contained therein.
 
 If you are not authorized to act on behalf of Licensee to agree upon this License Agreement or if Licensee does not agree with the License Agreement, please do not click the “Ok”- button and exit this program by clicking the “Cancel” - button.
 
@@ -17,18 +17,18 @@ Agree as Follows with General terms of delivery for software licensing and softw
 
 1.	General
 1.1	These general terms  (hereinafter: Terms) form an integral part of all offers by Stichting Deltares (hereinafter: Deltares) to provide user rights to software products and related documentation (hereafter: the Program) and/or related services and apply to all agreements between Deltares and licensees to its software products and/or related services (hereafter: User).
-1.2	Deltares software is fit for use by skilled persons only, who have experience in the relevant field and who have sufficient knowledge of the properties, possibilities, limitations and the purpose of the Program. The User should study the relevant manual prior to using the Program. 
+1.2	Deltares software is fit for use by skilled persons only, who have experience in the relevant field and who have sufficient knowledge of the properties, possibilities, limitations and the purpose of the Program. The User should study the relevant manual prior to using the Program.
 1.3	Deltares has the right to involve third parties in the execution of the agreement.
 1.4	Additions, alterations or deviations of or to these Terms or to an agreement between the parties must be in written form signed by the parties.
 1.5	If these Terms require a written notice, then this can also include notices in digital form, i.e. per fax or e-mail, unless the context indicates otherwise. The party that chooses to make use of an electronic medium has the burden of proof if the other party states that the electronically communicated statement was not received or not received correctly.
 
 2.	Make Program available
 2.1	Deltares makes a Program available to User by sending User the Program including available documentation,  a data carrier, or by providing user with a written notice that the Program is available for downloading by User.
-2.2	Deltares makes available to User the version  of the Program that is the most recent at the moment of making the Program available. 
+2.2	Deltares makes available to User the version  of the Program that is the most recent at the moment of making the Program available.
 2.3	Exceeding a delivery period shall not entitle User to claim damages.
 
 3.	Licences and intellectual property
-3.1	Unless stipulated otherwise in the offer, Deltares grants User a non-exclusive, non-transferable right to use the Program, for an indefinite period of time and against payment of a one-time fee. 
+3.1	Unless stipulated otherwise in the offer, Deltares grants User a non-exclusive, non-transferable right to use the Program, for an indefinite period of time and against payment of a one-time fee.
 3.2	The right of use is limited to User’s own use of the Program and to the number of agreed users as stipulated in the offer. User is not authorised to grant any sublicences to the Program to third parties, or in any other way to facilitate the use by third parties.
 3.3	User does not have the right to modify the Program.
 3.4	Except as allowed by applicable law, but in that case limited to the extent required by that law, User may not, and may not authorize any third party to reverse engineer, decompile or disassemble the Program in whole or in part nor create any derivative works from the Program.
@@ -46,9 +46,9 @@ d.	terminate the agreement and return the licence-fee to User without any other 
 	In the event maintenance and support is agreed upon, then the following applies:
 4.1	Deltares at all times has the right, within the purpose of the Program, to modify later versions of Program with regard to its appearance, programming, arithmetical and/or functional properties at its sole discretion.
 4.2	Maintenance and support of the Program consists of:
-a.	replacing the version of the Program in use by User by the most recent version, or, in case this is made explicit in the proposal, offering a new version for a reduced price; 
-b.	subject to article 5.2, restoring any errors in the Program that prevent the normal operation of the Program; 
-c.	updating available documentation and providing such updated documentation to User; 
+a.	replacing the version of the Program in use by User by the most recent version, or, in case this is made explicit in the proposal, offering a new version for a reduced price;
+b.	subject to article 5.2, restoring any errors in the Program that prevent the normal operation of the Program;
+c.	updating available documentation and providing such updated documentation to User;
 d.	within reasonable limits, providing support to User’s users concerning the operation of the Program.
 	Maintenance and support does not include (assistance in) actions aimed at resolving technical engineering problems.
 4.3	Notwithstanding article 4.4, User is not obliged to follow the Deltares policy regarding new versions of the Program.
@@ -66,7 +66,7 @@ b.	terminate the agreement unilaterally and return the licence-fee to User, with
 5.4	In the event that, before the end of the term of guarantee as stated in article 5.1, a revised version of the Program is provided on the basis of article 5.2 or 5.5, Deltares gives a guarantee on the new version until the latest of either the expiration of the original guarantee or one month after delivery of the revised version.
 5.5	If, according to Deltares, it becomes apparent that use of the Program may cause damage, Deltares, in consultation with User, but at its sole discretion, has the right to:
 a.	either, within the limits of the Program’s purpose, at its own expense carry out repairs and/or alterations until the risk of damage ceases to exist and/or replace free of charge (parts of) the Program or documentation;
-b.	impose on User temporary or permanent restrictions concerning the use of the Program, so that the risk of damage no longer exists; 
+b.	impose on User temporary or permanent restrictions concerning the use of the Program, so that the risk of damage no longer exists;
 c.	terminate the agreement and return the licence-fee to User without any other rights to compensation for User.
 5.6	All guarantees are void if User (i) has altered the Program in any way, (ii) uses or has used the Program in combination with hardware and/or operating systems that do not comply with the system requirements as indicated by Deltares, or (iii) has failed to notify Deltares in writing of defects in the Program within one (1) week of their discovery or (iv) has not paid the amounts due.
 
@@ -77,11 +77,11 @@ a.	defects in the Program;
 b. 	the temporary or permanent inability to use the Program, partly or completely, as a result of or in connection with defects in the Program or alleged or legally proven infringements upon any rights of third parties as a consequence of the use of the Program by User.
 6.2	User indemnifies Deltares against any third party claim for compensation regarding damages and expenses resulting from the use of the Program by User, the interpretation of the results and/or the use of these results.
 6.3	Deltares’ liability arising out of default, contract, negligence, tort, breach of any statutory duty or otherwise shall be limited to direct damages, with a maximum of the total amount paid by the User excluding ‘BTW’ (Dutch VAT) in the six (6) months prior to Deltares’ default. Direct damages in this context refers exclusively to:
-a.	reasonable costs incurred by User to have the performance of Deltares comply with the terms of the agreement (this form of damage will not be compensated if the agreement is terminated by User); 
+a.	reasonable costs incurred by User to have the performance of Deltares comply with the terms of the agreement (this form of damage will not be compensated if the agreement is terminated by User);
 b. 	reasonable costs incurred to establish the cause and the amount of the damage, insofar this is related to direct damage as described within these Terms;
 c.	reasonable costs incurred to prevent or reduce damages, insofar User shows that such costs have actually led to limitation of direct damages pursuant to these Terms.
 6.4	Deltares shall not be liable for indirect damages, including, but not limited to, loss of profit and revenues.
-6.5	Deltares’ liability as a result of default only arises after User has given Deltares notice of default. The notice of default shall be in writing, leaving Deltares a reasonable time to restore any shortcomings. 
+6.5	Deltares’ liability as a result of default only arises after User has given Deltares notice of default. The notice of default shall be in writing, leaving Deltares a reasonable time to restore any shortcomings.
 
 7.	Application Service Providing (ASP)
 7.1	If Deltares and User agreed upon use of the functionality of the Program by User on the basis of ASP (= Application Service Provision) at a distance by means of a WAN-connection (WAN = Wide Area Network), Deltares will sent to User a username and password that provide access to the functionality of the Program.
@@ -89,14 +89,14 @@ c.	reasonable costs incurred to prevent or reduce damages, insofar User shows th
 7.3	Deltares will provide reasonable efforts to make functionality of the Program available for User during Deltares office hours (8:30 a.m. to 4:30 p.m. Central European Time-zone). User will immediately notify Deltares in case functionality is not available. If non availability exceeds, or threatens to exceed, the duration of a calendar week, parties can make further arrangements concerning the use of the Program.
 7.4	Deltares will never be liable for User’s problems regarding telecommunication facilities, for loss of or damage to data or for the consequences of the unavailability of the ASP service.
 
-8.	Training 
+8.	Training
 	In case training is agreed upon, the following applies:
-8.1	Cancellation of participation by User shall take place in writing. Cancellation by User until six weeks before the start of the training is free of charge. In case of cancellation between three and six weeks before the start of the training, User shall pay 50% of the agreed training fee, after three weeks before the start of the training User shall pay the full training fee. 
+8.1	Cancellation of participation by User shall take place in writing. Cancellation by User until six weeks before the start of the training is free of charge. In case of cancellation between three and six weeks before the start of the training, User shall pay 50% of the agreed training fee, after three weeks before the start of the training User shall pay the full training fee.
 8.2	Deltares reserves the right to cancel a course. In that case Deltares shall reimburse the paid training fee.
 8.3	If Deltares makes available any material related to training to User, User obtains a non-exclusive and non-transferrable right for its own use of the material. User is not authorised to copy or modify the material.
 
 9. 	Invoices and payment
-9.1 	User shall pay invoices within thirty (30) days after the invoice date. In the event User exceeds the payment period, User shall pay both the statutory commercial interest and collection costs without notice of default being required. In case of non-payment, Deltares may suspend maintenance and support and may require security for future deliveries or services. 
+9.1 	User shall pay invoices within thirty (30) days after the invoice date. In the event User exceeds the payment period, User shall pay both the statutory commercial interest and collection costs without notice of default being required. In case of non-payment, Deltares may suspend maintenance and support and may require security for future deliveries or services.
 9.2 	Any complaint raised by User regarding (the amount of) an invoice does not suspend the obligation to pay.
 9.3 	Deltares may require User to pay in advance.
 

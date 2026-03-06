@@ -1,0 +1,1893 @@
+.\" Process this file with
+.\" groff -man -Tascii xsd.1
+.\"
+.TH XSD 1 "April 2010" "XSD 3.3.0"
+.SH NAME
+xsd \- W3C XML Schema to C++ Compiler
+.\"
+.\"
+.\"
+.\"--------------------------------------------------------------------
+.SH SYNOPSIS
+.\"--------------------------------------------------------------------
+.B xsd
+.I command
+.B [
+.I options
+.B ]
+.I file
+.B [
+.I file
+.B ...]
+.in
+.B xsd help
+.B [
+.I command
+.B ]
+.in
+.B xsd version
+.\"
+.\"
+.\"
+.\"--------------------------------------------------------------------
+.SH DESCRIPTION
+.\"--------------------------------------------------------------------
+.B xsd
+generates vocabulary-specific, statically-typed C++ mapping from W3C XML
+Schema definitions. Particular mapping to produce is selected by a
+.IR command .
+Each mapping has a number of mapping-specific
+.I options
+that should appear, if any, after the
+.IR command .
+Input files should be W3C XML Schema definitions. The exact set of the
+generated files depends on the selected mapping and options.
+.\"
+.\"
+.\"
+.\"--------------------------------------------------------------------
+.SH COMMANDS
+.\"--------------------------------------------------------------------
+.IP \fBcxx-tree\fR
+Generate the C++/Tree mapping. For each input file in the form
+.B name.xsd
+the following C++ files are generated:
+.B name.hxx
+(header file),
+.B name.ixx
+(inline file, generated only if the
+.B --generate-inline
+option is specified),
+.B name.cxx
+(source file), and
+.B name-fwd.hxx
+(forward declaration file, generated only if the
+.B --generate-forward
+option is specified).
+
+.IP \fBcxx-parser\fR
+Generate the C++/Parser mapping. For each input file in the form
+.B name.xsd
+the following C++ files are generated:
+.B name-pskel.hxx
+(parser skeleton header file),
+.B name-pskel.ixx
+(parser skeleton inline file, generated only if the
+.B --generate-inline
+option is specified), and
+.B name-pskel.cxx
+(parser skeleton source file). If the
+.B --generate-noop-impl
+or
+.B --generate-print-impl
+option is specified, the following additional sample implementation files
+are generated:
+.B name-pimpl.hxx
+(parser implementation header file) and
+.B name-pimpl.cxx
+(parser implementation source file). If the
+.B --generate-test-driver
+option is specified, the additional
+.B name-driver.cxx
+test driver file is generated.
+
+.IP \fBhelp\fR
+Print usage information and exit. Use
+.PP
+.RS
+.RS 3
+.B xsd help
+.I command
+.RE
+.PP
+for command-specific help.
+.RE
+.IP \fBversion\fR
+Print version and exit.
+.\"--------------------------------------------------------------------
+.SH OPTIONS
+.\"--------------------------------------------------------------------
+Command-specific
+.IR options ,
+if any, should appear after the corresponding
+.IR command .
+
+.\"
+.\" Common options.
+.\"
+.SS common options
+.
+.IP "\fB\--char-type \fItype\fR"
+Generate code using the provided character
+.I type
+instead of the default
+.BR char .
+Valid values are
+.B char
+and
+.BR wchar_t .
+.
+.IP "\fB\--char-encoding \fIenc\fR"
+Specify the character encoding that should be used in the generated code.
+Valid values for the
+.B char
+character type are
+.B utf8
+(default),
+.BR iso8859-1 , lcp
+(Xerces-C++ local code page),
+and
+.BR custom .
+If you pass
+.B custom
+as the value then you will need to include the transcoder implementation
+header for your encoding at the beginning of the generated header files
+(see the
+.B --hxx-prologue
+option).
+
+For the
+.B wchar_t
+character type the only valid value is
+.B auto
+and the encoding is automatically selected between UTF-16 and UTF-32/UCS-4,
+depending on the
+.B wchar_t
+type size.
+.
+.IP "\fB\--output-dir \fIdir\fR"
+Write generated files to
+.I dir
+instead of the current directory.
+
+.IP "\fB\--namespace-map \fIxns\fB=\fIcns"
+Map XML Schema namespace
+.I xns
+to C++ namespace
+.IR cns .
+Repeat this option to specify mapping for more than one XML Schema namespace.
+For example, the following option:
+
+.B --namespace-map http://example.com/foo/bar=foo::bar
+
+will map the
+.B http://example.com/foo/bar
+XML Schema namespace to the
+.B foo::bar
+C++ namespace.
+.
+.IP "\fB\--namespace-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema namespace
+names to C++ namespace names.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+Any character can be used as a delimiter instead of
+.BR / .
+Escaping of the delimiter character in
+.I pattern
+or
+.I replacement
+is not supported.
+
+All the regular expressions are pushed into a stack with the last specified
+expression considered first. The first match that succeeds is used. Regular
+expressions are applied to a string in the form
+
+.I filename namespace
+
+For example, if you have file
+.B hello.xsd
+with namespace
+.B http://example.com/hello
+and you run
+.B xsd
+on this file, then the string in question will be:
+
+.B hello.xsd. http://example.com/hello
+
+For the built-in XML Schema namespace the string is:
+
+.B XMLSchema.xsd http://www.w3.org/2001/XMLSchema
+
+The following three steps are performed for each regular expression until
+the match is found:
+.RS
+.RS 3
+.TP 3
+1.
+The expression is applied and if the result is empty the next expression
+is considered.
+.TP 3
+2.
+All
+.B /
+are replaced with
+.BR :: .
+.TP 3
+3.
+The result is verified to be a valid C++ scope name (e.g.,
+.BR foo::bar ).
+If this test succeeds, the result is used as a C++ namespace name.
+.RE
+.PP
+As an example, the following expression maps XML Schema namespaces in the
+form
+.B http://example.com/foo/bar
+to C++ namespaces in the form
+.BR foo::bar :
+.PP
+.B "%.* http://example.com/(.+)%$1%"
+
+See also the REGEX AND SHELL QUOTING section below.
+.RE
+
+.IP "\fB\--namespace-regex-trace\fR"
+Trace the process of applying regular expressions specified with
+the
+.B --namespace-regex
+option. Use this option to find out why your regular expressions
+don't do what you expected them to do.
+
+\"
+\" Reserved names.
+\"
+
+.IP "\fB\--reserved-name \fIname\fR[\fB=\fIrep\fR]"
+Add
+.I name
+to the list of names that should not be used as identifiers. The name
+can optionally be followed by
+.B =
+and the replacement name that should be used instead. All the C++ keywords
+are already in this list.
+
+\"
+\" Include
+\"
+
+.IP "\fB\--include-with-brackets\fR"
+Use angle brackets (<>) instead of quotes ("") in generated
+.B #include
+directives.
+
+.IP "\fB\--include-prefix \fIprefix\fR"
+Add
+.I prefix
+to generated
+.B #include
+directive paths.
+
+For example, if you had the following import element in your schema
+
+.B <import namespace="..." schemaLocation="base.xsd"/>
+
+and compiled this fragment with
+.B --include-prefix schemas/\fR,
+then the include directive in the generated code would be:
+
+.B #include "schemas/base.hxx"
+
+.IP "\fB\--include-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to transform
+.B #include
+directive paths.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+Any character can be used as a delimiter instead of
+.BR / .
+Escaping of the delimiter character in
+.I pattern
+or
+.I replacement
+is not supported.
+
+All the regular expressions are pushed into a stack with the last specified
+expression considered first. The first match that succeeds is used.
+
+As an example, the following expression transforms paths in the form
+.B schemas/foo/bar
+to paths in the form
+.BR generated/foo/bar :
+
+.B "%schemas/(.+)%generated/$1%"
+
+See also the REGEX AND SHELL QUOTING section below.
+
+.IP "\fB\--include-regex-trace\fR"
+Trace the process of applying regular expressions specified with
+the
+.B --include-regex
+option. Use this option to find out why your regular expressions
+don't do what you expected them to do.
+
+.IP "\fB\--guard-prefix \fIprefix\fR"
+Add
+.I prefix
+to generated header inclusion guards. The prefix is transformed to upper
+case and characters that are illegal in a preprocessor macro name are
+replaced with underscores. If this option is not specified then the
+directory part of the input schema file is used as a prefix.
+
+.\"
+.\" Suffixes.
+.\"
+
+.IP "\fB\--hxx-suffix \fIsuffix\fR"
+Use the provided
+.I suffix
+instead of the default
+.B .hxx
+to construct the name of the header file. Note that this suffix is also
+used to construct names for included/imported schemas.
+
+.IP "\fB\--ixx-suffix \fIsuffix\fR"
+Use the provided
+.I suffix
+instead of the default
+.B .ixx
+to construct the name of the inline file.
+
+.IP "\fB\--cxx-suffix \fIsuffix\fR"
+Use the provided
+.I suffix
+instead of the default
+.B .cxx
+to construct the name of the source file.
+
+.IP "\fB\--hxx-regex \fIregex\fR"
+Use the provided expression to construct the name of the header file.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+Note that this expression is also used to construct names for
+included/imported schemas. See also the REGEX AND SHELL QUOTING section
+below.
+
+.IP "\fB\--ixx-regex \fIregex\fR"
+Use the provided expression to construct the name of the inline file.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+See also the REGEX AND SHELL QUOTING section below.
+
+.IP "\fB\--cxx-regex \fIregex\fR"
+Use the provided expression to construct the name of the source file.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+See also the REGEX AND SHELL QUOTING section below.
+
+.IP "\fB\--hxx-prologue \fItext\fR"
+Insert
+.I text
+at the beginning of the header file.
+
+.IP "\fB\--ixx-prologue \fItext\fR"
+Insert
+.I text
+at the beginning of the inline file.
+
+.IP "\fB\--cxx-prologue \fItext\fR"
+Insert
+.I text
+at the beginning of the source file.
+
+.IP "\fB\--prologue \fItext\fR"
+Insert
+.I text
+at the beginning of each generated file for which there is no file-specific
+prologue.
+
+.IP "\fB\--hxx-epilogue \fItext\fR"
+Insert
+.I text
+at the end of the header file.
+
+.IP "\fB\--ixx-epilogue \fItext\fR"
+Insert
+.I text
+at the end of the inline file.
+
+.IP "\fB\--cxx-epilogue \fItext\fR"
+Insert
+.I text
+at the end of the source file.
+
+.IP "\fB\--epilogue \fItext\fR"
+Insert
+.I text
+at the end of each generated file for which there is no file-specific
+epilogue.
+
+.IP "\fB\--hxx-prologue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the beginning of the header file.
+
+.IP "\fB\--ixx-prologue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the beginning of the inline file.
+
+.IP "\fB\--cxx-prologue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the beginning of the source file.
+
+.IP "\fB\--prologue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the beginning of each generated file for which there is no file-specific
+prologue file.
+
+.IP "\fB\--hxx-epilogue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the end of the header file.
+
+.IP "\fB\--ixx-epilogue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the end of the inline file.
+
+.IP "\fB\--cxx-epilogue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the end of the source file.
+
+.IP "\fB\--epilogue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the end of each generated file for which there is no file-specific
+epilogue file.
+
+.IP "\fB\--custom-literals \fIfile\fR"
+Load custom XML string to C++ literal mappings from
+.IR file .
+This mechanism can be useful if you are using a custom character encoding
+and some of the strings in your schemas, for example element/attribute
+names or enumeration values, contain non-ASCII characters. In this case
+you will need to provide a custom mapping to C++ literals for such
+strings. The format of this file is specified in the
+.B custom-literals.xsd
+XML Schema file that can be found in the documentation directory.
+
+.IP "\fB\--export-symbol \fIsymbol\fR"
+Insert
+.I symbol
+in places where DLL export/import control statements (
+.BR __declspec(dllexport/dllimport) )
+are necessary.
+
+.IP "\fB\--export-xml-schema\fR"
+Export/import types in the XML Schema namespace using the export
+symbol provided with the
+.B --export-symbol
+option. The
+.B XSD_NO_EXPORT
+macro can be used to omit this code during C++ compilation, which may be
+useful if you would like to use the same generated code across multiple
+platforms.
+
+.IP "\fB\--export-maps\fR"
+Export polymorphism support maps from a Win32 DLL into which this generated
+code is linked. This is necessary when your type hierarchy is split across
+several DLLs since otherwise each DLL will have its own set of maps. In
+this situation the generated code for the DLL which contains base types
+and/or substitution group heads should be compiled with this option and
+the generated code for all other DLLs should be compiled with
+.BR --import-maps .
+This option is only valid together with
+.BR --generate-polymorphic.
+The
+.B XSD_NO_EXPORT
+macro can be used to omit this code during C++ compilation, which may be
+useful if you would like to use the same generated code across multiple
+platforms.
+
+.IP "\fB\--import-maps\fR"
+Import polymorphism support maps to a Win32 DLL or executable into which
+this generated code is linked. See the
+.B --export-maps
+option documentation for details. This option is only valid together with
+.BR --generate-polymorphic.
+The
+.B XSD_NO_EXPORT
+macro can be used to omit this code during C++ compilation, which may be
+useful if you would like to use the same generated code across multiple
+platforms.
+
+.IP "\fB\--disable-warning \fIwarn\fR"
+Disable printing warning with id
+.IR warn .
+If
+.B all
+is specified for the warning id then all warnings are disabled.
+
+.IP "\fB\--show-sloc\fR"
+Show the number of generated physical source lines of code (SLOC).
+
+.IP "\fB\--sloc-limit \fInum\fR"
+Check that the number of generated physical source lines of code (SLOC)
+does not exceed
+.I num.
+
+.IP "\fB\--options-file \fIfile\fR"
+Read additional options from
+.IR file .
+Each option should appear on a separate line optionally followed by
+space and an argument. Empty lines and lines starting with
+.B #
+are ignored. The semantics of providing options in a file is equivalent
+to providing the same set of options in the same order in the command
+line at the point where the
+.B --options-file
+option is specified except that shell escaping and quoting is not
+required. Repeat this option to specify more than one options files.
+
+.IP "\fB\--proprietary-license\fR"
+Indicate that the generated code is licensed under a proprietary license
+instead of the GPL.
+
+.IP "\fB\--preserve-anonymous\fR"
+Preserve anonymous types. By default anonymous types are
+automatically named with names derived from the enclosing
+elements/attributes. Because mappings implemented by this
+compiler require all types to be named, this option is only
+useful if you want to make sure your schemas don't have
+anonymous types.
+
+.IP "\fB\--show-anonymous\fR"
+Show elements and attributes that are of anonymous types. This option
+only makes sense together with the
+.B --preserve-anonymous
+option.
+
+.IP "\fB\--anonymous-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to derive names for anonymous
+types from the enclosing attributes/elements.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+Any character can be used as a delimiter instead of
+.BR / .
+Escaping of the delimiter character in
+.I pattern
+or
+.I replacement
+is not supported.
+
+All the regular expressions are pushed into a stack with the last
+specified expression considered first. The first match that
+succeeds is used. Regular expressions are applied to a string
+in the form
+
+.I filename namespace xpath
+
+For instance:
+
+.B hello.xsd http://example.com/hello element
+
+.B hello.xsd http://example.com/hello type/element
+
+As an example, the following expression makes all the derived
+names start with capital letters. This could be useful when
+your naming convention requires type names to start with
+capital letters:
+
+.B %.* .* (.+/)*(.+)%\\\\u$2%
+
+See also the REGEX AND SHELL QUOTING section below.
+
+.IP "\fB\--anonymous-regex-trace\fR"
+Trace the process of applying regular expressions specified with
+the
+.B --anonymous-regex
+option. Use this option to find out why your regular expressions
+don't do what you expected them to do.
+
+.IP "\fB\--location-map \fIol\fB=\fInl"
+Map the original schema location
+.I ol
+that is specified in the XML Schema include or import elements to new
+schema location
+.IR nl .
+Repeat this option to map more than one schema location. For example,
+the following option maps the
+.B http://example.com/foo.xsd
+URL to the
+.B foo.xsd
+local file.
+
+.B --location-map http://example.com/foo.xsd=foo.xsd
+
+.IP "\fB\--location-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to map schema locations that are
+specified in the XML Schema include or import elements.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+Any character can be used as a delimiter instead of
+.BR / .
+Escaping of the delimiter character in
+.I pattern
+or
+.I replacement
+is not supported. All the regular expressions are pushed into a stack with the
+last specified expression considered first. The first match that succeeds
+is used.
+
+For example, the following expression maps URL locations in the form
+.B http://example.com/foo/bar.xsd
+to local files in the form
+.BR bar.xsd :
+
+.B %http://.+/(.+)%$1%
+
+See also the REGEX AND SHELL QUOTING section below.
+
+.IP "\fB\--location-regex-trace\fR"
+Trace the process of applying regular expressions specified with
+the
+.B --location-regex
+option. Use this option to find out why your regular expressions
+don't do what you expected them to do.
+
+.IP "\fB\--file-per-type\fR"
+Generate a separate set of C++ files for each type defined in XML Schema.
+Note that in this mode you only need to compile the root schema(s) and the
+code will be generated for all included and imported schemas. This
+compilation mode is primarily useful when some of your schemas cannot be
+compiled separately or have cyclic dependencies which involve type
+inheritance. Other options related to this mode are:
+.BR --type-file-regex ,
+.BR --schema-file-regex,
+and
+.BR --file-list .
+
+.IP "\fB\--type-file-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate type names to file
+names when the
+.B --file-per-type
+option is specified.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+Any character can be used as a delimiter instead of
+.BR / .
+Escaping of the delimiter character in
+.I pattern
+or
+.I replacement
+is not supported. All the regular expressions are pushed into a stack with
+the last specified expression considered first. The first match that
+succeeds is used. Regular expressions are applied to a string
+in the form
+
+.I namespace type-name
+
+For example, the following expression maps type
+.B foo
+that is defined in the
+.B http://example.com/bar
+namespace to file name
+.BR bar-foo :
+
+.B %http://example.com/(.+) (.+)%$1-$2%
+
+See also the REGEX AND SHELL QUOTING section below.
+
+.IP "\fB\--type-file-regex-trace\fR"
+Trace the process of applying regular expressions specified with
+the
+.B --type-file-regex
+option. Use this option to find out why your regular expressions
+don't do what you expected them to do.
+
+.IP "\fB\--schema-file-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate schema file names
+when the
+.B --file-per-type
+option is specified.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+Any character can be used as a delimiter instead of
+.BR / .
+Escaping of the delimiter character in
+.I pattern
+or
+.I replacement
+is not supported. All the regular expressions are pushed into a stack
+with the last specified expression considered first. The first match
+that succeeds is used. Regular expressions are applied to the absolute
+filesystem path of a schema file and the result, including the directory
+part, if any, is used to derive the
+.B #include
+directive paths as well as the generated C++ file paths. This option, along
+with
+.B --type-file-regex
+are primarily used to place the generated files into subdirectories or to
+resolve file name conflicts.
+
+For example, the following expression maps schema files in the
+.B foo/1.0.0/
+subdirectory to the files in the
+.B foo/
+subdirectory. As a result, the
+.B #include
+directive paths for such schemas will be in the
+.B foo/schema.hxx
+form and the generated C++ files will be placed into the
+.B foo/
+subdirectory:
+
+.B %.*/foo/1.0.0/(.+)%foo/$1%
+
+See also the REGEX AND SHELL QUOTING section below.
+
+.IP "\fB\--schema-file-regex-trace\fR"
+Trace the process of applying regular expressions specified with
+the
+.B --schema-file-regex
+option. Use this option to find out why your regular expressions
+don't do what you expected them to do.
+
+.IP "\fB\--file-list \fIfile\fR"
+Write a list of generated C++ files to
+.IR file .
+This option is primarily useful in the file-per-type compilation mode
+.RB ( --file-per-type )
+to create a list of generated C++ files, for example, as a makefile fragment.
+
+.IP "\fB\--file-list-prologue \fItext\fR"
+Insert
+.I text
+at the beginning of the file list. As a convenience, all occurrences of the
+\\n character sequence in
+.I text
+are replaced with new lines. This option can, for example, be used to assign
+the generated file list to a makefile variable.
+
+.IP "\fB\--file-list-epilogue \fItext\fR"
+Insert
+.I text
+at the end of the file list. As a convenience, all occurrences of the
+\\n character sequence in
+.I text
+are replaced with new lines.
+
+.IP "\fB\--file-list-delim \fItext\fR"
+Delimit file names written to the file list with
+.I text
+instead of new lines. As a convenience, all occurrences of the \\n character
+sequence in
+.I text
+are replaced with new lines.
+
+.\"
+.\" C++/Tree options.
+.\"
+.SS cxx-tree command options
+
+.IP "\fB\--generate-polymorphic\fR"
+Generate polymorphism-aware code. Specify this option if you use substitution
+groups or
+.BR xsi:type .
+Use the
+.B --polymorphic-type
+or
+.B --polymorphic-type-all
+option to specify which type hierarchies are polymorphic.
+
+.IP "\fB\--polymorphic-type \fItype\fR"
+Indicate that
+.I type
+is a root of a polymorphic type hierarchy. The compiler can often
+automatically determine which types are polymorphic based on the
+substitution group declarations. However, you may need to use this
+option if you are not using substitution groups or if substitution
+groups are defined in another schema. You need to specify this option
+when compiling every schema file that references
+.IR type .
+The
+.I type
+argument is an XML Schema type name that can be optionally qualified
+with a namespace in the
+.IB namespace # name
+form.
+
+.IP "\fB\--polymorphic-type-all\fR"
+Indicate that all types should be treated as polymorphic.
+
+.IP "\fB\--generate-serialization\fR"
+Generate serialization functions. Serialization functions convert
+the object model back to XML.
+
+.IP "\fB\--generate-inline\fR"
+Generate simple functions inline. This option triggers creation of the
+inline file.
+
+.IP "\fB\--generate-ostream\fR"
+Generate ostream insertion operators
+.RB ( operator<< )
+for generated types. This allows to easily print a fragment or the whole
+object model for debugging or logging.
+
+.IP "\fB\--generate-doxygen\fR"
+Generate documentation comments suitable for extraction by the Doxygen
+documentation system. Documentation from annotations is added to the
+comments if present in the schema.
+
+.IP "\fB\--generate-comparison\fR"
+Generate comparison operators
+.RB ( operator==
+and
+.BR operator!= )
+for complex types. Comparison is performed memberwise.
+
+.IP "\fB\--generate-default-ctor\fR"
+Generate default constructors even for types that have required members.
+Required members of an instance constructed using such a constructor are
+not initialized and accessing them results in undefined behavior.
+
+.IP "\fB\--generate-from-base-ctor\fR"
+Generate constructors that expect an instance of a base type followed by all
+required members.
+
+.IP "\fB\--generate-detach\fR"
+Generate detach functions for required elements and attributes (detach
+functions for optional and sequence cardinalities are provided by the
+respective containers). These functions, for example, allow you to move
+sub-trees in the object model either within the same tree or between
+different trees.
+
+.IP "\fB\--generate-wildcard\fR"
+Generate accessors and modifiers as well as parsing and serialization code
+for XML Schema wildcards
+.RB ( any
+and
+.BR anyAttribute ).
+XML content matched by wildcards is presented as DOM fragments. Note that
+you need to initialize the Xerces-C++ runtime if you are using this option.
+
+.IP "\fB\--generate-insertion \fIos\fR"
+Generate data representation stream insertion operators for the
+.I os
+output stream type. Repeat this option to specify more than one stream
+type. The ACE CDR stream
+.RB ( ACE_OutputCDR )
+and RPC XDR are recognized by the compiler and the necessary
+.B #include
+directives are automatically generated. For custom stream types use the
+.B --hxx-prologue*
+options to provide the necessary declarations.
+
+.IP "\fB\--generate-extraction \fIis\fR"
+Generate data representation stream extraction constructors for the
+.I is
+input stream type. Repeat this option to specify more than one stream
+type. The ACE CDR stream
+.RB ( ACE_InputCDR )
+and RPC XDR are recognized by the compiler and the necessary
+.B #include
+directives are automatically generated. For custom stream types use the
+.B --hxx-prologue*
+options to provide the necessary declarations.
+
+.IP "\fB\--generate-forward\fR"
+Generate a separate header file with forward declarations for the types
+being generated.
+
+.IP "\fB\--generate-xml-schema\fR"
+Generate a C++ header file as if the schema being compiled defines the
+XML Schema namespace. In particular, the resulting file will have
+definitions for all XML Schema built-in types. The schema file provided
+to the compiler need not exist and is only used to derive the name of the
+resulting header file. Use the
+.B --extern-xml-schema
+option to include this file in the generated files for other schemas.
+
+.IP "\fB\--extern-xml-schema \fIfile\fR"
+Include a header file derived from
+.I file
+instead of generating the XML Schema namespace mapping inline. The provided
+file need not exist and is only used to derive the name of the included
+header file. Use the
+.B --generate-xml-schema
+option to generate this header file.
+
+.IP "\fB\--suppress-parsing\fR"
+Suppress the generation of the parsing functions and constructors. Use this
+option to reduce the generated code size when parsing from XML is not
+needed.
+
+.IP "\fB\--generate-element-type\fR"
+Generate types instead of parsing and serialization functions for root
+elements. This is primarily useful to distinguish object models with the
+same root type but with different root elements.
+
+.IP "\fB\--generate-element-map\fR"
+Generate a root element map that allows uniform parsing and serialization
+of multiple root elements. This option is only valid together with
+.BR --generate-element-type .
+
+.IP "\fB\--generate-intellisense\fR"
+Generate workarounds for IntelliSense bugs in Visual Studio 2005 (8.0). When
+this option is used, the resulting code is slightly more verbose. IntelliSense
+in Visual Studio 2008 (9.0) does not require these workarounds. Support for
+IntelliSense in Visual Studio 2003 (7.1) is improved with this option but
+is still incomplete.
+
+.IP "\fB\--omit-default-attributes\fR"
+Omit attributes with default and fixed values from serialized XML
+documents.
+
+\"
+\" Naming
+\"
+
+.IP "\fB\--type-naming \fIstyle\fR"
+Specify the type naming convention that should be used in the generated code.
+Valid styles are
+.B knr
+(default),
+.BR ucc ,
+and
+.BR java .
+See the NAMING CONVENTION section below for more information.
+
+.IP "\fB\--function-naming \fIstyle\fR"
+Specify the function naming convention that should be used in the generated
+code. Valid styles are
+.B knr
+(default),
+.BR lcc ,
+and
+.BR java.
+See the NAMING CONVENTION section below for more information.
+
+.IP "\fB\--type-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+type names to C++ type names. See the NAMING CONVENTION section below for
+more information.
+
+.IP "\fB\--accessor-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+names of elements/attributes to C++ accessor function names. See the NAMING
+CONVENTION section below for more information.
+
+.IP "\fB\--one-accessor-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+names of elements/attributes with cardinality one to C++ accessor function
+names. See the NAMING CONVENTION section below for more information.
+
+.IP "\fB\--opt-accessor-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+names of elements/attributes with cardinality optional to C++ accessor
+function names. See the NAMING CONVENTION section below for more information.
+
+.IP "\fB\--seq-accessor-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+names of elements/attributes with cardinality sequence to C++ accessor
+function names. See the NAMING CONVENTION section below for more information.
+
+.IP "\fB\--modifier-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+names of elements/attributes to C++ modifier function names. See the NAMING
+CONVENTION section below for more information.
+
+.IP "\fB\--one-modifier-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+names of elements/attributes with cardinality one to C++ modifier function
+names. See the NAMING CONVENTION section below for more information.
+
+.IP "\fB\--opt-modifier-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+names of elements/attributes with cardinality optional to C++ modifier
+function names. See the NAMING CONVENTION section below for more information.
+
+.IP "\fB\--seq-modifier-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+names of elements/attributes with cardinality sequence to C++ modifier
+function names. See the NAMING CONVENTION section below for more information.
+
+.IP "\fB\--parser-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+element names to C++ parsing function names. See the NAMING CONVENTION
+section below for more information.
+
+.IP "\fB\--serializer-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+element names to C++ serialization function names. See the NAMING
+CONVENTION section below for more information.
+
+.IP "\fB\--enumerator-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+enumeration values to C++ enumerator names. See the NAMING CONVENTION
+section below for more information.
+
+.IP "\fB\--element-type-regex \fIregex\fR"
+Add
+.I regex
+to the list of regular expressions used to translate XML Schema
+element names to C++ element type names. See the NAMING CONVENTION section
+below for more information.
+
+.IP "\fB\--name-regex-trace\fR"
+Trace the process of applying regular expressions specified with the name
+transformation options. Use this option to find out why your regular
+expressions don't do what you expected them to do.
+
+\"
+\" Root element.
+\"
+
+.IP "\fB\--root-element-first\fR"
+Treat only the first global element as a document root. By default all
+global elements are considered document roots.
+
+.IP "\fB\--root-element-last\fR"
+Treat only the last global element as a document root. By default all
+global elements are considered document roots.
+
+.IP "\fB\--root-element-all\fR"
+Treat all global elements as document roots. This is the default behavior.
+By explicitly specifying this option you can suppress the warning that is
+issued if more than one global element is defined.
+
+.IP "\fB\--root-element-none\fR"
+Do not treat any global elements as document roots. By default all global
+elements are considered document roots.
+
+.IP "\fB\--root-element \fIelement\fR"
+Treat only
+.I element
+as a document root. Repeat this option to specify more than one root element.
+
+\"
+\" Custom type.
+\"
+
+.IP "\fB\--custom-type \fIname\fR[\fB=\fItype\fR[\fB/\fIbase\fR]]"
+Use a custom C++ type
+.I type
+instead of the generated class for XML Schema type
+.IR name .
+If
+.I type
+is not present or empty then the custom type is assumed to have the same name
+and be defined in the same namespace as the generated class would have. If
+.I base
+is specified then the generated class is still generated but with that name.
+
+.IP "\fB\--custom-type-regex \fB/\fIname-pat\fB/\fR[\fItype-sub\fB/\fR[\fIbase-sub\fB/\fR]]"
+For each type defined in XML Schema that matches the
+.I name-pat
+pattern use a custom C++ type instead of the generated class. The
+name of the custom type is obtained by substituting
+.IR type-sub .
+If
+.I type-sub
+is not present or its substitution results in an empty string then the
+custom type is assumed to have the same name and be defined in the same
+namespace as the generated class would have. If
+.I base-sub
+is present and its substitution results in a non-empty string then the
+generated class is still generated but with the result of substitution
+as its name. The pattern and substitutions are in the perl regular
+expression format. See also the REGEX AND SHELL QUOTING section below.
+
+\"
+\" Suffixes.
+\"
+
+.IP "\fB\--fwd-suffix \fIsuffix\fR"
+Use the provided
+.I suffix
+instead of the default
+.B -fwd.hxx
+to construct the name of the forward declaration file.
+
+.IP "\fB\--fwd-regex \fIregex\fR"
+Use the provided expression to construct the name of the forward
+declaration file.
+.I regex
+is a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+See also the REGEX AND SHELL QUOTING section below.
+
+.IP "\fB\--fwd-prologue \fItext\fR"
+Insert
+.I text
+at the beginning of the forward declaration file.
+
+.IP "\fB\--fwd-epilogue \fItext\fR"
+Insert
+.I text
+at the end of the forward declaration file.
+
+.IP "\fB\--fwd-prologue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the beginning of the forward declaration file.
+
+.IP "\fB\--fwd-epilogue-file \fIfile\fR"
+Insert the content of the
+.I file
+at the end of the forward declaration file.
+
+\"
+\" Parts.
+\"
+
+.IP "\fB\--parts \fInum\fR"
+Split generated source code into
+.I num
+parts. This is useful when translating large, monolithic schemas and a C++
+compiler is not able to compile the resulting source code at once (usually
+due to insufficient memory).
+
+.IP "\fB\--parts-suffix \fIsuffix\fR"
+Use
+.I suffix
+instead of the default '\fB-\fR' to separate the file name from the part
+number.
+
+\"
+\" C++/Parser
+\"
+
+.SS cxx-parser command options
+
+.IP "\fB\--type-map \fImapfile\fR"
+Read XML Schema to C++ type mapping information from
+.I mapfile
+Repeat this option to specify several type maps. Type maps are
+considered in order of appearance and the first match is used.
+By default all user-defined types are mapped to
+.BR void .
+See the TYPE MAP section below for more information.
+
+.IP "\fB\--xml-parser \fIparser\fR"
+Use
+.I parser
+as the underlying XML parser. Valid values are
+.B xerces
+for Xerces-C++ (default) and
+.B expat
+for Expat.
+
+.IP "\fB\--generate-inline\fR"
+Generate simple functions inline. This option triggers creation of the
+inline file.
+
+.IP "\fB\--generate-validation\fR"
+Generate validation code ("perfect" parser) which ensures that instance
+documents conform to the schema. Validation code is generated by default
+when the selected underlying XML parser is non-validating (\fBexpat\fR).
+
+.IP "\fB\--suppress-validation\fR"
+Suppress the generation of validation code ("perfect" parser). Validation is
+suppressed by default when the selected underlying XML parser is
+validating (\fBxerces\fR).
+
+.IP "\fB\--generate-polymorphic\fR"
+Generate polymorphism-aware code. Specify this option if you use substitution
+groups or
+.BR xsi:type .
+
+.IP "\fB\--generate-noop-impl\fR"
+Generate a sample parser implementation that does nothing (no operation).
+The sample implementation can then be filled with the application-specific
+code. For an input file in the form
+.B name.xsd
+this option triggers the generation of the two additional C++ files in the form:
+.B name-pimpl.hxx
+(parser implementation header file) and
+.B name-pimpl.cxx
+(parser implementation source file).
+
+.IP "\fB\--generate-print-impl\fR"
+Generate a sample parser implementation that prints the XML data to STDOUT.
+For an input file in the form
+.B name.xsd
+this option triggers the generation of the two additional C++ files in the form:
+.B name-pimpl.hxx
+(parser implementation header file) and
+.B name-pimpl.cxx
+(parser implementation source file).
+
+.IP "\fB\--generate-test-driver\fR"
+Generate a test driver for the sample parser implementation. For an input
+file in the form
+.B name.xsd
+this option triggers the generation of an additional C++ file in the form
+.BR name-driver.cxx .
+
+.IP "\fB\--force-overwrite\fR"
+Force overwriting of the existing implementation and test driver files.
+Use this option only if you do not mind loosing the changes you have made
+in the sample implementation or test driver files.
+
+.IP "\fB\--root-element-first\fR"
+Indicate that the first global element is the document root. This information
+is used to generate the test driver for the sample implementation.
+
+.IP "\fB\--root-element-last\fR"
+Indicate that the last global element is the document root. This information
+is used to generate the test driver for the sample implementation.
+
+.IP "\fB\--root-element \fIelement\fR"
+Indicate that
+.I element
+is the document root. This information is used to generate the test driver
+for the sample implementation.
+
+.IP "\fB\--generate-xml-schema\fR"
+Generate a C++ header file as if the schema being compiled defines the
+XML Schema namespace. In particular, the resulting file will have
+definitions for all parser skeletons and implementations corresponding
+to the XML Schema built-in types. The schema file provided to the compiler
+need not exist and is only used to derive the name of the resulting header
+file. Use the
+.B --extern-xml-schema
+option to include this file in the generated files for other schemas.
+
+.IP "\fB\--extern-xml-schema \fIfile\fR"
+Include a header file derived from
+.I file
+instead of generating the XML Schema namespace mapping inline. The provided
+file need not exist and is only used to derive the name of the included
+header file. Use the
+.B --generate-xml-schema
+option to generate this header file.
+
+.IP "\fB\--skel-type-suffix \fIsuffix\fR"
+Use the provided
+.I suffix
+instead of the default
+.B _pskel
+to construct the names of generated parser skeletons.
+
+.IP "\fB\--skel-file-suffix \fIsuffix\fR"
+Use the provided
+.I suffix
+instead of the default
+.B -pskel
+to construct the names of generated parser skeleton files.
+
+.IP "\fB\--impl-type-suffix \fIsuffix\fR"
+Use the provided
+.I suffix
+instead of the default
+.B _pimpl
+to construct the names of parser implementations for the built-in XML
+Schema types and sample parser implementations.
+
+.IP "\fB\--impl-file-suffix \fIsuffix\fR"
+Use the provided
+.I suffix
+instead of the default
+.B -pimpl
+to construct the names of generated sample parser implementation files.
+
+\"
+\" NAMING CONVENTION
+\"
+
+.SH NAMING CONVENTION
+The compiler can be instructed to use a particular naming convention in
+the generated code. A number of widely-used conventions can be selected
+using the
+.B --type-naming
+and
+.B --function-naming
+options. A custom naming convention can be achieved using the
+.BR --type-regex ,
+.BR --accessor-regex ,
+.BR --one-accessor-regex ,
+.BR --opt-accessor-regex ,
+.BR --seq-accessor-regex ,
+.BR --modifier-regex ,
+.BR --one-modifier-regex ,
+.BR --opt-modifier-regex ,
+.BR --seq-modifier-regex ,
+.BR --parser-regex ,
+.BR --serializer-regex ,
+.BR --enumerator-regex ,
+and
+.B --element-type-regex
+options.
+
+The
+.B --type-naming
+option specifies the convention that should be used for naming C++ types.
+Possible values for this option are
+.B knr
+(default),
+.BR ucc ,
+and
+.BR java .
+The
+.B knr
+value (stands for K&R) signifies the standard, lower-case naming convention
+with the underscore used as a word delimiter, for example: foo, foo_bar.
+The
+.B ucc
+(stands for upper-camel-case) and
+.B java
+values a synonyms for the same naming convention where the first letter
+of each word in the name is capitalized, for example: Foo, FooBar.
+
+Similarly, the
+.B --function-naming
+option specifies the convention that should be used for naming C++ functions.
+Possible values for this option are
+.B knr
+(default),
+.BR lcc ,
+and
+.BR java .
+The
+.B knr
+value (stands for K&R) signifies the standard, lower-case naming convention
+with the underscore used as a word delimiter, for example: foo(), foo_bar().
+The
+.B lcc
+value (stands for lower-camel-case) signifies a naming convention where the
+first letter of each word except the first is capitalized, for example: foo(),
+fooBar(). The
+.B java
+naming convention is similar to the lower-camel-case one except that accessor
+functions are prefixed with get, modifier functions are prefixed with set,
+parsing functions are prefixed with parse, and serialization functions are
+prefixed with serialize, for example: getFoo(), setFooBar(), parseRoot(),
+serializeRoot().
+
+Note that the naming conventions specified with the
+.B --type-naming
+and
+.B --function-naming
+options perform only limited transformations on the
+names that come from the schema in the form of type, attribute, and element
+names. In other words, to get consistent results, your schemas should follow
+a similar naming convention as the one you would like to have in the generated
+code. Alternatively, you can use the
+.B --*-regex
+options (discussed below) to perform further transformations on the names
+that come from the schema.
+
+The
+.BR --type-regex ,
+.BR --accessor-regex ,
+.BR --one-accessor-regex ,
+.BR --opt-accessor-regex ,
+.BR --seq-accessor-regex ,
+.BR --modifier-regex ,
+.BR --one-modifier-regex ,
+.BR --opt-modifier-regex ,
+.BR --seq-modifier-regex ,
+.BR --parser-regex ,
+.BR --serializer-regex ,
+.BR --enumerator-regex ,
+and
+.B --element-type-regex
+options allow you to specify extra regular expressions for each name
+category in addition to the predefined set that is added depending on
+the
+.B --type-naming
+and
+.B --function-naming
+options. Expressions that are provided with the
+.B --*-regex
+options are evaluated prior to any predefined expressions. This allows
+you to selectively override some or all of the predefined transformations.
+When debugging your own expressions, it is often useful to see which
+expressions match which names. The
+.B --name-regex-trace
+option allows you to trace the process of applying
+regular expressions to names.
+
+The value for the
+.B --*-regex
+options should be a perl-like regular expression in the form
+.BI / pattern / replacement /\fR.
+Any character can be used as a delimiter instead of
+.BR / .
+Escaping of the delimiter character in
+.I pattern
+or
+.I replacement
+is not supported. All the regular expressions for each category are pushed
+into a category-specific stack with the last specified expression
+considered first. The first match that succeeds is used. For the
+.B --one-accessor-regex
+(accessors with cardinality one),
+.B --opt-accessor-regex
+(accessors with cardinality optional), and
+.B --seq-accessor-regex
+(accessors with cardinality sequence) categories the
+.B --accessor-regex
+expressions are used as a fallback. For the
+.BR --one-modifier-regex ,
+.BR --opt-modifier-regex ,
+and
+.B --seq-modifier-regex
+categories the
+.B --modifier-regex
+expressions are used as a fallback. For the
+.B --element-type-regex
+category the
+.B --type-regex
+expressions are used as a fallback.
+
+The type name expressions
+.RB ( --type-regex )
+are evaluated on the name string that has the following format:
+
+[\fInamespace  \fR]\fIname\fR[\fB,\fIname\fR][\fB,\fIname\fR][\fB,\fIname\fR]
+
+The element type name expressions
+.RB ( --element-type-regex ),
+effective only when the
+.B --generate-element-type
+option is specified, are evaluated on the name string that has the following
+format:
+
+.I namespace  name
+
+In the type name format the
+.I namespace
+part followed by a space is only present for global type names. For global
+types and elements defined in schemas without a target namespace, the
+.I namespace
+part is empty but the space is still present. In the type name format after
+the initial
+.I name
+component, up to three additional
+.I name
+components can be present, separated by commas. For example:
+
+.B http://example.com/hello type
+
+.B foo
+
+.B foo,iterator
+
+.B foo,const,iterator
+
+The following set of predefined regular expressions is used to transform
+type names when the upper-camel-case naming convention is selected:
+
+.B /(?:[^ ]* )?([^,]+)/\\\\u$1/
+
+.B /(?:[^ ]* )?([^,]+),([^,]+)/\\\\u$1\\\\u$2/
+
+.B /(?:[^ ]* )?([^,]+),([^,]+),([^,]+)/\\\\u$1\\\\u$2\\\\u$3/
+
+.B /(?:[^ ]* )?([^,]+),([^,]+),([^,]+),([^,]+)/\\\\u$1\\\\u$2\\\\u$3\\\\u$4/
+
+The accessor and modifier expressions
+.RB ( --*accessor-regex
+and
+.BR --*modifier-regex )
+are evaluated on the name string that has the following format:
+
+\fIname\fR[\fB,\fIname\fR][\fB,\fIname\fR]
+
+After the initial
+.I name
+component, up to two additional
+.I name
+components can be present, separated by commas. For example:
+
+.B foo
+
+.B dom,document
+
+.B foo,default,value
+
+The following set of predefined regular expressions is used to transform
+accessor names when the
+.B java
+naming convention is selected:
+
+.B /([^,]+)/get\\\\u$1/
+
+.B /([^,]+),([^,]+)/get\\\\u$1\\\\u$2/
+
+.B /([^,]+),([^,]+),([^,]+)/get\\\\u$1\\\\u$2\\\\u$3/
+
+For the parser, serializer, and enumerator categories, the corresponding
+regular expressions are evaluated on local names of elements and on
+enumeration values, respectively. For example, the following predefined
+regular expression is used to transform parsing function names when the
+.B java
+naming convention is selected:
+
+.B /(.+)/parse\\\\u$1/
+
+See also the REGEX AND SHELL QUOTING section below.
+
+\"
+\" TYPE MAP
+\"
+.SH TYPE MAP
+Type map files are used in C++/Parser to define a mapping between XML
+Schema and C++ types. The compiler uses this information to determine
+the return types of
+.B post_*
+functions in parser skeletons corresponding to XML Schema types
+as well as argument types for callbacks corresponding to elements
+and attributes of these types.
+
+The compiler has a set of predefined mapping rules that map built-in
+XML Schema types to suitable C++ types (discussed below) and all
+other types to
+.BR void .
+By providing your own type maps you can override these predefined rules.
+The format of the type map file is presented below:
+
+.RS
+.B namespace
+.I schema-namespace
+[
+.I cxx-namespace
+]
+.br
+.B {
+.br
+  (
+.B include
+.IB file-name ;
+)*
+.br
+  ([
+.B type
+]
+.I schema-type cxx-ret-type
+[
+.I cxx-arg-type
+.RB ] ;
+)*
+.br
+.B }
+.br
+.RE
+
+Both
+.I schema-namespace
+and
+.I schema-type
+are regex patterns while
+.IR cxx-namespace ,
+.IR cxx-ret-type ,
+and
+.I cxx-arg-type
+are regex pattern substitutions. All names can be optionally enclosed
+in \fR" "\fR, for example, to include white-spaces.
+
+.I schema-namespace
+determines XML Schema namespace. Optional
+.I cxx-namespace
+is prefixed to every C++ type name in this namespace declaration.
+.I cxx-ret-type
+is a C++ type name that is used as a return type for the
+.B post_*
+functions. Optional
+.I cxx-arg-type
+is an argument type for callback functions corresponding to elements and
+attributes of this type. If
+.I cxx-arg-type
+is not specified, it defaults to
+.I cxx-ret-type
+if
+.I cxx-ret-type
+ends with
+.B *
+or
+.B &
+(that is, it is a pointer or a reference) and
+.B const
+\fIcxx-ret-type\fB&\fR otherwise.
+.I file-name
+is a file name either in the \fR" "\fR or < > format and is added with the
+.B #include
+directive to the generated code.
+
+The \fB#\fR character starts a comment that ends with a new line or end of
+file. To specify a name that contains \fB#\fR enclose it in \fR" "\fR. For
+example:
+
+.RS
+namespace http://www.example.com/xmlns/my my
+.br
+{
+.br
+  include "my.hxx";
+.br
+
+  # Pass apples by value.
+  #
+  apple apple;
+.br
+
+  # Pass oranges as pointers.
+  #
+  orange orange_t*;
+.br
+}
+.br
+.RE
+
+In the example above, for the
+.B http://www.example.com/xmlns/my#orange
+XML Schema type, the
+.B my::orange_t*
+C++ type will be used as both return and argument types.
+
+Several namespace declarations can be specified in a single file.
+The namespace declaration can also be completely omitted to map
+types in a schema without a namespace. For instance:
+
+.RS
+include "my.hxx";
+.br
+apple apple;
+.br
+
+namespace http://www.example.com/xmlns/my
+.br
+{
+.br
+  orange "const orange_t*";
+.br
+}
+.br
+.RE
+
+
+The compiler has a number of predefined mapping rules that can be
+presented as the following map files. The string-based XML Schema
+built-in types are mapped to either
+.B std::string
+or
+.B std::wstring
+depending on the character type selected with the
+.B --char-type
+option
+.RB ( char
+by default).
+
+.RS
+namespace http://www.w3.org/2001/XMLSchema
+.br
+{
+.br
+  boolean bool bool;
+.br
+
+  byte "signed char" "signed char";
+.br
+  unsignedByte "unsigned char" "unsigned char";
+.br
+
+  short short short;
+.br
+  unsignedShort "unsigned short" "unsigned short";
+.br
+
+  int int int;
+.br
+  unsignedInt "unsigned int" "unsigned int";
+.br
+
+  long "long long" "long long";
+.br
+  unsignedLong "unsigned long long" "unsigned long long";
+.br
+
+  integer "long long" "long long";
+.br
+
+  negativeInteger "long long" "long long";
+.br
+  nonPositiveInteger "long long" "long long";
+.br
+
+  positiveInteger "unsigned long long" "unsigned long long";
+.br
+  nonNegativeInteger "unsigned long long" "unsigned long long";
+.br
+
+  float float float;
+.br
+  double double double;
+.br
+  decimal double double;
+.br
+
+  string std::string;
+.br
+  normalizedString std::string;
+.br
+  token std::string;
+.br
+  Name std::string;
+.br
+  NMTOKEN std::string;
+.br
+  NCName std::string;
+.br
+  ID std::string;
+.br
+  IDREF std::string;
+.br
+  language std::string;
+.br
+  anyURI std::string;
+.br
+
+  NMTOKENS xml_schema::string_sequence;
+.br
+  IDREFS xml_schema::string_sequence;
+.br
+
+  QName xml_schema::qname;
+.br
+
+  base64Binary std::auto_ptr<xml_schema::buffer>
+.br
+               std::auto_ptr<xml_schema::buffer>;
+.br
+  hexBinary std::auto_ptr<xml_schema::buffer>
+.br
+            std::auto_ptr<xml_schema::buffer>;
+.br
+
+  date xml_schema::date;
+.br
+  dateTime xml_schema::date_time;
+.br
+  duration xml_schema::duration;
+.br
+  gDay xml_schema::gday;
+.br
+  gMonth xml_schema::gmonth;
+.br
+  gMonthDay xml_schema::gmonth_day;
+.br
+  gYear xml_schema::gyear;
+.br
+  gYearMonth xml_schema::gyear_month;
+.br
+  time xml_schema::time;
+.br
+}
+.br
+.RE
+
+
+The last predefined rule maps anything that wasn't mapped by previous
+rules to
+.BR void :
+
+.RS
+namespace .*
+.br
+{
+.br
+  .* void void;
+.br
+}
+.br
+.RE
+
+When you provide your own type maps with the
+.B --type-map
+option, they are evaluated first. This allows you to selectively override
+predefined rules.
+
+.\"
+.\" REGEX AND SHELL QUOTING
+.\"
+.SH REGEX AND SHELL QUOTING
+When entering a regular expression argument in the shell command line
+it is often necessary to use quoting (enclosing the argument in " "
+or ' ') in order to prevent the shell from interpreting certain
+characters, for example, spaces as argument separators and $ as
+variable expansions.
+
+Unfortunately it is hard to achieve this in a manner that is portable
+across POSIX shells, such as those found on GNU/Linux and UNIX, and
+Windows shell. For example, if you use " " for quoting you will get
+a wrong result with POSIX shells if your expression contains $. The
+standard way of dealing with this on POSIX systems is to use ' '
+instead. Unfortunately, Windows shell does not remove ' '  from
+arguments when they are passed to applications. As a result you may
+have to use ' ' for POSIX and " " for Windows ($ is not treated as
+a special character on Windows).
+
+Alternatively, you can save regular expression options into a file,
+one option per line, and use this file with the
+.B --options-file
+option. With this approach you don't need to worry about shell quoting.
+
+.\"
+.\" DIAGNOSTICS
+.\"
+.SH DIAGNOSTICS
+If the input file is not a valid W3C XML Schema definition,
+.B xsd
+will issue diagnostic messages to
+.B STDERR
+and exit with non-zero exit code.
+.SH BUGS
+Send bug reports to the xsd-users@codesynthesis.com mailing list.
+.SH COPYRIGHT
+Copyright (c) 2005-2010 Code Synthesis Tools CC.
+
+Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License,
+version 1.2; with no Invariant Sections, no Front-Cover Texts and
+no Back-Cover Texts. Copy of the license can be obtained from
+http://codesynthesis.com/licenses/fdl-1.2.txt

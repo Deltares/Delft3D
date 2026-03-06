@@ -1650,20 +1650,20 @@ int proj_trans_bounds(PJ_CONTEXT *context, PJ *P, PJ_DIRECTION direction,
 /*****************************************************************************/
 static void reproject_bbox(PJ *pjGeogToCrs, double west_lon, double south_lat,
                            double east_lon, double north_lat, double &minx,
-                           double &miny, double &maxx, double &maxy) {
+                           double &miny, double &max_x, double &max_y) {
     /*****************************************************************************/
 
     minx = -std::numeric_limits<double>::max();
     miny = -std::numeric_limits<double>::max();
-    maxx = std::numeric_limits<double>::max();
-    maxy = std::numeric_limits<double>::max();
+    max_x = std::numeric_limits<double>::max();
+    max_y = std::numeric_limits<double>::max();
 
     if (!(west_lon == -180.0 && east_lon == 180.0 && south_lat == -90.0 &&
           north_lat == 90.0)) {
         minx = -minx;
         miny = -miny;
-        maxx = -maxx;
-        maxy = -maxy;
+        max_x = -max_x;
+        max_y = -max_y;
 
         constexpr int N_STEPS = 20;
         constexpr int N_STEPS_P1 = N_STEPS + 1;
@@ -1689,8 +1689,8 @@ static void reproject_bbox(PJ *pjGeogToCrs, double west_lon, double south_lat,
             if (x[j] != HUGE_VAL && y[j] != HUGE_VAL) {
                 minx = std::min(minx, x[j]);
                 miny = std::min(miny, y[j]);
-                maxx = std::max(maxx, x[j]);
-                maxy = std::max(maxy, y[j]);
+                max_x = std::max(max_x, x[j]);
+                max_y = std::max(max_y, y[j]);
             }
         }
     }

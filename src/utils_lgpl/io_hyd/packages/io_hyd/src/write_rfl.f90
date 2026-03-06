@@ -1,47 +1,43 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine write_rfl(hyd)
-
       ! function : write the source in delwaq format
 
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       use time_module, only: mjd2date
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
 
       ! local declarations
 
@@ -49,7 +45,7 @@
       integer                                :: lunrfl                ! unit number sources file
       integer                                :: nowast                ! number of wasteloads
       integer                                :: noflow                ! number of flows
-      integer                                :: nolay                 ! number of layers
+      integer                                :: num_layers                 ! number of layers
       integer                                :: nolay_waste           ! number of layers for specific load
       integer                                :: iwaste_lay            ! follow number load
       integer                                :: nobrk                 ! number of breakpoints
@@ -79,25 +75,26 @@
       integer           :: isec
       integer           :: success
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
-      nowast = hyd%wasteload_coll%cursize
+      nowast = hyd%wasteload_coll%current_size
       if ( nowast .le. 0 ) return
-      nolay  = hyd%nolay
-      nobrk  = hyd%wasteload_data%no_brk
+      num_layers  = hyd%num_layers
+      nobrk  = hyd%wasteload_data%num_breakpoints
 
-      if ( nowast .ne. hyd%wasteload_data%no_loc ) then
+      if ( nowast .ne. hyd%wasteload_data%num_locations ) then
          write(lunrep,*) 'error, number of wasteloads in hyd file does not equal the data files'
          write(lunrep,*) 'number from hyd file:',nowast
-         write(lunrep,*) 'number from data    :',hyd%wasteload_data%no_loc
-         call srstop(1)
+
+         write(lunrep,*) 'number from data    :',hyd%wasteload_data%num_locations
+         call stop_with_error()
       endif
 
-      if ( nolay .gt. 1 ) then
-         allocate(waq_layers_frac(nolay))
+      if ( num_layers .gt. 1 ) then
+         allocate(waq_layers_frac(num_layers))
          waq_layers_frac = 0.0
          koff = 0
-         do ilay = 1 , nolay
+         do ilay = 1 , num_layers
             nok = nint(hyd%waq_layers(ilay))
             do k = 1 , nok
                waq_layers_frac(ilay) = waq_layers_frac(ilay) + hyd%hyd_layers(koff+k)
@@ -107,7 +104,7 @@
          noflow = 0
          do i = 1, nowast
             if ( hyd%wasteload_coll%wasteload_pnts(i)%k .eq. 0 ) then
-               noflow = noflow + nolay
+               noflow = noflow + num_layers
             else
                noflow = noflow + 1
             endif
@@ -118,15 +115,15 @@
          waq_layers_frac = 1.0
       endif
 
-      call dlwqfile_open(hyd%file_rfl)
-      lunrfl = hyd%file_rfl%unit_nr
+      call hyd%file_rfl%open()
+      lunrfl = hyd%file_rfl%unit
 
       ! loop over the wasteloads
 
       iwaste_lay = 0
       do iwaste = 1 , nowast
          if ( hyd%wasteload_coll%wasteload_pnts(iwaste)%k .eq. 0 ) then
-            nolay_waste = nolay
+            nolay_waste = num_layers
          else
             nolay_waste = 1
          endif
@@ -183,7 +180,7 @@
       enddo
       deallocate(waq_layers_frac)
 
-      close(hyd%file_rfl%unit_nr)
+      close(hyd%file_rfl%unit)
       hyd%file_rfl%status = FILE_STAT_UNOPENED
 
       return

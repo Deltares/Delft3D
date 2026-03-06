@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -29,13 +29,13 @@
 
       ! global declarations
 
-      use m_file_unit_number
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use waq_file_utils_external, only: create_new_file_unit_number
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
       character(len=*)                       :: file_names            ! file with new discharge names and type
 
       ! local declarations
@@ -43,7 +43,7 @@
       integer                                :: lun_names             ! unit number
       integer                                :: nowast                ! number of wasteloads
       integer                                :: nowast_tot            ! number of wasteloads total in waq
-      integer                                :: nolay                 ! number of layers
+      integer                                :: num_layers                 ! number of layers
       integer                                :: nolay_waste           ! number of layers for specific load
       integer                                :: iwaste_lay            ! follow number load
       integer                                :: ilay                  ! waq layer index
@@ -61,16 +61,16 @@
 
       ! some init
 
-      nowast = hyd%wasteload_coll%cursize
+      nowast = hyd%wasteload_coll%current_size
       if ( nowast .le. 0 ) return
-      nolay  = hyd%nolay
+      num_layers  = hyd%num_layers
 
       ! count total number of waq loads
 
       nowast_tot = 0
       do iwaste = 1 , nowast
          if ( hyd%wasteload_coll%wasteload_pnts(iwaste)%k .eq. 0 ) then
-            nolay_waste = nolay
+            nolay_waste = num_layers
          else
             nolay_waste = 1
          endif
@@ -98,7 +98,7 @@
          k = hyd%wasteload_coll%wasteload_pnts(iwaste)%k
 
          if ( k .eq. 0 ) then
-            nolay_waste = nolay
+            nolay_waste = num_layers
             k = 1
          else
             nolay_waste = 1

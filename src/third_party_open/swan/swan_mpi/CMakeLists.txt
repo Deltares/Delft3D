@@ -28,16 +28,15 @@ add_executable(${executable_name}   ${headers}
                                     ${rc_version_file}
                                     ${executable_files})
 
+target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies netcdf4
-                         netcdff)
+    set(exe_dependencies netcdff)
 
-    oss_include_libraries(${executable_name} exe_dependencies)
-    target_link_libraries(${executable_name} ${exe_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
-                        ${mpi_include_path}
+                        ${mpi_module_path}
                         ${version_include_dir})
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
@@ -46,15 +45,9 @@ if (WIN32)
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
                           "${mpi_fortran_library}"
                           "netcdf.lib")
-
-    # disable OpenMP
-    string(REPLACE "/MP" "" TEMP "${CMAKE_Fortran_FLAGS}")
-    set(CMAKE_Fortran_FLAGS ${TEMP})
-    string(REPLACE "/MP" "" TEMP "${CMAKE_Fortran_FLAGS_DEBUG}")
-    set(CMAKE_Fortran_FLAGS_DEBUG ${TEMP})
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
@@ -62,17 +55,9 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
-    target_link_libraries(${executable_name}
-         PkgConfig::NETCDF
+    target_link_libraries(${executable_name} PRIVATE
          netcdff)
 
-    target_include_directories(${executable_name} PUBLIC netcdff)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}
                         ${CMAKE_BINARY_DIR}/fortran_module_dir)
@@ -89,7 +74,22 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+target_compile_options(${executable_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+
+# Set additional compilation flags to match with Deltares-SWAN outside Delft3D
+if (WIN32)
+    target_compile_options(${executable_name} PRIVATE
+                                                  "${avx2_flag}"
+                                                  "${traceback_flag}"
+                                                  "${heap_arrays_20_flag}"
+                                                  "${automatic_local_variable_storage_flag}"
+                                                  "${floating_point_source_flag}"
+                                                  "${floating_point_speculation_safe_flag}")
+endif(WIN32)
+if (UNIX)
+    target_compile_options(${executable_name} PRIVATE
+                                                  "SHELL:${avx2_flag}")
+endif(UNIX)
 
 # Define preprocessor definitions
 if (WIN32)
@@ -103,10 +103,6 @@ endif(UNIX)
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${checkout_src_root}/third_party_open/swan FILES ${executable_files})
 set_target_properties (${executable_name} PROPERTIES FOLDER third_party_open/swan_mpi)
-
-if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
-endif(WIN32)
 
 # Set post-build step
 set(install_dir ${CMAKE_BINARY_DIR})

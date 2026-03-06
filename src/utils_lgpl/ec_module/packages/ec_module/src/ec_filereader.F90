@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -129,8 +129,6 @@ module m_ec_filereader
          if (allocated(fileReader%tframe%times)) deallocate(fileReader%tframe%times, stat = istat)
          deallocate(fileReader%tframe, stat = istat)
          if (istat /= 0) success = .false.
-         deallocate(fileReader%hframe, stat = istat)
-         if (istat /= 0) success = .false.
 
          if (allocated(fileReader%variable_names)) then
             deallocate(fileReader%variable_names)
@@ -201,7 +199,6 @@ module m_ec_filereader
          character(len=255)      :: qname
          integer                 :: nv, nl, iitem
          integer                 :: from, thru
-         integer                 :: time_ndx
          real(hp), dimension(:), allocatable    :: values
          type(tEcItem), pointer  :: itemPtr
          integer                 :: n_invalid_components
@@ -267,6 +264,10 @@ module m_ec_filereader
                case (BC_FUNC_ASTRO)
                   success = ecTimeFrameRealHpTimestepsToDateTime(timesteps, yyyymmdd, hhmmss)
                   n_invalid_components = (ecFileReaderLookupAstroComponents(fileReaderPtr))
+                  if (n_invalid_components > 0) then
+                     success = .false.
+                     return
+                  end if
                   do i = 1, size(fileReaderPtr%items(1)%ptr%sourceT1FieldPtr%arr1d)
                      fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arr1d(i) = fileReaderPtr%items(1)%ptr%sourceT1FieldPtr%arr1d(i)
                      fileReaderPtr%items(2)%ptr%sourceT0FieldPtr%arr1d(i) = fileReaderPtr%items(2)%ptr%sourceT1FieldPtr%arr1d(i)
@@ -335,6 +336,10 @@ module m_ec_filereader
                if (allocated(fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_components)) then ! Astronomical case
                   success = ecTimeFrameRealHpTimestepsToDateTime(timesteps, yyyymmdd, hhmmss)
                   n_invalid_components = (ecFileReaderLookupAstroComponents(fileReaderPtr))
+                  if (n_invalid_components > 0) then
+                     success = .false.
+                     return
+                  end if
                   do i = 1, size(fileReaderPtr%items(1)%ptr%sourceT1FieldPtr%arr1d)
                      fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arr1d(i) = fileReaderPtr%items(1)%ptr%sourceT1FieldPtr%arr1d(i)
                      fileReaderPtr%items(2)%ptr%sourceT0FieldPtr%arr1d(i) = fileReaderPtr%items(2)%ptr%sourceT1FieldPtr%arr1d(i)
@@ -378,7 +383,7 @@ module m_ec_filereader
                   if(fileReaderPtr%one_time_field) then
                      t0t1 = -1
                      do i=1, fileReaderPtr%nItems
-                        success = ecNetcdfReadBlock(fileReaderPtr, fileReaderPtr%items(i)%ptr, t0t1, fileReaderPtr%items(i)%ptr%elementSetPtr%nCoordinates)
+                        success = ecNetcdfReadBlock(fileReaderPtr, fileReaderPtr%items(i)%ptr, t0t1, fileReaderPtr%items(i)%ptr%elementSetPtr%nCoordinates, timesteps)
                         if (t0t1 == 0) then
                            ! flip t0 and t1
                            fieldPtrA => fileReaderPtr%items(i)%ptr%sourceT1FieldPtr
@@ -572,7 +577,9 @@ module m_ec_filereader
                end select
             endif
             itemPtr%tframe => fileReaderPtr%tframe
-            itemPtr%hframe => fileReaderPtr%hframe
+            if (allocated(fileReaderPtr%hframe%phases)) then ! a valid hframe will have allocated phases
+               itemPtr%hframe => fileReaderPtr%hframe
+            end if
             success = .true.
          end if
       end function ecFileReaderAddItem
@@ -581,22 +588,15 @@ module m_ec_filereader
          implicit none
          integer                               :: nmissing      !< function status
          type(tEcFileReader), pointer          :: fileReaderPtr !< FileReader corresponding to fileReaderId
-         integer :: kcmp, icmp
+         integer                               :: kcmp          !< number of astronomical components in the file
 
          nmissing = 0
          kcmp = size(fileReaderPtr%items(1)%ptr%sourceT1FieldPtr%arr1d)
          if (.not.allocated(fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_kbnumber)) then
             allocate (fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_kbnumber(kcmp))
             nmissing = asc_map_components(kcmp, fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_components, fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_kbnumber)
-            if (nmissing>0) then
-               do icmp=1, kcmp
-                  if (fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_kbnumber(icmp)<0) then
-                     call setECMessage('unknown component '     &
-                                 // trim(fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_components(icmp)),                      &
-                                      ' amplitude set to 0 ')
-                     ! TODO: return the appropriate state
-                  end if
-               end do
+            if (nmissing > 0) then
+               call setECMessage("Failed to read all astronomical constituents from file '" // trim(fileReaderPtr%FILENAME) // "'. See the user manual for an overview of all supported constituents.")
             end if
          end if
       end function ecFileReaderLookupAstroComponents

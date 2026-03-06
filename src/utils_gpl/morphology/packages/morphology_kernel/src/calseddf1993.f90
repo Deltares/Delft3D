@@ -1,10 +1,10 @@
-subroutine calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , &
+subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,sig       , &
                       & thick     ,dicww     ,tauwav    ,tauc      ,ltur      , &
                       & eps       ,vonkar    ,difvr     ,deltas    ,epsbed    , &
                       & epsmax    ,epsmxc    ,seddif    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -44,25 +44,25 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , 
 !
 ! Arguments
 !
-    integer                    , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
+    integer                    , intent(in)  :: num_layers_grid   !  Description and declaration in esm_alloc_int.f90
     integer                    , intent(in)  :: ltur   !  Description and declaration in esm_alloc_int.f90
     real(fp)                   , intent(in)  :: deltas
-    real(fp), dimension(0:kmax), intent(in)  :: dicww  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(0:num_layers_grid), intent(in)  :: dicww  !  Description and declaration in esm_alloc_real.f90
     real(fp)                   , intent(in)  :: eps
     real(fp)                   , intent(in)  :: epsbed
     real(fp)                   , intent(in)  :: epsmax
     real(fp)                   , intent(in)  :: h1
-    real(fp), dimension(kmax)  , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(num_layers_grid)  , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
     real(fp)                   , intent(in)  :: tauc
     real(fp)                   , intent(in)  :: tauwav
-    real(fp), dimension(kmax)  , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(num_layers_grid)  , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
     real(fp)                   , intent(in)  :: ustarc
     real(fp)                   , intent(in)  :: vonkar
-    real(fp), dimension(0:kmax), intent(in)  :: ws     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(0:num_layers_grid), intent(in)  :: ws     !  Description and declaration in esm_alloc_real.f90
     logical                    , intent(in)  :: difvr
     !
     real(fp)                   , intent(out) :: epsmxc
-    real(fp), dimension(0:kmax), intent(out) :: seddif !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(0:num_layers_grid), intent(out) :: seddif !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
@@ -71,7 +71,6 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , 
     real(fp)                    :: betaef
     real(fp)                    :: epscur
     real(fp)                    :: epswav
-    real(fp)                    :: hs
     real(fp)                    :: zi
 !
 !! executable statements -------------------------------------------------------
@@ -106,7 +105,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , 
        !
        ! loop through vertical
        !
-       do k = 1, kmax
+       do k = 1, num_layers_grid
           !
           ! calculate level of lower cell interface
           ! epscur as described by Van Rijn 1984
@@ -140,7 +139,7 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , 
        else
           betaef = beta
        endif
-       do k = 0, kmax
+       do k = 0, num_layers_grid
           seddif(k) = dicww(k) * betaef
        enddo
     endif

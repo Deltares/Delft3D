@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,8 +28,8 @@ module m_prodr2
 contains
 
 
-    SUBROUTINE PRODR2 (DERIV, NOTOT, NOFLUX, STOCHI, NFLUX1, &
-            NFLUXP, FLUX, NOSEG, VOLUME, NDT)
+    SUBROUTINE PRODR2 (DERIV, num_substances_total, NOFLUX, STOCHI, NFLUX1, &
+            NFLUXP, FLUX, num_cells, VOLUME, NDT)
         !
         !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
         !
@@ -47,26 +47,26 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     DERIV   REAL     NOTOT,*    OUTPUT  Model derivatives
-        !     NOTOT   INTEGER       1     INPUT   Total number of substances
+        !     DERIV   REAL     num_substances_total,*    OUTPUT  Model derivatives
+        !     num_substances_total   INTEGER       1     INPUT   Total number of substances
         !     NOFLUX  INTEGER       1     INPUT   Nr. of fluxes
-        !     STOCHI  REAL   NOTOT*NOFLUX INPUT   Proces stochiometry
+        !     STOCHI  REAL   num_substances_total*NOFLUX INPUT   Proces stochiometry
         !     NFLUX1  INTEGER       1     INPUT   first flux to construct deriv
         !     NFLUXP  INTEGER       1     INPUT   number of fluxes to construct deriv
         !     FLUX    REAL          *     INPUT   fluxes at all segments
-        !     NOSEG   INTEGER       1     INPUT   number of segments
+        !     num_cells   INTEGER       1     INPUT   number of segments
         !     VOLUME  REAL          *     INPUT   Segment volumes
         !     NDT     INTEGER       1     INPUT   nuber of timesteps in fractional step
         !
         !     Declaration of arguments
         !
         use timers
-        INTEGER(kind = int_wp) :: NOTOT, NOFLUX, NFLUX1, NFLUXP, NOSEG, NDT
-        REAL(kind = real_wp) :: DERIV(NOTOT, NOSEG), STOCHI(NOTOT, NOFLUX), &
-                FLUX(NOFLUX, NOSEG), VOLUME(NOSEG)
+        INTEGER(kind = int_wp) :: num_substances_total, NOFLUX, NFLUX1, NFLUXP, num_cells, NDT
+        REAL(kind = real_wp) :: DERIV(num_substances_total, num_cells), STOCHI(num_substances_total, NOFLUX), &
+                FLUX(NOFLUX, num_cells), VOLUME(num_cells)
 
         !     loclal
-        integer(kind = int_wp) :: fdt, isys, iflux, iseg
+        integer(kind = int_wp) :: fdt, substance_i, iflux, cell_i
         real(kind = real_wp) :: st, fact
 
         integer(kind = int_wp) :: ithandl = 0
@@ -75,20 +75,20 @@ contains
         !     We construeren nu de DERIV's
         !
         FDT = NDT
-        DO ISYS = 1, NOTOT
+        DO substance_i = 1, num_substances_total
             DO IFLUX = NFLUX1, NFLUX1 + NFLUXP - 1
-                ST = STOCHI(ISYS, IFLUX)
+                ST = STOCHI(substance_i, IFLUX)
                 IF (ST /= 0.0) THEN
                     FACT = FDT * ST
                     IF (ABS(FACT - 1.0) < 1.E-10) THEN
-                        DO ISEG = 1, NOSEG
-                            DERIV(ISYS, ISEG) = DERIV(ISYS, ISEG) + &
-                                    FLUX(IFLUX, ISEG) * VOLUME(ISEG)
+                        DO cell_i = 1, num_cells
+                            DERIV(substance_i, cell_i) = DERIV(substance_i, cell_i) + &
+                                    FLUX(IFLUX, cell_i) * VOLUME(cell_i)
                         ENDDO
                     ELSE
-                        DO ISEG = 1, NOSEG
-                            DERIV(ISYS, ISEG) = DERIV(ISYS, ISEG) + &
-                                    FLUX(IFLUX, ISEG) * VOLUME(ISEG) * FACT
+                        DO cell_i = 1, num_cells
+                            DERIV(substance_i, cell_i) = DERIV(substance_i, cell_i) + &
+                                    FLUX(IFLUX, cell_i) * VOLUME(cell_i) * FACT
                         ENDDO
                     ENDIF
                 ENDIF

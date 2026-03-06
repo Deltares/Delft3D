@@ -11,6 +11,7 @@ create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . resource_fil
 set(oss_dependencies waq_definition
         deltares_common
         deltares_common_c
+        waq_proc_preprocess
         waq_process
         waq_hyd_data
         waq_utils_c
@@ -19,11 +20,9 @@ set(oss_dependencies waq_definition
 # Link libraries
 target_link_libraries(${library_name} ${oss_dependencies})
 
-oss_include_libraries(${library_name} oss_dependencies)
-
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE ${waq_default_flags})
-target_include_directories(${library_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../include ${version_include_dir})
+target_include_directories(${library_name} PRIVATE ${version_include_dir})
 
 # Define how the files should be structured in Visual studio
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

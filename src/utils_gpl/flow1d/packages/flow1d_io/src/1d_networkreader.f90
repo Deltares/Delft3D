@@ -1,7 +1,7 @@
 module m_1d_networkreader
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -109,12 +109,6 @@ module m_1d_networkreader
    endif
    if (meshgeom%nbranches .eq. -1) then
       call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nbranches')
-   endif
-   if (.not.associated(meshgeom%nodex)) then
-      call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nodex')
-   endif
-   if (.not.associated(meshgeom%nodey)) then
-      call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nodey')
    endif
    if (.not.allocated(nodeids)) then
       call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in nodeids')
@@ -459,15 +453,15 @@ module m_1d_networkreader
       double precision                       :: y
       logical                                :: success
       
-      call  prop_get_string(md_ptr, 'node', 'id', nodeId, success)
+      call prop_get(md_ptr, 'node', 'id', nodeId, success)
       if (.not. success) then
          call SetMessage(LEVEL_FATAL, 'Error Reading Node ID')
       endif
       
-      call prop_get_string(md_ptr, 'node', 'name', nodeName, success)
+      call prop_get(md_ptr, 'node', 'name', nodeName, success)
 
-      call prop_get_double(md_ptr, 'node', 'x', x, success)
-      if (success) call prop_get_double(md_ptr, 'node', 'y', y, success)
+      call prop_get(md_ptr, 'node', 'x', x, success)
+      if (success) call prop_get(md_ptr, 'node', 'y', y, success)
       
       if (.not. success) then
          call SetMessage(LEVEL_FATAL, 'Error Reading Node '''//trim(nodeId)//'''')
@@ -532,7 +526,7 @@ module m_1d_networkreader
       type(t_branchSet), target, intent(inout) :: brs
       type(t_nodeSet), target, intent(inout)   :: nds
       type(tree_data), pointer, intent(in)     :: md_ptr
-      
+
       ! Local Variables
       integer                                  :: ibr
       type(t_branch), pointer                  :: pbr
@@ -567,15 +561,15 @@ module m_1d_networkreader
       
       pbr =>brs%branch(brs%Count)
       
-      call  prop_get_string(md_ptr, 'branch', 'id', branchId, success)
+      call prop_get(md_ptr, 'branch', 'id', branchId, success)
       if (.not. success) then
          call SetMessage(LEVEL_FATAL, 'Error Reading Branch ID')
       endif
 
-      call  prop_get_string(md_ptr, 'branch', 'fromnode', begNodeId, success)
-      if (success) call  prop_get_string(md_ptr, 'branch', 'tonode', endNodeId, success)
-      if (success) call  prop_get_integer(md_ptr, 'branch', 'order', ordernumber, success)
-      if (success) call  prop_get_integer(md_ptr, 'branch', 'gridpointscount', gridPointsCount, success)
+      call prop_get(md_ptr, 'branch', 'fromnode', begNodeId, success)
+      if (success) call prop_get(md_ptr, 'branch', 'tonode', endNodeId, success)
+      if (success) call prop_get(md_ptr, 'branch', 'order', ordernumber, success)
+      if (success) call prop_get(md_ptr, 'branch', 'gridpointscount', gridPointsCount, success)
 
       if (.not. success) then
          call SetMessage(LEVEL_FATAL, 'Error Reading Branch '''//trim(branchId)//'''')
@@ -616,9 +610,9 @@ module m_1d_networkreader
          call SetMessage(LEVEL_FATAL, 'Reading Branch: Error allocating Gridpoint Arrays')
       endif
       
-      call prop_get_doubles(md_ptr, 'branch', 'gridPointX', gpX, gridPointsCount, success)
-      if (success) call prop_get_doubles(md_ptr, 'branch', 'gridPointY', gpY, gridPointsCount, success)
-      if (success) call prop_get_doubles(md_ptr, 'branch', 'gridPointOffsets', gpchainages, gridPointsCount, success)
+      call prop_get(md_ptr, 'branch', 'gridPointX', gpX, gridPointsCount, success)
+      if (success) call prop_get(md_ptr, 'branch', 'gridPointY', gpY, gridPointsCount, success)
+      if (success) call prop_get(md_ptr, 'branch', 'gridPointOffsets', gpchainages, gridPointsCount, success)
       if (.not. success) then
          call SetMessage(LEVEL_FATAL, 'Error Reading Grid Data from Branch '''//trim(branchId)//'''')
       endif
@@ -685,7 +679,7 @@ module m_1d_networkreader
       endif
       gpID = ' '
 
-      call prop_get_strings(md_ptr, 'branch', 'gridPointIds', gridPointsCount, gpID, success)
+      call prop_get(md_ptr, 'branch', 'gridPointIds', gridPointsCount, gpID, success)
       call realloc(pbr%gridPointIDs, gridPointsCount)
 
       if (success) then

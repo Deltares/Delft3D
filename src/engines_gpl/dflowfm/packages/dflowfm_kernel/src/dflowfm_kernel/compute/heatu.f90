@@ -1,80 +1,93 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-subroutine heatu(timhr)
-use m_flow
-use m_flowgeom
-use m_sferic
-implicit none
+module m_heatu
 
-double precision :: timhr
+   implicit none
 
-double precision :: qsnom
-integer          :: n, kb, kt
+contains
 
+   !> Update the heatfluxes
+   subroutine heatu(time_in_hours)
+      use precision, only: dp
+      use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, jamapheatflux, jahisheatflux, &
+                        temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, epshstem, chktempdep
+      use m_flowgeom, only: ndxi, nd
+      use m_sferic, only: anglon, anglat
+      use m_wind, only: heatsrc0
+      use m_qsun_nominal, only: calculate_nominal_solar_radiation
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_heatun, only: heatun
 
-heatsrc0 = 0d0                                              ! array of heat sources zero
+      real(kind=dp), intent(in) :: time_in_hours !< Current model time in hours
 
-if (jamapheatflux > 0 .or. jahisheatflux > 0) then          ! map output zero
-   if ( jatem.eq.3 ) then
-      Qtotmap=0d0
-   else if ( jatem.eq.5 ) then
-      Qtotmap=0d0
-      Qsunmap=0d0
-      Qevamap=0d0
-      Qconmap=0d0
-      Qlongmap=0d0
-      Qfrevamap=0d0
-      Qfrconmap=0d0
-   end if
-endif
+      real(kind=dp) :: nominal_solar_radiation
+      integer :: n, kb, kt
 
-call qsun_nominal(anglon, anglat, timhr, qsnom) ! for models not in spherical coordinates do this just once
+      heatsrc0(:) = 0.0_dp ! 2D or 3D heat source per cell, only set at timeuser (Km3/s)
 
-!epshstem     = 0.001d0
-!chktempdep   = 0.0d0
-!Soiltempthick = 0.2d0
+      if (jamapheatflux > 0 .or. jahisheatflux > 0) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS) then
+            qtotmap(:) = 0.0_dp
+         else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            qtotmap(:) = 0.0_dp
+            qsunmap(:) = 0.0_dp
+            qevamap(:) = 0.0_dp
+            qconmap(:) = 0.0_dp
+            qlongmap(:) = 0.0_dp
+            qfrevamap(:) = 0.0_dp
+            qfrconmap(:) = 0.0_dp
+         end if
+      end if
 
-!$OMP PARALLEL DO   &
-!$OMP PRIVATE(n,kb,kt)
-do n = 1,ndxi
-   if (nd(n)%lnx == 0) cycle   ! The need for this statement makes Santa Claus unhappy
-   if (hs(n) < epshstem) cycle
-   call heatun(n,timhr,qsnom)
-   if (hs(n) < chktempdep) then
-      call getkbotktop(n,kb,kt)
-      heatsrc0 (kb:kt) = heatsrc0 (kb:kt)*hs(n)/chktempdep
-   endif
-enddo
-!$OMP END PARALLEL DO
+      nominal_solar_radiation = calculate_nominal_solar_radiation(anglon, anglat, time_in_hours) ! for models not in spherical coordinates do this just once
 
-end subroutine heatu
+      !$OMP PARALLEL DO   &
+      !$OMP PRIVATE(n,kb,kt)
+      do n = 1, ndxi
+         if (nd(n)%lnx == 0) then
+            cycle
+         end if
+         if (hs(n) < epshstem) then
+            cycle
+         end if
+         call heatun(n, time_in_hours, nominal_solar_radiation)
+         if (hs(n) < chktempdep) then
+            call getkbotktop(n, kb, kt)
+            heatsrc0(kb:kt) = heatsrc0(kb:kt) * hs(n) / chktempdep
+         end if
+      end do
+      !$OMP END PARALLEL DO
+
+   end subroutine heatu
+
+end module m_heatu

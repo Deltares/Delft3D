@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -42,7 +42,7 @@ contains
 
         implicit none
 
-        character*60 aline
+        character(len=60) aline
 
         integer(kind = int_wp) :: i, ioff, j
 

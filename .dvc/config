@@ -1,0 +1,7 @@
+[core]
+    remote = storage
+    autostage = true
+['remote "storage"']
+    url = s3://delft3d-testbench
+    endpointurl = https://s3.deltares.nl
+    profile = default

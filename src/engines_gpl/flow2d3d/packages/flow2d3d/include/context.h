@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -506,7 +506,7 @@ class D3dFlowContext
         );
 
     void CMapLog(
-        char      * format,     // I: 'fprintf-format' for print
+        const char      * format,     // I: 'fprintf-format' for print
         ...             // I: varargs
         );
 

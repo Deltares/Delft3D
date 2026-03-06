@@ -1,7 +1,7 @@
-subroutine tricom_finish(olv_handle, gdp)
+subroutine tricom_finish(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -43,9 +43,7 @@ subroutine tricom_finish(olv_handle, gdp)
     use sync_flowcouple
     use sync_flowwave
     use flow2d3d_timers
-    use d3d_olv_class
     use D3D_Sobek 
-    use D3DPublish
     use globaldata
     use dfparall
     !
@@ -166,7 +164,7 @@ subroutine tricom_finish(olv_handle, gdp)
     integer(pntrsize)                   , pointer :: dis
     integer(pntrsize)                   , pointer :: disch
     integer(pntrsize)                   , pointer :: discom
-    integer(pntrsize)                   , pointer :: dp
+    integer(pntrsize)                   , pointer :: dpd
     integer(pntrsize)                   , pointer :: dpc
     integer(pntrsize)                   , pointer :: dps
     integer(pntrsize)                   , pointer :: dpu
@@ -335,17 +333,12 @@ subroutine tricom_finish(olv_handle, gdp)
     logical                             , pointer :: lrdok         ! Logical to check if reading phase has been passed. 
     real(fp)                            , pointer :: dtsec         ! DT in seconds 
 !
-! Global variables
-!
-    type(olvhandle) :: olv_handle
-!
 ! Local variables
 !
     integer                                       :: ierror        ! Value is non-zero when an error is encountered
     integer                                       :: istat
     integer                                       :: lunfil
     integer                            , external :: modlen
-    integer                            , external :: newlun
     integer                                       :: nst           ! Current time step counter 
     integer                                       :: nst2go        ! Number of timesteps left 
     integer(pntrsize)                  , external :: gtcpnt
@@ -488,7 +481,7 @@ subroutine tricom_finish(olv_handle, gdp)
     dis                 => gdp%gdr_i_ch%dis
     disch               => gdp%gdr_i_ch%disch
     discom              => gdp%gdr_i_ch%discom
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dpc                 => gdp%gdr_i_ch%dpc
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
@@ -669,7 +662,7 @@ subroutine tricom_finish(olv_handle, gdp)
     !
     if (lsed > 0) then
        call rwbotc(comfil    ,lundia    ,error     ,itima     , &
-                 & itcomi    ,mmax      ,nmax      ,nmaxus    ,r(dp)     , &
+                 & itcomi    ,mmax      ,nmax      ,nmaxus    ,r(dpd)    , &
                  & r(rbuff)  ,gdp       )
        if (error) goto 9999
     endif
@@ -797,11 +790,6 @@ subroutine tricom_finish(olv_handle, gdp)
        call timer_stop(timer_wait, gdp)
        write(*,*) '... continue'
     endif
-    !
-    ! Close Communication with delftonline
-    !
-    call setEndFlag(olv_handle, 1) !Tells the DOL client that the simulation has ended by passing an exception
-    call free_olv(olv_handle)
     !
     ! Mormerge synchronisation
     !

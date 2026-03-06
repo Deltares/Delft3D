@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -59,7 +59,7 @@ contains
 
         implicit none
 
-        character*8 :: cdate
+        character(len=8) :: cdate
         integer(kind = int_wp) :: nonun(mt)
         integer(kind = int_wp) :: i, id, iseg, k, nset, numun
         integer(kind = int_wp) :: swblsa, infeas

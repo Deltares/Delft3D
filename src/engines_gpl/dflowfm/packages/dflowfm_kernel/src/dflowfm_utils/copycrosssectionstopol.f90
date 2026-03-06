@@ -1,49 +1,62 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !> Copy the original polygons that define the current cross sections
 !! to the active polygons in xpl,...
-subroutine copyCrossSectionsToPol()
-use m_monitoring_crosssections
-use m_polygon
-use m_alloc
-implicit none
-integer :: i, ip
+module m_copycrosssectionstopol
 
-npl    = 0
-call realloc(nampli, ncrs, fill=' ')
-do i=1,ncrs
-    nampli(i) = crs(i)%name
-    call appendCRSPathToPol(crs(i)%path)
-end do
+   implicit none
 
-end subroutine copyCrossSectionsToPol
+   private
+
+   public :: copycrosssectionstopol
+
+contains
+
+   subroutine copyCrossSectionsToPol()
+      use m_monitoring_crosssections, only: ncrs, crs
+      use m_polygon, only: npl, nampli
+      use m_alloc, only: realloc
+      use m_append_crspath_to_pol, only: appendcrspathtopol
+
+      integer :: i
+
+      npl = 0
+      call realloc(nampli, ncrs, fill=' ')
+      do i = 1, ncrs
+         nampli(i) = crs(i)%name
+         call appendCRSPathToPol(crs(i)%path)
+      end do
+
+   end subroutine copyCrossSectionsToPol
+
+end module m_copycrosssectionstopol

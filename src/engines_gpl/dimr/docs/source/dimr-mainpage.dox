@@ -1,0 +1,46 @@
+/**
+\mainpage DIMR Developer guide
+
+This documentation is intended for developers working with DIMR source code.
+
+\image html DIMR_BMI_Design.svg
+
+For detailed information see \ref Introduction
+
+Below is an example of a Graphviz dot graph. You can find some tutorials for graphviz on https://sketchviz.com/graphviz-examples
+\dot
+digraph dimr_diag {
+  node [fontname = "Handlee"];
+  edge [fontname = "Handlee"];
+
+  dimr_config [
+    label = "Configuration";
+    shape = rect;
+    URL = "\ref scanConfigFile";
+  ];
+  dimr [
+    label = "DIMR";
+    shape = rect;
+    URL = "\ref dimr.h";
+  ];
+  comp [
+    label = "DIMR Component";
+    shape = rect;
+    URL = "\ref component.h";
+  ];
+  coupler [
+    label = "DIMR Coupler";
+    shape = rect;
+    URL = "\ref dimr_coupler.h";
+  ];
+
+  dimr_config -> dimr;
+  
+  dimr->coupler;
+  coupler->comp;
+  coupler->comp;
+
+}
+\enddot
+
+*/

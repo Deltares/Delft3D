@@ -38,7 +38,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -46,9 +45,6 @@
             <arguments>
                 <argument>/C</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="dimr" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true">
             <location ref="reference_engines" type="reference">
@@ -103,11 +99,30 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
+        <!-- a generic testCase configuration for running tests with arbitrary programs and platform independent results -->
+        <testCase name="generic">
+            <!-- programs specified in test case -->
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- a generic testCase configuration for running tests with arbitrary programs and platform dependent results -->
+        <!-- check the actual testCase why the results are platform dependent -->
+        <testCase name="generic_platform_specific">
+            <!-- programs specified in test case -->
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
         <testCase name="postproc">
-            <programs>
-                <program ref="dfmoutput">
-                </program>
-            </programs>
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
@@ -118,6 +133,6 @@
         </testCase>
     </defaultTestCases>
 
-  <xi:include href="../include/dimr_dflowfm_parallel_win64.xml"/>
+  <xi:include href="../include/dimr_dflowfm_parallel.xml"/>
 
 </deltaresTestbench_v3>

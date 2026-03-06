@@ -6,7 +6,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
                 & lturi     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -58,7 +58,6 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     integer(pntrsize)      , pointer :: cfurou
     integer(pntrsize)      , pointer :: cfvrou
     integer(pntrsize)      , pointer :: dicuv
-    integer(pntrsize)      , pointer :: dp
     integer(pntrsize)      , pointer :: fcorio
     integer(pntrsize)      , pointer :: gsqd
     integer(pntrsize)      , pointer :: gsqs
@@ -277,7 +276,6 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     cfurou      => gdp%gdr_i_ch%cfurou
     cfvrou      => gdp%gdr_i_ch%cfvrou
     dicuv       => gdp%gdr_i_ch%dicuv
-    dp          => gdp%gdr_i_ch%dp
     fcorio      => gdp%gdr_i_ch%fcorio
     gsqd        => gdp%gdr_i_ch%gsqd
     gsqs        => gdp%gdr_i_ch%gsqs

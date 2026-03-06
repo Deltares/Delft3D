@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,15 +27,15 @@
 
       ! global declarations
 
-      use dlwq_hyd_data                   ! module contains everything for the hydrodynamics
-      use hydmod
+      use m_waq_data_structure                   ! module contains everything for the hydrodynamics
+      use m_hydmod
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll       ! description of the domain hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)                 :: domain_hyd_coll       ! description of the domain hydrodynamics
       integer                                :: maxbnd                ! maximum boundary id
       integer                                :: maxseg                ! maximum segment id
       integer                                :: n_domain              ! number of domains
@@ -43,7 +43,7 @@
 
       ! local declarations
 
-      type(t_hyd), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
       integer                                :: i_domain              ! domain index
       integer                                :: iseg                  ! segment index
       integer                                :: isegl                 ! segment index
@@ -52,7 +52,7 @@
       do i_domain = 1 , n_domain
 
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         do iseg_domain = 1 , domain_hyd%noseg
+         do iseg_domain = 1 , domain_hyd%num_cells
             iseg = ipnew(iseg_domain,i_domain)
             hyd%attributes(iseg) = domain_hyd%attributes(iseg_domain)
          enddo

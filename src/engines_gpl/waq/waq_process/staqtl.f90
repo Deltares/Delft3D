@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,12 +28,11 @@ module m_staqtl
 contains
 
 
-    subroutine staqtl (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_srstop
-        use m_monsys
-        use m_evaluate_waq_attribute
+    subroutine staqtl (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
 
         !>\file
         !>       Quantiles for a given substance during a given period
@@ -68,9 +67,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
                 IP6, IP7, IP8, IP9, IP10, &
@@ -79,7 +78,7 @@ contains
                 IN6, IN7, IN8, IN9, IN10, &
                 IN11
         INTEGER(kind = int_wp) :: ISEG
-        INTEGER(kind = int_wp) :: IB, IPBUCK, IPTCNT, LUNREP, IACTION, ATTRIB
+        INTEGER(kind = int_wp) :: IB, IPBUCK, IPTCNT, lunrep, IACTION, ATTRIB
 
         INTEGER(kind = int_wp) :: NOBUCK
         INTEGER(kind = int_wp) :: MAXBCK
@@ -89,9 +88,12 @@ contains
         REAL(kind = real_wp) :: BMIN, BMAX, BDIFF, BSUM
         REAL(kind = real_wp) :: PQUANT
         REAL(kind = real_wp) :: TSTART, TSTOP, TIME, DELT, TCOUNT
+        REAL(kind = real_wp), parameter :: missing_value = -999.0_real_wp
 
         INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
         INTEGER(kind = int_wp), SAVE :: NOWARN = 0
+
+        call get_log_unit_number(lunrep)
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -99,7 +101,7 @@ contains
         IP4 = IPOINT(4)
         IP5 = IPOINT(5)
         IP6 = IPOINT(6)
-        NOBUCK = NINT(PMSA(IP6)) + 1
+        NOBUCK = NINT(process_space_real(IP6)) + 1
         IP7 = IPOINT(7)
         IP8 = IPOINT(8)
         IP9 = IPOINT(9)
@@ -123,17 +125,16 @@ contains
         IN10 = INCREM(10)
         IN11 = INCREM(11 + NOBUCK)
 
-        BMIN = PMSA(IP7)
-        BMAX = PMSA(IP8)
+        BMIN = process_space_real(IP7)
+        BMAX = process_space_real(IP8)
 
         IF (NOBUCK > MAXBCK) THEN
-            CALL GETMLU(LUNREP)
-            WRITE(LUNREP, *) 'ERROR in STAQTL'
-            WRITE(LUNREP, *) &
+            WRITE(lunrep, *) 'ERROR in STAQTL'
+            WRITE(lunrep, *) &
                     'Number of buckets too large'
-            WRITE(LUNREP, *) &
+            WRITE(lunrep, *) &
                     'Number of buckets: ', NOBUCK - 1, ' - maximum: ', MAXBCK - 1
-            CALL SRSTOP(1)
+            CALL stop_with_error()
         ENDIF
 
         BDIFF = (BMAX - BMIN) / REAL(NOBUCK - 1)
@@ -154,10 +155,10 @@ contains
         !
         !     (Use a safe margin)
         !
-        TSTART = PMSA(IP2)
-        TSTOP = PMSA(IP3)
-        TIME = PMSA(IP4)
-        DELT = PMSA(IP5)
+        TSTART = process_space_real(IP2)
+        TSTOP = process_space_real(IP3)
+        TIME = process_space_real(IP4)
+        DELT = process_space_real(IP5)
 
         !
         !      Start and stop criteria are somewhat involved. Be careful
@@ -174,13 +175,13 @@ contains
         IF (TIME >= TSTART - 0.5 * DELT .AND. TIME <= TSTOP + 0.5 * DELT) THEN
             IACTION = 2
             IF (TIME <= TSTART + 0.5 * DELT) THEN
-                DO ISEG = 1, NOSEG
+                DO ISEG = 1, num_cells
                     IP = IPOINT(10) + (ISEG - 1) * INCREM(10)
-                    PMSA(IP) = 0.0
+                    process_space_real(IP) = 0.0
 
                     DO IB = 1, NOBUCK
                         IP = IPOINT(IPBUCK + IB) + (ISEG - 1) * INCREM(IPBUCK + IB)
-                        PMSA(IP) = 0.0
+                        process_space_real(IP) = 0.0
                     ENDDO
 
                 ENDDO
@@ -193,18 +194,22 @@ contains
 
         IF (IACTION == 0) RETURN
 
-        DO ISEG = 1, NOSEG
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+        DO ISEG = 1, num_cells
+            !
+            !           Only active cells that do not have a missing value
+            !           Note: the value representing a missing value is exact
+            !
+            IF (BTEST(IKNMRK(ISEG), 0) .and. process_space_real(ip1) /= missing_value ) then
                 !
                 !           Keep track of the time within the current quantile specification
                 !           that each segment is active
                 !
-                TCOUNT = PMSA(IPTCNT) + DELT
-                PMSA(IPTCNT) = TCOUNT
+                TCOUNT = process_space_real(IPTCNT) + DELT
+                process_space_real(IPTCNT) = TCOUNT
 
                 DO IB = 1, NOBUCK
-                    IF (PMSA(IP1) <= BCKLIM(IB)) THEN
-                        PMSA(IBUCK(IB)) = PMSA(IBUCK(IB)) + DELT
+                    IF (process_space_real(IP1) <= BCKLIM(IB)) THEN
+                        process_space_real(IBUCK(IB)) = process_space_real(IBUCK(IB)) + DELT
                         EXIT
                     ENDIF
                 ENDDO
@@ -218,7 +223,7 @@ contains
                 !
                 !           Determine the length of the period for the quantile
                 !
-                PQUANT = PMSA(IP9) * 0.01 * TCOUNT
+                PQUANT = process_space_real(IP9) * 0.01 * TCOUNT
                 !
                 !           Accumulate the values in the buckets until we add up
                 !           to at least the requested percentage of total time.
@@ -229,47 +234,47 @@ contains
                 !           outer buckets will contain the quantile. In that
                 !           case: use the lower and upper bounds.
                 !
-                PMSA(IP11) = -999.0
-                BSUM = PMSA(IBUCK(1))
-                IF (BSUM < PQUANT) THEN
-                    DO IB = 2, NOBUCK
-                        BSUM = BSUM + PMSA(IBUCK(IB))
-                        IF (BSUM >= PQUANT) THEN
-                            PMSA(IP11) = BCKLIM(IB) - &
-                                    (BSUM - PQUANT) * BDIFF / PMSA(IBUCK(IB))
-                            EXIT
-                        ENDIF
-                    ENDDO
+                process_space_real(IP11) = -999.0
+                BSUM = process_space_real(IBUCK(1))
+               IF (BSUM < PQUANT) THEN
+                   DO IB = 2, NOBUCK
+                       BSUM = BSUM + process_space_real(IBUCK(IB))
+                       IF (BSUM >= PQUANT) THEN
+                           process_space_real(IP11) = BCKLIM(IB) - &
+                                   (BSUM - PQUANT) * BDIFF / process_space_real(IBUCK(IB))
+                           EXIT
+                       ENDIF
+                   ENDDO
 
-                    IF (BSUM < PQUANT) THEN
-                        PMSA(IP11) = BMAX
+                   IF (BSUM < PQUANT .AND. BSUM /=  -999.0) THEN
+                       process_space_real(IP11) = BMAX
 
-                        IF (NOWARN < MAXWARN) THEN
-                            NOWARN = NOWARN + 1
-                            WRITE(*, '(a,i0)')      'Quantile could not be determined for segment ', ISEG
-                            WRITE(*, '(a,e12.4,a)') '    - too many values above ', BMAX, ' (assuming this value)'
+                       IF (NOWARN < MAXWARN) THEN
+                           NOWARN = NOWARN + 1
+                           WRITE(lunrep, '(a,i0)')      'Quantile could not be determined for segment ', ISEG
+                           WRITE(lunrep, '(a,e12.4,a)') '    - too many values above ', BMAX, ' (assuming this value)'
 
-                            IF (NOWARN == MAXWARN) THEN
-                                WRITE(*, '(a)') '(Further messages suppressed)'
-                            ENDIF
-                        ENDIF
-                    ENDIF
-                ELSE
-                    PMSA(IP11) = BMIN
+                           IF (NOWARN == MAXWARN) THEN
+                               WRITE(lunrep, '(a)') '(Further messages suppressed)'
+                           ENDIF
+                       ENDIF
+                   ENDIF
+               ELSE
+                   process_space_real(IP11) = BMIN
 
-                    IF (NOWARN < MAXWARN) THEN
-                        CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
-                        IF (ATTRIB /= 0) THEN
-                            NOWARN = NOWARN + 1
-                            WRITE(*, '(a,i0)')    'Quantile could not be determined for segment ', ISEG
-                            WRITE(*, '(a,e12.4)') '    - too many values below ', BMIN, ' (assuming this value)'
+                   IF (NOWARN < MAXWARN) THEN
+                       CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
+                       IF (ATTRIB /= 0) THEN
+                           NOWARN = NOWARN + 1
+                           WRITE(lunrep, '(a,i0)')    'Quantile could not be determined for segment ', ISEG
+                           WRITE(lunrep, '(a,e12.4)') '    - too many values below ', BMIN, ' (assuming this value)'
 
-                            IF (NOWARN == MAXWARN) THEN
-                                WRITE(*, '(a)') '(Further messages suppressed)'
-                            ENDIF
-                        ENDIF
-                    ENDIF
-                ENDIF
+                           IF (NOWARN == MAXWARN) THEN
+                               WRITE(lunrep, '(a)') '(Further messages suppressed)'
+                           ENDIF
+                       ENDIF
+                   ENDIF
+               ENDIF
             ENDIF
 
             IP1 = IP1 + IN1

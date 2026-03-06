@@ -1,0 +1,14 @@
+@echo off
+echo Creating xsd-cxx and xsd-hxx in directory src\dataBinding for schemas in xsd/ 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./rtcSharedTypes.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./rtcDataConfig.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./rtcRuntimeConfig.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./rtcToolsConfig.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java                          --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./pi_sharedtypes.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./pi_diag.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./pi_modelparameters.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./pi_run.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./pi_state.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java                          --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding ./pi_timeseries.xsd 
+..\thirdParty\xsd\xsd-3.3.0-i686-windows\bin\xsd cxx-tree --type-naming ucc --function-naming java --generate-serialization --char-type char --char-encoding lcp --generate-doxygen --output-dir ../src/dataBinding --namespace-map http://www.openda.org=openda ./treeVector.xsd 
+pause

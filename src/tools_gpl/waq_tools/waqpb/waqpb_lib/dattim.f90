@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -36,10 +36,10 @@
 !
 ! declarations and specifications
 !
-      character*20 rundat
-      character*8  date
-      character*10 time
-      character*5  zone
+      character(len=20) rundat
+      character(len=8)  date
+      character(len=10) time
+      character(len=5)  zone
       integer      values(8)
 
       call date_and_time (date,time,zone,values)

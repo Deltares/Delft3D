@@ -1,7 +1,7 @@
 module m_Universal_Weir
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -47,7 +47,7 @@ module m_Universal_Weir
                                                                               !< The lowest value of Z is equal to 0.
       double precision                             :: crestlevel              !< Crest level.
       double precision                             :: crestlevel_actual       !< Actual crest level.
-      double precision                             :: dischargecoeff          !< Discharge loss coefficient.
+      double precision                             :: discharge_coeff          !< Discharge loss coefficient.
       integer                                      :: allowedflowdir          !< allowed flow direction.
                                                                               !< 0 all directions.
                                                                               !< 1 only positive flow.
@@ -86,7 +86,7 @@ module m_Universal_Weir
    end subroutine deallocUniWeir
    
    !> Compute the coefficients FU, RU and AU for this universal weir.
-   subroutine ComputeUniversalWeir(uniweir, fum, rum, aum, dadsm, bob0, kfum, s1m1, s1m2, &
+   subroutine ComputeUniversalWeir(uniweir, fum, rum, aum, dadsm, bob0, s1m1, s1m2, &
                                    qm, u1m, dxm, dt, changeStructureDimensions)
       implicit none
       !
@@ -98,7 +98,6 @@ module m_Universal_Weir
       double precision, intent(  out)             :: aum      !< Computed flow area at structure.
       double precision, intent(  out)             :: dadsm    !< Computed flow width at structure.
       double precision, intent(in   )             :: bob0(2)  !< BOB's of the channel
-      integer,          intent(  out)             :: kfum     !< Flag for drying and flooding.
       double precision, intent(in   )             :: s1m2     !< Water level at left side of universal weir.
       double precision, intent(in   )             :: s1m1     !< Water level at right side of universal weir.
       double precision, intent(  out)             :: qm       !< Computed discharge at structure.
@@ -149,7 +148,6 @@ module m_Universal_Weir
       ! ARS 11952 PJvO 20040309
       allowedflowdir = uniweir%allowedflowdir 
       if ((allowedflowdir == 3) .or. (dir == 1 .and. allowedflowdir == 2) .or. (dir == -1 .and. allowedflowdir == 1)) then
-         kfum = 0
          fum  = 0.0d0
          rum  = 0.0d0
          u1m  = 0.0d0
@@ -162,6 +160,14 @@ module m_Universal_Weir
       else
          uniweir%crestlevel_actual = uniweir%crestlevel
       endif
+
+      if (smax < uniweir%crestlevel_actual) then
+         fum  = 0.0d0
+         rum  = 0.0d0
+         u1m  = 0.0d0
+         qm   = 0.0d0
+         return
+      end if
       !
       !     Switchfactor is the transition factor between free and
       !     submerged flow (0.667 for a broad crested weir)
@@ -244,7 +250,7 @@ module m_Universal_Weir
       qflow   = 0.0
 
       lowestcrestlevel = uniweir%crestlevel_actual
-      cmuoriginal      = uniweir%dischargecoeff
+      cmuoriginal      = uniweir%discharge_coeff
 
       cmuoriginal=1d0 ! jira 19171
 
@@ -270,7 +276,7 @@ module m_Universal_Weir
 
             ! check for rectangular or sloping sections
             ! dzb is the height of the slope
-            dzb = dabs(uniweir%z(isect) - uniweir%z(isect + 1))
+            dzb = abs(uniweir%z(isect) - uniweir%z(isect + 1))
 
             if (dzb .gt.1d-5) then
 
@@ -304,17 +310,17 @@ module m_Universal_Weir
 
             call wetdimuni(dpt, warea, dwdd, uniweir, isect)
 
-            warea    = warea * uniweir%dischargecoeff  ! cmu correction in au, jira 19171
+            warea    = warea * uniweir%discharge_coeff  ! cmu correction in au, jira 19171
             wetaavg  = wetaavg +  warea
             dwddavg  = dwddavg + dwdd
             cmus     = cmus + mulfactor * warea
 
             if (isfreeflow) then
                ! free flow
-               qsect = cmuoriginal * mulfactor * warea * dsqrt(2.d0 * gravity * (1 - vkm) * (smax - crestlevel))
+               qsect = cmuoriginal * mulfactor * warea * sqrt(2.d0 * gravity * (1 - vkm) * (smax - crestlevel))
             else
                ! submerged flow
-               qsect = cmuoriginal * mulfactor * warea * dsqrt(2.d0 * gravity * (smax - smin))
+               qsect = cmuoriginal * mulfactor * warea * sqrt(2.d0 * gravity * (smax - smin))
             endif
             qflow = qflow + qsect 
          endif

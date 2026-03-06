@@ -1,63 +1,72 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
+module m_dminmax
+contains
 
-      SUBROUTINE DMINMAX(      X, MXLAN,   XMIN,   XMAX, MAXLAN)
-      USE M_MISSING
+   subroutine DMINMAX(X, MXLAN, XMIN, XMAX, MAXLAN)
+      use precision, only: dp
+      use m_missing, only: dmiss
       implicit none
       integer :: i
-      integer :: maxlan
-      integer :: mxlan
-      double precision :: xmax
-      double precision :: xmin
-      double precision :: xx
+      integer, intent(in) :: maxlan
+      integer, intent(in) :: mxlan
+      real(kind=dp) :: xmax
+      real(kind=dp) :: xmin
+      real(kind=dp) :: xx
 !     BEPAAL MINIMUM EN MAXIMUM VAN EEN EENDIMENSIONALE ARRAY
-      DOUBLE PRECISION, intent(inout)  ::  X(MAXLAN)
+      real(kind=dp), intent(inout) :: X(MAXLAN)
 
-      IF (MXLAN .EQ. 0) THEN
+      if (MXLAN == 0) then
          XMIN = 0
          XMAX = 0
-         RETURN
-      ENDIF
+         return
+      end if
 
-      XMIN =  10D20
-      XMAX = -10D20
-      DO 10 I = 1,MXLAN
-         XX   = X(I)
-         IF (XX .NE. dmiss) THEN
-            XMIN = MIN(XMIN,XX)
-            XMAX = MAX(XMAX,XX)
-         ENDIF
-   10 CONTINUE
-      IF (XMIN .EQ. 10D20) XMIN = 0
-      IF (XMAX .EQ.-10D20) XMAX = 0
-      RETURN
-      END
+      XMIN = 10.0e20_dp
+      XMAX = -10.0e20_dp
+      do I = 1, MXLAN
+         XX = X(I)
+         if (XX /= dmiss) then
+            XMIN = min(XMIN, XX)
+            XMAX = max(XMAX, XX)
+         end if
+      end do
+      if (XMIN == 10.0e20_dp) then
+         XMIN = 0
+      end if
+      if (XMAX == -10.0e20_dp) then
+         XMAX = 0
+      end if
+      return
+   end
+
+end module m_dminmax

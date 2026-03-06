@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -31,7 +31,7 @@ contains
     subroutine iblbal(ntyp_m, ntyp_a, algtyp, ipoint)
 
         use bloom_data_mass_balance
-        use m_sysa
+        use m_real_array_indices
 
         implicit none
         !

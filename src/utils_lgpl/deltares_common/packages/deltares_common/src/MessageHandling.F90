@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -68,10 +68,8 @@ module MHCallBack
 !! This interface is to be used by utility libraries that want to call back
 !! a GUI routine in the parent program to display a message box.
    abstract interface
-      subroutine msgbox_callbackiface(title, msg, level)
-        character(len=*), intent(in) :: title !< Title string
+      subroutine msgbox_callbackiface(msg)
         character(len=*), intent(in) :: msg   !< Message string
-        integer,          intent(in) :: level !< Severity level (e.g., LEVEL_ERROR).
       end subroutine msgbox_callbackiface
    end interface
 
@@ -138,9 +136,9 @@ module MessageHandling
    integer,parameter, public     :: LEVEL_ERROR = 4
    integer,parameter, public     :: LEVEL_FATAL = 5
    integer,parameter, public     :: LEVEL_NONE  = 6
-   integer,parameter, public     :: Idlen = 256  !< Max string length of Ids. Recommended to use one character less for the actual Id, to allow for a null char at the end, when interfacing with C.
-   integer,parameter, public     :: max_level = 5
-   character(len=12), dimension(max_level), private    :: level_prefix = (/'** DEBUG  : ',  &
+   integer,parameter, public     :: IDLEN = 256  !< Max string length of Ids. Recommended to use one character less for the actual Id, to allow for a null char at the end, when interfacing with C.
+   integer,parameter, public     :: MAX_LEVEL = 5
+   character(len=12), dimension(MAX_LEVEL), private    :: level_prefix = (/'** DEBUG  : ',  &
                                                                            '** INFO   : ',  &
                                                                            '** WARNING: ',  &
                                                                            '** ERROR  : ',  &
@@ -352,7 +350,7 @@ subroutine msgbox(title, msg, level)
 
    ! call the registered msgbox
    if (associated(msgbox_callback)) then
-      call msgbox_callback(title, msg, level)
+      call msgbox_callback(msg)
    end if
 
 end subroutine msgbox

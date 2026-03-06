@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -268,7 +268,7 @@ int D3dFlowContext::GetContextId(void)
 
     if ( this->contextID == YET_TO_INIT )
     {
-        throw new Exception (true, "Context not yet Initialized" );
+        throw new Exception("Context not yet Initialized" );
     }
 
     return this->contextID;
@@ -391,7 +391,7 @@ int D3dFlowContext::CreateContextVar(
     ptr = malloc(size);
     if ( ptr == NULL )
     {
-        throw new Exception (true, "Var (%s) not created", name);
+        throw new Exception("Var (%s) not created", name);
     }
     else
     {
@@ -517,14 +517,14 @@ int D3dFlowContext::AttachContextVar(
 
     if ( aContextId != this->contextID )
     {
-        throw new Exception (true, "Trying to attach var. to wrong context");
+        throw new Exception("Trying to attach var. to wrong context");
     }
     else
     {
         ptr = ESM_Alloc ( aContextId, name, (size_t)(0) );
         if ( ptr == NULL )
         {
-            throw new Exception (true, "Var (%s) not attached to Context (%d)", name, aContextId);
+            throw new Exception("Var (%s) not attached to Context (%d)", name, aContextId);
         }
         else
         {
@@ -547,7 +547,7 @@ void D3dFlowContext::DumpEsmContext(void)
 
 
 void D3dFlowContext::CMapLog(
-    char      * format,     /* I: 'fprintf-format' for print of log */
+    const char      * format,     /* I: 'fprintf-format' for print of log */
     ...             /* I: arguments of log message (should be
                     terminated with NULL)       */
     )
@@ -570,7 +570,7 @@ void D3dFlowContext::CMapLog(
             logFile = fopen(name,"w");
             if (logFile == NULL)
             {
-                throw new Exception (true, "Couldn't open logfile %s", name);
+                throw new Exception("Couldn't open logfile %s", name);
             }
         }
         if ( logFile != NULL )

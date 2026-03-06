@@ -1,57 +1,71 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      !SUBROUTINE SPLINESFROMLANDBOUNDARY()
-      !USE M_SPLINES
-      !USE M_GRIDSETTINGS
-      !use m_missing
-      !
-      !END SUBROUTINE SPLINESFROMLANDBOUNDARY
-      SUBROUTINE curvilinearGRIDinpolygon()
-      USE M_POLYGON
-      USE M_SAMPLES
-      USE M_GRID
-      USE M_GRIDSETTINGS
+module m_curvilineargridinpolygon
+   use m_wrirgf, only: wrirgf
+   use m_tranfn2, only: tranfn2
+   use m_andersom, only: andersom
+   use m_pillargrid, only: pillargrid
+   use m_maptopolyline, only: maptopolyline
+
+   implicit none
+
+   private
+
+   public :: curvilineargridinpolygon
+
+contains
+
+   subroutine curvilinearGRIDinpolygon()
+      use precision, only: dp
+      use m_accumulatedistance, only: accumulatedistance
+      use m_rcirc
+      use M_POLYGON
+      use M_SAMPLES
+      use M_GRID
+      use M_GRIDSETTINGS
       use m_orthosettings
       use m_missing
       use m_netw
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dcosphi
-      implicit none
+      use m_drawthis
+      use m_qnerror
+      use m_increase_grid
+      use m_filez, only: newfil
 
-      double precision :: atpfo
-      double precision :: dp
-      double precision :: dpok1
-      double precision :: ff
+      real(kind=dp) :: atpfo
+      real(kind=dp) :: dpok1
+      real(kind=dp) :: ff
       integer :: ierr
       integer :: jam
       integer :: jan
@@ -64,176 +78,181 @@
       integer :: n
       integer :: n1
       integer :: n2
-      integer :: ndraw
       integer :: ndraw8org
       integer :: nfo
       integer :: npo
       integer :: nr
-      common /drawthis/ ndraw(50)
-      double precision :: dprodin
 
+      real(kind=dp), allocatable :: XH(:, :), YH(:, :)
 
-      DOUBLE PRECISION, ALLOCATABLE :: XH(:,:), YH(:,:)
+      real(kind=dp), allocatable :: XPA(:), YPA(:), DPA(:)
+      real(kind=dp), allocatable :: XPO(:), YPO(:), DPO(:)
 
-      DOUBLE PRECISION, ALLOCATABLE :: XPA(:), YPA(:), DPA(:)
-      DOUBLE PRECISION, ALLOCATABLE :: XPO(:), YPO(:), DPO(:)
+      real(kind=dp) :: TXO, DXO, PRIN
+      integer :: MNX, MAXP
+      integer :: npc(5)
+      integer :: ierror
 
-      DOUBLE PRECISION              :: TXO, DXO, PRIN
-      INTEGER                       :: MNX, MAXP
-      integer                       :: npc(5)
-      integer                       :: ierror
-
-      if (npl < 4) return
-
-!     create O-type pillar grid if the pillar radius .ne. 0d0
-      if ( pil_rad.ne.0d0 ) then
-         call pillargrid(ierror)
-         if ( ierror.eq.0 ) return  ! otherwise, generate non-pillar grid
+      if (npl < 4) then
+         return
       end if
 
+!     create O-type pillar grid if the pillar radius .ne. 0d0
+      if (pil_rad /= 0.0_dp) then
+         call pillargrid(ierror)
+         if (ierror == 0) then
+            return ! otherwise, generate non-pillar grid
+         end if
+      end if
 
-      CALL SAVEPOL()
+      call SAVEPOL()
 
-      DO K = 1,NPL
-         IF (XPL(K) .NE. xymis) THEN
+      do K = 1, NPL
+         if (XPL(K) /= xymis) then
             KM = K
-         ELSE
-            EXIT
-         ENDIF
-      ENDDO
+         else
+            exit
+         end if
+      end do
       NPL = KM
 
-
-      IF ( XPL(1) .NE. XPL(NPL) ) THEN
-         NPL      = NPL + 1
+      if (XPL(1) /= XPL(NPL)) then
+         NPL = NPL + 1
          XPL(NPL) = XPL(1)
          YPL(NPL) = YPL(1)
-      ENDIF
+      end if
 
       NPO = NPL
-      ALLOCATE ( DPO(NPO) , XPO(NPO), YPO(NPO) , STAT = IERR) ; DPO =0D0
-      CALL AERR('DPO(NPO) , XPO(NPO), YPO(NPO)', IERR,   NPO)
+      allocate (DPO(NPO), XPO(NPO), YPO(NPO), STAT=IERR)
+      DPO = 0.0_dp
+      call AERR('DPO(NPO) , XPO(NPO), YPO(NPO)', IERR, NPO)
       XPO(1:NPO) = XPL(1:NPO)
       YPO(1:NPO) = YPL(1:NPO)
 
-      NR      = 1  ! FIRST
+      NR = 1 ! FIRST
       NPC(NR) = 1
 
       !CALL SETCOL(31)
       !CALL RCIRC ( XPL(1), YPL(1) )
 
-      DO N = 2,NPL - 1
-         prin = dcosphi(XPO(N-1), YPO(N-1),  XPO(N)  , YPO(N)  , &
-                        XPO(N)  , YPO(N)  ,  XPO(N+1), YPO(N+1), jsferic, jasfer3D, dxymis)
-         prin = dabs(prin)
-         IF (PRIN < 0.5d0) THEN
-            CALL RCIRC ( XPL(1), YPL(1) )
+      do N = 2, NPL - 1
+         prin = dcosphi(XPO(N - 1), YPO(N - 1), XPO(N), YPO(N), &
+                        XPO(N), YPO(N), XPO(N + 1), YPO(N + 1), jsferic, jasfer3D, dxymis)
+         prin = abs(prin)
+         if (PRIN < 0.5_dp) then
+            call RCIRC(XPL(1), YPL(1))
             NR = NR + 1
-            IF (NR <= 4) THEN
+            if (NR <= 4) then
                NPC(NR) = N
-            ENDIF
-         ENDIF
+            end if
+         end if
 
-      ENDDO
+      end do
 
-      IF (NR < 4) THEN
-         CALL QNERROR('LESS THAN FOUR CORNERS FOUND',' ',' ')
-         CALL RESTOREPOL()
-         DEALLOCATE (DPO, XPO, YPO)
-         RETURN
-      ELSE IF (NR > 4) THEN
-         CALL QNERROR('MORE THAN 4 CORNERS FOUND',' ',' ')
-         CALL RESTOREPOL()
-         DEALLOCATE (DPO, XPO, YPO)
-         RETURN
-      ENDIF
+      if (NR < 4) then
+         call QNERROR('LESS THAN FOUR CORNERS FOUND', ' ', ' ')
+         call RESTOREPOL()
+         deallocate (DPO, XPO, YPO)
+         return
+      else if (NR > 4) then
+         call QNERROR('MORE THAN 4 CORNERS FOUND', ' ', ' ')
+         call RESTOREPOL()
+         deallocate (DPO, XPO, YPO)
+         return
+      end if
 
       NR = NR + 1
       NPC(NR) = NPL
 
-      MFO = MFAC ; NFO = NFAC
-      MC  = MFAC + 1
-      NC  = NFAC + 1
+      MFO = MFAC
+      NFO = NFAC
+      MC = MFAC + 1
+      NC = NFAC + 1
 
-      IF (MFO == 0) THEN
-         MC = NPC(2) - NPC(1) + 1 ; MFAC = MC - 1
+      if (MFO == 0) then
+         MC = NPC(2) - NPC(1) + 1
+         MFAC = MC - 1
          JAM = 1
-      ENDIF
+      end if
 
-      IF (NFO == 0) THEN
-         NC = NPC(5) - NPC(4) + 1 ; NFAC = NC - 1
+      if (NFO == 0) then
+         NC = NPC(5) - NPC(4) + 1
+         NFAC = NC - 1
          JAN = 1
-      ENDIF
+      end if
 
-      call INCREASEGRID(MC,NC)
+      call INCREASEGRID(MC, NC)
 
-      MNX = 5*MAX(MC,NC)
-      ALLOCATE ( XH(MNX,4), YH(MNX,4) )
+      MNX = 5 * max(MC, NC)
+      allocate (XH(MNX, 4), YH(MNX, 4))
 
-      ALLOCATE ( DPA(MNX) , XPA(MNX), YPA(MNX) , STAT = IERR) ; DPA =0D0
-      CALL AERR('DPA(MNX) , XPA(MNX), YPA(MNX)', IERR,   MNX)
+      allocate (DPA(MNX), XPA(MNX), YPA(MNX), STAT=IERR)
+      DPA = 0.0_dp
+      call AERR('DPA(MNX) , XPA(MNX), YPA(MNX)', IERR, MNX)
 
-      CALL accumulateDistance(XPO, YPO , DPO, NPO)       ! OORSPRONKELIJKE LENGTECOORDINAAT
+      call accumulateDistance(XPO, YPO, DPO, NPO) ! OORSPRONKELIJKE LENGTECOORDINAAT
 
       KA = 1
-      DO N  = 1,4
+      do N = 1, 4
 
-         N1   = NPC(N)
-         N2   = NPC(N + 1)
+         N1 = NPC(N)
+         N2 = NPC(N + 1)
          MAXP = NC
-         IF (N == 1 .OR. N == 3) MAXP = MC
+         if (N == 1 .or. N == 3) then
+            MAXP = MC
+         end if
 
-         TXO = DPO(N2) - DPO(N1) ; DXO = TXO/(MAXP-1)
+         TXO = DPO(N2) - DPO(N1)
+         DXO = TXO / (MAXP - 1)
 
+         DPA = 0.0_dp
+         do K = 1, MAXP
+            DPA(K) = DPO(N1)
+            DPO(N1) = DPO(N1) + DXO
+         end do
+         if (N == 3 .or. N == 4) then
+            call ANDERSOM(DPA, MAXP)
+         end if
 
-         DP = DPO(N1) ; DPA = 0D0
-         DO K = 1,MAXP
-            DPA(K) = DP
-            DP     = DP + DXO
-         ENDDO
-         IF (N == 3 .OR. N == 4) THEN
-            CALL ANDERSOM(DPA, MAXP)
-         ENDIF
-
-         IF (MFO == 0) THEN
-            IF (N == 1) THEN                                     ! COPY FROM FIRST SEGMENT
+         if (MFO == 0) then
+            if (N == 1) then ! COPY FROM FIRST SEGMENT
                DPA(1:MAXP) = DPO(1:MAXP)
-            ELSE IF (N == 3) THEN                                ! REVERSED COPY FROM ALSO FIRST SEGMENT
-               FF = TXO / ( DPO(NPC(2)) - DPO(NPC(1)) )
+            else if (N == 3) then ! REVERSED COPY FROM ALSO FIRST SEGMENT
+               FF = TXO / (DPO(NPC(2)) - DPO(NPC(1)))
                DPA(1) = DPO(N2)
-               DO K = 2,MAXP
-                  DPOK1  = DPO(K) - DPO(1)
-                  DPA(K) = DPA(1) - DPOK1*FF
-               ENDDO
+               do K = 2, MAXP
+                  DPOK1 = DPO(K) - DPO(1)
+                  DPA(K) = DPA(1) - DPOK1 * FF
+               end do
                K = K
-            ENDIF
-         ENDIF
-         IF (NFO == 0) THEN
-            IF (N == 2) THEN                                     ! REVERSED COPY FROM FOURTH SEGMENT
+            end if
+         end if
+         if (NFO == 0) then
+            if (N == 2) then ! REVERSED COPY FROM FOURTH SEGMENT
                K1 = NPC(5)
-               FF = TXO / ( DPO(NPC(5)) - DPO(NPC(4)) )
+               FF = TXO / (DPO(NPC(5)) - DPO(NPC(4)))
                DPA(1) = DPO(N1)
-               DO K = 2,MAXP
-                  K1     = K1 - 1
-                  DPOK1  = DPO(K1) - DPO(NPC(5))
-                  DPA(K) = DPA(1)  - DPOK1*FF
-               ENDDO
+               do K = 2, MAXP
+                  K1 = K1 - 1
+                  DPOK1 = DPO(K1) - DPO(NPC(5))
+                  DPA(K) = DPA(1) - DPOK1 * FF
+               end do
                K = K
-            ELSE IF (N == 4) THEN                                ! REVERSED FOURTH SEGMENT
-               DO K = 1,MAXP
+            else if (N == 4) then ! REVERSED FOURTH SEGMENT
+               do K = 1, MAXP
                   DPA(K) = DPO(NPC(5) - K + 1)
-               ENDDO
+               end do
                K = K
-            ENDIF
-         ENDIF
+            end if
+         end if
 
-         CALL maptoPolyline(XPO, YPO, DPO, NPO, XH(1,N), YH(1,N), DPA, MAXP) ! HAAL HUIDIGE PUNTEN OP
+         call maptoPolyline(XPO, YPO, DPO, NPO, XH(1, N), YH(1, N), DPA, MAXP) ! HAAL HUIDIGE PUNTEN OP
 
-         CALL maptoPolyline(XPO, YPO, DPO, NPO, XPA(KA), YPA(KA), DPA, MAXP) ! HAAL HUIDIGE PUNTEN OP
+         call maptoPolyline(XPO, YPO, DPO, NPO, XPA(KA), YPA(KA), DPA, MAXP) ! HAAL HUIDIGE PUNTEN OP
 
          KA = KA + MAXP
 
-      ENDDO
+      end do
 
       ! NPA = KA-1
       ! XPL(1:NPA) = XPA(1:NPA)
@@ -241,28 +260,29 @@
       ! NPL = NPA
 
       ! RETURN
-                                                                      ! POLYG       TRANSF
-      CALL TRANFN2( XH(1,4), XH(1,2), XH(1,1), XH(1,3),            &  ! . 3 .       . 4 .
-                    YH(1,4), YH(1,2), YH(1,1), YH(1,3),            &  ! 4   2       1   2
-                    MNMAX, MMAX, NMAX, XC, YC)                        ! . 1 .       . 3 .
+      ! POLYG       TRANSF
+      call TRANFN2(XH(1, 4), XH(1, 2), XH(1, 1), XH(1, 3), & ! . 3 .       . 4 .
+                   YH(1, 4), YH(1, 2), YH(1, 1), YH(1, 3), & ! 4   2       1   2
+                   MNMAX, MMAX, NMAX, XC, YC) ! . 1 .       . 3 .
 
-      zc = 0d0 !zkuni
+      zc = 0.0_dp !zkuni
 
-
-
-      NDRAW8ORG  = NDRAW(8) ; NDRAW(8) = 0
-      IF (MFO .NE. 0 .AND. NFO .NE. 0) THEN
-         ATPFO = ATPF ; ATPF = 0.
-      ENDIF
+      NDRAW8ORG = NDRAW(8)
+      NDRAW(8) = 0
+      if (MFO /= 0 .and. NFO /= 0) then
+         ATPFO = ATPF
+         ATPF = 0.
+      end if
 
       ! CALL ORTHOGRID(1,1,MC,NC)
 
-      NDRAW(8)   = NDRAW8ORG
-      IF (MFO .NE. 0 .AND. NFO .NE. 0) THEN
+      NDRAW(8) = NDRAW8ORG
+      if (MFO /= 0 .and. NFO /= 0) then
          ATPF = ATPFO
-      ENDIF
+      end if
 
-      MFAC = MFO ; NFAC = NFO
+      MFAC = MFO
+      NFAC = NFO
 
       call newfil(mout, 'gridnow.grd')
       call WRIRGF(mout, 'gridnow.grd')
@@ -271,8 +291,10 @@
 
       !XC = DXYMIS; YC = DXYMIS; MC = 0 ; NC = 0
 
-      CALL RESTOREPOL()
+      call RESTOREPOL()
 
-      DEALLOCATE (DPA, XPA, YPA, DPO, XPO, YPO, XH, YH)
+      deallocate (DPA, XPA, YPA, DPO, XPO, YPO, XH, YH)
 
-      END SUBROUTINE curvilinearGRIDinpolygon
+   end subroutine curvilinearGRIDinpolygon
+
+end module m_curvilineargridinpolygon

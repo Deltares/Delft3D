@@ -1,15 +1,13 @@
-"""
-Description: Handler type
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
-"""
+"""Handler type.
 
+Copyright (C)  Stichting Deltares, 2026
+"""
 
 from enum import Enum
 
 
 class HandlerType(Enum):
-    """Enum for Handler used in HandlerFactory"""
+    """Enum for Handler used in HandlerFactory."""
 
     NONE = 0
     WEB = 1
@@ -18,3 +16,4 @@ class HandlerType(Enum):
     NET = 4
     PATH = 5
     MINIO = 6
+    DVC = 7

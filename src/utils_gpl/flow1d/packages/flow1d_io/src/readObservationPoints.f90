@@ -1,7 +1,7 @@
 module m_readObservationPoints
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -71,7 +71,7 @@ module m_readObservationPoints
       implicit none
       
       type(t_network), intent(inout)        :: network
-      character*(*)  , intent(in)           :: observationPointsFile
+      character(len=*)  , intent(in)           :: observationPointsFile
 
       logical                               :: success
       type(tree_data), pointer              :: md_ptr 
@@ -83,7 +83,7 @@ module m_readObservationPoints
       character(len=IdLen)                  :: obsPointName
       character(len=IdLen)                  :: branchID
       character(len=IdLen)                  :: locationType
-      
+      character(len=IdLen)                  :: location_file
       double precision                      :: Chainage
       double precision                      :: xx, yy
       integer                               :: loctype
@@ -112,7 +112,7 @@ module m_readObservationPoints
       ierr = 0
       major = 0
       minor = 0
-      call prop_get_version_number(md_ptr, major = major, minor = minor, success = success)
+      call get_version_number(md_ptr, major = major, minor = minor, success = success)
       if (.not. success .or. major < ObsFileMajorVersion) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of observation point file detected in '''//trim(observationPointsFile)//''': v', major, minor, '. Current format: v',ObsFileMajorVersion,ObsFileMinorVersion,'. Ignoring this file.'
          call warn_flush()
@@ -131,18 +131,23 @@ module m_readObservationPoints
       do i = 1, numstr
          
          if (strcmpi(tree_get_name(md_ptr%child_nodes(i)%node_ptr), 'ObservationPoint')) then
-            ! Read Data
-            call prop_get_string(md_ptr%child_nodes(i)%node_ptr, '', 'name', obsPointName, success)
+            call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'locationFile', location_file, success)
             if (success) then
-               call prop_get_string(md_ptr%child_nodes(i)%node_ptr, '', 'branchId', branchID, success)
+                ! currently, locationFile is used for moving observation points that are processed in other subroutine
+                cycle
+            end if
+            ! Read Data
+            call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'name', obsPointName, success)
+            if (success) then
+               call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'branchId', branchID, success)
                if (success) then ! the obs is defined by branchid and chainage
                   formatbr = 1
-                  call prop_get_double(md_ptr%child_nodes(i)%node_ptr, '', 'chainage', Chainage, success)
+                  call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'chainage', Chainage, success)
                   loctype = INDTP_1D
                else ! the obs is defined by x, y coordinate and locationtype
                   formatbr = 0
                   locationType = '2d' ! Default when not user-defined.
-                  call prop_get_string(md_ptr%child_nodes(i)%node_ptr, '', 'locationType', locationType, success)
+                  call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'locationType', locationType, success)
                   call locationTypeStringToInteger(locationType, loctype)
                   if (loctype < 0) then
                      call SetMessage(LEVEL_ERROR, 'Error reading observation point '''//trim(obsPointName)//''' from file ''' // &
@@ -150,9 +155,9 @@ module m_readObservationPoints
                      cycle
                   end if
 
-                  call prop_get_double(md_ptr%child_nodes(i)%node_ptr, '', 'x', xx, success)
+                  call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'x', xx, success)
                   if (success) then
-                     call prop_get_double(md_ptr%child_nodes(i)%node_ptr, '', 'y', yy, success)
+                     call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'y', yy, success)
                   end if
                end if
                
@@ -197,7 +202,7 @@ module m_readObservationPoints
          endif
       end do
       
-      write(msgbuf,'(i10,2a)') network%obs%Count , ' observation points have been read from file ', trim(observationPointsFile)
+      write(msgbuf,'(i10,2a)') network%obs%Count , ' static observation points have been read from file ', trim(observationPointsFile)
       call msg_flush()
       
       call fill_hashtable(network%obs)
@@ -214,8 +219,7 @@ module m_readObservationPoints
       character(len=*), intent(in   ) :: slocType        !< Location type string.
       integer,          intent(  out) :: ilocType        !< Location type integer. When string is invalid, -1 is returned.
       
-      call str_lower(slocType)
-      select case (trim(slocType))
+      select case (trim(str_tolower(slocType)))
       case ('1d')
          ilocType = INDTP_1D
       case ('2d')

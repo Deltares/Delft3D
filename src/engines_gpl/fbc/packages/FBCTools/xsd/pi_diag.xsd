@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  Delft FEWS Published Interface (Copyright 2003 WL | Delft Hydraulics) -->
+<schema targetNamespace="http://www.wldelft.nl/fews/PI" xmlns:fews="http://www.wldelft.nl/fews/PI" xmlns="http://www.w3.org/2001/XMLSchema"  elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="pi_sharedtypes.xsd"/>
+	<element name="Diag" type="fews:DiagComplexType">
+		<annotation>
+			<documentation>All model diagnostics output that is generated during and at the end of a run by a module should go in this file.</documentation>
+		</annotation>
+	</element>
+	<complexType name="DiagComplexType">
+		<annotation>
+			<documentation>All model diagnostics output that is generated during and at the end of a run by a module should go in this file.</documentation>
+		</annotation>
+		<sequence>
+			<element name="line" type="fews:LineComplexType" maxOccurs="unbounded">
+				<annotation>
+					<documentation>Each line/mesasage contains the actual text and a warning level.
+                        each message/line has a level attached to it
+                        3 = info (information, all is well, e,g, :"SOBEK: program ended")
+                        2 = warn (warning information.
+                        e.g. "SOBEK: high number of iterations")
+                        1 = error (critical problems. e.g. "SOBEK: no convergence")
+                        0 = fatal (full module crash. e.g. "SOBEK: ooops, what now?")
+                        All levels higher than 3 are regarded as non-essential (debug) information</documentation>
+				</annotation>
+			</element>
+			<element name="comment" type="fews:commentString" minOccurs="0">
+				<annotation>
+					<documentation>use this field as a notebook to add comments, suggestions
+                        description of data entered etc.</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="version" type="double" use="required" fixed="1.2"/>
+	</complexType>
+	<complexType name="LineComplexType">
+		<annotation>
+			<documentation>Each line/mesasage contains the actual text and a warning level.
+                each message/line has a level attached to it
+                3 = info (information, all is well, e,g, :"SOBEK: program ended")
+                2 = warn (warning information.
+                e.g. "SOBEK: high number of iterations")
+                1 = error (critical problems. e.g. "SOBEK: no convergence")
+                0 = fatal (full module crash. e.g. "SOBEK: ooops, what now?")
+                All levels higher than 3 are regarded as non-essential (debug) information</documentation>
+		</annotation>
+		<attribute name="level" type="byte" use="required">
+			<annotation>
+				<documentation/>
+			</annotation>
+		</attribute>
+		<attribute name="eventCode" type="fews:commentString" use="optional">
+            <annotation>
+                <documentation>Since 2014.01. event code used when this message is stored in the FEWS log entries table</documentation>
+            </annotation>
+		</attribute>
+		<attribute name="description" type="string" use="required"/>
+	</complexType>
+</schema>

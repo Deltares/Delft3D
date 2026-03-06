@@ -25,18 +25,10 @@ add_library(${library_name} ${meteo_sources} ${sources})
                          kdtree_wrapper
                          io_netcdf
                          io_netcdf_data
-                         netcdf4
                          netcdff)
 
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
-
-# Set additional compilation properties, specific for Debug mode
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
+target_link_libraries(${library_name} ${oss_dependencies})
 
 set_source_files_properties(${src_path}/ec_parameters.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
@@ -51,7 +43,10 @@ set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/ec_module)
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 if ( ${configuration_type} STREQUAL "DFLOWFM" OR
      ${configuration_type} STREQUAL "DELFT3D4" OR
-     ${configuration_type} STREQUAL "ALL" OR
+     ${configuration_type} STREQUAL "FM-SUITE" OR
+     ${configuration_type} STREQUAL "D3D4-SUITE" OR
+     ${configuration_type} STREQUAL "ALL-TESTBENCH" OR
+     ${configuration_type} STREQUAL "FM-TESTBENCH" OR
      ${configuration_type} STREQUAL "TOOLS" )
 
     set(library_name ec_module_dll)
@@ -60,13 +55,8 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     add_library(${library_name} SHARED ${src_path}/ec_module_api.f90 ${rc_version_file})
     include_directories(${version_include_dir})
     set(oss_dependencies deltares_common kdtree2 kdtree_wrapper gridgeom io_netcdf ec_module)
-    oss_include_libraries(${library_name} oss_dependencies)
 
 	target_link_libraries(${library_name} ${oss_dependencies})
-
-    # Set additional compilation properties, specific for Debug mode
-    target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
-    target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
 
     # Create the folder structure in vfproj
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${src_path}/ec_module_api.f90)

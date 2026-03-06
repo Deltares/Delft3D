@@ -1,233 +1,289 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE EDITGRIDLINEBLOK(MODE,NFLD,KEY)
-      use unstruc_colors
+module m_editgridlineblok
+   use m_tekb, only: tekb
+   use m_savegrd, only: savegrd
+   use m_saveb, only: saveb
+   use m_restoreb, only: restoreb
+   use m_resetb, only: resetb
+   use m_positiveblok, only: positiveblok
+   use m_onsameline, only: onsameline
+   use m_newblockpoint, only: newblockpoint
+   use m_modgr4, only: modgr4
+   use m_modgr2, only: modgr2
+   use m_linemirror, only: linemirror
+   use m_dosmooth, only: dosmooth
+   use m_attractrepulse, only: attractrepulse
+   use m_shwxyz
+   use m_selecteditmode
+   use m_ispoin
+   use m_editgridlineshift
+
+   implicit none
+
+contains
+
+   subroutine EDITGRIDLINEBLOK(MODE, NFLD, KEY)
+      use precision, only: dp
+      use m_choices
+      use unstruc_colors, only: ncolln, ncolrg, ncoldg
       use m_grid
-      implicit none
+      use m_helpnow
+      use m_drawthis
+      use m_grid_block
+      use m_qnerror
+      use m_ktext
+      use m_putget_un
+      use m_botlin
+      use m_draw_nu
+      use m_cirr
+      use m_restore_grd
+      use m_local_refine
+      use m_tek_grd
+      use m_fieldop
 
       integer :: mode, nfld, key
       integer :: newmode
-      integer :: ndraw, nlevel, bm, nb, mb2, nb2, npt, npt2, nputo, itype, NCOL
+      integer :: NCOL
       integer :: jonce
-
-      COMMON /DRAWTHIS/ ndraw(50)
-      COMMON /HELPNOW/ WRDKEY,NLEVEL
-      COMMON /BLOK/ MB(6),NB(6),MB2(6),NB2(6),NPT,NPT2,NPUTO,ITYPE
-
-      CHARACTER TEX*20, WRDKEY*40, FIELDOP*40
-      integer :: num, nwhat, numb, nump, mp, np, ipt, ja, mb, m1b, n1b, m2b, n2b, m1, n1, m2, n2, m, n
+      character TEX * 20
+      integer :: num, nwhat, numb, nump, mp, np, ipt, ja, m1b, n1b, m2b, n2b, m1, n1, m2, n2, m, n
       integer :: nput
-      double precision :: xp, yp
+      real(kind=dp) :: xp, yp
 
-      TEX    = ' '//FIELDOP(NFLD)
+      TEX = ' '//FIELDOP(NFLD)
       WRDKEY = FIELDOP(NFLD)
       NLEVEL = 3
-      NUM    = 0
-      NWHAT  = 0
-      NUMB   = 6
-      NCOL   = NCOLRG
-      NUMP   = 80
-      MP     = 0
-      NP     = 0
-      ITYPE  = 1
+      NUM = 0
+      NWHAT = 0
+      NUMB = 6
+      NCOL = NCOLRG
+      NUMP = 80
+      MP = 0
+      NP = 0
+      ITYPE = 1
 
-      NPUT   = 10
-      CALL RESETB(NPUT)
-      CALL BOTLIN(0,NUMB,KEY)
+      NPUT = 10
+      call RESETB(NPUT)
+      call BOTLIN(0, NUMB, KEY)
 
-    10 CONTINUE
-      CALL DRAWNU(KEY)
-      CALL TEKB(Xc,Yc,MMAX,NMAX,NCOLLN)
-      CALL KTEXT(TEX,1,2,15)
-      IF (NPT .LE. 1) THEN
-         CALL KTEXT(' Indicate a Line    ',1,3,15)
-      ELSE
-         CALL KTEXT(' Influence or rght M',1,3,15)
-      ENDIF
+10    continue
+      call DRAWNU(KEY)
+      call TEKB(Xc, Yc, MMAX, NMAX, NCOLLN)
+      call KTEXT(TEX, 1, 2, 15)
+      if (NPT <= 1) then
+         call KTEXT(' Indicate a Line    ', 1, 3, 15)
+      else
+         call KTEXT(' Influence or rght M', 1, 3, 15)
+      end if
 
-      CALL putget_un(NUM,NWHAT,NPUT,NUMB,XP,YP,KEY)
-      IF (KEY .NE. 23) JONCE = 0
+      call putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
+      if (KEY /= 23) then
+         JONCE = 0
+      end if
 
-      IF (NUM .NE. 0) THEN
+      if (NUM /= 0) then
 !        ER IS EEN KEUZE
-         IF (NUM .EQ. 4) THEN
+         if (NUM == 4) then
             MODE = NWHAT
-            CALL TEKB(Xc,Yc,MMAX,NMAX,0)
-            RETURN
-         ELSE
-            CALL CHOICES(MODE,NUM,NWHAT,KEY)
-         ENDIF
-      ELSE IF (KEY >= 577) THEN ! Alt+letter switches edit mode.
-        call selecteditmode(newmode, key)
-        if (newmode > 0 .and. newmode /= mode) then
+            call TEKB(Xc, Yc, MMAX, NMAX, 0)
+            return
+         else
+            call CHOICES(NUM, NWHAT, KEY)
+         end if
+      else if (KEY >= 577) then ! Alt+letter switches edit mode.
+         call selecteditmode(newmode, key)
+         if (newmode > 0 .and. newmode /= mode) then
             mode = newmode
             return
-        end if
-      ELSE IF (KEY .EQ. 21) THEN
+         end if
+      else if (KEY == 21) then
 !        INS KEY
 !        kijken welk punt
-         CALL ISPOIN(     Xc,     Yc,     mmax, nmax, MC,     NC,   Zc,  &
-                          XP,     YP,     MP,     NP)
-         IF (MP .NE. 0) THEN
-            IF (NPUT .EQ. 16) THEN
-               CALL ONSAMELINE(IPT,MP,NP,JA)
-               IF (JA .EQ. 1) THEN
+         call ISPOIN(Xc, Yc, mmax, nmax, MC, NC, Zc, &
+                     XP, YP, MP, NP)
+         if (MP /= 0) then
+            if (NPUT == 16) then
+               call ONSAMELINE(IPT, MP, NP, JA)
+               if (JA == 1) then
                   MB(IPT) = MP
                   NB(IPT) = NP
-                  CALL CIRR(Xc(MP,NP), Yc(MP,NP), NCOLLN)
-                  IF (NPT .EQ. 1) NPUT = 11
-                  IF (NPT .EQ. 2) NPUT = 14
-                  IF (NPT .EQ. 3) NPUT = 15
-                  IF (NPT .EQ. 4) NPUT = 19
-               ELSE
-                  CALL QNERROR('POINT 1 AND 2 SHOULD LIE',     &
-                               'ON THE SAME GRIDLINE',' ')
-               ENDIF
-            ELSE
-               CALL NEWBLOCKPOINT(MP,NP,JA,IPT)
-               IF (JA .EQ. 1) THEN
+                  call CIRR(Xc(MP, NP), Yc(MP, NP), NCOLLN)
+                  if (NPT == 1) then
+                     NPUT = 11
+                  end if
+                  if (NPT == 2) then
+                     NPUT = 14
+                  end if
+                  if (NPT == 3) then
+                     NPUT = 15
+                  end if
+                  if (NPT == 4) then
+                     NPUT = 19
+                  end if
+               else
+                  call QNERROR('POINT 1 AND 2 SHOULD LIE', &
+                               'ON THE SAME GRIDLINE', ' ')
+               end if
+            else
+               call NEWBLOCKPOINT(MP, NP, JA, IPT)
+               if (JA == 1) then
 !                 voeg punt toe
-                  CALL ONSAMELINE(IPT,MP,NP,JA)
-                  IF (JA .EQ. 1) THEN
-                     CALL SAVEB(NPUT)
+                  call ONSAMELINE(IPT, MP, NP, JA)
+                  if (JA == 1) then
+                     call SAVEB(NPUT)
                      NPT = NPT + 1
                      MB(NPT) = MP
                      NB(NPT) = NP
-                     CALL CIRR(Xc(MB(NPT),NB(NPT)), Yc(MB(NPT),NB(NPT)),NCOLLN)
-                     IF (NPT .EQ. 1) NPUT = 11
-                     IF (NPT .EQ. 2) NPUT = 14
-                     IF (NPT .EQ. 3) NPUT = 15
-                     IF (NPT .EQ. 4) NPUT = 19
-                  ELSE
-                     CALL QNERROR('POINT 1 AND 2 SHOULD LIE','ON THE SAME GRIDLINE',' ')
-                  ENDIF
-               ELSE IF (JA .EQ. -1) THEN
+                     call CIRR(Xc(MB(NPT), NB(NPT)), Yc(MB(NPT), NB(NPT)), NCOLLN)
+                     if (NPT == 1) then
+                        NPUT = 11
+                     end if
+                     if (NPT == 2) then
+                        NPUT = 14
+                     end if
+                     if (NPT == 3) then
+                        NPUT = 15
+                     end if
+                     if (NPT == 4) then
+                        NPUT = 19
+                     end if
+                  else
+                     call QNERROR('POINT 1 AND 2 SHOULD LIE', 'ON THE SAME GRIDLINE', ' ')
+                  end if
+               else if (JA == -1) then
 !                 niet meer toevoegen
-                  CALL QNERROR('4 POINTS: CONTINUE = RIGHT MOUSE OR', 'Enter,',' ')
-               ELSE IF (JA .EQ. 0) THEN
+                  call QNERROR('4 POINTS: CONTINUE = RIGHT MOUSE OR', 'Enter,', ' ')
+               else if (JA == 0) then
 !                 oud punt geclickt; uitgummen
-                  CALL SAVEB(NPUT)
-                  CALL CIRR(Xc(MB(IPT),NB(IPT)),Yc(MB(IPT),NB(IPT)),0)
-                  IF (IPT .LE. 2) CALL TEKB(Xc,Yc,MMAX,NMAX,0)
+                  call SAVEB(NPUT)
+                  call CIRR(Xc(MB(IPT), NB(IPT)), Yc(MB(IPT), NB(IPT)), 0)
+                  if (IPT <= 2) then
+                     call TEKB(Xc, Yc, MMAX, NMAX, 0)
+                  end if
                   MB(IPT) = 0
                   NB(IPT) = 0
-                  NPUT    = 16
-               ENDIF
-            ENDIF
-         ENDIF
-      ELSE IF (KEY .EQ. 22) THEN
-         IF (NPT .LE. 1) THEN
-           CALL QNERROR('FIRST PRESS MORE POINTS WITH LEFT MOUSE BUTTON',' ',' ')
-         ELSE
+                  NPUT = 16
+               end if
+            end if
+         end if
+      else if (KEY == 22) then
+         if (NPT <= 1) then
+            call QNERROR('FIRST PRESS MORE POINTS WITH LEFT MOUSE BUTTON', ' ', ' ')
+         else
 !           ENTER KEY
-            CALL TEKB(Xc,Yc,MMAX,NMAX,0)
-            CALL POSITIVEBLOK()
-            M1B = MAX(MB(3)-1,1)
-            N1B = MAX(NB(3)-1,1)
-            M2B = MIN(MB(4)+1,MC)
-            N2B = MIN(NB(4)+1,NC)
-            IF (NFLD .NE. 4) THEN
-               CALL TEKGRD(Xc,Yc,mmax, nmax, M1B,N1B,M2B,N2B,0,NDRAW(38),key,mc)
-            ENDIF
+            call TEKB(Xc, Yc, MMAX, NMAX, 0)
+            call POSITIVEBLOK()
+            M1B = max(MB(3) - 1, 1)
+            N1B = max(NB(3) - 1, 1)
+            M2B = min(MB(4) + 1, MC)
+            N2B = min(NB(4) + 1, NC)
+            if (NFLD /= 4) then
+               call TEKGRD(Xc, Yc, mmax, nmax, M1B, N1B, M2B, N2B, 0, NDRAW(38), key, mc)
+            end if
 !           Begin Operatie
-            CALL SAVEGRD()
-            IF (NFLD .EQ. 4) THEN
+            call SAVEGRD()
+            if (NFLD == 4) then
                M1 = MB(1)
                M2 = MB(2)
                N1 = NB(1)
                N2 = NB(2)
-               CALL EDITGRIDLINESHIFT(MODE,NFLD,KEY,M1,N1,M2,N2)
-               IF (KEY .NE. 23) THEN
-                  CALL TEKGRD(      Xc,     Yc,    mmax, nmax, M1B,           &
-                                   N1B,    M2B,    N2B,0,NDRAW(38),key,mc)
-                  CALL MODGR2(     Xc,     Yc,     Xch,     Ych,   mmax, nmax, &
-                                   MC,     NC,   NUMP)
-               ENDIF
-            ELSE IF (NFLD .EQ. 5) THEN    ! Attraction
-               CALL ATTRACTREPULSE(     Xc,     Yc,     Xch,   Ych, &
-                                      mmax,   nmax, &
-                                        MC,     NC,   NUMP,     -1)
-            ELSE IF (NFLD .EQ. 6) THEN    ! Repulsion
-               CALL ATTRACTREPULSE(     Xc,     Yc,     Xch,   Ych, &
-                                      mmax,   nmax, &
-                                        MC,     NC,   NUMP,      1)
-            ELSE IF (NFLD .EQ. 7) THEN
-               CALL MODGR4( NUMP,1  )
-            ELSE IF (NFLD .EQ. 8) THEN
-               CALL MODGR4( NUMP,2  )
-            ELSE IF (NFLD .EQ. 9) THEN
-               CALL DOSMOOTH(NFLD)!Xc,Yc,mmax, nmax, MC,NC,NFLD,IJC,IJYES)
-            ELSE IF (NFLD .EQ. 10) THEN
-               CALL LINEMIRROR()!Xc,Yc,mmax, nmax, MC,NC,IJC,IJYES)
-            ELSE IF (NFLD .EQ. 11) THEN
+               call EDITGRIDLINESHIFT(MODE, NFLD, KEY, M1, N1, M2, N2)
+               if (KEY /= 23) then
+                  call TEKGRD(Xc, Yc, mmax, nmax, M1B, &
+                              N1B, M2B, N2B, 0, NDRAW(38), key, mc)
+                  call MODGR2(Xc, Yc, Xch, Ych, mmax, nmax, &
+                              MC, NC, NUMP)
+               end if
+            else if (NFLD == 5) then ! Attraction
+               call ATTRACTREPULSE(Xc, Yc, Xch, Ych, &
+                                   mmax, nmax, &
+                                   MC, NC, NUMP, -1)
+            else if (NFLD == 6) then ! Repulsion
+               call ATTRACTREPULSE(Xc, Yc, Xch, Ych, &
+                                   mmax, nmax, &
+                                   MC, NC, NUMP, 1)
+            else if (NFLD == 7) then
+               call MODGR4(NUMP, 1)
+            else if (NFLD == 8) then
+               call MODGR4(NUMP, 2)
+            else if (NFLD == 9) then
+               call DOSMOOTH(NFLD) !Xc,Yc,mmax, nmax, MC,NC,NFLD,IJC,IJYES)
+            else if (NFLD == 10) then
+               call LINEMIRROR() !Xc,Yc,mmax, nmax, MC,NC,IJC,IJYES)
+            else if (NFLD == 11) then
                M1 = MB(1)
                M2 = MB(2)
                N1 = NB(1)
                N2 = NB(2)
-               CALL LOCALREFINE(NUM, m1, n1, m2, n2, 1)
-            ELSE IF (NFLD .EQ. 12) THEN
+               call LOCALREFINE(NUM, m1, n1, m2, n2, 1)
+            else if (NFLD == 12) then
                M1 = MB(1)
                M2 = MB(2)
                N1 = NB(1)
                N2 = NB(2)
-               CALL LOCALREFINE(NUM, m1, n1, m2, n2, 2)
-            ENDIF
+               call LOCALREFINE(NUM, m1, n1, m2, n2, 2)
+            end if
 !           Einde Operatie
-            CALL TEKGRD(      Xc,     Yc,    mmax,   nmax, M1B,                  &
-                             N1B,    M2B,    N2B, NCOLDG, NDRAW(38),key,mc)
-            CALL TEKGRD(     Xch,    Ych,    mmax,   nmax, M1B,                  &
-                             N1B,    M2B,    N2B, NCOLRG, NDRAW(16),key,mch)
-            IF (NPT .LE. 2) KEY = 3
-            CALL RESETB(NPUT)
+            call TEKGRD(Xc, Yc, mmax, nmax, M1B, &
+                        N1B, M2B, N2B, NCOLDG, NDRAW(38), key, mc)
+            call TEKGRD(Xch, Ych, mmax, nmax, M1B, &
+                        N1B, M2B, N2B, NCOLRG, NDRAW(16), key, mch)
+            if (NPT <= 2) then
+               KEY = 3
+            end if
+            call RESETB(NPUT)
             NPUT = 10
-         ENDIF
-      ELSE IF (KEY .EQ. 23) THEN
+         end if
+      else if (KEY == 23) then
 !        ESC
          JONCE = JONCE + 1
-         IF (JONCE .EQ. 1) THEN
-            CALL RESTOREB(NPUT)
-         ELSE IF (JONCE .EQ. 2) THEN
+         if (JONCE == 1) then
+            call RESTOREB(NPUT)
+         else if (JONCE == 2) then
             NPUT = 10
-            CALL RESETB(NPUT)
-         ELSE IF (JONCE .EQ. 3) THEN
-            CALL RESTOREgrd()
-         ENDIF
+            call RESETB(NPUT)
+         else if (JONCE == 3) then
+            call RESTOREgrd()
+         end if
          KEY = 3
-      ELSE IF (KEY .EQ. 27) THEN
+      else if (KEY == 27) then
 !        TAB
-         CALL SHWXYZ(Xc,Yc,Zc,mmax, nmax, MC,NC,0,KEY,M,N)
-      ENDIF
+         call SHWXYZ(Xc, Yc, Zc, mmax, nmax, MC, NC, 0, KEY, M, N)
+      end if
 !
-      GOTO 10
+      goto 10
 !
-      END subroutine editgridlineblok
+   end subroutine editgridlineblok
+
+end module m_editgridlineblok

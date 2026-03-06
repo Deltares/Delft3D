@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -27,22 +27,18 @@
 !
 !
 
-      subroutine read_srf(file_srf, mmax  , nmax  , nosegl, surf )
+      subroutine read_srf(file_srf, num_columns  , num_rows  , nosegl, surf )
 
-      ! function : read a srf file and check dimensions
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
-      use filmod                   ! module contains everything for the files
+      ! read a srf file and check dimensions
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_srf               ! aggregation-file
-      integer                                :: mmax                   ! grid cells m direction
-      integer                                :: nmax                   ! grid cells n direction
+      type(t_file)                       :: file_srf               ! aggregation-file
+      integer                                :: num_columns                   ! grid cells m direction
+      integer                                :: num_rows                   ! grid cells n direction
       integer                                :: nosegl                 ! nosegl
       real                                   :: surf(nosegl)           ! property of the cells per layer
 
@@ -56,54 +52,50 @@
       integer                                :: lunrep                 ! unit number report file
       logical                                :: exists                 ! file should exist
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       inquire( file = file_srf%name, exist = exists )
       if ( .not. exists ) then
          write(lunrep,*) ' file does not exist: ', trim(file_srf%name)
-         call srstop(1)
+         call stop_with_error()
       endif
 
-      call dlwqfile_open(file_srf)
-      read(file_srf%unit_nr,iostat=ioerr) nmaxd, mmaxd, i3, i4, i5, i6
+      call file_srf%open()
+      read(file_srf%unit,iostat=ioerr) nmaxd, mmaxd, i3, i4, i5, i6
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading file: ', trim(file_srf%name)
-         call srstop(1)
+         call stop_with_error()
       endif
 
-      if ( mmax*nmax .ne. mmaxd*nmaxd ) then
+      if ( num_columns*num_rows .ne. mmaxd*nmaxd ) then
          write(lunrep,*) ' dimensions file ', trim(file_srf%name), ' differ from input hydrodynamics'
-         call srstop(1)
+         call stop_with_error()
       endif
 
-      read(file_srf%unit_nr,iostat=ioerr) (surf(i),i=1,nosegl)
+      read(file_srf%unit,iostat=ioerr) (surf(i),i=1,nosegl)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading file: ', trim(file_srf%name)
-         call srstop(1)
+         call stop_with_error()
       endif
 
-      close(file_srf%unit_nr)
+      close(file_srf%unit)
       file_srf%status = FILE_STAT_UNOPENED
 
       return
       end
 
-      subroutine read_hsrf(file_hsrf, noseg, surf )
+      subroutine read_hsrf(file_hsrf, num_cells, surf )
 
-      ! function : read a horizontal srf file
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
-      use filmod                   ! module contains everything for the files
+      ! read a horizontal srf file
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_hsrf              ! aggregation-file
-      integer                                :: noseg                  ! number of segments
-      real                                   :: surf(noseg)            ! horizontal surfaces
+      type(t_file)                       :: file_hsrf              ! aggregation-file
+      integer                                :: num_cells                  ! number of segments
+      real                                   :: surf(num_cells)            ! horizontal surfaces
 
       ! local declarations
 
@@ -113,22 +105,22 @@
       integer                                :: ioerr                  ! error on file
       logical                                :: exists                 ! file should exist
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       inquire( file = file_hsrf%name, exist = exists )
       if ( .not. exists ) then
          write(lunrep,*) ' file does not exist: ', trim(file_hsrf%name)
-         call srstop(1)
+         call stop_with_error()
       endif
 
-      call dlwqfile_open(file_hsrf)
-      read(file_hsrf%unit_nr,iostat=ioerr) idum, (surf(i),i=1,noseg)
+      call file_hsrf%open()
+      read(file_hsrf%unit,iostat=ioerr) idum, (surf(i),i=1,num_cells)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading horizontal srf file'
-         call srstop(1)
+         call stop_with_error()
       endif
 
-      close(file_hsrf%unit_nr)
+      close(file_hsrf%unit)
       file_hsrf%status = FILE_STAT_UNOPENED
 
       return

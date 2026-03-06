@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -29,11 +29,10 @@
       contains
 
 
-      subroutine varoxy ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_srstop
-      use m_monsys
+      subroutine varoxy ( process_space_real   , fl     , ipoint , increm , num_cells  , &
+                         noflux , iexpnt , iknmrk , num_exchanges_u_dir   , num_exchanges_v_dir   , &
+                         num_exchanges_z_dir   , num_exchanges_bottom_dir   )
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
 
 !>\file
 !>       Variation of oxygen due to variation in primary production within day
@@ -51,16 +50,16 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+      REAL(kind=real_wp) ::process_space_real  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , num_cells , NOFLUX, &
+              IEXPNT(4,*) , IKNMRK(*) , num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
       INTEGER(kind=int_wp) ::LUNREP
 
-      INTEGER(kind=int_wp) ::IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8 , IP9 , & 
+      INTEGER(kind=int_wp) ::IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8 , IP9 , &
               IP10, IP11, IP12, I, IFLUX, ISEG
-      REAL(kind=real_wp) ::TIMSIM, DELTAT, TIMNUL, T1MXPP, T2MXPP, DAYLEN, FPPTOT, & 
-              FRESPI, DEPTHW, T1    , T2    , PPMAX , TRISE , & 
+      REAL(kind=real_wp) ::TIMSIM, DELTAT, TIMNUL, T1MXPP, T2MXPP, DAYLEN, FPPTOT, &
+              FRESPI, DEPTHW, T1    , T2    , PPMAX , TRISE , &
               TSET  , TOTAL , V1    , V2
       REAL(kind=real_wp) ::INTEGR(0:12*24), PPLAST, RELAST, DAYLLAST
       SAVE     PPLAST, RELAST, DAYLLAST, INTEGR
@@ -91,26 +90,26 @@
           (INCREM(5) > 0) .OR. &
           (INCREM(6) > 0) ) THEN
 
-          CALL GETMLU(LUNREP)
-          WRITE (LUNREP,*) & 
+          CALL get_log_unit_number(LUNREP)
+          WRITE (LUNREP,*) &
          ' VAROXY: Time parameters function(x) not ALLOWED'
-          WRITE (*,*) & 
+          WRITE (*,*) &
          ' VAROXY: Time parameters function(x) not ALLOWED'
-          CALL SRSTOP(1)
+          CALL stop_with_error()
       ENDIF
 
       IFLUX = 1
-      DO ISEG = 1 , NOSEG
+      DO ISEG = 1 , num_cells
 
-          TIMSIM = PMSA(IP1)/PMSA(IP3)
-          DELTAT = PMSA(IP4)
-          TIMNUL = PMSA(IP2)
-          T1MXPP = PMSA(IP5)
-          T2MXPP = PMSA(IP6)
-          DAYLEN = PMSA(IP7)*24.
-          FPPTOT = PMSA(IP8)
-          FRESPI = PMSA(IP9)
-          DEPTHW = PMSA(IP10)
+          TIMSIM = process_space_real(IP1)/process_space_real(IP3)
+          DELTAT = process_space_real(IP4)
+          TIMNUL = process_space_real(IP2)
+          T1MXPP = process_space_real(IP5)
+          T2MXPP = process_space_real(IP6)
+          DAYLEN = process_space_real(IP7)*24.
+          FPPTOT = process_space_real(IP8)
+          FRESPI = process_space_real(IP9)
+          DEPTHW = process_space_real(IP10)
           TRISE  = 12.0-0.5*DAYLEN
           TSET   = 12.0+0.5*DAYLEN
 
@@ -175,7 +174,7 @@
 !
 !            Compute FLUX only if SWITCH is 1.0
 !
-             IF ( PMSA(IP11) > 0.5 ) THEN
+             IF ( process_space_real(IP11) > 0.5 ) THEN
 
 !               Compute relative time within day of time step to come
 
@@ -186,14 +185,14 @@
                     T2 = 24.
                     T1 = T2 - DELTAT*24.0
                 ENDIF
-                PMSA(IP12) = T1
+                process_space_real(IP12) = T1
 
 !               Compute flux for interval [T1:T2] by subtracting integrals
 !               for both times and dividing by time interval
 
-                FL(IFLUX)  = (( INTEGR(NINT(T2*12.0)) & 
-                              -INTEGR(NINT(T1*12.0)) ) & 
-                            / (T2-T1)* (FPPTOT+FRESPI) & 
+                FL(IFLUX)  = (( INTEGR(NINT(T2*12.0)) &
+                              -INTEGR(NINT(T1*12.0)) ) &
+                            / (T2-T1)* (FPPTOT+FRESPI) &
                             - FRESPI ) / DEPTHW
 
              ELSE

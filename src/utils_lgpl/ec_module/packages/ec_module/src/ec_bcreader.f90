@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -36,7 +36,7 @@ module m_ec_bcreader
   use m_alloc
   use multi_file_io
   use string_module
-  use physicalconsts, only : CtoKelvin
+  use physicalconsts, only : C_TO_KELVIN
   implicit none
 
   private
@@ -362,7 +362,7 @@ contains
     integer, allocatable             ::     iv(:), il(:), perm_vpos(:)
 
     integer                          ::     ipos, npos, posfs, ipos1, ipos2
-    integer                          ::     iq, iq_sel, idim, kmax
+    integer                          ::     iq, iq_sel, idim, num_layers_grid
     integer, parameter               ::     MAXDIM = 10    !< max number of vector quantities in one vector
     character(len=maxNameLen)        ::     vectorquantities(MAXDIM)
     character(len=maxNameLen)        ::     vectordefinition, vectorstr
@@ -383,11 +383,15 @@ contains
        if (allocated(bc%quantity%col2elm)) then
           deallocate(bc%quantity%col2elm)
        endif
+       if (allocated(bc%quantity%column_units)) then
+          deallocate(bc%quantity%column_units)
+       end if
        deallocate(bc%quantity)
     endif
     allocate(bc%quantity)
     allocate(hdrkeys(nfld),hdrvals(nfld))
     allocate(bc%quantity%jacolumn(nq))
+    allocate(bc%quantity%column_units(nq))
     allocate(bc%quantity%col2elm(nq))
     allocate(iv(nq),il(nq))
     iv = -1
@@ -478,6 +482,7 @@ contains
        case ('UNIT')
           if (bc%quantity%jacolumn(iq)) then
              bc%quantity%unit = trim(hdrvals(ifld)%s)
+             bc%quantity%column_units(iq) = trim(hdrvals(ifld)%s)
           endif
           if (iq==bc%timecolumn) then                     ! Is this the unit of time ?
              bc%timeunit = trim(hdrvals(ifld)%s)            ! store timeunit string in this bc instance
@@ -612,7 +617,7 @@ contains
 
     if (bc%quantity%unit == 'K' .or. bc%quantity%unit == 'KELVIN' .or. bc%quantity%unit == 'Kelvin') then
        ! convert Kelvin to degrees Celsius (kernel expects degrees Celsius)
-       bc%quantity%offset = bc%quantity%offset - CtoKelvin
+       bc%quantity%offset = bc%quantity%offset - C_TO_KELVIN
     endif
 
     ! Fill bc%quantity%col2elm(nq) which holds the mapping of columns in the file to vector positions
@@ -632,10 +637,10 @@ contains
     enddo
 
     if (associated(bc%vp)) then
-       kmax = size(bc%vp)
+       num_layers_grid = size(bc%vp)
        if (perm_vpos(1) /= 1) then
-         allocate(vp_new(kmax))
-         do iq = 1, kmax
+         allocate(vp_new(num_layers_grid))
+         do iq = 1, num_layers_grid
             vp_new(iq) = bc%vp(perm_vpos(iq))
          enddo
          deallocate(bc%vp)
@@ -663,7 +668,7 @@ contains
 
      real(kind=hp)   :: minvp                      !< lowest vertical position
      real(kind=hp)   :: maxvp                      !< higest vertical position
-     integer         :: kmax                       !< number of layers
+     integer         :: num_layers_grid                       !< number of layers
      integer         :: k                          !< loop counter
      logical, save   :: warningPrinted = .false.   !< flag to avoid printing the same warning many times
 
@@ -671,7 +676,7 @@ contains
 
      minvp = minval(vp)
      maxvp = maxval(vp)
-     kmax = size(vp)
+     num_layers_grid = size(vp)
 
      if (minvp >= 0.0d0 .and. maxvp <= 1.0d0) then
         continue ! all layers oke
@@ -681,7 +686,7 @@ contains
         success = .false.
      else
         ! in range 0.0 - 100.0. probably percentages. extra check, increasing numbers?
-        do k = 2, kmax
+        do k = 2, num_layers_grid
            if (vp(k) < vp(k-1)) then
               success = .false.
               exit

@@ -13,7 +13,7 @@ subroutine bedbc2004(tp        ,rhowat    , &
                    & awb       ,wform     ,phi_phase ,r         ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -143,12 +143,6 @@ subroutine bedbc2004(tp        ,rhowat    , &
     real(fp) :: dzdn
     real(fp) :: fac_slp
     real(fp) :: phi
-    real(fp) :: p1
-    real(fp) :: p2
-    real(fp) :: p3
-    real(fp) :: p4
-    real(fp) :: p5
-    real(fp) :: p6
     real(fp) :: omega
     real(fp) :: k
     real(fp) :: urs
@@ -156,19 +150,6 @@ subroutine bedbc2004(tp        ,rhowat    , &
     real(fp) :: s
     real(fp) :: a
     real(fp) :: b
-    real(fp) :: psi_phase
-    real(fp) :: rsf
-    real(fp) :: aas
-    real(fp) :: bbs
-    real(fp) :: ccs
-    real(fp) :: xa
-    real(fp) :: xb
-    real(fp) :: xc
-    real(fp) :: x1
-    real(fp) :: x2
-    real(fp) :: t1_sol
-    real(fp) :: t2_sol
-    real(fp) :: f
 !
 !! executable statements -------------------------------------------------------
 !

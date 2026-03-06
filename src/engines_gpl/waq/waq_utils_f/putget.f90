@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -31,8 +31,8 @@ subroutine putget(defnam, datnam, grpnam, nelems, &
     integer         celidt, nelems, error
 
     integer         buffr(*)
-    character*(*)   elmnms(nelems), elmtps(nelems)
-    character*(*)   elmnam, grpnam
+    character(len=*)   elmnms(nelems), elmtps(nelems)
+    character(len=*)   elmnam, grpnam
     !
     logical         wrilog
     !
@@ -49,13 +49,13 @@ subroutine putget(defnam, datnam, grpnam, nelems, &
     integer         fd_nef
     integer         elmdim(5), uindex(3)
     !
-    character*2     access
-    character*1     coding
-    character*16    elmqta, elmant
-    character*(*)   datnam
-    character*(*)   defnam
-    character*64    elmdas
-    character*134   errstr
+    character(len=2)     access
+    character(len=1)     coding
+    character(len=16)    elmqta, elmant
+    character(len=*)     datnam
+    character(len=*)     defnam
+    character(len=64)    elmdas
+    character(len=134)   errstr
     !
     !-External Functions
     !

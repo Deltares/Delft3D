@@ -13,11 +13,9 @@ set(oss_dependencies    wave_data
                         deltares_common
                         wave_io
                         swan)
-                        
-oss_include_libraries(${library_name} oss_dependencies)
 target_link_libraries(${library_name} ${oss_dependencies})
 
-include_directories(${mpi_include_path})
+include_directories(${mpi_module_path})
 
 
 # Define how the files should be structured within Visual Studio

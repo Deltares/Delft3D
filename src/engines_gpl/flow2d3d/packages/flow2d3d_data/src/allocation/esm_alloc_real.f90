@@ -1,7 +1,7 @@
 subroutine esm_alloc_real(lundia, error, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -546,7 +546,7 @@ subroutine esm_alloc_real(lundia, error, gdp)
     !
     !-----arrays for: depths
     !
-    !                           dp    (nmaxddb  ,mmaxddb)
+    !                           dpd   (nmaxddb  ,mmaxddb)
     !                           dpu   (nmaxddb  ,mmaxddb)
     !                           dpv   (nmaxddb  ,mmaxddb)
     !                           dps   (nmaxddb  ,mmaxddb)
@@ -557,7 +557,7 @@ subroutine esm_alloc_real(lundia, error, gdp)
     !                           hv    (nmaxddb  ,mmaxddb)
     !                           hv0   (nmaxddb  ,mmaxddb)
     !
-    pntnam = 'dp'            !  Depth value at depth points
+    pntnam = 'dpd'           !  Depth value at depth points
     ierr = mkfpnt(pntnam, nmaxddb*mmaxddb, gdp)
     if (ierr <= -9) goto 9999
     !

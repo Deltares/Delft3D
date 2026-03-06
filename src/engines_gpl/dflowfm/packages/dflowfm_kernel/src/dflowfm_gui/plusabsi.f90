@@ -1,50 +1,65 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE PLUSABSI(XK,YK,ZK,KN,NUMK,NUML,KEY,kndefault)
+module m_plusabsi
+   use m_showreal
+
+   implicit none
+
+contains
+
+   subroutine PLUSABSI(XK, YK, ZK, KN, NUMK, NUML, KEY, kndefault)
+      use precision, only: dp
+      use m_menuv3
+      use m_getreal
+      use m_confrm
       use M_polygon
-      USE m_missing
-      use network_data, only: kn3typ
+      use m_missing
       use geometry_module, only: dpinpok
       use gridoperations
-      implicit none
+      use m_readyy
+
       integer, parameter :: MAXOP = 64
       integer :: NUMK, NUML, KEY
-      DOUBLE PRECISION XK(NUMK), YK(NUMK), ZK(NUMK), XI, YI, ZI
-      INTEGER KN(3,NUML)
-      integer, intent(inout) :: kndefault !< Default uniform value (e.g. kn3typ), will be changed too at call site when user changes it in the dialog.
-      CHARACTER*40 OPTION(MAXOP),EXP(MAXOP)
+      real(kind=dp) :: XI, YI, ZI
+      real(kind=dp), dimension(numk), intent(in) :: XK
+      real(kind=dp), dimension(numk), intent(in) :: YK
+      real(kind=dp), dimension(numk), intent(in) :: ZK
+      integer, dimension(3, NUML), intent(inout) :: KN
 
-      double precision :: af
+      integer, intent(inout) :: kndefault !< Default uniform value (e.g. kn3typ), will be changed too at call site when user changes it in the dialog.
+      character(len=40) OPTION(MAXOP)
+
+      real(kind=dp) :: af
       integer :: ia
       integer :: ichange
       integer :: inhul
@@ -52,18 +67,15 @@
       integer :: k1
       integer :: k2
       integer :: l
-      integer :: maxexp
       integer :: maxopt
       integer :: nwhat
-      double precision :: rd
+      real(kind=dp) :: rd
 
-      double precision, save :: A
-      integer, save :: INI = 0
-      A   = kndefault
+      real(kind=dp), save :: A
 
-      JA        = 0
-      EXP(1)    = 'MENU TIG                                '
-      EXP(2)    = 'HOW TO REPLACE THE VALUES               '
+      A = kndefault
+
+      JA = 0
       OPTION(1) = 'FIELD = UNIFORM VALUE, only missings    '
       OPTION(2) = 'FIELD = UNIFORM VALUE, all points       '
       OPTION(3) = 'FIELD = MAX(FIELD,UNIFORM VALUE)        '
@@ -72,89 +84,105 @@
       OPTION(6) = 'FIELD = FIELD * UNIFORM VALUE           '
       OPTION(7) = 'FIELD = MISSING VALUE -999.             '
       OPTION(8) = 'SPECIFY UNIFORM VALUE                   '
-      MAXOPT    = 8
-      ICHANGE   = 1
-   10 CONTINUE
+      MAXOPT = 8
+      ICHANGE = 1
+10    continue
       NWHAT = ICHANGE
-      CALL SHOWREAL('UNIFORM VALUE = ',A)
-      CALL MENUV3(NWHAT,OPTION,MAXOPT,EXP,MAXEXP)
-      CALL IWINCLOSE(1)
-      IF (NWHAT .EQ. 0) THEN
+      call SHOWREAL('UNIFORM VALUE = ', A)
+      call MENUV3(NWHAT, OPTION, MAXOPT)
+      call IWINCLOSE(1)
+      if (NWHAT == 0) then
          KEY = 0
-         RETURN
-      ELSE
-         IF (NWHAT .LE. 6) THEN
+         return
+      else
+         if (NWHAT <= 6) then
             ICHANGE = NWHAT
-            IF (A .EQ. dmiss) THEN
-               CALL GETREAL('FIRST SPECIFY UNIFORM VALUE = ',A)
-               IF (A .NE. dmiss) JA = 1
-               GOTO 10
-            ELSE
+            if (A == dmiss) then
+               call GETREAL('FIRST SPECIFY UNIFORM VALUE = ', A)
+               if (A /= dmiss) then
+                  JA = 1
+               end if
+               goto 10
+            else
                JA = 1
-            ENDIF
-         ELSE IF (NWHAT == 7) THEN
-            ICHANGE = NWHAT
-         ELSE IF (NWHAT == 8) THEN
-            CALL GETREAL('SPECIFY UNIFORM VALUE = ',A)
-            IF (A .NE. dmiss) then
-                JA = 1
-                kndefault = int(A)
             end if
-            GOTO 10
-         ENDIF
-      ENDIF
+         else if (NWHAT == 7) then
+            ICHANGE = NWHAT
+         else if (NWHAT == 8) then
+            call GETREAL('SPECIFY UNIFORM VALUE = ', A)
+            if (A /= dmiss) then
+               JA = 1
+               kndefault = int(A)
+            end if
+            goto 10
+         end if
+      end if
 
-      IF (NPL .LE. 2) THEN
-         CALL CONFRM('NO POLYGON, SO INCLUDE all FIELD POINTS ? ',JA)
-         IF (JA .EQ. 0) THEN
+      if (NPL <= 2) then
+         call CONFRM('NO POLYGON, SO INCLUDE all FIELD POINTS ? ', JA)
+         if (JA == 0) then
             KEY = 0
-            RETURN
-         ENDIF
-      ENDIF
-      CALL SAVENET()
-      CALL READYY('CHANGE FIELD VALUES', 0d0)
-      KMOD = MAX(1,NUML/100)
-      DO 20 L = 1,NUML
-         IF (MOD(L,KMOD) == 0) THEN
-            AF = dble(L) / dble(NUML)
-            CALL READYY('CHANGE FIELD VALUES', AF)
-         ENDIF
-         K1 = KN(1,L)
-         K2 = KN(2,L)
-         IF (K1 .EQ. 0 .OR. K2 .EQ. 0) GOTO 20
-         XI = (XK(K1) + XK(K2))/2
-         YI = (YK(K1) + YK(K2))/2
-         ZI = (ZK(K1) + ZK(K2))/2
-         RD = kn(3,L)
+            return
+         end if
+      end if
+      call SAVENET()
+      call READYY('CHANGE FIELD VALUES', 0.0_dp)
+      KMOD = max(1, NUML / 100)
+      do L = 1, NUML
+         if (mod(L, KMOD) == 0) then
+            AF = real(L, kind=dp) / real(NUML, kind=dp)
+            call READYY('CHANGE FIELD VALUES', AF)
+         end if
+         K1 = KN(1, L)
+         K2 = KN(2, L)
+         if (K1 == 0 .or. K2 == 0) then
+            cycle
+         end if
+         XI = (XK(K1) + XK(K2)) / 2
+         YI = (YK(K1) + YK(K2)) / 2
+         ZI = (ZK(K1) + ZK(K2)) / 2
+         RD = kn(3, L)
          JA = 0
-         IF (NPL .GE. 3) THEN
-            CALL DPINPOK( XI, YI, ZI, NPL, XPL, YPL, INHUL, jins, dmiss)
-            IF (INHUL .EQ. 1) JA = 1
-         ELSE
+         if (NPL >= 3) then
+            call DPINPOK(XI, YI, ZI, NPL, XPL, YPL, INHUL, jins, dmiss)
+            if (INHUL == 1) then
+               JA = 1
+            end if
+         else
             JA = 1
-         ENDIF
+         end if
          IA = A
-         IF (JA .EQ. 1) THEN
-            IF (ICHANGE .EQ. 1) THEN
-               IF (RD == dmiss) THEN
-                  kn(3,L) = IA
-               ENDIF
-            ELSE IF (ICHANGE .EQ. 2) THEN
-                  kn(3,L) = IA
-            ELSE IF (ICHANGE .EQ. 3) THEN
-               IF (RD == dmiss) kn(3,L) = MAX(kn(3,L),IA)
-            ELSE IF (ICHANGE .EQ. 4) THEN
-               IF (RD == dmiss) kn(3,L) = MIN(kn(3,L),IA)
-            ELSE IF (ICHANGE .EQ. 5) THEN
-               IF (RD == dmiss) kn(3,L) = kn(3,L) + IA
-            ELSE IF (ICHANGE .EQ. 6) THEN
-               IF (RD == dmiss) kn(3,L) = kn(3,L) * IA
-            ELSE IF (ICHANGE .EQ. 7) THEN
-               kn(3,L) = INT(dmiss)
-            ENDIF
-         ENDIF
-   20 CONTINUE
-      CALL READYY('CHANGE FIELD VALUES', -1d0)
+         if (JA == 1) then
+            if (ICHANGE == 1) then
+               if (RD == dmiss) then
+                  kn(3, L) = IA
+               end if
+            else if (ICHANGE == 2) then
+               kn(3, L) = IA
+            else if (ICHANGE == 3) then
+               if (RD == dmiss) then
+                  kn(3, L) = max(kn(3, L), IA)
+               end if
+            else if (ICHANGE == 4) then
+               if (RD == dmiss) then
+                  kn(3, L) = min(kn(3, L), IA)
+               end if
+            else if (ICHANGE == 5) then
+               if (RD == dmiss) then
+                  kn(3, L) = kn(3, L) + IA
+               end if
+            else if (ICHANGE == 6) then
+               if (RD == dmiss) then
+                  kn(3, L) = kn(3, L) * IA
+               end if
+            else if (ICHANGE == 7) then
+               kn(3, L) = int(dmiss)
+            end if
+         end if
+      end do
+      call READYY('CHANGE FIELD VALUES', -1.0_dp)
       KEY = 3
-      RETURN
-      END SUBROUTINE PLUSABSI
+
+   end subroutine PLUSABSI
+
+end module m_plusabsi

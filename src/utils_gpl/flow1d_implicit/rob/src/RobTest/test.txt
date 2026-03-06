@@ -1,0 +1,326 @@
+
+Add properties to first two quantities
+	Quantity
+	ID                : q1
+	Description       : q1_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+
+	Quantity
+	ID                : q2
+	Description       : q2_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+
+Create Quantityset and add properties to first two quantities in set
+	Quantity
+	ID                : q1
+	Description       : q1_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+
+	Quantityset
+	ID                : q2
+	Description       : q2_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+		ID                : q2_1
+		Description       : q2_1_description
+		Unit ID           : kg/m3
+			Properties :
+			PropertyID : Property 1  ,PropertyValue : Property Value 1
+			PropertyID : Property 2  ,PropertyValue : Property Value 2
+		ID                : q2_2
+		Description       : q2_2_description
+		Unit ID           : m
+			Properties :
+			PropertyID : Property 1  ,PropertyValue : Property Value 1
+			PropertyID : Property 2  ,PropertyValue : Property Value 2
+		ID                : q2_3
+		Description       : q2_3_description
+		Unit ID           : m
+
+Change property value for the second quantities in the set
+Value now "New Property Value"
+Remove : q2_2
+
+	Quantity
+	ID                : q1
+	Description       : q1_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+
+	Quantityset
+	ID                : q2
+	Description       : q2_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+		ID                : q2_1
+		Description       : q2_1_description
+		Unit ID           : kg/m3
+			Properties :
+			PropertyID : Property 1  ,PropertyValue : Property Value 1
+			PropertyID : Property 2  ,PropertyValue : Property Value 2
+		ID                : q2_3
+		Description       : q2_3_description
+		Unit ID           : m
+
+Remove : q2_1
+
+	Quantity
+	ID                : q1
+	Description       : q1_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+
+	Quantityset
+	ID                : q2
+	Description       : q2_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+		ID                : q2_3
+		Description       : q2_3_description
+		Unit ID           : m
+
+Remove : q2_3
+
+	Quantity
+	ID                : q1
+	Description       : q1_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+
+	Quantity
+	ID                : q2
+	Description       : q2_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+
+
+Recreated Set :
+
+	Quantity
+	ID                : q1
+	Description       : q1_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+
+	Quantityset
+	ID                : q2
+	Description       : q2_description
+	Unit ID           : m3/s
+	Properties :
+	PropertyID : Property 1  ,PropertyValue : Property Value 1
+	PropertyID : Property 2  ,PropertyValue : Property Value 2
+		ID                : q2_1
+		Description       : q2_1_description
+		Unit ID           : kg/m3
+		ID                : q2_2
+		Description       : q2_2_description
+		Unit ID           : m
+		ID                : q2_3
+		Description       : q2_3_description
+		Unit ID           : m
+
+ElementSets :
+	Elementset         : TestSet ID
+	Description        : TestSet Description
+	Type               : 0
+	#Elements          : 3
+		Element[ 0]: Element1
+		Element[ 1]: Element2
+		Element[ 2]: Element3
+
+ExchangeItems (empty) :
+	Role               : 1
+	Model              : RobTest
+	Quantity           : q1
+	Elementset         : TestSet ID
+	Number of elements : 3
+		Element[ 0]= MISSING_VALUE (=1.79769e+308)
+		Element[ 1]= MISSING_VALUE (=1.79769e+308)
+		Element[ 2]= MISSING_VALUE (=1.79769e+308)
+
+
+	Role               : 2
+	Model              : RobTest
+	Quantity           : q1
+	Elementset         : TestSet ID
+	Number of elements : 3
+		Element[ 0]= MISSING_VALUE (=1.79769e+308)
+		Element[ 1]= MISSING_VALUE (=1.79769e+308)
+		Element[ 2]= MISSING_VALUE (=1.79769e+308)
+
+
+	Role               : 1
+	Model              : RobTest
+	Quantity           : q2
+	Elementset         : TestSet ID
+	Number of elements : 9
+		Element[ 0]= MISSING_VALUE (=1.79769e+308)	(q2_1)
+		Element[ 1]= MISSING_VALUE (=1.79769e+308)
+		Element[ 2]= MISSING_VALUE (=1.79769e+308)
+		Element[ 3]= MISSING_VALUE (=1.79769e+308)	(q2_2)
+		Element[ 4]= MISSING_VALUE (=1.79769e+308)
+		Element[ 5]= MISSING_VALUE (=1.79769e+308)
+		Element[ 6]= MISSING_VALUE (=1.79769e+308)	(q2_3)
+		Element[ 7]= MISSING_VALUE (=1.79769e+308)
+		Element[ 8]= MISSING_VALUE (=1.79769e+308)
+
+
+	Role               : 2
+	Model              : RobTest
+	Quantity           : q2
+	Elementset         : TestSet ID
+	Number of elements : 9
+		Element[ 0]= MISSING_VALUE (=1.79769e+308)	(q2_1)
+		Element[ 1]= MISSING_VALUE (=1.79769e+308)
+		Element[ 2]= MISSING_VALUE (=1.79769e+308)
+		Element[ 3]= MISSING_VALUE (=1.79769e+308)	(q2_2)
+		Element[ 4]= MISSING_VALUE (=1.79769e+308)
+		Element[ 5]= MISSING_VALUE (=1.79769e+308)
+		Element[ 6]= MISSING_VALUE (=1.79769e+308)	(q2_3)
+		Element[ 7]= MISSING_VALUE (=1.79769e+308)
+		Element[ 8]= MISSING_VALUE (=1.79769e+308)
+
+
+
+RobPutDouble :
+RobPutDouble (all elements same value) : Quantity q1  ElementID TestSet ID PROVIDING 10.000000
+RobPutDouble (all elements same value) : Quantity q1  ElementID TestSet ID ACCEPTING 20.000000
+RobPutDouble : Quantityset q2 Quantity q2_1  ElementID TestSet ID PROVIDING    3.0    14.0    25.0  
+RobPutDouble : Quantityset q2 Quantity q2_1  ElementID TestSet ID ACCEPTING    6.0    28.0    50.0  
+RobPutDouble : Quantityset q2 Quantity q2_2  ElementID TestSet ID PROVIDING    4.0    15.0    26.0  
+RobPutDouble : Quantityset q2 Quantity q2_2  ElementID TestSet ID ACCEPTING    8.0    30.0    52.0  
+
+ExchangeItems :
+	Role               : 1
+	Model              : RobTest
+	Quantity           : q1
+	Elementset         : TestSet ID
+	Number of elements : 3
+		Element[ 0]=    10.000000
+		Element[ 1]=    10.000000
+		Element[ 2]=    10.000000
+
+
+	Role               : 2
+	Model              : RobTest
+	Quantity           : q1
+	Elementset         : TestSet ID
+	Number of elements : 3
+		Element[ 0]=    20.000000
+		Element[ 1]=    20.000000
+		Element[ 2]=    20.000000
+
+
+	Role               : 1
+	Model              : RobTest
+	Quantity           : q2
+	Elementset         : TestSet ID
+	Number of elements : 9
+		Element[ 0]=     3.000000	(q2_1)
+		Element[ 1]=    14.000000
+		Element[ 2]=    25.000000
+		Element[ 3]=     4.000000	(q2_2)
+		Element[ 4]=    15.000000
+		Element[ 5]=    26.000000
+		Element[ 6]= MISSING_VALUE (=1.79769e+308)	(q2_3)
+		Element[ 7]= MISSING_VALUE (=1.79769e+308)
+		Element[ 8]= MISSING_VALUE (=1.79769e+308)
+
+
+	Role               : 2
+	Model              : RobTest
+	Quantity           : q2
+	Elementset         : TestSet ID
+	Number of elements : 9
+		Element[ 0]=     6.000000	(q2_1)
+		Element[ 1]=    28.000000
+		Element[ 2]=    50.000000
+		Element[ 3]=     8.000000	(q2_2)
+		Element[ 4]=    30.000000
+		Element[ 5]=    52.000000
+		Element[ 6]= MISSING_VALUE (=1.79769e+308)	(q2_3)
+		Element[ 7]= MISSING_VALUE (=1.79769e+308)
+		Element[ 8]= MISSING_VALUE (=1.79769e+308)
+
+
+
+RobGetDouble :
+RobGetDouble Quantity q1  ElementID TestSet ID PROVIDING   10.0    10.0    10.0  
+RobGetDouble Quantity q1  ElementID TestSet ID ACCEPTING   20.0    20.0    20.0  
+RobGetDouble Quantityset q2 Quantity q2_1  ElementID TestSet ID PROVIDING    3.0    14.0    25.0  
+RobGetDouble : Quantityset q2 Quantity q2_1  ElementID TestSet ID ACCEPTING    6.0    28.0    50.0  
+RobGetDouble Quantityset q2 Quantity q2_2  ElementID TestSet ID PROVIDING    4.0    15.0    26.0  
+RobGetDouble : Quantityset q2 Quantity q2_2  ElementID TestSet ID ACCEPTING    8.0    30.0    52.0  
+
+Remove & trim : q2_2
+	Role               : 1
+	Model              : RobTest
+	Quantity           : q1
+	Elementset         : TestSet ID
+	Number of elements : 3
+		Element[ 0]=    10.000000
+		Element[ 1]=    10.000000
+		Element[ 2]=    10.000000
+
+
+	Role               : 2
+	Model              : RobTest
+	Quantity           : q1
+	Elementset         : TestSet ID
+	Number of elements : 3
+		Element[ 0]=    20.000000
+		Element[ 1]=    20.000000
+		Element[ 2]=    20.000000
+
+
+	Role               : 1
+	Model              : RobTest
+	Quantity           : q2
+	Elementset         : TestSet ID
+	Number of elements : 6
+		Element[ 0]= MISSING_VALUE (=1.79769e+308)	(q2_1)
+		Element[ 1]= MISSING_VALUE (=1.79769e+308)
+		Element[ 2]= MISSING_VALUE (=1.79769e+308)
+		Element[ 3]= MISSING_VALUE (=1.79769e+308)	(q2_3)
+		Element[ 4]= MISSING_VALUE (=1.79769e+308)
+		Element[ 5]= MISSING_VALUE (=1.79769e+308)
+
+
+	Role               : 2
+	Model              : RobTest
+	Quantity           : q2
+	Elementset         : TestSet ID
+	Number of elements : 6
+		Element[ 0]= MISSING_VALUE (=1.79769e+308)	(q2_1)
+		Element[ 1]= MISSING_VALUE (=1.79769e+308)
+		Element[ 2]= MISSING_VALUE (=1.79769e+308)
+		Element[ 3]= MISSING_VALUE (=1.79769e+308)	(q2_3)
+		Element[ 4]= MISSING_VALUE (=1.79769e+308)
+		Element[ 5]= MISSING_VALUE (=1.79769e+308)
+
+

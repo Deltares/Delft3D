@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="CodeSynthesis XSD Compiler C++/Parser Mapping Rules"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="C++/Parser Mapping Rule"
+			DisplayName="C++/Parser Mapping Rule"
+			CommandLine="xsd.exe cxx-parser [AllOptions] [AdditionalOptions] [Inputs]"
+			Outputs="[$OutDir]\$(InputName)[$SkelFileSuffix][$HeaderSuffix];[$OutDir]\$(InputName)[$SkelFileSuffix][$SourceSuffix]"
+			FileExtensions="*.xsd"
+			ExecutionDescription="xsd cxx-parser [Inputs]"
+			ShowOnlyRuleProperties="false"
+			>
+			<Properties>
+				<StringProperty
+					Name="OutDir"
+					DisplayName="Output Directory"
+					Category="Output"
+					Description="Output directory for the generated files"
+					Switch="--output-dir [value]"
+					DefaultValue="."
+				/>
+				<BooleanProperty
+					Name="ProprietaryLicense"
+					DisplayName="Proprietary License"
+					Category="Licensing"
+					Description="Indicate that the generated code is licensed under a proprietary license instead of the GPL."
+					Switch="--proprietary-license"
+				/>
+				<StringProperty
+					Name="HeaderSuffix"
+					DisplayName="C++ Header Suffix "
+					Category="Output"
+					Description="Generated C++ header file suffix"
+					Switch="--hxx-suffix [value]"
+					DefaultValue=".hxx"
+				/>
+				<StringProperty
+					Name="SourceSuffix"
+					DisplayName="C++ Source Suffix"
+					Category="Output"
+					Description="Generated C++ source file suffix"
+					Switch="--cxx-suffix [value]"
+					DefaultValue=".cxx"
+				/>
+				<StringProperty
+					Name="InlineSuffix"
+					DisplayName="C++ Inline Suffix"
+					Category="Output"
+					Description="Generated C++ inline file suffix"
+					Switch="--ixx-suffix [value]"
+					DefaultValue=".ixx"
+				/>
+				<StringProperty
+					Name="SkelFileSuffix"
+					DisplayName="Parser Skeleton File Suffix"
+					PropertyPageName="Output"
+					Description="Use the provided suffix to construct the names of generated parser skeleton file."
+					Switch="--skel-file-suffix [value]"
+					DefaultValue="-pskel"
+				/>
+				<EnumProperty
+					Name="CharType"
+					DisplayName="Char Type"
+					PropertyPageName="Code Generation"
+					Description="Character type to be used in the generated code."
+					>
+					<Values>
+						<EnumValue
+							Value="0"
+							DisplayName="char"
+						/>
+						<EnumValue
+							Value="1"
+							Switch="--char-type wchar_t"
+							DisplayName="wchar_t"
+						/>
+					</Values>
+				</EnumProperty>
+				<EnumProperty
+					Name="CharEncoding"
+					DisplayName="Char Encoding"
+					PropertyPageName="Code Generation"
+					Description="Character encoding to be used bu the generated code."
+					>
+					<Values>
+						<EnumValue
+							Value="0"
+							DisplayName="UTF-8 (char)/UTF-16 (wchar_t)"
+						/>
+						<EnumValue
+							Value="1"
+							Switch="--char-encoding iso8859-1"
+							DisplayName="ISO-8859-1"
+						/>
+						<EnumValue
+							Value="2"
+							Switch="--char-encoding lcp"
+							DisplayName="Xerces-C++ local code page"
+						/>
+						<EnumValue
+							Value="3"
+							Switch="--char-encoding custom"
+							DisplayName="Custom encoding"
+						/>
+					</Values>
+				</EnumProperty>
+				<EnumProperty
+					Name="XMLParser"
+					DisplayName="Underlying XML Parser"
+					PropertyPageName="Code Generation"
+					Description="Use the specified parser as the underlying XML parser."
+					>
+					<Values>
+						<EnumValue
+							Value="0"
+							DisplayName="xerces"
+						/>
+						<EnumValue
+							Value="1"
+							Switch="--xml-parser expat"
+							DisplayName="expat"
+						/>
+					</Values>
+				</EnumProperty>
+				<StringProperty
+					Name="NamespaceMap"
+					DisplayName="Namespace Map"
+					PropertyPageName="Code Generation"
+					Description="Map XML Schema namespaces to C++ namespaces by specifying a comma-separated list of mapping rules in the form &lt;xml-ns&gt;=&lt;cxx-ns&gt; where &lt;xml-ns&gt; stands for an XML Schema namespace and &lt;cxx-ns&gt; - for a C++ namespace."
+					Switch="--namespace-map [value]"
+					Delimited="true"
+					Delimiters=","
+				/>
+				<StringProperty
+					Name="TypeMap"
+					DisplayName="Type Map"
+					PropertyPageName="Code Generation"
+					Description="Specify type map files as a comma-separated list."
+					Switch="--type-map [value]"
+					Delimited="true"
+					Delimiters=","
+				/>
+				<BooleanProperty
+					Name="GenInline"
+					DisplayName="Generate Inline"
+					PropertyPageName="Code Generation"
+					Description="Generate simple functions inline. This option triggers creation of the inline file."
+					Switch="--generate-inline"
+				/>
+				<BooleanProperty
+					Name="GenValidation"
+					DisplayName="Generate Validation Code"
+					PropertyPageName="Code Generation"
+					Description="Generate validation code which ensures that instance documents conform to the schema. This is the default for the Expat XML parser."
+					Switch="--generate-validation"
+				/>
+				<BooleanProperty
+					Name="SupValidation"
+					DisplayName="Suppress Validation Code"
+					PropertyPageName="Code Generation"
+					Description="Suppress generation of validation code. This is the default for the Xerces-C++ XML parser."
+					Switch="--suppress-validation"
+				/>
+				<BooleanProperty
+					Name="GenPolymorphic"
+					DisplayName="Generate Polymorphic"
+					PropertyPageName="Code Generation"
+					Description="Generate polymorphism-aware code. Specify this option if you use substitution groups or xsi:type."
+					Switch="--generate-polymorphic"
+				/>
+				<StringProperty
+					Name="SkelTypeSuffix"
+					DisplayName="Parser Skeleton Type Suffix"
+					PropertyPageName="Code Generation"
+					Description="Use the provided suffix to construct the names of generated parser skeletons."
+					Switch="--skel-type-suffix [value]"
+					DefaultValue="_pskel"
+				/>
+				<StringProperty
+					Name="ExportSymbol"
+					DisplayName="Export Symbol"
+					PropertyPageName="Code Generation"
+					Description="Insert the specified symbol in places where DLL export/import control statements (__declspec(dllexport/dllimport)) are necessary."
+					Switch="--export-symbol [value]"
+				/>
+				<StringProperty
+					Name="HxxPrologue"
+					DisplayName="Header Prologue File"
+					PropertyPageName="Code Generation"
+					Description="Insert the contents of the file specified at the beginning of the header file."
+					Switch="--hxx-prologue-file [value]"
+				/>
+				<StringProperty
+					Name="HxxEpilogue"
+					DisplayName="Header Epilogue File"
+					PropertyPageName="Code Generation"
+					Description="Insert the contents of the file specified at the end of the header file."
+					Switch="--hxx-epilogue-file [value]"
+				/>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

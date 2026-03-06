@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,27 +41,27 @@ static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version 
 #endif
 
 
-char * getversionstring_d_hydro(void)
+const char * getversionstring_d_hydro(void)
 {
     return modname_version;
 }
 
-char * getfullversionstring_d_hydro(void)
+const char * getfullversionstring_d_hydro(void)
 {
     return modname_version_full;
 }
 
-char * getshortversionstring_d_hydro(void)
+const char * getshortversionstring_d_hydro(void)
 {
     return modname_version_short;
 }
 
-char * geturlstring_d_hydro(void)
+const char * geturlstring_d_hydro(void)
 {
     return modname_url;
 }
 
-char * getversionidstring_d_hydro(void)
+const char * getversionidstring_d_hydro(void)
 {
     return modname_version_id;
 }

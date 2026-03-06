@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -351,7 +351,7 @@ end subroutine swap
 
  subroutine getdxdy(x1,y1,x2,y2,dx,dy)
  implicit none
- double precision :: x1, y1, x2, y2, dx, dy, dx2, dy2, dum
+ double precision :: x1, y1, x2, y2, dx, dy
  integer :: jsferic = 0 ! xy pair is in : 0=cart, 1=sferic coordinates (no taken into account yet)
  double precision, external :: getdx, getdy
  if (Jsferic == 1) then 

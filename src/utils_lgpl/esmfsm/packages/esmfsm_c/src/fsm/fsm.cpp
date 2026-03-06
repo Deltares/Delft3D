@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -130,7 +130,7 @@ InitProcess (
 static void
 SetError (
     int     thid,
-    char *  message,
+    const char *  message,
     ...
     );
 
@@ -729,7 +729,7 @@ InitProcess (
 void
 SetError (
     int     thid,
-    char *  message,
+    const char *  message,
     ...
     ) {
 

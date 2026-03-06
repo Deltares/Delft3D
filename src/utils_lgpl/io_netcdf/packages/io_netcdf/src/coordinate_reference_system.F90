@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -177,9 +177,6 @@ function get_proj_string_from_epsg(epsg, proj_string) result(ierr)
    character(len=1024), intent(  out) :: proj_string !< The PROJ-string for the given crs.
    integer                            :: ierr        !< Result status (IONC_NOERR==NF90_NOERR) if successful.
 
-   integer :: i, natts
-   logical :: found
-
    ierr = 0 ! TODO: AvD
 
    select case(epsg)
@@ -207,7 +204,7 @@ end function get_proj_string_from_epsg
    !> Transforms the given coordinates using the provided coordinate transformation.
    !! This subroutine uses the proj library for coordinate transformations.
    subroutine transform(coord_trans, src_x, src_y, dst_x, dst_y)
-      use proj6
+      use proj
 
       implicit none
 
@@ -242,7 +239,7 @@ end function get_proj_string_from_epsg
    !> Transforms the given coordinates from the given source coordinate system to the given destination coordinate system.
    ! This subroutine uses the proj library for coordinate transformations.
    subroutine transform_coordinates(src_proj_string, dst_proj_string, src_x, src_y, dst_x, dst_y)
-      use proj6
+      use proj
 
       implicit none
 

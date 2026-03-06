@@ -1,82 +1,89 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !>  compute the orientation of a cell by SVD
-subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
-   use m_netw
-   use m_sferic
-   use m_alloc
- !  use m_flow     ! for visualisation only
+module m_orthonet_compute_orientation
+   use m_spher2loc, only: spher2loc
+   use m_svdcmp, only: svdcmp
 
-   IMPLICIT NONE
+   implicit none
 
-   integer,              intent(in)  :: i                !< netcell number
-   double precision,     intent(out) :: aspect           !< aspect ratio
-   double precision,     intent(out) :: uu1, uu2         !< components of first orientation vector
-   double precision,     intent(out) :: vv1, vv2         !< components of second orientation vector
+   private
 
-   double precision, dimension(2,2)  :: B, Jacobian      ! Jacobian matrix
-   double precision                  :: lambda1, lambda2 ! eigen values of J
-   double precision, dimension(2)    :: L1, L2, R1, R2   ! left and right eigen vectors of J
+   public :: orthonet_compute_orientation
 
-   integer, parameter                :: M=6              ! maximum nodes in cell
-   double precision, dimension(M, 2) :: A, R             ! coefficient matrix
-   double precision, dimension(M)    :: xi, eta, xminx0, yminy0, theta
-   double precision                  :: x0, y0, D
+contains
 
-   integer, dimension(M)             :: knodes           ! indices of the nodes
+   subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
+      use precision, only: dp
+      use m_netw
+      use m_sferic
+      use m_alloc
+      use m_qnerror
 
-   double precision, dimension(2,2)  :: C
+      integer, intent(in) :: i !< netcell number
+      real(kind=dp), intent(out) :: aspect !< aspect ratio
+      real(kind=dp), intent(out) :: uu1, uu2 !< components of first orientation vector
+      real(kind=dp), intent(out) :: vv1, vv2 !< components of second orientation vector
 
-   double precision, dimension(2,2)  :: UU, VV           ! left and right singular vectors
-   double precision, dimension(2)    :: S                ! singular values
+      real(kind=dp), dimension(2, 2) :: B, Jacobian ! Jacobian matrix
 
-   double precision                  :: xx, yy, zz
+      integer, parameter :: M = 6 ! maximum nodes in cell
+      real(kind=dp), dimension(M, 2) :: A, R ! coefficient matrix
+      real(kind=dp), dimension(M) :: xi, eta, xminx0, yminy0, theta
+      real(kind=dp) :: x0, y0, D
 
-   integer                           :: j, k, link, N
+      integer, dimension(M) :: knodes ! indices of the nodes
 
-   double precision, parameter       :: EPS=1D-4
+      real(kind=dp), dimension(2, 2) :: C
+
+      real(kind=dp), dimension(2, 2) :: UU, VV ! left and right singular vectors
+      real(kind=dp), dimension(2) :: S ! singular values
+
+      integer :: j, k, N
+
+      real(kind=dp), parameter :: EPS = 1.0e-4_dp
 
 !--------------------------------------------------------------
 !  compute the Jacobian matrix J of net cell i
 !--------------------------------------------------------------
       N = netcell(i)%n
-      if ( N.gt.M ) then
+      if (N > M) then
          call qnerror('orthonet_compute_orientation: N > M', ' ', ' ')
          return
       end if
 
-      knodes      = 0
-      knodes(1:N) = (/ (netcell(i)%nod(j), j=1,N) /)
+      knodes = 0
+      knodes(1:N) = [(netcell(i)%nod(j), j=1, N)]
 
 !--------------------------------------------------------------
 !  Assume (x,y)' = (x0,y0)' + Jacobian*(xi,eta)'
@@ -84,14 +91,14 @@ subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
 !  (x0,y0)' is the mean of the node coordinates
 !--------------------------------------------------------------
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if (jsferic == 1 .and. jasfer3D == 1) then
          x0 = xzw(i)
          y0 = yzw(i)
 
-         call spher2loc(x0,y0,N,xk(knodes(1:N)),yk(knodes(1:N)),xminx0(1:N),yminy0(1:N))
+         call spher2loc(x0, y0, N, xk(knodes(1:N)), yk(knodes(1:N)), xminx0(1:N), yminy0(1:N))
       else
-         xminx0(1:N) = (/ (xk(knodes(j)), j=1,N) /)
-         yminy0(1:N) = (/ (yk(knodes(j)), j=1,N) /)
+         xminx0(1:N) = [(xk(knodes(j)), j=1, N)]
+         yminy0(1:N) = [(yk(knodes(j)), j=1, N)]
 
          x0 = sum(xminx0(1:N)) / N
          y0 = sum(yminy0(1:N)) / N
@@ -100,46 +107,46 @@ subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
          yminy0 = yminy0 - y0
       end if
 
-      theta(1:N) = (/ (k-1, k=1,N) /)
-      theta(1:N) = theta(1:N) / N * 2d0*pi
+      theta(1:N) = [(k - 1, k=1, N)]
+      theta(1:N) = theta(1:N) / N * 2.0_dp * pi
 
-      xi(1:N)  = cos(theta(1:N))
+      xi(1:N) = cos(theta(1:N))
       eta(1:N) = sin(theta(1:N))
 
-      A        = 0d0
-      A(1:N,1) = xi(1:N)
-      A(1:N,2) = eta(1:N)
+      A = 0.0_dp
+      A(1:N, 1) = xi(1:N)
+      A(1:N, 2) = eta(1:N)
 
-      R        = 0d0
-      R(1:N,1) = xminx0
-      R(1:N,2) = yminy0
+      R = 0.0_dp
+      R(1:N, 1) = xminx0
+      R(1:N, 2) = yminy0
 
 !     B = A'A
-      B        = matmul(transpose(A(1:N,:)), A(1:N,:))
+      B = matmul(transpose(A(1:N, :)), A(1:N, :))
 
 !     C = inv(A'A) = inv(B)
-      D = B(1,1)*B(2,2) - B(1,2)*B(2,1)  ! determinant
+      D = B(1, 1) * B(2, 2) - B(1, 2) * B(2, 1) ! determinant
 
-      if ( D.eq.0d0 ) then
+      if (D == 0.0_dp) then
          call qnerror('orthonet_compute_orientation: D==0', ' ', ' ')
          return
       end if
 
       B = B / D
-      C(1,1) =  B(2,2)
-      C(2,2) =  B(1,1)
-      C(1,2) = -B(1,2)
-      C(2,1) = -B(2,1)
+      C(1, 1) = B(2, 2)
+      C(2, 2) = B(1, 1)
+      C(1, 2) = -B(1, 2)
+      C(2, 1) = -B(2, 1)
 
 !     Jacobian = (inv(A'A)*A'*R)' = (C*A'*R)'
-      Jacobian = transpose(   &
-                   matmul(    &
-                     matmul(  &
-                       C,     &
-                       transpose(A(1:N,:))   &
-                     ),       &
-                     R        &
-                   )          &
+      Jacobian = transpose( &
+                 matmul( &
+                 matmul( &
+                 C, &
+                 transpose(A(1:N, :)) &
+                 ), &
+                 R &
+                 ) &
                  )
 !--------------------------------------------------------------
 !  compute the Singular Value Decomposition of the Jacobian matrix
@@ -147,11 +154,12 @@ subroutine orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, i)
       UU = Jacobian
       call svdcmp(UU, 2, 2, 2, 2, S, VV)
 
-      aspect = min( S(1)/(S(2)+EPS), S(2)/(S(1)+EPS) )
-      uu1     = UU(1,1) * S(1)
-      vv1     = UU(2,1) * S(1)
-      uu2     = UU(1,2) * S(2)
-      vv2     = UU(2,2) * S(2)
+      aspect = min(S(1) / (S(2) + EPS), S(2) / (S(1) + EPS))
+      uu1 = UU(1, 1) * S(1)
+      vv1 = UU(2, 1) * S(1)
+      uu2 = UU(1, 2) * S(2)
+      vv2 = UU(2, 2) * S(2)
 
+   end subroutine orthonet_compute_orientation
 
-end subroutine orthonet_compute_orientation
+end module m_orthonet_compute_orientation

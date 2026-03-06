@@ -18,16 +18,18 @@ public  ::  arglogical
         function argint(prefix, default) result (i)
         implicit none
         integer         :: i
+        integer         :: iargc
         integer         :: jarg
         integer         :: default
-        character*(*)   :: prefix
-        character*50    :: sarg
+        character(len=*) :: prefix
+        character(len=50) :: sarg
 
-        i=default
-        do jarg=1,iargc()
-           call getarg(jarg,sarg)
+        i =default
+        iargc = command_argument_count()
+        do jarg = 1, iargc
+           call get_command_argument( jarg, sarg)
            if(sarg(1:index(sarg,' ')-1).eq.prefix) then
-              call getarg(jarg+1,sarg)
+              call get_command_argument( jarg + 1, sarg)
               read(sarg,*,end=233,err=233) i
            endif
  233       continue
@@ -37,16 +39,18 @@ public  ::  arglogical
         function argreal(prefix, default) result (r)
         implicit none
         real            :: r
+        integer         :: iargc
         integer         :: jarg
         real            :: default
-        character*(*)   :: prefix
-        character*50    :: sarg
+        character(len=*) :: prefix
+        character(len=50) :: sarg
 
-        r=default
-        do jarg=1,iargc()
-           call getarg(jarg,sarg)
+        r = default
+        iargc = command_argument_count()
+        do jarg = 1, iargc
+           call get_command_argument( jarg, sarg)
            if(sarg(1:index(sarg,' ')-1).eq.prefix) then
-              call getarg(jarg+1,sarg)
+              call get_command_argument( jarg + 1, sarg)
               read(sarg,*,end=323,err=323) r
            endif
  323       continue
@@ -57,14 +61,16 @@ public  ::  arglogical
 !       returns .True. if the prefix is found in ARGV[]
         implicit none
         logical         :: l
+        integer         :: iargc
         integer         :: jarg
-        character*(*)   :: prefix
-        character*50    :: sarg
+        character(len=*) :: prefix
+        character(len=50) :: sarg
 
-        l=.False.
-        jarg=1
-        do jarg=1,iargc()
-           call getarg(jarg,sarg)
+        l = .False.
+        iargc = command_argument_count()
+        jarg = 1
+        do jarg = 1, iargc
+           call get_command_argument( jarg, sarg)
            if(sarg(1:index(sarg,' ')-1).eq.prefix) l=.True.
         enddo
         end function arglogical
@@ -72,18 +78,20 @@ public  ::  arglogical
         function argstring(prefix, default, s) result (success)
         implicit none
         logical         :: success
+        integer         :: iargc
         integer         :: jarg
-        character*(*)   :: default
-        character*(*)   :: s            !MAX 20 characters!
-        character*(*)   :: prefix
-        character*50    :: sarg
+        character(len=*) :: default
+        character(len=*) :: s            !MAX 20 characters!
+        character(len=*) :: prefix
+        character(len=50) :: sarg
 
-        s=default
-        success=.False.
-        do jarg=1,iargc()
-           call getarg(jarg,sarg)
+        s = default
+        success = .False.
+        iargc = command_argument_count()
+        do jarg = 1, iargc
+           call get_command_argument( jarg, sarg)
            if(sarg(1:index(sarg,' ')-1).eq.prefix) then
-              call getarg(jarg+1,sarg)
+              call get_command_argument( jarg + 1, sarg)
 !             read(sarg,*,end=233,err=233) s
               s=sarg                                       !2012-02-19
               success=.True.

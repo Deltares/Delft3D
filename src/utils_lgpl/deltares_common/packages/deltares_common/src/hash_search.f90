@@ -80,7 +80,7 @@ module m_hash_search
       do i = 1, length
          ires = ishft(ires,4) + ires+ iachar(string(i:i))
       enddo
-      ires = iabs(ires)
+      ires = abs(ires)
       ires = mod (ires, hashcon)
 
       if (ires == 0) then
@@ -108,7 +108,6 @@ module m_hash_search
       integer                                  :: next
       integer                                  :: ierr
       character(len=idLen)                     :: locid
-      integer ires
 
       hashlist%hashcon   = 1009
 
@@ -193,10 +192,7 @@ module m_hash_search
       integer                                  :: hashcode
       integer                                  :: inr
       integer                                  :: next
-      integer                                  :: ierr
       character(len=idLen)                     :: locid
-      integer ires
-
 
       locid = hashlist%id_list(ind)
       call str_upper(locid)

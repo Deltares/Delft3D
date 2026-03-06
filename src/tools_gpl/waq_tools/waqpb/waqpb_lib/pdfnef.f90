@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 !
 !
 
-      SUBROUTINE PDFNEF ( LUNREP, SERIAL, VERSIO, IERROR, generate_latex_files)
+      SUBROUTINE PDFNEF ( LUNREP, SERIAL, VERSIO, proc_def_folder, IERROR, generate_latex_files)
 !
 !          Deltares
 !
@@ -59,6 +59,7 @@
 !
 !          Declaration of arguments
 !
+      character(len=*), intent(in) :: proc_def_folder !< proc_def_folder
       INTEGER       LUNREP      , SERIAL     , &
                    IERROR      , lunfil
       REAL          VERSIO
@@ -69,10 +70,10 @@
 !          Declaration of file identification group
 !
       REAL          VFFORM
-      CHARACTER*20  RUNDAT
-      CHARACTER*40  FFORM      , CONTEN      , &
+      CHARACTER(len=20)  RUNDAT
+      CHARACTER(len=40)  FFORM      , CONTEN      , &
                    SOURCE
-      CHARACTER*40  REMARK(4)
+      CHARACTER(len=40)  REMARK(4)
 !
 !          Local variables
 !
@@ -82,9 +83,9 @@
       INTEGER       IC              , IP          , &
                    ITEL
       INTEGER       DEFFDS
-      CHARACTER*1   CODING
-      CHARACTER*2   ACCESS
-      CHARACTER*255 DEFNAM          , DATNAM
+      CHARACTER(len=1)   CODING
+      CHARACTER(len=2)   ACCESS
+      CHARACTER(len=255) DEFNAM          , DATNAM
 !
 !          External NEFIS Functions
 !
@@ -95,8 +96,8 @@
 !
 !          Initialize proces definition file
 !
-      DEFNAM = 'proc_def.def'
-      DATNAM = 'proc_def.dat'
+      DEFNAM = proc_def_folder // 'proc_def.def'
+      DATNAM = proc_def_folder // 'proc_def.dat'
       WRITE(LUNREP,*) 'opening NEFIS DEF file:',DEFNAM
       WRITE(LUNREP,*) 'opening NEFIS DAT file:',DEFNAM
 !

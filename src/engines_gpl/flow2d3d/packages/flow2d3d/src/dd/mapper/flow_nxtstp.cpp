@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -136,11 +136,11 @@ void FlowDD_Process (
 
     int esmfsm_flags = self->dd->flow->esm_flags;
     if (ESM_Init (esmfsm_flags) != 0)
-        throw new Exception (true, "Could not initialize ESM for D3dFlow \"%s\": %s", name, ESM_Error ());
+        throw new Exception("Could not initialize ESM for D3dFlow \"%s\": %s", name, ESM_Error ());
 
     int esmContextID = ESM_Create (0, 0);    // local memory
     if (esmContextID == 0)
-        throw new Exception (true, "Could not create ESM-context for D3dFlow \"%s\": %s", name, ESM_Error ());
+        throw new Exception("Could not create ESM-context for D3dFlow \"%s\": %s", name, ESM_Error ());
 
     FLOW2D3D->dd->log->Write (Log::ITER_MAJOR, "FlowDD_Process \"%s\" created context with ID %d", name, esmContextID);
 
@@ -150,11 +150,11 @@ void FlowDD_Process (
 
     Category * mappers = LookupCategory (DD::mapperCategoryName);
     if (mappers == NULL)
-        throw new Exception (true, "Mapper category does not exist for D3dFlow \"%s\"", name);
+        throw new Exception("Mapper category does not exist for D3dFlow \"%s\"", name);
 
     int numNeighborMappers = self->NeighborCount (mappers);
     if (numNeighborMappers < 1)
-        throw new Exception (true, "D3dFlow \"%s\" does not have mappers", name);
+        throw new Exception("D3dFlow \"%s\" does not have mappers", name);
     else
         FLOW2D3D->dd->log->Write (Log::DDMAPPER_MAJOR, "D3dFlow \"%s\" has %d mappers", name, numNeighborMappers);
 
@@ -166,7 +166,7 @@ void FlowDD_Process (
 
         if (numMappers >= MAX_NUM_MAPPERS)
         {
-            throw new Exception (true, "D3dFlow \"%s\" exceeds max #mappers for this (linux) process", name);
+            throw new Exception("D3dFlow \"%s\" exceeds max #mappers for this (linux) process", name);
         }
         else
         {
@@ -194,11 +194,11 @@ void FlowDD_Process (
         FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "FLOW, gawsBarrier \"%s\" found for FLOW \"%s\"",
                                          gawsBarrier->name, IteratorSelf()->name );
     else
-        throw new Exception (true, "FLOW, gawsBarrier NOT found for FLOW \"%s\"",
+        throw new Exception("FLOW, gawsBarrier NOT found for FLOW \"%s\"",
                                          IteratorSelf()->name );
 
     if (nGawsRelations >= MAX_NUM_D3D_FLOW_PROCS)
-        throw new Exception (true, "FLOW \"%s\" exceeds max #Gaws-relation for this (linux) process", name);
+        throw new Exception("FLOW \"%s\" exceeds max #Gaws-relation for this (linux) process", name);
     else
     {
 
@@ -222,14 +222,8 @@ void FlowDD_Process (
     // Run Flow now
     //
 
-    if (FLOW2D3D->flowol != NULL)
-        FLOW2D3D->flowol->RegisterSubdomain (name);
-
     int initOnly      = 0;
     TRISIM (&FLOW2D3D->dd->numSubdomains, &numNeighborMappers, &esmContextID, &esmfsm_flags, name, &initOnly, &FLOW2D3D->gdp,strlen (name));
-
-    if (FLOW2D3D->flowol != NULL)
-        FLOW2D3D->flowol->UnregisterSubdomain ();
 
 }
 
@@ -252,7 +246,7 @@ void STDCALL GWSSLV(
     Iterator * gawsBarrier = FLOW2D3D->dd->gawsbar;
     if ( gawsBarrier == NULL )
     {
-        throw new Exception (true, "FLOW: GWSSLV, gawsBarrier found for flow \"%s\"",
+        throw new Exception("FLOW: GWSSLV, gawsBarrier found for flow \"%s\"",
                                          IteratorSelf()->name );
     }
 
@@ -320,7 +314,7 @@ void STDCALL GWSSLV(
             delete okMesgBlob;
             if ( incomingBlobID != G2F_Blob_OKMessage )
             {
-                throw new Exception (true, "FLOW: GWSSLV: unexpected blobID (%d /= %d)",
+                throw new Exception("FLOW: GWSSLV: unexpected blobID (%d /= %d)",
                             incomingBlobID, G2F_Blob_OKMessage);
             }
 
@@ -418,7 +412,7 @@ int STDCALL COMMUNICATENEXTSTEPWITHMAPPER(
 
             if ( dried == -1 )
             {
-                throw new Exception (true, "FLOW: CommunicateNextStepWithMappeR D3dFlow_Check_ADI_Dry: dried NOT SET\n");
+                throw new Exception("FLOW: CommunicateNextStepWithMappeR D3dFlow_Check_ADI_Dry: dried NOT SET\n");
             }
             else
             {
@@ -511,7 +505,7 @@ int STDCALL COMMUNICATENEXTSTEPWITHMAPPER(
 
             if ( updateHeader.numMessages != 0 )
             {
-                throw new Exception (true, "FLOW: CommunicateNextStepWithMapper: # incoming messages must be 0");
+                throw new Exception("FLOW: CommunicateNextStepWithMapper: # incoming messages must be 0");
             }
 
             nextStep = updateHeader.nextStep;
@@ -556,7 +550,7 @@ int STDCALL COMMUNICATENEXTSTEPWITHMAPPER(
     )
 
     if ( nextStep == -1 )
-        throw new Exception (true, "FLOW: CommunicateNextStepWithMapper: nextStep undefined");
+        throw new Exception("FLOW: CommunicateNextStepWithMapper: nextStep undefined");
 
     return nextStep;
 
@@ -646,7 +640,7 @@ static int D3dFlowDetermineMapperStep(
 
     if ( mapperStep[curStep] == STEP_UNDEF )
     {
-        throw new Exception (true, "Next Mapper Step not defined (curStep %d)", curStep);
+        throw new Exception("Next Mapper Step not defined (curStep %d)", curStep);
     }
 
     return mapperStep[curStep];
@@ -765,7 +759,7 @@ MapDistribGroup DetermineDistribGroup(
         //
         // Flow has no neighbors (i.e. no Mappers, can't be here)
         //
-        throw new Exception (true, "DetermineDistribGroup: Step can not be NONEIGHBORS");
+        throw new Exception("DetermineDistribGroup: Step can not be NONEIGHBORS");
     }
     else
     {

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2024.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -36,7 +36,7 @@ select case(var_name)
     location_name = "face"
   case("twav")
     location_name = "face"
-  case("Uorb")
+  case("uorb")
     location_name = "face"
   case("bodsed")
     location_name = "face"
@@ -78,19 +78,9 @@ select case(var_name)
     location_name = "face"
   case("infilt")
     location_name = "face"
-  case("infiltcap0")
-    location_name = "face"
   case("infiltcap")
     location_name = "face"
-  case("HortonMinInfCap")
-    location_name = "face"
-  case("HortonMaxInfCap")
-    location_name = "face"
-  case("HortonDecreaseRate")
-    location_name = "face"
-  case("HortonRecoveryRate")
-    location_name = "face"
-  case("HortonState")
+  case("horton_state")
     location_name = "face"
   case("shx")
     location_name = ""
@@ -140,6 +130,14 @@ select case(var_name)
     location_name = "face"
   case("evap")
     location_name = "face"
+  case("qext")
+    location_name = "face"
+  case("qextreal")
+    location_name = "face"
+  case("vextcum")
+    location_name = "face"
+  case("rainuni")
+    location_name = ""
   case("numlatsg")
     location_name = ""
   case("qplat")
@@ -170,14 +168,6 @@ select case(var_name)
     location_name = ""
   case("kclat")
     location_name = "face"
-  case("qext")
-    location_name = "face"
-  case("qextreal")
-    location_name = "face"
-  case("vextcum")
-    location_name = "face"
-  case("rainuni")
-    location_name = ""
   case("Qsunmap")
     location_name = "face"
   case("zbndz")
@@ -278,8 +268,6 @@ select case(var_name)
     location_name = "edge"
   case("diusp")
     location_name = "edge"
-  case("taus")
-    location_name = "face"
   case("ndxi")
     location_name = ""
   case("ndx1db")

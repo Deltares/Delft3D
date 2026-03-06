@@ -1,46 +1,42 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine write_ddp(hyd)
 
       ! function : write a ddp file, dd boundary administration for part
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
+      use m_hydmod        ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
 
       ! local declarations
 
@@ -74,8 +70,9 @@
 
       ! some init
 
-      call getmlu(lunrep)
-      n_domain = hyd%domain_coll%cursize
+      call get_log_unit_number(lunrep)
+      n_domain = hyd%domain_coll%current_size
+
       nddb = 0
       nddb_max = 500
       allocate(iadmddb(22,nddb_max))
@@ -88,29 +85,29 @@
          if ( i_domain .eq. 1 ) then
             m_offset(i_domain) = 0
          else
-            m_offset(i_domain) = m_offset(i_domain-1) + hyd%domain_coll%domain_pnts(i_domain-1)%mmax
+            m_offset(i_domain) = m_offset(i_domain-1) + hyd%domain_coll%domain_pnts(i_domain-1)%num_columns
          endif
       enddo
 
       ! check dd_boundaries
 
-      n_dd_bound = hyd%dd_bound_coll%cursize
+      n_dd_bound = hyd%dd_bound_coll%current_size
       do i_dd_bound = 1 , n_dd_bound
 
          dd_bound => hyd%dd_bound_coll%dd_bound_pnts(i_dd_bound)
 
          ! look up the domain names
 
-         i_domain1 = domain_coll_find(hyd%domain_coll,dd_bound%name1)
+         i_domain1 = hyd%domain_coll%find(dd_bound%name1)
          if ( i_domain .le. 0 ) then
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name1)
-            call srstop(1)
+            call stop_with_error()
          endif
          dd_bound%i_domain1 = i_domain1
-         i_domain2 = domain_coll_find(hyd%domain_coll,dd_bound%name2)
+         i_domain2 = hyd%domain_coll%find(dd_bound%name2)
          if ( i_domain .le. 0 ) then
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name2)
-            call srstop(1)
+            call stop_with_error()
          endif
          dd_bound%i_domain2 = i_domain2
 
@@ -344,8 +341,8 @@
 
       ! write
 
-      call dlwqfile_open(hyd%file_ddp)
-      lunddp = hyd%file_ddp%unit_nr
+      call hyd%file_ddp%open()
+      lunddp = hyd%file_ddp%unit
 
       write(lunddp,*) nddb
       write(lunddp,*) '# ddcouple output PART ddbound administration'

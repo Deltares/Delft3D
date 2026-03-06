@@ -38,7 +38,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -46,12 +45,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
 		<program name="checkhydbal">
 			<shell ref="command_prompt"/>
@@ -71,6 +64,15 @@
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
                 <!-- <environment name="LD_PRELOAD" type="path">[programpath(dimr)]/../lib/libmkl_core.so</environment> -->
             </environments>
+        </program>
+        <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+            </location>
+            <path>bin/run_dflowfm.sh</path>
         </program>
     </programs>
     <!--
@@ -94,6 +96,27 @@
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="dflowfm_restart">
+            <programs>
+                <program ref="dimr" seq="1">
+                    <arguments>
+                        <argument>-m dimr.xml</argument>
+                    </arguments>
+                </program>
+                <program ref="dimr" seq="2">
+                    <arguments>
+                        <argument>-m dimr_restart.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="dflowfm_restart_platform">
             <programs>
                 <program ref="dimr" seq="1">
                     <arguments>

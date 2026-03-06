@@ -1,52 +1,48 @@
 !----- LGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This library is free software; you can redistribute it and/or                
-!  modify it under the terms of the GNU Lesser General Public                   
-!  License as published by the Free Software Foundation version 2.1.                 
-!                                                                               
-!  This library is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-!  Lesser General Public License for more details.                              
-!                                                                               
-!  You should have received a copy of the GNU Lesser General Public             
-!  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This library is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License as published by the Free Software Foundation version 2.1.
+!
+!  This library is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  You should have received a copy of the GNU Lesser General Public
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
-      subroutine read_src(file_src, nolay, wasteload_coll, wasteload_data, time_in_seconds)
+      subroutine read_src(file_src, num_layers, wasteload_coll, wasteload_data, time_in_seconds)
 
-      ! function : read a src file
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
-      use filmod                   ! module contains everything for the files
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      ! read a src file
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
+      use m_waq_file                   ! module contains everything for the files
+      use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_src               ! aggregation-file
-      integer                                :: nolay                  ! number of layers
+      type(t_file)                       :: file_src               ! aggregation-file
+      integer                                :: num_layers                  ! number of layers
       type(t_wasteload_coll)                 :: wasteload_coll         ! the wasteloads
-      type(t_dlwqdata)      , intent(inout)  :: wasteload_data         ! wasteload_data
+      type(t_data_block)      , intent(inout)  :: wasteload_data         ! wasteload_data
 
       ! local declarations
 
@@ -77,25 +73,26 @@
       integer*8                              :: imin                   ! imin
       integer*8                              :: isec                   ! isec
       integer*8                              :: itime                  ! time in seconds
+      integer*8, parameter :: I8_1000000 = 1000000, I8_10000 = 10000, I8_100 = 100
 
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
-      ! count how many wasteload flows we expect in the file (uniform loads have nolay flows)
+      ! count how many wasteload flows we expect in the file (uniform loads have num_layers flows)
 
       no_flow  = 0
-      no_waste = wasteload_coll%cursize
+      no_waste = wasteload_coll%current_size
       do i = 1 , no_waste
          if ( wasteload_coll%wasteload_pnts(i)%k .eq. 0 ) then
-            no_flow = no_flow + nolay
+            no_flow = no_flow + num_layers
          else
             no_flow = no_flow + 1
          endif
       enddo
 
-      call dlwqfile_open(file_src)
+      call file_src%open()
       ilun    = 0
-      ilun(1) = file_src%unit_nr
+      ilun(1) = file_src%unit
       lch (1) = file_src%name
       npos   = 1000
       cchar  = ';'
@@ -114,7 +111,7 @@
          write(lunrep,*) ' error reading sources file'
          goto 200
       endif
-          
+
       if ( itype .eq. 1) then
           if (string .eq. 'SECONDS' .or. string .eq. 'seconds') then
               time_in_seconds = .true.
@@ -123,14 +120,14 @@
                  write(lunrep,*) ' expected integer with option time dependent sources'
                  goto 200
               endif
-          else  
+          else
               write(lunrep,*) ' error reading sources file'
               write(lunrep,*) ' string at the beginning of the file should be either ''SECONDS'' or ''seconds'''
               goto 200
           endif
       else if ( itype .eq. 2) then
           iopt_time = int
-      else  
+      else
           write(lunrep,*) ' error reading sources file'
           write(lunrep,*) ' expected integer with option time dependent sources or a ''SECONDS'' or ''seconds'' string'
           goto 200
@@ -140,7 +137,7 @@
 
       ! option block function
 
-      if ( gettoken( wasteload_data%functype, ierr) .ne. 0 ) then
+      if ( gettoken( wasteload_data%function_type, ierr) .ne. 0 ) then
          write(lunrep,*) ' error reading sources file'
          write(lunrep,*) ' expected integer with option block function'
          goto 200
@@ -178,13 +175,13 @@
          write(lunrep,*) ' expected integer with number of breakpoints'
          goto 200
       endif
-      wasteload_data%no_brk = nobrk_waste
+      wasteload_data%num_breakpoints = nobrk_waste
 
       ! allocate arrays
 
       no_param = 1
-      wasteload_data%no_loc   = no_waste
-      wasteload_data%no_param = no_param
+      wasteload_data%num_locations   = no_waste
+      wasteload_data%num_spatial_parameters = no_param
       allocate(wasteload_data%times(nobrk_waste), &
                wasteload_data%values(no_param,no_waste,nobrk_waste), &
                flow_data(no_param,no_flow,nobrk_waste), &
@@ -201,16 +198,16 @@
       ! set options
 
       wasteload_data%subject         = SUBJECT_WASTE
-      wasteload_data%functype        = FUNCTYPE_BLOCK
+      wasteload_data%function_type        = FUNCTYPE_BLOCK
       wasteload_data%igrid          =  1
-      wasteload_data%extern          = .FALSE.
+      wasteload_data%is_external          = .FALSE.
       wasteload_data%iorder          = ORDER_PARAM_LOC
-      wasteload_data%param_pointered = .FALSE.
-      wasteload_data%loc_defaults    = .FALSE.
-      wasteload_data%loc_pointered   = .FALSE.
-      wasteload_data%scaled          = .FALSE.
-      wasteload_data%param_scaled    = .FALSE.
-      wasteload_data%loc_scaled      = .FALSE.
+      wasteload_data%is_parameter_pointered = .FALSE.
+      wasteload_data%are_locations_default    = .FALSE.
+      wasteload_data%are_locations_pointered   = .FALSE.
+      wasteload_data%is_scaled          = .FALSE.
+      wasteload_data%need_parameters_scaling    = .FALSE.
+      wasteload_data%need_location_scaling      = .FALSE.
 
 
       ! two scale factors
@@ -238,10 +235,10 @@
          ! convert to seconds if needed using integer*8
 
          if ( .not. time_in_seconds ) then
-            iday  = itime/1000000
-            ihour = mod(itime,1000000)/10000
-            imin  = mod(itime,10000)/100
-            isec  = mod(itime,100)
+            iday  = itime/I8_1000000
+            ihour = mod(itime,I8_1000000)/I8_10000
+            imin  = mod(itime,I8_10000)/I8_100
+            isec  = mod(itime,I8_100)
             itime = iday*86400 + ihour*3600 + imin*60 + isec
          endif
 
@@ -277,7 +274,7 @@
       wasteload_data%values = 0.0
       do ibrk = 1 , nobrk_waste
          i_flow = 0
-         do ilay = 1 , nolay
+         do ilay = 1 , num_layers
             do i_waste = 1 , no_waste
                if ( ilay .eq. 1 .or. wasteload_coll%wasteload_pnts(i_waste)%k .eq. 0 ) then
                   i_flow = i_flow + 1
@@ -291,14 +288,14 @@
 
   200 continue
       if ( ierr .ne. 0 ) then
-         call srstop(1)
+         call stop_with_error()
       endif
 
       ! time always in seconds
 
       time_in_seconds = .true.
 
-      close(file_src%unit_nr)
+      close(file_src%unit)
       file_src%status = FILE_STAT_UNOPENED
 
       return

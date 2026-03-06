@@ -24,9 +24,6 @@ module HRextensions
    !  are registered trademarks of Stichting Deltares, and remain the property of
    !  Stichting Deltares. All rights reserved.
    !
-   !-------------------------------------------------------------------------------
-   !  
-   !  $URL$
    !!--description-----------------------------------------------------------------
    !! extensions for SWAN for HR (Hydraulic Boundaries / in Dutch: Hydraulische Randvoorwaarden)
     use swn_outnc
@@ -268,7 +265,7 @@ contains
         logical,                   intent(out) :: isCurvi
 
         integer                                :: ncid, varid
-        real(kind=4)                           :: sf, ao, fv, minlon, minlat
+        real                                   :: sf, ao, fv, minlon, minlat
         type(mapgrid_type)                     :: mapgrid
         type(recordaxe_type)                   :: recordaxe
 
@@ -316,7 +313,7 @@ contains
 
         ! read exception value
         call swn_hre_grid_varid(ncid, IGR1, varid)
-        call get_scalies_float(ncid, varid, ao, sf, fv)
+        call get_scalies(ncid, varid, ao, sf, fv)
         EXCFLD(IGR1) = fv
         if ( IGR2 /= 0 ) EXCFLD(IGR2) = fv
         if ( IGR2 /= 0 ) flippedY(IGR2) = mapgrid%flippedY
@@ -357,7 +354,7 @@ contains
 
         integer                                  :: varid, ndims, mydatevec(6), xpctime, &
                                                     ri, ncid, xtype, i, j, missing
-        real(kind=4)                             :: add_offset, scale_factor, fill_value
+        real                                     :: add_offset, scale_factor, fill_value
         logical                                  :: STPNOW
         type(recordaxe_type)                     :: recordaxe
         real, allocatable                        :: temp(:,:)
@@ -399,7 +396,7 @@ contains
         end if
 
         ! scale the data
-        call get_scalies_float(ncid, varid, add_offset, scale_factor, fill_value, xtype)
+        call get_scalies(ncid, varid, add_offset, scale_factor, fill_value, xtype)
         if ( xtype == NF90_SHORT .or. xtype == NF90_BYTE .or. xtype == NF90_INT) then
            if (scale_factor /= 1.0 .or. add_offset /= 0.0) then
               do i = 1, MXG(igr)
@@ -474,7 +471,10 @@ contains
                    'turb_visc', &
                    'fl_mud_lr', &
                    'icec     ', &
-                   'hice     ' /)
+                   'hice     ', &
+                   'sea-sw-hs', &
+                   'sea-sw-tp', &
+                   'sea-sw-dr'  /)
 
         vname = vnames(igr)
 
@@ -518,7 +518,7 @@ contains
     subroutine swn_hre_bcnccf  (FBCNAM, BCTYPE, BSPFIL,       &
                                 XCGRID, YCGRID, KGRPNT,       &
                                 XYTST,  KGRBND, DONALL)
-        use M_BNDSPEC
+        use M_BNDSPEC, only : bspcdat
         use SWCOMM3, only : xpc, ypc
 
 !       data concerning boundary files are stored in array BFILED
@@ -556,9 +556,8 @@ contains
         type(pntgrid_type)                     :: pntgrid
         type(spcgrid_type)                     :: spcgrid
         character                              :: dconv*20
-        logical                                :: spc_as_map
         real(kind=8)                           :: xlon0, xlat0
-        real(kind=4)                           :: xp2, yp2, xp, yp
+        real                                   :: xp2, yp2, xp, yp
 
         call STRACE (IENT, 'BCNCCF')
 
@@ -572,11 +571,6 @@ contains
             call agnc_get_pntgrid(ncid, pntgrid)
 
             NBOUNC        = pntgrid%npoints
-
-            if ( spc_as_map ) then
-                call MSGERR (4, 'Maps of spectra are not yet supported in the reading of boundary data')
-                return
-            end if
 
             ! fill in collected data
             !
@@ -654,7 +648,7 @@ contains
                     write (PRTEST, *) ' B. spectrum', ibounc, xp + XOFFS, yp + YOFFS
                 end if
                 nbgrpt_prev = NBGRPT
-                call SWBCPT (  XCGRID, YCGRID, KGRPNT, XYTST,  KGRBND, xp2,yp2,ibounc, NBOUNC, DONALL )
+                call SWBCPT ( XCGRID, YCGRID, KGRPNT, XYTST,  KGRBND, xp2,yp2,ibounc, NBOUNC, DONALL )
 
                 ! check if the grid points are on nested boundary.
                 ! if not, stop the calculation and give an error message
@@ -708,7 +702,7 @@ contains
         real(kind=8),           intent(  out)        :: timf
         integer, save                                :: IENT=0
         integer                                      :: ri
-        real(kind=4)                                 :: toffset
+        real                                         :: toffset
         type(recordaxe_type)                         :: recordaxe
 
         real, external :: DTTIME
@@ -738,8 +732,8 @@ contains
         real, dimension(:,:),       intent(inout) :: BAUX1  !< spectral data
 
         ! local
-        real(kind=4)                              :: scale_factor
-        real(kind=4), save                        :: fill_value
+        real                                      :: scale_factor
+        real,         save                        :: fill_value
         integer                                   :: svarid, j, i, ncid
         character(len=*), parameter               :: enames(2) = ['density', 'VaDens ']
         integer, save                             :: evarid
@@ -749,7 +743,7 @@ contains
         integer, save                             :: dimid_afreq, dimid_ndir
         character(len=16), save                   :: names(bndDims)
         integer, save                             :: ncidPrev = -999
-        real(kind=4), allocatable                 :: tmp(:,:)
+        real,         allocatable                 :: tmp(:,:)
         integer, save                             :: IENT=0
 
         call STRACE (IENT, 'swn_hre_get_bpnt_2d')
@@ -818,7 +812,7 @@ contains
         real,                       intent(inout) :: etot, theta, spr
 
         ! local
-        real(kind=4)                              :: scale_energy, &
+        real                                      :: scale_energy, &
                                                      sf_theta, sf_spr, &
                                                      ao_theta, ao_spr, &
                                                      fv_theta, fv_spr, fill_value

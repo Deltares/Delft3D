@@ -7,9 +7,6 @@ set(library_name wave)
 add_library(${library_name} SHARED  ${library_files}
                                     ${rc_version_file})
 
-# Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
-
 # Set dependencies on windows
 if (WIN32)
     set(library_dependencies    wave_data
@@ -25,13 +22,11 @@ if (WIN32)
                                 wave_kernel
                                 wave_manager
                                 nefis
-                                netcdf4
                                 netcdff
                                 triangle_c
                                 swan
                                 ) 
 
-    oss_include_libraries(${library_name} library_dependencies)
     target_link_libraries(${library_name} ${library_dependencies})
 
     # Set linker properties
@@ -77,8 +72,6 @@ if(UNIX)
                                 esmfsm
                                 netcdff
                                 )
-                                
-    oss_include_libraries(${library_name} library_dependencies)
 
     target_link_libraries(${library_name}
          ${library_dependencies}
@@ -93,7 +86,7 @@ if(UNIX)
 
 endif(UNIX)
 
-include_directories(${mpi_include_path} ${version_include_dir})
+include_directories(${mpi_module_path} ${version_include_dir})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_files})
@@ -107,4 +100,6 @@ set_target_properties (${library_name} PROPERTIES OUTPUT_NAME wave)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib)
+install(TARGETS ${library_name} RUNTIME DESTINATION lib
+                                LIBRARY DESTINATION lib
+)

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,12 +28,11 @@ module m_s12tim
 contains
 
 
-    subroutine s12tim (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_srstop
-        use m_monsys
-        use m_evaluate_waq_attribute
+    subroutine s12tim (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
 
 
         !>\file
@@ -41,9 +40,9 @@ contains
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(34), increm(34), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(34), increm(34), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: ip(34), iflux, iseg, ikmrk2
         real(kind = real_wp) :: fracs1, scals1, fracs2, scals2, fress1, fress2, &
@@ -78,42 +77,29 @@ contains
         ip = ipoint
         !
         iflux = 0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
                     !
-                    fracs1 = pmsa(ip(1))
-                    scals1 = pmsa(ip(2))
-                    fracs2 = pmsa(ip(3))
-                    scals2 = pmsa(ip(4))
-                    fracs3 = pmsa(ip(5))
-                    scals3 = pmsa(ip(6))
-                    fress1 = pmsa(ip(7))
-                    fress2 = pmsa(ip(8))
-                    fburs1 = pmsa(ip(9))
-                    fburs2 = pmsa(ip(10))
-                    fdigs1 = pmsa(ip(11))
-                    fdigs2 = pmsa(ip(12))
-                    swds1 = pmsa(ip(13))
-                    swds2 = pmsa(ip(14))
-                    depth = pmsa(ip(15))
-                    switch = pmsa(ip(16))
-                    iswres = nint(pmsa(ip(17)))
+                    fracs1 = process_space_real(ip(1))
+                    scals1 = process_space_real(ip(2))
+                    fracs2 = process_space_real(ip(3))
+                    scals2 = process_space_real(ip(4))
+                    fracs3 = process_space_real(ip(5))
+                    scals3 = process_space_real(ip(6))
+                    fress1 = process_space_real(ip(7))
+                    fress2 = process_space_real(ip(8))
+                    fburs1 = process_space_real(ip(9))
+                    fburs2 = process_space_real(ip(10))
+                    fdigs1 = process_space_real(ip(11))
+                    fdigs2 = process_space_real(ip(12))
+                    swds1 = process_space_real(ip(13))
+                    swds2 = process_space_real(ip(14))
+                    depth = process_space_real(ip(15))
+                    switch = process_space_real(ip(16))
+                    iswres = nint(process_space_real(ip(17)))
                     !     if iswres = 1 then the resuspension flux is independent of the other fractions and calculated here
-                    if (iswres == 1) then
-                        call getmlu(lunrep)
-                        write(lunrep, *) "Please remove processes S12TraIMx from your  &
-                                sub-file, and use the Res_Pickup process instead."
-                        write(*, *) "Please remove processes S12TraIMx from your  &
-                                sub-file, and use the Res_Pickup process instead."
-                        call srstop(1)
-                    else
-                        fracs1_res = fracs1
-                        fracs2_res = fracs2
-                        scals1_res = scals1
-                        scals2_res = scals2
-                    endif
 
                     !***********************************************************************
                     !**** Processes connected to the BURIAL and DIGGING
@@ -122,8 +108,10 @@ contains
                     !     RESUSPENSION
                     R1 = 0.0
                     R2 = 0.0
-                    IF (FRACS1_RES * SCALS1_RES >= 0.0) R1 = FRESS1 * FRACS1_RES * SCALS1_RES
-                    IF (FRACS2_RES * SCALS2_RES >= 0.0) R2 = FRESS2 * FRACS2_RES * SCALS2_RES
+                    if (iswres /= 1) then
+                       IF (FRACS1 * SCALS1 >= 0.0) R1 = FRESS1 * FRACS1 * SCALS1
+                       IF (FRACS2 * SCALS2 >= 0.0) R2 = FRESS2 * FRACS2 * SCALS2
+                    end if
 
                     !     BURIAL
                     B1 = 0.0
@@ -147,20 +135,20 @@ contains
 
                     !     Store results
 
-                    PMSA(IP(28)) = R1
-                    PMSA(IP(29)) = R2
+                    process_space_real(IP(28)) = R1
+                    process_space_real(IP(29)) = R2
                     IF (ABS(SWITCH)<0.5) THEN
                         !       NO SWITCH
-                        PMSA(IP(30)) = B1
-                        PMSA(IP(31)) = 0.0
+                        process_space_real(IP(30)) = B1
+                        process_space_real(IP(31)) = 0.0
                     ELSE
                         !       SWITCH
-                        PMSA(IP(30)) = 0.0
-                        PMSA(IP(31)) = B1
+                        process_space_real(IP(30)) = 0.0
+                        process_space_real(IP(31)) = B1
                     ENDIF
-                    PMSA(IP(32)) = B2
-                    PMSA(IP(33)) = D1
-                    PMSA(IP(34)) = D2
+                    process_space_real(IP(32)) = B2
+                    process_space_real(IP(33)) = D1
+                    process_space_real(IP(34)) = D2
 
                     FL(1 + IFLUX) = R1 / DEPTH
                     FL(2 + IFLUX) = R2 / DEPTH

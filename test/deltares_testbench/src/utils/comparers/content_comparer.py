@@ -1,7 +1,6 @@
-"""
-Description: Raw File Content comparer
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Raw File Content comparer.
+
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import filecmp
@@ -11,6 +10,7 @@ from typing import List, Tuple
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.i_comparer import IComparer
 from src.utils.logging.i_logger import ILogger
 
@@ -40,15 +40,15 @@ class ContentComparer(IComparer):
             equal = filecmp.cmp(left_file_name, right_file_name)
             if equal:
                 comparison_result.passed = True
-                comparison_result.result = "OK"
+                comparison_result.result = EndResult.OK
             else:
                 comparison_result.passed = False
-                comparison_result.maxAbsDiff = 1.0
-                comparison_result.maxRelDiff = 1.0
-                comparison_result.result = "NOK"
+                comparison_result.max_abs_diff = 1.0
+                comparison_result.max_rel_diff = 1.0
+                comparison_result.result = EndResult.NOK
         except Exception:
             comparison_result.passed = False
             comparison_result.error = True
-            comparison_result.result = "ERROR"
+            comparison_result.result = EndResult.ERROR
 
         return [(testcase_name, file_check, parameter, comparison_result)]

@@ -3,7 +3,7 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
                   & parloc, npar, wsloc, error)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -77,7 +77,6 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
                                                   ! Calling perf_function_eqtran with "message" caused problems
                                                   ! Solved by using "message_c"
     integer                     :: i
-    integer                     :: l = 0
     logical                     :: apply_hinset
     real(fp)                    :: rhow
     real(fp)                    :: rhosol
@@ -92,8 +91,6 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
     real(fp)                    :: s
     real(fp)                    :: tdiss
     real(fp)                    :: tshear
-    real(fp)                    :: vonkar
-    real(fp)                    :: settling_flux
     real(fp)                    :: macro_frac  ! macro floc fraction
     real(fp)                    :: ws_macro
     real(fp)                    :: ws_micro
@@ -115,6 +112,8 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
     real(fp)                    :: sedtc
     real(fp)                    :: gamflc
     real(fp)                    :: npow
+    real(fp)                    :: d_micro
+    real(fp)                    :: ustar_macro
 !
 !! executable statements -------------------------------------------------------
 !
@@ -247,13 +246,15 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        !
        ! Settling velocity for macro flocs according Chassagne and Safar
        !
-       cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
+       cclay  = real(dll_reals(WS_RP_CFRCB),fp) * 1000.0_fp ! convert kg/m3 to g/m3
        ag     = real(dll_reals(WS_RP_GRAV ),fp)
        tshear = real(dll_reals(WS_RP_SHTUR),fp)
        tdiss  = real(dll_reals(WS_RP_EPTUR),fp)
        rhow   = real(dll_reals(WS_RP_RHOWT),fp)
        vcmol  = real(dll_reals(WS_RP_VICML),fp)
-       call macro_floc_settling_chassagne( cclay, tshear, tdiss, ag, vcmol, rhow, wsloc )
+       d_micro      = parloc(1)
+       ustar_macro  = parloc(2)
+       call macro_floc_settling_chassagne( cclay, tshear, tdiss, ag, vcmol, rhow, d_micro, ustar_macro, wsloc )
        apply_hinset = .true.
 
     case (WS_FORM_CHASSAGNE_SAFAR_MICRO)
@@ -278,7 +279,9 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        tdiss  = real(dll_reals(WS_RP_EPTUR),fp)
        rhow   = real(dll_reals(WS_RP_RHOWT),fp)
        vcmol  = real(dll_reals(WS_RP_VICML),fp)
-       call floc_chassagne( cclay, tshear, tdiss, ag, vcmol, rhow, wsloc, macro_frac, ws_macro, ws_micro )
+       d_micro      = parloc(1)
+       ustar_macro  = parloc(2)
+       call floc_chassagne( cclay, tshear, tdiss, ag, vcmol, rhow, d_micro, ustar_macro, wsloc, macro_frac, ws_macro, ws_micro )
        apply_hinset = .true.
 
     case (WS_FORM_USER_ROUTINE)

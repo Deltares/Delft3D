@@ -1,0 +1,55 @@
+# Define library
+set(library_name rtc_kernel)
+
+# Set directory which contains all source files
+set(src_path src)
+
+# Gather source files
+get_fortran_source_files(${src_path} source_files)
+
+add_library(${library_name} ${source_files})
+
+set_source_files_properties(
+                   src/CloseMatlab.F90
+                   src/Cmpdecv.F90
+                   src/datafrommatlab.F90
+                   src/datatomatlab.F90
+                   src/write_error_message_rtc.F90
+                   src/filemodule.F90
+                   src/LocationDataModule.F90  # no preprocessot needed, should be .f90
+                   src/OpenMatlab.F90
+                   src/readlib_rtc.F90
+                   src/rtc_matlab_module.F90
+                   src/Rtc_Rdini.F90
+                   PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+
+target_compile_definitions(${library_name} PRIVATE "X64")
+
+
+set(oss_dependencies_general delftio
+                            delftio_shm
+                            deltares_common
+                            rr_rtc_tools
+                            wl_openmi_support)
+                             
+                             
+# Add dependencies
+if (UNIX)
+    set(oss_dependencies ${oss_dependencies_general})
+
+    target_link_libraries(${library_name}
+         ${oss_dependencies}
+    )
+    add_definitions(-DHAVE_CONFIG_H)    
+endif(UNIX)
+
+if (WIN32)
+    target_link_libraries(${library_name} ${oss_dependencies_general}
+                                            netcdff)
+endif(WIN32)
+
+
+# Define how the files should be structured within Visual Studio
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
+set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/rtc)
+

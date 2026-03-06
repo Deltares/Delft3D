@@ -4,7 +4,7 @@ subroutine strfil(lundia    ,error     ,filstr    ,mmax      , &
                 & dphkrv    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -111,7 +111,6 @@ subroutine strfil(lundia    ,error     ,filstr    ,mmax      , &
     integer                         :: nlook  ! Help var.: nr. of data to look for in the MD-file 
     integer                         :: nrigid ! Help var. (counter) 
     integer, dimension(6)           :: ival   ! Help array (int.) where the data, recently read from file, are stored temporarily 
-    integer, external               :: newlun
     logical                         :: skip   ! Skip flag for structures outside active domain
     real(fp)                        :: brlosc ! Constant value for wall roughness 
     real(fp)                        :: rdef   ! Help var. containing default va- lue(s) for real variable 
@@ -287,6 +286,9 @@ subroutine strfil(lundia    ,error     ,filstr    ,mmax      , &
              error = .true.
              goto 1100
           endif
+       else
+          value1 = 0.0_fp
+          value2 = 0.0_fp
        endif
        !
        ! Define local weir/ gate / rigid sheet / porous plate or

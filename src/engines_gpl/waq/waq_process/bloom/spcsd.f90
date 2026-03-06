@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -69,7 +69,7 @@
          do k3=1,2
             n=n+1
             jk=ij+k3-1
-            svec(n)=xvec(jk)-extb*dabs(sdmix(i))
+            svec(n)=xvec(jk)-extb*abs(sdmix(i))
             dvec(n)=svec(n)
          end do
       end do

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -29,20 +29,20 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll       ! description of the domain hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)                 :: domain_hyd_coll       ! description of the domain hydrodynamics
 
       ! local declarations
 
-      type(t_hyd), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
       integer                                :: n_domain              ! number of domains
       integer                                :: i_domain              ! domain index
-      integer                                :: nolay                 ! number of layers
+      integer                                :: num_layers                 ! number of layers
       integer                                :: ilay                  ! layer index
       integer                                :: iseg                  ! segment index
       integer                                :: isegl                 ! segment index
@@ -51,14 +51,14 @@
 
       ! copy to locals for convenience
 
-      n_domain  = hyd%domain_coll%cursize
-      nolay     = hyd%nolay
+      n_domain  = hyd%domain_coll%current_size
+      num_layers     = hyd%num_layers
 
       isoff  = 0
       do i_domain = 1 , n_domain
 
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         do ilay = 1 , nolay
+         do ilay = 1 , num_layers
             do isegl = 1 , domain_hyd%nosegl
                iseg_domain = (ilay-1)*domain_hyd%nosegl + isegl
                iseg        = (ilay-1)*hyd%nosegl + isegl + isoff

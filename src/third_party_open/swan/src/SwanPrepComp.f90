@@ -11,22 +11,20 @@ subroutine SwanPrepComp ( cross )
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !   Authors
@@ -45,8 +43,9 @@ subroutine SwanPrepComp ( cross )
 !
     use ocpcomm4
     use swcomm3
+    use m_obsta, only: OBSTDONE
     use SwanGriddata
-!PUN    use SwanGridobjects
+    use SwanGridobjects
 !
     implicit none
 !
@@ -58,9 +57,9 @@ subroutine SwanPrepComp ( cross )
 !   Local variables
 !
     integer, save                         :: ient = 0 ! number of entries in this subroutine
-!PUN    integer                               :: ivert    ! loop counter over vertices
+    integer                               :: ivert    ! loop counter over vertices
     !
-!PUN    type(verttype), dimension(:), pointer :: vert     ! datastructure for vertices with their attributes
+    type(verttype), dimension(:), pointer :: vert     ! datastructure for vertices with their attributes
 !
 !   Structure
 !
@@ -70,24 +69,26 @@ subroutine SwanPrepComp ( cross )
 !
     if (ltrace) call strace (ient,'SwanPrepComp')
     !
-!PUN    ! point to vertex object
-!PUN    !
-!PUN    vert => gridobject%vert_grid
-!PUN    !
+    ! point to vertex object
+    !
+    vert => gridobject%vert_grid
+    !
     ! deallocate arrays kvertc and kvertf (we don't use them anymore!)
     !
     if (allocated(kvertc)) deallocate(kvertc)
     if (allocated(kvertf)) deallocate(kvertf)
     !
-!PUN    ! ghost vertices are regarded as vertices with boundary condition
-!PUN    !
-!PUN    do ivert = 1, nverts
-!PUN       if ( vmark(ivert) == 999 ) vert(ivert)%atti(VBC) = 1
-!PUN    enddo
-!PUN    !
+    ! ghost and exception vertices are regarded as vertices with boundary condition
+    !
+    do ivert = 1, nverts
+       if ( vmark(ivert) >= excmark ) vert(ivert)%atti(VBC) = 1
+    enddo
     !
     ! find obstacles in computational grid, if present
     !
-    if ( NUMOBS > 0 ) call SwanFindObstacles ( cross )
+    if ( NUMOBS > 0 .and. .not.OBSTDONE ) then
+       call SwanFindObstacles ( cross )
+       OBSTDONE = .true.
+    endif
     !
 end subroutine SwanPrepComp

@@ -22,7 +22,7 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 set(include_path ${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${include_path}
-                    ${mpi_include_path}
+                    ${mpi_module_path}
                     ${deltares_common_include_path}
                     ${delftio_include_path}
                     ${esmfsm_module_include_path}
@@ -51,8 +51,6 @@ if (UNIX)
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
     set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
-
-    include_directories(${NETCDF_INCLUDEDIR})
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 
@@ -94,33 +92,18 @@ set(oss_dependencies_general    delftio
                                 morphology_plugins_c)
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
     set(oss_dependencies ${oss_dependencies_general}
                          netcdff)
 
-    target_link_libraries(${library_name}
-         ${oss_dependencies}
-         PkgConfig::NETCDF)
+    target_link_libraries(${library_name} ${oss_dependencies})
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdf4
                         netcdff)
-
-    target_link_libraries(${library_name} ${oss_dependencies})
 endif(WIN32)
 
-oss_include_libraries(${library_name} oss_dependencies)
-
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif()
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${include_files}
@@ -132,5 +115,5 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${include_files}
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
 # Change project flags at the end of this file
-target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")
-target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_nobounds_flag}>")
+target_compile_options(${library_name} PRIVATE ${qauto_threaded_flags})
+target_compile_options(${library_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nobounds_flag}>")

@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,7 @@
 //
 //  stef.hummel@deltares.nl
 //
-//  (c) Deltares, july 2002
+//  (c) Deltares, 2026
 //
 
 
@@ -47,7 +47,7 @@
 // On Unix: ESM for shared mem blocks
 //
 
-#if (defined(HAVE_CONFIG_H))
+#ifdef HAVE_CONFIG_H
 
 #include "dio-sync-ux.h"
 #include "esm.h"

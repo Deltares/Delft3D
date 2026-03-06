@@ -1,7 +1,6 @@
-"""
-Description: Ascii file comparer
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Ascii file comparer.
+
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import os
@@ -65,13 +64,13 @@ class AsciiComparer(IComparer):
         nCompared = 0
         for parameters in file_check.parameters.values():
             for parameter in parameters:
-                logger.debug("Checking parameter: " + str(parameter.name))
+                logger.debug(f"Checking parameter: {parameter.name}")
                 result = ComparisonResult(error=local_error)
 
                 min_ref_value = sys.float_info.max
                 max_ref_value = -1.0 * min_ref_value
 
-                result.lineNumber = sys.maxsize
+                result.line_number = sys.maxsize
 
                 try:
                     filename = file_check.name
@@ -83,14 +82,8 @@ class AsciiComparer(IComparer):
 
                                 if leftData is None and rightData is None:
                                     # Finished comparing the files
-                                    logger.debug(
-                                        "Absolute Tolerance: "
-                                        + str(parameter.tolerance_absolute)
-                                    )
-                                    logger.debug(
-                                        "Relative Tolerance: "
-                                        + str(parameter.tolerance_relative)
-                                    )
+                                    logger.debug(f"Absolute Tolerance: {parameter.tolerance_absolute}")
+                                    logger.debug(f"Relative Tolerance: {parameter.tolerance_relative}")
                                     logger.debug(f"Compared {nCompared} floats")
                                     break
                                 elif leftData is None and rightData is not None:
@@ -117,13 +110,10 @@ class AsciiComparer(IComparer):
                                 if (
                                     startColumn > 0
                                     and endColumn > 0
-                                    and (
-                                        leftData[2] < startColumn
-                                        or leftData[2] > endColumn
-                                    )
+                                    and (leftData[2] < startColumn or leftData[2] > endColumn)
                                 ):
                                     continue
-                                result.lineNumber = min(result.lineNumber, leftData[1])
+                                result.line_number = min(result.line_number, leftData[1])
 
                                 # Assuming that leftData is the data from the reference run.
                                 max_ref_value = max(leftData[0], max_ref_value)
@@ -131,37 +121,30 @@ class AsciiComparer(IComparer):
 
                                 nCompared += 1
                                 diff = abs(leftData[0] - rightData[0])
-                                if (
-                                    diff > 2 * float_info.epsilon
-                                    and diff > result.maxAbsDiff
-                                ):
-                                    result.maxAbsDiff = diff
-                                    result.maxAbsDiffCoordinates = (nCompared,)
-                                    result.maxAbsDiffValues = (
+                                if diff > 2 * float_info.epsilon and diff > result.max_abs_diff:
+                                    result.max_abs_diff = diff
+                                    result.max_abs_diff_coordinates = (nCompared,)
+                                    result.max_abs_diff_values = (
                                         leftData[0],
                                         rightData[0],
                                     )
-                                    result.columnNumber = leftData[2]
+                                    result.column_number = leftData[2]
 
                     # Make the absolute difference in maxDiff relative, by dividing by (max_ref_value-min_ref_value).
-                    if result.maxAbsDiff < 2 * sys.float_info.epsilon:
+                    if result.max_abs_diff < 2 * sys.float_info.epsilon:
                         # No difference found, so relative difference is set to 0.
-                        result.maxRelDiff = 0.0
+                        result.max_rel_diff = 0.0
                     elif max_ref_value - min_ref_value < 2 * sys.float_info.epsilon:
                         # Difference found, but denominator will be very small, so set relative difference to maximum.
-                        result.maxRelDiff = 1.0
+                        result.max_rel_diff = 1.0
                     else:
                         # Difference found, make the difference relative. Maximise relative difference to 1.0.
-                        result.maxRelDiff = min(
-                            1.0, result.maxAbsDiff / (max_ref_value - min_ref_value)
-                        )
+                        result.max_rel_diff = min(1.0, result.max_abs_diff / (max_ref_value - min_ref_value))
                 except Exception as e:
                     logger.error(e)
                     result.error = True
 
-                result.isToleranceExceeded(
-                    parameter.tolerance_absolute, parameter.tolerance_relative
-                )
+                result.is_tolerance_exceeded(parameter.tolerance_absolute, parameter.tolerance_relative)
 
                 # Even though only one result is generated, the caller expects a list of results.
                 results.append((testcase_name, file_check, parameter, result))

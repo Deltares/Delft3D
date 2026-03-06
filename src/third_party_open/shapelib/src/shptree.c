@@ -1160,7 +1160,7 @@ static void SHPWriteTreeNode( SAFile fp, SHPTreeNode *node, SAHooks* psHooks)
 
     memcpy( pabyRec, &offset, 4);
 
-    /* minx, miny, maxx, maxy */
+    /* minx, miny, max_x, max_y */
     memcpy( pabyRec+ 4, node->adfBoundsMin+0, sizeof(double) );
     memcpy( pabyRec+12, node->adfBoundsMin+1, sizeof(double) );
     memcpy( pabyRec+20, node->adfBoundsMax+0, sizeof(double) );

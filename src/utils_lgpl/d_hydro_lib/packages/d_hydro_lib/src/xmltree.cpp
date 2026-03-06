@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -69,7 +69,7 @@ XmlTree::XmlTree (
     char *buffer = new char[bufSize];
     while (fgets (buffer, bufSize, input) != NULL)
         if (XML_Parse (parser, buffer, strlen (buffer), 0) != XML_STATUS_OK)
-            throw new Exception (true, "XML parse error in configuration file");
+            throw new Exception("XML parse error in configuration file");
 
     XML_Parse (parser, buffer, 0, 1);
     XML_ParserFree (parser);
@@ -140,7 +140,7 @@ chardata (
     XmlTree ** curnode = (XmlTree **) userdata;
 
     if (len + CharDataLen >= sizeof CharDataBuffer)
-        throw new Exception (true, "XML charcter data block exceeds buffer size (%d bytes)", sizeof CharDataBuffer);
+        throw new Exception("XML charcter data block exceeds buffer size (%d bytes)", sizeof CharDataBuffer);
 
     memcpy (CharDataBuffer+CharDataLen, data, len);
     CharDataLen += len;

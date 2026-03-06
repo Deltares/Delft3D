@@ -5,7 +5,7 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
                & ftstat    ,ftcros    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -58,7 +58,6 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
     integer(pntrsize)      , pointer :: ctr
     integer(pntrsize)      , pointer :: dicuv
     integer(pntrsize)      , pointer :: dicww
-    integer(pntrsize)      , pointer :: dp
     integer(pntrsize)      , pointer :: dps
     integer(pntrsize)      , pointer :: dpsed
     integer(pntrsize)      , pointer :: dtr
@@ -263,7 +262,6 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
     integer                       :: istat  ! Station number selected 
     integer                       :: itime  ! Current simulation time MMHHSS 
     integer                       :: notim  ! No. of time step to be written to the file 
-    integer, external             :: newlun
     character(131), dimension(10) :: header ! File header 
 !
 !! executable statements -------------------------------------------------------
@@ -313,7 +311,6 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
     ctr         => gdp%gdr_i_ch%ctr
     dicuv       => gdp%gdr_i_ch%dicuv
     dicww       => gdp%gdr_i_ch%dicww
-    dp          => gdp%gdr_i_ch%dp
     dps         => gdp%gdr_i_ch%dps
     dpsed       => gdp%gdr_i_ch%dpsed
     dtr         => gdp%gdr_i_ch%dtr

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/custom/contacts/contacts.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<cts:catalog xmlns:cts="http://www.codesynthesis.com/contacts"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.codesynthesis.com/contacts contacts.xsd">
+
+  <contact>
+    <name>Joe Dirt</name>
+    <email>joe@dirt.com</email>
+    <phone>555 DIRT</phone>
+  </contact>
+
+</cts:catalog>

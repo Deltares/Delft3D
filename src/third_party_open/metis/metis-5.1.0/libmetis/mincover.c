@@ -186,7 +186,7 @@ void MinCover_Decompose(idx_t *xadj, idx_t *adjncy, idx_t asize, idx_t bsize, id
     card[where[i]]++;
 
   k = 0;
-  if (iabs(card[VC]+card[SC]-card[HR]) < iabs(card[VC]-card[SR]-card[HR])) {  /* S = VC+SC+HR */
+  if (abs(card[VC]+card[SC]-card[HR]) < abs(card[VC]-card[SR]-card[HR])) {  /* S = VC+SC+HR */
     /* printf("%"PRIDX" %"PRIDX" ",vc+sc, hr); */
     for (i=0; i<bsize; i++) 
       if (where[i] == VC || where[i] == SC || where[i] == HR)

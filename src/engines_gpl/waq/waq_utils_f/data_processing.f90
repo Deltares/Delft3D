@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,6 @@
 !!  rights reserved.
 module data_processing
     use m_waq_precision
-    use timers, only : timstrt, timstop
     use m_string_utils, only : string_equals, index_in_array
 
     implicit none
@@ -33,13 +32,14 @@ module data_processing
 
 contains
 
+    !> Closes all files except the monitoring file (the one at 19th position).
+    !! The subroutine assumes that the monitoring file is at the 19th position in the logical_units array
+    !! and that the array has a length of 22
     subroutine close_files(logical_units)
-        !! Close all files except the monitoring file (except for the one at 19th position)
-        !! the subroutine assumes that the monitoring file is at the 19th position in the logical_units array
-        !! and that the array has a length of 22
 
-        integer(kind = int_wp), dimension(*), intent(in) :: logical_units !! Array of logical unit numbers
+        integer(kind = int_wp), dimension(*), intent(in) :: logical_units !< Array of logical unit numbers
 
+        ! local variables
         logical :: is_file_open
         integer(kind = int_wp) :: exclude_index = 19 ! the monotoring file at the 19th position in the logical_units
         integer(kind = int_wp) :: i
@@ -55,8 +55,8 @@ contains
 
     subroutine delete_file (file_name, error_flag)
         !! Deletes a file by its name and returns an error flag if the deletion fails
-        character(len = *), intent(in) :: file_name       !! Name of the file to be deleted
-        integer(kind = int_wp), intent(out) :: error_flag !! Error indicator (0 = no error, 1 = error)
+        character(len = *), intent(in)      :: file_name       !! Name of the file to be deleted
+        integer(kind = int_wp), intent(out) :: error_flag      !! Error indicator (0 = no error, 1 = error)
 
         integer(kind = int_wp) :: io_logical_unit, free_logical_unit
         logical :: is_file_open, file_exists
@@ -114,7 +114,6 @@ contains
         integer(kind = int_wp) :: str_len, error_code, str_comp, index
         integer(kind = int_wp) :: timer_handle = 0
 
-        call timstrt("extract_value_from_group", timer_handle)
         rewind (file_unit)
 
         group_open = .false.
@@ -141,7 +140,7 @@ contains
                     if (group_open) group_closed = .true.
                 endif
 
-                ! Finis if requested group is passed.
+                ! Finish if requested group is passed.
                 if (group_closed) exit
             else
                 ! check for keyword if group is open
@@ -168,7 +167,7 @@ contains
             endif
 
         end do
-        90 call timstop(timer_handle)
+        90 continue
 
     end subroutine extract_value_from_group
 
@@ -184,23 +183,25 @@ contains
         character(len = *), intent(out) :: sub_string     !! string between separators
         integer, intent(out) :: sub_string_length         !! length of string between separators
 
-        character(len = 10) :: format_string             ! format string for write statement
+        character(len = 10) :: format_string              ! format string for write statement
         integer(kind = int_wp) :: index_start, index_end
         integer(kind = int_wp) :: timer_handle = 0
-        logical :: found_lead = .false.                ! flag for finding leading separator
-        logical :: found_trail = .false.               ! flag for finding trailing separator
-
-        call timstrt("extract_string_by_separator", timer_handle)
+        logical :: found_lead                             ! flag for finding leading separator
+        logical :: found_trail                            ! flag for finding trailing separator
 
         sub_string = ' '
+        sub_string_length = 0
         error_code = 0
         index_start = 1
         index_end = string_length
+        found_lead = .false.
+        found_trail = .false.
 
         ! find the position of the leading separator if specified
         if (lead_separator /= '*') then
             do while (index_start <= string_length .and. .not. found_lead)
                 if (string(index_start:index_start) == lead_separator) then
+                    index_start = index_start + 1
                     found_lead = .true.
                     exit
                 endif
@@ -215,7 +216,7 @@ contains
         endif
 
         ! skip leading blanks/whitespaces
-        do while (index_start <= string_length .and. string(index_start:index_start) == ' ')
+        do while (index_start < string_length .and. string(index_start:index_start) == ' ')
             index_start = index_start + 1
         end do
 
@@ -226,8 +227,9 @@ contains
 
         ! Find the position of the trailing separator if specified
         if (trail_separator /= '*') then
-            do while (index_end >= index_start .and. .not. found_trail)
+            do while (index_end > index_start .and. .not. found_trail)
                 if (string(index_end:index_end) == trail_separator) then
+                    index_end = index_end - 1
                     found_trail = .true.
                     exit
                 endif
@@ -246,7 +248,7 @@ contains
             index_end = index_end - 1
         end do
 
-        if (index_end < index_start) then
+        if (index_end <= index_start) then
             error_code = 4
             goto 9999
         endif
@@ -255,7 +257,7 @@ contains
         call create_format_string (format_string, sub_string_length)
         write (sub_string(1:sub_string_length), format_string) string(index_start:index_end)
 
-        9999 call timstop(timer_handle)
+        9999 continue
 
     end subroutine extract_string_by_separator
 
@@ -350,8 +352,8 @@ contains
             num_outputs, substance_names, substance_units, constant_names, constant_values, output_names, &
             output_descriptions, error_status, error_message)
 
-        use m_monsys
-        use rd_token, only : ilun, lch, lstack, gettoken, lunut, npos, cchar
+        use m_logger_helper
+        use rd_token, only : ilun, lch, lstack, gettoken, file_unit, npos, cchar
 
         implicit none
 
@@ -410,7 +412,7 @@ contains
                 'value               ', 'name                ' /
 
         ! Open input file
-        call getmlu(lunut)
+        call get_log_unit_number(file_unit)
         ilun = 0
         lch (1) = input_file
         open (newunit = ilun(1), file = lch(1), status = 'old', iostat = error_status)

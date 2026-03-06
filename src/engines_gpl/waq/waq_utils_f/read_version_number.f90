@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,15 +22,14 @@
 !!  rights reserved.
 module m_read_version_number
     use m_waq_precision
-    use m_srstop
+    use m_logger_helper, only : stop_with_error
 
     implicit none
 
 contains
 
 
-    subroutine read_version_number (lunin, lfile, lunut, npos, input_version_number, &
-            ioutpt)
+    subroutine read_version_number (input_file, lfile, lunut, npos, input_version_number, output_verbose_level)
 
         !! Searches and reads the input file for the version string
         !! The version string looks like DELWAQ_VERSION_n.nnn\n
@@ -38,16 +37,16 @@ contains
         !! The n.nnn number is used to determine how to parse the
         !! input file
 
-        integer(kind = int_wp), intent(in) :: lunin             !< unit number input file
-        character*(*), intent(in) :: lfile             !< file name
+        integer(kind = int_wp), intent(in) :: input_file             !< unit number input file
+        character(len = *), intent(in) :: lfile             !< file name
         integer(kind = int_wp), intent(in) :: lunut             !< unit number report file
         integer(kind = int_wp), intent(in) :: npos              !< number of significant positions in one line
         real(kind = real_wp), intent(out) :: input_version_number            !< Version number
-        integer(kind = int_wp), intent(out) :: ioutpt            !< Output option
+        integer(kind = int_wp), intent(out) :: output_verbose_level            !< Output option
 
         ! Local
-        character*(npos) car                              !  read buffer
-        character*1      ctrlz, ch_cr                    !  special characters
+        character(len = npos) char_arr                              !  read buffer
+        character(len = 1)      ctrlz, ch_cr                    !  special characters
         integer(kind = int_wp) :: i, i2                            !  loop counter
         integer(kind = int_wp) :: status                           !  iostatus
 
@@ -55,38 +54,38 @@ contains
         ctrlz = char(26)
 
         input_version_number = 0.0
-        ioutpt = -1
+        output_verbose_level = -1
         status = 0
         do while (status == 0)
-            read (lunin, '(a)', iostat = status) car
+            read (input_file, '(a)', iostat = status) char_arr
 
             ! search the tokens, read the numbers
 
             do i = 1, npos - 19
-                if (car(i:i + 14) == 'DELWAQ_VERSION_') then
+                if (char_arr(i:i + 14) == 'DELWAQ_VERSION_') then
                     do i2 = i + 15, i + 19
-                        if (car(i2:i2) == ctrlz .or. &
-                                car(i2:i2) == ch_cr) car(i2:i2) = ' '
+                        if (char_arr(i2:i2) == ctrlz .or. &
+                                char_arr(i2:i2) == ch_cr) char_arr(i2:i2) = ' '
                     enddo
-                    read  (car(i + 15:i + 19), '(f5.0)') input_version_number
+                    read  (char_arr(i + 15:i + 19), '(f5.0)') input_version_number
                     write (lunut, '(a,a,f6.3)') '       ---------->', &
                             ' Version number of the input file is: ', input_version_number
                 endif
-                if (car(i:i + 19) == 'PRINT_OUTPUT_OPTION_') then
-                    read (car(i + 20:i + 20), '(i1)') ioutpt
+                if (char_arr(i:i + 19) == 'PRINT_OUTPUT_OPTION_') then
+                    read (char_arr(i + 20:i + 20), '(i1)') output_verbose_level
                     write (lunut, '(a,a,i1)') '       ---------->', &
-                            ' Output level of the listfile is: ', ioutpt
+                            ' Output level of the listfile is: ', output_verbose_level
                 endif
             enddo
         enddo
 
         if (status < 0) then    !        end of file encountered
-            rewind lunin
-            read (lunin, '(a)') car
+            rewind input_file
+            read (input_file, '(a)') char_arr
             return
         else                         !        errors during read
-            write (lunut, 2000) lunin, lfile
-            call srstop(1)
+            write (lunut, 2000) input_file, lfile
+            call stop_with_error()
         endif
 
         ! output formats
@@ -111,7 +110,7 @@ contains
 
         if (input_version_number < lower_limit_version) then
             write (lunut, 2010) input_version_number, lower_limit_version
-            call srstop(1)
+            call stop_with_error()
         endif
 
         ! output formats

@@ -1,5 +1,9 @@
+from src.utils.comparers.end_result import EndResult
+
+
 class ComparisonResult:
-    """
+    """Comparison result class.
+
     Two types of results are distinguished: maxAbsDiff and maxRelDiff.
     For both results, the following are administrated:
     - The maxDiff itself,
@@ -7,46 +11,45 @@ class ComparisonResult:
     - The coordinates in the table where the values were found.
     """
 
-    def __init__(self, error=False):
+    def __init__(self, error: bool = False) -> None:
         self.passed = None
         self.error = error
-        self.result = ""
-        self.maxAbsDiff = 0.0
-        self.maxAbsDiffValues = (0.0, 0.0)  # Left and right.
-        self.maxAbsDiffCoordinates = ()
-        self.maxRelDiff = 0.0
-        self.maxRelDiffValues = (0.0, 0.0)  # Left and right.
-        self.maxRelDiffCoordinates = ()
-        self.lineNumber = 0
-        self.columnNumber = 0
+        self.result: EndResult = EndResult.NOK
+        if self.error:
+            self.result = EndResult.ERROR
+        self.max_abs_diff = 0.0
+        self.max_abs_diff_values = (0.0, 0.0)  # Left and right.
+        self.max_abs_diff_coordinates = ()
+        self.max_rel_diff = 0.0
+        self.max_rel_diff_values = (0.0, 0.0)  # Left and right.
+        self.max_rel_diff_coordinates = ()
+        self.line_number = 0
+        self.column_number = 0
         self.path = []
 
     # No getters and setters: use this object as if it were a struct.
 
-    def isToleranceExceeded(self, maxAbsDiffTolerance=None, maxRelDiffTolerance=None):
+    def is_tolerance_exceeded(self, maxAbsDiffTolerance=None, maxRelDiffTolerance=None) -> None:
+        """Determine if the maximum absolute or relative difference exceeds the specified tolerances."""
         if self.error:
             self.passed = False
-            self.result = "ERROR"
-        elif maxAbsDiffTolerance != None and maxRelDiffTolerance != None:
+            self.result = EndResult.ERROR
+        elif maxAbsDiffTolerance is not None and maxRelDiffTolerance is not None:
             # The line below used to contain "and" instead of "or". "or" seems more useful
-            if (
-                self.maxAbsDiff <= maxAbsDiffTolerance
-                or self.maxRelDiff <= maxRelDiffTolerance
-            ):
+            if self.max_abs_diff <= maxAbsDiffTolerance or self.max_rel_diff <= maxRelDiffTolerance:
                 self.passed = True
-                self.result = "OK"
+                self.result = EndResult.OK
             else:
                 self.passed = False
-                self.result = "NOK"
-        elif maxAbsDiffTolerance != None and self.maxAbsDiff <= maxAbsDiffTolerance:
+                self.result = EndResult.NOK
+        elif (
+            (maxAbsDiffTolerance is not None and self.max_abs_diff <= maxAbsDiffTolerance)
+            or (maxRelDiffTolerance is not None and self.max_rel_diff <= maxRelDiffTolerance)
+            or (self.max_abs_diff == 0.0)
+            or (self.max_rel_diff == 0.0)
+        ):
             self.passed = True
-            self.result = "OK"
-        elif maxRelDiffTolerance != None and self.maxRelDiff <= maxRelDiffTolerance:
-            self.passed = True
-            self.result = "OK"
-        elif (self.maxAbsDiff == 0.0) or (self.maxRelDiff == 0.0):
-            self.passed = True
-            self.result = "OK"
+            self.result = EndResult.OK
         else:
             self.passed = False
-            self.result = "NOK"
+            self.result = EndResult.NOK

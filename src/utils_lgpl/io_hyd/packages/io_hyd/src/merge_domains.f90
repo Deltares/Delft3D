@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -32,27 +32,27 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       use m_alloc
       use precision_basics, only : comparereal
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                    ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
 
       ! local declarations
 
       integer                                :: n_domain               ! number of domains
       integer                                :: i_domain               ! index in collection
       integer                                :: idmn                   ! flow like domain index (0:n_domain-1)
-      type(t_hyd), pointer                   :: d_hyd                  ! description of one domain hydrodynamics
-      type(t_hyd), pointer                   :: l_hyd                  ! description of a linked domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: d_hyd                  ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: l_hyd                  ! description of a linked domain hydrodynamics
       integer                                :: nosegl                 ! total number of segments per layer
-      integer                                :: nobnd                  ! total number of boundaries
+      integer                                :: num_boundary_conditions                  ! total number of boundaries
       integer                                :: nobndl                 ! total number of boundaries per layer
-      integer                                :: noq1                   ! total number of exchanges in first directory
+      integer                                :: num_exchanges_u_dir                   ! total number of exchanges in first directory
       integer                                :: iseg                   ! segment index
       integer                                :: isegl                  ! segment index in layer
       integer                                :: iseg_global            ! global segment index
@@ -68,9 +68,9 @@
       integer                                :: isect                  ! index of section
       integer                                :: no_bnd                 ! number of boundaries in section
       integer                                :: i_bnd                  ! index of boundary
-      type(t_openbndsect), pointer           :: openbndsect            ! single section
-      type(t_openbndlin),pointer             :: openbndlin             ! single open boundary lin
-      type(t_openbndsect)                    :: new_sect               ! single section new
+      type(t_openbnd_section), pointer           :: openbndsect            ! single section
+      type(t_open_boundary_line),pointer             :: openbndlin             ! single open boundary lin
+      type(t_openbnd_section)                    :: new_sect               ! single section new
       logical                                :: bnd_active             ! if a boundary is active
       integer                                :: iret                   ! return value
       integer                                :: ik                     ! node counter
@@ -103,7 +103,7 @@
       integer, parameter                     :: edge_type_orde(4) = [1, 2, 0, 3]
 
       ! allocate local arrays
-      n_domain = domain_hyd_coll%cursize
+      n_domain = domain_hyd_coll%current_size
       d_hyd => domain_hyd_coll%hyd_pnts(1)
 
       ! copy projection attributes
@@ -113,17 +113,25 @@
       hyd%crs  = d_hyd%crs
       hyd%conv_type  = d_hyd%conv_type
       hyd%conv_version  = d_hyd%conv_version
+      
+      ! copy waqgeom layer information from first domain
+      hyd%waqgeom%num_layers = d_hyd%waqgeom%num_layers
+      hyd%waqgeom%numtopsig = d_hyd%waqgeom%numtopsig
+      hyd%waqgeom%layertype = d_hyd%waqgeom%layertype
+      allocate( hyd%waqgeom%layer_zs, source = d_hyd%waqgeom%layer_zs )
+      allocate( hyd%waqgeom%interface_zs, source = d_hyd%waqgeom%interface_zs )
 
       ! init totals
-      hyd%nmax  = 1
-      hyd%kmax  = d_hyd%kmax
-      hyd%nolay = d_hyd%nolay
+      hyd%num_rows  = 1
+      hyd%num_layers_grid  = d_hyd%num_layers_grid
+      hyd%num_layers = d_hyd%num_layers
       hyd%geometry    = d_hyd%geometry
       hyd%layer_type  = d_hyd%layer_type
       hyd%sal_present = d_hyd%sal_present
       hyd%tem_present = d_hyd%tem_present
       hyd%tau_present = d_hyd%tau_present
       hyd%vdf_present = d_hyd%vdf_present
+      hyd%vel_present = d_hyd%vel_present
       hyd%description = ' '
       hyd%hyd_ref     = d_hyd%hyd_ref
       hyd%hyd_start   = d_hyd%hyd_start
@@ -136,10 +144,10 @@
       hyd%cnv_step_sec= d_hyd%cnv_step_sec
 
       hyd%openbndsect_coll%maxsize = 0
-      hyd%openbndsect_coll%cursize = 0
-      hyd%wasteload_coll%cursize = 0
+      hyd%openbndsect_coll%current_size = 0
+      hyd%wasteload_coll%current_size = 0
       hyd%wasteload_coll%maxsize = 0
-      hyd%dd_bound_coll%cursize = 0
+      hyd%dd_bound_coll%current_size = 0
       hyd%dd_bound_coll%maxsize = 0
 
       ! initialise
@@ -405,15 +413,15 @@
          end do
       end do
 
-      ! sequentially fill in segment numbers in the third dimension (when hyd nolay > 1)
-      if (hyd%nolay.gt.1) then
+      ! sequentially fill in segment numbers in the third dimension (when hyd num_layers > 1)
+      if (hyd%num_layers.gt.1) then
          do i_domain = 1, n_domain
             idmn = i_domain - 1
             d_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-            call reallocP(d_hyd%idomain, d_hyd%nolay * d_hyd%nosegl, keepExisting = .true.)
-            call reallocP(d_hyd%iglobal, d_hyd%nolay * d_hyd%nosegl, keepExisting = .true.)
+            call reallocP(d_hyd%idomain, d_hyd%num_layers * d_hyd%nosegl, keepExisting = .true.)
+            call reallocP(d_hyd%iglobal, d_hyd%num_layers * d_hyd%nosegl, keepExisting = .true.)
             do iseg = 1, d_hyd%nosegl
-               do ilay = 2, d_hyd%nolay
+               do ilay = 2, d_hyd%num_layers
                   d_hyd%idomain(iseg + (ilay - 1) * d_hyd%nosegl) = d_hyd%idomain(iseg)
                   d_hyd%iglobal(iseg + (ilay - 1) * d_hyd%nosegl) = d_hyd%iglobal(iseg) + (ilay - 1) * nosegl
                end do
@@ -423,21 +431,21 @@
 
       ! set the dimensions of the overall domain
       hyd%nosegl = nosegl
-      hyd%noseg  = nosegl * hyd%nolay
-      hyd%mmax   = nosegl
+      hyd%num_cells  = nosegl * hyd%num_layers
+      hyd%num_columns   = nosegl
 
       ! boundaries, add the active sections and boundaries to the collections
       do i_domain = 1, n_domain
          d_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         call reallocP(d_hyd%ispoint_bnd, d_hyd%nobnd, fill = .false.)
-         no_sect = d_hyd%openbndsect_coll%cursize
+         call reallocP(d_hyd%ispoint_bnd, d_hyd%num_boundary_conditions, fill = .false.)
+         no_sect = d_hyd%openbndsect_coll%current_size
          do i_sect = 1 , no_sect
             openbndsect => d_hyd%openbndsect_coll%openbndsect_pnts(i_sect)
-            no_bnd = openbndsect%openbndlin_coll%cursize
+            no_bnd = openbndsect%openbndlin_coll%current_size
             do i_bnd = 1 , no_bnd
                openbndlin => openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)
                if (comparereal(openbndlin%x1, openbndlin%x2) == 0 .and. comparereal(openbndlin%x1, openbndlin%x2) == 0) then
-                  do ilay = 1, d_hyd%nolay
+                  do ilay = 1, d_hyd%num_layers
                      d_hyd%ispoint_bnd(abs(openbndlin%ibnd)+(ilay-1)*d_hyd%nobndl) = .true.
                   end do
                end if
@@ -447,10 +455,10 @@
 
       ! exchanges
       ! gather the exchanges per layer, and in such a way that the internal exchanges come first, and overlap with the edge face table
-      noq1  = 0
-      nobnd = 0
+      num_exchanges_u_dir  = 0
+      num_boundary_conditions = 0
       ! loop over layers
-      do ilay = 1, hyd%nolay
+      do ilay = 1, hyd%num_layers
          ! first round internal links only
          do i_domain = 1, n_domain
             idmn = i_domain - 1
@@ -458,15 +466,15 @@
             ! determine min and max segment number of this layer in this domain
             min_seg = (ilay - 1) * d_hyd%nosegl + 1
             max_seg = ilay * d_hyd%nosegl
-            do iq = 1, d_hyd%noq1
+            do iq = 1, d_hyd%num_exchanges_u_dir
                ip1 = d_hyd%ipoint(1,iq)
                ip2 = d_hyd%ipoint(2,iq)
                if (ip1 .ge. min_seg .and. ip1 .le. max_seg .and. ip2 .gt. 0) then
                   ! ip1 is in this layer and ip2 not a boundary
                   if (min(d_hyd%idomain(ip1),d_hyd%idomain(ip2)) .eq. idmn) then
                      ! only add when the lowest domain on either side of the link is in the current domain to avoid double inclusion
-                     noq1 = noq1 + 1
-                     d_hyd%iglobal_link(iq) = noq1
+                     num_exchanges_u_dir = num_exchanges_u_dir + 1
+                     d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                   end if
                end if
             end do
@@ -478,31 +486,31 @@
             ! determine min and max segment number of this layer in this domain
             min_seg = (ilay - 1) * d_hyd%nosegl + 1
             max_seg = ilay * d_hyd%nosegl
-            do iq = 1, d_hyd%noq1
+            do iq = 1, d_hyd%num_exchanges_u_dir
                ip1 = d_hyd%ipoint(1,iq)
                ip2 = d_hyd%ipoint(2,iq)
                if ( ip1 .lt. 0 .and. ip2 .ge. min_seg .and. ip2 .le. max_seg) then
                   ! ip1 is a boundary and ip2 is in this layer
                   if(d_hyd%idomain(ip2) .eq. idmn .and. (.not.d_hyd%ispoint_bnd(abs(ip1)))) then
                      ! only add boundary links from current domain that are not point sources
-                     noq1 = noq1 + 1
-                     d_hyd%iglobal_link(iq) = noq1
+                     num_exchanges_u_dir = num_exchanges_u_dir + 1
+                     d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                      if (abs(ip1) .le. d_hyd%nobndl) then
-                        nobnd = nobnd + 1
-                        d_hyd%iglobal_bnd(-ip1) = -nobnd
-                        call renum_bnd(d_hyd%openbndsect_coll,ip1,-nobnd)
+                        num_boundary_conditions = num_boundary_conditions + 1
+                        d_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
+                        call renum_bnd(d_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
                      end if
                   end if
                else if (ip1 .ge. min_seg .and. ip1 .le. max_seg .and. ip2 .lt. 0) then !ip1 between min +1 and max
                   ! ip2 is a boundary and ip1 is in this layer
-                  if (d_hyd%idomain(ip1) .eq. idmn .and. (.not.d_hyd%ispoint_bnd(abs(ip1)))) then
+                  if (d_hyd%idomain(ip1) .eq. idmn .and. (.not.d_hyd%ispoint_bnd(abs(ip2)))) then
                      ! only add boundary links from current domain that are not point sources
-                     noq1 = noq1 + 1
-                     d_hyd%iglobal_link(iq) = noq1
+                     num_exchanges_u_dir = num_exchanges_u_dir + 1
+                     d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                      if (abs(ip2) .le. d_hyd%nobndl) then
-                        nobnd = nobnd + 1
-                        d_hyd%iglobal_bnd(-ip2) = -nobnd
-                        call renum_bnd(d_hyd%openbndsect_coll,ip2,-nobnd)
+                        num_boundary_conditions = num_boundary_conditions + 1
+                        d_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
+                        call renum_bnd(d_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
                      end if
                   end if
                end if
@@ -514,31 +522,31 @@
       do i_domain = 1, n_domain
          idmn = i_domain - 1
          d_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         do iq = 1, d_hyd%noq1
+         do iq = 1, d_hyd%num_exchanges_u_dir
             ip1 = d_hyd%ipoint(1,iq)
             ip2 = d_hyd%ipoint(2,iq)
             if (ip1 .lt. 0 .and. ip2 .gt. 0) then
                ! ip1 is a boundary to a valid segment
                if (d_hyd%idomain(ip2) .eq. idmn .and. d_hyd%ispoint_bnd(abs(ip1))) then
                   ! only add when the segment is in the current domain and it is a point source
-                  noq1 = noq1 + 1
-                  d_hyd%iglobal_link(iq) = noq1
+                  num_exchanges_u_dir = num_exchanges_u_dir + 1
+                  d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                   if (abs(ip1) .le. d_hyd%nobndl) then
-                     nobnd = nobnd + 1
-                     d_hyd%iglobal_bnd(-ip1) = -nobnd
-                     call renum_bnd(d_hyd%openbndsect_coll,ip1,-nobnd)
+                     num_boundary_conditions = num_boundary_conditions + 1
+                     d_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
+                     call renum_bnd(d_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
                   end if
                end if
             else if (ip1 .gt. 0 .and. ip2 .lt. 0) then
                ! ip2 is a boundary to a valid segment
                if (d_hyd%idomain(ip1) .eq. idmn .and. d_hyd%ispoint_bnd(abs(ip2))) then
                   ! only add when the segment is in the current domain and it is a point source
-                  noq1 = noq1 + 1
-                  d_hyd%iglobal_link(iq) = noq1
+                  num_exchanges_u_dir = num_exchanges_u_dir + 1
+                  d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                   if (abs(ip2) .le. d_hyd%nobndl) then
-                     nobnd = nobnd + 1
-                     d_hyd%iglobal_bnd(-ip2) = -nobnd
-                     call renum_bnd(d_hyd%openbndsect_coll,ip2,-nobnd)
+                     num_boundary_conditions = num_boundary_conditions + 1
+                     d_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
+                     call renum_bnd(d_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
                   end if
                end if
             end if
@@ -546,23 +554,23 @@
       end do
 
       ! exchange totals
-      hyd%noq1 = noq1
-      hyd%noq2 = 0
-      hyd%noq3 = hyd%nosegl*(hyd%nolay-1)
-      hyd%noq4 = 0
-      hyd%noq  = hyd%noq1 + hyd%noq2 + hyd%noq3 + hyd%noq4
-      hyd%nobndl = nobnd
-      hyd%nobnd  = nobnd*hyd%nolay
+      hyd%num_exchanges_u_dir = num_exchanges_u_dir
+      hyd%num_exchanges_v_dir = 0
+      hyd%num_exchanges_z_dir = hyd%nosegl*(hyd%num_layers-1)
+      hyd%num_exchanges_bottom_dir = 0
+      hyd%num_exchanges  = hyd%num_exchanges_u_dir + hyd%num_exchanges_v_dir + hyd%num_exchanges_z_dir + hyd%num_exchanges_bottom_dir
+      hyd%nobndl = num_boundary_conditions
+      hyd%num_boundary_conditions  = num_boundary_conditions*hyd%num_layers
 
-      ! fill in boundary numbers in the third dimension (when hyd nolay > 1)
-      if (hyd%nolay.gt.1) then
+      ! fill in boundary numbers in the third dimension (when hyd num_layers > 1)
+      if (hyd%num_layers.gt.1) then
          do i_domain = 1, n_domain
             idmn = i_domain - 1
             d_hyd => domain_hyd_coll%hyd_pnts(i_domain)
             do i_bnd = 1, d_hyd%nobndl
                if ( d_hyd%iglobal_bnd(i_bnd).ne.0) then
-                  do ilay = 2, d_hyd%nolay
-                     d_hyd%iglobal_bnd(i_bnd + (ilay - 1) * d_hyd%nobndl) = d_hyd%iglobal_bnd(i_bnd) - (ilay - 1) * nobnd
+                  do ilay = 2, d_hyd%num_layers
+                     d_hyd%iglobal_bnd(i_bnd + (ilay - 1) * d_hyd%nobndl) = d_hyd%iglobal_bnd(i_bnd) - (ilay - 1) * num_boundary_conditions
                   end do
                end if
             end do
@@ -570,12 +578,12 @@
       end if
 
       ! make final pointer table
-      nobnd  = 0
+      num_boundary_conditions  = 0
       nobndl = hyd%nobndl
-      call reallocP(hyd%ipoint, [4, hyd%noq] , fill = 0)
+      call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , fill = 0)
       do i_domain = 1, n_domain
          d_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         do iq = 1, d_hyd%noq1
+         do iq = 1, d_hyd%num_exchanges_u_dir
             iq_global = d_hyd%iglobal_link(iq)
             if ( iq_global .gt. 0 ) then
                ip1 = d_hyd%ipoint(1,iq)
@@ -595,11 +603,22 @@
             endif
          enddo
       enddo
+      
+      ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
+      ! equals the number of boundary conditions per layer times the number of layers
+      if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
+         ! increase hyd%num_exchanges_u_dir and hyd%num_exchanges, and reallocate hyd%ipoint
+         hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+         hyd%num_exchanges = hyd%num_exchanges + 1
+         call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , keepExisting = .true., fill = 0)
+         ! Insert a dummy exchange as the last of the horizontal exhanges
+         hyd%ipoint(1, hyd%num_exchanges_u_dir) = -hyd%num_boundary_conditions
+      endif
 
       ! pointers in third dimension
       do iseg = 1, hyd%nosegl
-         do ilay = 1, hyd%nolay - 1
-            iq_global = hyd%noq1 + (ilay-1)*hyd%nosegl + iseg
+         do ilay = 1, hyd%num_layers - 1
+            iq_global = hyd%num_exchanges_u_dir + (ilay-1)*hyd%nosegl + iseg
             ip1 = (ilay-1)*hyd%nosegl + iseg
             ip2 = (ilay  )*hyd%nosegl + iseg
             if ( ilay .ne. 1 ) then
@@ -607,7 +626,7 @@
             else
                ip3 = 0
             end if
-            if ( ilay .ne. hyd%nolay - 1 ) then
+            if ( ilay .ne. hyd%num_layers - 1 ) then
                ip4 = (ilay+1)*hyd%nosegl + iseg
             else
                ip4 = 0
@@ -620,18 +639,18 @@
       end do
 
       ! layering
-      call reallocP(hyd%hyd_layers, hyd%kmax, fill = 0e0)
-      call reallocP(hyd%waq_layers, hyd%nolay, fill = 0e0)
+      call reallocP(hyd%hyd_layers, hyd%num_layers_grid, fill = 0e0)
+      call reallocP(hyd%waq_layers, hyd%num_layers, fill = 0e0)
       hyd%hyd_layers = d_hyd%hyd_layers
       hyd%waq_layers = d_hyd%waq_layers
 
       ! boundaries, add the active sections and boundaries to the collections
       do i_domain = 1, n_domain
          d_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         no_sect = d_hyd%openbndsect_coll%cursize
+         no_sect = d_hyd%openbndsect_coll%current_size
          do i_sect = 1 , no_sect
             openbndsect => d_hyd%openbndsect_coll%openbndsect_pnts(i_sect)
-            no_bnd = openbndsect%openbndlin_coll%cursize
+            no_bnd = openbndsect%openbndlin_coll%current_size
             bnd_active = .false.
             do i_bnd = 1 , no_bnd
                if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new .ne. 0 ) then
@@ -639,17 +658,17 @@
                end if
             end do
             if ( bnd_active ) then
-               isect = openbndsect_coll_find( hyd%openbndsect_coll, openbndsect%name )
+               isect = hyd%openbndsect_coll%find(openbndsect%name )
                if ( isect .le. 0 ) then
                   new_sect%name = openbndsect%name
-                  new_sect%openbndlin_coll%cursize = 0
+                  new_sect%openbndlin_coll%current_size = 0
                   new_sect%openbndlin_coll%maxsize = 0
                   new_sect%openbndlin_coll%openbndlin_pnts => null()
-                  isect = coll_add(hyd%openbndsect_coll, new_sect)
+                  isect = hyd%openbndsect_coll%add(new_sect)
                end if
                do i_bnd = 1 , no_bnd
                   if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new .ne. 0 ) then
-                     iret = coll_add(hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll,openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd))
+                     iret = hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll%add(openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd))
                      hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll%openbndlin_pnts(iret)%ibnd = openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new
                   end if
                end do
@@ -658,17 +677,18 @@
       end do
 
       ! allocate rest of the arrays
-      allocate(hyd%volume(hyd%noseg))
-      allocate(hyd%area(hyd%noq))
-      allocate(hyd%flow(hyd%noq))
-      allocate(hyd%displen(2,hyd%noq))
-      allocate(hyd%surf(hyd%noseg))
-      allocate(hyd%depth(hyd%noseg))
-      allocate(hyd%attributes(hyd%noseg))
-      if (hyd%sal_present) allocate(hyd%sal(hyd%noseg))
-      if (hyd%tem_present) allocate(hyd%tem(hyd%noseg))
-      if (hyd%tau_present) allocate(hyd%tau(hyd%noseg))
-      if (hyd%vdf_present) allocate(hyd%vdf(hyd%noseg))
+      allocate(hyd%volume(hyd%num_cells))
+      allocate(hyd%area(hyd%num_exchanges))
+      allocate(hyd%flow(hyd%num_exchanges))
+      allocate(hyd%displen(2,hyd%num_exchanges))
+      allocate(hyd%surf(hyd%num_cells))
+      allocate(hyd%depth(hyd%num_cells))
+      allocate(hyd%attributes(hyd%num_cells))
+      if (hyd%sal_present) allocate(hyd%sal(hyd%num_cells))
+      if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells))
+      if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells))
+      if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells))
+      if (hyd%vel_present) allocate(hyd%vel(hyd%num_cells))
 
       ! time independent items
       hyd%atr_type = ATR_FM
@@ -679,14 +699,14 @@
          do isegl = 1 , d_hyd%nosegl
             iseg_global = d_hyd%iglobal(isegl)
             if ( iseg_global .gt. 0 ) then
-               do ilay = 1, hyd%nolay
+               do ilay = 1, hyd%num_layers
                   hyd%surf(iseg_global + (ilay - 1) * hyd%nosegl)       = d_hyd%surf(isegl + (ilay - 1) * d_hyd%nosegl)
                   hyd%attributes(iseg_global + (ilay - 1) * hyd%nosegl) = d_hyd%attributes(isegl + (ilay - 1) * d_hyd%nosegl)
                end do
                hyd%depth(iseg_global) = d_hyd%depth(isegl)
             end if
          end do
-         do iq = 1, d_hyd%noq1
+         do iq = 1, d_hyd%num_exchanges_u_dir
             iq_global = d_hyd%iglobal_link(iq)
             if ( iq_global .gt. 0 ) then
                hyd%displen(1,iq_global) = d_hyd%displen(1,iq)
@@ -703,27 +723,27 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       use MessageHandling
       use m_alloc
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                    ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
 
       ! local declarations
 
       integer                                :: n_domain               ! number of domains
       integer                                :: i_domain               ! index in collection
       integer                                :: idmn                   ! flow like domain index (0:n_domain-1)
-      type(t_hyd), pointer                   :: domain_hyd             ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: domain_hyd             ! description of one domain hydrodynamics
       integer                                :: nosegl                 ! total number of segments per layer
-      integer                                :: nobnd                  ! total number of boundaries
+      integer                                :: num_boundary_conditions                  ! total number of boundaries
       integer                                :: nobndl                 ! total number of boundaries per layer
-      integer                                :: nolay                  ! number of layers
-      integer                                :: noq1                   ! total number of exchanges in first directory
+      integer                                :: num_layers                  ! number of layers
+      integer                                :: num_exchanges_u_dir                   ! total number of exchanges in first directory
       integer                                :: iseg                   ! segment index
       integer                                :: isegl                  ! segment index in layer
       integer                                :: iseg_glob              ! global segment index
@@ -741,8 +761,8 @@
       integer                                :: isect                  ! index of section
       integer                                :: no_bnd                 ! number of boundaries in section
       integer                                :: i_bnd                  ! index of boundary
-      type(t_openbndsect), pointer           :: openbndsect            ! single section
-      type(t_openbndsect)                    :: new_sect               ! single section new
+      type(t_openbnd_section), pointer           :: openbndsect            ! single section
+      type(t_openbnd_section)                    :: new_sect               ! single section new
       logical                                :: bnd_active             ! if a boundary is active
       integer                                :: iret                   ! return value
 
@@ -758,21 +778,22 @@
       integer                                :: inew                   ! new number
 
       ! allocate local arrays
-      n_domain = domain_hyd_coll%cursize
+      n_domain = domain_hyd_coll%current_size
 
       ! copy projection attributes
       hyd%crs  = domain_hyd_coll%hyd_pnts(1)%crs
 
       ! init totals
-      hyd%nmax  = 1
-      hyd%kmax  = domain_hyd_coll%hyd_pnts(1)%kmax
-      hyd%nolay = domain_hyd_coll%hyd_pnts(1)%nolay
+      hyd%num_rows  = 1
+      hyd%num_layers_grid  = domain_hyd_coll%hyd_pnts(1)%num_layers_grid
+      hyd%num_layers = domain_hyd_coll%hyd_pnts(1)%num_layers
       hyd%geometry    = domain_hyd_coll%hyd_pnts(1)%geometry
       hyd%layer_type  = domain_hyd_coll%hyd_pnts(1)%layer_type
       hyd%sal_present = domain_hyd_coll%hyd_pnts(1)%sal_present
       hyd%tem_present = domain_hyd_coll%hyd_pnts(1)%tem_present
       hyd%tau_present = domain_hyd_coll%hyd_pnts(1)%tau_present
       hyd%vdf_present = domain_hyd_coll%hyd_pnts(1)%vdf_present
+      hyd%vel_present = domain_hyd_coll%hyd_pnts(1)%vel_present
       hyd%description = ' '
       hyd%hyd_ref     = domain_hyd_coll%hyd_pnts(1)%hyd_ref
       hyd%hyd_start   = domain_hyd_coll%hyd_pnts(1)%hyd_start
@@ -785,10 +806,10 @@
       hyd%cnv_step_sec= domain_hyd_coll%hyd_pnts(1)%cnv_step_sec
 
       hyd%openbndsect_coll%maxsize = 0
-      hyd%openbndsect_coll%cursize = 0
-      hyd%wasteload_coll%cursize = 0
+      hyd%openbndsect_coll%current_size = 0
+      hyd%wasteload_coll%current_size = 0
       hyd%wasteload_coll%maxsize = 0
-      hyd%dd_bound_coll%cursize = 0
+      hyd%dd_bound_coll%current_size = 0
       hyd%dd_bound_coll%maxsize = 0
 
       ! iglobal is only partially filled first look for highest number
@@ -861,14 +882,14 @@
          end do
       end if
 
-      ! sequentially fill in segment numbers in the third dimension (when hyd nolay > 1)
+      ! sequentially fill in segment numbers in the third dimension (when hyd num_layers > 1)
 
-      if (hyd%nolay.gt.1) then
+      if (hyd%num_layers.gt.1) then
          do i_domain = 1, n_domain
             idmn = i_domain - 1
             domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
             do iseg = 1, domain_hyd%nosegl
-               do ilay = 2, domain_hyd%nolay
+               do ilay = 2, domain_hyd%num_layers
                   domain_hyd%idomain(iseg + (ilay - 1) * domain_hyd%nosegl) = domain_hyd%idomain(iseg)
                   domain_hyd%iglobal(iseg + (ilay - 1) * domain_hyd%nosegl) = domain_hyd%iglobal(iseg) + (ilay - 1) * nosegl
                end do
@@ -879,67 +900,67 @@
       ! set the dimensions of the overall domain
 
       hyd%nosegl = nosegl
-      hyd%noseg  = nosegl * hyd%nolay
-      hyd%mmax   = nosegl
+      hyd%num_cells  = nosegl * hyd%num_layers
+      hyd%num_columns   = nosegl
 
       ! global exchanges count, boundary count
 
-      noq1  = 0
-      nobnd = 0
+      num_exchanges_u_dir  = 0
+      num_boundary_conditions = 0
       do i_domain = 1, n_domain
          idmn = i_domain - 1
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
          domain_hyd%iglobal_link = 0
-         do iq = 1, domain_hyd%noq1
-            noq1 = noq1 + 1
-            domain_hyd%iglobal_link(iq) = noq1
+         do iq = 1, domain_hyd%num_exchanges_u_dir
+            num_exchanges_u_dir = num_exchanges_u_dir + 1
+            domain_hyd%iglobal_link(iq) = num_exchanges_u_dir
             ip1 = domain_hyd%ipoint(1,iq)
             ip2 = domain_hyd%ipoint(2,iq)
             if ( ip1 .lt. 0 ) then
                if (abs(ip1) .le. domain_hyd%nobndl .and. domain_hyd%idomain(ip2) .eq. idmn) then
-                  nobnd = nobnd + 1
-                  domain_hyd%iglobal_bnd(-ip1) = -nobnd
-                  call renum_bnd(domain_hyd%openbndsect_coll,ip1,-nobnd)
+                  num_boundary_conditions = num_boundary_conditions + 1
+                  domain_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
+                  call renum_bnd(domain_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
                else if (domain_hyd%idomain(ip2) .ne. idmn) then
                   ! from cell is in ghost domain, revert addition of exchange
                   domain_hyd%iglobal_link(iq) = 0
-                  noq1 = noq1 - 1
+                  num_exchanges_u_dir = num_exchanges_u_dir - 1
                end if
             else if ( ip2 .lt. 0 ) then
                if (abs(ip2) .le. domain_hyd%nobndl .and. domain_hyd%idomain(ip1) .eq. idmn) then
-                  nobnd = nobnd + 1
-                  domain_hyd%iglobal_bnd(-ip2) = -nobnd
-                  call renum_bnd(domain_hyd%openbndsect_coll,ip2,-nobnd)
+                  num_boundary_conditions = num_boundary_conditions + 1
+                  domain_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
+                  call renum_bnd(domain_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
                else if (domain_hyd%idomain(ip1) .ne. idmn) then
                   ! from cell is in ghost domain, revert addition of exchange
                   domain_hyd%iglobal_link(iq) = 0
-                  noq1 = noq1 - 1
+                  num_exchanges_u_dir = num_exchanges_u_dir - 1
                end if
             else if (min(domain_hyd%idomain(ip1),domain_hyd%idomain(ip2)) .ne. idmn) then
                ! one of the cells is in ghost domain with a lower domain number, revert addition of exchange to avoid double inclusion
                domain_hyd%iglobal_link(iq) = 0
-               noq1 = noq1 - 1
+               num_exchanges_u_dir = num_exchanges_u_dir - 1
             end if
          end do
       end do
-      hyd%noq1 = noq1
-      hyd%noq2 = 0
-      hyd%noq3 = hyd%nosegl*(hyd%nolay-1)
-      hyd%noq4 = 0
-      hyd%noq  = hyd%noq1 + hyd%noq2 + hyd%noq3 + hyd%noq4
-      hyd%nobndl = nobnd
-      hyd%nobnd  = nobnd*hyd%nolay
+      hyd%num_exchanges_u_dir = num_exchanges_u_dir
+      hyd%num_exchanges_v_dir = 0
+      hyd%num_exchanges_z_dir = hyd%nosegl*(hyd%num_layers-1)
+      hyd%num_exchanges_bottom_dir = 0
+      hyd%num_exchanges  = hyd%num_exchanges_u_dir + hyd%num_exchanges_v_dir + hyd%num_exchanges_z_dir + hyd%num_exchanges_bottom_dir
+      hyd%nobndl = num_boundary_conditions
+      hyd%num_boundary_conditions  = num_boundary_conditions*hyd%num_layers
 
-      ! sequentially fill in boundary numbers in the third dimension (when hyd nolay > 1)
+      ! sequentially fill in boundary numbers in the third dimension (when hyd num_layers > 1)
 
-      if (hyd%nolay.gt.1) then
+      if (hyd%num_layers.gt.1) then
          do i_domain = 1, n_domain
             idmn = i_domain - 1
             domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
             do i_bnd = 1, domain_hyd%nobndl
                if ( domain_hyd%iglobal_bnd(i_bnd).ne.0) then
-                  do ilay = 2, domain_hyd%nolay
-                     domain_hyd%iglobal_bnd(i_bnd + (ilay - 1) * domain_hyd%nobndl) = domain_hyd%iglobal_bnd(i_bnd) - (ilay - 1) * nobnd
+                  do ilay = 2, domain_hyd%num_layers
+                     domain_hyd%iglobal_bnd(i_bnd + (ilay - 1) * domain_hyd%nobndl) = domain_hyd%iglobal_bnd(i_bnd) - (ilay - 1) * num_boundary_conditions
                   end do
                end if
             end do
@@ -948,12 +969,12 @@
 
       ! make final pointer table
 
-      nobnd  = 0
+      num_boundary_conditions  = 0
       nobndl = hyd%nobndl
-      allocate(hyd%ipoint(4,hyd%noq))
+      allocate(hyd%ipoint(4,hyd%num_exchanges))
       do i_domain = 1, n_domain
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         do iq = 1, domain_hyd%noq1
+         do iq = 1, domain_hyd%num_exchanges_u_dir
             iq_global = domain_hyd%iglobal_link(iq)
             if ( iq_global .gt. 0 ) then
                ip1 = domain_hyd%ipoint(1,iq)
@@ -983,11 +1004,22 @@
             end if
          end do
       end do
+      
+      ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
+      ! equals the number of boundary conditions per layer times the number of layers
+      if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
+         ! increase hyd%num_exchanges_u_dir and hyd%num_exchanges, and reallocate hyd%ipoint
+         hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+         hyd%num_exchanges = hyd%num_exchanges + 1
+         call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , keepExisting = .true., fill = 0)
+         ! Insert a dummy exchange as the last of the horizontal exhanges
+         hyd%ipoint(1, hyd%num_exchanges_u_dir) = -hyd%num_boundary_conditions
+      endif
 
       ! pointers in third dimension
       do iseg = 1, hyd%nosegl
-         do ilay = 1, hyd%nolay - 1
-            iq_glob = hyd%noq1 + (ilay-1)*hyd%nosegl + iseg
+         do ilay = 1, hyd%num_layers - 1
+            iq_glob = hyd%num_exchanges_u_dir + (ilay-1)*hyd%nosegl + iseg
             ip1 = (ilay-1)*hyd%nosegl + iseg
             ip2 = (ilay  )*hyd%nosegl + iseg
             if ( ilay .ne. 1 ) then
@@ -995,7 +1027,7 @@
             else
                ip3 = 0
             end if
-            if ( ilay .ne. hyd%nolay - 1 ) then
+            if ( ilay .ne. hyd%num_layers - 1 ) then
                ip4 = (ilay+1)*hyd%nosegl + iseg
             else
                ip4 = 0
@@ -1070,8 +1102,8 @@
       end do
 
       ! coordinates exchanges
-      allocate(hyd%xu(noq1))
-      allocate(hyd%yu(noq1))
+      allocate(hyd%xu(num_exchanges_u_dir))
+      allocate(hyd%yu(num_exchanges_u_dir))
       hyd%xu = 0.0
       hyd%yu = 0.0
       do i_domain = 1, n_domain
@@ -1087,18 +1119,18 @@
 
       ! layering
 
-      allocate(hyd%hyd_layers(hyd%kmax))
-      allocate(hyd%waq_layers(hyd%nolay))
+      allocate(hyd%hyd_layers(hyd%num_layers_grid))
+      allocate(hyd%waq_layers(hyd%num_layers))
       hyd%hyd_layers = domain_hyd_coll%hyd_pnts(1)%hyd_layers
       hyd%waq_layers = domain_hyd_coll%hyd_pnts(1)%waq_layers
 
       ! boundaries, add the active sections and boundaries to the collections
       do i_domain = 1, n_domain
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         no_sect = domain_hyd%openbndsect_coll%cursize
+         no_sect = domain_hyd%openbndsect_coll%current_size
          do i_sect = 1 , no_sect
             openbndsect => domain_hyd%openbndsect_coll%openbndsect_pnts(i_sect)
-            no_bnd = openbndsect%openbndlin_coll%cursize
+            no_bnd = openbndsect%openbndlin_coll%current_size
             bnd_active = .false.
             do i_bnd = 1 , no_bnd
                if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new .ne. 0 ) then
@@ -1106,17 +1138,17 @@
                end if
             end do
             if ( bnd_active ) then
-               isect = openbndsect_coll_find( hyd%openbndsect_coll, openbndsect%name )
+               isect = hyd%openbndsect_coll%find(openbndsect%name)
                if ( isect .le. 0 ) then
                   new_sect%name = openbndsect%name
-                  new_sect%openbndlin_coll%cursize = 0
+                  new_sect%openbndlin_coll%current_size = 0
                   new_sect%openbndlin_coll%maxsize = 0
                   new_sect%openbndlin_coll%openbndlin_pnts => null()
-                  isect = coll_add(hyd%openbndsect_coll, new_sect)
+                  isect = hyd%openbndsect_coll%add(new_sect)
                end if
                do i_bnd = 1 , no_bnd
                   if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new .ne. 0 ) then
-                     iret = coll_add(hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll,openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd))
+                     iret = hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll%add(openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd))
                      hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll%openbndlin_pnts(iret)%ibnd = openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new
                   end if
                end do
@@ -1125,22 +1157,23 @@
       end do
 
       ! allocate rest of the arrays
-      allocate(hyd%volume(hyd%noseg))
-      allocate(hyd%area(hyd%noq))
-      allocate(hyd%flow(hyd%noq))
-      allocate(hyd%displen(2,hyd%noq))
-      allocate(hyd%surf(hyd%noseg))
-      allocate(hyd%depth(hyd%noseg))
-      allocate(hyd%attributes(hyd%noseg))
-      if (hyd%sal_present) allocate(hyd%sal(hyd%noseg))
-      if (hyd%tem_present) allocate(hyd%tem(hyd%noseg))
-      if (hyd%tau_present) allocate(hyd%tau(hyd%noseg))
-      if (hyd%vdf_present) allocate(hyd%vdf(hyd%noseg))
+      allocate(hyd%volume(hyd%num_cells))
+      allocate(hyd%area(hyd%num_exchanges))
+      allocate(hyd%flow(hyd%num_exchanges))
+      allocate(hyd%displen(2,hyd%num_exchanges))
+      allocate(hyd%surf(hyd%num_cells))
+      allocate(hyd%depth(hyd%num_cells))
+      allocate(hyd%attributes(hyd%num_cells))
+      if (hyd%sal_present) allocate(hyd%sal(hyd%num_cells))
+      if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells))
+      if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells))
+      if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells))
+      if (hyd%vel_present) allocate(hyd%vel(hyd%num_cells))
 
       ! time independent items
       hyd%atr_type = ATR_FM
       hyd%no_atr = 2
-      nolay     = hyd%nolay
+      num_layers     = hyd%num_layers
       hyd%displen = 0.0
 
       do i_domain = 1 , n_domain
@@ -1148,14 +1181,14 @@
          do isegl = 1 , domain_hyd%nosegl
             iseg_glob = domain_hyd%iglobal(isegl)
             if ( iseg_glob .gt. 0 ) then
-               do ilay = 1,nolay
+               do ilay = 1,num_layers
                   hyd%surf(iseg_glob + (ilay - 1) * hyd%nosegl) = domain_hyd%surf(isegl + (ilay - 1) * domain_hyd%nosegl)
                   hyd%attributes(iseg_glob + (ilay - 1) * hyd%nosegl) = domain_hyd%attributes(isegl + (ilay - 1) * domain_hyd%nosegl)
                end do
                hyd%depth(iseg_glob) = domain_hyd%depth(isegl)
             end if
          end do
-         do iq = 1, domain_hyd%noq1
+         do iq = 1, domain_hyd%num_exchanges_u_dir
             iq_global = domain_hyd%iglobal_link(iq)
             if ( iq_global .gt. 0 ) then
                hyd%displen(1,iq_global) = domain_hyd%displen(1,iq)

@@ -198,7 +198,7 @@ real            , allocatable     :: sncnw (:)      !< closed wall alignment sin
 
  ! branch related :
  type tbranch                                        !< this is a branch type
-   integer                        :: nx             !< with nx links and nx + 1 nodes in it
+   integer                        :: num_cells_u_dir             !< with num_cells_u_dir links and num_cells_u_dir + 1 nodes in it
    integer, allocatable           :: ln (:)         !< successive flow linknrs
  end type tbranch
 
@@ -311,7 +311,7 @@ integer, parameter :: maxopenfiles = 1000
 character(len=255) :: open_files_(maxopenfiles)    !< Names of open NetCDF files.
 integer            :: open_datasets_(maxopenfiles) !< Dataset IDs of open NetCDF files.
 integer            :: nopen_files_ = 0             !< Nr. of NetCDF files currently open.
-character*80       :: version_full
+character(len=80)  :: version_full
 
 private :: nerr_, err_firsttime_, err_firstline_, &
            prepare_error, check_error, &
@@ -327,9 +327,9 @@ subroutine unc_addglobalatts(ncid, version_full)
     integer, intent(in) :: ncid
     character(len=*), intent(in) ::  version_full
 
-    character*8  :: cdate
-    character*10 :: ctime
-    character*5  :: czone
+    character(len=8)  :: cdate
+    character(len=10) :: ctime
+    character(len=5)  :: czone
     integer :: ierr, jaInDefine
     ierr = nf90_noerr
     jaInDefine = 0
@@ -1721,7 +1721,7 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
    if (dim == 2 .or. ug_checklocation(dataLocs, UG_LOC_FACE)) then
       maxnv = size(face_nodes, 1)
       ierr = nf90_def_dim(ncid, 'n'//prefix//'_face',        numFace,   meshids%id_facedim)
-      ierr = nf90_def_dim(ncid, 'nMax'//prefix//'_face_nodes', maxnv,   meshids%id_maxfacenodesdim)
+      ierr = nf90_def_dim(ncid, 'num_rows'//prefix//'_face_nodes', maxnv,   meshids%id_maxfacenodesdim)
    end if
 
    ierr = ug_add_coordmapping(ncid, crs)

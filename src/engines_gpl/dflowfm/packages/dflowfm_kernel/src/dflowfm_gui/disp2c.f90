@@ -1,82 +1,96 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
-
 !
-      SUBROUTINE DISP2C(X,Y,N,RCIR,NCOL)
-      use m_missing
- !     use gridoperations
-      implicit none
-      integer          :: n, ncol
-      double precision :: X(N), Y(N), rcir
-      logical          :: inview
+!
+module m_disp2c
+   use m_cir
 
-      integer          :: i, istart, key, in
+   implicit none
+contains
+!
+   subroutine DISP2C(X, Y, N, RCIR, NCOL)
+      use precision, only: dp
+      use m_missing, only: dmiss
+      use m_jgrline8, only: jgrline8
+      use m_set_col, only: setcol
+      use m_inview, only: inview
+      use m_movabs, only: movabs
+
+      integer :: n, ncol
+      real(kind=dp) :: X(N), Y(N), rcir
+
+      integer :: i, istart, in
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET CIRKELS
 
-      IF (N .LE. 0) RETURN
-      CALL SETCOL(NCOL)
+      if (N <= 0) then
+         return
+      end if
+      call SETCOL(NCOL)
 
-      CALL JGRLINE8(x,y,N)
+      call JGRLINE8(x, y, N)
 
-      if (rcir == 0) return
+      if (rcir == 0) then
+         return
+      end if
 
-      IF ( NCOL.NE.0 ) THEN
+      if (NCOL /= 0) then
 
          in = 0
-         DO I = 1,N
-            if ( INVIEW(X(i),Y(i)) ) then
-               CALL MOVABS(X(I),Y(I))
-               CALL CIR(RCIR)
+         do I = 1, N
+            if (INVIEW(X(i), Y(i))) then
+               call MOVABS(X(I), Y(I))
+               call CIR(RCIR)
                in = in + 1
-               if (in > 5000) exit
-            endif
-         enddo
+               if (in > 5000) then
+                  exit
+               end if
+            end if
+         end do
 
-         CALL SETCOL(31)
+         call SETCOL(31)
          ISTART = 0
-         DO I = 1,N
-            IF (X(I) .NE. dmiss) THEN
-               IF (ISTART .EQ. 1) THEN
-               ELSE
-                  CALL MOVABS(X(I),Y(I))
-                  CALL CIR(RCIR)
+         do I = 1, N
+            if (X(I) /= dmiss) then
+               if (ISTART == 1) then
+               else
+                  call MOVABS(X(I), Y(I))
+                  call CIR(RCIR)
                   ISTART = 1
-               ENDIF
-            ELSE
+               end if
+            else
                ISTART = 0
-            ENDIF
-         END DO
+            end if
+         end do
 
-      END IF
+      end if
 
-      RETURN
-      END
+      return
+   end
+end module m_disp2c

@@ -28,13 +28,13 @@ add_executable(${executable_name}   ${headers}
                                     ${rc_version_file}
                                     ${executable_files})
 
+target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
+
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies netcdf4
-                         netcdff)
+    set(exe_dependencies netcdff)
 
-    oss_include_libraries(${executable_name} exe_dependencies)
-    target_link_libraries(${executable_name} ${exe_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir})
@@ -44,7 +44,7 @@ if (WIN32)
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
                             "netcdf.lib")
 
     # Set linker options
@@ -54,14 +54,7 @@ if (WIN32)
 endif(WIN32)
 
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
-    target_link_libraries(${executable_name}
-         PkgConfig::NETCDF
+    target_link_libraries(${executable_name} PRIVATE
          netcdff)
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
@@ -82,15 +75,34 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+target_compile_options(${executable_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+
+# Set additional compilation flags to match with Deltares-SWAN outside Delft3D
+if (WIN32)
+    target_compile_options(${executable_name} PRIVATE
+                                                  "${avx2_flag}"
+                                                  "${traceback_flag}"
+                                                  "${heap_arrays_20_flag}"
+                                                  "${automatic_local_variable_storage_flag}"
+                                                  "${floating_point_source_flag}"
+                                                  "${floating_point_speculation_safe_flag}"
+                                                  "${flush_to_zero_flag}")
+endif(WIN32)
+if (UNIX)
+    target_compile_options(${executable_name} PRIVATE
+                                                  "SHELL:${avx2_flag}"
+                                                  "SHELL:${flush_to_zero_flag}")
+endif(UNIX)
 
 # Define preprocessor definitions
 if (WIN32)
     target_compile_definitions(${executable_name} PRIVATE "WIN32;SWANEXE")
+    remove_definitions(-DHAVE_MPI=1)
 endif(WIN32)
 
 if (UNIX)
     target_compile_definitions(${executable_name} PRIVATE "SWANEXE")
+    remove_definitions(-DHAVE_MPI)
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio
@@ -98,7 +110,6 @@ source_group(TREE ${checkout_src_root}/third_party_open/swan FILES ${executable_
 set_target_properties (${executable_name} PROPERTIES FOLDER third_party_open/swan_omp)
 
 if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 

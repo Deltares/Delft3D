@@ -1,0 +1,1600 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+  <title>XSD 3.3.0 Compiler Command Line Manual</title>
+
+  <meta name="copyright" content="&copy; 2005-2010 Code Synthesis Tools CC"/>
+  <meta name="keywords" content="xsd,xml,schema,c++,mapping,data,binding,code,generator,manual,man,page"/>
+  <meta name="description" content="XSD Compiler Command Line Manual"/>
+
+  <link rel="stylesheet" type="text/css" href="default.css" />
+
+<style type="text/css">
+
+  #synopsis {
+    list-style-type:  none;
+  }
+
+  #synopsis li {
+    padding-top      : 0.0em;
+    padding-bottom   : 0.0em;
+  }
+
+  #commands dt {
+    padding-top      : 0.4em;
+  }
+
+  #commands dd {
+    padding-bottom   : 0.4em;
+    padding-left     : 2em;
+  }
+
+  .options dt {
+    padding-top      : 0.4em;
+  }
+
+  .options dd {
+    padding-top      : 0.1em;
+    padding-bottom   : 0.4em;
+    padding-left     : 1.4em;
+  }
+
+</style>
+</head>
+
+<body>
+<div id="container">
+  <div id="content">
+
+  <h1>NAME</h1>
+
+  <p>xsd - W3C XML Schema to C++ Compiler</p>
+
+  <h1>SYNOPSIS</h1>
+
+  <dl id="synopsis">
+    <dt><code><b>xsd</b> <i>command</i> [<i>options</i>] <i>file</i> [<i>file</i> ...]</code></dt>
+    <dt><code><b>xsd help</b> [<i>command</i>]</code></dt>
+    <dt><code><b>xsd version</b></code></dt>
+  </dl>
+
+  <h1>DESCRIPTION</h1>
+
+  <p><code><b>xsd</b></code> generates vocabulary-specific, statically-typed
+  C++ mapping from W3C XML Schema definitions. Particular mapping to
+  produce is selected by a <code><i>command</i></code>. Each mapping has
+  a number of mapping-specific <code><i>options</i></code> that should
+  appear, if any, after the <code><i>command</i></code>. Input files should
+  be W3C XML Schema definitions. The exact set of the generated files depends
+  on the selected mapping and options.</p>
+
+  <h1>COMMANDS</h1>
+
+  <dl id="commands">
+    <dt><code><b>cxx-tree</b></code></dt>
+    <dd>Generate the C++/Tree mapping. For each input file in the form
+        <code><b>name.xsd</b></code> the following C++ files are generated:
+        <code><b>name.hxx</b></code> (header file),
+        <code><b>name.ixx</b></code> (inline file, generated only if the
+          <code><b>--generate-inline</b></code> option is specified),
+	<code><b>name.cxx</b></code> (source file), and
+        <code><b>name-fwd.hxx</b></code> (forward declaration file, generated
+          only if the <code><b>--generate-forward</b></code> option is
+          specified).</dd>
+
+    <dt><code><b>cxx-parser</b></code></dt>
+    <dd>Generate the C++/Parser mapping. For each input file in the form
+        <code><b>name.xsd</b></code> the following C++ files are generated:
+        <code><b>name-pskel.hxx</b></code> (parser skeleton header file),
+        <code><b>name-pskel.ixx</b></code> (parser skeleton inline file,
+          generated only if the <code><b>--generate-inline</b></code>
+          option is specified), and
+	<code><b>name-pskel.cxx</b></code> (parser skeleton source file).
+        If the <code><b>--generate-noop-impl</b></code> or
+        <code><b>--generate-print-impl</b></code> option is specified,
+        the following additional sample implementation files are generated:
+        <code><b>name-pimpl.hxx</b></code> (parser implementation header
+        file) and
+        <code><b>name-pimpl.cxx</b></code> (parser implementation source
+        file). If the <code><b>--generate-test-driver</b></code> option
+        is specified, the additional <code><b>name-driver.cxx</b></code>
+        test driver file is generated.</dd>
+
+    <dt><code><b>help</b></code></dt>
+    <dd>Print usage information and exit. Use
+      <p><code><b>xsd help</b> <i>command</i></code></p>
+      for command-specific help.
+    </dd>
+
+    <dt><code><b>version</b></code></dt>
+    <dd>Print version and exit.</dd>
+  </dl>
+
+  <h1>OPTIONS</h1>
+
+  <p>Command-specific <code><i>options</i></code>, if any, should appear
+  after the corresponding <code><i>command</i></code>.</p>
+
+  <h2>COMMON OPTIONS</h2>
+
+  <dl class="options">
+    <dt><code><b>--char-type</b> <i>type</i></code></dt>
+    <dd>Generate code using the provided character <code><i>type</i></code>
+      instead of the default <code><b>char</b></code>. Valid values
+      are <code><b>char</b></code> and <code><b>wchar_t</b></code>.</dd>
+
+    <dt><code><b>--char-encoding</b> <i>enc</i></code></dt>
+    <dd>Specify the character encoding that should be used in the generated
+      code. Valid values for the <code><b>char</b></code> character type
+      are <code><b>utf8</b></code> (default), <code><b>iso8859-1</b></code>,
+      <code><b>lcp</b></code> (Xerces-C++ local code page), and
+      <code><b>custom</b></code>. If you pass <code><b>custom</b></code> as
+      the value then you will need to include the transcoder implementation
+      header for your encoding at the beginning of the generated header
+      files (see the <code><b>--hxx-prologue</b></code> option).
+
+      <p>For the <code><b>wchar_t</b></code> character type the only valid
+      value is <code><b>auto</b></code> and the encoding is automatically
+      selected between UTF-16 and UTF-32/UCS-4, depending on the
+      <code><b>wchar_t</b></code> type size.</p></dd>
+
+    <dt><code><b>--output-dir</b> <i>dir</i></code></dt>
+    <dd>Write generated files to <code><i>dir</i></code> instead of
+      the current directory.</dd>
+
+    <dt><code><b>--namespace-map</b> <i>xns</i><b>=</b><i>cns</i></code></dt>
+    <dd>Map XML Schema namespace <i>xns</i> to C++ namespace <i>cns</i>.
+        Repeat this option to specify mapping for more than one XML Schema
+        namespace. For example, the following option:
+
+        <p><code><b>--namespace-map http://example.com/foo/bar=foo::bar</b></code></p>
+
+        <p>will map the <code><b>http://example.com/foo/bar</b></code>
+           XML Schema namespace to the <code><b>foo::bar</b></code> C++
+           namespace.</p>
+    </dd>
+
+    <dt><code><b>--namespace-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+      used to translate XML Schema namespace names to C++ namespace
+      names. <code><i>regex</i></code> is a perl-like regular expression in
+      the form <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      Any character can be used as a delimiter instead of <code><b>/</b></code>.
+      Escaping of the delimiter character in <code><i>pattern</i></code> or
+      <code><i>replacement</i></code> is not supported.
+
+      <p>All the regular expressions are pushed into a stack with the last
+        specified expression considered first. The first match that
+        succeeds is used. Regular expressions are applied to a string
+        in the form</p>
+
+      <p><code><i>filename</i> <i>namespace</i></code></p>
+
+      <p>For example, if you have file <code><b>hello.xsd</b></code>
+        with namespace <code><b>http://example.com/hello</b></code> and you run
+        <code><b>xsd</b></code> on this file, then the string in question
+        will be:</p>
+
+      <p><code><b>hello.xsd. http://example.com/hello</b></code></p>
+
+      <p>For the built-in XML Schema namespace the string is:</p>
+
+      <p><code><b>XMLSchema.xsd http://www.w3.org/2001/XMLSchema</b></code></p>
+
+      <p>The following three steps are performed for each regular expression
+        until the match is found:</p>
+
+      <ol>
+        <li>The expression is applied and if the result is empty the
+          next expression is considered.</li>
+
+        <li>All <code><b>/</b></code> are replaced with
+          <code><b>::</b></code>.</li>
+
+        <li>The result is verified to be a valid C++ scope name (e.g.,
+          <code><b>foo::bar</b></code>). If this test succeeds, the
+          result is used as a C++ namespace name.</li>
+      </ol>
+
+      <p>As an example, the following expression maps XML  Schema
+        namespaces  in  the  form
+        <code><b>http://example.com/foo/bar</b></code> to C++
+        namespaces in the form <code><b>foo::bar</b></code>:</p>
+
+      <p><code><b>%.* http://example.com/(.+)%$1%</b></code></p>
+
+      <p>See also the REGEX AND SHELL QUOTING section below.</p>
+    </dd>
+
+    <dt><code><b>--namespace-regex-trace</b></code></dt>
+    <dd>Trace the process of applying regular expressions specified with
+        the <code><b>--namespace-regex</b></code> option. Use this option
+        to find out why your regular expressions don't do what you expected
+        them to do.
+    </dd>
+
+    <!-- Reserved names -->
+
+    <dt><code><b>--reserved-name</b> <i>name</i>[<b>=</b><i>rep</i>]</code></dt>
+    <dd>Add <code><i>name</i></code> to the list of names that should not
+        be used as identifiers. The name can optionally be followed by
+        <code><b>=</b></code> and the replacement name that should be
+        used instead. All the C++ keywords are already in this list.
+    </dd>
+
+    <!-- Include -->
+
+    <dt><code><b>--include-with-brackets</b></code></dt>
+    <dd>Use angle brackets (&lt;&gt;) instead of quotes ("") in
+        generated <code><b>#include</b></code> directives.
+    </dd>
+
+    <dt><code><b>--include-prefix</b> <i>prefix</i></code></dt>
+    <dd>Add <code><i>prefix</i></code> to generated <code><b>#include</b></code>
+        directive paths.
+
+        <p>For example, if you had the following import element in your
+           schema</p>
+
+        <p><code><b>&lt;import namespace="..." schemaLocation="base.xsd"/&gt;</b></code></p>
+
+        <p>and compiled this fragment with <code><b>--include-prefix schemas/</b></code>,
+           then the include directive in the generated code would be:</p>
+
+        <p><code><b>#include "schemas/base.hxx"</b></code></p>
+    </dd>
+
+    <dt><code><b>--include-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+      used to transform <code><b>#include</b></code> directive paths.
+      <code><i>regex</i></code> is a perl-like regular expression in
+      the form <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      Any character can be used as a delimiter instead of <code><b>/</b></code>.
+      Escaping of the delimiter character in <code><i>pattern</i></code> or
+      <code><i>replacement</i></code> is not supported.
+
+      <p>All the regular expressions are pushed into a stack with the last
+        specified expression considered first. The first match that
+        succeeds is used.</p>
+
+      <p>As an example, the following expression transforms paths
+        in the form <code><b>schemas/foo/bar</b></code> to paths
+        in the form <code><b>generated/foo/bar</b></code>:</p>
+
+      <p><code><b>%schemas/(.+)%generated/$1%</b></code></p>
+
+      <p>See also the REGEX AND SHELL QUOTING section below.</p>
+    </dd>
+
+    <dt><code><b>--include-regex-trace</b></code></dt>
+    <dd>Trace the process of applying regular expressions specified with
+        the <code><b>--include-regex</b></code> option. Use this option
+        to find out why your regular expressions don't do what you expected
+        them to do.
+    </dd>
+
+    <dt><code><b>--guard-prefix</b> <i>prefix</i></code></dt>
+    <dd>Add <code><i>prefix</i></code> to generated header inclusion guards.
+        The prefix is transformed to upper case and characters that are
+        illegal in a preprocessor macro name are replaced with underscores.
+        If this option is not specified then the directory part of the
+        input schema file is used as a prefix.
+    </dd>
+
+    <!-- Suffixes. -->
+
+    <dt><code><b>--hxx-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use the provided <code><i>suffix</i></code> instead of the default
+      <code><b>.hxx</b></code> to construct the name of the header file.
+      Note that this suffix is also used to construct names for
+      included/imported schemas.
+    </dd>
+
+    <dt><code><b>--ixx-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use the provided <code><i>suffix</i></code> instead of the default
+      <code><b>.ixx</b></code> to construct the name of the inline file.
+    </dd>
+
+    <dt><code><b>--cxx-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use the provided <code><i>suffix</i></code> instead of the default
+      <code><b>.cxx</b></code> to construct the name of the source file.
+    </dd>
+
+    <dt><code><b>--hxx-regex</b> <i>regex</i></code></dt>
+    <dd>Use the provided expression to construct the name of the header
+      file. <code><i>regex</i></code> is a perl-like regular expression
+      in the form
+      <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      Note that this expression is also used to construct names for
+      included/imported schemas. See also the REGEX AND SHELL QUOTING
+      section below.
+    </dd>
+
+    <dt><code><b>--ixx-regex</b> <i>regex</i></code></dt>
+    <dd>Use the provided expression to construct the name of the inline
+      file. <code><i>regex</i></code> is a perl-like regular expression
+      in the form
+      <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      See also the REGEX AND SHELL QUOTING section below.
+    </dd>
+
+    <dt><code><b>--cxx-regex</b> <i>regex</i></code></dt>
+    <dd>Use the provided expression to construct the name of the source
+      file. <code><i>regex</i></code> is a perl-like regular expression
+      in the form
+      <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      See also the REGEX AND SHELL QUOTING section below.
+    </dd>
+
+
+    <dt><code><b>--hxx-prologue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the beginning of the header file.
+    </dd>
+
+    <dt><code><b>--ixx-prologue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the beginning of the inline file.
+    </dd>
+
+    <dt><code><b>--cxx-prologue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the beginning of the source file.
+    </dd>
+
+    <dt><code><b>--prologue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the beginning of each generated
+      file for which there is no file-specific prologue.
+    </dd>
+
+    <dt><code><b>--hxx-epilogue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the end of the header file.
+    </dd>
+
+    <dt><code><b>--ixx-epilogue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the end of the inline file.
+    </dd>
+
+    <dt><code><b>--cxx-epilogue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the end of the source file.
+    </dd>
+
+    <dt><code><b>--epilogue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the end of each generated
+      file for which there is no file-specific epilogue.
+    </dd>
+
+
+    <dt><code><b>--hxx-prologue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the beginning
+      of the header file.
+    </dd>
+
+    <dt><code><b>--ixx-prologue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the beginning
+      of the inline file.
+    </dd>
+
+    <dt><code><b>--cxx-prologue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the beginning
+      of the source file.
+    </dd>
+
+    <dt><code><b>--prologue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the beginning
+        of each generated file for which there is no file-specific prologue
+        file.
+    </dd>
+
+    <dt><code><b>--hxx-epilogue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the end of the
+      header file.
+    </dd>
+
+    <dt><code><b>--ixx-epilogue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the end of the
+      inline file.
+    </dd>
+
+    <dt><code><b>--cxx-epilogue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the end of the
+      source file.
+    </dd>
+
+    <dt><code><b>--epilogue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the end of each
+      generated file for which there is no file-specific epilogue file.
+    </dd>
+
+    <dt><code><b>--custom-literals</b> <i>file</i></code></dt>
+    <dd>Load custom XML string to C++ literal mappings from
+        <code><i>file</i></code>. This mechanism can be useful if you
+        are using a custom character encoding and some of the strings
+        in your schemas, for example element/attribute names or enumeration
+        values, contain non-ASCII characters. In this case you will need
+        to provide a custom mapping to C++ literals for such
+        strings. The format of this file is specified in the
+        <code><b>custom-literals.xsd</b></code> XML Schema file that
+        can be found in the documentation directory.
+    </dd>
+
+    <dt><code><b>--export-symbol</b> <i>symbol</i></code></dt>
+    <dd>Insert <code><i>symbol</i></code> in places where DLL
+      export/import control statements
+      (<code><b>__declspec(dllexport/dllimport)</b></code>) are necessary.
+    </dd>
+
+    <dt><code><b>--export-xml-schema</b></code></dt>
+    <dd>Export/import types in the XML Schema namespace using the export
+        symbol provided with the <code><b>--export-symbol</b></code> option.
+        The <code><b>XSD_NO_EXPORT</b></code> macro can be used to omit
+        this code during C++ compilation, which may be useful if you
+        would like to use the same generated code across multiple platforms.
+    </dd>
+
+    <dt><code><b>--export-maps</b></code></dt>
+    <dd>Export polymorphism support maps from a Win32 DLL into which this
+        generated code is linked. This is necessary when your type hierarchy
+        is split across several DLLs since otherwise each DLL will have its
+        own set of maps. In this situation the generated code for the DLL
+        which contains base types and/or substitution group heads should be
+        compiled with this option and the generated code for all other
+        DLLs should be compiled with <code><b>--import-maps</b></code>.
+        This option is only valid together with
+        <code><b>--generate-polymorphic</b></code>.
+        The <code><b>XSD_NO_EXPORT</b></code> macro can be used to omit
+        this code during C++ compilation, which may be useful if you
+        would like to use the same generated code across multiple platforms.
+    </dd>
+
+    <dt><code><b>--import-maps</b></code></dt>
+    <dd>Import polymorphism support maps to a Win32 DLL or executable into
+        which this generated code is linked. See the <code><b>--export-maps</b></code>
+        option documentation for details. This options is only valid together
+        with <code><b>--generate-polymorphic</b></code>.
+        The <code><b>XSD_NO_EXPORT</b></code> macro can be used to omit
+        this code during C++ compilation, which may be useful if you
+        would like to use the same generated code across multiple platforms.
+    </dd>
+
+    <dt><code><b>--disable-warning</b> <i>warn</i></code></dt>
+    <dd>Disable printing warning with id <i>warn</i>. If <code><b>all</b></code>
+        is specified for the warning id then all warnings are disabled.
+    </dd>
+
+    <!-- misc options -->
+
+    <dt><code><b>--show-sloc</b></code></dt>
+    <dd>Show the number of generated physical source lines of code (SLOC).
+    </dd>
+
+    <dt><code><b>--sloc-limit</b> <i>num</i></code></dt>
+    <dd>Check that the number of generated physical source lines of code
+        (SLOC) does not exceed <code><i>num</i></code>.
+    </dd>
+
+    <dt><code><b>--options-file</b> <i>file</i></code></dt>
+    <dd>Read additional options from <code><i>file</i></code>. Each option
+        should appear on a separate line optionally followed by space and
+        an argument. Empty lines and lines starting with <code><b>#</b></code>
+        are ignored. The semantics of providing options in a
+        file is equivalent to providing the same set of options in
+        the same order in the command line at the point where the
+        <code><b>--options-file</b></code> option is specified
+        except that shell escaping and quoting is not required.
+        Repeat this option to specify more than one options files.
+    </dd>
+
+    <dt><code><b>--proprietary-license</b></code></dt>
+    <dd>Indicate that the generated code is licensed under a proprietary
+        license instead of the GPL.
+    </dd>
+
+    <!-- Anonymous options. -->
+
+    <dt><code><b>--preserve-anonymous</b></code></dt>
+    <dd>Preserve anonymous types. By default anonymous types are
+        automatically named with names derived from the enclosing
+        elements/attributes. Because mappings implemented by this
+        compiler require all types to be named, this option is only
+        useful if you want to make sure your schemas don't have
+        anonymous types.
+    </dd>
+
+    <dt><code><b>--show-anonymous</b></code></dt>
+    <dd>Show elements and attributes that are of anonymous types.
+        This option only makes sense together with the
+        <code><b>--preserve-anonymous</b></code> option.
+    </dd>
+
+    <dt><code><b>--anonymous-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+      used to derive names for anonymous types from the enclosing
+      attributes/elements. <code><i>regex</i></code> is a perl-like regular
+      expression in the form
+      <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      Any character can be used as a delimiter instead of <code><b>/</b></code>.
+      Escaping of the delimiter character in <code><i>pattern</i></code> or
+      <code><i>replacement</i></code> is not supported.
+
+      <p>All the regular expressions are pushed into a stack with the last
+        specified expression considered first. The first match that
+        succeeds is used. Regular expressions are applied to a string
+        in the form</p>
+
+      <p><code><i>filename</i> <i>namespace</i> <i>xpath</i></code></p>
+
+      <p>For instance:</p>
+
+      <p><code><b>hello.xsd http://example.com/hello element</b></code></p>
+      <p><code><b>hello.xsd http://example.com/hello type/element</b></code></p>
+
+      <p>As an example, the following expression makes all the derived
+         names start with capital letters. This could be useful when
+         your naming convention requires type names to start with
+         capital letters:</p>
+
+      <p><code><b>%.* .* (.+/)*(.+)%\u$2%</b></code></p>
+
+      <p>See also the REGEX AND SHELL QUOTING section below.</p>
+    </dd>
+
+    <dt><code><b>--anonymous-regex-trace</b></code></dt>
+    <dd>Trace the process of applying regular expressions specified with
+        the <code><b>--anonymous-regex</b></code> option. Use this option
+        to find out why your regular expressions don't do what you expected
+        them to do.
+    </dd>
+
+    <!-- Location mapping options. -->
+
+    <dt><code><b>--location-map</b> <i>ol</i><b>=</b><i>nl</i></code></dt>
+    <dd>Map the original schema location <i>ol</i> that is specified in
+        the XML Schema include or import elements to new schema
+        location <i>nl</i>. Repeat this option to map more than one
+        schema location. For example, the following option maps the
+        <code><b>http://example.com/foo.xsd</b></code> URL to the
+        <code><b>foo.xsd</b></code> local file.
+
+        <p><code><b>--location-map http://example.com/foo.xsd=foo.xsd</b></code></p>
+    </dd>
+
+    <dt><code><b>--location-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+      used to map schema locations that are specified in the XML Schema
+      include or import elements. <code><i>regex</i></code> is a perl-like
+      regular expression in the form
+      <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      Any character can be used as a delimiter instead of <code><b>/</b></code>.
+      Escaping of the delimiter character in <code><i>pattern</i></code> or
+      <code><i>replacement</i></code> is not supported. All the regular
+      expressions are pushed into a stack with the last specified
+      expression considered first. The first match that succeeds is used.
+
+      <p>For example, the following expression maps URL locations in the form
+        <code><b>http://example.com/foo/bar.xsd</b></code> to local files
+        in the form <code><b>bar.xsd</b></code>:</p>
+
+      <p><code><b>%http://.+/(.+)%$1%</b></code></p>
+
+      <p>See also the REGEX AND SHELL QUOTING section below.</p>
+    </dd>
+
+    <dt><code><b>--location-regex-trace</b></code></dt>
+    <dd>Trace the process of applying regular expressions specified with
+        the <code><b>--location-regex</b></code> option. Use this option
+        to find out why your regular expressions don't do what you expected
+        them to do.
+    </dd>
+
+    <!-- File-per-type compilation mode options. -->
+
+    <dt><code><b>--file-per-type</b></code></dt>
+    <dd>Generate a separate set of C++ files for each type defined in XML
+        Schema. Note that in this mode you only need to compile the root
+        schema(s) and the code will be generated for all included and
+        imported schemas. This compilation mode is primarily useful when
+        some of your schemas cannot be compiled separately or have cyclic
+        dependencies which involve type inheritance. Other options related
+        to this mode are:
+        <code><b>--type-file-regex</b></code>,
+        <code><b>--schema-file-regex</b></code>, and
+	<code><b>--file-list</b></code>.
+    </dd>
+
+
+    <dt><code><b>--type-file-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+      used to translate type names to file names when the
+      <code><b>--file-per-type</b></code> option is specified.
+      <code><i>regex</i></code> is a perl-like regular expression in the form
+      <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      Any character can be used as a delimiter instead of <code><b>/</b></code>.
+      Escaping of the delimiter character in <code><i>pattern</i></code> or
+      <code><i>replacement</i></code> is not supported. All the regular
+      expressions are pushed into a stack with the last specified
+      expression considered first. The first match that succeeds is used.
+      Regular expressions are applied to a string in the form
+
+      <p><code><i>namespace</i> <i>type-name</i></code></p>
+
+      <p>For example, the following expression maps type <code><b>foo</b></code>
+         that is defined in the <code><b>http://example.com/bar</b></code>
+         namespace to file name <code><b>bar-foo</b></code>:</p>
+
+      <p><code><b>%http://example.com/(.+) (.+)%$1-$2%</b></code></p>
+
+      <p>See also the REGEX AND SHELL QUOTING section below.</p>
+    </dd>
+
+    <dt><code><b>--type-file-regex-trace</b></code></dt>
+    <dd>Trace the process of applying regular expressions specified with
+        the <code><b>--type-file-regex</b></code> option. Use this option
+        to find out why your regular expressions don't do what you expected
+        them to do.
+    </dd>
+
+    <dt><code><b>--schema-file-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+      used to translate schema file names when the
+      <code><b>--file-per-type</b></code> option is specified.
+      <code><i>regex</i></code> is a perl-like regular expression in the form
+      <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      Any character can be used as a delimiter instead of <code><b>/</b></code>.
+      Escaping of the delimiter character in <code><i>pattern</i></code> or
+      <code><i>replacement</i></code> is not supported. All the regular
+      expressions are pushed into a stack with the last specified
+      expression considered first. The first match that succeeds is used.
+      Regular expressions are applied to the absolute filesystem path
+      of a schema file and the result, including the directory part,
+      if any, is used to derive the <code><b>#include</b></code> directive
+      paths as well as the generated C++ file paths. This option, along
+      with <code><b>--type-file-regex</b></code> are primarily used to
+      place the generated files into subdirectories or to resolve file
+      name conflicts.
+
+      <p>For example, the following expression maps schema files in the
+         <code><b>foo/1.0.0/</b></code> subdirectory to the files in
+         the <code><b>foo/</b></code> subdirectory. As a result, the
+         <code><b>#include</b></code> directive paths for such schemas
+         will be in the <code><b>foo/schema.hxx</b></code> form and
+         the generated C++ files will be placed into the
+         <code><b>foo/</b></code> subdirectory:</p>
+
+      <p><code><b>%.*/foo/1.0.0/(.+)%foo/$1%</b></code></p>
+
+      <p>See also the REGEX AND SHELL QUOTING section below.</p>
+    </dd>
+
+    <dt><code><b>--schema-file-regex-trace</b></code></dt>
+    <dd>Trace the process of applying regular expressions specified with
+        the <code><b>--schema-file-regex</b></code> option. Use this option
+        to find out why your regular expressions don't do what you expected
+        them to do.
+    </dd>
+
+    <!-- File list options. -->
+
+    <dt><code><b>--file-list</b> <i>file</i></code></dt>
+    <dd>Write a list of generated C++ files to <code><i>file</i></code>.
+        This option is primarily useful in the file-per-type compilation
+        mode (<code><b>--file-per-type</b></code>) to create a list of
+        generated C++ files, for example, as a makefile fragment.
+    </dd>
+
+    <dt><code><b>--file-list-prologue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the beginning of the file list.
+        As a convenience, all occurrences of the \n character sequence in
+        <code><i>text</i></code> are replaced with new lines. This option
+        can, for example, be used to assign the generated file list to a
+        makefile variable.
+    </dd>
+
+    <dt><code><b>--file-list-epilogue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the end of the file list.
+        As a convenience, all occurrences of the \n character sequence in
+        <code><i>text</i></code> are replaced with new lines.
+    </dd>
+
+    <dt><code><b>--file-list-delim</b> <i>text</i></code></dt>
+    <dd>Delimit file names written to the file list with
+        <code><i>text</i></code>  instead of new lines. As a convenience,
+        all occurrences of the \n character sequence in
+        <code><i>text</i></code> are replaced with new lines.
+    </dd>
+
+  </dl>
+
+  <h2>CXX-TREE COMMAND OPTIONS</h2>
+
+  <dl class="options">
+    <dt><code><b>--generate-polymorphic</b></code></dt>
+    <dd>Generate polymorphism-aware code. Specify this option if you use
+        substitution groups or <code><b>xsi:type</b></code>. Use the
+        <code><b>--polymorphic-type</b></code> or
+        <code><b>--polymorphic-type-all</b></code> option to specify
+        which type hierarchies are polymorphic.</dd>
+
+    <dt><code><b>--polymorphic-type</b></code> <i>type</i></dt>
+    <dd>Indicate that <code><i>type</i></code> is a root of a polymorphic
+        type hierarchy. The compiler can often automatically determine
+        which types are polymorphic based on the substitution group
+        declarations. However, you may need to use this option if you are
+        not using substitution groups or if substitution groups are defined
+        in another schema. You need to specify this option when compiling
+        every schema file that references <code><i>type</i></code>. The
+        <code><i>type</i></code> argument is an XML Schema type name that
+        can be optionally qualified with a namespace in the
+        <code><i>namespace</i><b>#</b><i>name</i></code> form.</dd>
+
+    <dt><code><b>--polymorphic-type-all</b></code></dt>
+    <dd>Indicate that all types should be treated as polymorphic.</dd>
+
+    <dt><code><b>--generate-serialization</b></code></dt>
+    <dd>Generate serialization functions. Serialization functions
+        convert the object model back to XML.</dd>
+
+    <dt><code><b>--generate-inline</b></code></dt>
+    <dd>Generate simple functions inline. This option triggers creation
+      of the inline file.</dd>
+
+    <dt><code><b>--generate-ostream</b></code></dt>
+    <dd>Generate ostream insertion operators
+      (<code><b>operator&lt;&lt;</b></code>) for generated types. This
+      allows to easily print a fragment or the whole object model
+      for debugging or logging.</dd>
+
+    <dt><code><b>--generate-doxygen</b></code></dt>
+    <dd>Generate documentation comments suitable for extraction by the
+        Doxygen documentation system. Documentation from annotations
+        is added to the comments if present in the schema.</dd>
+
+    <dt><code><b>--generate-comparison</b></code></dt>
+    <dd>Generate comparison operators
+      (<code><b>operator==</b></code> and <code><b>operator!=</b></code>)
+      for complex types. Comparison is performed memberwise.</dd>
+
+    <dt><code><b>--generate-default-ctor</b></code></dt>
+    <dd>Generate default constructors even for types that have required
+        members. Required members of an instance constructed using such a
+        constructor are not initialized and accessing them results in
+        undefined behavior.</dd>
+
+    <dt><code><b>--generate-from-base-ctor</b></code></dt>
+    <dd>Generate constructors that expect an instance of a base type
+        followed by all required members.</dd>
+
+    <dt><code><b>--generate-detach</b></code></dt>
+    <dd>Generate detach functions for required elements and attributes
+        (detach functions for optional and sequence cardinalities are
+        provided by the respective containers). These functions, for
+        example, allow you to move sub-trees in the object model either
+        within the same tree or between different trees.</dd>
+
+    <dt><code><b>--generate-wildcard</b></code></dt>
+    <dd>Generate accessors and modifiers as well as parsing and serialization
+        code for XML Schema wildcards (<code><b>any</b></code> and
+        <code><b>anyAttribute</b></code>). XML content matched by wildcards
+        is presented as DOM fragments. Note that you need to initialize the
+        Xerces-C++ runtime if you are using this option.</dd>
+
+    <dt><code><b>--generate-insertion</b> <i>os</i></code></dt>
+    <dd>Generate data representation stream insertion operators for
+        the <code><i>os</i></code> output stream type. Repeat this
+        option to specify more than one stream type. The ACE CDR stream
+        (<code><b>ACE_OutputCDR</b></code>) and RPC XDR are recognized
+        by the compiler and the necessary <code><b>#include</b></code>
+        directives are automatically generated. For custom stream
+        types use the <code><b>--hxx-prologue*</b></code> options
+        to provide the necessary declarations.</dd>
+
+    <dt><code><b>--generate-extraction</b> <i>is</i></code></dt>
+    <dd>Generate data representation stream extraction constructors for
+        the <code><i>is</i></code> input stream type. Repeat this
+        option to specify more than one stream type. The ACE CDR stream
+        (<code><b>ACE_InputCDR</b></code>) and RPC XDR are recognized by
+        the compiler and the necessary <code><b>#include</b></code>
+        directives are automatically generated. For custom stream
+        types use the <code><b>--hxx-prologue*</b></code> options
+        to provide the necessary declarations.</dd>
+
+    <dt><code><b>--generate-forward</b></code></dt>
+    <dd>Generate a separate header file with forward declarations for the
+        types being generated.</dd>
+
+    <dt><code><b>--generate-xml-schema</b></code></dt>
+    <dd>Generate a C++ header file as if the schema being compiled defines
+        the XML Schema namespace. In particular, the resulting file will
+        have definitions for all XML Schema built-in types. The schema file
+        provided to the compiler need not exist and is only used to derive
+        the name of the resulting header file. Use the
+        <code><b>--extern-xml-schema</b></code> option to include this file
+        in the generated files for other schemas.</dd>
+
+    <dt><code><b>--extern-xml-schema</b> <i>file</i></code></dt>
+    <dd>Include a header file derived from <i>file</i> instead of
+        generating the XML Schema namespace mapping inline. The provided
+        file need not exist and is only used to derive the name of the
+        included header file. Use the <code><b>--generate-xml-schema</b></code>
+        option to generate this header file.</dd>
+
+    <dt><code><b>--suppress-parsing</b></code></dt>
+    <dd>Suppress the generation of the parsing functions and constructors.
+        Use this option to reduce the generated code size when parsing
+        from XML is not needed.</dd>
+
+    <dt><code><b>--generate-element-type</b></code></dt>
+    <dd>Generate types instead of parsing and serialization functions
+        for root elements. This is primarily useful to distinguish
+        object models with the same root type but with different root
+        elements.</dd>
+
+    <dt><code><b>--generate-element-map</b></code></dt>
+    <dd>Generate a root element map that allows uniform parsing and
+        serialization of multiple root elements. This option is only
+        valid together with <code><b>--generate-element-type</b></code>.
+    </dd>
+
+    <dt><code><b>--generate-intellisense</b></code></dt>
+    <dd>Generate workarounds for IntelliSense bugs in Visual Studio
+        2005 (8.0). When this option is used, the resulting code is
+        slightly more verbose. IntelliSense in Visual Studio 2008 (9.0)
+        does not require these workarounds. Support for IntelliSense in
+        Visual Studio 2003 (7.1) is improved with this option but is
+        still incomplete.</dd>
+
+    <dt><code><b>--omit-default-attributes</b></code></dt>
+    <dd>Omit attributes with default and fixed values from serialized
+        XML documents.</dd>
+
+    <!-- Naming -->
+
+    <dt><code><b>--type-naming</b> <i>style</i></code></dt>
+    <dd>Specify the type naming convention that should be used in the
+        generated code. Valid styles are <code><b>knr</b></code>
+        (default), <code><b>ucc</b></code>, and <code><b>java</b></code>.
+        See the NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--function-naming</b> <i>style</i></code></dt>
+    <dd>Specify the function naming convention that should be used in the
+        generated code. Valid styles are <code><b>knr</b></code>
+        (default), <code><b>lcc</b></code>, and <code><b>java</b></code>.
+        See the NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--type-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema type names to C++ type names. See the
+        NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--accessor-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema names of elements/attributes to C++
+        accessor function names. See the NAMING CONVENTION section below
+        for more information.
+    </dd>
+
+    <dt><code><b>--one-accessor-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema names of elements/attributes with
+        cardinality one to C++ accessor function names. See the NAMING
+        CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--opt-accessor-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema names of elements/attributes with
+        cardinality optional to C++ accessor function names. See the
+        NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--seq-accessor-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema names of elements/attributes with
+        cardinality sequence to C++ accessor function names. See the
+        NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--modifier-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema names of elements/attributes to C++
+        modifier function names. See the NAMING CONVENTION section below
+        for more information.
+    </dd>
+
+    <dt><code><b>--one-modifier-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema names of elements/attributes with
+        cardinality one to C++ modifier function names. See the NAMING
+        CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--opt-modifier-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema names of elements/attributes with
+        cardinality optional to C++ modifier function names. See the
+        NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--seq-modifier-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema names of elements/attributes with
+        cardinality sequence to C++ modifier function names. See the
+        NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--parser-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema element names to C++ parsing function
+        names. See the NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--serializer-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema element names to C++ serialization
+        function names. See the NAMING CONVENTION section below for more
+        information.
+    </dd>
+
+    <dt><code><b>--enumerator-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema enumeration values to C++ enumerator
+        names. See the NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--element-type-regex</b> <i>regex</i></code></dt>
+    <dd>Add <code><i>regex</i></code> to the list of regular expressions
+        used to translate XML Schema element names to C++ element type
+        names. See the NAMING CONVENTION section below for more information.
+    </dd>
+
+    <dt><code><b>--name-regex-trace</b></code></dt>
+    <dd>Trace the process of applying regular expressions specified with
+        the name transformation options. Use this option to find out why
+        your regular expressions don't do what you expected them to do.
+    </dd>
+
+    <!-- Root element. -->
+
+    <dt><code><b>--root-element-first</b></code></dt>
+    <dd>Treat only the first global element as a document root. By default
+        all global elements are considered document roots.
+    </dd>
+
+    <dt><code><b>--root-element-last</b></code></dt>
+    <dd>Treat only the last global element as a document root. By default
+        all global elements are considered document roots.
+    </dd>
+
+    <dt><code><b>--root-element-all</b></code></dt>
+    <dd>Treat all global elements as document roots. This is the default
+        behavior. By explicitly specifying this option you can suppress
+        the warning that is issued if more than one global element is defined.
+    </dd>
+
+    <dt><code><b>--root-element-none</b></code></dt>
+    <dd>Do not treat any global elements as document roots. By default
+        all global elements are considered document roots.
+    </dd>
+
+    <dt><code><b>--root-element</b> <i>element</i></code></dt>
+    <dd>Treat only <code><i>element</i></code> as a document root. Repeat this
+        option to specify more than one root element.
+    </dd>
+
+    <!-- Custom type. -->
+
+    <dt><code><b>--custom-type</b>
+        <i>name</i>[<b>=</b><i>type</i>[<b>/</b><i>base</i>]]</code></dt>
+    <dd>Use a custom C++ type <i>type</i> instead of the generated class for
+        XML Schema type <i>name</i>. If <i>type</i> is not present
+        or empty then the custom type is assumed to have the same name and
+        be defined in the same namespace as the generated class would have.
+        If <i>base</i> is specified then the generated class is still
+        generated but with that name.
+    </dd>
+
+    <dt><code><b>--custom-type-regex</b>
+        <b>/</b><i>name-pat</i><b>/</b>[<i>type-sub</i><b>/</b>[<i>base-sub</i><b>/</b>]]</code></dt>
+    <dd>For each type defined in XML Schema that matches the <i>name-pat</i>
+        pattern use a custom C++ type instead of the generated class. The
+        name of the custom type is obtained by substituting <i>type-sub</i>.
+        If <i>type-sub</i> is not present or its substitution results in an
+        empty string then the custom type is assumed to have the same name
+        and be defined in the same namespace as the generated class would
+        have. If <i>base-sub</i> is present and its substitution results
+        in a non-empty string then the generated class is still generated
+        but with the result of substitution as its name. The pattern and
+        substitutions are in the perl regular expression format. See also
+        the REGEX AND SHELL QUOTING section below.
+    </dd>
+
+    <!-- Suffixes. -->
+
+    <dt><code><b>--fwd-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use the provided <code><i>suffix</i></code> instead of the default
+      <code><b>-fwd.hxx</b></code> to construct the name of the forward
+      declaration file.
+    </dd>
+
+    <dt><code><b>--fwd-regex</b> <i>regex</i></code></dt>
+    <dd>Use the provided expression to construct the name of the forward
+      declaration file. <code><i>regex</i></code> is a perl-like regular
+      expression in the form
+      <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+      See also the REGEX AND SHELL QUOTING section below.
+    </dd>
+
+    <dt><code><b>--fwd-prologue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the beginning of the forward
+      declaration file.
+    </dd>
+
+    <dt><code><b>--fwd-epilogue</b> <i>text</i></code></dt>
+    <dd>Insert <code><i>text</i></code> at the end of the forward
+        declaration file.
+    </dd>
+
+    <dt><code><b>--fwd-prologue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the beginning
+      of the forward declaration file.
+    </dd>
+
+    <dt><code><b>--fwd-epilogue-file</b> <i>file</i></code></dt>
+    <dd>Insert the content of the <code><i>file</i></code> at the end of the
+      forward declaration file.
+    </dd>
+
+    <!-- Parts. -->
+
+    <dt><code><b>--parts</b> <i>num</i></code></dt>
+    <dd>Split generated source code into <code><i>num</i></code> parts. This
+        is useful when translating large, monolithic schemas and a C++
+        compiler is not able to compile the resulting source code at once
+        (usually due to insufficient memory).
+    </dd>
+
+    <dt><code><b>--parts-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use <code><i>suffix</i></code> instead of the default
+        '<code><b>-</b></code>' to separate the file name from the
+        part number.
+    </dd>
+
+  </dl>
+
+  <h2>CXX-PARSER COMMAND OPTIONS</h2>
+
+  <dl class="options">
+    <dt><code><b>--type-map</b> <i>mapfile</i></code></dt>
+    <dd>Read XML Schema to C++ type mapping information from
+        <code><i>mapfile</i></code>. Repeat this option to specify
+        several type maps. Type maps are considered in order of
+        appearance and the first match is used. By default all
+        user-defined types are mapped to <code><b>void</b></code>.
+        See the TYPE MAP section below for more information.</dd>
+
+    <dt><code><b>--xml-parser</b> <i>parser</i></code></dt>
+    <dd>Use <code><i>parser</i></code> as the underlying XML parser.
+        Valid values are <code><b>xerces</b></code> for Xerces-C++ (default)
+        and <code><b>expat</b></code> for Expat.</dd>
+
+    <dt><code><b>--generate-inline</b></code></dt>
+    <dd>Generate simple functions inline. This option triggers creation
+      of the inline file.</dd>
+
+    <dt><code><b>--generate-validation</b></code></dt>
+    <dd>Generate validation code ("perfect" parser) which ensures that
+        instance documents conform to the schema. Validation code is
+        generated by default when the selected underlying XML parser
+	is non-validating (<code><b>expat</b></code>).</dd>
+
+    <dt><code><b>--suppress-validation</b></code></dt>
+    <dd>Suppress the generation of validation code ("perfect" parser).
+        Validation is suppressed by default when the selected underlying
+        XML parser is validating (<code><b>xerces</b></code>).</dd>
+
+    <dt><code><b>--generate-polymorphic</b></code></dt>
+    <dd>Generate polymorphism-aware code. Specify this option if you use
+        substitution groups or <code><b>xsi:type</b></code>.</dd>
+
+    <dt><code><b>--generate-noop-impl</b></code></dt>
+    <dd>Generate a sample parser implementation that does nothing (no
+        operation). The sample implementation can then be filled with
+        the application-specific code. For an input file in the form
+        <code><b>name.xsd</b></code> this option triggers the generation
+        of the two additional C++ files in the form:
+        <code><b>name-pimpl.hxx</b></code> (parser implementation header
+        file) and <code><b>name-pimpl.cxx</b></code> (parser implementation
+        source file).</dd>
+
+    <dt><code><b>--generate-print-impl</b></code></dt>
+    <dd>Generate a sample parser implementation that prints the XML data
+        to STDOUT. For an input file in the form <code><b>name.xsd</b></code>
+        this option triggers the generation of the two additional C++ files
+        in the form: <code><b>name-pimpl.hxx</b></code> (parser implementation
+        header file) and <code><b>name-pimpl.cxx</b></code> (parser
+        implementation source file).</dd>
+
+    <dt><code><b>--generate-test-driver</b></code></dt>
+    <dd>Generate a test driver for the sample parser implementation. For an
+        input file in the form <code><b>name.xsd</b></code> this option
+        triggers the generation of an additional C++ file in the form
+        <code><b>name-driver.cxx</b></code>.</dd>
+
+    <dt><code><b>--force-overwrite</b></code></dt>
+    <dd>Force overwriting of the existing implementation and test driver
+        files. Use this option only if you do not mind loosing the changes
+        you have made in the sample implementation or test driver files.</dd>
+
+    <dt><code><b>--root-element-first</b></code></dt>
+    <dd>Indicate that the first global element is the document root. This
+        information is used to generate the test driver for the sample
+        implementation.</dd>
+
+    <dt><code><b>--root-element-last</b></code></dt>
+    <dd>Indicate that the last global element is the document root. This
+        information is used to generate the test driver for the sample
+        implementation.</dd>
+
+    <dt><code><b>--root-element <i>element</i></b></code></dt>
+    <dd>Indicate that <code><i>element</i></code> is the document root.
+        This information is used to generate the test driver for the
+        sample implementation.</dd>
+
+    <dt><code><b>--generate-xml-schema</b></code></dt>
+    <dd>Generate a C++ header file as if the schema being compiled defines
+        the XML Schema namespace. In particular, the resulting file will
+        have definitions for all parser skeletons and implementations
+        corresponding to the XML Schema built-in types. The schema file
+        provided to the compiler need not exist and is only used to derive
+        the name of the resulting header file. Use the
+        <code><b>--extern-xml-schema</b></code> option to include this file
+        in the generated files for other schemas.</dd>
+
+    <dt><code><b>--extern-xml-schema</b> <i>file</i></code></dt>
+    <dd>Include a header file derived from <i>file</i> instead of
+        generating the XML Schema namespace mapping inline. The provided
+        file need not exist and is only used to derive the name of the
+        included header file. Use the <code><b>--generate-xml-schema</b></code>
+        option to generate this header file.</dd>
+
+    <dt><code><b>--skel-type-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use the provided <code><i>suffix</i></code> instead of the
+        default <code><b>_pskel</b></code> to construct the names
+        of generated parser skeletons.</dd>
+
+    <dt><code><b>--skel-file-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use the provided <code><i>suffix</i></code> instead of the
+        default <code><b>-pskel</b></code> to construct the names of
+        generated parser skeleton files.</dd>
+
+    <dt><code><b>--impl-type-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use the provided <code><i>suffix</i></code> instead of the
+        default <code><b>_pimpl</b></code> to construct the names of
+        parser implementations for the built-in XML Schema types
+        and sample parser implementations.</dd>
+
+    <dt><code><b>--impl-file-suffix</b> <i>suffix</i></code></dt>
+    <dd>Use the provided <code><i>suffix</i></code> instead of the
+        default <code><b>-pimpl</b></code> to construct the names of
+        generated sample parser implementation files.</dd>
+  </dl>
+
+  <h1>NAMING CONVENTION</h1>
+
+  <p>The compiler can be instructed to use a particular naming
+     convention in the generated code. A number of widely-used
+     conventions can be selected using the <code><b>--type-naming</b></code>
+     and <code><b>--function-naming</b></code> options. A custom
+     naming convention can be achieved using the
+     <code><b>--type-regex</b></code>,
+     <code><b>--accessor-regex</b></code>,
+     <code><b>--one-accessor-regex</b></code>,
+     <code><b>--opt-accessor-regex</b></code>,
+     <code><b>--seq-accessor-regex</b></code>,
+     <code><b>--modifier-regex</b></code>,
+     <code><b>--one-modifier-regex</b></code>,
+     <code><b>--opt-modifier-regex</b></code>,
+     <code><b>--seq-modifier-regex</b></code>,
+     <code><b>--parser-regex</b></code>,
+     <code><b>--serializer-regex</b></code>,
+     <code><b>--enumerator-regex</b></code>, and
+     <code><b>--element-type-regex</b></code> options.
+  </p>
+
+  <p>The <code><b>--type-naming</b></code> option specifies the
+     convention that should be used for naming C++ types. Possible
+     values for this option are <code><b>knr</b></code> (default),
+     <code><b>ucc</b></code>, and <code><b>java</b></code>. The
+     <code><b>knr</b></code> value (stands for K&amp;R) signifies
+     the standard, lower-case naming convention with the underscore
+     used as a word delimiter, for example: <code>foo</code>,
+     <code>foo_bar</code>. The <code><b>ucc</b></code> (stands
+     for upper-camel-case) and
+     <code><b>java</b></code> values a synonyms for the same
+     naming convention where the first letter of each word in the
+     name is capitalized, for example: <code>Foo</code>,
+     <code>FooBar</code>.</p>
+
+  <p>Similarly, the <code><b>--function-naming</b></code> option
+     specifies the convention that should be used for naming C++
+     functions. Possible values for this option are <code><b>knr</b></code>
+     (default), <code><b>lcc</b></code>, and <code><b>java</b></code>. The
+     <code><b>knr</b></code> value (stands for K&amp;R) signifies
+     the standard, lower-case naming convention with the underscore
+     used as a word delimiter, for example: <code>foo()</code>,
+     <code>foo_bar()</code>. The <code><b>lcc</b></code> value
+     (stands for lower-camel-case) signifies a naming convention
+     where the first letter of each word except the first is
+     capitalized, for example: <code>foo()</code>, <code>fooBar()</code>.
+     The <code><b>java</b></code> naming convention is similar to
+     the lower-camel-case one except that accessor functions are prefixed
+     with <code>get</code>, modifier functions are prefixed
+     with <code>set</code>, parsing functions are prefixed
+     with <code>parse</code>, and serialization functions are
+     prefixed with <code>serialize</code>, for example:
+     <code>getFoo()</code>, <code>setFooBar()</code>,
+     <code>parseRoot()</code>, <code>serializeRoot()</code>.</p>
+
+  <p>Note that the naming conventions specified with the
+     <code><b>--type-naming</b></code> and
+     <code><b>--function-naming</b></code> options perform only limited
+     transformations on the names that come from the schema in the
+     form of type, attribute, and element names. In other words, to
+     get consistent results, your schemas should follow a similar
+     naming convention as the one you would like to have in the
+     generated code. Alternatively, you can use the
+     <code><b>--*-regex</b></code> options (discussed below)
+     to perform further transformations on the names that come from
+     the schema.</p>
+
+  <p>The
+     <code><b>--type-regex</b></code>,
+     <code><b>--accessor-regex</b></code>,
+     <code><b>--one-accessor-regex</b></code>,
+     <code><b>--opt-accessor-regex</b></code>,
+     <code><b>--seq-accessor-regex</b></code>,
+     <code><b>--modifier-regex</b></code>,
+     <code><b>--one-modifier-regex</b></code>,
+     <code><b>--opt-modifier-regex</b></code>,
+     <code><b>--seq-modifier-regex</b></code>,
+     <code><b>--parser-regex</b></code>,
+     <code><b>--serializer-regex</b></code>,
+     <code><b>--enumerator-regex</b></code>, and
+     <code><b>--element-type-regex</b></code> options allow you to
+     specify extra regular expressions for each name category in
+     addition to the predefined set that is added depending on
+     the <code><b>--type-naming</b></code> and
+     <code><b>--function-naming</b></code> options. Expressions
+     that are provided with the <code><b>--*-regex</b></code>
+     options are evaluated prior to any predefined expressions.
+     This allows you to selectively override some or all of the
+     predefined transformations. When debugging your own expressions,
+     it is often useful to see which expressions match which names.
+     The <code><b>--name-regex-trace</b></code> option allows you
+     to trace the process of applying regular expressions to
+     names.</p>
+
+  <p>The value for the <code><b>--*-regex</b></code> options should be
+     a perl-like regular expression in the form
+     <code><b>/</b><i>pattern</i><b>/</b><i>replacement</i><b>/</b></code>.
+     Any character can be used as a delimiter instead of <code><b>/</b></code>.
+     Escaping of the delimiter character in <code><i>pattern</i></code> or
+     <code><i>replacement</i></code> is not supported.
+     All the regular expressions for each category are pushed into a
+     category-specific stack with the last specified expression
+     considered first. The first match that succeeds is used. For the
+     <code><b>--one-accessor-regex</b></code> (accessors with cardinality one),
+     <code><b>--opt-accessor-regex</b></code> (accessors with cardinality optional), and
+     <code><b>--seq-accessor-regex</b></code> (accessors with cardinality sequence)
+     categories the  <code><b>--accessor-regex</b></code> expressions are
+     used as a fallback. For the
+     <code><b>--one-modifier-regex</b></code>,
+     <code><b>--opt-modifier-regex</b></code>, and
+     <code><b>--seq-modifier-regex</b></code>
+     categories the  <code><b>--modifier-regex</b></code> expressions are
+     used as a fallback. For the <code><b>--element-type-regex</b></code>
+     category the <code><b>--type-regex</b></code> expressions are
+     used as a fallback.</p>
+
+  <p>The type name expressions (<code><b>--type-regex</b></code>)
+     are evaluated on the name string that has the following
+     format:</p>
+
+  <p><code>[<i>namespace</i> ]<i>name</i>[,<i>name</i>][,<i>name</i>][,<i>name</i>]</code></p>
+
+  <p>The element type name expressions
+     (<code><b>--element-type-regex</b></code>), effective only when
+     the <code><b>--generate-element-type</b></code> option is specified,
+     are evaluated on the name string that has the following
+     format:</p>
+
+  <p><code><i>namespace</i> <i>name</i></code></p>
+
+  <p>In the type name format the <code><i>namespace</i></code> part
+     followed by a space is only present for global type names. For
+     global types and elements defined in schemas without a target
+     namespace, the <code><i>namespace</i></code> part is empty but
+     the space is still present. In the type name format after the
+     initial <code><i>name</i></code> component, up to three additional
+     <code><i>name</i></code> components can be present, separated
+     by commas. For example:</p>
+
+  <p><code><b>http://example.com/hello type</b></code></p>
+  <p><code><b>foo</b></code></p>
+  <p><code><b>foo,iterator</b></code></p>
+  <p><code><b>foo,const,iterator</b></code></p>
+
+  <p>The following set of predefined regular expressions is used to
+     transform type names when the upper-camel-case naming convention
+     is selected:</p>
+
+  <p><code><b>/(?:[^ ]* )?([^,]+)/\u$1/</b></code></p>
+  <p><code><b>/(?:[^ ]* )?([^,]+),([^,]+)/\u$1\u$2/</b></code></p>
+  <p><code><b>/(?:[^ ]* )?([^,]+),([^,]+),([^,]+)/\u$1\u$2\u$3/</b></code></p>
+  <p><code><b>/(?:[^ ]* )?([^,]+),([^,]+),([^,]+),([^,]+)/\u$1\u$2\u$3\u$4/</b></code></p>
+
+  <p>The accessor and modifier expressions
+     (<code><b>--*accessor-regex</b></code> and
+     <code><b>--*modifier-regex</b></code>) are evaluated on the name string
+     that has the following format:</p>
+
+  <p><code><i>name</i>[,<i>name</i>][,<i>name</i>]</code></p>
+
+  <p>After the initial <code><i>name</i></code> component, up to two
+     additional <code><i>name</i></code> components can be present,
+     separated by commas. For example:</p>
+
+  <p><code><b>foo</b></code></p>
+  <p><code><b>dom,document</b></code></p>
+  <p><code><b>foo,default,value</b></code></p>
+
+  <p>The following set of predefined regular expressions is used to
+     transform accessor names when the <code><b>java</b></code> naming
+     convention is selected:</p>
+
+  <p><code><b>/([^,]+)/get\u$1/</b></code></p>
+  <p><code><b>/([^,]+),([^,]+)/get\u$1\u$2/</b></code></p>
+  <p><code><b>/([^,]+),([^,]+),([^,]+)/get\u$1\u$2\u$3/</b></code></p>
+
+  <p>For the parser, serializer, and enumerator categories, the
+     corresponding regular expressions are evaluated on local names of
+     elements and on enumeration values, respectively. For example, the
+     following predefined regular expression is used to transform parsing
+     function names when the <code><b>java</b></code> naming convention
+     is selected:</p>
+
+  <p><code><b>/(.+)/parse\u$1/</b></code></p>
+
+  <p>See also the REGEX AND SHELL QUOTING section below.</p>
+
+  <h1>TYPE MAP</h1>
+
+  <p>Type map files are used in C++/Parser to define a mapping between
+     XML Schema and C++ types. The compiler uses this information
+     to determine the return types of <code><b>post_*</b></code>
+     functions in parser skeletons corresponding to XML Schema
+     types as well as argument types for callbacks corresponding
+     to elements and attributes of these types.</p>
+
+  <p>The compiler has a set of predefined mapping rules that map
+     built-in XML Schema types to suitable C++ types (discussed
+     below) and all other types to <code><b>void</b></code>.
+     By providing your own type maps you can override these predefined
+     rules. The format of the type map file is presented below:
+  </p>
+
+  <pre>
+namespace &lt;schema-namespace> [&lt;cxx-namespace>]
+{
+  (include &lt;file-name>;)*
+  ([type] &lt;schema-type> &lt;cxx-ret-type> [&lt;cxx-arg-type>];)*
+}
+  </pre>
+
+  <p>Both <code><i>&lt;schema-namespace></i></code> and
+     <code><i>&lt;schema-type></i></code> are regex patterns while
+     <code><i>&lt;cxx-namespace></i></code>,
+     <code><i>&lt;cxx-ret-type></i></code>, and
+     <code><i>&lt;cxx-arg-type></i></code> are regex pattern
+     substitutions. All names can be optionally enclosed in
+     <code><b>" "</b></code>, for example, to include white-spaces.</p>
+
+  <p><code><i>&lt;schema-namespace></i></code> determines XML
+     Schema namespace. Optional <code><i>&lt;cxx-namespace></i></code>
+     is prefixed to every C++ type name in this namespace declaration.
+     <code><i>&lt;cxx-ret-type></i></code> is a C++ type name that is
+     used as a return type for the <code><b>post_*</b></code> functions.
+     Optional <code><i>&lt;cxx-arg-type></i></code> is an argument
+     type for callback functions corresponding to elements and attributes
+     of this type. If
+     <code><i>&lt;cxx-arg-type></i></code> is not specified, it defaults
+     to <code><i>&lt;cxx-ret-type></i></code> if <code><i>&lt;cxx-ret-type></i></code>
+     ends with <code><b>*</b></code> or <code><b>&amp;</b></code> (that is,
+     it is a pointer or a reference) and
+     <code><b>const</b>&nbsp;<i>&lt;cxx-ret-type></i><b>&amp;</b></code>
+     otherwise.
+     <code><i>&lt;file-name></i></code> is a file name either in the
+     <code><b>" "</b></code> or <code><b>&lt; ></b></code> format
+     and is added with the <code><b>#include</b></code> directive to
+     the generated code.</p>
+
+  <p>The <code><b>#</b></code> character starts a comment that ends
+     with a new line or end of file. To specify a name that contains
+     <code><b>#</b></code> enclose it in <code><b>" "</b></code>.
+     For example:</p>
+
+  <pre>
+namespace http://www.example.com/xmlns/my my
+{
+  include "my.hxx";
+
+  # Pass apples by value.
+  #
+  apple apple;
+
+  # Pass oranges as pointers.
+  #
+  orange orange_t*;
+}
+  </pre>
+
+  <p>In the example above, for the
+     <code><b>http://www.example.com/xmlns/my#orange</b></code>
+     XML Schema type, the <code><b>my::orange_t*</b></code> C++ type will
+     be used as both return and argument types.</p>
+
+  <p>Several namespace declarations can be specified in a single
+     file. The namespace declaration can also be completely
+     omitted to map types in a schema without a namespace. For
+     instance:</p>
+
+  <pre>
+include "my.hxx";
+apple apple;
+
+namespace http://www.example.com/xmlns/my
+{
+  orange "const orange_t*";
+}
+  </pre>
+
+  <p>The compiler has a number of predefined mapping rules that can be
+     presented as the following map files. The string-based XML Schema
+     built-in types are mapped to either <code><b>std::string</b></code>
+     or <code><b>std::wstring</b></code> depending on the character type
+     selected with the <code><b>--char-type</b></code> option
+     (<code><b>char</b></code> by default).</p>
+
+  <pre>
+namespace http://www.w3.org/2001/XMLSchema
+{
+  boolean bool bool;
+
+  byte "signed char" "signed char";
+  unsignedByte "unsigned char" "unsigned char";
+
+  short short short;
+  unsignedShort "unsigned short" "unsigned short";
+
+  int int int;
+  unsignedInt "unsigned int" "unsigned int";
+
+  long "long long" "long long";
+  unsignedLong "unsigned long long" "unsigned long long";
+
+  integer "long long" "long long";
+
+  negativeInteger "long long" "long long";
+  nonPositiveInteger "long long" "long long";
+
+  positiveInteger "unsigned long long" "unsigned long long";
+  nonNegativeInteger "unsigned long long" "unsigned long long";
+
+  float float float;
+  double double double;
+  decimal double double;
+
+  string std::string;
+  normalizedString std::string;
+  token std::string;
+  Name std::string;
+  NMTOKEN std::string;
+  NCName std::string;
+  ID std::string;
+  IDREF std::string;
+  language std::string;
+  anyURI std::string;
+
+  NMTOKENS xml_schema::string_sequence;
+  IDREFS xml_schema::string_sequence;
+
+  QName xml_schema::qname;
+
+  base64Binary std::auto_ptr&lt;xml_schema::buffer>
+               std::auto_ptr&lt;xml_schema::buffer>;
+  hexBinary std::auto_ptr&lt;xml_schema::buffer>
+            std::auto_ptr&lt;xml_schema::buffer>;
+
+  date xml_schema::date;
+  dateTime xml_schema::date_time;
+  duration xml_schema::duration;
+  gDay xml_schema::gday;
+  gMonth xml_schema::gmonth;
+  gMonthDay xml_schema::gmonth_day;
+  gYear xml_schema::gyear;
+  gYearMonth xml_schema::gyear_month;
+  time xml_schema::time;
+}
+  </pre>
+
+  <p>The last predefined rule maps anything that wasn't mapped by
+     previous rules to <code><b>void</b></code>:</p>
+
+  <pre>
+namespace .*
+{
+  .* void void;
+}
+  </pre>
+
+
+  <p>When you provide your own type maps with the
+     <code><b>--type-map</b></code> option, they are evaluated first.
+     This allows you to selectively override predefined rules.</p>
+
+  <h1>REGEX AND SHELL QUOTING</h1>
+
+  <p>When entering a regular expression argument in the shell
+     command line it is often necessary to use quoting (enclosing
+     the argument in <code><b>"&nbsp;"</b></code> or
+     <code><b>'&nbsp;'</b></code>) in order to prevent the shell
+     from interpreting certain characters, for example, spaces as
+     argument separators and <code><b>$</b></code> as variable
+     expansions.</p>
+
+  <p>Unfortunately it is hard to achieve this in a manner that is
+     portable across POSIX shells, such as those found on
+     GNU/Linux and UNIX, and Windows shell. For example, if you
+     use <code><b>"&nbsp;"</b></code> for quoting you will get a
+     wrong result with POSIX shells if your expression contains
+     <code><b>$</b></code>. The standard way of dealing with this
+     on POSIX systems is to use <code><b>'&nbsp;'</b></code> instead.
+     Unfortunately, Windows shell does not remove <code><b>'&nbsp;'</b></code>
+     from arguments when they are passed to applications. As a result you
+     may have to use <code><b>'&nbsp;'</b></code> for POSIX and
+     <code><b>"&nbsp;"</b></code> for Windows (<code><b>$</b></code> is
+     not treated as a special character on Windows).</p>
+
+  <p>Alternatively, you can save regular expression options into
+     a file, one option per line, and use this file with the
+     <code><b>--options-file</b></code> option. With this approach
+     you don't need to worry about shell quoting.</p>
+
+  <h1>DIAGNOSTICS</h1>
+
+  <p>If the input file is not a valid W3C XML Schema definition,
+    <code><b>xsd</b></code> will issue diagnostic messages to STDERR
+    and exit with non-zero exit code.</p>
+
+  <h1>BUGS</h1>
+
+  <p>Send bug reports to the
+     <a href="mailto:xsd-users@codesynthesis.com">xsd-users@codesynthesis.com</a> mailing list.</p>
+
+  </div>
+  <div id="footer">
+    &copy;2005-2010 <a href="http://codesynthesis.com">CODE SYNTHESIS TOOLS CC</a>
+
+    <div id="terms">
+      Permission is granted to copy, distribute and/or modify this
+      document under the terms of the
+      <a href="http://codesynthesis.com/licenses/fdl-1.2.txt">GNU Free
+      Documentation License, version 1.2</a>; with no Invariant Sections,
+      no Front-Cover Texts and no Back-Cover Texts.
+    </div>
+  </div>
+</div>
+</body>
+</html>

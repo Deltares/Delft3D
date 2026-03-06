@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,7 +23,7 @@
 
 module HydroSet
     use m_waq_precision
-    use m_srstop
+    use m_logger_helper, only : stop_with_error
 
     !
     !          module contains everything for composition of hydrodynamics from multiple files
@@ -59,40 +59,35 @@ module HydroSet
     logical, dimension(1000), save :: file_locked
 
 
-    !
-    !          this is the properties of the file itself
-    !
+    ! Properties of the file itself
     type FileProp
-        character(len = FILE_NAME_SIZE) :: name            ! file path
-        integer(kind = int_wp) :: ilun            ! unit number
-        integer(kind = int_wp) :: istart          ! start time in file
-        integer(kind = int_wp) :: istop           ! stop time in file
-        integer(kind = int_wp) :: istep           ! step time in file
-        integer(kind = int_wp) :: ioffset         ! offset at rewind of this file
-        integer(kind = int_wp) :: itime1          ! time array1
-        integer(kind = int_wp) :: itime2          ! time array2
-        integer(kind = INT64) :: position = -1   ! position in the file
-        logical :: stream_access   ! Stream or sequential access?
-        real(kind = real_wp), pointer :: array1(:)       ! interpolation arrays
-        real(kind = real_wp), pointer :: array2(:)       ! interpolation arrays
+        character(len = FILE_NAME_SIZE) :: name    !< File path
+        integer(kind = int_wp) :: ilun             !< Unit number
+        integer(kind = int_wp) :: istart           !< Start time in file
+        integer(kind = int_wp) :: istop            !< Stop time in file
+        integer(kind = int_wp) :: istep            !< Step time in file
+        integer(kind = int_wp) :: ioffset          !< Offset at rewind of this file
+        integer(kind = int_wp) :: itime1           !< Time array1
+        integer(kind = int_wp) :: itime2           !< Time array2
+        integer(kind = INT64) :: position = -1     !< Position in the file
+        logical :: stream_access                   !< Stream or sequential access?
+        real(kind = real_wp), pointer :: array1(:) !< Interpolation arrays
+        real(kind = real_wp), pointer :: array2(:) !< Interpolation arrays
     end type FileProp
-    !
-    !          this is the pointer to properties of files
-    !
+
+    ! Index of properties of files
     type FilePropPnt
         type(FileProp), pointer :: pnt
     end type FilePropPnt
-    !
-    !          this is the collection of the files
-    !
+
+    ! Collection of the files
     type FilePropColl
-        type(FilePropPnt), pointer :: FilePropPnts(:) ! array with file properties
-        integer(kind = int_wp) :: maxsize         ! maximum size of the current array
-        integer(kind = int_wp) :: cursize         ! filled up to this size
+        type(FilePropPnt), pointer :: FilePropPnts(:) !< Array with file properties
+        integer(kind = int_wp) :: maxsize             !< Maximum size of the current array
+        integer(kind = int_wp) :: current_size        !< Filled up to this size
     end type FilePropColl
-    !
-    !          this is one entry of the table of files
-    !
+
+    ! One entry of the table of files
     type FileUseDef
         type(FilePropPnt) :: afilePnt        ! pointer to a file property
         real(kind = real_wp) :: weight          ! weight for interpolation
@@ -107,7 +102,7 @@ module HydroSet
     type FileUseDefColl
         type(FileUseDef), pointer :: FileUseDefs(:)  ! array with file definitions
         integer(kind = int_wp) :: maxsize         ! maximum size of the current array
-        integer(kind = int_wp) :: cursize         ! filled up to this size
+        integer(kind = int_wp) :: current_size         ! filled up to this size
         integer(kind = int_wp) :: unitnr          ! the entry for the physical property
         integer(kind = int_wp) :: intopt          ! interpolation option
         integer(kind = int_wp) :: istart          ! start time of the UseDefCollection
@@ -124,7 +119,7 @@ module HydroSet
     type FileUseDefCollColl
         type(FileUseDefColl), pointer :: FileUseDefColls(:) ! array with file definition collections
         integer(kind = int_wp) :: maxsize            ! maximum size of the current array
-        integer(kind = int_wp) :: cursize            ! filled up to this size
+        integer(kind = int_wp) :: current_size            ! filled up to this size
     end type FileUseDefCollColl
     !
 
@@ -140,7 +135,7 @@ contains
         integer(kind = int_wp) :: iret
         !
         iret = 0
-        do i = 1, aFilePropColl%cursize         ! search by name
+        do i = 1, aFilePropColl%current_size         ! search by name
             if (aFilePropColl%FilePropPnts(i)%pnt%name == aFileProp%name) then
                 iret = i
                 return
@@ -151,15 +146,15 @@ contains
     !
     !          function to add to a collection of fileproperties
     !
-    function FilePropCollAdd(aFilePropColl, aFileProp, nrftot) result (cursize)
+    function FilePropCollAdd(aFilePropColl, aFileProp, nrftot) result (current_size)
         !
         type(FilePropColl) :: aFilePropColl
         type(FileProp) :: aFileProp
         type(FileProp), pointer :: aPropPnt           ! should be a pointer to preserve space
         type(FilePropPnt), pointer :: aFilePropPnts(:)   ! should be a pointer for the resize operation
-        integer(kind = int_wp) :: nrftot, cursize
+        integer(kind = int_wp) :: nrftot, current_size
         !                                                   ! this is the standard procedure to enlarge collections
-        if (aFilePropColl%cursize == aFilePropColl%maxsize) then
+        if (aFilePropColl%current_size == aFilePropColl%maxsize) then
             allocate (aFilePropPnts (aFilePropColl%maxsize + MAX_NUM))
             do i = 1, aFilePropColl%maxsize
                 aFilePropPnts(i) = aFilePropColl%FilePropPnts (i)        ! copies the pointers
@@ -168,10 +163,10 @@ contains
             aFilePropColl%FilePropPnts => aFilePropPnts                   ! attaches this new array of pointers
             aFilePropColl%maxsize = aFilePropColl%maxsize + MAX_NUM
         endif
-        aFilePropColl%cursize = aFilePropColl%cursize + 1
+        aFilePropColl%current_size = aFilePropColl%current_size + 1
         allocate (aPropPnt)                                  ! this is important, allocate space to
         aPropPnt = aFileProp                                   !                    preserve argument
-        aFilePropColl%FilePropPnts(aFilePropColl%cursize)%pnt => aPropPnt       ! put reference to space in array
+        aFilePropColl%FilePropPnts(aFilePropColl%current_size)%pnt => aPropPnt       ! put reference to space in array
         allocate (aPropPnt%array1(nrftot))                   ! allocate the arrays  etc.
         allocate (aPropPnt%array2(nrftot))
 
@@ -193,32 +188,32 @@ contains
         aPropPnt%istart = aPropPnt%itime1
         aPropPnt%istep = aPropPnt%itime2 - aPropPnt%itime1
         if (aPropPnt%istop == 0) aPropPnt%istop = aPropPnt%itime2  ! This is the convention if stop time is unknown !
-        cursize = aFilePropColl%cursize
+        current_size = aFilePropColl%current_size
 
         if (aPropPnt%istart == aPropPnt%istop) then
             write(*, *) 'Error: times in two consecutive records are equal!'
             write(*, *) 'File in question: ', trim(aPropPnt%name)
             write(*, *) 'Stopping the program'
-            call srstop(1)
+            call stop_with_error()
         endif
 
         return
-        10    cursize = 0
-        aFilePropColl%cursize = aFilePropColl%cursize - 1
+        10    current_size = 0
+        aFilePropColl%current_size = aFilePropColl%current_size - 1
         return
         !
     end function FilePropCollAdd
     !
     !          function to add to a collection of file use definitions
     !
-    function FileUseDefCollAdd(aFileUseDefColl, aFileUseDef) result (cursize)
+    function FileUseDefCollAdd(aFileUseDefColl, aFileUseDef) result (current_size)
         !
         type(FileUseDefColl) :: aFileUseDefColl
         type(FileUseDef) :: aFileUseDef
         type(FileUseDef), pointer :: aFileUseDefs(:) ! should be a pointer for the resize operation
-        integer(kind = int_wp) :: cursize
+        integer(kind = int_wp) :: current_size
         !                                                   ! this is the standard procedure to enlarge collections
-        if (aFileUseDefColl%cursize == aFileUseDefColl%maxsize) then
+        if (aFileUseDefColl%current_size == aFileUseDefColl%maxsize) then
             allocate (aFileUseDefs (aFileUseDefColl%maxsize + MAX_NUM))
             do i = 1, aFileUseDefColl%maxsize
                 aFileUseDefs(i) = aFileUseDefColl%FileUseDefs (i)
@@ -228,22 +223,22 @@ contains
             aFileUseDefColl%maxsize = aFileUseDefColl%maxsize + MAX_NUM
         endif
         !
-        aFileUseDefColl%cursize = aFileUseDefColl%cursize + 1
-        aFileUseDefColl%FileUseDefs(aFileUseDefColl%cursize) = aFileUseDef
-        cursize = aFileUseDefColl%cursize
+        aFileUseDefColl%current_size = aFileUseDefColl%current_size + 1
+        aFileUseDefColl%FileUseDefs(aFileUseDefColl%current_size) = aFileUseDef
+        current_size = aFileUseDefColl%current_size
         !
     end function FileUseDefCollAdd
     !
     !          function to add to a collection of collections of file use definitions
     !
-    function FileUseDefCollCollAdd(aFileUseDefCollColl, aFileUseDefColl) result (cursize)
+    function FileUseDefCollCollAdd(aFileUseDefCollColl, aFileUseDefColl) result (current_size)
         !
         type(FileUseDefCollColl) :: aFileUseDefCollColl
         type(FileUseDefColl) :: aFileUseDefColl
         type(FileUseDefColl), pointer :: aFileUseDefColls(:)  ! should be a pointer for the resize operation
-        integer(kind = int_wp) :: cursize
+        integer(kind = int_wp) :: current_size
         !                                                   ! this is the standard procedure to enlarge collections
-        if (aFileUseDefCollColl%cursize == aFileUseDefCollColl%maxsize) then
+        if (aFileUseDefCollColl%current_size == aFileUseDefCollColl%maxsize) then
             allocate (aFileUseDefColls (aFileUseDefCollColl%maxsize + MAX_NUM))
             do i = 1, aFileUseDefCollColl%maxsize
                 aFileUseDefColls(i) = aFileUseDefCollColl%FileUseDefColls (i)
@@ -253,12 +248,12 @@ contains
             aFileUseDefCollColl%maxsize = aFileUseDefCollColl%maxsize + MAX_NUM
         endif
         !
-        aFileUseDefCollColl%cursize = aFileUseDefCollColl%cursize + 1
+        aFileUseDefCollColl%current_size = aFileUseDefCollColl%current_size + 1
         allocate (aFileUseDefColl%array1(aFileUseDefColl%nrftot), &
                 aFileUseDefColl%array2(aFileUseDefColl%nrftot), &
                 aFileUseDefColl%array3(aFileUseDefColl%nrftot))
-        aFileUseDefCollColl%FileUseDefColls(aFileUseDefCollColl%cursize) = aFileUseDefColl
-        cursize = aFileUseDefCollColl%cursize
+        aFileUseDefCollColl%FileUseDefColls(aFileUseDefCollColl%current_size) = aFileUseDefColl
+        current_size = aFileUseDefCollColl%current_size
         !
     end function FileUseDefCollCollAdd
     !
@@ -270,7 +265,7 @@ contains
         integer(kind = int_wp) :: ilun, found
         !
         found = 0
-        do i = 1, aFileUseDefCollColl%cursize          ! search by unitc number for this phisics
+        do i = 1, aFileUseDefCollColl%current_size          ! search by unitc number for this phisics
             if (aFileUseDefCollColl%FileUseDefColls(i)%unitnr == ilun) then
                 found = i
                 return
@@ -496,8 +491,8 @@ contains
         logical          UPDATE
         !
         weight = aDef%weight
-        if (abs(aDef%weight) < 1.0E-30) weight = float((itLocal - aDef%istart)) / (aDef%istop - aDef%istart)
-        if (abs(aDef%weight + 1.0) < 1.0E-30) weight = float((aDef%istop - itLocal)) / (aDef%istop - aDef%istart)
+        if (abs(aDef%weight) < 1.0E-30) weight = real((itLocal - aDef%istart)) / real(aDef%istop - aDef%istart)
+        if (abs(aDef%weight + 1.0) < 1.0E-30) weight = real((aDef%istop - itLocal)) / real(aDef%istop - aDef%istart)
         !
         if (intopt == 0) then
             do i = 1, nrftot
@@ -510,7 +505,7 @@ contains
             if (aProp%itime1 == aProp%itime2) then
                 fact = 1.0
             else
-                fact = float(itFile - aProp%itime1) / (aProp%itime2 - aProp%itime1)
+                fact = real(itFile - aProp%itime1) / (aProp%itime2 - aProp%itime1)
             endif
             do i = 1, nrftot
                 array3(i) = array3(i) + weight * (fact * aProp%array2(i) + (1.0 - fact) * aProp%array1(i))
@@ -527,7 +522,7 @@ contains
             if (aProp%itime1 == aProp%itime2) then
                 fact = 1.0
             else
-                fact = float(itFile - aProp%itime1) / (aProp%itime2 - aProp%itime1)
+                fact = real(itFile - aProp%itime1) / (aProp%itime2 - aProp%itime1)
             endif
             do i = 1, nrftot
                 array3(i) = array3(i) + weight * (fact * alog(max(aProp%array2(i), 1.0E-25)) + &
@@ -537,23 +532,20 @@ contains
 
     end subroutine Flinterpol
 
-    !
-    !          subroutine to close all open hydrodynamic files
-    !
-    subroutine CloseHydroFiles(collection)
-        type(FileUseDefCollColl) :: collection
+    !> Close all open hydrodynamic files
+    subroutine close_hydro_files(collection)
+        type(FileUseDefCollColl) :: collection !< Collection of open hydrodynamic files
 
         type(FileUseDefColl), pointer :: files
         integer(kind = int_wp) :: i, j
 
-        do i = 1, collection%cursize
+        do i = 1, collection%current_size
             files => collection%FileUseDefColls(i)
 
-            do j = 1, files%cursize
+            do j = 1, files%current_size
                 close(files%FileUseDefs(j)%aFilePnt%pnt%ilun)
             enddo
         enddo
-
-    end subroutine CloseHydroFiles
+    end subroutine close_hydro_files
 
 end module HydroSet

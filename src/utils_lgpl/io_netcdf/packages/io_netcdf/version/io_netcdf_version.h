@@ -10,4 +10,4 @@
 
 #define VERSION_FULL MAJOR_STR "." MINOR_STR "." REVISION_STR "-" BUILD_NR
 
-#define PROGRAM "io_netcdf" 
+#define PROGRAM_NAME "io_netcdf" 

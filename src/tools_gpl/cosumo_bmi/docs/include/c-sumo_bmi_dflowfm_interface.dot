@@ -1,0 +1,73 @@
+// COSUMO-DFlowFM Communication Interface
+// Generated for c00_nf_2dis_simple_sigma example
+// Shows BMI-based bidirectional coupling through DIMR
+
+digraph c_sumo_bmi_dflowfm_coupling {
+    // Graph settings
+    rankdir=LR;
+    nodesep=1.0;
+    ranksep=2.0;
+    
+    // Define node styles
+    node [shape=box, style=filled, fontname="Arial", fontsize=12];
+    
+    // Components
+    dflowfm [label="DFlowFM\n(dflowfm library)\n\nBMI Interface:\n• initialize(config)\n• update(dt)\n• get_var(name, ptr)\n• set_var(name, ptr)\n• get_var_shape(name)\n• finalize()", 
+             fillcolor="#E3F2FD", 
+             shape=box,
+             width=2.5];
+    
+    cosumo [label="COSUMO\n(cosumo_bmi library)\n\nBMI Interface:\n• initialize(config)\n• update(dt)\n• get_var(name, ptr)\n• set_var(name, ptr)\n• get_var_shape(name)\n• finalize()",
+            fillcolor="#FFF3E0",
+            shape=box,
+            width=2.5];
+    
+    dimr [label="DIMR\n(Deltares Integrated Model Runner)\n\nControls:\n• Kernel execution\n• Time synchronization\n• Data coupling\n• Pointer sharing",
+          fillcolor="#F3E5F5",
+          shape=ellipse];
+    
+    // DIMR orchestrates both components
+    dimr -> dflowfm [label="start, update", style=dashed, color=gray];
+    dimr -> cosumo [label="start, update", style=dashed, color=gray];
+    
+    // Data flow: DFlowFM -> COSUMO (flow2cosumo coupler)
+    dflowfm -> cosumo [label="Geometry (pointers):\n• xcc - cell center X coords\n• ycc - cell center Y coords\n• z_level - vertical layer levels\n• kbot - bottom layer indices\n• ktop - top layer indices",
+                       color="#1976D2",
+                       penwidth=2.0,
+                       fontcolor="#1976D2"];
+    
+    dflowfm -> cosumo [label="Hydrodynamic Fields (pointers):\n• water_depth\n• velocity_x\n• velocity_y\n• rho (density)\n• constituents (dim(NUMCONST,Ndkx))",
+                       color="#0288D1",
+                       penwidth=2.0,
+                       fontcolor="#0288D1",
+                       constraint=false];
+    
+    dflowfm -> cosumo [label="Scalars & Metadata:\n• isalt - index of salinity in constituents array \n• itemp - index of temperature in constituents array\n• runid - simulation ID\n• constituents_names",
+                       color="#0097A7",
+                       penwidth=2.0,
+                       fontcolor="#0097A7",
+                       constraint=false];
+    
+    // Data flow: COSUMO -> DFlowFM (cosumo2flow coupler) (all data read from NF2FF files)
+    cosumo -> dflowfm [label="Source/Sink Terms (pointers):\n• nf_q_source - total discharge from diffuser \n• nf_q_intake - total withdrawal at intake \n• nf_const - constituent values for discharge water \n• nf_intake - intake locations\n• nf_sink - sinks distribution points \n• nf_sour - sources distribution points \n• nf_const_operator - absolute concentration (as specified) or excess concentration (added to ambient)\n• nf_src_mom - is source momentum provided",
+                       color="#E65100",
+                       penwidth=2.0,
+                       fontcolor="#E65100"];
+    
+    // Logger note
+    logger [label="Logger Output:\ncosumo_to_dflowfm.nc",
+            shape=note,
+            fillcolor="#FFFDE7"];
+    dimr -> logger [style=dotted, color=gray];
+    
+    // Legend
+    //subgraph cluster_legend {
+    //    label="Legend";
+    //    style=filled;
+    //    fillcolor="#FAFAFA";
+        
+    //    leg_ptr [label="Pointer-based data exchange\n(type=\"pointer\" in DIMR config)", shape=plaintext];
+    //    leg_bmi [label="BMI standard methods:\nget_var(), set_var(), etc.", shape=plaintext];
+    //    leg_dimr [label="DIMR orchestrates coupling\nwith sequential execution", shape=plaintext];
+    //}
+}

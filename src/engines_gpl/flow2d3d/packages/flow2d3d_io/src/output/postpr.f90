@@ -6,7 +6,7 @@ subroutine postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
                 & itrstc    ,ktemp     ,halftime  ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -155,7 +155,7 @@ subroutine postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
     integer(pntrsize)                    , pointer :: dicuv
     integer(pntrsize)                    , pointer :: dicww
     integer(pntrsize)                    , pointer :: discum
-    integer(pntrsize)                    , pointer :: dp
+    integer(pntrsize)                    , pointer :: dpd
     integer(pntrsize)                    , pointer :: dps
     integer(pntrsize)                    , pointer :: dpsed
     integer(pntrsize)                    , pointer :: dpu
@@ -395,7 +395,6 @@ subroutine postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
     integer                  :: nmaxddb
     integer(pntrsize)        :: velu           ! U velocity array (FSM r-index)
     integer(pntrsize)        :: velv           ! V velocity array (FSM r-index)
-    integer       , external :: newlun
     logical                  :: flupd          ! Flag to update (true) or initialize (false) the discharge arrays 
     logical                  :: ftcros         ! Flag set when TCROSS is invoked 
     logical                  :: ftstat         ! Flag set when TSTAT  is invoked 
@@ -503,7 +502,7 @@ subroutine postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
     dicuv               => gdp%gdr_i_ch%dicuv
     dicww               => gdp%gdr_i_ch%dicww
     discum              => gdp%gdr_i_ch%discum
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dps                 => gdp%gdr_i_ch%dps
     dpsed               => gdp%gdr_i_ch%dpsed
     dpu                 => gdp%gdr_i_ch%dpu
@@ -814,7 +813,7 @@ subroutine postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
                 &  r(gvv)    , r(gsqs)   , r(volum1) , dtsec     , itdate    ,  &
                 &  tstart    , tstop     , dt        , r(thick)  , lsal      ,  &
                 &  ltem      , lsed      , r(r1)     , r(areau)  , r(areav)  ,  &
-                &  r(taubmx) , r(dicww)  , d(dps)    , r(dp)     , r(cfurou) , r(cfvrou) , &
+                &  r(taubmx) , r(dicww)  , d(dps)    , r(dpd)    , r(cfurou) , r(cfvrou) , &
                 &  chez      , i(mnksrc) , ch(namsrc), nto       , ch(nambnd), i(mnbnd)  , &
                 &  zmodel    , ztop      , zbot      , gdp       )
     !
@@ -836,13 +835,13 @@ subroutine postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
              call waq2flow(d(dps), mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
              call timer_stop(timer_wait, gdp)
              call wribot(comfil, lundia, error , mmax    , nmax,  &
-                       & nmaxus, r(dp) , d(dps), r(rbuff), gdp     )
+                       & nmaxus, r(dpd), d(dps), r(rbuff), gdp     )
           endif
           !
           ! Set DPS at the boundary cell which is not taken care of by WAQ (depth at water level points)
           !
           call upbdps(mmax      , nmax         , i(kcs), &
-                    & nmaxus    , r(dp)        , d(dps), gdp       )
+                    & nmaxus    , r(dpd)       , d(dps), gdp       )
           !
           ! Recalculate DPU/DPV (depth at velocity points)
           !
@@ -850,7 +849,7 @@ subroutine postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
                     &  zmodel    , &
                     &  i(kcs)    ,i(kcu)    ,i(kcv)    , &
                     &  i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-                    &  r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)   , &
+                    &  r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)   , &
                     &  d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)    , &
                     &  r(thick)  ,gdp       )
           if (nst == itmapc) then

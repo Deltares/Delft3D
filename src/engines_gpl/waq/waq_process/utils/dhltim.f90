@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -36,7 +36,7 @@ contains
         !     function            : determines if this is the last step
         !
         !     declarations
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
 
         integer :: itime     ! actual time in scu
         integer :: idtact    ! time step

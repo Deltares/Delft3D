@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,11 +25,8 @@
 
       ! function : read the ddb file from the overall hydrodynamics
 
-      ! global declarations
-
-      use m_monsys
-      use hydmod
-      use m_write_error_message
+      use m_logger_helper, only : write_error_message
+      use m_hydmod
       use m_file_path_utils, only : extract_file_extension
       use rd_token       ! tokenized reading
 
@@ -37,7 +34,7 @@
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd                    ! description of the hydrodynamics
 
       ! local declarations
 
@@ -58,42 +55,37 @@
       character(len=20)   :: string         !< String token
       integer             :: ierr           !< error indicator
       logical             :: token_used     !< token_used
-      type(t_dlwqfile)    :: file_src       !< hydrodynamics-file
+      type(t_file)    :: file_src       !< hydrodynamics-file
 
       file_src = hyd%file_com
+      file_src%type = FT_ASC
 
-      call dlwqfile_open(file_src)
+      call file_src%open()
 
       ilun    = 0
-      ilun(1) = file_src%unit_nr
+      ilun(1) = file_src%unit
       lch (1) = file_src%name
       npos   = 1000
       cchar  = ';'
       ierr = 0
 
-      if (gettoken( string, int, reel, itype, ierr) .ne. 0) then
-         write(lunrep,*) ' error opening ddbound file'
+      ! read first domain
+
+      if (gettoken( dd_bound%name1, ierr) .ne. 0) then
+         write(lunrep,*) ' error reading ddbound file'
          write(lunrep,*) ' file: ',trim(hyd%file_com%name)
       endif
 
-      hyd%domain_coll%cursize = 0
+      hyd%domain_coll%current_size = 0
       hyd%domain_coll%maxsize = 0
-      hyd%dd_bound_coll%cursize = 0
+      hyd%dd_bound_coll%current_size = 0
       hyd%dd_bound_coll%maxsize = 0
 
       ! loop over all the tokens in the file
 
       do
 
-         ! read first domain
-
-         if (gettoken( dd_bound%name1, ierr) .ne. 0) then
-            ! if end of file the exit loop
-            exit
-        endif
-
          ! read m_begin1, n_begin1, m_end1, n_end1, domain name 2, m_begin2, n_begin2, m_end2, n_end2
-
 
          if (gettoken( dd_bound%m_begin1, ierr) .ne. 0 ) goto 900
          if (gettoken( dd_bound%n_begin1, ierr) .ne. 0 ) goto 900
@@ -138,8 +130,14 @@
 
          ! add to dd_bound collection
 
-         i_dd_bound = dd_bound_coll_add(hyd%dd_bound_coll, dd_bound)
+         i_dd_bound = hyd%dd_bound_coll%add(dd_bound)
 
+         ! read next domain (when available)
+
+         if (gettoken( dd_bound%name1, ierr) .ne. 0) then
+            ! if end of file the exit loop
+            exit
+        endif
       enddo
 
       return

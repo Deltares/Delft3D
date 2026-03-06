@@ -37,7 +37,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -45,12 +44,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
             <location ref="reference_engines" type="reference">
@@ -96,7 +89,7 @@
     <testCases>
         <!-- ======================================================================== -->
         <testCase name="e109_f01_c010" ref="dimr_trunk">
-            <path>e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
+            <path version="2025-06-05T13:59:00">e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
              <checks>
                 <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_map.nc" type="NETCDF">
                     <parameters>

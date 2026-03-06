@@ -2,7 +2,7 @@ subroutine trabwc(utot      ,di        ,taub      ,npar      ,par       , &
                 & sbot      ,ssus      ,dg        ,fs        ,chezy     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -45,7 +45,7 @@ subroutine trabwc(utot      ,di        ,taub      ,npar      ,par       , &
 ! Arguments
 !
     integer                  , intent(in)    :: npar
-    real(fp)                 , intent(in)    :: chezy  ! local Chézy value [m1/2/s]
+    real(fp)                 , intent(in)    :: chezy  ! local ChÃ©zy value [m1/2/s]
     real(fp)                 , intent(in)    :: dg     ! mean surface grain size [m]
     real(fp)                 , intent(in)    :: di     ! Grain size specified as d50
     real(fp)                 , intent(in)    :: fs     ! sand fraction on surface

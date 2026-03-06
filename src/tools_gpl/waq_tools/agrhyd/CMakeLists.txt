@@ -24,7 +24,6 @@ set(oss_dependencies waq_definition
                      waq_hyd_data
                      waq_utils_f)
 
-oss_include_libraries(${executable_name} oss_dependencies)
 target_link_libraries(${executable_name} ${oss_dependencies})
 
 # Set additional compilation properties
@@ -41,4 +40,3 @@ set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/agrhyd)
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/default/agrhyd.ini  DESTINATION share/delft3d)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_agrhyd.${platform_extension}  DESTINATION bin)
-
