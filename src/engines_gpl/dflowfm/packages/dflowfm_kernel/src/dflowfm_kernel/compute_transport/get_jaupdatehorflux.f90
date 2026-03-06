@@ -50,7 +50,7 @@ contains
 
       integer, intent(in) :: limtyp !< limited higher-order upwind (>0) or first-order upwind (0)
       integer, dimension(Ndx), intent(in) :: jaupdate !< cell updated (1) or not (0)
-      integer, dimension(Lnx), intent(out) :: jaupdatehorflux !< update horizontal flux (1) or not (0)
+      integer, dimension(Lnx), intent(out) :: jaupdatehorflux !< horizontal flux on link needs updating (1) or not (0)
 
       integer :: k1, k2, LL
       integer :: kk1L, kk2L
