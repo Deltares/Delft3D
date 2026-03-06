@@ -147,6 +147,7 @@ target_link_libraries(${library_name} PRIVATE
                       morphology_plugins_c
                       netcdff
                       polypack
+                      precicef
                       trachytopes_io
                       trachytopes_kernel
                       triangle_c
