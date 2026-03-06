@@ -27,7 +27,7 @@
 !
 !  This module contains basic interpolation routines
 !
-   !Global modules
+!Global modules
 module m_ec_triangle ! original name : m_triangle
    use precision, only: hp
    implicit none
@@ -1175,7 +1175,7 @@ contains
       ! For points on the triangle edges and their extension, apply rounding
       if (abs(RLAM) < EPS_BARY) then
          RLAM = 0.0_hp
-         end if
+      end if
       if (abs(RMHU) < EPS_BARY) then
          RMHU = 0.0_hp
       end if
