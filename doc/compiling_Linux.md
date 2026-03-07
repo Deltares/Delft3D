@@ -83,7 +83,7 @@ The `INTEL_FORTRAN_COMPILER` selects which Fortran compiler is used to compile t
 Valid values are `ifort` and `ifx`.
 The `ifort` compiler in combination with an `INTEL_ONEAPI_VERSION` with value `2024` will result in a lot of warnings during compilation, since the `ifort` compiler has been deprecated and will no longer be included in the `2025` release of the intel compilers.
 
-The `BUILD_TYPE` should be `Release` for a regular optimized, release version of the code, `Debug` for debug version of the code, or `RelWithDebInfo` for something in between: a less optimized, release version of the code that still contains debug information.
+The `BUILD_TYPE` should be `Release` for a regular optimized, release version of the code, or `Debug` for debug version of the code.
 
 The `CONFIGURATION` determines whether to build Delft3D 4 (`d3d4-suite`), Delft3D FM (`fm-suite`) or both ( `all`).
 
