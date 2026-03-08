@@ -288,6 +288,16 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                  & griddim   )
     if (error) return
     !
+    if (morlyr%settings%iunderlyr == BED_LAYERED) then
+       morpar%moroutput%poros = .false.
+       morpar%moroutput%td = .false.
+       morpar%moroutput%preload = .false.
+       morpar%moroutput%preload = .false.
+       morpar%moroutput%cmudlyr = .false.
+       morpar%moroutput%csandlyr = .false.
+       morpar%moroutput%conclyr = .false.
+    end if
+    !
     if (sedpar%anymud) then
        if (morlyr%settings%iconsolidate==1) then
           morpar%flufflyr%iburtype = 2
@@ -889,8 +899,6 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     call prop_get(mor_ptr, 'Output', 'TcrEro'                      , moroutput%tcrero)
     call prop_get(mor_ptr, 'Output', 'Taub'                        , moroutput%taub)
     call prop_get(mor_ptr, 'Output', 'Taurat'                      , moroutput%taurat)
-    call prop_get(mor_ptr, 'Output', 'td    '                      , moroutput%td)
-    call prop_get(mor_ptr, 'Output', 'preload'                     , moroutput%preload)
     !
     call prop_get(mor_ptr, 'Output', 'Dm'                          , moroutput%dm)
     call prop_get(mor_ptr, 'Output', 'Dg'                          , moroutput%dg)
@@ -909,6 +917,8 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     moroutput%thlyr = moroutput%dpsed
     call prop_get(mor_ptr, 'Output', 'BedLayerDepth'               , moroutput%dpbedlyr)
     call prop_get(mor_ptr, 'Output', 'BedLayerPorosity'            , moroutput%poros)
+    call prop_get(mor_ptr, 'Output', 'td    '                      , moroutput%td)
+    call prop_get(mor_ptr, 'Output', 'preload'                     , moroutput%preload)
     call prop_get(mor_ptr, 'Output', 'BedLayerPreload'             , moroutput%preload)
     call prop_get(mor_ptr, 'Output', 'BedLayerMudConcentration'    , moroutput%cmudlyr)
     call prop_get(mor_ptr, 'Output', 'BedLayerSandConcentration'   , moroutput%csandlyr)

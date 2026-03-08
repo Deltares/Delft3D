@@ -1820,7 +1820,7 @@ subroutine initmoroutput(moroutput, def)
     moroutput%bamor         = no
     moroutput%wumor         = no
     moroutput%aldiff        = no
-    moroutput%preload       = yes
+    moroutput%preload       = no
     moroutput%morfac        = yes
     !
     moroutput%cmudlyr       = no
