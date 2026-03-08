@@ -179,7 +179,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
     ! Compute basic parameters
     !
     if (wave) then
-        effwave = (tper > 0.0_fp) .and. (uorb >= 1.0-6_fp)
+        effwave = (tper > 0.0_fp) .and. (uorb >= 1.0e-6_fp)
     else
         effwave = .false.
     endif

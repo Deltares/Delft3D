@@ -94,7 +94,6 @@ subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
 !
 ! Local variables
 !
-    integer  :: ierosion
     real(fp) :: rhosol
     real(fp) :: betaslope     !> coefficient in bed slope effect on critical shear stress for bed erosion (-)
     real(fp) :: sour          !> entrainment flux from bed (kg/m2/s)

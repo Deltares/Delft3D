@@ -257,7 +257,7 @@ contains
          end if
          write (lundia, '(3a)') txtput1, ':', txtput2
          !
-         call prop_get(mor_ptr, 'Underlayer', 'cmet', iconsolidate)
+         call prop_get(mor_ptr, 'Underlayer', 'cmet', iconsolidate) ! old keyword
          call prop_get(mor_ptr, 'Underlayer', 'IConsolidate', iconsolidate)
          txtput1 = 'Consolidation'
          select case (iconsolidate)
@@ -1070,7 +1070,7 @@ contains
                  plyrthksum = plyrthksum + plyrthk(i)
               enddo
               ! check if plyrthksum == 1.0
-              if (comparereal(plyrthksum,1.0_fp) /= 0.0_fp) then
+              if (comparereal(plyrthksum,1.0_fp) /= 0) then
                   errmsg = 'Sum values in keyword plyrstr in *.mor file and should equal 1.0'
                   call write_error(errmsg, unit=lundia)
                   error = .true.
