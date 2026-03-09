@@ -2340,7 +2340,7 @@
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Only positive forced evaporation fluxes.",
-                    "status": "research"
+                    "status": "deprecated"
                 },
                 {
                     "key": "freeConvectionCoefficient",

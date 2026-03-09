@@ -357,7 +357,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | `schmidtNumberSalinity` 🔬 | Turbulent Schmidt number for salinity. |  |  |  |
 | `schmidtNumberTracer` 🔬 | Turbulent Schmidt number for tracer(s). |  |  |  |
 | `umodLin` 🔬 | Linear friction umod. |  |  |  |
-| `jadelvappos` 🔬 | Only positive forced evaporation fluxes. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
+| `jadelvappos` | Only positive forced evaporation fluxes. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `freeConvectionCoefficient` 🔬 | Free convection turbulence coefficient. | `0.14` |  |  |
 | `uniffrictcoef1dgrlay` 🔬 | Uniform ground layer friction coefficient for ocean models. |  |  | [m/s] |
 | `salinityDependentFreezingPoint` | Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
