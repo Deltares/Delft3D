@@ -51,6 +51,8 @@ function(copy_dflowfm_test_dependencies TARGET_NAME)
     endif()
 endfunction()
 
+add_subdirectory(helpers)
+
 f90twtest(test_dflowfm_kernel_example
     CFILES test_dflowfm_kernel_example.cpp
     F90FILES test_dflowfm_kernel_example.f90
@@ -83,7 +85,7 @@ f90twtest(test_getprof_1d
     F90FILES test_getprof_1d.f90
     F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_getprof_1d.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
-    LIBRARIES dflowfm_kernel
+    LIBRARIES dflowfm_kernel test_helpers
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
@@ -94,7 +96,7 @@ f90twtest(test_longculverts
     F90FILES test_longculverts.f90
     F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_longculverts.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
-    LIBRARIES dflowfm_kernel
+    LIBRARIES dflowfm_kernel test_helpers
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
