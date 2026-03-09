@@ -27,6 +27,7 @@ from src.suite.test_case import TestCase
 from src.suite.test_case_result import TestCaseResult
 from src.utils.common import log_header, log_separator, log_sub_header
 from src.utils.errors.test_bench_error import TestBenchError
+from src.utils.handlers.dvc_handler import DvcHandler
 from src.utils.handlers.handler_factory import HandlerFactory
 from src.utils.handlers.resolve_handler import ResolveHandler
 from src.utils.logging.i_logger import ILogger
@@ -91,16 +92,9 @@ class TestSetRunner(ABC):
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
 
-        # Prepare cases (download input and reference data, validate etc.)
-        # Parallel download is not supported by DVC.
-        for config in self.__settings.configs_to_run:
-            if config.path and config.path.version == "DVC":
-                try:
-                    self.prepare_test_case(config, self.__logger)
-                except Exception as exception:
-                    self.__logger.error(f"Failed to prepare test case '{config.name}': {exception}")
-                    self.cleanup_failed_preparation(config)
-                log_separator(self.__logger, char="-")
+        # Prepare DVC cases: batch-download all .dvc files in one command,
+        # then copy inputs to work folders and set paths.
+        self.__prepare_dvc_test_cases()
 
         results = (
             self.run_tests_in_parallel()
@@ -413,6 +407,81 @@ class TestSetRunner(ABC):
                 shutil.rmtree(config.absolute_test_case_reference_path)
             except Exception as e:
                 self.__logger.warning(f"Failed to remove reference directory: {e}")
+
+    def __prepare_dvc_test_cases(self) -> None:
+        """Prepare all DVC test cases with a single batched download."""
+        dvc_configs = [c for c in self.__settings.configs_to_run if c.path and c.path.version == "DVC"]
+        if not dvc_configs:
+            return
+
+        log_sub_header("Preparing DVC test cases (batch download)", self.__logger)
+
+        # Phase 1: Validate configs and collect all DVC file paths + metadata.
+        dvc_files: list[str] = []
+        # Each entry: (config, location, remote_path, local_path)
+        location_info: list[tuple[TestCaseConfig, Location, str, str]] = []
+        credentials = None
+
+        for config in dvc_configs:
+            try:
+                self.__validate_test_case_preparation(config)
+                self.__log_preparation_info(config, self.__logger)
+            except Exception as exception:
+                self.__logger.error(f"Failed to validate test case '{config.name}': {exception}")
+                self.cleanup_failed_preparation(config)
+                continue
+
+            config_ok = True
+            for location in config.locations:
+                if location.type == PathType.CHECK:
+                    continue
+                try:
+                    self.__validate_location(config, location)
+                except Exception as exception:
+                    self.__logger.error(f"Failed to validate location for '{config.name}': {exception}")
+                    config_ok = False
+                    break
+
+                remote_path = self.__build_remote_path(config, location)
+                local_path = self.__build_local_path(config, location)
+
+                if location.type in self.skip_download:
+                    self.__logger.info(f"Skipping download for {config.name} (skip download argument)")
+                else:
+                    dvc_files.append(remote_path)
+                    if credentials is None and location.credentials and location.credentials.username:
+                        credentials = location.credentials
+
+                location_info.append((config, location, remote_path, local_path))
+
+            if not config_ok:
+                self.cleanup_failed_preparation(config)
+
+        # Phase 2: Batch-download all .dvc files in one fetch+checkout.
+        if dvc_files:
+            try:
+                from src.config.credentials import Credentials
+
+                handler = DvcHandler()
+                handler.download_batch(dvc_files, credentials or Credentials(), self.__logger)
+            except Exception as exception:
+                self.__logger.error(f"Batch DVC download failed: {exception}")
+                for config in dvc_configs:
+                    self.cleanup_failed_preparation(config)
+                log_separator(self.__logger, char="-")
+                return
+
+        # Phase 3: Post-download steps (copy to work folder, set paths).
+        for config, location, _remote_path, local_path in location_info:
+            try:
+                if location.type == PathType.INPUT:
+                    self.__copy_to_work_folder(Path(local_path), self.__logger)
+                self.__set_absolute_paths(config, location.type, local_path)
+            except Exception as exception:
+                self.__logger.error(f"Failed post-download steps for '{config.name}': {exception}")
+                self.cleanup_failed_preparation(config)
+
+        log_separator(self.__logger, char="-")
 
     def __download_dependencies(self) -> None:
         configs_to_handle = [c for c in self.__settings.configs_to_run if c.dependency]

@@ -200,19 +200,21 @@ class TestComparisonRunner:
         testcase_logger = MagicMock()
         logger.create_test_case_logger.return_value = testcase_logger
         mocker.patch.object(ComparisonRunner, "show_summary")
+        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
 
         runner = ComparisonRunner(settings, logger)
 
         # Act
         runner.run()
 
-        # Assert
+        # Assert — batch download is called with both DVC file paths
         remote_ref_path = os.path.abspath("data/cases/abc/prefix/reference_win64.dvc")
         remote_case_path = os.path.abspath("data/cases/abc/prefix/input.dvc")
-        expected_log_message1 = f"Downloading reference result, from DVC file at {remote_ref_path}"
-        expected_log_message2 = f"Downloading input of case, from DVC file at {remote_case_path}"
-        assert call(expected_log_message1) in logger.debug.call_args_list
-        assert call(expected_log_message2) in logger.debug.call_args_list
+        mock_handler = mock_dvc_handler_cls.return_value
+        mock_handler.download_batch.assert_called_once()
+        dvc_files_arg = mock_handler.download_batch.call_args[0][0]
+        assert remote_ref_path in dvc_files_arg
+        assert remote_case_path in dvc_files_arg
 
     def test_run_tests_in_parallel_with_empty_settings_raises_value_error(self) -> None:
         # Arrange
@@ -510,10 +512,10 @@ class TestComparisonRunner:
         mocker.patch.object(runner, "_TestSetRunner__update_programs", return_value=[])
         mocker.patch.object(runner, "_TestSetRunner__download_dependencies")
         mocker.patch.object(runner, "show_summary", return_value=None)
-        prepare_mock = mocker.patch.object(
+        prepare_batch_mock = mocker.patch.object(
             runner,
-            "prepare_test_case",
-            side_effect=lambda config, _logger: call_order.append(f"prepare:{config.name}"),
+            "_TestSetRunner__prepare_dvc_test_cases",
+            side_effect=lambda: call_order.append("prepare_dvc_batch"),
         )
         parallel_mock = mocker.patch.object(
             runner,
@@ -524,9 +526,9 @@ class TestComparisonRunner:
         # Act
         runner.run()
 
-        # Assert
-        assert call_order == ["prepare:Name_1", "prepare:Name_2", "dispatch:parallel"]
-        prepare_mock.assert_has_calls([call(config1, logger), call(config2, logger)])
+        # Assert — batch DVC preparation happens before parallel dispatch
+        assert call_order == ["prepare_dvc_batch", "dispatch:parallel"]
+        prepare_batch_mock.assert_called_once()
         parallel_mock.assert_called_once()
 
     def test_run_test_case_raises_error_when_paths_not_prepared(self) -> None:
@@ -572,17 +574,15 @@ class TestComparisonRunner:
         mocker.patch.object(runner, "run_tests_sequentially", return_value=[MagicMock()])
         mocker.patch.object(runner, "show_summary", return_value=None)
 
-        test_exception = Exception("Test preparation failed")
-
-        mocker.patch.object(runner, "prepare_test_case", side_effect=test_exception)
         cleanup_mock = mocker.patch.object(runner, "cleanup_failed_preparation")
 
         # Act
         runner.run()
 
-        # Assert
-        expected_error_message = f"Failed to prepare test case 'Name_1': {test_exception}"
-        logger.error.assert_called_with(expected_error_message)
+        # Assert — validation fails because config has no locations
+        logger.error.assert_called()
+        error_message = logger.error.call_args[0][0]
+        assert "Name_1" in error_message
         cleanup_mock.assert_called_once_with(config)
 
     def test_cleanup_failed_preparation_removes_directories(self, fs: FakeFilesystem) -> None:

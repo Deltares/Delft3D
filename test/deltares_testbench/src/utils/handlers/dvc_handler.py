@@ -47,6 +47,64 @@ class DvcHandler(IHandler):
         """
         self.__download_with_dvc_pull(from_path, credentials, logger)
 
+    def download_batch(
+        self, dvc_files: list[str], credentials: Credentials, logger: ILogger, jobs: Optional[int] = None
+    ) -> None:
+        """Download multiple .dvc files in a single fetch + checkout operation.
+
+        Parameters
+        ----------
+        dvc_files : list[str]
+            Paths to .dvc files to download.
+        credentials : Credentials
+            DVC credentials (used for remote storage access).
+        logger : ILogger
+            Logger instance.
+        jobs : Optional[int]
+            Number of parallel jobs for DVC fetch. Similar to ``dvc pull -j``.
+            When *None*, DVC uses its own default.
+        """
+        if not dvc_files:
+            return
+
+        _aws_keys = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
+        _prev_env = {k: os.environ.get(k) for k in _aws_keys}
+        if credentials and credentials.username:
+            os.environ["AWS_ACCESS_KEY_ID"] = credentials.username
+            os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.password
+
+        try:
+            # Collect all stage targets from all .dvc files
+            all_targets: list[str] = []
+            for dvc_file in dvc_files:
+                logger.debug(f"Loading DVC file: {dvc_file}")
+                if not os.path.isfile(dvc_file):
+                    raise FileNotFoundError(f"DVC file not found: {dvc_file}")
+                dvcfile = load_file(self.__repo, dvc_file)
+                for stage in dvcfile.stages.values():
+                    all_targets.append(stage.addressing)
+
+            logger.info(f"Fetching {len(all_targets)} DVC targets in one batch (jobs={jobs})")
+            self.__repo.fetch(targets=all_targets, jobs=jobs)
+
+            logger.info(f"Checking out {len(all_targets)} DVC targets in one batch")
+            self.__repo.checkout(targets=all_targets, force=True)
+
+            logger.info(f"Batch DVC download complete for {len(dvc_files)} .dvc files")
+
+        except FileNotFoundError as e:
+            logger.error(f"File not found: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Error during DVC batch pull: {str(e)}")
+            raise
+        finally:
+            for key, val in _prev_env.items():
+                if val is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = val
+
     def __download_with_dvc_pull(self, dvc_file: str, credentials: Credentials, logger: ILogger) -> None:
         """Download using DVC by reading the .dvc file and fetching from remote.
 
