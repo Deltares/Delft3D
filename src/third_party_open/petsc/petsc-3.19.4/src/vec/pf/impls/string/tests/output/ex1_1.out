@@ -1,3 +1,0 @@
-PF Object: 1 MPI process
-  type: string
-  String = f = 2*x;

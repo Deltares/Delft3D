@@ -41,14 +41,14 @@ module m_physcoef
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
    real(kind=dp) :: sag !< sqrt(ag)
    integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
-   real(kind=dp) :: vonkar !< von Karman constant ()
-   real(kind=dp) :: vonkarw !< von Karman constant used in wind formulations
+   real(kind=dp), parameter :: vonkar = 0.41_dp !< von Karman constant ()
+   real(kind=dp), parameter :: vonkarw = 0.40_dp !< von Karman constant used in wind formulations
    real(kind=dp) :: frcuni !< uniform friction coeff 2D
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
-   real(kind=dp) :: frcunistreetinlet = 0.035
-   real(kind=dp) :: frcuniroofgutterpipe = 0.035
-   real(kind=dp) :: frcuniroof = 0.030
+   real(kind=dp), parameter :: frcunistreetinlet = 0.035_dp
+   real(kind=dp), parameter :: frcuniroofgutterpipe = 0.035_dp
+   real(kind=dp), parameter :: frcuniroof = 0.030_dp
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
 
@@ -66,7 +66,7 @@ module m_physcoef
 
    real(kind=dp) :: Elder !< add Elder viscosity
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
-   real(kind=dp) :: viuchk !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
+   real(kind=dp), parameter :: viuchk = 0.24_dp !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
    real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity (m2/s)
    real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
@@ -74,20 +74,20 @@ module m_physcoef
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
-   real(kind=dp) :: c9of1 !< vonkar/log(c9of1 + dzb / z0)
+   real(kind=dp), parameter :: c9of1 = 9.0_dp !< vonkar/log(c9of1 + dzb / z0)
 
    !< Molecular diffusivity coefficients (m2/s):
-   real(kind=dp) :: viskin !< kinematic  viscosity water in keps model
+   real(kind=dp), parameter :: viskin = 1e-6_dp !< kinematic  viscosity water in keps model
    real(kind=dp) :: vismol !< molecular viscosity (m2/s)
-   real(kind=dp) :: difmolsal !< molecular diffusivity of salinity
-   real(kind=dp) :: difmoltem !<           diffusivity of temperature
-   real(kind=dp) :: difmolsed !<           diffusivity of sediment
-   real(kind=dp) :: difmoltracer !<        diffusivity of tracers
+   real(kind=dp), parameter :: difmolsal = viskin / 700.0_dp !< molecular diffusivity of salinity
+   real(kind=dp), parameter :: difmoltem = viskin / 6.7_dp !< diffusivity of temperature
+   integer, parameter :: difmolsed = 0 !< diffusivity of sediment
+   integer, parameter :: difmoltracer = 0 !< diffusivity of tracers
 
    real(kind=dp) :: vicwminb !< minimum eddy viscosity in production terms shear and buoyancy
    real(kind=dp) :: xlozmidov !< Ozmidov length scale (m)
 
-   real(kind=dp) :: viskinair !< kinematic air viscosity
+   real(kind=dp), parameter :: viskinair = 1.5e-5_dp !< kinematic air viscosity
    real(kind=dp) :: backgroundwatertemperature !< background water temp (C)
    real(kind=dp) :: backgroundsalinity !< background salinity (ppt), in eq of state, if salinity not computed
    real(kind=dp), parameter :: BACKGROUND_AIR_PRESSURE = 101325.0_dp !< background air pressure (Pa)
@@ -130,11 +130,9 @@ contains
 !> Sets all variables in this module to their default values.
    subroutine default_physcoef()
       ag = 9.81_dp
-      vonkar = 0.41_dp
-      vonkarw = 0.40_dp
       frcuni = 0.023_dp
-      frcuni1D = 0.023_dp
-      frcuni1D2D = 0.023_dp
+      frcuni1D = frcuni
+      frcuni1D2D = frcuni
       frcuni1Dgrounlay = 0.05_dp
       frcmax = 0.0_dp
       ifrctypuni = 1
@@ -145,20 +143,14 @@ contains
       dicouv = 0.1_dp
       Elder = 0.0_dp
       Smagorinsky = 0.2_dp
-      viuchk = 0.24_dp
       vicoww = 1e-6_dp
       constant_dicoww = 1e-6_dp
       rhomean = 1000.0_dp
-      c9of1 = 9.0_dp
       backgroundwatertemperature = 20.0_dp
       backgroundsalinity = 30.0_dp
       secchidepth = 1.0_dp
       secchidepth2 = 0.0_dp
       secchidepth2fraction = 0.0_dp
-      viskin = 1e-6_dp
-      viskinair = 1.5e-5_dp
-      difmolsed = 0.0_dp
-      difmoltracer = 0.0_dp
       vicwminb = 0.0_dp
       xlozmidov = 0.0_dp
       idensform = 2
@@ -183,8 +175,6 @@ contains
       sag = sqrt(ag)
       rhog = ag * rhomean
       vismol = 4.0_dp / (20.0_dp + backgroundwatertemperature) * 1e-5_dp ! Van Rijn, 1993, from iniphys.f90
-      difmolsal = viskin / 700.0_dp
-      difmoltem = viskin / 6.7_dp
    end subroutine calculate_derived_physcoef
 
 end module m_physcoef

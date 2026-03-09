@@ -59,6 +59,7 @@ contains
       real(kind=dp) :: time_step !< [s] time step
       real(kind=dp) :: expected_result !< [mm/hr] expected infiltration capacity result
       real(kind=dp), dimension(:), allocatable :: inf_cap !< [m/s] infiltration capacity
+      real(kind=dp), dimension(:), allocatable :: result_inf_cap !< result [m/s] infiltration capacity      
       real(kind=dp), dimension(:), allocatable :: waterdepth !< [m] waterdepth
       real(kind=dp), dimension(:), allocatable :: rainfall !< [mm/day] rainfall
       integer, dimension(:), allocatable :: inf_cap_state !< [-] infiltration capacity state
@@ -77,10 +78,10 @@ contains
       expected_result = config%min_inf_cap(1) + (config%max_inf_cap(1) - config%min_inf_cap(1)) * exp(-1.0_dp * config%decrease_rate(1) * time_step * SECOND_TO_HOUR)
 
       ! Convert inf_cap to mm/hr for comparison
-      inf_cap = inf_cap * MPS_TO_MMPHR
+      result_inf_cap = inf_cap * MPS_TO_MMPHR
 
       ! Compare results
-      call f90_expect_true(comparereal(inf_cap(1), expected_result) == 0, "Infiltration capacity does not match expected value")
+      call f90_expect_true(comparereal(result_inf_cap(1), expected_result) == 0, "Infiltration capacity does not match expected value")
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_DECREASE, "Infiltration capacity state should be HORTON_CAPSTAT_DECREASE (1)")
 
    end subroutine test_horton_infiltration_decreasing_rain
@@ -97,6 +98,7 @@ contains
       real(kind=dp) :: time_step !< [s] time step
       real(kind=dp) :: expected_result !< [mm/hr] expected infiltration capacity result
       real(kind=dp), dimension(:), allocatable :: inf_cap !< [m/s] infiltration capacity
+      real(kind=dp), dimension(:), allocatable :: result_inf_cap !< result [m/s] infiltration capacity        
       real(kind=dp), dimension(:), allocatable :: waterdepth !< [m] waterdepth
       real(kind=dp), dimension(:), allocatable :: rainfall !< [mm/day] rainfall
       integer, dimension(:), allocatable :: inf_cap_state !< [-] infiltration capacity state
@@ -114,10 +116,10 @@ contains
       expected_result = config%min_inf_cap(1) + (config%max_inf_cap(1) - config%min_inf_cap(1)) * exp(-1.0_dp * config%decrease_rate(1) * time_step * SECOND_TO_HOUR)
 
       ! Convert inf_cap to mm/hr for comparison
-      inf_cap = inf_cap * MPS_TO_MMPHR
+      result_inf_cap = inf_cap * MPS_TO_MMPHR
 
       ! Compare results
-      call f90_expect_true(comparereal(inf_cap(1), expected_result) == 0, "Infiltration capacity does not match expected value")
+      call f90_expect_true(comparereal(result_inf_cap(1), expected_result) == 0, "Infiltration capacity does not match expected value")
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_DECREASE, "Infiltration capacity state should be HORTON_CAPSTAT_DECREASE (1)")
 
    end subroutine test_horton_infiltration_decreasing_waterdepth
@@ -134,6 +136,7 @@ contains
       real(kind=dp) :: time_step !< [s] time step
       real(kind=dp) :: expected_result !< [mm/hr] expected infiltration capacity result
       real(kind=dp), dimension(:), allocatable :: inf_cap !< [m/s] infiltration capacity
+      real(kind=dp), dimension(:), allocatable :: result_inf_cap !< result [m/s] infiltration capacity
       real(kind=dp), dimension(:), allocatable :: waterdepth !< [m] waterdepth
       real(kind=dp), dimension(:), allocatable :: rainfall !< [mm/day] rainfall
       integer, dimension(:), allocatable :: inf_cap_state !< [-] infiltration capacity state
@@ -155,10 +158,10 @@ contains
       expected_result = config%max_inf_cap(1) - (config%max_inf_cap(1) - config%min_inf_cap(1)) * exp(-1.0_dp * config%recovery_rate(1) * time_step * SECOND_TO_HOUR)
 
       ! Convert inf_cap to mm/hr for comparison
-      inf_cap = inf_cap * MPS_TO_MMPHR
+      result_inf_cap = inf_cap * MPS_TO_MMPHR
 
       ! Compare results
-      call f90_expect_true(comparereal(inf_cap(1), expected_result) == 0, "Infiltration capacity does not match expected value")
+      call f90_expect_true(comparereal(result_inf_cap(1), expected_result) == 0, "Infiltration capacity does not match expected value")
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_RECOVERY, "Infiltration capacity state should be HORTON_CAPSTAT_RECOVERY (2)")
 
    end subroutine test_horton_infiltration_recovering_rain
@@ -175,6 +178,7 @@ contains
       real(kind=dp) :: time_step !< [s] time step
       real(kind=dp) :: expected_result !< [mm/hr] expected infiltration capacity result
       real(kind=dp), dimension(:), allocatable :: inf_cap !< [m/s] infiltration capacity
+      real(kind=dp), dimension(:), allocatable :: result_inf_cap !< result [m/s] infiltration capacity
       real(kind=dp), dimension(:), allocatable :: waterdepth !< [m] waterdepth
       real(kind=dp), dimension(:), allocatable :: rainfall !< [mm/day] rainfall
       integer, dimension(:), allocatable :: inf_cap_state !< [-] infiltration capacity state
@@ -192,10 +196,10 @@ contains
       expected_result = config%max_inf_cap(1) - (config%max_inf_cap(1) - config%min_inf_cap(1)) * exp(-1.0_dp * config%recovery_rate(1) * time_step * SECOND_TO_HOUR)
 
       ! Convert inf_cap to mm/hr for comparison
-      inf_cap = inf_cap * MPS_TO_MMPHR
+      result_inf_cap = inf_cap * MPS_TO_MMPHR
 
       ! Compare results
-      call f90_expect_true(comparereal(inf_cap(1), expected_result) == 0, "Infiltration capacity does not match expected value")
+      call f90_expect_true(comparereal(result_inf_cap(1), expected_result) == 0, "Infiltration capacity does not match expected value")
       call f90_expect_eq(inf_cap_state(1), HORTON_CAPSTAT_RECOVERY, "Infiltration capacity state should be HORTON_CAPSTAT_RECOVERY (2)")
 
    end subroutine test_horton_infiltration_recovering_dry
