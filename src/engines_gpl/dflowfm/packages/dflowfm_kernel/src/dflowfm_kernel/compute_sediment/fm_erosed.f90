@@ -123,6 +123,8 @@ contains
       use m_sand_mud
       use m_get_kbot_ktop
       use m_get_chezy, only: get_chezy
+      use m_compdiam, only: compdiam
+      use m_comphidexp, only: comphidexp
       !
       implicit none
       !
