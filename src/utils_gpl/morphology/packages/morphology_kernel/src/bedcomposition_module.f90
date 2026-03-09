@@ -1893,7 +1893,7 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     !
     integer                                 :: l
     real(fp)                                :: cel_dunes
-    real(fp)                                :: dunelngth_cl
+    real(fp)                                :: dunelength_coarse_layer
     real(fp)                                :: hefac
     real(fp)                                :: localmoblyr
     real(fp)                                :: mav_ms_cl    ! available mass of mobile sediment in coarse layer for exchange
@@ -1970,18 +1970,18 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     !
     if (thick>0.0_fp) then
         if (thtrlyr(nm)>0.0_fp) then
-            dunelngth_cl    = dunelength(nm)*min(1.0_fp + (a_max-1.0_fp)*thick/thtrlyr(nm),a_max)  
+            dunelength_coarse_layer    = dunelength(nm)*min(1.0_fp + (a_max-1.0_fp)*thick/thtrlyr(nm),a_max)  
         else
-            dunelngth_cl    = dunelength(nm) 
+            dunelength_coarse_layer    = dunelength(nm) 
         endif 
-        dunelngth_cl    = max(dunelngth_cl,1e-3_fp)
+        dunelength_coarse_layer    = max(dunelength_coarse_layer,1e-3_fp)
         qs = 0.0_fp
         do l = 1, this%settings%nfrac       
             qs = qs + max(sbot(nm,l),0.0_fp)/rhofrac(l)
         enddo
         qs  = qs/svfrac(1,nm)
         cel_dunes       = qs/thick
-        sinkfrac        = cel_dunes*hdt/dunelngth_cl
+        sinkfrac        = cel_dunes*hdt/dunelength_coarse_layer
         sinkfrac        = min(sinkfrac,sinkfrac_max)
     else
         sinkfrac  = 0.0_fp
