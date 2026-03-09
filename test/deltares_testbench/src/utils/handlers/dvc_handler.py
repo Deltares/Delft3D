@@ -8,6 +8,7 @@ from typing import Optional
 
 from dvc.dvcfile import load_file
 from dvc.repo import Repo
+from dvc.scm import NoSCM
 
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
@@ -23,7 +24,7 @@ class DvcHandler(IHandler):
         else:
             current_file_path = os.getcwd()
             repo_root = self.__find_dvc_root(current_file_path)
-            self.__repo = Repo(repo_root)
+            self.__repo = Repo(repo_root, scm=NoSCM())
 
     def download(
         self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger
