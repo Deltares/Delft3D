@@ -266,7 +266,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp) :: trndiv
     real(fp) :: z
     real(hp) :: dim_real
-    real(fp) , dimension(:)   , allocatable :: dunelngth  !  Copy of dune length in case of 
+    real(fp) , dimension(:)   , allocatable :: dunelength_tmp  !  Copy of dune length in case of 
     real(fp) , dimension(:,:) , allocatable :: sbot       !  Description and declaration in rjdim.f90
 !
 !! executable statements -------------------------------------------------------
@@ -1039,9 +1039,9 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
           enddo
           !
           allocate(sbot     (gdp%d%nmlb:gdp%d%nmub, lsedtot))
-          allocate(dunelngth(gdp%d%nmlb:gdp%d%nmub))
+          allocate(dunelength_tmp(gdp%d%nmlb:gdp%d%nmub))
           sbot      = 0.0_fp 
-          dunelngth = 1.0e10_fp
+          dunelength_tmp = 1.0e10_fp
           !
           istat =  bedcomp_getpointer_logical(gdp%gdmorlyr,'crslyr',crslyr)
           istat =  bedcomp_getpointer_integer(gdp%gdmorlyr,'imobility',imobility)
@@ -1057,7 +1057,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
               !
               ! Get dunelength
               !
-              dunelngth = dunelength
+              dunelength_tmp = dunelength
               !
               ! Compute average bed load transport in cel
               ! 
@@ -1081,7 +1081,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
           ! Update layers and obtain the depth change
           !
           call morstats(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, ssvv, gdp%d%nmlb, gdp%d%nmub, lsedtot, lsed)
-          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, dunelngth, sbot, dtmor, gdp%messages) /= 0) then
+          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, dunelength_tmp, sbot, dtmor, gdp%messages) /= 0) then
              call writemessages(gdp%messages, lundia)
              call d3stop(1, gdp)
           else
@@ -1096,7 +1096,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                        & gdp       )
           !
           deallocate(sbot)
-          deallocate(dunelngth)
+          deallocate(dunelength_tmp)
           !
        endif
     endif ! nst >= itcmp
