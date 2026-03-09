@@ -1,4 +1,4 @@
-name: Cancel testbench
+name: Cancel TeamCity builds
 
 on:
   push:
@@ -19,7 +19,7 @@ on:
         type: string
 
 jobs:
-  cancel-testbench:
+  cancel-teamcity-builds:
     runs-on: ubuntu-latest
 
     env:
@@ -105,7 +105,7 @@ jobs:
           secrets: |-
             keeper://${{ env.KSM_RECORD_UID }}/field/password > teamcity_token
 
-      - name: Cancel testbench
+      - name: Cancel TeamCity builds
         if: steps.retrieve-ksm-credentials.outcome == 'success'
         run: |
           set -eou pipefail
