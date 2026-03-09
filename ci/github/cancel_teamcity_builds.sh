@@ -175,67 +175,68 @@ function cancel_all_builds() {
   if [[ -n "${COMMIT_HASH}" ]]; then
     locator="${locator},revision:${COMMIT_HASH}"
   fi
-  root_build_ids=$(get_build_ids "${locator}")
+  local raw_root_build_ids
+  raw_root_build_ids=$(get_build_ids "${locator}")
   printf "done.\n"
 
-  if [[ -z "${root_build_ids}" ]]; then
-    printf "No builds found for this commit. Nothing to cancel."
+  if [[ -z "${raw_root_build_ids}" ]]; then
+    printf "No builds found. Nothing to cancel."
     exit 0
   fi
 
-  if ${VERBOSE}; then
-    printf "Root builds:\n%s\n" "${root_build_ids}"
-  fi
-
-  for root_build_id in $root_build_ids; do
-    root_build_id="${root_build_id%$'\r'}"
-    printf "\nProcessing root build: %s\n" "${root_build_id}" >&2
-    read -r build_type_id state build_web_url <<<"$(get_build_info "${root_build_id}")"
-    printf "Found %s (id: %d | state: %s | %s)\n" \
-      "${build_type_id}" \
+  local root_build_ids=()
+  mapfile -t root_build_ids < <(printf '%s' "${raw_root_build_ids}" | tr -d '\r')
+  for root_build_id in "${root_build_ids[@]}"; do
+    read -r root_build_type_id root_build_state root_build_web_url <<<"$(get_build_info "${root_build_id}")"
+    printf "\nFound root build %s (id: %s | state: %s | %s)\n" \
+      "${root_build_type_id}" \
       "${root_build_id}" \
-      "${state}" \
-      "${build_web_url}" >&2
+      "${root_build_state}" \
+      "${root_build_web_url}" >&2
 
-    case "${state}" in
-    queued | pending)
+    case "${root_build_state}" in
+    pending | queued)
       cancel_build "${root_build_id}"
       ;;
-
     running | finished)
       local raw_dep_build_ids
-      raw_dep_build_ids=$(get_build_ids "snapshotDependency:(from:(id:${root_build_id}),includeInitial:true),state:any,defaultFilter:false")
+      locator="snapshotDependency:(from:(id:${root_build_id}),includeInitial:true),state:any,defaultFilter:false"  
+
+      raw_dep_build_ids=$(get_build_ids "${locator}")
 
       if [[ -z "${raw_dep_build_ids}" ]]; then
-        printf "No dependent builds for %d.\n" "${root_build_id}"
+        printf "No dependent builds for root build with id %s.\n" "${root_build_id}"
         continue
       fi
 
       local dep_build_ids=()
       mapfile -t dep_build_ids < <(printf '%s' "${raw_dep_build_ids}" | tr -d '\r')
-      printf "Dependent builds for root build with id %d:\n" "${root_build_id}"
+      printf "Dependent builds for root build with id %s:\n" "${root_build_id}"
       for dep_build_id in "${dep_build_ids[@]}"; do
-        read -r dep_build_type_id dep_state dep_build_web_url <<<"$(get_build_info "${dep_build_id}")"
+        read -r dep_build_type_id dep_build_state dep_build_web_url <<<"$(get_build_info "${dep_build_id}")"
         printf "  Found \"%s\" [id: %s | state: %s | %s]\n" \
           "${dep_build_type_id}" \
           "${dep_build_id}" \
-          "${dep_state}" \
+          "${dep_build_state}" \
           "${dep_build_web_url}" >&2
 
-        if [[ "${dep_state}" == "running" ||
-          "${dep_state}" == "queued" ||
-          "${dep_state}" == "pending" ]]; then
+        case "${dep_build_state}" in
+        pending | queued | running)
           printf "    Stopping build..."
           cancel_build "${dep_build_id}"
           printf " done.\n"
-        else
-          printf "    Build finished, nothing to do.\n"
-        fi
+          ;;
+        finished)
+          printf "    Build finished, nothing to cancel.\n"
+          ;;
+        *)
+          printf "    Unknown state '%s', skipping.\n" "${root_build_state}"
+          ;;
+        esac
       done
       ;;
-
     *)
-      printf "Unknown state '%s' for build %d, skipping.\n" "${state}" "${root_build_id}"
+      printf "Unknown state '%s' for build %s, skipping.\n" "${root_build_state}" "${root_build_id}"
       ;;
     esac
   done
