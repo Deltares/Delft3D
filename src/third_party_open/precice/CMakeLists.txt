@@ -41,6 +41,7 @@ if(WIN32)
             Boost::log_setup
             Boost::program_options
             Boost::thread
+            Boost::filesystem
             RUNTIME DESTINATION lib
     )
 endif(WIN32)

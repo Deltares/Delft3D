@@ -145,6 +145,7 @@ function(F90TWTEST NAME)
     target_link_libraries(${NAME} PRIVATE ${FLIBNAME} f90tw_gtest)
     target_compile_definitions(${NAME} PUBLIC ${FTW_DEFINITIONS})
     add_dependencies(${NAME} ${FLIBNAME})
+    
     set_target_properties(${NAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)
 
     if(WIN32)

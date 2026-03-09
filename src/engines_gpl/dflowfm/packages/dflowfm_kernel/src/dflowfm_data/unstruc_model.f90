@@ -3441,7 +3441,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
       end if
 
-      if (Jadelvappos /= 0) then
+      if (writeall .or. (Jadelvappos /= 0)) then
          call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
       end if
 
