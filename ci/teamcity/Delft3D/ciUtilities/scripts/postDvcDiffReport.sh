@@ -138,14 +138,16 @@ if [ -s report.md ]; then
     PAYLOAD="$(jq -c -n --rawfile body report.md '$ARGS.named')"
 
     # Post the report
-    curl -L \
+    curl --location \
         --fail \
-        -X POST \
-        -H "Accept: application/vnd.github+json" \
-        -H "Authorization: Bearer $GITHUB_BARER_TOKEN" \
-        -H "X-GitHub-Api-Version: 2022-11-28" \
+        --show-error \
+        --silent \
+        --request POST \
+        --header "Accept: application/vnd.github+json" \
+        --header "Authorization: Bearer $GITHUB_BARER_TOKEN" \
+        --header "X-GitHub-Api-Version: 2022-11-28" \
         "$POST_URL" \
-        -d "$PAYLOAD"
+        --data "$PAYLOAD"
 else
     echo "No dvc changes detected, therefore no report was generated"
     exit 0
