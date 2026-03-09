@@ -10,6 +10,7 @@ TEAMCITY_TOKEN=""
 TEAMCITY_PROJECT_ID=""
 BRANCH=""
 COMMIT_HASH=""
+VERBOSE=false
 
 TEAMCITY_URL="https://dpcbuild.deltares.nl"
 TEAMCITY_BUILDS="${TEAMCITY_URL}/app/rest/builds"
@@ -49,9 +50,9 @@ EOF
 }
 
 function parse_args() {
-  local long_options="help,teamcity-token:,teamcity-project-id:,branch:,commit-hash:"
+  local long_options="help,teamcity-token:,teamcity-project-id:,branch:,commit-hash:,verbose"
   local parsed_options
-  if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long ${long_options} -- "$@"); then
+  if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long "${long_options}" -- "$@"); then
     printf "parse_args: failed to parse arguments.\n"
     return 1
   fi
@@ -79,6 +80,10 @@ function parse_args() {
       COMMIT_HASH="$2"
       shift 2
       ;;
+    --verbose)
+      VERBOSE=true
+      shift 1
+      ;;
     --)
       shift
       break
@@ -102,10 +107,16 @@ function parse_args() {
 }
 
 function print_header() {
-  printf "\n%s was invoked with\n" "$0" 
+  printf "\n%s was invoked with\n" "$0"
   printf "Project ID    : %s\n" "${TEAMCITY_PROJECT_ID}"
   printf "Branch name   : %s\n" "${BRANCH}"
-  printf "Commit SHA    : %s\n" "${COMMIT_HASH}"
+  local commit
+  if [[ -z "${COMMIT_HASH}" ]]; then
+    commit="All commits"
+  else
+    commit="${COMMIT_HASH}"
+  fi
+  printf "Commit SHA    : %s\n" "${commit}"
 }
 
 function encode_branch_name() {
@@ -133,6 +144,7 @@ function teamcity_post_request() {
     --fail \
     --show-error \
     --request POST \
+    --output /dev/null \
     --header "Authorization: Bearer ${TEAMCITY_TOKEN}" \
     --header "Accept: application/json" \
     --header "Content-Type: application/json" \
@@ -142,21 +154,19 @@ function teamcity_post_request() {
 
 function get_build_ids() {
   local locator="$1"
-  #echo "${TEAMCITY_BUILDS}?locator=${locator}" >&2
   teamcity_get_request "${TEAMCITY_BUILDS}?locator=${locator}" | jq -r '.build[]?.id'
 }
 
-function get_build_state() {
+function get_build_info() {
   local build_id="$1"
-  teamcity_get_request "${TEAMCITY_BUILDS}/id:${build_id}" | jq -r '.state'
+  teamcity_get_request "${TEAMCITY_BUILDS}/id:${build_id}" |
+    jq -r '[.buildTypeId, .state, .webUrl] | @tsv'
 }
 
 function cancel_build() {
   local build_id="$1"
   local payload='{ "buildCancelRequest": { "comment": "Build cancelled from GitHub", "readdIntoQueue": false } }'
-  printf "Stopping build %d... " "${build_id}" >&2
   teamcity_post_request "${TEAMCITY_BUILDS}/id:${build_id}" "${payload}"
-  printf "done.\n" >&2
 }
 
 function cancel_all_builds() {
@@ -173,13 +183,19 @@ function cancel_all_builds() {
     exit 0
   fi
 
-  printf "Root builds:\n%s\n" "${root_build_ids}"
+  if ${VERBOSE}; then
+    printf "Root builds:\n%s\n" "${root_build_ids}"
+  fi
 
   for root_build_id in $root_build_ids; do
     root_build_id="${root_build_id%$'\r'}"
-    printf "\nprocessing: %s\n" "${root_build_id}" >&2
-    state=$(get_build_state "${root_build_id}")
-    printf "Build %d state: %s.\n" "${root_build_id}" "${state}"
+    printf "\nProcessing root build: %s\n" "${root_build_id}" >&2
+    read -r build_type_id state build_web_url <<<"$(get_build_info "${root_build_id}")"
+    printf "Found %s (id: %d | state: %s | %s)\n" \
+      "${build_type_id}" \
+      "${root_build_id}" \
+      "${state}" \
+      "${build_web_url}" >&2
 
     case "${state}" in
     queued | pending)
@@ -187,23 +203,33 @@ function cancel_all_builds() {
       ;;
 
     running | finished)
-      dep_build_ids=$(get_build_ids "snapshotDependency:(from:(id:${root_build_id}),includeInitial:true),state:any,defaultFilter:false")
+      local raw_dep_build_ids
+      raw_dep_build_ids=$(get_build_ids "snapshotDependency:(from:(id:${root_build_id}),includeInitial:true),state:any,defaultFilter:false")
 
-      if [[ -z "${dep_build_ids}" ]]; then
+      if [[ -z "${raw_dep_build_ids}" ]]; then
         printf "No dependent builds for %d.\n" "${root_build_id}"
         continue
       fi
 
-      printf "Dependent builds for root build with id %d: \n%s\n" "${root_build_id}" "${dep_build_ids}"
-
-      for dep_build_id in ${dep_build_ids}; do
-        dep_build_id="${dep_build_id%$'\r'}"
-        dep_state=$(get_build_state "${dep_build_id}")
+      local dep_build_ids=()
+      mapfile -t dep_build_ids < <(printf '%s' "${raw_dep_build_ids}" | tr -d '\r')
+      printf "Dependent builds for root build with id %d:\n" "${root_build_id}"
+      for dep_build_id in "${dep_build_ids[@]}"; do
+        read -r dep_build_type_id dep_state dep_build_web_url <<<"$(get_build_info "${dep_build_id}")"
+        printf "  Found \"%s\" [id: %s | state: %s | %s]\n" \
+          "${dep_build_type_id}" \
+          "${dep_build_id}" \
+          "${dep_state}" \
+          "${dep_build_web_url}" >&2
 
         if [[ "${dep_state}" == "running" ||
           "${dep_state}" == "queued" ||
           "${dep_state}" == "pending" ]]; then
+          printf "    Stopping build..."
           cancel_build "${dep_build_id}"
+          printf " done.\n"
+        else
+          printf "    Build finished, nothing to do.\n"
         fi
       done
       ;;
