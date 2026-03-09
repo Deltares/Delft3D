@@ -115,6 +115,8 @@ class DvcHandler(IHandler):
         current = os.path.dirname(os.path.abspath(path))
         while current != "/":
             if os.path.isdir(os.path.join(current, ".dvc")):
-                return current
+                # Resolve to true filesystem casing so DVC/scmrepo path
+                # comparisons work on case-insensitive (Windows) file systems.
+                return os.path.realpath(current)
             current = os.path.dirname(current)
         raise ValueError("Could not find DVC repository root (.dvc directory)")
