@@ -56,7 +56,6 @@ public  detthcmud
 public  getalluvthick
 public  getporosity
 public  getfrac
-public  getmfrac
 public  setmfrac
 public  getvfrac
 public  setvfrac
