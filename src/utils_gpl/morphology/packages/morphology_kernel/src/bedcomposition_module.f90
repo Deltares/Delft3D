@@ -2892,7 +2892,7 @@ function allocmorlyr(this) result (istat)
           if (istat == 0) allocate (settings%thclyr(nmlb:nmub), stat = istat)
           if (istat == 0) settings%thclyr = 0.0_fp
           if (istat == 0) allocate (state%mobile(nfrac,nmlb:nmub), stat = istat)
-          if (istat == 0) state%mobile = 0.0_fp
+          if (istat == 0) state%mobile = 1.0_fp
        endif
        !
        if (settings%exchlyr) then
@@ -2907,8 +2907,6 @@ function allocmorlyr(this) result (istat)
        if (istat == 0) state%svfrac = 1.0_fp
        if (istat == 0) allocate (state%preload(settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%preload = 0.0_fp
-       if (istat == 0) allocate (state%mobile(nfrac,nmlb:nmub), stat = istat)
-       if (istat == 0) state%mobile = 1.0_fp  ! consider all fractions mobile by default
     endif
     if (istat == 0) allocate (state%sedshort(nfrac,nmlb:nmub), stat = istat)
     if (istat == 0) state%sedshort = 0.0_fp
