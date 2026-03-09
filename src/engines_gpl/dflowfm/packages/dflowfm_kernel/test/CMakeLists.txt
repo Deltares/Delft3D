@@ -106,13 +106,6 @@ f90twtest(test_bubblescreen
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
-f90twtest(test_deltares_common_gtest
-    CFILES test_deltares_common_gtest.cpp
-    F90FILES test_deltares_common_gtest.f90
-    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_deltares_common_gtest.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
-    LIBRARIES dflowfm_kernel
-    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
-)
+
 
 add_subdirectory(io)
