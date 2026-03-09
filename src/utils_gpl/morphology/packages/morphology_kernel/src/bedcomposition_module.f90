@@ -1857,8 +1857,8 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
                 !
                 !  Continuous formulation of mobility
                 !
-                tau50 = max(tau50,1e-12_fp)
-                t1    = taub(nm)/tau50
+                tau50 = max(tau50,1e-12_fp) !prevent division by 0
+                t1    = max(taub(nm)/tau50, tiny(1.0_fp)) !prevent log of 0
                 t2    = log(t1)*fac
                 mobile(l,nm) = 0.5_fp*(1.0_fp+erf(t2))
             endif
