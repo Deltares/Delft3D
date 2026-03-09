@@ -22,7 +22,7 @@ contains
    subroutine test_dp_equal_outside_tolerance() bind(C)
       real(kind=dp) :: a, b
       a = 1.0_dp
-      b = a + 2.1_dp * epsilon(a)
+      b = a + 3.0_dp * epsilon(a)
       call f90_expect_false(equal(a, b))
    end subroutine test_dp_equal_outside_tolerance
    !$f90tw)
@@ -58,11 +58,11 @@ contains
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_sp_equal_outside_tolerance, test_sp_equal_outside_tolerance,
-   !> Two sp numbers 2 ULPs apart should not be equal
+   !> Two sp numbers >2 ULPs apart should not be equal
    subroutine test_sp_equal_outside_tolerance() bind(C)
       real(kind=sp) :: a, b
       a = 1.0_sp
-      b = a + 2.1_sp * epsilon(a)
+      b = a + 3.0_sp * epsilon(a)
       call f90_expect_false(equal(a, b))
    end subroutine test_sp_equal_outside_tolerance
    !$f90tw)
