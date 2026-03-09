@@ -1057,7 +1057,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
               !
               ! Get dunelength
               !
-              if (lfbedfrm) dunelngth = dunelength
+              dunelngth = dunelength
               !
               ! Compute average bed load transport in cel
               ! 
