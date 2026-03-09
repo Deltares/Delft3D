@@ -89,11 +89,11 @@ for modified_idx in $(seq 0 "$NUM_MODIFIED_FILES"); do
             echo "skpping because NEW_PATH did not exist in cache" 
         else
             
-            MIME=$(file --mime-type "$ADDED_FILE_PATH" | cut -d: -f2 )
+            MIME=$(file --mime-type "$OLD_PATH" | cut -d: -f2 )
             MIME_TYPE=$(echo "$MIME" | cut -d/ -f2 | tr -d ' ')
             
             if [ "$MIME_TYPE" != "text" ]; then
-                echo "Skipping $ADDED_FILE_PATH because it was not a text file"
+                echo "Skipping $MODIFIED_FILE_PATH because it was not a text file"
                 continue
             fi
 
