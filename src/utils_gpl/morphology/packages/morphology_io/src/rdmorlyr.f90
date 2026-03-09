@@ -597,7 +597,6 @@ contains
          !
          ! HANNEKE
          !
-         !ATTENTION! This will not compile because pointers are not created. Associate rather than point. 
          istat = bedcomp_getpointer_integer(morlyr, 'ISedCrs2Tr'          , isedcrs2tr)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IHidExpTrCrs'        , ihidexptrcrs)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IMobility'           , imobility)
