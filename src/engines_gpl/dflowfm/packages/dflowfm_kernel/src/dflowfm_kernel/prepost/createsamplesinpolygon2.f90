@@ -33,7 +33,7 @@
 module m_createsamplesinpolygon2
    use m_darean, only: darean
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -52,6 +52,7 @@ contains
       use m_qnerror, only: qnerror
       use network_data, only: TRIANGLESIZEFAC
       use geometry_module, only: dbpinpol, get_startend
+      use m_ec_basic_interpolation, only: tricall
 
       integer :: ierr
       integer :: in
