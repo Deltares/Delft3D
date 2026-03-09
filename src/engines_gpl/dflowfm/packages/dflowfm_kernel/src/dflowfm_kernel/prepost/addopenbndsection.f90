@@ -41,10 +41,10 @@ module m_addopenbndsection
 contains
 
    !> Adds administration for an open boundary segment, intended
- !! for postprocessing.
- !!
- !! An open boundary section is associated with one polyline
- !! and consists of one or more netlink numbers.
+   !! for postprocessing.
+   !!
+   !! An open boundary section is associated with one polyline
+   !! and consists of one or more netlink numbers.
    subroutine addopenbndsection(nbnd, netlinknrs, plifilename, ibndtype)
       use m_alloc, only: realloc
       use fm_external_forcings_data, only: nopenbndsect, nopenbndlin, openbndname, openbndfile, openbndtype, ibndtp_unknown, openbndlin
