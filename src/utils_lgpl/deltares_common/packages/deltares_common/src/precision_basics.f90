@@ -84,7 +84,7 @@ module precision_basics
 ! long integer of at least 54 bits:
    integer, parameter, public :: long = selected_int_kind(16)
 
-   interface comparereal
+   interface comparereal !< deprecated, preferably use new equal interface which returns a logical instead of integer
       module procedure comparerealdouble
       module procedure comparerealsingle
       module procedure comparerealdouble_finite_check
@@ -98,15 +98,16 @@ module precision_basics
       module procedure real_sp_equal_eps
    end interface
 
-   public :: comparereal
+   public :: comparereal 
    public :: equal
    public :: dp
    public :: sp
    public :: int32
    public :: int64
+
 contains
 
-   !> Returns .true. if two double precision numbers are equal within machine epsilon.
+   !> Returns .true. if two double precision numbers are equal within 2x machine epsilon.
    !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
    elemental function real_dp_equal(a, b) result(res)
       logical :: res
@@ -116,7 +117,7 @@ contains
       res = abs(a - b) < 2.0_dp * epsilon(a) * max(abs(a), abs(b), 1.0_dp)
    end function real_dp_equal
 
-   !> Returns .true. if two single precision numbers are equal within machine epsilon.
+   !> Returns .true. if two single precision numbers are equal within 2x machine epsilon.
    !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
    elemental function real_sp_equal(a, b) result(res)
       logical :: res
