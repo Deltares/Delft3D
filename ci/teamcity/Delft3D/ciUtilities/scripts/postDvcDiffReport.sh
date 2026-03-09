@@ -43,71 +43,85 @@ function fetch_dvc_files() {
 # that we decided to just write seperate loops instead of one function
 
 function generate_added_files_diffs() {
-    NUM_ADDED_FILES="$(jq '.added | length - 1' "$TEMP_DIR/diff.json")"
+    local num_added_files
+    num_added_files="$(jq '.added | length - 1' "$TEMP_DIR/diff.json")"
 
-    for added_idx in $(seq 0 "$NUM_ADDED_FILES"); do
-        ADDED_FILE_PATH="$(jq -c -r --arg idx "$added_idx" '.added | .[$idx | tonumber] | .path' "$TEMP_DIR/diff.json")"
-        if [ -s "$ADDED_FILE_PATH" ]; then
+    for added_idx in $(seq 0 "$num_added_files"); do
+        local added_file_path
+        added_file_path="$(jq -c -r --arg idx "$added_idx" '.added | .[$idx | tonumber] | .path' "$TEMP_DIR/diff.json")"
+        
+        if [ -s "$added_file_path" ]; then
 
-            MIME=$(file --mime-type "$ADDED_FILE_PATH" | cut -d: -f2 )
-            MIME_TYPE=$(echo "$MIME" | cut -d/ -f2 | tr -d ' ')
+            local mime
+            mime="$(file --mime-type "$added_file_path" | cut -d: -f2 )"
+            
+            local mime_type
+            mime_type="$(echo "$mime" | cut -d/ -f2 | tr -d ' ')"
 
-            if [ "$MIME_TYPE" != "text" ]; then
-                echo "Skipping $ADDED_FILE_PATH because it was not a text file"
+            if [ "$mime_type" != "text" ]; then
+                echo "Skipping $added_file_path because it was not a text file"
                 continue
             fi
             # get the language of the file from `file` so that we can use the correct syntax hilighting in the comment
-            LANG=$( echo "$MIME" | cut -d/ -f2 | tr -d ' ')
+            local lang
+            lang="$( echo "$mime" | cut -d/ -f2 | tr -d ' ')"
         
             # jq recommended way of doing this. see https://github.com/jqlang/jq/wiki/FAQ#general-questions
-            jq -c -r --arg idx "$added_idx" --rawfile diff_content "$ADDED_FILE_PATH" --arg lang "$LANG"  '.added[$idx | tonumber] += {"diff":$diff_content, "lang":$lang}' "$TEMP_DIR/diff.json" > "$TEMP_DIR/tmp.json"
+            jq -c -r --arg idx "$added_idx" --rawfile diff_content "$added_file_path" --arg lang "$lang"  '.added[$idx | tonumber] += {"diff":$diff_content, "lang":$lang}' "$TEMP_DIR/diff.json" > "$TEMP_DIR/tmp.json"
             mv "$TEMP_DIR/tmp.json" "$TEMP_DIR/diff.json" 
         else 
-            echo "skipping adding the diff of $ADDED_FILE_PATH since it was not present"
+            echo "skipping adding the diff of $added_file_path since it was not present"
         fi
     done 
 }
 
 function generate_modified_files_diffs() {
-    NUM_MODIFIED_FILES="$(jq '.modified | length - 1' "$TEMP_DIR/diff.json")"
-    CACHE_DIR="$(dvc cache dir)"
-    for modified_idx in $(seq 0 "$NUM_MODIFIED_FILES"); do
-            MODIFIED_FILE_PATH="$(jq -c -r --arg idx "$modified_idx" '.modified | .[$idx | tonumber] | .path' "$TEMP_DIR/diff.json")"
+    local num_modified_files
+    num_modified_files="$(jq '.modified | length - 1' "$TEMP_DIR/diff.json")"
+    
+    local cache_dir
+    cache_dir="$(dvc cache dir)"
+    for modified_idx in $(seq 0 "$num_modified_files"); do
+            local modified_file_path
+            modified_file_path="$(jq -c -r --arg idx "$modified_idx" '.modified | .[$idx | tonumber] | .path' "$TEMP_DIR/diff.json")"
 
-            echo "checking $MODIFIED_FILE_PATH"
-        
-            OLD_HASH="$(jq -c -r --arg idx "$modified_idx" '.modified | .[$idx | tonumber] | .hash.old' "$TEMP_DIR/diff.json")"
-            OLD_DIR="$(echo "$OLD_HASH" | cut -c1-2)"
-            OLD_FILE="$(echo "$OLD_HASH" | cut -c3-)"
-            OLD_PATH="$CACHE_DIR/files/md5/$OLD_DIR/$OLD_FILE"
-            echo "OLD_PATH: $OLD_PATH"
+            echo "checking $modified_file_path"
+            local old_dir, old_file, old_dir, old_path
 
-            NEW_HASH="$(jq -c -r --arg idx "$modified_idx" '.modified | .[$idx | tonumber] | .hash.new' "$TEMP_DIR/diff.json")"
-            NEW_DIR="$(echo "$NEW_HASH" | cut -c1-2)"
-            NEW_FILE="$(echo "$NEW_HASH" | cut -c3-)" 
-            NEW_PATH="$CACHE_DIR/files/md5/$NEW_DIR/$NEW_FILE"
-            echo "new_PATH: $NEW_PATH"
+            old_hash="$(jq -c -r --arg idx "$modified_idx" '.modified | .[$idx | tonumber] | .hash.old' "$TEMP_DIR/diff.json")"
+            old_dir="$(echo "$old_hash" | cut -c1-2)"
+            old_file="$(echo "$old_hash" | cut -c3-)"
+            old_path="$cache_dir/files/md5/$old_dir/$old_file"
+            echo "OLD_PATH: $old_path"
+
+            local new_hash, new_dir, new_file, new_path
+            new_hash="$(jq -c -r --arg idx "$modified_idx" '.modified | .[$idx | tonumber] | .hash.new' "$TEMP_DIR/diff.json")"
+            new_dir="$(echo "$new_hash" | cut -c1-2)"
+            new_file="$(echo "$new_hash" | cut -c3-)" 
+            new_path="$cache_dir/files/md5/$new_dir/$new_file"
+            echo "new_PATH: $new_path"
             
 
 
-            if [ ! -s "$OLD_PATH" ]; then
+            if [ ! -s "$old_path" ]; then
                 echo "skpping because OLD_PATH did not exist in cache" 
-            elif [ ! -s "$NEW_PATH" ]; then 
+            elif [ ! -s "$new_path" ]; then 
                 echo "skpping because NEW_PATH did not exist in cache" 
             else
                 
-                MIME=$(file --mime-type "$OLD_PATH" | cut -d: -f2 )
-                MIME_TYPE=$(echo "$MIME" | cut -d/ -f2 | tr -d ' ')
+                local mime, mime_type
+                mime="$(file --mime-type "$old_path" | cut -d: -f2 )"
+                mime_type="$(echo "$mime" | cut -d/ -f2 | tr -d ' ')"
                 
-                if [ "$MIME_TYPE" != "text" ]; then
-                    echo "Skipping $MODIFIED_FILE_PATH because it was not a text file"
+                if [ "$mime_type" != "text" ]; then
+                    echo "Skipping $modified_file_path because it was not a text file"
                     continue
                 fi
 
                 # git diff will exit 1 if there are chagnes, and because we set -eo pipefiail ath the start, 
                 # the script will stop if we don't add the || true at the end
                 # We already know there will be changes because of dvc diff, so we're not creating false possitives here
-                git diff --no-index --output "$TEMP_DIR/diff.txt" "$OLD_PATH" "$NEW_PATH" || true
+                git diff --no-index --output "$TEMP_DIR/diff.txt" "$old_path" "$new_path" || true
 
                 # jq recommended way of doing this. see https://github.com/jqlang/jq/wiki/FAQ#general-questions
                 jq -c -r --arg idx "$modified_idx" --rawfile diff_content "$TEMP_DIR/diff.txt"  '.modified[$idx | tonumber] += {"diff":$diff_content}' "$TEMP_DIR/diff.json" > "$TEMP_DIR/tmp.json"
