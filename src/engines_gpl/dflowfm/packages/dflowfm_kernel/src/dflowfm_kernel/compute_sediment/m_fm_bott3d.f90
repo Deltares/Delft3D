@@ -77,7 +77,11 @@ contains
       use fm_external_forcings_data, only: nopenbndsect
       use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
       use unstruc_files, only: mdia
-      use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
+      use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, &
+                             bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, &
+                             stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt,&
+                             hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy, sedd50, taub, rhosol, &
+                             hidexp
       use m_sediment, only: kcsmor
       use m_partitioninfo, only: jampi, ITYPE_Sall, update_ghosts
       use m_fm_morstatistics, only: morstats, morstatt0
@@ -85,6 +89,8 @@ contains
       use Timers
       use m_reconstruct_sed_transports
       use m_waveconst
+      use m_physcoef, only: ag, rhomean
+      use m_bedform, only: bfmpar
 
       implicit none
 
@@ -98,6 +104,7 @@ contains
       logical, parameter :: AVALANCHE_OFF = .false.
       logical, parameter :: SLOPECOR_ON = .true.
       logical, parameter :: SLOPECOR_OFF = .false.
+      integer, parameter :: OFF = 0
 
    !!
    !! Local variables
@@ -109,6 +116,7 @@ contains
 
       real(kind=dp) :: dtmor
       real(kind=dp) :: timhr
+      real(kind=dp) :: sbtot(ndx,stmpar%lsedtot)
 
       logical, pointer :: cmpupd
 
@@ -222,18 +230,35 @@ contains
             !
             ! Diffuse fractions in active layer
             !
-            if (stmpar%morlyr%settings%active_layer_diffusion > 0) then
+            if (stmpar%morlyr%settings%active_layer_diffusion > OFF) then
                call fm_diffusion_active_layer()
             end if
             !
             ! Determine new thickness of transport layer
             !
             call compthick()
+            ! 
+            ! Compute mobile fractions
+            ! 
+            if (stmpar%morlyr%settings%imobility > OFF) then 
+               call compmobile(stmpar%morlyr, ag, sedd50, taub, rhosol, rhomean, hidexp)
+            endif    
+            ! 
+            if (stmpar%morlyr%settings%crslyr) then 
+               !
+               ! Get dunelength
+               !
+               !dunelength_tmp = dunelength
+               !
+               ! Compute average bed load transport in cel
+               ! 
+               sbtot(:, :) = hypot(sbcx(:, :), sbcy(:, :)) !sbtot(:, :) = sqrt(sbcx(:, :) * sbcx(:, :) + sbcy(:, :) * sbcy(:, :))
+            endif 
             !
             ! Update layers and obtain the depth change
             !
             !See: UNST-7369
-            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, mtd%messages) /= 0) then
+            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, bfmpar%dunelength, sbtot, dtmor, mtd%messages) /= 0) then
                call writemessages(mtd%messages, mdia)
                write (errmsg, '(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
                call write_error(errmsg, unit=mdia)
