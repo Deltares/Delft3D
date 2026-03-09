@@ -3040,7 +3040,6 @@ function clrmorlyr(this) result (istat)
        if (associated(state%msed))         deallocate(state%msed    , STAT = istat)
        if (associated(state%thlyr))        deallocate(state%thlyr   , STAT = istat)
        if (associated(state%sedshort))     deallocate(state%sedshort, STAT = istat)
-       if (associated(state%mobile))  deallocate(state%mobile, STAT = istat)
        !
        deallocate(this%state, STAT = istat)
        nullify(this%state)
