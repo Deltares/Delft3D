@@ -229,11 +229,17 @@ class TestSetRunner(ABC):
         )
 
         try:
-            # DVC will not download data as part of the run.
             if not config.path or config.path.version != "DVC":
                 log_sub_header(f"Preparing test case name = '{config.name}'", logger)
                 self.prepare_test_case(config, logger)
                 log_separator(logger, char="-")
+            else:
+                # DVC data is batch-downloaded upfront; create a fresh work copy for this run.
+                if config.absolute_test_case_path:
+                    work_path = Path(config.absolute_test_case_path)
+                    if work_path.name.endswith("_work"):
+                        source_path = work_path.with_name(work_path.name[:-5])
+                        self.__copy_to_work_folder(source_path, logger)
 
             # Run testcase
             if not config.absolute_test_case_path or not config.absolute_test_case_reference_path:
@@ -471,11 +477,9 @@ class TestSetRunner(ABC):
                 log_separator(self.__logger, char="-")
                 return
 
-        # Phase 3: Post-download steps (copy to work folder, set paths).
+        # Phase 3: Set paths on configs (work folder copy deferred to run_test_case).
         for config, location, _remote_path, local_path in location_info:
             try:
-                if location.type == PathType.INPUT:
-                    self.__copy_to_work_folder(Path(local_path), self.__logger)
                 self.__set_absolute_paths(config, location.type, local_path)
             except Exception as exception:
                 self.__logger.error(f"Failed post-download steps for '{config.name}': {exception}")
