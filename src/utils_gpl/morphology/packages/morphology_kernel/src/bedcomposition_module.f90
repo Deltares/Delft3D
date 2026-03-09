@@ -2377,42 +2377,19 @@ subroutine getmfrac(this, frac, nmfrom, nmto, kfrom, kto)
     !
     ! Calculate total bottom sediments and fractions
     !
-    select case(this%settings%iunderlyr)
-    case(2)
-       do nm = nmfrom, nmto
-          sedtot = 0.0_fp
-          do l = 1, this%settings%nfrac
-             do k = kfrom, kto 
-                sedtot = sedtot + msed(l, k, nm)
-             enddo
-          enddo
-          if (comparereal(sedtot,0.0_fp) == 0) then
-             frac(nm, :) = 1.0_fp/this%settings%nfrac
-          else
-            do l = 1, this%settings%nfrac
-               msedl = 0.0_fp
-               do k = kfrom, kto 
-                   msedl = msedl + msed(l, 1, nm)
-               enddo      
-               frac(nm, l) = msedl/sedtot
-            enddo
-          endif
+    do nm = nmfrom, nmto
+       sedtot = 0.0_fp
+       do l = 1, this%settings%nfrac
+          sedtot = sedtot + real(bodsed(l, nm),fp)
        enddo
-    case default
-       do nm = nmfrom, nmto
-          sedtot = 0.0_fp
+       if (comparereal(sedtot,0.0_fp) == 0) then
+          frac(nm, :) = 1.0_fp/this%settings%nfrac
+       else
           do l = 1, this%settings%nfrac
-             sedtot = sedtot + real(bodsed(l, nm),fp)
+             frac(nm, l) = real(bodsed(l, nm),fp)/sedtot
           enddo
-          if (comparereal(sedtot,0.0_fp) == 0) then
-             frac(nm, :) = 1.0_fp/this%settings%nfrac
-          else
-             do l = 1, this%settings%nfrac
-                frac(nm, l) = real(bodsed(l, nm),fp)/sedtot
-             enddo
-          endif
-       enddo
-    endselect
+       endif
+    enddo
 end subroutine getmfrac
 !
 !
@@ -2491,8 +2468,8 @@ subroutine getvfrac(this, frac, nmfrom, nmto, kfrom, kto)
     integer                                                           , intent(in)  :: nmto
     type(bedcomp_data)                                                , intent(in)  :: this
     real(fp), dimension(nmfrom:nmto, this%settings%nfrac)             , intent(out) :: frac
-    integer, optional                                                 , intent(in)  :: kfrom
-    integer, optional                                                 , intent(in)  :: kto
+    integer                                                           , intent(in)  :: kfrom
+    integer                                                           , intent(in)  :: kto
     !
     ! Local variables
     !
