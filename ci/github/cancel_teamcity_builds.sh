@@ -13,9 +13,9 @@ BRANCH=""
 COMMIT_HASH=""
 
 # unicode definitions
-UNICODE_FINISHED="\U1F3C1"
-UNICODE_SUCCESS='\U2705'
-UNICODE_UNKNOWN="\U2753"
+readonly UNICODE_FINISHED="\U1F3C1"
+readonly UNICODE_SUCCESS='\U2705'
+readonly UNICODE_UNKNOWN="\U2753"
 
 function catch() {
   local exit_code=$1
