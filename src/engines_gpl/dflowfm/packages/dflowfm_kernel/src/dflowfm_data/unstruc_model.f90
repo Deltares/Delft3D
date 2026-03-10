@@ -1349,6 +1349,11 @@ contains
       ! Physics
 
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef', frcuni)
+
+      ! Set default value for 1D and 1D2D uniform friction coefficients to the value of frcuni
+      frcuni1D = frcuni
+      frcuni1D2D = frcuni
+
       call prop_get(md_ptr, 'physics', 'UnifFrictType', ifrctypuni)
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D) ! TODO: LUMBRICUS: HK: ook UnifFrictType1D? EN/OF prof1d type --> frcutp(LF) zetten?
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', frcuni1D2D)
@@ -3425,15 +3430,10 @@ contains
          end if
       end if
 
-      if (writeall .or. (jasal == 0 .and. (temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0))) then
-         call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
-      end if
+      call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
+      call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
 
-      if (writeall .or. (temperature_model == TEMPERATURE_MODEL_NONE .and. (jasal > 0 .or. jased > 0))) then
-         call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
-      end if
-
-      if (Jadelvappos /= 0) then
+      if (writeall .or. (Jadelvappos /= 0)) then
          call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
       end if
 
