@@ -116,7 +116,7 @@ jobs:
           commit_hash="${{ steps.configure.outputs.commit_hash }}"
 
           ./ci/github/cancel_teamcity_builds.sh \
-            --teamcity-base-url "${teamcity_base_url}"
+            --teamcity-base-url "${teamcity_base_url}" \
             --teamcity-token "${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
             --teamcity-project-id "${teamcity_project_id}" \
             --branch "${branch}" \
