@@ -6,14 +6,26 @@ set -o errexit
 set -o errtrace
 
 # Globals to be set by parse_args
+TEAMCITY_BASE_URL=""
 TEAMCITY_TOKEN=""
 TEAMCITY_PROJECT_ID=""
 BRANCH=""
 COMMIT_HASH=""
 VERBOSE=false
+POLL_INTERVAL=10
 
-TEAMCITY_BASE_URL="https://dpcbuild.deltares.nl"
-TEAMCITY_BUILDS="${TEAMCITY_BASE_URL}/app/rest/builds"
+# unicode definitions
+# states
+UNICODE_QUEUED="\U23F3"
+UNICODE_PENDING="\U1F551"
+UNICODE_RUNNING="\U1F680"
+UNICODE_FINISHED="\U1F3C1"
+# statuses
+UNICODE_SUCCESS='\U2705'
+UNICODE_FAILURE='\U274C'
+UNICODE_UNKNOWN="\U2753"
+# misc
+UNICODE_WAIT='\U23F3'
 
 function catch() {
   local exit_code=$1
@@ -176,14 +188,63 @@ function cancel_build() {
   teamcity_post_request "${TEAMCITY_BUILDS}/id:${build_id}" "${payload}"
 }
 
+function query_trigger() {
+
+  local build_type="${TEAMCITY_PROJECT_ID}_Trigger"
+  local waiting=false
+
+  local request_url
+  printf -v request_url \
+    "%s?locator=project:%s,buildType:%s,branch:%s,revision:%s,state:any,count:1" \
+    "$TEAMCITY_BUILDS" \
+    "$TEAMCITY_PROJECT_ID" \
+    "$build_type" \
+    "$BRANCH" \
+    "$COMMIT_HASH"
+
+  while true; do
+    local trigger
+    trigger="$(teamcity_get_request "${request_url}")"
+
+    local state status id
+    read -r state status id < <(
+      jq -r '.build[0] | "\(.state)\t\(.status)\t\(.id)"' <<<"${trigger}" | tr -d '\r'
+    )
+
+    if [ "${state}" != "finished" ]; then
+      if [ "${waiting}" = false ]; then
+        printf "%b Trigger is not finished yet. Polling for updates every %d seconds...\n" "${UNICODE_WAIT}" "${POLL_INTERVAL}" >&2
+        waiting=true
+      fi
+      sleep "${POLL_INTERVAL}"
+      continue
+    fi
+
+    if [ "${status}" != "SUCCESS" ]; then
+      printf "%b Trigger failed. Tracking of the remaining jobs is no longer possible.\n" "${UNICODE_FAILURE}" >&2
+      return 1
+    fi
+
+    printf "%b Trigger (id: %d) finished successfully!\n" "${UNICODE_SUCCESS}" "${id}" >&2
+    printf "%s" "${id}"
+    return 0
+  done
+}
+
 function cancel_all_builds() {
+
+  local trigger_id="$1"
+
+  echo "FROM CANCEL ${trigger_id}"
+
   printf "Looking up builds configs for project %s on branch %s... " "${TEAMCITY_PROJECT_ID}" "${BRANCH}"
-  local locator="affectedProject:${TEAMCITY_PROJECT_ID},branch:${BRANCH},state:any,count:1000,lookupLimit:5000"
+
+  local locator="affectedProject:${TEAMCITY_PROJECT_ID},branch:${BRANCH},sinceBuild:${trigger_id},state:any,count:1000,lookupLimit:5000,defaultFilter:false"
   if [[ -n "${COMMIT_HASH}" ]]; then
     locator="${locator},revision:${COMMIT_HASH}"
   fi
   locator="${locator}&fields=build(id)"
-  
+
   local raw_build_ids
   raw_build_ids=$(get_build_ids "${locator}")
   printf "done.\n"
@@ -197,8 +258,9 @@ function cancel_all_builds() {
   mapfile -t build_ids < <(printf '%s' "${raw_build_ids}" | tr -d '\r')
   printf "Found  %d build configurations.\n\n" "${#build_ids[@]}"
   for build_id in "${build_ids[@]}"; do
+    local build_type_id build_state build_web_url
     read -r build_type_id build_state build_web_url <<<"$(get_build_info "${build_id}")"
-    printf ">> \"%s\" (id: %s | state: %s | %s)\n" \
+    printf ">> \"%s\"\n     id: %s\n     state: %s\n     link: %s\n" \
       "${build_type_id}" \
       "${build_id}" \
       "${build_state}" \
@@ -206,15 +268,14 @@ function cancel_all_builds() {
 
     case "${build_state}" in
     pending | queued | running)
-      printf "   Cancelling..."
       cancel_build "${build_id}"
-      printf " done %b\n" "\U2705"
+      printf "     %b Cancelled.\n" "${UNICODE_SUCCESS}"
       ;;
     finished)
-      printf "   Build finished, nothing to cancel.\n"
+      printf "     %b Build finished, nothing to cancel.\n" ${UNICODE_FINISHED}
       ;;
     *)
-      printf "   %b Unknown state '%s', skipping.\n" "\U2753" "${build_state}"
+      printf "     %b Unknown state '%s', skipping.\n" "${UNICODE_UNKNOWN}" "${build_state}"
       ;;
     esac
   done
@@ -224,7 +285,10 @@ function main() {
   parse_args "$@"
   print_header
   encode_branch_name
-  cancel_all_builds
+  local trigger_id
+  trigger_id="$(query_trigger)"
+  echo "${trigger_id}"
+  cancel_all_builds "${trigger_id}"
 }
 
 main "$@"
