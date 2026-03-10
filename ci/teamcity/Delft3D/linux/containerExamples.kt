@@ -15,6 +15,7 @@ object LinuxRunAllContainerExamples : BuildType({
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     templates(
+        TemplateLinuxAgentNoFips,
         TemplateMergeRequest,
         TemplateDockerRegistry,
         TemplatePublishStatus,
@@ -80,7 +81,4 @@ object LinuxRunAllContainerExamples : BuildType({
         }
     }
 
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
 })

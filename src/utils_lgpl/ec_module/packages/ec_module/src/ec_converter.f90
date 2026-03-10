@@ -43,7 +43,7 @@ module m_ec_converter
    use string_module, only : strcmpi
    use, intrinsic :: ieee_arithmetic
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -313,11 +313,10 @@ contains
    !> Update the weight factors of a Converter.
    function ecConverterUpdateWeightFactors(instancePtr, connection) result(success)
       use kdtree2Factory
-      use m_ec_basic_interpolation
       use m_alloc
       use ieee_arithmetic, only: ieee_is_nan
       use m_ec_triangle, only: jagetwf, indxx, wfxx
-      use m_ec_basic_interpolation, only: triinterp2
+      use m_ec_basic_interpolation, only: triinterp2, nearest_neighbour
       use m_ec_parameters, only: ec_undef_hp
       implicit none
       logical :: success !< function status
@@ -2770,7 +2769,7 @@ contains
       logical :: has_wave_direction
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
       real(dp), dimension(:), pointer :: targetValues
-      real(dp), dimension(:), allocatable :: zsrc
+      real(dp), dimension(:), allocatable :: source_sink_z_bottom
       real(dp) :: ztgt
       real(dp) :: PI, phi, xtmp
       integer :: time_interpolation
@@ -2923,11 +2922,39 @@ contains
                t0 = sourceT0Field%timesteps
                t1 = sourceT1Field%timesteps
 
-               call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
+               ! Check if this is harmonic data
+               if (has_harmonics) then
+                  ! No time interpolation, but we DO have to update source values based on phase and amplitude.
+                  ! FieldT0 should contain the currently calculated values. (hence a0 = 1, a1 = 0)
+                  a0 = 1.0
+                  a1 = 0.0
+                  ! FOR SIMPLE HARMONIC only one step needed:
+                  !   1. calculate with cosine, and time, phase and source (T1) amplitude.
+                  ! note: source file Amplitude lives in T1
+                  omega = 2.0_dp * PI / sourceItem%hframe%ec_period ! period from seconds to radians
+                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_dp ! delta t in seconds since refdate
+                  
+                  ! Loop over all source sample points and evaluate harmonic function
+                  do ipt = 1, n_cols
+                     amplitude = sourceT1Field%arr1d(ipt)
+                     phase0 = sourceItem%hframe%phases(ipt, 1)  ! Linear indexing: phases(point, 1)
+                     
+                     if (comparereal(amplitude, sourceMissing, .true.) == 0 .or. &
+                         comparereal(phase0, sourceMissing, .true.) == 0) then
+                        sourceT0Field%arr1d(ipt) = sourceMissing
+                     else
+                        sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                     end if
+                  end do
+               else
+                  ! Normal time interpolation for time-series data
+                  call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
+               end if
+
                if (n_layers == 0) then
                   do j = 1, n_points
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
-                         (connection%converterPtr%operandType == operand_replace_if_value)) then ! Dit hoort in de loop beneden per target gridpunt!
+                         (connection%converterPtr%operandType == operand_replace_if_value)) then
                         targetValues(j) = 0.0_dp
                      end if
                      do i_weight_index = 1, size(indexWeight%indices, 1)
@@ -3030,7 +3057,7 @@ contains
                end if
 
                if (n_layers > 0 .and. associated(targetElementSet%z) .and. associated(sourceElementSet%z)) then
-                  allocate (zsrc(n_layers))
+                  allocate (source_sink_z_bottom(n_layers))
                   if (issparse == 1) then
                      Ndatasize = ia(n_rows + 1) - 1
                      s2D_T0(1:Ndatasize, 1:n_layers) => sourceT0Field%arr1d
@@ -3077,13 +3104,13 @@ contains
                         end select
 
                         ! scale source coordinates with factors of target
-                        zsrc = (a_s * sourceElementSet%z + b_s - b_t) / a_t
+                        source_sink_z_bottom = (a_s * sourceElementSet%z + b_s - b_t) / a_t
 
                         ! initialize upper layer kp
                         kp = 2
 
-                        ! dkp: increase direction of (scaled) source z-coordinate zsrc, i.e. zrsc(kp) > zsrc(kp-dkp)
-                        if (zsrc(2) - zsrc(1) > 0) then
+                        ! dkp: increase direction of (scaled) source z-coordinate source_sink_z_bottom, i.e. zrsc(kp) > source_sink_z_bottom(kp-dkp)
+                        if (source_sink_z_bottom(2) - source_sink_z_bottom(1) > 0) then
                            dkp = 1
                         else
                            dkp = -1
@@ -3096,15 +3123,15 @@ contains
                         do k = kbot, ktop
                            ztgt = targetElementSet%z(k)
 
-                           ! get search direction in zsrc
-                           if (dkp * (ztgt - zsrc(kp)) > 0) then
+                           ! get search direction in source_sink_z_bottom
+                           if (dkp * (ztgt - source_sink_z_bottom(kp)) > 0) then
                               k_inc = 1
                            else
                               k_inc = -1
                            end if
 
                            ! get new upper layer kp
-                           do while ((zsrc(kp - dkp) > ztgt) .or. (zsrc(kp) <= ztgt))
+                           do while ((source_sink_z_bottom(kp - dkp) > ztgt) .or. (source_sink_z_bottom(kp) <= ztgt))
                               kp = kp + k_inc
                               if (kp > n_layers .or. kp < 1) exit
                               if (kp - dkp > n_layers .or. kp - dkp < 1) exit
@@ -3153,7 +3180,7 @@ contains
                                  end do
                               end do
                               ! get weights for vertical interpolation
-                              wb = (zsrc(kp) - ztgt) / (zsrc(kp) - zsrc(kp - dkp))
+                              wb = (source_sink_z_bottom(kp) - ztgt) / (source_sink_z_bottom(kp) - source_sink_z_bottom(kp - dkp))
                               wb = min(max(wb, 0.0_dp), 1.0_dp) ! zeroth-order extrapolation beyond range of source vertical coordinates
                               wt = (1.0_dp - wb)
 
@@ -3187,7 +3214,7 @@ contains
                         end do ! loop over vertical
                      end if ! valid mp and np
                   end do ! loop over the target elementset
-                  if (allocated(zsrc)) deallocate (zsrc)
+                  if (allocated(source_sink_z_bottom)) deallocate (source_sink_z_bottom)
                else
                   if (issparse == 1) then
                      Ndatasize = ia(n_rows + 1) - 1

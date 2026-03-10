@@ -7,7 +7,59 @@
     <!-- general setup -->
     <xi:include href="../include/configuration.xml"/>
     <xi:include href="../include/programs_x64.xml"/>
-    <xi:include href="../include/default_testcases.xml"/>
+    <!-- <xi:include href="../include/default_testcases.xml"/> -->
+
+    <defaultTestCases>
+        <testCase name="dwaq_opl">
+            <programs>
+                <program ref="dimr_opl">
+                    <arguments>
+                        <argument>dimr_config.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <!-- Yes, point to the Linux references. We use only one set, since results should be independent of OS -->
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+        <testCase name="waqpb_export">
+            <programs>
+                <program ref="waqpb_export">
+                    <arguments>
+                        <argument>--serial 20260101</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <!-- Yes, point to the Linux references. We use only one set, since results should be independent of OS -->
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+        </testCase>
+        <testCase name="waqpb_import">
+            <programs>
+                <program ref="waqpb_import"/>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <!-- Yes, point to the Linux references. We use only one set, since results should be independent of OS -->
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
 
     <!-- testCases -->
     <xi:include href="../include/test_configs/dwaq_openpb.xml"/>

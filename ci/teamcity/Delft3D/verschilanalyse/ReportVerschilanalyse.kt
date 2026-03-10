@@ -19,7 +19,7 @@ object ReportVerschilanalyse: BuildType({
     """.trimIndent()
 
     params {
-        param("current_prefix", "output/weekly/latest")
+        param("current_prefix", "output/weekly/development")
         param("reference_prefix", "output/release/2025.01")
         param("send_email", "true")
 
