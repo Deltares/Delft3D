@@ -144,7 +144,7 @@ contains
       character(len=128) :: txt1, txt2, txt3
       real(kind=dp), pointer :: inputptr => null()
 
-      call clearECMessage()
+      call clear_ec_message()
       ec_addtimespacerelation = .false.
       if (present(quiet)) then
          quiet_ = quiet
@@ -190,7 +190,7 @@ contains
       call get_constituent_name(name, constituent_name, qidname)
       target_name = qidname
 
-      call clearECMessage()
+      call clear_ec_message()
 
       ! ============================================================
       ! If BC-Type file, create filereader and source items here
@@ -202,7 +202,7 @@ contains
                                                   refdate_mjd, tzone, ec_second, fileReaderId)) then
 
             if (.not. quiet_) then
-               message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+               message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
             end if
             message = 'Adding time-space-relation for forcing '''//trim(name)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
             call mess(LEVEL_ERROR, message)
@@ -237,7 +237,7 @@ contains
                else
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile)
                end if
-               !message = dumpECMessageStack(LEVEL_WARN,callback_msg)
+               !message = dump_ec_message_stack(LEVEL_WARN,callback_msg)
                if (.not. success) then
                   goto 1234
                end if
@@ -263,7 +263,7 @@ contains
                   end if
                   if (.not. success) then
                      ! message = ecGetMessage()
-                     ! message = dumpECMessageStack(LEVEL_WARN,callback_msg)
+                     ! message = dump_ec_message_stack(LEVEL_WARN,callback_msg)
                      ! NOTE: do all error dumping (if any) at the end of this routine at label 1234
 
                      ! NOTE: in relation to WAVE: all calling WAVE-related routines now pass quiet=.true. to this addtimespace routine.
@@ -1579,7 +1579,7 @@ contains
          ! TODO: AvD: I'd rather have a full message stack that will combine EC + meteo + dflowfm, and any caller may print any pending messages.
          ! For now: Print the EC message stack here, and leave the rest to the caller.
          ! TODO: RL: the message below is from m_meteo::message, whereas timespace::getmeteoerror() returns timespace::errormessage. So now this message here is lost/never printed at call site.
-         message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+         message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          ! Leave this concluding message for the caller to print or not. (via getmeteoerror())
       end if
       message = 'm_meteo::ec_addtimespacerelation: Error while initializing '''//trim(name)//''' from file: '''//trim(filename)//''''
