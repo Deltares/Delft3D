@@ -3,7 +3,7 @@ Compiled with Intel ifort, version
 Compiled with support for:
 IntGUI   : no
 OpenGL   : no
-OpenMP   : no
+OpenMP   : yes
 MPI      : yes
 PETSc    : yes
 METIS    : yes
