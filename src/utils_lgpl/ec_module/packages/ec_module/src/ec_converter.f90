@@ -1742,45 +1742,44 @@ contains
             wL = connection%converterPtr%indexWeight%weightFactors(1, i)
             wR = connection%converterPtr%indexWeight%weightFactors(2, i)
             
-            !TK_Temp: Check if point is permanent or temperary dry (arr1D = dmiss for all layers)
-            !       
-            kbeginL = vectormax * (kL - 1) * maxlay_src + 1 ! refers to source left column
-            kendL   = kbeginL + vectormax*maxlay_src - 1
-            kbeginR = vectormax * (kR - 1) * maxlay_src + 1 ! refers to source right column
-            kendR   = kbeginR + vectormax*maxlay_src - 1 
-            
-            !  TK_Temp: Left side
-            oneSided = .true.
-            do k = kbeginL, kendL
-               if (comparereal(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(k),dmiss) /=0) oneSided = .false.
-            end do
-              
-            if (oneSided) kL = 0
-        
-            ! TK_Temp: Check if right has at leat one valid z coordinate
-            oneSided = .true.
-            do k = kbeginR, kendR
-               if (comparereal(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(k),dmiss) /=0) oneSided = .false.
-            end do
-  
-            if (oneSided) kR = 0
-                                    
-            ! deal with one-sided interpolation
-            if (kL == 0 .and. kR /= 0) then
-               kL = kR
-               wL = 0.0_dp
-            end if
-            if (kR == 0 .and. kL /= 0) then
-               kR = kL
-               wR = 0.0_dp
-            end if
-                     
             select case (connection%converterPtr%operandType)
             case (operand_replace_element, operand_replace, operand_replace_if_value, operand_add)
                ! Are the subproviders 3D or 2D?
                if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                    associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
-
+                  !TK_Temp: Check if point is permanent or temperary dry (arr1D = dmiss for all layers)
+                  !       
+                  kbeginL = (kL - 1) * maxlay_src + 1 ! refers to source left column
+                  kendL   = kL*maxlay_src
+                  kbeginR = (kR - 1) * maxlay_src + 1 ! refers to source right column
+                  kendR   = kR*maxlay_src 
+             
+                  !  TK_Temp: Check if left has at least one valid z coordinate
+                  oneSided = .true.
+                  do k = kbeginL, kendL
+                     if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(k),missing) /=0) oneSided = .false.
+                  end do
+              
+                  if (oneSided) kL = 0
+        
+                  ! TK_Temp: Check if right has at least one valid z coordinate
+                  oneSided = .true.
+                  do k = kbeginR, kendR
+                     if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(k),missing) /=0) oneSided = .false.
+                  end do
+  
+                  if (oneSided) kR = 0
+                                    
+                  ! deal with one-sided interpolation
+                  if (kL == 0 .and. kR /= 0) then
+                     kL = kR
+                     wL = 0.0_dp
+                  end if
+                  if (kR == 0 .and. kL /= 0) then
+                     kR = kL
+                     wR = 0.0_dp
+                 end if
+                     
                   if (kL > 0) then
                      if (kR > 0) then               
                         kbegin = maxlay_tgt * (i - 1) + 1 ! refers to target column
