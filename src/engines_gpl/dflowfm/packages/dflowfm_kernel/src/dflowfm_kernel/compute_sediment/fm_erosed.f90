@@ -106,7 +106,7 @@ contains
       use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
       use m_fm_erosed, only: i10, i15, i50, i90
       use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, &
-                             factsd, pmcrit, uau
+                             factsd, pmcrit, uau, ithresh
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -536,7 +536,7 @@ contains
       dtmor = dts * morfac
       !
       call getfixfac(stmpar%morlyr, 1, ndx, lsedtot, & ! Update underlayer bookkeeping system for erosion/sedimentation
-                   & ndx, fixfac, ffthresh)
+                   & ndx, fixfac, ffthresh, ithresh)
       !
       ! Set fixfac to 1.0 for tracer sediments and adjust frac
       !

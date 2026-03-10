@@ -49,6 +49,7 @@ subroutine getfixfac(bedcomp   ,nmlb      ,nmub      ,nval      ,nmmax     , &
     type(bedcomp_data)                                 , intent(in)  :: bedcomp
     real(fp)                                           , intent(in)  :: ffthresh
     real(fp), dimension(nmlb:nmub, nval)               , intent(out) :: fixfac
+    integer                                            , intent(in)  :: ithresh
 !
 ! Local variables
 !
@@ -56,13 +57,13 @@ subroutine getfixfac(bedcomp   ,nmlb      ,nmub      ,nval      ,nmmax     , &
     integer  :: nm
     real(fp) :: thresh
     real(fp) :: thick
-    integer  :: ithresh
     real(fp)   , dimension(:)     , pointer :: thtrlyr  
+    integer, parameter :: THRESH_BASED_ON_THICKNESS = 2 
 !
 !! executable statements -------------------------------------------------------
 !
     !
-    if (ithresh == 2) then
+    if (ithresh == THRESH_BASED_ON_THICKNESS) then
        thtrlyr     => bedcomp%settings%thtrlyr
        do l = 1, nval
           do nm = nmlb, nmub
@@ -71,7 +72,7 @@ subroutine getfixfac(bedcomp   ,nmlb      ,nmub      ,nval      ,nmmax     , &
              fixfac(nm, l) = min(max(thick/thresh, 0.0_fp), 1.0_fp)
           enddo
        enddo
-    else
+    else !1 = constant value set by `thresh`
        call getalluvthick(bedcomp, fixfac, nmlb, nmub, nval)
        !call getsedthick(bedcomp, fixfac)  <- new call 
        ! The FIXFAC array contains at this stage the sediment thickness!
