@@ -27,6 +27,7 @@ from src.suite.test_case import TestCase
 from src.suite.test_case_result import TestCaseResult
 from src.utils.common import log_header, log_separator, log_sub_header
 from src.utils.errors.test_bench_error import TestBenchError
+from src.utils.handlers.dvc_handler import DvcHandler
 from src.utils.handlers.handler_factory import HandlerFactory
 from src.utils.handlers.resolve_handler import ResolveHandler
 from src.utils.logging.i_logger import ILogger
@@ -91,16 +92,9 @@ class TestSetRunner(ABC):
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
 
-        # Prepare cases (download input and reference data, validate etc.)
-        # Parallel download is not supported by DVC.
-        for config in self.__settings.configs_to_run:
-            if config.path and config.path.version == "DVC":
-                try:
-                    self.prepare_test_case(config, self.__logger)
-                except Exception as exception:
-                    self.__logger.error(f"Failed to prepare test case '{config.name}': {exception}")
-                    self.cleanup_failed_preparation(config)
-                log_separator(self.__logger, char="-")
+        # Prepare DVC cases: batch-download all .dvc files in one command,
+        # then copy inputs to work folders and set paths.
+        self.__prepare_dvc_test_cases()
 
         results = (
             self.run_tests_in_parallel()
@@ -235,11 +229,17 @@ class TestSetRunner(ABC):
         )
 
         try:
-            # DVC will not download data as part of the run.
             if not config.path or config.path.version != "DVC":
                 log_sub_header(f"Preparing test case name = '{config.name}'", logger)
                 self.prepare_test_case(config, logger)
                 log_separator(logger, char="-")
+            else:
+                # DVC data is batch-downloaded upfront; create a fresh work copy for this run.
+                if config.absolute_test_case_path:
+                    work_path = Path(config.absolute_test_case_path)
+                    if work_path.name.endswith("_work"):
+                        source_path = work_path.with_name(work_path.name[:-5])
+                        self.__copy_to_work_folder(source_path, logger)
 
             # Run testcase
             if not config.absolute_test_case_path or not config.absolute_test_case_reference_path:
@@ -413,6 +413,79 @@ class TestSetRunner(ABC):
                 shutil.rmtree(config.absolute_test_case_reference_path)
             except Exception as e:
                 self.__logger.warning(f"Failed to remove reference directory: {e}")
+
+    def __prepare_dvc_test_cases(self) -> None:
+        """Prepare all DVC test cases with a single batched download."""
+        dvc_configs = [c for c in self.__settings.configs_to_run if c.path and c.path.version == "DVC"]
+        if not dvc_configs:
+            return
+
+        log_sub_header("Preparing DVC test cases (batch download)", self.__logger)
+
+        # Phase 1: Validate configs and collect all DVC file paths + metadata.
+        dvc_files: list[str] = []
+        # Each entry: (config, location, remote_path, local_path)
+        location_info: list[tuple[TestCaseConfig, Location, str, str]] = []
+        credentials = None
+
+        for config in dvc_configs:
+            try:
+                self.__validate_test_case_preparation(config)
+                self.__log_preparation_info(config, self.__logger)
+            except Exception as exception:
+                self.__logger.error(f"Failed to validate test case '{config.name}': {exception}")
+                self.cleanup_failed_preparation(config)
+                continue
+
+            config_ok = True
+            for location in config.locations:
+                if location.type == PathType.CHECK:
+                    continue
+                try:
+                    self.__validate_location(config, location)
+                except Exception as exception:
+                    self.__logger.error(f"Failed to validate location for '{config.name}': {exception}")
+                    config_ok = False
+                    break
+
+                remote_path = self.__build_remote_path(config, location)
+                local_path = self.__build_local_path(config, location)
+
+                if location.type in self.skip_download:
+                    self.__logger.info(f"Skipping download for {config.name} (skip download argument)")
+                else:
+                    dvc_files.append(remote_path)
+                    if credentials is None and location.credentials and location.credentials.username:
+                        credentials = location.credentials
+
+                location_info.append((config, location, remote_path, local_path))
+
+            if not config_ok:
+                self.cleanup_failed_preparation(config)
+
+        # Phase 2: Batch-download all .dvc files in one fetch+checkout.
+        if dvc_files:
+            try:
+                from src.config.credentials import Credentials
+
+                handler = DvcHandler()
+                handler.download_batch(dvc_files, credentials or Credentials(), self.__logger)
+            except Exception as exception:
+                self.__logger.error(f"Batch DVC download failed: {exception}")
+                for config in dvc_configs:
+                    self.cleanup_failed_preparation(config)
+                log_separator(self.__logger, char="-")
+                return
+
+        # Phase 3: Set paths on configs (work folder copy deferred to run_test_case).
+        for config, location, _remote_path, local_path in location_info:
+            try:
+                self.__set_absolute_paths(config, location.type, local_path)
+            except Exception as exception:
+                self.__logger.error(f"Failed post-download steps for '{config.name}': {exception}")
+                self.cleanup_failed_preparation(config)
+
+        log_separator(self.__logger, char="-")
 
     def __download_dependencies(self) -> None:
         configs_to_handle = [c for c in self.__settings.configs_to_run if c.dependency]
@@ -795,29 +868,35 @@ class TestSetRunner(ABC):
         )
         logger.debug(f"Dependency local_dir: {config.dependency.local_dir}, cases_path: {config.dependency.cases_path}")
 
-        # For DVC dependencies, place them relative to the test case directory
+        # For DVC dependencies, download data and create a working copy at the dependency source location
         if dependency_version == "DVC" and config.path and config.path.version == "DVC":
             logger.debug("Using DVC-specific dependency download logic")
-            # Use the full test case path to place dependencies alongside input/reference
-            local_path = Paths().rebuildToLocalPath(
-                Paths().mergeFullPath(
-                    self.__settings.local_paths.cases_path,
-                    config.path.prefix,
-                    config.dependency.local_dir,
-                )
-            )
+            source_input_path = Path(self.__settings.local_paths.cases_path) / config.dependency.cases_path / "input"
             remote_path = Paths().mergeFullPath(location.root, config.dependency.cases_path, "input.dvc")
+
+            logger.debug(f"Dependency download - remote: {remote_path}, source: {source_input_path}")
+
+            # Ensure the DVC dependency source data is downloaded
+            if not source_input_path.exists() or not any(source_input_path.iterdir()):
+                self.__download_files(
+                    location, remote_path, str(source_input_path), PathType.DEPENDENCY, dependency_version, logger
+                )
+
+            # Create input_work copy for the test run to use
+            work_path = source_input_path.with_name(f"{source_input_path.name}_work")
+            if not work_path.exists():
+                if source_input_path.exists() and any(source_input_path.iterdir()):
+                    logger.debug(f"Creating dependency work folder: {work_path}")
+                    self.__copy_to_work_folder(source_input_path, logger)
+                else:
+                    logger.warning(f"DVC dependency source not found at {source_input_path}")
+            else:
+                logger.debug(f"Dependency work folder already exists: {work_path}")
+            return
         else:
             logger.debug("Using legacy dependency download logic")
             # Use existing logic for non-DVC dependencies
-            destination_dir = self.__settings.local_paths.cases_path
-            local_path = Paths().rebuildToLocalPath(
-                Paths().mergeFullPath(
-                    destination_dir,
-                    location.to_path,
-                    config.dependency.local_dir,
-                )
-            )
+            local_path = Path(self.__settings.local_paths.cases_path) / location.to_path / config.dependency.local_dir
 
             if dependency_version == "DVC":
                 remote_path = Paths().mergeFullPath(location.root, config.dependency.cases_path, "input.dvc")
@@ -826,7 +905,7 @@ class TestSetRunner(ABC):
 
         logger.debug(f"Dependency download - remote: {remote_path}, local: {local_path}")
 
-        if os.path.exists(local_path) and os.listdir(local_path):
+        if local_path.exists() and any(local_path.iterdir()):
             logger.info("Dependency directory already exists and has content: Skipping download")
             return
 
@@ -835,42 +914,4 @@ class TestSetRunner(ABC):
         else:
             logger.info(f"Dependency version timestamp: {dependency_version}")
 
-        self.__download_files(location, remote_path, local_path, PathType.DEPENDENCY, dependency_version, logger)
-
-        # For DVC dependencies, copy content from source to target location
-        if dependency_version == "DVC" and config.path and config.path.version == "DVC":
-            source_content_path = Paths().mergeFullPath(
-                self.__settings.local_paths.cases_path, config.dependency.cases_path, "input"
-            )
-            if os.path.exists(source_content_path):
-                logger.debug(f"Copying DVC content from {source_content_path} to {local_path}")
-                try:
-                    # Ensure target directory exists
-                    os.makedirs(local_path, exist_ok=True)
-                    # Copy all contents from source to target
-                    for item in os.listdir(source_content_path):
-                        source_item = os.path.join(source_content_path, item)
-                        target_item = os.path.join(local_path, item)
-                        if os.path.isdir(source_item):
-                            shutil.copytree(source_item, target_item, symlinks=True, ignore_dangling_symlinks=True)
-                        else:
-                            shutil.copy2(source_item, target_item)
-                    logger.debug("DVC content copy completed successfully")
-                except Exception as e:
-                    logger.error(f"Failed to copy DVC content: {e}")
-            else:
-                logger.warning(f"DVC source content not found at {source_content_path}")
-
-        # Copy dependencies to work folder to prevent mixing input and output files
-        if os.path.exists(local_path) and os.listdir(local_path):
-            logger.debug(f"Copying dependency to work folder to prevent input/output mixing")
-            self.__copy_to_work_folder(Path(local_path), logger)
-
-            # Remove original folder and rename work folder to original name
-            # This prevents contamination of DVC input while making dependency available to simulation
-            work_folder_path = local_path + "_work"
-            if os.path.exists(work_folder_path):
-                logger.debug(f"Replacing original dependency folder with work folder")
-                shutil.rmtree(local_path)  # Remove pristine DVC copy
-                os.rename(work_folder_path, local_path)  # Rename work folder to original name
-                logger.debug(f"Dependency work folder in place: {local_path}")
+        self.__download_files(location, remote_path, str(local_path), PathType.DEPENDENCY, dependency_version, logger)
