@@ -1674,7 +1674,6 @@ contains
       integer :: idx !< helper variable
       integer :: vectormax
       integer :: from, thru !< contiguous range of indices in the target array
-      integer :: iVal
       logical :: oneSided
       character(maxMessageLen) :: errormsg
 
@@ -1743,40 +1742,45 @@ contains
             kR = connection%converterPtr%indexWeight%indices(2, i)
             wL = connection%converterPtr%indexWeight%weightFactors(1, i)
             wR = connection%converterPtr%indexWeight%weightFactors(2, i)
+            
+            !TK_Temp: Check if point is permanent or temperary dry (arr1D = dmiss for all layers)
+            !       
+            kbeginL = vectormax * (kL - 1) * maxlay_src + 1 ! refers to source left column
+            kendL   = kbeginL + vectormax*maxlay_src - 1
+            kbeginR = vectormax * (kR - 1) * maxlay_src + 1 ! refers to source right column
+            kendR   = kbeginR + vectormax*maxlay_src - 1 
+            
+            !  TK_Temp: Left side
+            oneSided = .true.
+            do k = kbeginL, kendL
+               if (comparereal(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(k),dmiss) /=0) oneSided = .false.
+            end do
+              
+            if (oneSided) kL = 0
+        
+            ! TK_Temp: Check if right has at leat one valid z coordinate
+            oneSided = .true.
+            do k = kbeginR, kendR
+               if (comparereal(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(k),dmiss) /=0) oneSided = .false.
+            end do
+  
+            if (oneSided) kR = 0
+                                    
+            ! deal with one-sided interpolation
+            if (kL == 0 .and. kR /= 0) then
+               kL = kR
+               wL = 0.0_dp
+            end if
+            if (kR == 0 .and. kL /= 0) then
+               kR = kL
+               wR = 0.0_dp
+            end if
+                     
             select case (connection%converterPtr%operandType)
             case (operand_replace_element, operand_replace, operand_replace_if_value, operand_add)
                ! Are the subproviders 3D or 2D?
                if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                    associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
-                  
-                  kbeginL = maxlay_src * (kL - 1) + 1 ! refers to source left column
-                  kendL   = maxlay_src * kL
-                  kbeginR = maxlay_src * (kR - 1) + 1 ! refers to source right column
-                  kendR = maxlay_src * kR
-                  
-                  ! TK_Temp: Check if left has at leat one valid z coordinate
-                  oneSided = .true.
-                  do iVal = kbeginL, kendL
-                     if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(iVal),dmiss) /=0) oneSided = .false.
-                  end do
-              
-                  if (oneSided) kL = 0
-                  ! TK_Temp: Check if right has at leat one valid z coordinate
-                  oneSided = .true.
-                  do iVal = kbeginR, kendR
-                     if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(iVal),dmiss) /=0) oneSided = .false.
-                  end do
-                  if (oneSided) kR = 0
-                                    
-                  ! deal with one-sided interpolation
-                  if (kL == 0 .and. kR /= 0) then
-                     kL = kR
-                     wL = 0.0_dp
-                  end if
-                  if (kR == 0 .and. kL /= 0) then
-                     kR = kL
-                     wR = 0.0_dp
-                  end if
 
                   if (kL > 0) then
                      if (kR > 0) then               
