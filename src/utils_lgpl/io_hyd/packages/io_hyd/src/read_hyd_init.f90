@@ -108,6 +108,11 @@
             endif
          endif
 
+         ! Fallback: the waqgeom file has no layer information?
+         if ( hyd%waqgeom%num_layers == -1 ) then
+             call fillin_layers( hyd%waqgeom, hyd%num_layers )
+         endif
+
          hyd%openbndsect_coll%maxsize = 0
          hyd%openbndsect_coll%current_size = 0
          call read_bnd(hyd%file_bnd, hyd%openbndsect_coll)
@@ -200,4 +205,24 @@
   990 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%num_exchanges:',hyd%num_exchanges
       call stop_with_error()
+
+      contains
+
+      ! Fallback if the waqgeom file holds no layer information
+      ! - assume uniform sigma layers
+      subroutine fillin_layers( waqgeom, num_layers )
+      implicit none
+
+      type(t_ug_meshgeom), intent(inout) :: waqgeom
+      integer, intent(in)                :: num_layers
+
+      integer                            :: i
+
+      allocate( waqgeom%interface_zs(num_layers + 1) )
+      allocate( waqgeom%layer_zs(num_layers) )
+
+      waqgeom%layer_zs     = [ (0.5 + (i-1) * 1.0/num_layers, i = 1,num_layers) ]
+      waqgeom%interface_zs = [ ( (i-1) * 1.0/num_layers, i = 1,num_layers), 1.0 ]
+
+      end subroutine fillin_layers
       end
