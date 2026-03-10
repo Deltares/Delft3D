@@ -120,4 +120,4 @@ jobs:
             --teamcity-token "${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
             --teamcity-project-id "${teamcity_project_id}" \
             --branch "${branch}" \
-            --commit-hash ${commit_hash}"
+            --commit-hash "${commit_hash}"
