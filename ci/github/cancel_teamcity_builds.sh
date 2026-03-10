@@ -123,7 +123,7 @@ function print_header() {
   else
     commit="${COMMIT_HASH}"
   fi
-  printf "Commit SHA    : %s\n" "${commit}"
+  printf "Commit SHA    : %s\n\n" "${commit}"
 }
 
 function encode_branch_name() {
@@ -177,73 +177,42 @@ function cancel_build() {
 }
 
 function cancel_all_builds() {
-  printf "Looking up root builds for project %s on branch %s... " "${TEAMCITY_PROJECT_ID}" "${BRANCH}"
-  local locator="project:${TEAMCITY_PROJECT_ID},branch:${BRANCH},state:any"
+  printf "Looking up builds configs for project %s on branch %s... " "${TEAMCITY_PROJECT_ID}" "${BRANCH}"
+  local locator="affectedProject:${TEAMCITY_PROJECT_ID},branch:${BRANCH},state:any,count:1000,lookupLimit:5000&fields=build(id)"
   if [[ -n "${COMMIT_HASH}" ]]; then
     locator="${locator},revision:${COMMIT_HASH}"
   fi
-  local raw_root_build_ids
-  raw_root_build_ids=$(get_build_ids "${locator}")
+  local raw_build_ids
+  raw_build_ids=$(get_build_ids "${locator}")
   printf "done.\n"
 
-  if [[ -z "${raw_root_build_ids}" ]]; then
+  if [[ -z "${raw_build_ids}" ]]; then
     printf "No builds found. Nothing to cancel."
     exit 0
   fi
 
-  local root_build_ids=()
-  mapfile -t root_build_ids < <(printf '%s' "${raw_root_build_ids}" | tr -d '\r')
-  for root_build_id in "${root_build_ids[@]}"; do
-    read -r root_build_type_id root_build_state root_build_web_url <<<"$(get_build_info "${root_build_id}")"
-    printf "\nFound root build %s (id: %s | state: %s | %s)\n" \
-      "${root_build_type_id}" \
-      "${root_build_id}" \
-      "${root_build_state}" \
-      "${root_build_web_url}" >&2
+  local build_ids=()
+  mapfile -t build_ids < <(printf '%s' "${raw_build_ids}" | tr -d '\r')
+  printf "Found  %d build configurations.\n\n" "${#build_ids[@]}"
+  for build_id in "${build_ids[@]}"; do
+    read -r build_type_id build_state build_web_url <<<"$(get_build_info "${build_id}")"
+    printf ">> \"%s\" (id: %s | state: %s | %s)\n" \
+      "${build_type_id}" \
+      "${build_id}" \
+      "${build_state}" \
+      "${build_web_url}" >&2
 
-    case "${root_build_state}" in
-    pending | queued)
-      cancel_build "${root_build_id}"
+    case "${build_state}" in
+    pending | queued | running)
+      printf "   Cancelling..."
+      cancel_build "${build_id}"
+      printf " done %b\n" "\U2705"
       ;;
-    running | finished)
-      local raw_dep_build_ids
-      locator="snapshotDependency:(from:(id:${root_build_id}),includeInitial:true),state:any,defaultFilter:false"
-
-      raw_dep_build_ids=$(get_build_ids "${locator}")
-
-      if [[ -z "${raw_dep_build_ids}" ]]; then
-        printf "No dependent builds for root build with id %s.\n" "${root_build_id}"
-        continue
-      fi
-
-      local dep_build_ids=()
-      mapfile -t dep_build_ids < <(printf '%s' "${raw_dep_build_ids}" | tr -d '\r')
-      printf "Dependent builds for root build with id %s:\n" "${root_build_id}"
-      for dep_build_id in "${dep_build_ids[@]}"; do
-        read -r dep_build_type_id dep_build_state dep_build_web_url <<<"$(get_build_info "${dep_build_id}")"
-        printf "  Found \"%s\" [id: %s | state: %s | %s]\n" \
-          "${dep_build_type_id}" \
-          "${dep_build_id}" \
-          "${dep_build_state}" \
-          "${dep_build_web_url}" >&2
-
-        case "${dep_build_state}" in
-        pending | queued | running)
-          printf "    Stopping build..."
-          cancel_build "${dep_build_id}"
-          printf " done.\n"
-          ;;
-        finished)
-          printf "    Build finished, nothing to cancel.\n"
-          ;;
-        *)
-          printf "    Unknown state '%s', skipping.\n" "${root_build_state}"
-          ;;
-        esac
-      done
+    finished)
+      printf "   Build finished, nothing to cancel.\n"
       ;;
     *)
-      printf "Unknown state '%s' for build %s, skipping.\n" "${root_build_state}" "${root_build_id}"
+      printf "   %b Unknown state '%s', skipping.\n" "\U2753" "${build_state}"
       ;;
     esac
   done
