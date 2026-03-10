@@ -1,6 +1,7 @@
 name: Cancel TeamCity builds
 
 on:
+  push:
   workflow_dispatch:
     inputs:
       commit_hash:
