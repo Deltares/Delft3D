@@ -236,7 +236,13 @@ function cancel_all_builds() {
 
   printf "\nLooking up additional builds configurations..." >&2
 
-  local locator="affectedProject:${TEAMCITY_PROJECT_ID},branch:${BRANCH},revision:${COMMIT_HASH},sinceBuild:${trigger_id},state:any,count:1000,lookupLimit:5000,defaultFilter:false&fields=build(id)"
+  local locator
+  printf -v locator \
+    "affectedProject:%s,branch:%s,revision:%s,sinceBuild:%s,state:any,count:1000,lookupLimit:5000,defaultFilter:false&fields=build(id)" \
+    "${TEAMCITY_PROJECT_ID}" \
+    "${BRANCH}" \
+    "${COMMIT_HASH}" \
+    "${trigger_id}"
 
   local raw_build_ids
   raw_build_ids=$(get_build_ids "${locator}")
