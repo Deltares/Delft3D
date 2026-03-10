@@ -39,17 +39,28 @@ jobs:
             exit 1
           fi
 
+          # commit hash validation
           commit_hash="${{ github.event.inputs.commit_hash }}"
-
           if [[ -z "${commit_hash}" ]]; then
-            echo "A commit hash must be provided."
-            exit 1
-          fi
-
-          if ! git merge-base --is-ancestor "${commit_hash}" "${{ env.BRANCH }}"; then
+            echo "A commit hash was not provided, the latest one on this branch will be used."
+            commit_hash=$(
+              curl \
+                --silent \
+                --fail \
+                --show-error \
+                --request GET \
+                --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
+                --header "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/branches/${{ env.BRANCH }}" \
+              | jq -r .commit.sha
+            )
+            echo "Latest commit hash: ${commit_hash}."
+          elif ! git merge-base --is-ancestor "${commit_hash}" "${{ env.BRANCH }}"; then
             echo "Commit ${commit_hash} does not exist on branch ${{ env.BRANCH }}. Validate your input."
             exit 1
           fi
+
+          echo "commit_hash=${commit_hash}" >> $GITHUB_OUTPUT
 
       - name: Find PR for current branch
         id: find-pr
@@ -102,7 +113,7 @@ jobs:
           teamcity_base_url="https://dpcbuild.deltares.nl"
           teamcity_project_id="Delft3D"
           branch="pull/${{ steps.find-pr.outputs.pr_number }}"
-          commit_hash="${{ github.event.inputs.commit_hash }}"
+          commit_hash="${{ steps.configure.outputs.commit_hash }}"
 
           ./ci/github/cancel_teamcity_builds.sh \
             --teamcity-base-url "${teamcity_base_url}"
