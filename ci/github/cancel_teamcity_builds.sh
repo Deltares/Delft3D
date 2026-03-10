@@ -12,8 +12,8 @@ BRANCH=""
 COMMIT_HASH=""
 VERBOSE=false
 
-TEAMCITY_URL="https://dpcbuild.deltares.nl"
-TEAMCITY_BUILDS="${TEAMCITY_URL}/app/rest/builds"
+TEAMCITY_BASE_URL="https://dpcbuild.deltares.nl"
+TEAMCITY_BUILDS="${TEAMCITY_BASE_URL}/app/rest/builds"
 
 function catch() {
   local exit_code=$1
@@ -41,6 +41,7 @@ function usage() {
 Usage: $0 [OPTIONS]
 
 Options:
+  --teamcity-base-url URL        TeamCity base URL
   --teamcity-token TOKEN         TeamCity access token
   --teamcity-project-id ID       TeamCity project ID
   --branch BRANCH                Branch name to monitor (will be URL-encoded automatically)
@@ -50,7 +51,7 @@ EOF
 }
 
 function parse_args() {
-  local long_options="help,teamcity-token:,teamcity-project-id:,branch:,commit-hash:,verbose"
+  local long_options="help,teamcity-base-url:,teamcity-token:,teamcity-project-id:,branch:,commit-hash:,verbose"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long "${long_options}" -- "$@"); then
     printf "parse_args: failed to parse arguments.\n"
@@ -63,6 +64,11 @@ function parse_args() {
     --help)
       usage
       exit 0
+      ;;
+    --teamcity-base-url)
+      TEAMCITY_BASE_URL="$2"
+      TEAMCITY_BUILDS="${TEAMCITY_BASE_URL}/app/rest/builds"
+      shift 2
       ;;
     --teamcity-token)
       TEAMCITY_TOKEN="$2"
@@ -97,7 +103,8 @@ function parse_args() {
   done
 
   # Validate required params
-  if [[ -z "${TEAMCITY_TOKEN}" ||
+  if [[ -z "${TEAMCITY_BASE_URL}" ||
+    -z "${TEAMCITY_TOKEN}" ||
     -z "${TEAMCITY_PROJECT_ID}" ||
     -z "${BRANCH}" ]]; then
     printf "One or more required arguments were not provided.\n"
@@ -200,7 +207,7 @@ function cancel_all_builds() {
       ;;
     running | finished)
       local raw_dep_build_ids
-      locator="snapshotDependency:(from:(id:${root_build_id}),includeInitial:true),state:any,defaultFilter:false"  
+      locator="snapshotDependency:(from:(id:${root_build_id}),includeInitial:true),state:any,defaultFilter:false"
 
       raw_dep_build_ids=$(get_build_ids "${locator}")
 
