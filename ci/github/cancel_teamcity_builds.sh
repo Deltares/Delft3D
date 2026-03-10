@@ -11,21 +11,11 @@ TEAMCITY_TOKEN=""
 TEAMCITY_PROJECT_ID=""
 BRANCH=""
 COMMIT_HASH=""
-VERBOSE=false
-POLL_INTERVAL=10
 
 # unicode definitions
-# states
-UNICODE_QUEUED="\U23F3"
-UNICODE_PENDING="\U1F551"
-UNICODE_RUNNING="\U1F680"
 UNICODE_FINISHED="\U1F3C1"
-# statuses
 UNICODE_SUCCESS='\U2705'
-UNICODE_FAILURE='\U274C'
 UNICODE_UNKNOWN="\U2753"
-# misc
-UNICODE_WAIT='\U23F3'
 
 function catch() {
   local exit_code=$1
@@ -37,11 +27,10 @@ function catch() {
     # Loop through the stack
     local i
     for ((i = 1; i < ${#FUNCNAME[@]}; i++)); do
-
       local lineno="${BASH_LINENO[$((i - 1))]}"
       local func="${FUNCNAME[$i]}"
       local src="${BASH_SOURCE[$i]}"
-      printf "    at %s() in %s:%s\n" "$func" "$src" "$lineno"
+      printf "    at %s() in %s:%s\n" "${func}" "${src}" "${lineno}"
     done
   fi
 }
@@ -56,17 +45,17 @@ Options:
   --teamcity-base-url URL        TeamCity base URL
   --teamcity-token TOKEN         TeamCity access token
   --teamcity-project-id ID       TeamCity project ID
-  --branch BRANCH                Branch name to monitor (will be URL-encoded automatically)
-  --commit-hash HASH             Commit HASH (Optional: if not specified all builds on the branch wil be cancelled)
+  --branch BRANCH                Branch name
+  --commit-hash HASH             Commit hash
   --help                         Show this help message
 EOF
 }
 
 function parse_args() {
-  local long_options="help,teamcity-base-url:,teamcity-token:,teamcity-project-id:,branch:,commit-hash:,verbose"
+  local long_options="help,teamcity-base-url:,teamcity-token:,teamcity-project-id:,branch:,commit-hash:"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long "${long_options}" -- "$@"); then
-    printf "parse_args: failed to parse arguments.\n"
+    printf "parse_args: failed to parse arguments.\n" >&2
     return 1
   fi
   eval set -- "${parsed_options}"
@@ -98,16 +87,12 @@ function parse_args() {
       COMMIT_HASH="$2"
       shift 2
       ;;
-    --verbose)
-      VERBOSE=true
-      shift 1
-      ;;
     --)
       shift
       break
       ;;
     *)
-      printf "Parsing error!\n"
+      printf "Parsing error!\n" >&2
       usage
       exit 1
       ;;
@@ -119,23 +104,18 @@ function parse_args() {
     -z "${TEAMCITY_TOKEN}" ||
     -z "${TEAMCITY_PROJECT_ID}" ||
     -z "${BRANCH}" ]]; then
-    printf "One or more required arguments were not provided.\n"
+    printf "One or more required arguments were not provided.\n" >&2
     usage
     exit 1
   fi
 }
 
 function print_header() {
-  printf "\n%s was invoked with\n" "$0"
-  printf "Project ID    : %s\n" "${TEAMCITY_PROJECT_ID}"
-  printf "Branch name   : %s\n" "${BRANCH}"
-  local commit
-  if [[ -z "${COMMIT_HASH}" ]]; then
-    commit="All commits"
-  else
-    commit="${COMMIT_HASH}"
-  fi
-  printf "Commit SHA    : %s\n\n" "${commit}"
+  printf "\n%s was invoked with\n" "$0" >&2
+  printf "TeamCity base URL   : %s\n" "${TEAMCITY_BASE_URL}" >&2
+  printf "TeamCity Project ID : %s\n" "${TEAMCITY_PROJECT_ID}" >&2
+  printf "Branch name         : %s\n" "${BRANCH}" >&2
+  printf "Commit hash         : %s\n\n" "${COMMIT_HASH}" >&2
 }
 
 function encode_branch_name() {
@@ -182,81 +162,94 @@ function get_build_info() {
     jq -r '[.buildTypeId, .state, .webUrl] | @tsv'
 }
 
+readonly BUILD_CANCEL_PAYLOAD='
+  {
+    "buildCancelRequest": {
+      "comment": "Build cancelled from GitHub",
+      "readdIntoQueue": false
+    }
+  }
+'
+
 function cancel_build() {
   local build_id="$1"
-  local payload='{ "buildCancelRequest": { "comment": "Build cancelled from GitHub", "readdIntoQueue": false } }'
-  teamcity_post_request "${TEAMCITY_BUILDS}/id:${build_id}" "${payload}"
+  teamcity_post_request "${TEAMCITY_BUILDS}/id:${build_id}" "${BUILD_CANCEL_PAYLOAD}"
 }
 
 function query_trigger() {
 
+  printf "Querying Trigger...\n\n" >&2
+
   local build_type="${TEAMCITY_PROJECT_ID}_Trigger"
-  local waiting=false
 
   local request_url
   printf -v request_url \
     "%s?locator=project:%s,buildType:%s,branch:%s,revision:%s,state:any,count:1" \
-    "$TEAMCITY_BUILDS" \
-    "$TEAMCITY_PROJECT_ID" \
-    "$build_type" \
-    "$BRANCH" \
-    "$COMMIT_HASH"
+    "${TEAMCITY_BUILDS}" \
+    "${TEAMCITY_PROJECT_ID}" \
+    "${build_type}" \
+    "${BRANCH}" \
+    "${COMMIT_HASH}"
 
-  while true; do
-    local trigger
-    trigger="$(teamcity_get_request "${request_url}")"
+  local trigger
+  trigger="$(teamcity_get_request "${request_url}")"
 
-    local state status id
-    read -r state status id < <(
-      jq -r '.build[0] | "\(.state)\t\(.status)\t\(.id)"' <<<"${trigger}" | tr -d '\r'
-    )
+  local build_id build_state build_web_url
+  read -r build_id build_state build_web_url < <(
+    jq -r '.build[0] | "\(.id) \(.state) \(.webUrl)"' <<<"${trigger}" | tr -d '\r'
+  )
 
-    if [ "${state}" != "finished" ]; then
-      if [ "${waiting}" = false ]; then
-        printf "%b Trigger is not finished yet. Polling for updates every %d seconds...\n" "${UNICODE_WAIT}" "${POLL_INTERVAL}" >&2
-        waiting=true
-      fi
-      sleep "${POLL_INTERVAL}"
-      continue
-    fi
+  printf ">> \"%s\"\n     id: %s\n     state: %s\n     link: %s\n" \
+    "${build_type}" \
+    "${build_id}" \
+    "${build_state}" \
+    "${build_web_url}" >&2
 
-    if [ "${status}" != "SUCCESS" ]; then
-      printf "%b Trigger failed. Tracking of the remaining jobs is no longer possible.\n" "${UNICODE_FAILURE}" >&2
-      return 1
-    fi
+  local kill_em_all
+  case "${build_state}" in
+  pending | queued)
+    cancel_build "${build_id}"
+    printf "     %b Cancelled while in %s state. Nothing left to do. \n" "${UNICODE_SUCCESS}" "${build_state}" >&2
+    kill_em_all=0
+    ;;
+  running)
+    cancel_build "${build_id}"
+    printf "     %b Cancelled while in %s state. Additional builds may need to be cancelled.\n" "${UNICODE_SUCCESS}" "${build_state}" >&2
+    kill_em_all=1
+    ;;
+  finished)
+    printf "     %b Build finished. Additional builds may need to be cancelled.\n" ${UNICODE_FINISHED} >&2
+    kill_em_all=1
+    ;;
+  *)
+    printf "     %b Unknown state '%s'. Cannot proceed.\n" "${UNICODE_UNKNOWN}" "${build_state}" >&2
+    kill_em_all=0
+    ;;
+  esac
 
-    printf "%b Trigger (id: %d) finished successfully!\n" "${UNICODE_SUCCESS}" "${id}" >&2
-    printf "%s" "${id}"
-    return 0
-  done
+  printf "%s\t%s\n" "${kill_em_all}" "${build_id}"
 }
 
 function cancel_all_builds() {
 
   local trigger_id="$1"
 
-  echo "FROM CANCEL ${trigger_id}"
+  printf "\nLooking up additional builds configurations..." >&2
 
-  printf "Looking up builds configs for project %s on branch %s... " "${TEAMCITY_PROJECT_ID}" "${BRANCH}"
-
-  local locator="affectedProject:${TEAMCITY_PROJECT_ID},branch:${BRANCH},sinceBuild:${trigger_id},state:any,count:1000,lookupLimit:5000,defaultFilter:false"
-  if [[ -n "${COMMIT_HASH}" ]]; then
-    locator="${locator},revision:${COMMIT_HASH}"
-  fi
-  locator="${locator}&fields=build(id)"
+  local locator="affectedProject:${TEAMCITY_PROJECT_ID},branch:${BRANCH},revision:${COMMIT_HASH},sinceBuild:${trigger_id},state:any,count:1000,lookupLimit:5000,defaultFilter:false&fields=build(id)"
 
   local raw_build_ids
   raw_build_ids=$(get_build_ids "${locator}")
-  printf "done.\n"
+  printf " done. " >&2
 
   if [[ -z "${raw_build_ids}" ]]; then
-    printf "No builds found. Nothing to cancel."
+    printf "No configurations found. Nothing to cancel.\n" >&2
     exit 0
   fi
 
   local build_ids=()
   mapfile -t build_ids < <(printf '%s' "${raw_build_ids}" | tr -d '\r')
-  printf "Found  %d build configurations.\n\n" "${#build_ids[@]}"
+  printf "Found %d configuration(s): \n\n" ${#build_ids[@]}
   for build_id in "${build_ids[@]}"; do
     local build_type_id build_state build_web_url
     read -r build_type_id build_state build_web_url <<<"$(get_build_info "${build_id}")"
@@ -269,13 +262,13 @@ function cancel_all_builds() {
     case "${build_state}" in
     pending | queued | running)
       cancel_build "${build_id}"
-      printf "     %b Cancelled.\n" "${UNICODE_SUCCESS}"
+      printf "     %b Cancelled.\n" "${UNICODE_SUCCESS}" >&2
       ;;
     finished)
-      printf "     %b Build finished, nothing to cancel.\n" ${UNICODE_FINISHED}
+      printf "     %b Build finished, nothing to cancel.\n" ${UNICODE_FINISHED} >&2
       ;;
     *)
-      printf "     %b Unknown state '%s', skipping.\n" "${UNICODE_UNKNOWN}" "${build_state}"
+      printf "     %b Unknown state '%s', skipping.\n" "${UNICODE_UNKNOWN}" "${build_state}" >&2
       ;;
     esac
   done
@@ -285,10 +278,10 @@ function main() {
   parse_args "$@"
   print_header
   encode_branch_name
-  local trigger_id
-  trigger_id="$(query_trigger)"
-  echo "${trigger_id}"
-  cancel_all_builds "${trigger_id}"
+  IFS=$'\t' read -r kill_em_all trigger_id < <(query_trigger)
+  if [[ "${kill_em_all}" == 1 ]]; then
+    cancel_all_builds "${trigger_id}"
+  fi
 }
 
 main "$@"
