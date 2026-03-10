@@ -114,10 +114,9 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp), dimension(:)               , pointer :: dg
     real(fp), dimension(:,:)             , pointer :: fixfac
     real(fp), dimension(:,:)             , pointer :: frac
-    real(fp), dimension(:,:)             , pointer :: frache
+    real(fp), dimension(:,:)             , pointer :: frac_he
     integer , dimension(:)               , pointer :: kfsed
     integer , dimension(:,:)             , pointer :: kmxsed
-    real(fp), dimension(:)               , pointer :: mudfrac
     real(fp), dimension(:,:)             , pointer :: sbuuc
     real(fp), dimension(:,:)             , pointer :: sbvvc
     real(fp), dimension(:,:)             , pointer :: ssuu
@@ -312,10 +311,9 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     dg                  => gdp%gderosed%dg
     fixfac              => gdp%gderosed%fixfac
     frac                => gdp%gderosed%frac
-    frache              => gdp%gderosed%frache
+    frac_he             => gdp%gderosed%frac_he
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
-    mudfrac             => gdp%gderosed%mudfrac
     sbuuc               => gdp%gderosed%e_sbnc
     sbvvc               => gdp%gderosed%e_sbtc
     ssuu                => gdp%gderosed%e_ssn

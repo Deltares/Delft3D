@@ -135,11 +135,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:)      , pointer :: epswlc
     real(fp)         , dimension(:,:)    , pointer :: fixfac
     real(fp)         , dimension(:,:)    , pointer :: frac
-    real(fp)         , dimension(:,:)    , pointer :: frache
+    real(fp)         , dimension(:,:)    , pointer :: frac_he
     integer          , dimension(:)      , pointer :: kfsed
     integer          , dimension(:,:)    , pointer :: kmxsed
     real(fp)         , dimension(:)      , pointer :: mudfrac
-    real(fp)         , dimension(:)      , pointer :: mudfrache ! dummy not used
+    real(fp)         , dimension(:)      , pointer :: mudfrac_he ! dummy not used
     real(fp)         , dimension(:)      , pointer :: sandfrac
     real(fp)         , dimension(:,:)    , pointer :: hidexp
     real(fp)         , dimension(:)      , pointer :: rsdqlc
@@ -466,11 +466,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     epswlc              => gdp%gderosed%epswlc
     fixfac              => gdp%gderosed%fixfac
     frac                => gdp%gderosed%frac
-    frache             => gdp%gderosed%frache
+    frac_he             => gdp%gderosed%frac_he
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
     mudfrac             => gdp%gderosed%mudfrac
-    mudfrache          => gdp%gderosed%mudfrache
+    mudfrac_he          => gdp%gderosed%mudfrac_he
     sandfrac            => gdp%gderosed%sandfrac
     hidexp              => gdp%gderosed%hidexp
     rsdqlc              => gdp%gderosed%rsdqlc
@@ -716,13 +716,13 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           !in the second layer (the coarse layer) will influence the sediment transport rate. 
           !`frac` is used for computing the sediment transport rate for each fraction. This should
           !depend only on the sediment in the active layer, and therefore `frac` is not overwritten. 
-          call getfrac(gdp%gdmorlyr,frache    ,anymud    ,mudcnt    , &
-                     & mudfrache   ,gdp%d%nmlb,gdp%d%nmub, BED_LAYER_FROM, BED_LAYER_TO)
-          call compdiam(frache    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+          call getfrac(gdp%gdmorlyr,frac_he    ,anymud    ,mudcnt    , &
+                     & mudfrac_he   ,gdp%d%nmlb,gdp%d%nmub, BED_LAYER_FROM, BED_LAYER_TO)
+          call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                       & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
                       & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
                       & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
-          call comphidexp(frache   ,dm_he     ,nmmax     ,lsedtot   , &
+          call comphidexp(frac_he   ,dm_he     ,nmmax     ,lsedtot   , &
                         & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                         & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
        else

@@ -101,8 +101,8 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     real(fp)             , dimension(:)    , pointer :: dgsd_he
     real(fp)             , dimension(:)    , pointer :: dm_he
     real(fp)             , dimension(:,:)  , pointer :: dxx_he
-    real(fp)             , dimension(:,:)  , pointer :: frache
-    real(fp)             , dimension(:)    , pointer :: mudfrache
+    real(fp)             , dimension(:,:)  , pointer :: frac_he
+    real(fp)             , dimension(:)    , pointer :: mudfrac_he
     !
     integer                                          :: ll
     real(fp)                                         :: drho
@@ -116,8 +116,9 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     !
     asklhe    => morpar%asklhe
     frac      => sedtra%frac
-    frache    => sedtra%frache
+    frac_he   => sedtra%frac_he
     mudfrac   => sedtra%mudfrac
+    mudfrac_he => sedtra%mudfrac_he
     sandfrac  => sedtra%sandfrac
     anymud    => sedpar%anymud
     logsedsig => sedpar%logsedsig
@@ -140,7 +141,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     taucr     => sedpar%taucr
     tetacr    => sedpar%tetacr
     
-    mudfrache   => sedtra%mudfrache
+    mudfrac_he   => sedtra%mudfrac_he
     dg_he        => sedtra%dg_he
     dgsd_he      => sedtra%dgsd_he
     dm_he        => sedtra%dm_he

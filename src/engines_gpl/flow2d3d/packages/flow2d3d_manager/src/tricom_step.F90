@@ -111,7 +111,7 @@ subroutine tricom_step(gdp)
     real(fp)          , dimension(:)    , pointer :: dm
     real(fp)          , dimension(:)    , pointer :: dg
     real(fp)          , dimension(:,:)  , pointer :: frac
-    real(fp)          , dimension(:,:)  , pointer :: frache
+    real(fp)          , dimension(:,:)  , pointer :: frac_he
     real(fp)                            , pointer :: cp
     real(fp)                            , pointer :: sarea
     real(fp)                            , pointer :: fclou
@@ -398,7 +398,7 @@ subroutine tricom_step(gdp)
     dm                  => gdp%gderosed%dm
     dg                  => gdp%gderosed%dg
     frac                => gdp%gderosed%frac
-    frache              => gdp%gderosed%frache
+    frac_he              => gdp%gderosed%frac_he
     cp                  => gdp%gdheat%cp
     sarea               => gdp%gdheat%sarea
     fclou               => gdp%gdheat%fclou

@@ -112,7 +112,7 @@ subroutine tricom_init(gdp)
     real(fp)          , dimension(:,:)  , pointer :: frac
     real(fp)          , dimension(:)    , pointer :: dm_he
     real(fp)          , dimension(:)    , pointer :: dg_he
-    real(fp)          , dimension(:,:)  , pointer :: frache
+    real(fp)          , dimension(:,:)  , pointer :: frac_he
     real(fp)                            , pointer :: cp
     real(fp)                            , pointer :: sarea
     real(fp)                            , pointer :: fclou
@@ -492,7 +492,7 @@ subroutine tricom_init(gdp)
     dg                  => gdp%gderosed%dg
     dg_he               => gdp%gderosed%dg_he
     frac                => gdp%gderosed%frac
-    frache             => gdp%gderosed%frache
+    frac_he             => gdp%gderosed%frac_he
     cp                  => gdp%gdheat%cp
     sarea               => gdp%gdheat%sarea
     fclou               => gdp%gdheat%fclou
