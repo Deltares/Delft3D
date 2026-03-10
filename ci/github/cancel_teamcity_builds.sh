@@ -178,10 +178,12 @@ function cancel_build() {
 
 function cancel_all_builds() {
   printf "Looking up builds configs for project %s on branch %s... " "${TEAMCITY_PROJECT_ID}" "${BRANCH}"
-  local locator="affectedProject:${TEAMCITY_PROJECT_ID},branch:${BRANCH},state:any,count:1000,lookupLimit:5000&fields=build(id)"
+  local locator="affectedProject:${TEAMCITY_PROJECT_ID},branch:${BRANCH},state:any,count:1000,lookupLimit:5000"
   if [[ -n "${COMMIT_HASH}" ]]; then
     locator="${locator},revision:${COMMIT_HASH}"
   fi
+  locator="${locator}&fields=build(id)"
+  
   local raw_build_ids
   raw_build_ids=$(get_build_ids "${locator}")
   printf "done.\n"
