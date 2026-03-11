@@ -54,24 +54,24 @@ object TemplateDownloadFromDVC : Template({
                 )
 
                 pushd "%%BASE_PATH%%"
-                echo [INFO] Pulling ONLY f[0-9]* doc.dvc files in batches of 100 (to limit memory usage)...
 
+                echo [INFO] Pulling root doc/ first...
+                "%%DVC_EXE%%" pull doc.dvc
+
+                echo [INFO] Pulling f[0-9]* features in batches of 100 (low memory)...
                 setlocal EnableDelayedExpansion
                 set "BATCH="
                 set "COUNT=0"
 
-                for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul') do (
-                    echo "%%%%a" | findstr /i "\\f[0-9]" >nul
-                    if not errorlevel 1 (
-                        set /a COUNT+=1
-                        set "BATCH=!BATCH! "%%%%a""
+                for /f "delims=" %%%%a in ('dir /s /b f[0-9]*\\doc.dvc 2^>nul') do (
+                    set /a COUNT+=1
+                    set "BATCH=!BATCH! "%%%%a""
 
-                        if !COUNT! equ 100 (
-                            echo [BATCH] Pulling next 100 doc.dvc files...
-                            "%%DVC_EXE%%" pull !BATCH!
-                            set "BATCH="
-                            set "COUNT=0"
-                        )
+                    if !COUNT! equ 100 (
+                        echo [BATCH] Pulling next 100 files...
+                        "%%DVC_EXE%%" pull !BATCH!
+                        set "BATCH="
+                        set "COUNT=0"
                     )
                 )
 
