@@ -28,14 +28,14 @@ object TemplateDownloadFromDVC : Template({
 
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
 
-                if not exist "%BASE_PATH%" (
-                    echo [ERROR] Base path not found: %BASE_PATH%
+                if not exist "%%BASE_PATH%%" (
+                    echo [ERROR] Base path not found: %%BASE_PATH%%
                     echo Make sure VCS checkout runs BEFORE this template!
                     exit /b 1
                 )
 
-                echo [INFO] Searching for doc.dvc files recursively under %BASE_PATH%...
-                pushd "%BASE_PATH%"
+                echo [INFO] Searching for doc.dvc files recursively under %%BASE_PATH%%...
+                pushd "%%BASE_PATH%%"
 
                 set "COUNT=0"
                 for /r %%%%f in (doc.dvc) do (
