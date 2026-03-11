@@ -65,19 +65,16 @@ object TemplateDownloadFromDVC : Template({
                 set "COUNT=0"
                 set "TOTAL=0"
 
-                for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul') do (
-                    echo "%%%%a" | findstr /i "\\f[0-9]" >nul
-                    if not errorlevel 1 (
-                        set /a TOTAL+=1
-                        set /a COUNT+=1
-                        set "BATCH=!BATCH! "%%%%a""
+                for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul ^| findstr /i "\\f[0-9]"') do (
+                    set /a TOTAL+=1
+                    set /a COUNT+=1
+                    set "BATCH=!BATCH! "%%%%a""
 
-                        if !COUNT! equ 100 (
-                            echo [BATCH] Pulling next 100 files (total so far: !TOTAL!)...
-                            "%%DVC_EXE%%" pull !BATCH!
-                            set "BATCH="
-                            set "COUNT=0"
-                        )
+                    if !COUNT! equ 100 (
+                        echo [BATCH] Pulling next 100 files (total so far: !TOTAL!)...
+                        "%%DVC_EXE%%" pull !BATCH!
+                        set "BATCH="
+                        set "COUNT=0"
                     )
                 )
 
