@@ -21,15 +21,11 @@ object TemplateDownloadFromDVC : Template({
             scriptContent = "call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%"
         }
         script {
-            name = "Create destination directory"
-            scriptContent = "mkdir %engine_dir%"
-        }
-        script {
             name = "DVC Checkout all doc.dvc files recursively"
             scriptContent = """
                 @echo off
                 echo === DVC doc checkout started for engine_dir: %engine_dir% ===
-                pushd "%engine_dir%"
+                pushd "test/deltares_testbench/data/cases/%engine_dir%"
 
                 for /r %%%%f in (doc.dvc) do (
                     if exist "%%%%f" (

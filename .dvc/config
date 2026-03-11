@@ -4,3 +4,5 @@
 ['remote "storage"']
     url = s3://delft3d-testbench
     endpointurl = https://s3.deltares.nl
+    access_key_id = hxLt9PfnCocpg2Tq6lzk
+    secret_access_key = 3uVcWi3d8Pd0DYmRfGvSD1QPYtXKKLTU72opabFx
