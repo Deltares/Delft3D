@@ -58,6 +58,12 @@ if (WIN32)
         string(APPEND CMAKE_MODULE_LINKER_FLAGS " /MANIFEST:NO")
         string(APPEND CMAKE_SHARED_LINKER_FLAGS " /MANIFEST:NO")
     endif()
+
+    # On windows, we have precompiled release versions of third party libraries,
+    # so we cannot link to the windows debug runtime library unless moving through a C interface.
+    # As a workaround, we link to the release runtime library in debug mode as well until a
+    # package manager solves the issue of providing debug versions of the third party libraries on windows.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif(WIN32)
 
 if (UNIX)
