@@ -349,6 +349,8 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
           enddo
           if (outfile == 1) then
              if (.not.cart) then
+                ! Convert from nautical to cartesian coordinates
+                ! D-Waves processes all directions as cartesian, i.e. 0 degrees is towards the east and 90 degrees towards the north
                 dir(i) = 180. + north - dir(i)
                 if (dir(i)>360.) dir(i) = dir(i) - 360.
                 if (dir(i)<0.)   dir(i) = dir(i) + 360.

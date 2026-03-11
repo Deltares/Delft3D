@@ -1,4 +1,4 @@
-subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata)
+subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautconv)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -67,6 +67,7 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata)
     type (grid)               :: sg           ! swan grid
     type (output_fields)      :: sof          ! output fields defined on swan grid
     type (wave_data_type)     :: wavedata
+    logical     , intent(in)  :: nautconv     ! .true. if nautical directional convention is used, .false. if cartesian directional convention is used
 !
 ! Local variables
 !
@@ -286,6 +287,11 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata)
        ierror = nf90_put_att(idfile, nf90_global,  'history', &
               'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
               ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename)
+      if (nautconv) then
+         ierror = nf90_put_att(idfile, nf90_global, 'Directional_convention', 'nautical'); call nc_check_err(ierror, "put_att global institution", filename)
+      else
+         ierror = nf90_put_att(idfile, nf90_global, 'Directional_convention', 'cartesian'); call nc_check_err(ierror, "put_att global institution", filename)
+      end if      
        !
        ! dimensions
        !
@@ -311,7 +317,11 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata)
        ierror        = nf90_put_att(idfile, idvar_statid  , 'cf_role', 'timeseries_id')
        idvar_depth   = nc_def_var(idfile, 'Depth'  , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Water depth', 'm'  , .true., filename)
        idvar_hsig    = nc_def_var(idfile, 'Hsig'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Significant wave height', 'm'  , .true., filename)
-       idvar_dir     = nc_def_var(idfile, 'Dir'    , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Mean wave direction', 'degree'  , .true., filename)
+       if (nautconv) then
+          idvar_dir     = nc_def_var(idfile, 'Dir'    , precision, 2, (/iddim_nstat, iddim_time/), 'sea_surface_wave_from_direction'    , 'Mean wave direction', 'degree'  , .true., filename)
+       else
+          idvar_dir     = nc_def_var(idfile, 'Dir'    , precision, 2, (/iddim_nstat, iddim_time/), 'sea_surface_wave_to_direction'    , 'Mean wave direction', 'degree'  , .true., filename)
+       endif
        idvar_rtpeak  = nc_def_var(idfile, 'RTpeak' , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Peak period', 's'  , .true., filename)
        idvar_tm01    = nc_def_var(idfile, 'Tm01'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Mean absolute wave period', 's'  , .true., filename)
        idvar_dspr    = nc_def_var(idfile, 'Dspr'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Directional spreading of the waves', 'degree'  , .true., filename)
