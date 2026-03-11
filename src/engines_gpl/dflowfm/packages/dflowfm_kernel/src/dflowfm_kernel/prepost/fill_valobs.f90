@@ -130,11 +130,10 @@ contains
          water_depth = s1 - bl
       end if
       if (.not. allocated(wetordry)) then
-         ! Allocate as 2D aray, dtermne wet,1, or dry, 0
+         ! Allocate as 2D aray, determine wet,1, or dry, 0
          call realloc(wetordry, ndx, keepExisting=.false., fill=1)
-         water_depth = s1 - bl
          do k = 1, ndx
-             if (water_depth(k) < 0.05) wetordry(k) = 0
+             if (water_depth(k) < 0.10) wetordry(k) = 0
          end do
       end if
       
@@ -245,12 +244,6 @@ contains
             neighbour_weights_obs(1,i) = 1.0
             neighbour_weights_obs(2,i) = 0.0
             neighbour_weights_obs(3,i) = 0.0
-        else
-            ! You can have a station were interpolation is requested but outside the triangulation network through cel centres but
-            ! within the network (hence with a snapped location!). To avoid interplation set kobs to 0
-            if (neighbour_nodes_obs(1,i) == 0) then
-                kobs(i) = 0
-            end if
          end if
 
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
@@ -750,7 +743,7 @@ contains
 
       use precision, only: dp
       use fm_statistical_output, only: model_is_3d
-      use m_observations_data, only: neighbour_nodes_obs, neighbour_weights_obs, valobs
+      use m_observations_data, only: neighbour_nodes_obs, neighbour_weights_obs,intobs ,  valobs
       use m_get_kbot_ktop, only: getkbotktop
 
       use m_get_layer_indices, only: getlayerindices
@@ -767,8 +760,13 @@ contains
 
       integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), i_point, kstart, kstop, pntnr, klay, oneDown
 
-      ! No surroundig wet points, return, value remains dmiss!
-      if (sum(wetordry(neighbour_nodes_obs(:,i_station))) == 0) return
+      ! Interpolation needed, however no surroundig wet points, return, value remains dmiss!
+      if (intobs(i_station) == 1) then
+          if (neighbour_nodes_obs(1,i_station)                == 0)   return
+          if (sum(wetordry(neighbour_nodes_obs(:,i_station))) == 0 )  return                 !.and.                      &
+!           wetordry(neighbour_nodes_obs(2,i_station)) == 0 .and.                      &
+!           wetordry(neighbour_nodes_obs(3,i_station)) == 0)                           ) then  
+      end if 
       
       oneDown = 0
 

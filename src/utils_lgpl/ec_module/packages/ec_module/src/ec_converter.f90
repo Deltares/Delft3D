@@ -1747,28 +1747,29 @@ contains
                ! Are the subproviders 3D or 2D?
                if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                    associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
-                  !TK_Temp: Check if point is permanent or temperary dry (arr1D = dmiss for all layers)
-                  !       
-                  kbeginL = (kL - 1) * maxlay_src + 1 ! refers to source left column
-                  kendL   = kL*maxlay_src
-                  kbeginR = (kR - 1) * maxlay_src + 1 ! refers to source right column
-                  kendR   = kR*maxlay_src 
-             
-                  !  TK_Temp: Check if left has at least one valid z coordinate
-                  oneSided = .true.
-                  do k = kbeginL, kendL
-                     if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(k),missing) /=0) oneSided = .false.
-                  end do
+                  
+                   !  TK_Temp: Check if left has at least one valid z coordinate (if not, temporary or pemenent dry)
+                  if (Kl > 0) then
+                      kbeginL = (kL - 1) * maxlay_src + 1 ! refers to source left column
+                      kendL   = kL*maxlay_src
+                     oneSided = .true.
+                     do k = kbeginL, kendL
+                        if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(k),missing) /=0) oneSided = .false.
+                     end do
               
-                  if (oneSided) kL = 0
+                     if (oneSided) kL = 0
+                  end if
         
                   ! TK_Temp: Check if right has at least one valid z coordinate
-                  oneSided = .true.
-                  do k = kbeginR, kendR
-                     if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(k),missing) /=0) oneSided = .false.
-                  end do
-  
-                  if (oneSided) kR = 0
+                  if (kR > 0) then
+                     kbeginR = (kR - 1) * maxlay_src + 1 ! refers to source right column
+                     kendR   = kR*maxlay_src 
+                     oneSided = .true.
+                     do k = kbeginR, kendR
+                        if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(k),missing) /=0) oneSided = .false.
+                     end do
+                     if (oneSided) kR = 0
+                  end if
                                     
                   ! deal with one-sided interpolation
                   if (kL == 0 .and. kR /= 0) then
@@ -1928,6 +1929,7 @@ contains
                   ! 2D subproviders   
                   connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps !!!!! ???????
                   ! Determine value
+                  ! TODO, adjust kL an kR in case of drying (permanent or temporary
                   if (kL > 0) then
                      if (kR > 0) then
                         val(1:vectormax) = wL * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kL - 1) * vectormax + 1:kL * vectormax) &
