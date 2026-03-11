@@ -1579,7 +1579,7 @@ contains
          ! TODO: AvD: I'd rather have a full message stack that will combine EC + meteo + dflowfm, and any caller may print any pending messages.
          ! For now: Print the EC message stack here, and leave the rest to the caller.
          ! TODO: RL: the message below is from m_meteo::message, whereas timespace::getmeteoerror() returns timespace::errormessage. So now this message here is lost/never printed at call site.
-         message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
+         message = dump_ec_message_stack(LEVEL_ERROR, callback_msg)
          ! Leave this concluding message for the caller to print or not. (via getmeteoerror())
       end if
       message = 'm_meteo::ec_addtimespacerelation: Error while initializing '''//trim(name)//''' from file: '''//trim(filename)//''''
