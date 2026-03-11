@@ -55,7 +55,7 @@ object TemplateDownloadFromDVC : Template({
 
                 pushd "%%BASE_PATH%%"
                 echo [INFO] Pulling ALL doc.dvc files using glob (no argument limit)...
-                "%%DVC_EXE%%" pull --glob "**/doc.dvc"
+                "%%DVC_EXE%%" pull --glob "**/doc.dvc" --jobs 4
                 popd
 
                 echo === DVC doc pull completed ===
