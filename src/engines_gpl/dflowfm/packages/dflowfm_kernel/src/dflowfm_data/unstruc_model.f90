@@ -2380,13 +2380,15 @@ contains
 
       call prop_get(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
       call prop_get(md_ptr, 'output', 'VelocityDirectionClassesInterval', map_classes_ucdirstep, success)
-      if (success) then
-         call createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
-      else
-         allocate (map_classes_ucdir(0))
-      end if
+      
 
       if (ti_classmap > 0.0_dp) then
+         if (map_classes_ucdirstep > 0.0_dp) then
+            call createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
+         else
+            allocate (map_classes_ucdir(0))
+         end if
+
          call readClasses('WaterlevelClasses', map_classes_s1)
          call readClasses('WaterdepthClasses', map_classes_hs)
          call readClasses('VelocityMagnitudeClasses', map_classes_ucmag)
