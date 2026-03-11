@@ -12,11 +12,11 @@ object TemplateFunctionalityDocumentation : Template({
     buildNumberPattern = "%build.vcs.number%"
 
     artifactRules = """
-        %engine_dir%/*.log=>logging
-        %engine_dir%/doc/functionalities/*.pdf=>pdf
-        %engine_dir%/doc/functionalities/*.log=>logging
-        %engine_dir%/*/doc/*.pdf=>pdf/functionality
-        %engine_dir%/*/doc/*.log=>logging/functionality
+        test/deltares_testbench/data/cases/%engine_dir%/*.log=>logging
+        test/deltares_testbench/data/cases/%engine_dir%/doc/functionalities/*.pdf=>pdf
+        test/deltares_testbench/data/cases/%engine_dir%/doc/functionalities/*.log=>logging
+        test/deltares_testbench/data/cases/%engine_dir%/*/doc/*.pdf=>pdf/functionality
+        test/deltares_testbench/data/cases/%engine_dir%/*/doc/*.log=>logging/functionality
     """.trimIndent()
 
     params {
