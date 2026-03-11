@@ -46,6 +46,7 @@ object TemplateDownloadFromDVC : Template({
                 echo === DVC doc pull started for engine_dir: %engine_dir% ===
 
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
+                set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
 
                 if not exist "%%BASE_PATH%%" (
                     echo [ERROR] Base path not found: %%BASE_PATH%%
@@ -53,22 +54,18 @@ object TemplateDownloadFromDVC : Template({
                     exit /b 1
                 )
 
-                echo [INFO] Searching for doc.dvc files recursively under %%BASE_PATH%%...
+                echo [INFO] Collecting all doc.dvc files recursively...
 
-                set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
-
-                pushd "%%BASE_PATH%%"
-
-                set "COUNT=0"
-                for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul') do (
-                    set /a COUNT+=1
-                    echo [DVC] Pulling only doc data for: %%%%a
-                    "%%DVC_EXE%%" pull "%%%%a"
-                )
-
-                popd
-                echo [INFO] Processed %%COUNT%% doc.dvc file(s).
-                echo === DVC doc pull completed ===
+                powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+                    "$base = '%%BASE_PATH%%'; " ^
+                    "$dvc = '%%DVC_EXE%%'; " ^
+                    "$files = Get-ChildItem -Path $base -Filter 'doc.dvc' -Recurse -File | Select-Object -ExpandProperty FullName; " ^
+                    "if ($files) { " ^
+                    "  Write-Host '[INFO] Pulling' $files.Count 'doc.dvc files in ONE command...'; " ^
+                    "  & $dvc pull $files " ^
+                    "} else { " ^
+                    "  Write-Host '[WARN] No doc.dvc files found!' " ^
+                    "}"
             """.trimIndent()
         }
     }
