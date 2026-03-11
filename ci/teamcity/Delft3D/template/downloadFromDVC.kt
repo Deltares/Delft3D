@@ -20,6 +20,21 @@ object TemplateDownloadFromDVC : Template({
             name = "split engine_name_and_dir"
             scriptContent = "call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%"
         }
+        python {
+            name = "Install DVC locally (no system-wide)"
+            environment = venv {
+                name = ".dvc-venv"
+                requirementsFile = ""
+            }
+            command = script {
+                scriptContent = """
+                    python -m pip install --upgrade pip
+                    python -m pip install "dvc[s3]"
+                    echo === DVC installed successfully ===
+                    .dvc-venv\Scripts\dvc.exe --version
+                """.trimIndent()
+            }
+        }
         script {
             name = "DVC Pull all doc.dvc files recursively"
             scriptContent = """
@@ -41,7 +56,7 @@ object TemplateDownloadFromDVC : Template({
                 for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul') do (
                     set /a COUNT+=1
                     echo [DVC] Pulling only doc data for: %%%%a
-                    dvc pull "%%%%a"
+                    "%%cd%%\.dvc-venv\Scripts\dvc.exe" pull "%%%%a"
                 )
 
                 popd
