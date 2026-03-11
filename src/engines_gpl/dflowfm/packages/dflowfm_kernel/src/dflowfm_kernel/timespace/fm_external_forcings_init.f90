@@ -961,18 +961,13 @@ contains
 
    end function init_meteo_forcings
 
-   !> Read sourcesink blocks from new external forcings file.
-   function init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+   !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
+   module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
-      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
-      use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_addsorsin, only: addsorsin
-      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
-      use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
       use m_reapol, only: reapol
@@ -982,23 +977,16 @@ contains
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
 
-      character(len=INI_VALUE_LEN) :: sourcesink_id
-      character(len=INI_VALUE_LEN) :: sourcesink_name
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+      integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink
+      
+
       character(len=INI_VALUE_LEN) :: location_file
-      character(len=INI_VALUE_LEN) :: discharge_input
-      character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
-      character(len=NAMLEN) :: const_name_with_prefix
-      character(len=INI_VALUE_LEN) :: quantity_id, property_name
 
       integer :: num_coordinates
-      real(kind=dp), dimension(:), allocatable :: x_coordinates
-      real(kind=dp), dimension(:), allocatable :: y_coordinates
-      ! only constant profiles (1 value) or linear profiles (2 values) are allowed
-      integer, parameter :: num_range_points = 2
-      real(kind=dp), dimension(num_range_points) :: z_range_source
-      real(kind=dp), dimension(num_range_points) :: z_range_sink
-      real(kind=dp) :: area
-      integer :: i_const
       integer :: ierr
       integer :: polyline_file_lun ! polyline file logical unit number
       logical :: is_successful
@@ -1009,16 +997,6 @@ contains
       is_successful = .false.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
-
-      sourcesink_id = ' '
-      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
-      if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
-         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Field ''id'' is missing.'
-         call err_flush()
-         return
-      end if
-      call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
-
       
       ! Read source/sink z range information from ext file, load it from the polyline file later on as a fallback.
       source_z_in_ext_file = .false.
@@ -1076,7 +1054,8 @@ contains
          call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
          if (is_read) then
             if (num_coordinates <= 0) then
-               write (msgbuf, '(a)') 'SourceSink ''' // trim(sourcesink_id) // ''': numCoordinates must be greater than 0.'
+               !write (msgbuf, '(a)') 'SourceSink ''' // trim(sourcesink_id) // ''': numCoordinates must be greater than 0.'
+               write (msgbuf, '(a)') 'numCoordinates must be greater than 0.'
                call err_flush()
                return
             end if
@@ -1094,6 +1073,66 @@ contains
          write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Location information is incomplete or missing.'
          call err_flush()
          return
+      end if
+      
+      is_successful = .true.
+   end function
+   
+   !> Read sourcesink blocks from new external forcings file.
+   function init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+      use messageHandling, only: err_flush, msgbuf
+      use tree_data_types, only: tree_data
+      use properties, only: prop_get
+      use unstruc_files, only: resolvePath
+      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
+      use netcdf_utils, only: ncu_sanitize_name
+      use m_missing, only: dmiss
+      use m_addsorsin, only: addsorsin
+      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
+      use dfm_error, only: DFM_NOERR
+      use m_filez, only: oldfil
+      use m_polygon, only: xpl, ypl, zpl, dzL
+      use m_reapol, only: reapol
+
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+      character(len=INI_VALUE_LEN) :: sourcesink_id
+      character(len=INI_VALUE_LEN) :: sourcesink_name
+      character(len=INI_VALUE_LEN) :: discharge_input
+      character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
+      character(len=NAMLEN) :: const_name_with_prefix
+      character(len=INI_VALUE_LEN) :: quantity_id, property_name
+
+      real(kind=dp), dimension(:), allocatable :: x_coordinates
+      real(kind=dp), dimension(:), allocatable :: y_coordinates
+      integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
+      real(kind=dp), dimension(num_range_points) :: z_range_source
+      real(kind=dp), dimension(num_range_points) :: z_range_sink
+      real(kind=dp) :: area
+      integer :: i_const
+      integer :: ierr
+      logical :: is_successful
+      logical :: is_read
+
+      is_successful = .false.
+      z_range_source(:) = dmiss
+      z_range_sink(:) = dmiss
+
+      sourcesink_id = ' '
+      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
+      if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
+         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Field ''id'' is missing.'
+         call err_flush()
+         return
+      end if
+      call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
+
+      is_successful = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      if (.not. is_successful) then
+         return ! Error message already printed in sourcesink_parse_coordinates
       end if
       
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
