@@ -47,7 +47,6 @@ object TemplateDownloadFromDVC : Template({
 
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
                 set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
-                set "TEMP_LIST=%%TEMP%%\\dvc_doc_%%RANDOM%%.txt"
 
                 if not exist "%%BASE_PATH%%" (
                     echo [ERROR] Base path not found: %%BASE_PATH%%
@@ -59,36 +58,30 @@ object TemplateDownloadFromDVC : Template({
                 echo [INFO] 1/2 Pulling root doc.dvc ...
                 "%%DVC_EXE%%" pull doc.dvc
 
-                echo [INFO] 2/2 Collecting and pulling f[0-9]* doc.dvc files in batches of 100 (to reduce memory usage) ...
+                echo [INFO] 2/2 Pulling f[0-9]* doc.dvc files in batches of 100 (to reduce memory)...
 
                 setlocal EnableDelayedExpansion
                 set "BATCH="
                 set "COUNT=0"
                 set "TOTAL=0"
 
-                rem === Safe collection using temp file ===
-                dir /s /b doc.dvc 2^>nul ^| findstr /i "\\f[0-9]" > "!TEMP_LIST!" 2^>nul
+                echo [DEBUG] Looking for f[0-9]*\\doc.dvc files...
+                for /f "delims=" %%%%a in ('dir /s /b f[0-9]*\\doc.dvc 2^>nul') do (
+                    set /a TOTAL+=1
+                    set /a COUNT+=1
+                    set "BATCH=!BATCH! "%%%%a""
 
-                if exist "!TEMP_LIST!" (
-                    for /f "delims=" %%%%a in ('type "!TEMP_LIST!"') do (
-                        set /a TOTAL+=1
-                        set /a COUNT+=1
-                        set "BATCH=!BATCH! "%%%%a""
-
-                        if !COUNT! equ 100 (
-                            echo [BATCH] Pulling next 100 files (total: !TOTAL!)...
-                            "%%DVC_EXE%%" pull !BATCH!
-                            set "BATCH="
-                            set "COUNT=0"
-                        )
-                    )
-                    if not "!BATCH!"=="" (
-                        echo [BATCH] Pulling remaining !COUNT! files (total: !TOTAL!)...
+                    if !COUNT! equ 100 (
+                        echo [BATCH] Pulling next 100 files (total so far: !TOTAL!)...
                         "%%DVC_EXE%%" pull !BATCH!
+                        set "BATCH="
+                        set "COUNT=0"
                     )
-                    del "!TEMP_LIST!"
-                ) else (
-                    echo [INFO] No f[0-9]* doc.dvc files found.
+                )
+
+                if not "!BATCH!"=="" (
+                    echo [BATCH] Pulling remaining !COUNT! files (total: !TOTAL!)...
+                    "%%DVC_EXE%%" pull !BATCH!
                 )
 
                 echo [INFO] Total f[0-9]* doc.dvc files processed: !TOTAL!
