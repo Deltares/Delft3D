@@ -33,6 +33,7 @@ object TemplateDownloadFromDVC : Template({
 
                 python -m pip install --upgrade pip
                 python -m pip install "dvc[s3]"
+                python -m pip install --editable ./ci/python --force-reinstall
 
                 echo === DVC installed successfully ===
                 dvc --version
