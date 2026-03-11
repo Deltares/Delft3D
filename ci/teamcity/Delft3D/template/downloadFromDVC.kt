@@ -47,7 +47,7 @@ object TemplateDownloadFromDVC : Template({
 
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
                 set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
-                set "TEMP_LIST=%TEMP%\\dvc_doc_%%RANDOM%%.txt"
+                set "TEMP_LIST=%%TEMP%%\\dvc_doc_%%RANDOM%%.txt"
 
                 if not exist "%%BASE_PATH%%" (
                     echo [ERROR] Base path not found: %%BASE_PATH%%
