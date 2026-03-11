@@ -1,4 +1,4 @@
-subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, singleprecision, sif_mmax, sif_nmax, sif_veg, output_ice, output_veg)
+subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, singleprecision, sif_mmax, sif_nmax, sif_veg, output_ice, output_veg, nautconv, northdir)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -50,10 +50,12 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, pre
    type(wave_data_type), intent(in) :: wavedata
    logical, intent(in) :: prevtime ! true: the time to be written is the "previous time"
    logical, intent(in) :: singleprecision
+   logical, intent(in) :: nautconv ! true: angles are according to the nautical convention
    integer, intent(in) :: output_ice ! switch for writing ice quantities
    integer, intent(in) :: output_veg ! switch for writing vegetation quantities
    integer, intent(in) :: sif_mmax
    integer, intent(in) :: sif_nmax
+   real   , intent(in) :: northdir ! direction of north in degrees, used to convert to nautical convention if nautconv is true
    real, dimension(sif_mmax, sif_nmax) :: sif_veg
 !
 ! Local variables
@@ -121,6 +123,7 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, pre
    character(11) :: epsgstring
    real(kind=hp), dimension(:, :), allocatable :: tmp_x ! dummy x-coordinates cell center to write to netCDF
    real(kind=hp), dimension(:, :), allocatable :: tmp_y ! dummy y-coordinates cell center to write to netCDF
+   real(kind=hp), dimension(:, :), allocatable :: tmp_dir ! dummy directions to write to netCDF, converted to nautical convention if needed
 !
 !! executable statements -------------------------------------------------------
 !
@@ -348,8 +351,24 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, pre
 
    ierror = nf90_put_var(idfile, idvar_time, idummy(1), start=(/wavedata%output%count/)); call nc_check_err(ierror, "put_var time", filename)
    ierror = nf90_put_var(idfile, idvar_hsign, sof%hs, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var hsign", filename)
-   ierror = nf90_put_var(idfile, idvar_dir, sof%dir, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var dir    ", filename)
-   ierror = nf90_put_var(idfile, idvar_pdir, sof%pdir, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var pdir   ", filename)
+   if (nautconv) then
+      ! dir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
+      ! Here we convert it back to nautical convention for output to netCDF
+      allocate (tmp_dir(sof%mmax, sof%nmax), stat=ierror)
+      tmp_dir(:, :) = 180.0 + northdir - sof%dir(:, :)
+      where (tmp_dir(:, :) < 0.0) tmp_dir(:, :) = tmp_dir(:, :) + 360.0
+      where (tmp_dir(:, :) >= 360.0) tmp_dir(:, :) = tmp_dir(:, :) - 360.0
+   end if
+   ierror = nf90_put_var(idfile, idvar_dir, tmp_dir, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var dir    ", filename)
+   if (nautconv) then
+      ! pdir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
+      ! Here we convert it back to nautical convention for output to netCDF
+      ! Already allocated: tmp_dir
+      tmp_dir(:, :) = 180.0 + northdir - sof%pdir(:, :)
+      where (tmp_dir(:, :) < 0.0) tmp_dir(:, :) = tmp_dir(:, :) + 360.0
+      where (tmp_dir(:, :) >= 360.0) tmp_dir(:, :) = tmp_dir(:, :) - 360.0
+   end if
+   ierror = nf90_put_var(idfile, idvar_pdir, tmp_dir, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var pdir   ", filename)
    ierror = nf90_put_var(idfile, idvar_period, sof%period, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var period ", filename)
    ierror = nf90_put_var(idfile, idvar_rtp, sof%rtp, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var rtp    ", filename)
    ierror = nf90_put_var(idfile, idvar_depth, sof%depth, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var depth  ", filename)
