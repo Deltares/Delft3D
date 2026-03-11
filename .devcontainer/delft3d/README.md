@@ -106,6 +106,15 @@ package manager. If you do that, you should be aware of the following:
    compatibility issues between Podman and Docker Engine mostly when 'building' container
    images with [BuildKit](https://docs.docker.com/build/buildkit/) features. 
 
+To test if docker is installed correctly run the docker hello-world container.
+`$ sudo docker run hello-world`
+You should see `Hello from Docker!` at the start of the output. 
+
+Next, you should check that you are a member of the `docker` group. 
+Run `$ groups` and you should see `docker` in the list. 
+If you are not you add yourself to the docker group using the following command: 
+`$sudo usermod -aG docker ${USER}` 
+
 ### Opening Delft3D 'in the devcontainer' in your IDE
 Once you have Docker installed you can follow the instructions for your IDE to open the
 Delft3D repository inside the devcontainer. If you are on Windows, we **strongly recommend**
@@ -135,8 +144,10 @@ extension. You will need to install both of these extensions.
 Deltares hosts it's own our 'container registry' at
 [containers.deltares.nl](https://containers.deltares.nl). Our devcontainer is based on the
 'third-party-libs' build container stored under the `delft3d-dev` project in 
-`containers.deltares.nl`. You will need access to the `delft3d-dev` project before you can
-use the build container. Then you need to login with the `docker` command line tool. You
+`containers.deltares.nl`. You will need to be granted access to the `delft3d-dev` project 
+before you can use the build container. 
+
+Then you need to login with the `docker` command line tool. You
 can do so with the following command:
 ```bash
 docker login --username $YOUR_EMAIL_ADDRESS --password $YOUR_CLI_SECRET containers.deltares.nl
