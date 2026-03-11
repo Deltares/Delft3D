@@ -67,7 +67,7 @@ object TemplateDownloadFromDVC : Template({
                         set "BATCH=!BATCH! "%%%%a""
 
                         if !COUNT! equ 100 (
-                            echo [BATCH] Pulling next 100 files...
+                            echo [BATCH] Pulling next 100 doc.dvc files...
                             "%%DVC_EXE%%" pull !BATCH!
                             set "BATCH="
                             set "COUNT=0"
