@@ -1139,205 +1139,205 @@ subroutine lyrerosion(this, nm, dzini, dmi)
        !
     endselect
 end subroutine lyrerosion
-!
-!
-!
-!==============================================================================
-subroutine lyrerosion_mass(this, nm, dmi_in, dz_out, dmi_out)
-!!--description-----------------------------------------------------------------
-!
-!    Function:
-!     - lyrerosion implements the erosion of sediment from the layers below the
-!       transport and exchange layers based on mass
-!
-!!--declarations----------------------------------------------------------------
-    use precision
-    !
-    implicit none
-    !
-    ! Function/routine arguments
-    !
-    type(bedcomp_data)                                    :: this    
-    integer                                  , intent(in) :: nm
-    real(fp), dimension(this%settings%nfrac) , intent(in) :: dmi_in  !  density of sediment fractions, units : kg/m3
-    real(fp)                                 , intent(out) :: dz_out   !  thickness of eroded layer, units : m
-    real(fp), dimension(this%settings%nfrac) , intent(out) :: dmi_out  
-    !
-    ! Local variables
-    !
-    logical                                            :: remove
-    integer                                            :: k
-    integer                                            :: kero1  ! top-most layer that has been (partially) eroded
-    integer                                            :: l
-    real(fp)                                           :: dz
-    real(fp)                                           :: dm
-    real(fp)                                           :: fac
-    real(fp)                                           :: thick
-    real(fp)                                           :: thbaselyr
-    real(fp), dimension(this%settings%nfrac)           :: mbaselyr  
-    real(fp), dimension(this%settings%nfrac)           :: dmi_in_work  !  density of sediment fractions, units : kg/m3
-    real(fp)                                 , pointer :: thlalyr
-    integer                                  , pointer :: keuler 
-    integer                                  , pointer :: nlyr
-    integer                                  , pointer :: updbaselyr
-    real(fp), dimension(:,:)                 , pointer :: svfrac
-    real(fp), dimension(:,:,:)               , pointer :: msed
-    real(fp), dimension(:,:)                 , pointer :: thlyr
-    real(fp), dimension(:)                   , pointer :: rhofrac
-!
-!! executable statements -------------------------------------------------------
-!
-    keuler      => this%settings%keuler
-    nlyr        => this%settings%nlyr
-    thlalyr     => this%settings%thlalyr
-    updbaselyr  => this%settings%updbaselyr
-    svfrac      => this%state%svfrac
-    msed        => this%state%msed
-    thlyr       => this%state%thlyr
-    rhofrac     => this%settings%rhofrac
-    !
-    k   = 2
-    if (this%settings%exchlyr) k = k + 1
-    if (this%settings%crslyr) k = k + 1
-    !
-    thbaselyr = thlyr(nlyr, nm)
-    mbaselyr  = msed(:, nlyr, nm)
-    dmi_out = 0.0_fp
-    dz = 0.0_fp
-    ! get thickness of to be eroded material
-    do l = 1, this%settings%nfrac
-        dz  = dz + dmi_in(l)/rhofrac(l)
-        dmi_in_work(l) = dmi_in(l)
-    enddo
-    !
-    ! initially remove sediment irrespective of layer type
-    ! then fill the Lagrangian layers again up to their
-    ! original thickness
-    ! kero1 represents the Lagrangian layer that was eroded and needs
-    ! to be replenished
-    ! remove indicates that sediment should be eroded (stored in dmi_out)
-    ! rather than shifted to another Lagrangian layer
-    !
-    kero1 = k-1
-    remove = .true.
-    !do while (dz>0.0_fp .and. k<=2)
-        do l = 1, this%settings%nfrac
-            if (dmi_in_work(l) > msed(l, k, nm)) then 
-                !
-                ! more sediment is needed than there is available in layer
-                ! k, so all sediment should be removed from this layer
-                !          
-                if (remove) then
-                   dmi_out(l) = dmi_out(l) + msed(l, k, nm)
-                   dmi_in_work(l) = dmi_in_work(l) - msed(l, k, nm)
-                else
-                   !msed(l, kero1, nm) = msed(l, kero1, nm) + msed(l, k, nm)
-                endif
-                msed(l, k, nm) = 0.0_fp
-                thlyr(k, nm) = thlyr(k, nm) - dmi_out(l)/rhofrac(l)
-                dz_out = dz_out + dmi_out(l)/rhofrac(l)
-                !
-            else ! dmi_in_work(l) < msed(l, k, nm)
-                !
-                ! layer k contains more sediment than is needed, so only part
-                ! of the sediment has to be removed from the layer
-                !            
-                fac = dmi_in_work(l)/msed(l, k, nm)
-                dm = msed(l, k, nm)*fac
-                if (remove) then
-                   dmi_out(l) = dmi_out(l) + dm 
-                   dmi_in_work(l)  = 0.0_fp
-                else
-                   !msed(l, kero1, nm) = msed(l, kero1, nm) + dm
-                endif
-                msed(l, k, nm) = msed(l, k, nm) - dm
-                thlyr(k, nm)   = thlyr(k, nm) - dmi_out(l)/rhofrac(l)
-                dz_out = dz_out + dmi_out(l)/rhofrac(l)
-                if (.not.remove) then
-                   !svfrac(kero1, nm) = svfrac(kero1, nm)*thlyr(kero1, nm) + svfrac(k, nm)*dz
-                   !thlyr(kero1, nm)  = thlyr(kero1, nm) + dz
-                   !svfrac(kero1, nm) = svfrac(kero1, nm)/thlyr(kero1, nm)
-                endif
-                !
-                ! erosion complete (dz=0) now continue to replenish the
-                ! (partially) eroded Lagrangian layers as long as
-                ! sediment is available in lower layers. Note that the
-                ! Eulerian layers don't get replenished.
-                !
-                kero1 = kero1+1
-!                remove = .false.
-!                !
-!                ! do we have to fill again some of the Lagrangian layers?
-!                !
-                if (kero1<keuler) then
-!                    dz = max(thlalyr - thlyr(kero1, nm),0.0_fp)
-                    k = max(k,kero1+1)
-                else
-!                    dz = 0.0_fp
-                endif
+! !
+! !
+! !
+! !==============================================================================
+! subroutine lyrerosion_mass(this, nm, dmi_in, dz_out, dmi_out)
+! !!--description-----------------------------------------------------------------
+! !
+! !    Function:
+! !     - lyrerosion implements the erosion of sediment from the layers below the
+! !       transport and exchange layers based on mass
+! !
+! !!--declarations----------------------------------------------------------------
+!     use precision
+!     !
+!     implicit none
+!     !
+!     ! Function/routine arguments
+!     !
+!     type(bedcomp_data)                                    :: this    
+!     integer                                  , intent(in) :: nm
+!     real(fp), dimension(this%settings%nfrac) , intent(in) :: dmi_in  !  density of sediment fractions, units : kg/m3
+!     real(fp)                                 , intent(out) :: dz_out   !  thickness of eroded layer, units : m
+!     real(fp), dimension(this%settings%nfrac) , intent(out) :: dmi_out  
+!     !
+!     ! Local variables
+!     !
+!     logical                                            :: remove
+!     integer                                            :: k
+!     integer                                            :: kero1  ! top-most layer that has been (partially) eroded
+!     integer                                            :: l
+!     real(fp)                                           :: dz
+!     real(fp)                                           :: dm
+!     real(fp)                                           :: fac
+!     real(fp)                                           :: thick
+!     real(fp)                                           :: thbaselyr
+!     real(fp), dimension(this%settings%nfrac)           :: mbaselyr  
+!     real(fp), dimension(this%settings%nfrac)           :: dmi_in_work  !  density of sediment fractions, units : kg/m3
+!     real(fp)                                 , pointer :: thlalyr
+!     integer                                  , pointer :: keuler 
+!     integer                                  , pointer :: nlyr
+!     integer                                  , pointer :: updbaselyr
+!     real(fp), dimension(:,:)                 , pointer :: svfrac
+!     real(fp), dimension(:,:,:)               , pointer :: msed
+!     real(fp), dimension(:,:)                 , pointer :: thlyr
+!     real(fp), dimension(:)                   , pointer :: rhofrac
+! !
+! !! executable statements -------------------------------------------------------
+! !
+!     keuler      => this%settings%keuler
+!     nlyr        => this%settings%nlyr
+!     thlalyr     => this%settings%thlalyr
+!     updbaselyr  => this%settings%updbaselyr
+!     svfrac      => this%state%svfrac
+!     msed        => this%state%msed
+!     thlyr       => this%state%thlyr
+!     rhofrac     => this%settings%rhofrac
+!     !
+!     k   = 2
+!     if (this%settings%exchlyr) k = k + 1
+!     if (this%settings%crslyr) k = k + 1
+!     !
+!     thbaselyr = thlyr(nlyr, nm)
+!     mbaselyr  = msed(:, nlyr, nm)
+!     dmi_out = 0.0_fp
+!     dz = 0.0_fp
+!     ! get thickness of to be eroded material
+!     do l = 1, this%settings%nfrac
+!         dz  = dz + dmi_in(l)/rhofrac(l)
+!         dmi_in_work(l) = dmi_in(l)
+!     enddo
+!     !
+!     ! initially remove sediment irrespective of layer type
+!     ! then fill the Lagrangian layers again up to their
+!     ! original thickness
+!     ! kero1 represents the Lagrangian layer that was eroded and needs
+!     ! to be replenished
+!     ! remove indicates that sediment should be eroded (stored in dmi_out)
+!     ! rather than shifted to another Lagrangian layer
+!     !
+!     kero1 = k-1
+!     remove = .true.
+!     !do while (dz>0.0_fp .and. k<=2)
+!         do l = 1, this%settings%nfrac
+!             if (dmi_in_work(l) > msed(l, k, nm)) then 
+!                 !
+!                 ! more sediment is needed than there is available in layer
+!                 ! k, so all sediment should be removed from this layer
+!                 !          
+!                 if (remove) then
+!                    dmi_out(l) = dmi_out(l) + msed(l, k, nm)
+!                    dmi_in_work(l) = dmi_in_work(l) - msed(l, k, nm)
+!                 else
+!                    !msed(l, kero1, nm) = msed(l, kero1, nm) + msed(l, k, nm)
+!                 endif
+!                 msed(l, k, nm) = 0.0_fp
+!                 thlyr(k, nm) = thlyr(k, nm) - dmi_out(l)/rhofrac(l)
+!                 dz_out = dz_out + dmi_out(l)/rhofrac(l)
+!                 !
+!             else ! dmi_in_work(l) < msed(l, k, nm)
+!                 !
+!                 ! layer k contains more sediment than is needed, so only part
+!                 ! of the sediment has to be removed from the layer
+!                 !            
+!                 fac = dmi_in_work(l)/msed(l, k, nm)
+!                 dm = msed(l, k, nm)*fac
+!                 if (remove) then
+!                    dmi_out(l) = dmi_out(l) + dm 
+!                    dmi_in_work(l)  = 0.0_fp
+!                 else
+!                    !msed(l, kero1, nm) = msed(l, kero1, nm) + dm
+!                 endif
+!                 msed(l, k, nm) = msed(l, k, nm) - dm
+!                 thlyr(k, nm)   = thlyr(k, nm) - dmi_out(l)/rhofrac(l)
+!                 dz_out = dz_out + dmi_out(l)/rhofrac(l)
+!                 if (.not.remove) then
+!                    !svfrac(kero1, nm) = svfrac(kero1, nm)*thlyr(kero1, nm) + svfrac(k, nm)*dz
+!                    !thlyr(kero1, nm)  = thlyr(kero1, nm) + dz
+!                    !svfrac(kero1, nm) = svfrac(kero1, nm)/thlyr(kero1, nm)
+!                 endif
+!                 !
+!                 ! erosion complete (dz=0) now continue to replenish the
+!                 ! (partially) eroded Lagrangian layers as long as
+!                 ! sediment is available in lower layers. Note that the
+!                 ! Eulerian layers don't get replenished.
+!                 !
+!                 kero1 = kero1+1
+! !                remove = .false.
+! !                !
+! !                ! do we have to fill again some of the Lagrangian layers?
+! !                !
+!                 if (kero1<keuler) then
+! !                    dz = max(thlalyr - thlyr(kero1, nm),0.0_fp)
+!                     k = max(k,kero1+1)
+!                 else
+! !                    dz = 0.0_fp
+!                 endif
             
-            endif
-        enddo
-    !enddo   
-    !
-    ! update composition of base layer
-    !
-    select case (updbaselyr)
-    case(1) ! compute separate composition for base layer
-       !
-       ! no change necessary
-       !
-    case(2) ! composition of base layer constant
-       !
-       ! compute new masses based on old composition and new thickness
-       ! Problem of current implementation:
-       ! if the base layer runs out of sediment once (thlyr(nlyr,nm) -> 0),
-       ! it looses the information on the composition and cannot recover.
-       !
-       if (thbaselyr>0.0_fp) then
-          fac = thlyr(nlyr, nm)/thbaselyr
-       else
-          fac = 0.0_fp
-       endif
-       do l = 1, this%settings%nfrac
-          msed(l, nlyr, nm) = mbaselyr(l)*fac
-       enddo
-    case(3) ! same as the (first non-empty) layer above it
-       !
-       ! find lowest non-empty layer
-       !
-       do k = nlyr-1,1,-1
-          if ( thlyr(k, nm) > 0.0_fp ) exit
-       enddo
-       fac = thlyr(nlyr, nm)/thlyr(k, nm)
-       do l = 1, this%settings%nfrac
-          msed(l, nlyr, nm) = msed(l, k, nm)*fac
-       enddo
-    case(4) ! composition and thickness of base layer constant
-       !
-       ! reset thickness and masses
-       !
-       thlyr(nlyr, nm)  = thbaselyr
-       msed(:, nlyr, nm) = mbaselyr
-    case(5) ! composition updated, but thickness unchanged
-       !
-       ! reset thickness and correct mass
-       !
-       if (thlyr(nlyr, nm)>0.0_fp) then
-          fac = thbaselyr/thlyr(nlyr, nm)
-          do l = 1, this%settings%nfrac
-             msed(l, nlyr, nm) = msed(l, nlyr, nm)*fac
-          enddo
-       else
-          msed(:, nlyr, nm) = mbaselyr
-       endif
-       thlyr(nlyr, nm)  = thbaselyr
-    case default
-       !
-       ! ERROR
-       !
-    endselect
-end subroutine lyrerosion_mass
+!             endif
+!         enddo
+!     !enddo   
+!     !
+!     ! update composition of base layer
+!     !
+!     select case (updbaselyr)
+!     case(1) ! compute separate composition for base layer
+!        !
+!        ! no change necessary
+!        !
+!     case(2) ! composition of base layer constant
+!        !
+!        ! compute new masses based on old composition and new thickness
+!        ! Problem of current implementation:
+!        ! if the base layer runs out of sediment once (thlyr(nlyr,nm) -> 0),
+!        ! it looses the information on the composition and cannot recover.
+!        !
+!        if (thbaselyr>0.0_fp) then
+!           fac = thlyr(nlyr, nm)/thbaselyr
+!        else
+!           fac = 0.0_fp
+!        endif
+!        do l = 1, this%settings%nfrac
+!           msed(l, nlyr, nm) = mbaselyr(l)*fac
+!        enddo
+!     case(3) ! same as the (first non-empty) layer above it
+!        !
+!        ! find lowest non-empty layer
+!        !
+!        do k = nlyr-1,1,-1
+!           if ( thlyr(k, nm) > 0.0_fp ) exit
+!        enddo
+!        fac = thlyr(nlyr, nm)/thlyr(k, nm)
+!        do l = 1, this%settings%nfrac
+!           msed(l, nlyr, nm) = msed(l, k, nm)*fac
+!        enddo
+!     case(4) ! composition and thickness of base layer constant
+!        !
+!        ! reset thickness and masses
+!        !
+!        thlyr(nlyr, nm)  = thbaselyr
+!        msed(:, nlyr, nm) = mbaselyr
+!     case(5) ! composition updated, but thickness unchanged
+!        !
+!        ! reset thickness and correct mass
+!        !
+!        if (thlyr(nlyr, nm)>0.0_fp) then
+!           fac = thbaselyr/thlyr(nlyr, nm)
+!           do l = 1, this%settings%nfrac
+!              msed(l, nlyr, nm) = msed(l, nlyr, nm)*fac
+!           enddo
+!        else
+!           msed(:, nlyr, nm) = mbaselyr
+!        endif
+!        thlyr(nlyr, nm)  = thbaselyr
+!     case default
+!        !
+!        ! ERROR
+!        !
+!     endselect
+! end subroutine lyrerosion_mass
 !
 !
 !
