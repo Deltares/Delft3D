@@ -27,13 +27,14 @@ object TemplateDownloadFromDVC : Template({
         script {
             name = "DVC Checkout all doc.dvc files recursively"
             scriptContent = """
+                @echo off
                 echo === DVC doc checkout started for engine_dir: %engine_dir% ===
                 pushd "%engine_dir%"
 
-                for /r %%f in (doc.dvc) do (
-                    if exist "%%f" (
-                        echo [DVC] Pulling data for: %%f
-                        dvc pull "%%f"
+                for /r %%%%f in (doc.dvc) do (
+                    if exist "%%%%f" (
+                        echo [DVC] Pulling data for: %%%%f
+                        dvc pull "%%%%f"
                     )
                 )
 
