@@ -38,7 +38,7 @@ object TemplateDownloadFromDVC : Template({
                 dvc --version
             """.trimIndent()
         }
-        cript {
+        script {
             name = "DVC Pull all doc.dvc files recursively"
             scriptContent = """
                 @echo off
