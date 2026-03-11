@@ -1,6 +1,5 @@
 module test_sources_sinks
    use assertions_gtest
-
    use fm_external_forcings, only: sourcesink_parse_coordinates
    use tree_structures, only: tree_data, tree_create
    use properties, only: prop_inifile
@@ -80,8 +79,8 @@ contains
    end subroutine test_polyline_file_missing
 !$f90tw)
 
-!$f90tw TESTCODE(TEST, test_sources_sinks, test_overlapping_z_data_ext_file_polyline_file, test_overlapping_z_data_ext_file_polyline_file,
-   subroutine test_overlapping_z_data_ext_file_polyline_file() bind(C)
+!$f90tw TESTCODE(TEST, test_sources_sinks, test_double_z_data_specification, test_double_z_data_specification,
+   subroutine test_double_z_data_specification() bind(C)
       character(len=256) :: base_dir
       character(len=256) :: file_name
       character(len=256) :: group_name
@@ -129,11 +128,11 @@ contains
       call popLastMessage(error_level, error_message)
       call f90_expect_eq(error_level, LEVEL_ERROR)
       call f90_expect_true(error_message == "Error in source sink initialization, source/sink z information cannot be specified bothin the ext file and in the polyline file. Make sure the polyline file only contains x and y columns")
-   end subroutine test_overlapping_z_data_ext_file_polyline_file
+   end subroutine test_double_z_data_specification
 !$f90tw)
 
-!$f90tw TESTCODE(TEST, test_sources_sinks, test_xy_in_polyline_file, test_xy_in_polyline_file,
-   subroutine test_xy_in_polyline_file() bind(C)
+!$f90tw TESTCODE(TEST, test_sources_sinks, test_xy_in_polyline_file_2_columns, test_xy_in_polyline_file_2_columns,
+   subroutine test_xy_in_polyline_file_2_columns() bind(C)
       character(len=256) :: base_dir
       character(len=256) :: file_name
       character(len=256) :: group_name
@@ -191,8 +190,7 @@ contains
       call f90_assert_eq(size(z_range_sink), 2)
       call f90_expect_eq(z_range_sink(1), -11.5_dp)
       call f90_expect_eq(z_range_sink(2), dmiss)
-
-   end subroutine test_xy_in_polyline_file
+   end subroutine test_xy_in_polyline_file_2_columns
 !$f90tw)
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_xyz_in_polyline_file_3_columns, test_xyz_in_polyline_file_3_columns,
