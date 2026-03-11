@@ -4,7 +4,7 @@ module test_sources_sinks
    use fm_external_forcings, only: sourcesink_parse_coordinates
    use tree_structures, only: tree_data, tree_create
    use properties, only: prop_inifile
-   use MessageHandling, only: getOldestMessage, LEVEL_ERROR
+   use MessageHandling, only: popLastMessage, LEVEL_ERROR, resetMessageCount_MH
    use precision_basics, only: dp
    use m_missing, only: dmiss
 
@@ -69,11 +69,12 @@ contains
       call prop_inifile(EXT_FILENAME, tree, error_code)
       call f90_assert_eq(error_code, 0, "Failed to read ini file")
 
+      call resetMessageCount_MH()
       success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       call f90_assert_false(success)
-
-      call getOldestMessage(error_level, error_message)
-      call f90_expect_eq(error_level, LEVEL_ERROR, '')
+      
+      call popLastMessage(error_level, error_message)
+      call f90_expect_eq(error_level, LEVEL_ERROR)
       call f90_expect_true(error_message == "Error in source sink initialization, failed to read polyline file 'this_file_does_not_exist.pliz'")
 
    end subroutine test_polyline_file_missing
@@ -121,11 +122,12 @@ contains
       call prop_inifile(EXT_FILENAME, tree, error_code)
       call f90_assert_eq(error_code, 0, "Failed to read ini file")
 
+      call resetMessageCount_MH()
       success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       call f90_assert_false(success)
 
-      call getOldestMessage(error_level, error_message)
-      call f90_expect_eq(error_level, LEVEL_ERROR, '')
+      call popLastMessage(error_level, error_message)
+      call f90_expect_eq(error_level, LEVEL_ERROR)
       call f90_expect_true(error_message == "Error in source sink initialization, source/sink z information cannot be specified bothin the ext file and in the polyline file. Make sure the polyline file only contains x and y columns")
    end subroutine test_overlapping_z_data_ext_file_polyline_file
 !$f90tw)
