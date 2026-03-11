@@ -38,15 +38,13 @@ object TemplateDownloadFromDVC : Template({
                 dvc --version
             """.trimIndent()
         }
-
-        script {
+        cript {
             name = "DVC Pull all doc.dvc files recursively"
             scriptContent = """
                 @echo off
                 echo === DVC doc pull started for engine_dir: %engine_dir% ===
 
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
-                set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
 
                 if not exist "%%BASE_PATH%%" (
                     echo [ERROR] Base path not found: %%BASE_PATH%%
@@ -54,18 +52,32 @@ object TemplateDownloadFromDVC : Template({
                     exit /b 1
                 )
 
-                echo [INFO] Collecting all doc.dvc files recursively...
+                echo [INFO] Searching for doc.dvc files recursively under %%BASE_PATH%%...
 
-                powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-                    "$base = '%%BASE_PATH%%'; " ^
-                    "$dvc = '%%DVC_EXE%%'; " ^
-                    "$files = Get-ChildItem -Path $base -Filter 'doc.dvc' -Recurse -File | Select-Object -ExpandProperty FullName; " ^
-                    "if ($files) { " ^
-                    "  Write-Host '[INFO] Pulling' $files.Count 'doc.dvc files in ONE command...'; " ^
-                    "  & $dvc pull $files " ^
-                    "} else { " ^
-                    "  Write-Host '[WARN] No doc.dvc files found!' " ^
-                    "}"
+                set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
+
+                pushd "%%BASE_PATH%%"
+                setlocal EnableDelayedExpansion
+
+                set "COUNT=0"
+                set "FILES="
+
+                for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul') do (
+                    set /a COUNT+=1
+                    echo [DVC] Will pull: %%%%a
+                    set "FILES=!FILES! "%%%%a""
+                )
+
+                if "!FILES!"=="" (
+                    echo [WARN] No doc.dvc files found!
+                ) else (
+                    echo [INFO] Pulling ALL %%COUNT%% doc.dvc files in ONE command...
+                    "%%DVC_EXE%%" pull !FILES!
+                )
+
+                endlocal
+                popd
+                echo === DVC doc pull completed ===
             """.trimIndent()
         }
     }
