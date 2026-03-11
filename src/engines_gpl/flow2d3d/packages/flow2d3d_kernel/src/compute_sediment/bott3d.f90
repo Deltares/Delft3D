@@ -265,7 +265,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp) :: trndiv
     real(fp) :: z
     real(hp) :: dim_real
-    real(fp) , dimension(:)   , allocatable :: dunelength_tmp  !  Copy of dune length in case of 
+    real(fp) , dimension(:)   , allocatable :: dunelength_tmp  !  Copy of dune length. It is necessary in case of using the coarse-layer (HANNEKE) model. 
     real(fp) , dimension(:,:) , allocatable :: sbot       !  Description and declaration in rjdim.f90
 !
 !! executable statements -------------------------------------------------------

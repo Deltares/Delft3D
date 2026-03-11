@@ -104,7 +104,7 @@ contains
       logical, parameter :: AVALANCHE_OFF = .false.
       logical, parameter :: SLOPECOR_ON = .true.
       logical, parameter :: SLOPECOR_OFF = .false.
-      integer, parameter :: OFF = 0
+      integer, parameter :: ACTIVE_LAYER_DIFFUSION_OFF = 0
 
    !!
    !! Local variables
@@ -117,14 +117,23 @@ contains
       real(kind=dp) :: dtmor
       real(kind=dp) :: timhr
       real(kind=dp) :: sbtot(ndx,stmpar%lsedtot)
-
-      logical, pointer :: cmpupd
+      real(fp), dimension(:), pointer :: dunelength
+      real(fp), dimension(1:0), target :: empty_dunelength
 
    !!
    !! Point
    !!
 
-      cmpupd => stmpar%morpar%cmpupd
+      associate (&
+         cmpupd => stmpar%morpar%cmpupd &
+         )
+
+      if (associated(bfmpar%dunelength)) then
+         dunelength => bfmpar%dunelength
+      else
+         dunelength => empty_dunelength
+      end if
+         
 
    !!
    !! Execute
@@ -230,7 +239,7 @@ contains
             !
             ! Diffuse fractions in active layer
             !
-            if (stmpar%morlyr%settings%active_layer_diffusion > OFF) then
+            if (stmpar%morlyr%settings%active_layer_diffusion > ACTIVE_LAYER_DIFFUSION_OFF) then
                call fm_diffusion_active_layer()
             end if
             !
@@ -240,15 +249,11 @@ contains
             ! 
             ! Compute mobile fractions
             ! 
-            if (stmpar%morlyr%settings%imobility > OFF) then 
+            if (stmpar%morlyr%settings%imobility > ACTIVE_LAYER_DIFFUSION_OFF) then 
                call compmobile(stmpar%morlyr, ag, sedd50, taub, rhosol, rhomean, hidexp)
             endif    
             ! 
             if (stmpar%morlyr%settings%crslyr) then 
-               !
-               ! Get dunelength
-               !
-               !dunelength_tmp = dunelength
                !
                ! Compute average bed load transport in cel
                ! 
@@ -258,7 +263,7 @@ contains
             ! Update layers and obtain the depth change
             !
             !See: UNST-7369
-            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, bfmpar%dunelength, sbtot, dtmor, mtd%messages) /= 0) then
+            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, dunelength, sbtot, dtmor, mtd%messages) /= 0) then
                call writemessages(mtd%messages, mdia)
                write (errmsg, '(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
                call write_error(errmsg, unit=mdia)
@@ -306,7 +311,7 @@ contains
 
       !
       call timstop(handle_extra(89))
-
+   end associate
    end subroutine fm_bott3d
 
    !< Calculate suspended sediment transport correction vector (for SAND)

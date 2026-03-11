@@ -73,6 +73,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use dfparall
     use m_compdiam, only: compdiam
     use m_comphidexp, only: comphidexp
+    use m_getfixfac, only: getfixfac
     !
     implicit none
     !

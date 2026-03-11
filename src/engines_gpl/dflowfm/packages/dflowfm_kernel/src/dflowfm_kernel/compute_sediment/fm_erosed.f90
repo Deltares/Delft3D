@@ -119,6 +119,7 @@ contains
       use m_get_chezy, only: get_chezy
       use m_compdiam, only: compdiam
       use m_comphidexp, only: comphidexp
+      use m_getfixfac, only: getfixfac
       !
       implicit none
       !

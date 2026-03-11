@@ -224,6 +224,11 @@ integer,parameter,public   :: MOR_STAT_BODS= 2
 integer,parameter,public   :: SC_MUDTHC  = 1
 integer,parameter,public   :: SC_MUDFRAC = 2
 !
+! Threshold options for FIXFAC calculation
+!
+integer, parameter, public :: THRESH_CONSTANT = 1 ! constant value specified using Thresh
+integer, parameter, public :: THRESH_BASED_ON_THICKNESS = 2 !value based on thickness of alluvial transport layer
+!
 ! collection of morphology output options
 !
 type moroutputtype
@@ -479,8 +484,6 @@ type morpar_type
                            !  2: Bagnold, Ikeda/Van Rijn
                            !  3: Van Bendegom, Koch&Flokstra
     integer :: ithresh     !  switch for threshold for reduction of sediment thickness
-                           !  1: constant value specified using Thresh
-                           !  2: value based on thickness of alluvial transport layer
     integer :: morfacpar   ! parameter index of morfac in table structure
                            ! only used when varyingmorfac=true
     integer :: morfacrec   ! record index of morfac in table structure
@@ -1696,7 +1699,7 @@ subroutine nullmorpar(morpar)
     iopkcw             = 1
     iopsus             = 0
     islope             = 2
-    ithresh            = 1
+    ithresh            = THRESH_CONSTANT
     morfacpar          = imissval
     morfacrec          = imissval
     morfactable        = imissval

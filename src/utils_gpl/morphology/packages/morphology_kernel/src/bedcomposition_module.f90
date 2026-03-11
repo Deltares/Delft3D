@@ -635,9 +635,6 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
           dz(nm) = dpsed(nm) - seddep0
        enddo
     endselect
-    if (istat == 0) then 
-       istat = deallocwork(this)
-    endif
 end function updmorlyr
 !
 !

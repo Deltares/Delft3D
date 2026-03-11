@@ -125,8 +125,10 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
        allocate(dz_dummy(nmlb:nmub), stat=istat)   ! no actual bed update, unlike updmorlyr in fm_erosed.f90
        allocate (dunelength(nmlb:nmub)         , stat=istat)
        allocate (sbot     (nmlb:nmub, lsedtot), stat=istat)
-       dunelength = 1.0e10_fp
-       sbot      = 0.0_fp
+       !In case of coarse-layer (HANNEKE) model, we do not want to update the composition when applying dreding. 
+       sbot      = 0.0_fp !Setting the transport to zero sets the flux to zero.
+       dunelength = 1.0e10_fp !A very large dune length causes the flux to be negligible. 
+       !
        hdtmor    = hdt*morfac
        if (gdmorpar%moroutput%morstats) then
            call morstats(gderosed, gdmorpar, dbodsd, nmlb, nmub, lsedtot)

@@ -368,8 +368,8 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     call prop_get(mor_ptr, 'Morphology', 'BedUpdStt', morpar%tmor)       
        !
        call prop_get(mor_ptr, 'Morphology', 'IThresh', morpar%ithresh)
-       if (morpar%ithresh < 1 .or. morpar%ithresh > 2) then
-          errmsg = 'IThresh should be in the range 1 (default) to 2 in ' // trim(filmor)
+       if (morpar%ithresh /= THRESH_CONSTANT .and. morpar%ithresh /= THRESH_BASED_ON_THICKNESS) then
+          write(errmsg, '(a,i0,a,i0,a,a)') 'IThresh should be ', THRESH_CONSTANT, ' (default) or ', THRESH_BASED_ON_THICKNESS, ' in ', trim(filmor)
           call write_error(errmsg, unit=lundia)
           error = .true.
           return
