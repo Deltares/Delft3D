@@ -46,38 +46,18 @@ object TemplateDownloadFromDVC : Template({
                 echo === DVC doc pull started for engine_dir: %engine_dir% ===
 
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
+                set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
 
                 if not exist "%%BASE_PATH%%" (
                     echo [ERROR] Base path not found: %%BASE_PATH%%
-                    echo Make sure VCS checkout runs BEFORE this template!
                     exit /b 1
                 )
 
-                echo [INFO] Searching for doc.dvc files recursively under %%BASE_PATH%%...
-
-                set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
-
                 pushd "%%BASE_PATH%%"
-                setlocal EnableDelayedExpansion
-
-                set "COUNT=0"
-                set "FILES="
-
-                for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul') do (
-                    set /a COUNT+=1
-                    echo [DVC] Will pull: %%%%a
-                    set "FILES=!FILES! "%%%%a""
-                )
-
-                if "!FILES!"=="" (
-                    echo [WARN] No doc.dvc files found!
-                ) else (
-                    echo [INFO] Pulling ALL %%COUNT%% doc.dvc files in ONE command...
-                    "%%DVC_EXE%%" pull !FILES!
-                )
-
-                endlocal
+                echo [INFO] Pulling ALL doc.dvc files using glob (no argument limit)...
+                "%%DVC_EXE%%" pull --glob "**/doc.dvc"
                 popd
+
                 echo === DVC doc pull completed ===
             """.trimIndent()
         }
