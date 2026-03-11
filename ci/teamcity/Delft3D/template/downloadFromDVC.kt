@@ -58,14 +58,13 @@ object TemplateDownloadFromDVC : Template({
                 echo [INFO] 1/2 Pulling root doc.dvc ...
                 "%%DVC_EXE%%" pull doc.dvc
 
-                echo [INFO] 2/2 Pulling f[0-9]* doc.dvc files in batches of 100 (to reduce memory)...
+                echo [INFO] 2/2 Pulling feature doc.dvc files in batches of 100 (to reduce memory)...
 
                 setlocal EnableDelayedExpansion
                 set "BATCH="
                 set "COUNT=0"
                 set "TOTAL=0"
 
-                echo [DEBUG] Looking for f[0-9]*\\doc.dvc files...
                 for /f "delims=" %%%%a in ('dir /s /b f[0-9]*\\doc.dvc 2^>nul') do (
                     set /a TOTAL+=1
                     set /a COUNT+=1
@@ -84,7 +83,7 @@ object TemplateDownloadFromDVC : Template({
                     "%%DVC_EXE%%" pull !BATCH!
                 )
 
-                echo [INFO] Total f[0-9]* doc.dvc files processed: !TOTAL!
+                echo [INFO] Total feature doc.dvc files processed: !TOTAL!
 
                 endlocal
                 popd
