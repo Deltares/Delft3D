@@ -163,8 +163,7 @@ module m_fm_erosed
    real(fp), pointer :: bermslopegamma !< bermslope nudging applied for region where Hrms/h>bermslopegamma
    real(fp), pointer :: bermslopedepth !< minimum depth to apply nudging
    real(fp), pointer :: ti_sedtrans !< sediment transport computation start time in TUnits
-   integer, pointer :: ithresh !< switch for method to compute the FIXFAC array
-   integer, pointer :: ihidexptrcrs !< switch for threshold for reduction of sediment thickness. 1 = constant value specified using Thresh; 2 = value based on thickness of alluvial transport layer
+   integer, pointer :: ithresh !< switch for method to compute the FIXFAC array 1 = constant value specified using Thresh; 2 = value based on thickness of alluvial transport layer
 
    ! trapar
    integer, dimension(:), pointer :: iform

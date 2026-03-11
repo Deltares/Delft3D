@@ -99,7 +99,7 @@ contains
                              nxx, sedd50fld, sedtyp, xx, min_dxx_sedtyp, logsedsig, asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, &
                              iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc, max_integers, max_strings, dll_integers, &
                              dll_strings, dll_function, dll_handle, mfluff, wetslope, oldmudfrac, i10, i15, i50, i90, bed, bedw, camax, &
-                             cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, ihidexptrcrs, &
+                             cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
                              frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
@@ -588,7 +588,7 @@ contains
          !
          ! determine hiding & exposure factors
          !
-         if (ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+         if (stmpar%morlyr%settings%ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
             !In this case, the hiding and exposure factors are computed based on the mean grain
             !size of the sediment in both the active layer (which is the top layer in the bed) and
             !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
