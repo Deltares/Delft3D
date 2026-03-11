@@ -156,7 +156,7 @@
                     "key": "vertPlizFile",
                     "value_type": "path",
                     "description": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions).",
-                    "status": "research"
+                    "status": "deprecated"
                 },
                 {
                     "key": "frictFile",
@@ -655,7 +655,7 @@
                     "value_type": "float",
                     "description": "Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers).",
                     "unit": "s",
-                    "status": "research"
+                    "status": "deprecated"
                 },
                 {
                     "key": "dpuopt",
@@ -1607,6 +1607,7 @@
                     "key": "vertAdvTypSal",
                     "default_value": 6,
                     "value_type": "intenum",
+                    "status": "deprecated",
                     "description": "Vertical advection type for salinity. Note that `vertAdvTypSal`=4 leads to less numerical dissipation than `vertAdvTypSal`=6.",
                     "enum_values": {
                         "0": "none",
@@ -1618,6 +1619,7 @@
                     "key": "vertAdvTypTem",
                     "default_value": 6,
                     "value_type": "intenum",
+                    "status": "deprecated",
                     "description": "Vertical advection type for temperature. Note that `vertAdvTypTem`=4 leads to less numerical dissipation than `vertAdvTypTem`=6.",
                     "enum_values": {
                         "0": "none",
@@ -4271,7 +4273,7 @@
                     "value_type": "float",
                     "description": "Theta value for vertical transport of water quality substances.",
                     "unit": "-",
-                    "status": "research"
+                    "status": "deprecated"
                 },
                 {
                     "key": "dtProcesses",

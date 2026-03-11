@@ -69,6 +69,7 @@ def generate_legend() -> str:
         [
             "**Legend**",
             "- 🔬: Indicates keywords that are still experimental.",
+            "- ⚠️: Indicates keywords that are deprecated and will be removed in future versions.",
         ]
     )
 
@@ -124,6 +125,9 @@ def get_key_formatted(property) -> str:
 
     if property.get("status") == "research":
         return key + " 🔬"
+    
+    if property.get("status") == "deprecated":
+        return key + " ⚠️"
 
     return key
 
