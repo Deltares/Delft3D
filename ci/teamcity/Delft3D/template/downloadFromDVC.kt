@@ -38,12 +38,10 @@ object TemplateDownloadFromDVC : Template({
                 pushd "%%BASE_PATH%%"
 
                 set "COUNT=0"
-                for /r %%%%f in (doc.dvc) do (
-                    if exist "%%%%f" (
-                        set /a COUNT+=1
-                        echo [DVC] Pulling only doc data for: %%f
-                        dvc pull "%%%%f"
-                    )
+                for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul') do (
+                    set /a COUNT+=1
+                    echo [DVC] Pulling only doc data for: %%%%a
+                    dvc pull "%%%%a"
                 )
 
                 popd
