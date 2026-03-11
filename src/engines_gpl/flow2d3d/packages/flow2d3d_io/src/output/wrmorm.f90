@@ -4,7 +4,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
                 & mf        ,ml        ,nf        ,nl        ,iarrc     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -87,7 +87,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     real(fp)         , dimension(:)     , pointer :: thtrlyr
     real(fp)         , dimension(:,:)   , pointer :: thlyr
     real(fp)         , dimension(:,:)   , pointer :: mobile
-    real(fp)         , dimension(:)   , pointer :: thclyr
+    real(fp)         , dimension(:)     , pointer :: thclyr
     real(fp)         , dimension(:,:)   , pointer :: svfrac
     real(fp)         , dimension(:,:,:) , pointer :: msed
     type (moroutputtype)                , pointer :: moroutput
