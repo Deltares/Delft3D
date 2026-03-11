@@ -40,7 +40,7 @@ object TemplateFunctionalityDocumentation : Template({
             command = module {
                 module = "ci_tools.documentation.generate_functionality_report"
                 scriptArguments = """
-                    --engine-dir="test/deltares_testbench/data/cases/%engine_dir%"
+                    --engine-dir=test\\deltares_testbench\\data\\cases\\%engine_dir%
                     --max-workers=8
                     --teamcity
                 """.trimIndent()
