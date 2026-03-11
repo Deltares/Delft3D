@@ -27,7 +27,7 @@ object TemplateDownloadFromDVC : Template({
                 requirementsFile = ""
             }
             command = script {
-                scriptContent = """
+                content = """
                     python -m pip install --upgrade pip
                     python -m pip install "dvc[s3]"
                     echo === DVC installed successfully ===
@@ -50,13 +50,17 @@ object TemplateDownloadFromDVC : Template({
                 )
 
                 echo [INFO] Searching for doc.dvc files recursively under %%BASE_PATH%%...
+
+                REM Capture build root BEFORE we pushd (so we can find the venv)
+                set "DVC_EXE=%%cd%%\.dvc-venv\Scripts\dvc.exe"
+
                 pushd "%%BASE_PATH%%"
 
                 set "COUNT=0"
                 for /f "delims=" %%%%a in ('dir /s /b doc.dvc 2^>nul') do (
                     set /a COUNT+=1
                     echo [DVC] Pulling only doc data for: %%%%a
-                    "%%cd%%\.dvc-venv\Scripts\dvc.exe" pull "%%%%a"
+                    "%%DVC_EXE%%" pull "%%%%a"
                 )
 
                 popd
