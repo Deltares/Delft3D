@@ -21,21 +21,34 @@ object TemplateDownloadFromDVC : Template({
             scriptContent = "call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%"
         }
         script {
-            name = "DVC Checkout all doc.dvc files recursively"
+            name = "DVC Pull all doc.dvc files recursively"
             scriptContent = """
                 @echo off
-                echo === DVC doc checkout started for engine_dir: %engine_dir% ===
-                pushd "test/deltares_testbench/data/cases/%engine_dir%"
+                echo === DVC doc pull started for engine_dir: %engine_dir% ===
 
+                set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
+
+                if not exist "%BASE_PATH%" (
+                    echo [ERROR] Base path not found: %BASE_PATH%
+                    echo Make sure VCS checkout runs BEFORE this template!
+                    exit /b 1
+                )
+
+                echo [INFO] Searching for doc.dvc files recursively under %BASE_PATH%...
+                pushd "%BASE_PATH%"
+
+                set "COUNT=0"
                 for /r %%%%f in (doc.dvc) do (
                     if exist "%%%%f" (
-                        echo [DVC] Pulling data for: %%%%f
+                        set /a COUNT+=1
+                        echo [DVC] Pulling only doc data for: %%f
                         dvc pull "%%%%f"
                     )
                 )
 
                 popd
-                echo === DVC doc checkout completed ===
+                echo [INFO] Processed %%COUNT%% doc.dvc file(s).
+                echo === DVC doc pull completed ===
             """.trimIndent()
         }
     }
