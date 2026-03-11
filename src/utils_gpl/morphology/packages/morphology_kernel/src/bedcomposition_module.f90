@@ -74,6 +74,19 @@ public bedcomp_getpointer_logical
 public bedcomp_getpointer_realfp
 public bedcomp_getpointer_realprec
 !
+! public parameters
+!
+!`imobility`
+integer, parameter, public :: MOBILITY_OFF = 0 ! not used
+integer, parameter, public :: MOBILITY_DISCRETE = 1 ! discrete
+integer, parameter, public :: MOBILITY_SHIELDS = 2 ! based on Shields curve
+integer, parameter, public :: MOBILITY_WILCOCKMCARDELL = 3 ! Wilcock and McArdell (1997)
+integer, parameter, public :: MOBILITY_SEDTRANS = 4 ! From sediment transport relation
+!
+!`active-layer diffusion`
+integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_OFF = 0 ! no diffusion (default)
+integer, parameter, public :: ACTIVE_LAYER_DIFFUSION_XY = 1 ! x-y-diffusion file
+!
 ! interfaces
 !
 interface bedcomp_getpointer_logical
@@ -128,11 +141,7 @@ type bedcomp_settings
     integer :: iporosity      !  switch for porosity (simulate porosity if iporosity > 0)
                               !  0: porosity included in densities, set porosity to 0
                               !  1: ...
-    integer :: imobility  !  switch for mobility concept
-                          !  0: not used
-                          !  1: discrete
-                          !  2: based on Shields curve
-                          !  3: Wilcock and McArdell (1997)
+    integer :: imobility  !  switch for mobility concept. Possible values in "parameters" section above.
     integer :: isedcrs2tr !  switch for entraining mobile sediment from coarse layer to active layer
                           !  0: no
                           !  1: yes
@@ -159,9 +168,7 @@ type bedcomp_settings
                               !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
                               !  4: base layer composition and thickness constant (no change whatsoever)
                               !  5: base lyaer composition is updated, but thickness is kept constant
-   integer :: active_layer_diffusion !  switch for applying diffusion in the active layer model
-                                     !   0: no diffusion (default)
-                                     !   1: x-y-diffusion file
+   integer :: active_layer_diffusion !  switch for applying diffusion in the active layer model. Possible values in "parameters" section above.
     !
     ! pointers
     !
@@ -1800,11 +1807,11 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
     !hidexp              => gdp%gderosed%hidexp
     
     !
-    if (imobility > 1) fac = 1.0_fp/(sigma_sfm*sqrt(2.0_fp))
+    if (imobility > MOBILITY_DISCRETE) fac = 1.0_fp/(sigma_sfm*sqrt(2.0_fp))
     rnu = 1.0e-6
     do nm = this%settings%nmlb,this%settings%nmub
         do l = 1, this%settings%nfrac
-            if (imobility==1 .or. imobility==2) then
+            if (imobility==MOBILITY_DISCRETE .or. imobility==MOBILITY_SHIELDS) then
                 !
                 !  Shear stress according to shields curve
                 !
@@ -1822,12 +1829,12 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
                    thetcr = 0.055
                 endif                
                 tau50 = thetcr*((rhosol(l)-rhow)*g*di50(l))
-            elseif (imobility==3) then
+            elseif (imobility==MOBILITY_WILCOCKMCARDELL) then
                 !
                 !  Shear stress according to Wilcock and McArdell (1997)
                 !
                 tau50 = asfm*(di50(l)*1000.0_fp)**bsfm
-            elseif(imobility==4) then
+            elseif(imobility==MOBILITY_SEDTRANS) then
                 thetcr=0.047 !read from sediment transport relation
                 tau50=hidexp(nm,l)*thetcr*((rhosol(l)-rhow)*g*di50(l))
             else
@@ -1836,12 +1843,12 @@ subroutine compmobile(this, g, di50, taub, rhosol, rhow, hidexp)
                 ! 
             endif
             !
-            if (imobility==0) then
+            if (imobility==MOBILITY_OFF) then
                 !
                 !  Mobility concept not used
                 !               
                 ! mobile(l,nm) = 1.0_fp
-            elseif (imobility==1 .or. imobility==4) then
+            elseif (imobility==MOBILITY_DISCRETE .or. imobility==MOBILITY_SEDTRANS) then
                 !
                 !  Discrete formulation of mobility
                 !               
@@ -2742,8 +2749,8 @@ function initmorlyr(this) result (istat)
     settings%theulyr        = rmissval
     settings%thlalyr        = rmissval
     settings%updbaselyr     = 1
-    settings%active_layer_diffusion = 0
-    settings%imobility    = 0
+    settings%active_layer_diffusion = ACTIVE_LAYER_DIFFUSION_OFF
+    settings%imobility    = MOBILITY_OFF
     settings%isedcrs2tr   = 0
     settings%ihidexptrcrs = 0
     settings%a_max        = 20.0_fp
