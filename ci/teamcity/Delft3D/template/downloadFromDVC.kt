@@ -20,21 +20,25 @@ object TemplateDownloadFromDVC : Template({
             name = "split engine_name_and_dir"
             scriptContent = "call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%"
         }
-        python {
+        script {
             name = "Install DVC locally (no system-wide)"
-            environment = venv {
-                name = ".dvc-venv"
-                requirementsFile = ""
-            }
-            command = script {
-                content = """
-                    python -m pip install --upgrade pip
-                    python -m pip install "dvc[s3]"
-                    echo === DVC installed successfully ===
-                    .dvc-venv\Scripts\dvc.exe --version
-                """.trimIndent()
-            }
+            scriptContent = """
+                @echo off
+                echo === Installing DVC in isolated venv ===
+
+                if exist ".dvc-venv" rmdir /s /q ".dvc-venv"
+
+                python -m venv .dvc-venv
+                call .dvc-venv\\Scripts\\activate.bat
+
+                python -m pip install --upgrade pip
+                python -m pip install "dvc[s3]"
+
+                echo === DVC installed successfully ===
+                dvc --version
+            """.trimIndent()
         }
+
         script {
             name = "DVC Pull all doc.dvc files recursively"
             scriptContent = """
@@ -51,8 +55,7 @@ object TemplateDownloadFromDVC : Template({
 
                 echo [INFO] Searching for doc.dvc files recursively under %%BASE_PATH%%...
 
-                REM Capture build root BEFORE we pushd (so we can find the venv)
-                set "DVC_EXE=%%cd%%\.dvc-venv\Scripts\dvc.exe"
+                set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
 
                 pushd "%%BASE_PATH%%"
 
