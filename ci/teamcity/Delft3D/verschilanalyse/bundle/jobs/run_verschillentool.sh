@@ -10,7 +10,7 @@
 
 set -eo pipefail
 
-if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX MODELS_PATH; then
+if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX MODELS_PATH JSON_CONFIGS_PATH; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -25,7 +25,7 @@ docker login \
     containers.deltares.nl <"${HOME}/.harbor/verschillentool"
 
 # Run verschillentool (all configs).
-find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
+find "${JSON_CONFIGS_PATH}" -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
     --volume="${VAHOME}/${MODELS_PATH}:/data/input:ro" \
     --volume="${VAHOME}/reference:/data/reference:ro" \
     --volume="${PWD}/{}:/data/{}:ro" \
