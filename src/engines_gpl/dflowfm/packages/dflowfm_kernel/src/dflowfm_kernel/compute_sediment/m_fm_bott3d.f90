@@ -104,7 +104,6 @@ contains
       logical, parameter :: AVALANCHE_OFF = .false.
       logical, parameter :: SLOPECOR_ON = .true.
       logical, parameter :: SLOPECOR_OFF = .false.
-      integer, parameter :: ACTIVE_LAYER_DIFFUSION_OFF = 0
 
    !!
    !! Local variables
@@ -249,7 +248,7 @@ contains
             ! 
             ! Compute mobile fractions
             ! 
-            if (stmpar%morlyr%settings%imobility > ACTIVE_LAYER_DIFFUSION_OFF) then 
+            if (stmpar%morlyr%settings%imobility > MOBILITY_OFF) then 
                call compmobile(stmpar%morlyr, ag, sedd50, taub, rhosol, rhomean, hidexp)
             endif    
             ! 
