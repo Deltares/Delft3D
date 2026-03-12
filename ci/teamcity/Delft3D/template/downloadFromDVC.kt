@@ -21,32 +21,12 @@ object TemplateDownloadFromDVC : Template({
             scriptContent = "call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%"
         }
         script {
-            name = "Install DVC locally (no system-wide)"
-            scriptContent = """
-                @echo off
-                echo === Installing DVC in isolated venv ===
-
-                if exist ".dvc-venv" rmdir /s /q ".dvc-venv"
-
-                python -m venv .dvc-venv
-                call .dvc-venv\\Scripts\\activate.bat
-
-                python -m pip install --upgrade pip
-                python -m pip install "dvc[s3]"
-                python -m pip install --editable ./ci/python --force-reinstall
-
-                echo === DVC installed successfully ===
-                dvc --version
-            """.trimIndent()
-        }
-        script {
             name = "DVC Pull all doc.dvc files recursively"
             scriptContent = """
                 @echo off
                 echo === DVC doc pull started for engine_dir: %engine_dir% ===
 
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
-                set "DVC_EXE=%%cd%%\\.dvc-venv\\Scripts\\dvc.exe"
 
                 if not exist "%%BASE_PATH%%" (
                     echo [ERROR] Base path not found: %%BASE_PATH%%
@@ -56,7 +36,7 @@ object TemplateDownloadFromDVC : Template({
                 pushd "%%BASE_PATH%%"
 
                 echo [INFO] 1/2 Pulling root doc.dvc ...
-                "%%DVC_EXE%%" pull doc.dvc
+                dvc pull doc.dvc
 
                 echo [INFO] 2/2 Pulling ONLY feature doc.dvc files in batches of 100 (to limit memory usage)...
 
@@ -72,7 +52,7 @@ object TemplateDownloadFromDVC : Template({
 
                         if !COUNT! equ 100 (
                             echo [BATCH] Pulling next 100 doc.dvc files...
-                            "%%DVC_EXE%%" pull !BATCH!
+                            dvc pull !BATCH!
                             set "BATCH="
                             set "COUNT=0"
                         )
@@ -81,7 +61,7 @@ object TemplateDownloadFromDVC : Template({
 
                 if not "!BATCH!"=="" (
                     echo [BATCH] Pulling remaining files...
-                    "%%DVC_EXE%%" pull !BATCH!
+                    dvc pull !BATCH!
                 )
 
                 endlocal
