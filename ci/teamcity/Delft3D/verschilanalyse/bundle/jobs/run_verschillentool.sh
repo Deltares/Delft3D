@@ -27,6 +27,7 @@ docker login \
 # Run verschillentool (all configs).
 find "${JSON_CONFIGS_PATH}" -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
     --volume="${VAHOME}/${MODELS_PATH}:/data/input:ro" \
+    --volume="${JSON_CONFIGS_PATH}/${MODELS_PATH}:/data/config:ro" \
     --volume="${VAHOME}/reference:/data/reference:ro" \
     --volume="${PWD}/{}:/data/{}:ro" \
     --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
