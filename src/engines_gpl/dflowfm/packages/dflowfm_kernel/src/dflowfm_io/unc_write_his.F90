@@ -256,7 +256,9 @@ contains
 
          call check_netcdf_error(nf90_def_dim(ihisfile, 'name_len', strlen_netcdf, id_strlendim))
 
-         if (jahiszcor > 0) then
+         ! laydim and laydimw are always on for 3D models as are part of a lot of output variables packahes 
+         ! (see fm_statistical_output::default_fm_statistical_output )
+         if ((kmx > 0) .or. (jahiszcor > 0)) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'laydim', max(kmx,1)    , id_laydim))
             call check_netcdf_error(nf90_def_dim(ihisfile, 'laydimw',max(kmx,1) + 1, id_laydimw))
          end if

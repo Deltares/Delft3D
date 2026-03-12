@@ -1,7 +1,8 @@
 #include "csumo_precice_lib.hpp"
 
-#include <iostream>
 #include <precice/precice.hpp>
+#include <print>
+#include <string_view>
 #include <vector>
 
 namespace csumo_precice
@@ -10,7 +11,7 @@ namespace csumo_precice
      * @details This function implements a preCICE solver dummy based on the official example.
      * It sets up a coupling with preCICE, defines a mesh, exchanges data, and runs the coupling loop.
      */
-    int csumo_precice(const std::string& configFileName, const std::string& solverName)
+    int csumo_precice(const std::string_view configFileName, const std::string_view solverName)
     {
         int commRank = 0;
         int commSize = 1;
@@ -22,9 +23,9 @@ namespace csumo_precice
         precice::Participant participant(solverName, configFileName, commRank, commSize);
 
         // Configure mesh and data names based on solver
-        std::string meshName;
-        std::string dataWriteName;
-        std::string dataReadName;
+        std::string_view meshName;
+        std::string_view dataWriteName;
+        std::string_view dataReadName;
 
         if (solverName == "SolverOne")
         {
@@ -40,20 +41,20 @@ namespace csumo_precice
         }
 
         // Get mesh dimensions and set up vertices
-        int dimensions = participant.getMeshDimensions(meshName);
-        std::size_t numberOfVertices = 3;
+        const std::size_t dimensions = static_cast<std::size_t>(participant.getMeshDimensions(meshName));
+        constexpr std::size_t numberOfVertices = 3;
 
         participant.startProfilingSection("Define mesh");
 
         participant.startProfilingSection("Prepare coordinates");
-        std::vector<double> vertices(numberOfVertices * static_cast<std::size_t>(dimensions));
+        std::vector<double> vertices(numberOfVertices * dimensions);
         std::vector<int> vertexIDs(numberOfVertices);
 
-        for (std::size_t i = 0; i < numberOfVertices; i++)
+        for (std::size_t i = 0; i < numberOfVertices; ++i)
         {
-            for (std::size_t j = 0; j < static_cast<std::size_t>(dimensions); j++)
+            for (std::size_t j = 0; j < dimensions; ++j)
             {
-                vertices.at(j + static_cast<std::size_t>(dimensions) * i) = static_cast<double>(i);
+                vertices.at(j + dimensions * i) = static_cast<double>(i);
             }
         }
         participant.stopLastProfilingSection();
@@ -63,14 +64,14 @@ namespace csumo_precice
 
         // Prepare data buffers
         participant.startProfilingSection("Prepare data");
-        std::vector<double> readData(numberOfVertices * static_cast<std::size_t>(dimensions));
-        std::vector<double> writeData(numberOfVertices * static_cast<std::size_t>(dimensions));
-        for (std::size_t i = 0; i < numberOfVertices; i++)
+        std::vector<double> readData(numberOfVertices * dimensions);
+        std::vector<double> writeData(numberOfVertices * dimensions);
+        for (std::size_t i = 0; i < numberOfVertices; ++i)
         {
-            for (std::size_t j = 0; j < static_cast<std::size_t>(dimensions); j++)
+            for (std::size_t j = 0; j < dimensions; ++j)
             {
-                readData.at(j + static_cast<std::size_t>(dimensions) * i) = static_cast<double>(i);
-                writeData.at(j + static_cast<std::size_t>(dimensions) * i) = static_cast<double>(i);
+                readData.at(j + dimensions * i) = static_cast<double>(i);
+                writeData.at(j + dimensions * i) = static_cast<double>(i);
             }
         }
         participant.stopLastProfilingSection();
@@ -95,7 +96,7 @@ namespace csumo_precice
 
             // Solve: simple dummy computation (increment data by 1)
             participant.startProfilingSection("Solve");
-            for (std::size_t i = 0; i < numberOfVertices * static_cast<std::size_t>(dimensions); i++)
+            for (std::size_t i = 0; i < numberOfVertices * dimensions; ++i)
             {
                 writeData.at(i) = readData.at(i) + 1;
             }

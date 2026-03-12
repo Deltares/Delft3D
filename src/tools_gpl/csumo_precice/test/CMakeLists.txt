@@ -3,7 +3,12 @@ set(source_files test_csumo_precice_lib.cpp)
 
 add_executable(test_csumo_precice_lib ${source_files})
 
-target_link_libraries(test_csumo_precice_lib PRIVATE compiler_warnings_settings csumo_precice_lib gtest)
+target_link_libraries(test_csumo_precice_lib PRIVATE
+    compiler_warnings_settings
+    csumo_precice_lib
+    gtest
+)
+
 if(WIN32)
     # Copy runtime DLLs to test directory for test discovery
     add_custom_command(TARGET test_csumo_precice_lib POST_BUILD
