@@ -108,7 +108,7 @@ DELFT3D_SIF="${HOME}/.cache/verschilanalyse/delft3dfm.sif"
 module purge
 module load apptainer/1.2.5
 
-# Create log dir and input dir.
+# Create log, input and config dir.
 mkdir -p "${LOG_DIR}/models" "${VAHOME}/${MODELS_PATH}" "${VAHOME}/${JSON_CONFIGS_PATH}"
 
 # Get latest input data from MinIO.
