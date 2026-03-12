@@ -33,17 +33,14 @@ object TemplateDownloadFromDVC : Template({
 
                 if not exist "%%BASE_PATH%%" (
                     echo [ERROR] Base path not found: %%BASE_PATH%%
-                    echo ##teamcity[buildProblem description="DVC base path not found: %%BASE_PATH%%" identity="dvc_base_path_missing"]
+                    echo ##teamcity[buildProblem description='DVC base path not found: %%BASE_PATH%%' identity='dvc_base_path_missing']
                     exit /b 1
                 )
 
                 pushd "%%BASE_PATH%%"
 
                 echo [INFO] 1/2 Pulling root doc.dvc ...
-                dvc pull doc.dvc || (
-                    echo [ERROR] Failed to pull root doc.dvc
-                    echo ##teamcity[buildProblem description="DVC pull failed: root doc.dvc (!ENGINE_DIR!)" identity="dvc_pull_root_!ENGINE_DIR!"]
-                )
+                dvc pull doc.dvc || call :report_failure "root doc.dvc"
 
                 echo [INFO] 2/2 Pulling ONLY feature doc.dvc files in batches of 100 (to limit memory usage)...
 
@@ -60,10 +57,7 @@ object TemplateDownloadFromDVC : Template({
                         if !COUNT! equ 100 (
                             set /a BATCH_COUNT+=1
                             echo [BATCH !BATCH_COUNT!] Pulling next 100 doc.dvc files...
-                            dvc pull !BATCH! || (
-                                echo [ERROR] Failed to pull batch !BATCH_COUNT!
-                                echo ##teamcity[buildProblem description="DVC pull failed: batch !BATCH_COUNT! (!ENGINE_DIR!)" identity="dvc_batch_!BATCH_COUNT!_!ENGINE_DIR!"]
-                            )
+                            dvc pull !BATCH! || call :report_failure "batch !BATCH_COUNT!"
                             set "BATCH="
                             set "COUNT=0"
                         )
@@ -73,15 +67,19 @@ object TemplateDownloadFromDVC : Template({
                 if not "!BATCH!"=="" (
                     set /a BATCH_COUNT+=1
                     echo [BATCH !BATCH_COUNT!] Pulling remaining files...
-                    dvc pull !BATCH! || (
-                        echo [ERROR] Failed to pull final batch !BATCH_COUNT!
-                        echo ##teamcity[buildProblem description="DVC pull failed: final batch !BATCH_COUNT! (!ENGINE_DIR!)" identity="dvc_batch_final_!ENGINE_DIR!"]
-                    )
+                    dvc pull !BATCH! || call :report_failure "final batch !BATCH_COUNT!"
                 )
 
                 endlocal
                 popd
                 echo === DVC doc pull completed ===
+
+                goto :eof
+
+                :report_failure
+                echo [ERROR] Failed to pull %~1
+                echo ##teamcity[buildProblem description='DVC pull failed: %~1 (!ENGINE_DIR!)' identity='dvc_pull_%~1_!ENGINE_DIR!']
+                goto :eof
             """.trimIndent()
         }
     }
