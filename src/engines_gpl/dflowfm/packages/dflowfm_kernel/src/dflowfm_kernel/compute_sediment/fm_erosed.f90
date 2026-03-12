@@ -799,7 +799,7 @@ contains
             end if
          end if
          !
-         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, 1.0e-5_dp))
+         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
          !
          ! To be in line with rest of FM, this should be
          !ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)
