@@ -41,6 +41,7 @@ module m_ec_converter
    use m_ec_spatial_extrapolation
    use time_class
    use string_module, only : strcmpi
+   use m_missing    , only: dmiss
    use, intrinsic :: ieee_arithmetic
 
    implicit none(type, external)
@@ -1231,6 +1232,14 @@ contains
       allocate (valuesT(maxlay * n_data), stat=istat)
       valuesT = ec_undef_hp
       
+      ! TK_Temp: If either values at T0 or T1 is not defined, set them both to undefined
+      if (all(valuesT0 == dmiss)) then 
+          valuesT1 = dmiss 
+      end if
+      if (all(valuesT1 == dmiss)) then 
+          valuesT0 = dmiss 
+      end if
+           
       
       if (connection%converterPtr%interpolationType == interpolate_passthrough) then
          !
@@ -1646,6 +1655,7 @@ contains
       !! meteo1 : polyint
    function ecConverterPolytim(connection, timesteps) result(success)
       use m_ec_elementset, only: ecElementSetGetAbsZ
+      use m_ec_parameters, only: ec_undef_hp
       use m_missing,       only: dmiss
       use m_ec_message
       logical :: success !< function status
@@ -1742,35 +1752,30 @@ contains
             wL = connection%converterPtr%indexWeight%weightFactors(1, i)
             wR = connection%converterPtr%indexWeight%weightFactors(2, i)
             
+            ! TK_Temp: Deal with one sided interpolation, set kL or kR to 0 if arr1D does not contain valid values
+            ! TK_Temp: Left side
+            if (kL > 0) then
+               kbeginL = vectormax * maxlay_src * (kL - 1) +  1! refers to source right column
+               kendL   = kbeginL + vectormax*maxlay_src - 1  
+               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginL:kendL) == missing) ) then
+                  kL = 0
+               end if
+            end if
+           ! TK_Temp: Right side
+           if (kR > 0) then
+               kbeginR = vectormax * maxlay_src * (kR - 1) +  1! refers to source right column
+               kendR   = kbeginR + vectormax*maxlay_src -1  
+               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginR:kendR) == missing) ) then
+                  kR = 0
+               end if
+            end if
+            
             select case (connection%converterPtr%operandType)
             case (operand_replace_element, operand_replace, operand_replace_if_value, operand_add)
                ! Are the subproviders 3D or 2D?
                if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                    associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
                   
-                   !  TK_Temp: Check if left has at least one valid z coordinate (if not, temporary or pemenent dry)
-                  if (Kl > 0) then
-                      kbeginL = (kL - 1) * maxlay_src + 1 ! refers to source left column
-                      kendL   = kL*maxlay_src
-                     oneSided = .true.
-                     do k = kbeginL, kendL
-                        if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(k),missing) /=0) oneSided = .false.
-                     end do
-              
-                     if (oneSided) kL = 0
-                  end if
-        
-                  ! TK_Temp: Check if right has at least one valid z coordinate
-                  if (kR > 0) then
-                     kbeginR = (kR - 1) * maxlay_src + 1 ! refers to source right column
-                     kendR   = kR*maxlay_src 
-                     oneSided = .true.
-                     do k = kbeginR, kendR
-                        if (comparereal(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z(k),missing) /=0) oneSided = .false.
-                     end do
-                     if (oneSided) kR = 0
-                  end if
-                                    
                   ! deal with one-sided interpolation
                   if (kL == 0 .and. kR /= 0) then
                      kL = kR
