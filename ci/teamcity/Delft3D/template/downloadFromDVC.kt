@@ -31,13 +31,13 @@ object TemplateDownloadFromDVC : Template({
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
                 set "ENGINE_DIR=%engine_dir%"
 
-                if not exist "%BASE_PATH%" (
-                    echo [ERROR] Base path not found: %BASE_PATH%
-                    echo ##teamcity[buildProblem description="DVC base path not found: %BASE_PATH%" identity="dvc_base_path_missing"]
+                if not exist "%%BASE_PATH%%" (
+                    echo [ERROR] Base path not found: %%BASE_PATH%%
+                    echo ##teamcity[buildProblem description="DVC base path not found: %%BASE_PATH%%" identity="dvc_base_path_missing"]
                     exit /b 1
                 )
 
-                pushd "%BASE_PATH%"
+                pushd "%%BASE_PATH%%"
 
                 echo [INFO] 1/2 Pulling root doc.dvc ...
                 dvc pull doc.dvc || (
