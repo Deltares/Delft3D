@@ -24,6 +24,8 @@ object TemplateDownloadFromDVC : Template({
             name = "DVC Pull all doc.dvc files recursively"
             scriptContent = """
                 @echo off
+                setlocal EnableDelayedExpansion
+
                 echo === DVC doc pull started for engine_dir: %engine_dir% ===
 
                 set "BASE_PATH=test\\deltares_testbench\\data\\cases\\%engine_dir%"
@@ -38,14 +40,13 @@ object TemplateDownloadFromDVC : Template({
 
                 echo [INFO] 1/2 Pulling root doc.dvc ...
                 dvc pull doc.dvc
-                if errorlevel 1 (
+                if !errorlevel! neq 0 (
                     echo [ERROR] Failed to pull root doc.dvc
-                    echo ##teamcity[buildProblem description='DVC pull failed: root doc.dvc (%engine_dir%)' identity='dvc_pull_root_%engine_dir%']
+                    echo ##teamcity[buildProblem description='DVC pull failed: root doc.dvc (!engine_dir!)' identity='dvc_pull_root_!engine_dir!']
                 )
 
                 echo [INFO] 2/2 Pulling ONLY feature doc.dvc files in batches of 100 (to limit memory usage)...
 
-                setlocal EnableDelayedExpansion
                 set "BATCH="
                 set "COUNT=0"
                 set "BATCH_COUNT=0"
@@ -60,9 +61,9 @@ object TemplateDownloadFromDVC : Template({
                             set /a BATCH_COUNT+=1
                             echo [BATCH !BATCH_COUNT!] Pulling next 100 doc.dvc files...
                             dvc pull !BATCH!
-                            if errorlevel 1 (
+                            if !errorlevel! neq 0 (
                                 echo [ERROR] Failed to pull batch !BATCH_COUNT!
-                                echo ##teamcity[buildProblem description='DVC pull failed: batch !BATCH_COUNT! (%engine_dir%)' identity='dvc_batch_!BATCH_COUNT!_%engine_dir%']
+                                echo ##teamcity[buildProblem description='DVC pull failed: batch !BATCH_COUNT! (!engine_dir!)' identity='dvc_batch_!BATCH_COUNT!_!engine_dir!']
                             )
                             set "BATCH="
                             set "COUNT=0"
@@ -74,9 +75,9 @@ object TemplateDownloadFromDVC : Template({
                     set /a BATCH_COUNT+=1
                     echo [BATCH !BATCH_COUNT!] Pulling remaining files...
                     dvc pull !BATCH!
-                    if errorlevel 1 (
+                    if !errorlevel! neq 0 (
                         echo [ERROR] Failed to pull final batch !BATCH_COUNT!
-                        echo ##teamcity[buildProblem description='DVC pull failed: final batch !BATCH_COUNT! (%engine_dir%)' identity='dvc_batch_final_%engine_dir%']
+                        echo ##teamcity[buildProblem description='DVC pull failed: final batch !BATCH_COUNT! (!engine_dir!)' identity='dvc_batch_final_!engine_dir!']
                     )
                 )
 
