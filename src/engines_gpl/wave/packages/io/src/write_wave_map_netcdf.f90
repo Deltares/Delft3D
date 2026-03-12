@@ -123,7 +123,7 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, pre
    character(11) :: epsgstring
    real(kind=hp), dimension(:, :), allocatable :: tmp_x ! dummy x-coordinates cell center to write to netCDF
    real(kind=hp), dimension(:, :), allocatable :: tmp_y ! dummy y-coordinates cell center to write to netCDF
-   real(kind=hp), dimension(:, :), allocatable :: tmp_dir ! dummy directions to write to netCDF, converted to nautical convention if needed
+   real, dimension(:, :), allocatable :: tmp_dir ! dummy directions to write to netCDF, converted to nautical convention if needed
 !
 !! executable statements -------------------------------------------------------
 !
@@ -365,9 +365,7 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, pre
       ! dir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
       ! Here we convert it back to nautical convention for output to netCDF
       allocate (tmp_dir(sof%mmax, sof%nmax), stat=ierror)
-      tmp_dir(:, :) = 180.0 + northdir - sof%dir(:, :)
-      where (tmp_dir(:, :) < 0.0) tmp_dir(:, :) = tmp_dir(:, :) + 360.0
-      where (tmp_dir(:, :) >= 360.0) tmp_dir(:, :) = tmp_dir(:, :) - 360.0
+      call convert_cart_tofrom_naut(sof%dir, sof%mmax * sof%nmax, northdir, tmp_dir)
       ierror = nf90_put_var(idfile, idvar_dir, tmp_dir, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var dir    ", filename)
    else
       ierror = nf90_put_var(idfile, idvar_dir, sof%dir, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var dir    ", filename)   
@@ -376,9 +374,7 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, pre
       ! pdir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
       ! Here we convert it back to nautical convention for output to netCDF
       ! Already allocated: tmp_dir
-      tmp_dir(:, :) = 180.0 + northdir - sof%pdir(:, :)
-      where (tmp_dir(:, :) < 0.0) tmp_dir(:, :) = tmp_dir(:, :) + 360.0
-      where (tmp_dir(:, :) >= 360.0) tmp_dir(:, :) = tmp_dir(:, :) - 360.0
+      call convert_cart_tofrom_naut(sof%pdir, sof%mmax * sof%nmax, northdir, tmp_dir)
       ierror = nf90_put_var(idfile, idvar_pdir, tmp_dir, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var pdir   ", filename)
    else
       ierror = nf90_put_var(idfile, idvar_pdir, sof%pdir, start=(/1, 1, wavedata%output%count/), count=(/sof%mmax, sof%nmax, 1/)); call nc_check_err(ierror, "put_var pdir   ", filename)

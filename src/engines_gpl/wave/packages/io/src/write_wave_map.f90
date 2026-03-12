@@ -66,6 +66,8 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    integer :: j
    integer :: nelems
    integer :: nelems2
+   integer :: ndim
+   integer :: mdim
    integer, dimension(6, nelmx) :: elmdms
    integer, dimension(nelmx) :: nbytsg
    integer, dimension(:, :), allocatable :: elmdms2
@@ -157,7 +159,9 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    end if
    !
    wrswch = .true.
-   allocate (rbuf(size(sg%x, 1), size(sg%x, 2)))
+   ndim = size(sg%x, 1)
+   mdim = size(sg%x, 2)
+   allocate (rbuf(ndim, mdim))
    !
    ! Allocate and initialise possible additional output parameters
    ! One extra entry in group 2 for the time information
@@ -255,10 +259,7 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    if (nautconv) then
       ! dir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
       ! Here we convert it back to nautical convention for output to Nefis
-      rbuf(:, :) = 180.0 + northdir - sof%dir(:, :)
-      where (rbuf(:, :) < 0.0) rbuf(:, :) = rbuf(:, :) + 360.0
-      where (rbuf(:, :) >= 360.0) rbuf(:, :) = rbuf(:, :) - 360.0
-      !
+      call convert_cart_tofrom_naut(sof%dir, ndim*mdim, northdir, rbuf)
       call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
                 & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
                 & elmnms(4), celidt, wrswch, error, rbuf)
@@ -271,10 +272,7 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    if (nautconv) then
       ! pdir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
       ! Here we convert it back to nautical convention for output to Nefis
-      rbuf(:, :) = 180.0 + northdir - sof%pdir(:, :)
-      where (rbuf(:, :) < 0.0) rbuf(:, :) = rbuf(:, :) + 360.0
-      where (rbuf(:, :) >= 360.0) rbuf(:, :) = rbuf(:, :) - 360.0
-      !
+      call convert_cart_tofrom_naut(sof%pdir, ndim*mdim, northdir, rbuf)
       call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
                 & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
                 & elmnms(5), celidt, wrswch, error, rbuf)

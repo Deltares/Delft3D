@@ -347,20 +347,6 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
                 call wavestop(1, '*** ERROR: Unable to read values from file '//trim(filnam))
              endif
           enddo
-          if (outfile == 1) then
-             if (.not.cart) then
-                ! Convert from nautical to cartesian coordinates
-                ! D-Waves processes all directions as cartesian, i.e. 0 degrees is towards the east and 90 degrees towards the north
-                dir(i) = 180. + north - dir(i)
-                if (dir(i)>360.) dir(i) = dir(i) - 360.
-                if (dir(i)<0.)   dir(i) = dir(i) + 360.
-                pdir(i) = 180. + north - pdir(i)
-                if (pdir(i)>360.) pdir(i) = pdir(i) - 360.
-                if (pdir(i)<0.)   pdir(i) = pdir(i) + 360.
-             endif
-             dirc(i) = cos(dir(i)/180.*pi)*hs(i)
-             dirs(i) = sin(dir(i)/180.*pi)*hs(i)
-          endif
        enddo
        !
 150    continue
@@ -370,6 +356,14 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
           close (lunhis)
        endif
     enddo
+    if (.not.cart) then
+       ! Convert from nautical to cartesian coordinates
+       ! D-Waves processes all directions as cartesian, i.e. 0 degrees is towards the east and 90 degrees towards the north
+       call convert_cart_tofrom_naut(dir, npnt, north, dir)
+       call convert_cart_tofrom_naut(pdir, npnt, north, pdir)
+    endif
+    dirc(:npnt) = cos(dir(:npnt)/180.*pi)*hs(:npnt)
+    dirs(:npnt) = sin(dir(:npnt)/180.*pi)*hs(:npnt)
     !
     ! Negative values found in swanout1 file? write to screen
     !

@@ -374,6 +374,8 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautc
     do istat=1,nstat
        ierror = nf90_put_var(idfile, idvar_depth , rval(istat,COL_DEPTH ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Depth  ", filename)
        ierror = nf90_put_var(idfile, idvar_hsig  , rval(istat,COL_HSIG  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Hsig   ", filename)
+       ! Cartesian or Nautical directional convention for the wave direction:
+       ! D-Waves output matches SWAN output, no conversion needed.
        ierror = nf90_put_var(idfile, idvar_dir   , rval(istat,COL_DIR   ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Dir    ", filename)
        ierror = nf90_put_var(idfile, idvar_rtpeak, rval(istat,COL_RTPEAK), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var RTpeak ", filename)
        ierror = nf90_put_var(idfile, idvar_tm01  , rval(istat,COL_TM01  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Tm01   ", filename)
