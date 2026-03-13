@@ -14,13 +14,13 @@ if (-not (Test-Path $BASE_PATH)) {
 
 Push-Location $BASE_PATH
 
-Write-Host "[INFO] Pulling doc.dvc files ONLY from f[0-9] directories (skipping fxxx and everything else)..."
+Write-Host "[INFO] Pulling doc.dvc files ONLY from folders starting with f + number (skipping fxxx, c001, e02, etc.)..."
 
 # === DETECTION PHASE ===
 Write-Host "[DETECTION START] Looking for doc.dvc files..."
 $allDocDvc = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
     $featureDirName = Split-Path (Split-Path $_.FullName -Parent) -Leaf
-    $featureDirName -match '^f[0-9]+$' -and $_.FullName -notmatch 'doc\\doc\.dvc'
+    $featureDirName -match '^f\d+' -and $_.FullName -notmatch 'doc\\doc\.dvc'
 }
 
 $totalDetected = $allDocDvc.Count
