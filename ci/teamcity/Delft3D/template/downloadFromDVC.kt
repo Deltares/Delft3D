@@ -22,7 +22,7 @@ object TemplateDownloadFromDVC : Template({
         }
         script {
             name = "DVC Pull all doc.dvc files recursively"
-            scriptContent = """powershell.exe -NoProfile -ExecutionPolicy Bypass -File "ci/teamcity/Delft3D/windows/scripts/pullDvcDocs.ps1" -EngineDir "%engine_dir%" """
+            scriptContent = """powershell.exe -NoProfile -ExecutionPolicy Bypass -File "ci/teamcity/Delft3D/windows/scripts/pullDocsForEngine.ps1" -EngineDir "%engine_dir%" """
         }
     }
 })
