@@ -14,14 +14,25 @@ if (-not (Test-Path $BASE_PATH)) {
 
 Push-Location $BASE_PATH
 
-Write-Host "[INFO] Pulling ALL doc.dvc files under any fNNN folder"
+Write-Host "[INFO] Pulling engine root doc.dvc + ALL doc.dvc under any fNNN folder (fxxx + non-fNNN skipped)..."
 
 # === DETECTION PHASE ===
 Write-Host "[DETECTION START] Looking for doc.dvc files..."
 $allDocDvc = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
-    $segments = $_.FullName -split '[\\\/]'
-    $hasGoodFeatureFolder = $segments | Where-Object { $_ -match '^f\d' }
-    $hasGoodFeatureFolder -and $_.FullName -notmatch 'doc\\doc\.dvc$'
+    $fullName = $_.FullName
+
+    # Skip the weird doc/doc.dvc
+    if ($fullName -match 'doc\\doc\.dvc$') { return $false }
+
+    # 1. Always include the engine ROOT doc.dvc
+    $parent = Split-Path $fullName -Parent
+    $isRootDoc = $parent -eq $BASE_PATH
+
+    # 2. Or any folder in the path starts with f + digit (f01, f030, f120, etc.)
+    $segments = $fullName -split '[\\\/]'
+    $hasFNNN = $segments | Where-Object { $_ -match '^f\d' }
+
+    $isRootDoc -or $hasFNNN
 }
 
 $totalDetected = $allDocDvc.Count
@@ -58,7 +69,7 @@ if ($batch.Count -gt 0) {
     Write-Host "[PULL OK] Final batch $batchCount completed"
 }
 
-Write-Host "[DETECTION END] Total processed: $totalDetected"
+Write-Host "[DETECTION END] Total processed: $totalDetected (root + fNNN folders)"
 
 # === VERIFICATION PHASE ===
 Write-Host "[VERIFICATION START]"
