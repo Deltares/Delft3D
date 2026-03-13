@@ -59,7 +59,7 @@ contains
             call MPI_Abort(DFM_COMM_ALLWORLD, DFM_GENERICERROR, ierr)
          end if
 #endif
-         stop
+         error stop 1
       end if
    end subroutine unstruc_errorhandler
 

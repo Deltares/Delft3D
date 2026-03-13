@@ -276,6 +276,7 @@ contains
 !> optimized ray-casting point-in-polygon test.
 !! pure function that works with array slices or full arrays.
    pure function pinpok_raycast(xl, yl, x, y, n) result(is_inside)
+      use precision_basics, only: equal
 
       real(kind=dp), intent(in) :: xl, yl !< point coordinates to test
       integer, intent(in) :: n !< number of polygon points
@@ -285,6 +286,7 @@ contains
       ! locals
       integer :: i, j, crossings
       real(kind=dp) :: x_intersect
+      real(kind=dp), parameter :: TOLERANCE_FACTOR = 100.0_dp
 
       is_inside = .false.
 
@@ -308,12 +310,24 @@ contains
          end if
 
          ! check if point is exactly on a vertex
-         if (xl == x(j) .and. yl == y(j)) then
+         if (equal(xl, x(j)) .and. equal(yl, y(j))) then
             is_inside = .true.
             if (jins == 0) then
                is_inside = .not. is_inside
             end if
             return
+         end if
+
+         ! check for an exactly horizontal edge at test point's y-level
+         if (equal(y(j), yl) .and. equal(y(i), yl)) then
+            ! horizontal edge - check if point's x is between edge endpoints
+            if (xl >= min(x(j), x(i)) .and. xl <= max(x(j), x(i))) then
+               is_inside = .true.
+               if (jins == 0) then
+                  is_inside = .not. is_inside
+               end if
+               return
+            end if
          end if
 
          ! check if ray crosses this edge
@@ -324,7 +338,7 @@ contains
             if (xl < x_intersect) then
                ! ray crosses edge to the right of point
                crossings = crossings + 1
-            else if (xl == x_intersect) then
+            else if (equal(xl, x_intersect, TOLERANCE_FACTOR*epsilon(xl))) then
                ! point is exactly on the edge
                is_inside = .true.
                if (jins == 0) then

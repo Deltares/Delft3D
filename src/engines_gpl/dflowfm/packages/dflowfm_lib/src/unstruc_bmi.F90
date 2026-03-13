@@ -1051,7 +1051,7 @@ contains
          shape(1) = network%sts%numCulverts
          shape(2) = 1
       case ("sourcesinks")
-         shape(1) = numsrc
+         shape(1) = num_source_sink
          shape(2) = 3
          return
       case ("observations")
@@ -2275,19 +2275,19 @@ contains
          end if
          select case (field_name)
          case ("discharge")
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + 1))
+            x = c_loc(source_sink_all_discharges(1, item_index))
             return
          case ("change_in_salinity")
-            if (ISALT == 0) then
+            if (isalt == 0) then
                return
             end if
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + ISALT + 1))
+            x = c_loc(source_sink_all_discharges(isalt + 1, item_index))
             return
          case ("change_in_temperature")
-            if (ITEMP == 0) then
+            if (itemp == 0) then
                return
             end if
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + ITEMP + 1))
+            x = c_loc(source_sink_all_discharges(itemp + 1, item_index))
             return
          end select
          ! Dambreak
@@ -2452,6 +2452,9 @@ contains
 
       integer :: item_index, k1, constituent_index
       character(len=MAXSTRLEN) :: constituent_name, direction_string
+
+      c_lateral_pointer = c_null_ptr
+
       call getLateralIndex(item_name, item_index)
       if (item_index <= 0) then
          return
@@ -2747,21 +2750,21 @@ contains
          select case (field_name)
          case ("discharge")
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + 1) = x_0d_double_ptr
+            source_sink_all_discharges(1, item_index) = x_0d_double_ptr
             return
          case ("change_in_salinity")
-            if (ISALT == 0) then
+            if (isalt == 0) then
                return
             end if
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + ISALT + 1) = x_0d_double_ptr
+            source_sink_all_discharges(isalt + 1, item_index) = x_0d_double_ptr
             return
          case ("change_in_temperature")
-            if (ITEMP == 0) then
+            if (itemp == 0) then
                return
             end if
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + ITEMP + 1) = x_0d_double_ptr
+            source_sink_all_discharges(itemp + 1, item_index) = x_0d_double_ptr
             return
          end select
 
