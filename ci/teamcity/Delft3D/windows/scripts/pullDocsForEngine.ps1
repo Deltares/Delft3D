@@ -21,16 +21,19 @@ Write-Host "[DETECTION START] Looking for doc.dvc files..."
 
 $allDocDvc = @()
 
-# 1. ALWAYS include the root doc.dvc (the one that brings /doc/functionalities/)
-$rootDocDvc = Join-Path $BASE_PATH "doc.dvc"
-if (Test-Path $rootDocDvc) {
-    $allDocDvc += Get-Item $rootDocDvc
-    Write-Host "[ROOT INCLUDED] $rootDocDvc"
+# 1. FORCE root doc.dvc (this is the critical one for functionalities/)
+$rootDocDvcPath = Join-Path $BASE_PATH "doc.dvc"
+if (Test-Path $rootDocDvcPath) {
+    $allDocDvc += Get-Item $rootDocDvcPath
+    Write-Host "[ROOT DOC.DVC INCLUDED] $rootDocDvcPath"
+} else {
+    Write-Host "[WARNING] Root doc.dvc not found at $rootDocDvcPath"
 }
 
-# 2. All doc.dvc files under any fNNN folder
+# 2. All doc.dvc under fNNN folders
 $featureDocs = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
     $fullName = $_.FullName
+    if ($fullName -match 'doc\\doc\.dvc$') { return $false }
     $segments = $fullName -split '[\\\/]'
     $hasFNNN = $segments | Where-Object { $_ -match '^f\d' }
     $hasFNNN
@@ -47,14 +50,13 @@ foreach ($file in $allDocDvc) {
 
     if ($batch.Count -eq 100) {
         $batchCount++
-        Write-Host "[BATCH $batchCount] Pulling next 100 doc.dvc files..."
+        Write-Host "[BATCH $batchCount] Pulling next 100..."
         & dvc pull $batch
         if ($LASTEXITCODE -ne 0) { 
             Write-Host "[ERROR] Failed to pull batch $batchCount"
             "##teamcity[buildProblem description='DVC pull failed: batch $batchCount ($EngineDir)' identity='dvc_pull_batch_$batchCount']"
             exit 1
         }
-        Write-Host "[PULL OK] Batch $batchCount completed"
         $batch = @()
     }
 }
@@ -68,10 +70,9 @@ if ($batch.Count -gt 0) {
         "##teamcity[buildProblem description='DVC pull failed: final batch ($EngineDir)' identity='dvc_pull_final']"
         exit 1
     }
-    Write-Host "[PULL OK] Final batch $batchCount completed"
 }
 
-Write-Host "[DETECTION END] Total processed: $totalDetected (root doc.dvc + fNNN)"
+Write-Host "[DETECTION END] Total processed: $totalDetected (root + fNNN)"
 
 # === VERIFICATION PHASE ===
 Write-Host "[VERIFICATION START]"
