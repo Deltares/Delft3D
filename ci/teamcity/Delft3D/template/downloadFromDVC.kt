@@ -21,8 +21,8 @@ object TemplateDownloadFromDVC : Template({
             scriptContent = "call ci/teamcity/Delft3D/windows/scripts/extractEngineNameAndDir.bat %engine_name_and_dir%"
         }
         script {
-            name = "DVC pull all doc.dvc files recursively"
-            scriptContent = """powershell.exe -NoProfile -ExecutionPolicy Bypass -File "ci/teamcity/Delft3D/windows/scripts/pullDocsForEngine.ps1" """
+            name = "DVC Pull all doc.dvc files recursively"
+            scriptContent = """powershell.exe -NoProfile -ExecutionPolicy Bypass -File "ci/teamcity/Delft3D/windows/scripts/pullDvcDocs.ps1" -EngineDir "%engine_dir%" """
         }
     }
 })
