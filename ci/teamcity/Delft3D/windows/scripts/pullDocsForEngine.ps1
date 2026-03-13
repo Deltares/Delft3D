@@ -14,20 +14,22 @@ if (-not (Test-Path $BASE_PATH)) {
 
 Push-Location $BASE_PATH
 
-Write-Host "[INFO] Pulling engine root doc.dvc + ALL doc.dvc under any fNNN folder (fxxx + non-fNNN skipped)..."
+Write-Host "[INFO] Pulling root doc.dvc (for functionalities/) + all under fNNN folders..."
+Write-Host "[DEBUG] Listing ALL top-level files/folders in engine root (to see if doc.dvc exists):"
+Get-ChildItem $BASE_PATH | Format-Table Name, Length, LastWriteTime
 
 # === DETECTION PHASE ===
 Write-Host "[DETECTION START] Looking for doc.dvc files..."
 
 $allDocDvc = @()
 
-# 1. FORCE root doc.dvc (this is the critical one for functionalities/)
+# 1. FORCE root doc.dvc
 $rootDocDvcPath = Join-Path $BASE_PATH "doc.dvc"
 if (Test-Path $rootDocDvcPath) {
     $allDocDvc += Get-Item $rootDocDvcPath
-    Write-Host "[ROOT DOC.DVC INCLUDED] $rootDocDvcPath"
+    Write-Host "[ROOT DOC.DVC FOUND AND INCLUDED] $rootDocDvcPath"
 } else {
-    Write-Host "[WARNING] Root doc.dvc not found at $rootDocDvcPath"
+    Write-Host "[WARNING] Root doc.dvc STILL NOT FOUND at $rootDocDvcPath"
 }
 
 # 2. All doc.dvc under fNNN folders
