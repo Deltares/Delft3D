@@ -9,7 +9,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 & sscomp    ,kcsbot    , &
                 & guv       ,gvu       ,kcu       , &
                 & kcv       ,icx       ,icy       ,timhr     , &
-                & nto       ,volum0    ,volum1    ,dt        ,gdp       )
+                & nto       ,volum0    ,volum1    ,dt        ,taubmx    , gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -104,6 +104,8 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     logical                              , pointer :: snelli
     logical                              , pointer :: l_suscor
     logical, dimension(:)                , pointer :: cmpupdfrac
+    real(fp)                             , pointer :: ag
+    real(fp)                             , pointer :: rhow
     real(fp), dimension(:)               , pointer :: factor
     real(fp)                             , pointer :: slope
     real(fp), dimension(:)               , pointer :: bc_mor_array
@@ -112,9 +114,9 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp), dimension(:)               , pointer :: dg
     real(fp), dimension(:,:)             , pointer :: fixfac
     real(fp), dimension(:,:)             , pointer :: frac
+    real(fp), dimension(:,:)             , pointer :: frac_he
     integer , dimension(:)               , pointer :: kfsed
     integer , dimension(:,:)             , pointer :: kmxsed
-    real(fp), dimension(:)               , pointer :: mudfrac
     real(fp), dimension(:,:)             , pointer :: sbuuc
     real(fp), dimension(:,:)             , pointer :: sbvvc
     real(fp), dimension(:,:)             , pointer :: ssuu
@@ -131,16 +133,21 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp)      , dimension(:)         , pointer :: rhosol
     real(fp)      , dimension(:)         , pointer :: cdryb
     integer       , dimension(:)         , pointer :: tratyp
+    real(fp)      , dimension(:)         , pointer :: sedd50
     integer                              , pointer :: julday
     integer                              , pointer :: ntstep
     real(fp), dimension(:,:,:)           , pointer :: fluxu
     real(fp), dimension(:,:,:)           , pointer :: fluxv
+    logical                              , pointer :: lfbedfrm
+    logical                              , pointer :: crslyr
     real(fp), dimension(:)               , pointer :: duneheight
+    real(fp), dimension(:)               , pointer :: dunelength
     integer                              , pointer :: iflufflyr
     real(fp), dimension(:,:)             , pointer :: mfluff
     real(fp), dimension(:,:)             , pointer :: sinkf
     real(fp), dimension(:,:)             , pointer :: sourf
     real(fp) , dimension(:,:)            , pointer :: depflxf
+    integer                              , pointer :: imobility
     real(fp) , dimension(:,:)            , pointer :: eroflxf
     
     integer                              , pointer :: iconsolidate
@@ -195,13 +202,16 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, lsedtot)              :: sbvv   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                          , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                          , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: taubmx !  Description and declaration in rjdim.f90
 !
 ! Local variables
 !
+    integer  :: fac
     integer  :: i
     integer  :: ib
     integer  :: icond
     integer  :: idir_scalar
+    integer  :: istat
     integer  :: jb
     integer  :: k
     integer  :: kvalue
@@ -251,6 +261,8 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp) :: r1avg
     real(fp), dimension(:)   , allocatable  :: rhowat2d
     real(fp) :: sedflx
+    real(fp) :: sb1
+    real(fp) :: sb2
     real(fp) :: thet
     real(fp) :: thick0
     real(fp) :: thick1
@@ -259,11 +271,15 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp) :: trndiv
     real(fp) :: z
     real(hp) :: dim_real
+    real(fp) , dimension(:)   , allocatable :: dunelength_tmp  !  Copy of dune length. It is necessary in case of using the coarse-layer (HANNEKE) model. 
+    real(fp) , dimension(:,:) , allocatable :: sbot       !  Description and declaration in rjdim.f90
 !
 !! executable statements -------------------------------------------------------
 !
     lundia              => gdp%gdinout%lundia
     hydrt               => gdp%gdmorpar%hydrt
+    lfbedfrm            => gdp%gdbedformpar%lfbedfrm
+    dunelength          => gdp%gdbedformpar%dunelength
     morft               => gdp%gdmorpar%morft
     morfac              => gdp%gdmorpar%morfac
     sus                 => gdp%gdmorpar%sus
@@ -283,6 +299,8 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     neglectentrainment  => gdp%gdmorpar%neglectentrainment
     l_suscor            => gdp%gdmorpar%l_suscor
     multi               => gdp%gdmorpar%multi
+    ag                  => gdp%gdphysco%ag
+    rhow                => gdp%gdphysco%rhow
     wind                => gdp%gdprocs%wind
     temp                => gdp%gdprocs%temp
     const               => gdp%gdprocs%const
@@ -299,9 +317,9 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     dg                  => gdp%gderosed%dg
     fixfac              => gdp%gderosed%fixfac
     frac                => gdp%gderosed%frac
+    frac_he             => gdp%gderosed%frac_he
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
-    mudfrac             => gdp%gderosed%mudfrac
     sbuuc               => gdp%gderosed%e_sbnc
     sbvvc               => gdp%gderosed%e_sbtc
     ssuu                => gdp%gderosed%e_ssn
@@ -318,6 +336,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     cmpupdfrac          => gdp%gdsedpar%cmpupdfrac
     rhosol              => gdp%gdsedpar%rhosol
     cdryb               => gdp%gdsedpar%cdryb
+    sedd50              => gdp%gdsedpar%sedd50
     tratyp              => gdp%gdsedpar%tratyp
     julday              => gdp%gdinttim%julday
     ntstep              => gdp%gdinttim%ntstep
@@ -1034,10 +1053,50 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
              endif
           enddo
           !
+          allocate(sbot     (gdp%d%nmlb:gdp%d%nmub, lsedtot))
+          allocate(dunelength_tmp(gdp%d%nmlb:gdp%d%nmub))
+          sbot      = 0.0_fp 
+          dunelength_tmp = 1.0e10_fp
+          !
+          istat =  bedcomp_getpointer_logical(gdp%gdmorlyr,'crslyr',crslyr)
+          istat =  bedcomp_getpointer_integer(gdp%gdmorlyr,'imobility',imobility)
+          !
+          ! 
+          ! Compute mobile fractions
+          ! 
+          if (imobility > 0) then 
+              call compmobile(gdp%gdmorlyr, ag, sedd50, taubmx, rhosol, rhow, gdp%gderosed%hidexp)
+          endif    
+          ! 
+          if (crslyr) then 
+              !
+              ! Get dunelength
+              !
+              dunelength_tmp = dunelength
+              !
+              ! Compute average bed load transport in cel
+              ! 
+              do l = 1, lsedtot
+                  do nm = 1, nmmax
+                      if (kcs(nm)*kfs(nm) == 1) then
+                          nmd = nm - icx
+                          ndm = nm - icy
+                          fac = max(kfu(nm)+kfu(nmd),1)
+                          sb1 = (kfu(nm)*sbuu(nm,l)+kfu(nmd)*sbuu(nmd,l))/fac
+                          fac = max(kfv(nm)+kfv(ndm),1)
+                          sb2 = (kfv(nm)*sbvv(nm,l)+kfv(ndm)*sbvv(ndm,l))/fac
+                          sbot(nm, l)  = sqrt( sb1**2 + sb2**2 )
+                      else
+                          sbot(nm, l) = -999.0_fp  
+                      endif
+                  enddo
+              enddo
+          endif
+          !
           ! Update layers and obtain the depth change
           !
           call morstats(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, ssvv, gdp%d%nmlb, gdp%d%nmub, lsedtot, lsed)
-          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, gdp%messages, morft, dtmor) /= 0) then
+          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, dunelength_tmp, sbot, dtmor, morft, gdp%messages) /= 0) then
              call writemessages(gdp%messages, lundia)
              call d3stop(1, gdp)
           else
@@ -1050,6 +1109,10 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
           call bndmorlyr(lsedtot   ,timhr        , &
                        & nto       ,bc_mor_array , &
                        & gdp       )
+          !
+          deallocate(sbot)
+          deallocate(dunelength_tmp)
+          !
        endif
     endif ! nst >= itcmp
     !

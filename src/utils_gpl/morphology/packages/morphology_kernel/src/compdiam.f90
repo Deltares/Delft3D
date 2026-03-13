@@ -1,4 +1,12 @@
-subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
+    module m_compdiam
+    
+    private
+    
+    public compdiam
+    
+    contains
+    
+    subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
                   & logsedsig, nseddia, logseddia, nmmax, nmlb, &
                   & nmub, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
                   & sedd50fld, dm, dg, dxx, dgsd)
@@ -343,3 +351,6 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
        enddo
     endif
 end subroutine compdiam
+
+end module m_compdiam
+    

@@ -380,6 +380,14 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     ! === start for calculating morphological changes
     !
     call prop_get(mor_ptr, 'Morphology', 'BedUpdStt', morpar%tmor)       
+       !
+       call prop_get(mor_ptr, 'Morphology', 'IThresh', morpar%ithresh)
+       if (morpar%ithresh /= THRESH_CONSTANT .and. morpar%ithresh /= THRESH_BASED_ON_THICKNESS) then
+          write(errmsg, '(a,i0,a,i0,a,a)') 'IThresh should be ', THRESH_CONSTANT, ' (default) or ', THRESH_BASED_ON_THICKNESS, ' in ', trim(filmor)
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
     !
     ! === start for calculating bed composition changes
     !

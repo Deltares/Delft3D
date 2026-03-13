@@ -114,6 +114,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     real(fp), dimension(:)               , pointer :: dg
     real(fp), dimension(:,:)             , pointer :: fixfac
     real(fp), dimension(:,:)             , pointer :: frac
+    real(fp), dimension(:,:)             , pointer :: frac_he
     integer , dimension(:)               , pointer :: kfsed
     integer , dimension(:,:)             , pointer :: kmxsed
     real(fp), dimension(:)               , pointer :: mudfrac
@@ -273,6 +274,9 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     real(hp) :: dim_real
     real(fp) :: cellht
     real(fp) :: zusum
+    real(fp) , dimension(:)   , allocatable :: dunelngth  !  Copy of dune length in case of 
+    real(fp) , dimension(:,:) , allocatable :: sbot       !  Description and declaration in rjdim.f90
+
 !
 !! executable statements -------------------------------------------------------
 !
@@ -313,6 +317,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     dg                  => gdp%gderosed%dg
     fixfac              => gdp%gderosed%fixfac
     frac                => gdp%gderosed%frac
+    frac_he             => gdp%gderosed%frac_he
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
     mudfrac             => gdp%gderosed%mudfrac
@@ -1066,10 +1071,14 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              endif
           enddo
           !
+          allocate(sbot     (gdp%d%nmlb:gdp%d%nmub, lsedtot))
+          allocate(dunelngth(gdp%d%nmlb:gdp%d%nmub))
+          sbot      = 0.0_fp 
+          dunelngth = 1.0e10_fp
           ! Update layers and obtain the depth change
           !
           call morstats(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, ssvv, gdp%d%nmlb, gdp%d%nmub, lsedtot, lsed)
-          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, gdp%messages, morft, dtmor) /= 0) then
+          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, dunelngth, sbot, dtmor, morft, gdp%messages) /= 0) then
              call writemessages(gdp%messages, lundia)
              call d3stop(1, gdp)
           else
@@ -1082,6 +1091,10 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           call bndmorlyr(lsedtot   ,timhr        , &
                        & nto       ,bc_mor_array , &
                        & gdp       )
+          !
+          deallocate(sbot)
+          deallocate(dunelngth)
+          !
        endif
     endif ! nst >= itcmp
     !
