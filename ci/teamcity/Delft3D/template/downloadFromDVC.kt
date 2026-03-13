@@ -45,9 +45,11 @@ object TemplateDownloadFromDVC : Template({
                 set "COUNT=0"
                 set "BATCH_COUNT=0"
 
+                echo [DETECTION START] Listing every doc.dvc the script sees before any pull:
                 for /r %%%%a in (doc.dvc) do (
-                    echo "%%%%~a" | findstr /i "f[0-9]" >nul
+                    echo "%%%%~a" ^| findstr /i "f[0-9]" ^>nul
                     if not errorlevel 1 (
+                        echo [DETECTED] %%%%~a
                         set /a COUNT+=1
                         set "BATCH=!BATCH! "%%%%~a""
 
@@ -66,6 +68,8 @@ object TemplateDownloadFromDVC : Template({
                     echo [BATCH !BATCH_COUNT!] Pulling remaining files...
                     dvc pull !BATCH! || call :report_failure "final batch !BATCH_COUNT!"
                 )
+
+                echo [DETECTION END] Total detected: !COUNT! doc.dvc files
 
                 endlocal
                 popd
