@@ -60,10 +60,113 @@ contains
       XP = 1.0_dp
       YP = 1.0_dp
       call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
-      call f90_assert_eq(zp(1), 2.0_dp, "test4: Point outside triangle fails")
+      call f90_assert_eq(zp(1), 2.0_dp, "test 4: Point outside triangle fails")
+
+      X = [.810741505645373E+06_dp, .810715795061337E+06_dp, .810735820827145E+06_dp]
+      Y = [.191320100347323E+06_dp, .191235593530796E+06_dp, .191209251914610E+06_dp]
+      Z = reshape([.219641432209429E-18_dp, .169398097079605E-19_dp, .123683600075936E-19_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 3, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 3), "test 5: Shifted point on corner fails")
+
+      X = [.806502842601997E+06_dp, .806438395456953E+06_dp, .806470914272868E+06_dp]
+      Y = [.159100366306436E+06_dp, .159134438983112E+06_dp, .159083652909205E+06_dp]
+      Z = reshape([.464639817153730E-25_dp, .527615391002151E-36_dp, .712069478335024E-37_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 1, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 1), "test 6: Shifted point on corner fails")      
+
+      X = [.805702388463922E+06_dp, .805692129304944E+06_dp, .805673691129311E+06_dp]
+      Y = [.156545533005188E+06_dp, .156584360999117E+06_dp, .156521453008499E+06_dp]
+      Z = reshape([.498469040053414E+00_dp, .496177053725623E+00_dp, .496584955956583E+00_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 1, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 1), "test 7: Shifted point on corner fails")
+
+      X = [.807150922014422E+06_dp, .807172084442607E+06_dp, .807190212633611E+06_dp]
+      Y = [.168781462201362E+06_dp, .168767625702374E+06_dp, .168776505966367E+06_dp]
+      Z = reshape([.805482177954693E-44_dp, .000000000000000E+00_dp, .000000000000000E+00_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 3, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 3), "test 8: Shifted point on corner fails")
+
+      X = [.806776412841201E+06_dp, .806804789960853E+06_dp, .806769927345308E+06_dp]
+      Y = [.149483581166913E+06_dp, .149508431678412E+06_dp, .149506841015623E+06_dp]
+      Z = reshape([.199999999999856E+01_dp, .199999999999973E+01_dp, .199999999999186E+01_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 3, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 3), "test 9: Shifted point on corner fails")
+
+      X = [.807003062711879E+06_dp, .806908248153497E+06_dp, .806945021331757E+06_dp]
+      Y = [.135897014668739E+06_dp, .135946168814630E+06_dp, .135895686424603E+06_dp]
+      Z = reshape([.175707024484946E-24_dp, .152351036487821E-35_dp, .943483555475934E-48_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 1, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 1), "test 10: Shifted point on corner fails")
+
+      X = [.807110951159965E+06_dp, .807063041293978E+06_dp, .807148892744198E+06_dp]
+      Y = [.128259057203519E+06_dp, .128250251604510E+06_dp, .128258617554631E+06_dp]
+      Z = reshape([.833192365649538E-12_dp, .144254615653382E-10_dp, .231139206124284E-12_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 3, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 3), "test 11: Shifted point on corner fails")
+
+      X = [.811601457857964E+06_dp, .811490516351056E+06_dp, .811532845897478E+06_dp]
+      Y = [.171952588549913E+06_dp, .171985485060589E+06_dp, .171943565918315E+06_dp]
+      Z = reshape([.418016988243609E-22_dp, .117676256102526E-23_dp, .296107331970948E-23_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 1, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 1), "test 12: Shifted point on corner fails")
+
+      X = [.806914046291477E+06_dp, .806893441888252E+06_dp, .806926627972404E+06_dp]
+      Y = [.167905985010564E+06_dp, .167907208326401E+06_dp, .167883949377100E+06_dp]
+      Z = reshape([.000000000000000E+00_dp, .317584317488459E-44_dp, .000000000000000E+00_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 1, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 1), "test 13: Shifted point on corner fails")
+
+      X = [.812434846114502E+06_dp, .812518196067187E+06_dp, .812525177297805E+06_dp]
+      Y = [.166909550672643E+06_dp, .166949303495153E+06_dp, .167013146329587E+06_dp]
+      Z = reshape([.284986368376641E-27_dp, .267207958876060E-26_dp, .157397562929726E-26_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 2, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 2), "test 14: Shifted point on corner fails")
+
+      X = [.809436607241510E+06_dp, .809426717373578E+06_dp, .809463567886946E+06_dp]
+      Y = [.191142887944505E+06_dp, .190989535535170E+06_dp, .191044674094134E+06_dp]
+      Z = reshape([.196126584784370E-12_dp, .912131269907617E-13_dp, .536104596867851E-13_dp], [NDIM, 3])
+      call get_point_just_outside_triangle(X, Y, 3, XP, YP)
+      call interpolate_linear_from_triangle(X, Y, Z, NDIM, XP, YP, ZP, JSLO, SLO, wf, dmiss, jsferic)
+      call f90_assert_eq(zp(1), Z(1, 3), "test 15: Shifted point on corner fails")
 
    end subroutine test_interpolate_linear_from_triangle
    !$f90tw)
+
+   !< Helper subroutine to get a point just outside the triangle by shifting a corner point slightly away from the center of mass of the triangle
+   subroutine get_point_just_outside_triangle(X, Y, IDX, XP, YP) bind(C)
+      real(kind=dp), dimension(3), intent(in) :: X !x coordinates of triangle 
+      real(kind=dp), dimension(3), intent(in) :: Y !y coordinates of triangle
+      integer, intent(in) :: IDX !corner of triangle to be shifted outside
+      real(kind=dp), intent(out) :: XP 
+      real(kind=dp), intent(out) :: YP
+
+      real(kind=dp) :: XM !center of mass of triangle in x
+      real(kind=dp) :: YM !center of mass of triangle in y
+      real(kind=dp) :: shift !distance to shift the point
+      real(kind=dp) :: Xshift !x component of shift direction
+      real(kind=dp) :: Yshift !y component of shift direction
+      real(kind=dp) :: norm !norm of the shift direction vector
+
+      shift = 1e-15_dp*max(maxval(abs(X)), maxval(abs(Y)))
+      XM = sum(X) / 3.0_dp
+      YM = sum(Y) / 3.0_dp
+      Xshift = X(IDX) - XM
+      Yshift = Y(IDX) - YM
+      norm = sqrt(Xshift**2 + Yshift**2)        
+      XP = X(IDX) + shift*Xshift/norm
+      YP = Y(IDX) + shift*Yshift/norm
+   end subroutine get_point_just_outside_triangle
+
 
    !$f90tw TESTCODE(TEST, test_ec_module, test_triinterp2_pointcloud_boundary_regression, test_triinterp2_pointcloud_boundary_regression,
    !> Regression test for EC-module triangulation boundary case

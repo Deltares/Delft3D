@@ -1159,7 +1159,7 @@ contains
       real(kind=hp) :: zn
       real(kind=hp) :: sum_weights
 
-      real(kind=hp), parameter :: EPS_BARY = 1.0e-11_hp ! snapping distance to points in the mapped triangle space
+      real(kind=hp), parameter :: EPS_BARY = 1.0e-10_hp ! snapping distance to points in the mapped triangle space
 
       ZP = dmiss
       SLO = dmiss
@@ -1199,6 +1199,20 @@ contains
       wf(1) = 1.0_hp - rlam - rmhu
 
       ZP = wf(1) * Z(:, 1) + wf(2) * Z(:, 2) + wf(3) * Z(:, 3)
+
+      !if (ZP(1) < minval(Z(1, :)) .or. ZP(1) > maxval(Z(1, :))) then
+      !   open(unit=99, file='warning.txt', status='replace', action='write', position='append')
+      !   write(99, *) '!Warning: ZP(1) is outside the bounds of Z(1,:)'
+      !   write(99, '(A,3(ES24.17E3,A))') '      X = [', X(1), '_dp, ', X(2), '_dp, ', X(3), '_dp]'
+      !   write(99, '(A,3(ES24.17E3,A))') '      Y = [', Y(1), '_dp, ', Y(2), '_dp, ', Y(3), '_dp]'
+      !   write(99, '(A,3(ES24.17E3,A))') '      Z = reshape([', Z(1,1), '_dp, ', Z(1,2), '_dp, ', Z(1,3), '_dp], [NDIM, 3])'
+      !   write(99, '(A,2(ES24.17E3,A))') '      XP=', XP, '_dp , YP=', YP, '_dp'
+      !   write(99, '(A,ES24.17E3,A)') '!     ZP(1)=', ZP(1), '_dp'
+      !   write(99, '(A,ES24.17E3,A)') '!     RLAM=', RLAM, '_dp'
+      !   write(99, '(A,ES24.17E3,A)') '!     RMHU=', RMHU, '_dp'
+      !   write(99, '(A,ES24.17E3,A)') '!     1.0_hp - RLAM - RMHU=', 1.0_hp - RLAM - RMHU, '_dp'
+      !   close(99)
+      !end if
 
       if (JSLO == 1) then
          do idim = 1, NDIM
