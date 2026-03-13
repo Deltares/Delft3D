@@ -3,8 +3,10 @@
 
 #include <expected>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace csumo_precice
 {
@@ -17,6 +19,56 @@ namespace csumo_precice
     };
 
     /**
+     * @brief A 2-D coordinate pair (x, y).
+     */
+    struct Point2D
+    {
+            double x{};
+            double y{};
+    };
+
+    /**
+     * @brief Discharge characteristics of a near-field diffuser.
+     *
+     * Corresponds to the &lt;discharge&gt; element inside &lt;data&gt;.
+     */
+    struct Discharge
+    {
+            double m3s{}; ///< Volume flow rate [m³/s] (&lt;M3s&gt;)
+            std::vector<double>
+                constituents; ///< Concentrations: temperature, salinity, sediments, tracers (&lt;constituents&gt;)
+    };
+
+    /**
+     * @brief Settings for a single near-field diffuser.
+     *
+     * Corresponds to one &lt;settings&gt; block in the COSUMO XML.
+     */
+    struct DiffuserSettings
+    {
+            // --- general section ---
+            std::string id;              ///< Diffuser identifier (&lt;ID&gt;)
+            std::string sub_grid_model;  ///< Sub-grid model type (&lt;subGridModel&gt;)
+            std::string far_field_model; ///< Far-field model name (&lt;farFieldModel&gt;)
+
+            // --- data section ---
+            Point2D position; ///< Diffuser position in the flow grid (&lt;XYdiff&gt;)
+            std::vector<Point2D>
+                ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
+            Point2D intake;        ///< Intake location (&lt;XYintake&gt;)
+            Discharge discharge;   ///< Discharge characteristics (&lt;discharge&gt;)
+            double d0{};           ///< Nozzle diameter [m] (&lt;D0&gt;)
+            double h0{};           ///< Height above the bed [m] (&lt;H0&gt;)
+            double theta0{};       ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
+            double sigma0{};       ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
+            std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional)
+
+            // --- comm section ---
+            std::filesystem::path ff2nf_dir;  ///< Directory for FF2NF communication files (&lt;FF2NFdir&gt;)
+            std::filesystem::path ff_run_dir; ///< Far-field model run directory (&lt;FFrundir&gt;)
+    };
+
+    /**
      * @brief Reads C-SUMO settings from a configuration XML file.
      *
      * Expected XML format:
@@ -24,7 +76,24 @@ namespace csumo_precice
      * <?xml version="1.0" encoding="utf-8"?>
      * <COSUMO>
      *   <fileVersion>0.3</fileVersion>
-     *   ...
+     *   <settings>
+     *     <general>
+     *       <ID>Diffusor_1</ID>
+     *       <subGridModel>fixedNFSolution</subGridModel>
+     *       <farFieldModel>Delft3D</farFieldModel>
+     *     </general>
+     *     <comm>
+     *       <FF2NFdir>FF2NF\</FF2NFdir>
+     *       <FFrundir>rundir</FFrundir>
+     *     </comm>
+     *     <data>
+     *       <XYdiff>550.0 350.0</XYdiff>
+     *       <XYambient>823.0 344.8</XYambient>
+     *       <XYintake>567.0 350.0</XYintake>
+     *       <discharge><M3s>10.0</M3s><constituents>10.0 0.0 0.0</constituents></discharge>
+     *       <D0>0.5</D0><H0>3.2</H0><Theta0>15.0</Theta0><Sigma0>180</Sigma0>
+     *     </data>
+     *   </settings>
      * </COSUMO>
      * @endcode
      *
@@ -58,10 +127,16 @@ namespace csumo_precice
              */
             [[nodiscard]] std::string_view fileVersion() const noexcept;
 
+            /**
+             * @brief All diffuser settings blocks read from the XML, in document order.
+             */
+            [[nodiscard]] const std::vector<DiffuserSettings>& diffusers() const noexcept;
+
         private:
-            explicit CSumoSettingsReader(std::string file_version);
+            explicit CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers);
 
             std::string file_version_;
+            std::vector<DiffuserSettings> diffusers_;
     };
 } // namespace csumo_precice
 
