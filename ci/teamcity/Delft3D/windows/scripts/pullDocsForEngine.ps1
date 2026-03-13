@@ -14,13 +14,13 @@ if (-not (Test-Path $BASE_PATH)) {
 
 Push-Location $BASE_PATH
 
-Write-Host "[INFO] Pulling doc.dvc files ONLY from folders starting with f + number (skipping fxxx, c001, e02, etc.)..."
+Write-Host "[INFO] Pulling ALL doc.dvc files under any fNNN folder"
 
 # === DETECTION PHASE ===
 Write-Host "[DETECTION START] Looking for doc.dvc files..."
 $allDocDvc = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
-    $featureDirName = Split-Path (Split-Path $_.FullName -Parent) -Leaf
-    $featureDirName -match '^f\d+' -and $_.FullName -notmatch 'doc\\doc\.dvc'
+    $segments = $_.FullName -split '[\\\/]'
+    $hasGoodFeatureFolder = $segments | Where-Object { $_ -match '^f\d' }
 }
 
 $totalDetected = $allDocDvc.Count
@@ -57,7 +57,7 @@ if ($batch.Count -gt 0) {
     Write-Host "[PULL OK] Final batch $batchCount completed"
 }
 
-Write-Host "[DETECTION END] Total processed: $totalDetected (only f[0-9] folders)"
+Write-Host "[DETECTION END] Total processed: $totalDetected"
 
 # === VERIFICATION PHASE ===
 Write-Host "[VERIFICATION START]"
