@@ -64,7 +64,7 @@ if __name__ == "__main__":
         executor.submit(functools.partial(latex_generator.build, overview_func_doc))
 
         # Generate the individual functionality documents.
-        for func_doc in sorted(engine_dir.glob("f[0-9][0-9]*/doc/functionality_report.tex")):
+        for func_doc in sorted(engine_dir.glob("f*/doc/functionality_report.tex")):
             executor.submit(functools.partial(latex_generator.build, func_doc))
 
     print("\nStart: %s" % start_time)
