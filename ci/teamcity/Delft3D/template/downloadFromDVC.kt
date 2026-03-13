@@ -48,11 +48,11 @@ object TemplateDownloadFromDVC : Template({
                 set "COUNT=0"
                 set "BATCH_COUNT=0"
 
-                for /r %%a in (doc.dvc) do (
-                    echo "%%~a" | findstr /i "f[0-9]" >nul
+                for /r %%%%a in (doc.dvc) do (
+                    echo "%%%%~a" | findstr /i "f[0-9]" >nul
                     if not errorlevel 1 (
                         set /a COUNT+=1
-                        set "BATCH=!BATCH! "%%~a""
+                        set "BATCH=!BATCH! "%%%%~a""
 
                         if !COUNT! equ 100 (
                             set /a BATCH_COUNT+=1
