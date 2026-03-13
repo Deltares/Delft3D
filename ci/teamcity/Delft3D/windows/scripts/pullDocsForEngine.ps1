@@ -18,17 +18,24 @@ Write-Host "[INFO] Pulling engine root doc.dvc + ALL doc.dvc under any fNNN fold
 
 # === DETECTION PHASE ===
 Write-Host "[DETECTION START] Looking for doc.dvc files..."
-$allDocDvc = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
+
+$allDocDvc = @()
+
+# 1. ALWAYS include the root doc.dvc (the one that brings /doc/functionalities/)
+$rootDocDvc = Join-Path $BASE_PATH "doc.dvc"
+if (Test-Path $rootDocDvc) {
+    $allDocDvc += Get-Item $rootDocDvc
+    Write-Host "[ROOT INCLUDED] $rootDocDvc"
+}
+
+# 2. All doc.dvc files under any fNNN folder
+$featureDocs = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
     $fullName = $_.FullName
-
-    $isRootDoc = $fullName -eq (Join-Path $BASE_PATH "doc.dvc")
-
-    # 2. Anything under an fNNN folder
     $segments = $fullName -split '[\\\/]'
     $hasFNNN = $segments | Where-Object { $_ -match '^f\d' }
-
-    $isRootDoc -or $hasFNNN
+    $hasFNNN
 }
+$allDocDvc += $featureDocs
 
 $totalDetected = $allDocDvc.Count
 $batch = @()
