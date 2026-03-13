@@ -43,6 +43,7 @@ object TemplateDownloadFromDVC : Template({
 
                 set "BATCH="
                 set "COUNT=0"
+                set "TOTAL_DETECTED=0"
                 set "BATCH_COUNT=0"
 
                 echo [DETECTION START] Listing every doc.dvc the script sees before any pull:
@@ -50,6 +51,7 @@ object TemplateDownloadFromDVC : Template({
                     echo "%%%%~a" ^| findstr /i "f[0-9]" ^>nul
                     if not errorlevel 1 (
                         echo [DETECTED] %%%%~a
+                        set /a TOTAL_DETECTED+=1
                         set /a COUNT+=1
                         set "BATCH=!BATCH! "%%%%~a""
 
@@ -57,6 +59,7 @@ object TemplateDownloadFromDVC : Template({
                             set /a BATCH_COUNT+=1
                             echo [BATCH !BATCH_COUNT!] Pulling next 100 doc.dvc files...
                             dvc pull !BATCH! || call :report_failure "batch !BATCH_COUNT!"
+                            echo [PULL OK] Batch !BATCH_COUNT! completed successfully
                             set "BATCH="
                             set "COUNT=0"
                         )
@@ -67,9 +70,28 @@ object TemplateDownloadFromDVC : Template({
                     set /a BATCH_COUNT+=1
                     echo [BATCH !BATCH_COUNT!] Pulling remaining files...
                     dvc pull !BATCH! || call :report_failure "final batch !BATCH_COUNT!"
+                    echo [PULL OK] Final batch !BATCH_COUNT! completed successfully
                 )
 
-                echo [DETECTION END] Total detected: !COUNT! doc.dvc files
+                echo [DETECTION END] Total detected: !TOTAL_DETECTED! doc.dvc files
+
+                echo [VERIFICATION START] Final agent check: confirming every detected doc.dvc was actually pulled (doc folder now exists on disk)...
+                set "VERIFIED_COUNT=0"
+                set "MISSING_COUNT=0"
+                for /r %%%%a in (doc.dvc) do (
+                    echo "%%%%~a" ^| findstr /i "f[0-9]" ^>nul
+                    if not errorlevel 1 (
+                        set "DOC_FOLDER=%%%%~dp a doc"
+                        if exist "!DOC_FOLDER!*" (
+                            echo [VERIFIED] %%%%~a → doc folder materialized
+                            set /a VERIFIED_COUNT+=1
+                        ) else (
+                            echo [MISSING] %%%%~a → doc folder NOT materialized
+                            set /a MISSING_COUNT+=1
+                        )
+                    )
+                )
+                echo [VERIFICATION END] Verified: !VERIFIED_COUNT!   Missing: !MISSING_COUNT!
 
                 endlocal
                 popd
