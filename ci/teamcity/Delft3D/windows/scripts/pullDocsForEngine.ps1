@@ -2,34 +2,35 @@ param(
     [string]$EngineDir = $env:engine_dir
 )
 
-Write-Host "=== DVC doc pull started for engine_dir: $EngineDir ==="
+$REPO_ROOT = (Get-Location).Path
+$BASE_PATH = Join-Path $REPO_ROOT "test\deltares_testbench\data\cases\$EngineDir"
 
-$BASE_PATH = "test\deltares_testbench\data\cases\$EngineDir"
+Write-Host "=== DVC doc pull started for engine_dir: $EngineDir ==="
+Write-Host "[DEBUG] REPO_ROOT = $REPO_ROOT"
+Write-Host "[DEBUG] BASE_PATH = $BASE_PATH"
 
 if (-not (Test-Path $BASE_PATH)) {
     Write-Host "[ERROR] Base path not found: $BASE_PATH"
-    "##teamcity[buildProblem description='DVC base path not found: $BASE_PATH' identity='dvc_base_path_missing']"
+    "##teamcity[buildProblem description='DVC base path not found' identity='dvc_base_path_missing']"
     exit 1
 }
 
 Push-Location $BASE_PATH
 
-Write-Host "[INFO] Pulling root doc.dvc (for functionalities/) + all under fNNN folders..."
-Write-Host "[DEBUG] Listing ALL top-level files/folders in engine root (to see if doc.dvc exists):"
-Get-ChildItem $BASE_PATH | Format-Table Name, Length, LastWriteTime
+Write-Host "[DEBUG] Top-level files in engine root:"
+Get-ChildItem . | Format-Table Name, Length, LastWriteTime -AutoSize
 
-# === DETECTION PHASE ===
-Write-Host "[DETECTION START] Looking for doc.dvc files..."
+Write-Host "[INFO] Pulling root doc.dvc (for functionalities/) + all under fNNN folders..."
 
 $allDocDvc = @()
 
-# 1. FORCE root doc.dvc
+# 1. Root doc.dvc (the one that brings /doc/functionalities/)
 $rootDocDvcPath = Join-Path $BASE_PATH "doc.dvc"
 if (Test-Path $rootDocDvcPath) {
     $allDocDvc += Get-Item $rootDocDvcPath
-    Write-Host "[ROOT DOC.DVC FOUND AND INCLUDED] $rootDocDvcPath"
+    Write-Host "[ROOT SUCCESS] doc.dvc included"
 } else {
-    Write-Host "[WARNING] Root doc.dvc STILL NOT FOUND at $rootDocDvcPath"
+    Write-Host "[ROOT MISSING] doc.dvc NOT FOUND - this is why functionalities is missing"
 }
 
 # 2. All doc.dvc under fNNN folders
@@ -59,6 +60,7 @@ foreach ($file in $allDocDvc) {
             "##teamcity[buildProblem description='DVC pull failed: batch $batchCount ($EngineDir)' identity='dvc_pull_batch_$batchCount']"
             exit 1
         }
+        Write-Host "[PULL OK] Batch $batchCount completed"
         $batch = @()
     }
 }
@@ -72,9 +74,10 @@ if ($batch.Count -gt 0) {
         "##teamcity[buildProblem description='DVC pull failed: final batch ($EngineDir)' identity='dvc_pull_final']"
         exit 1
     }
+    Write-Host "[PULL OK] Final batch $batchCount completed"
 }
 
-Write-Host "[DETECTION END] Total processed: $totalDetected (root + fNNN)"
+Write-Host "[DETECTION END] Total processed: $totalDetected"
 
 # === VERIFICATION PHASE ===
 Write-Host "[VERIFICATION START]"
