@@ -81,7 +81,7 @@ object TemplateDownloadFromDVC : Template({
                 for /r %%%%a in (doc.dvc) do (
                     echo "%%%%~a" ^| findstr /i "f[0-9]" ^>nul
                     if not errorlevel 1 (
-                        echo "%%%%~a" ^| findstr /i "\\\\doc\\\\doc\\.dvc" ^>nul
+                        echo "%%%%~a" ^| findstr /i "\\doc\\doc\.dvc" ^>nul
                         if errorlevel 1 (
                             set "DOC_DIR=%%%%~dpa"
                             if exist "!DOC_DIR!doc\\" (
@@ -102,7 +102,7 @@ object TemplateDownloadFromDVC : Template({
 
                 if !MISSING_COUNT! gtr 0 (
                     echo [ERROR] !MISSING_COUNT! doc folders failed to materialize for !ENGINE_DIR!
-                    echo ##teamcity[buildProblem description='!MISSING_COUNT! doc folders failed to materialize (!ENGINE_DIR!)' identity='dvc_missing_folders']
+                    echo ##teamcity[buildProblem description='!MISSING_COUNT! doc folders failed to materialize !ENGINE_DIR!' identity='dvc_missing_folders']
                     exit /b 1
                 )
 
@@ -110,7 +110,7 @@ object TemplateDownloadFromDVC : Template({
 
                 :report_failure
                 echo [ERROR] Failed to pull %%~1
-                echo ##teamcity[buildProblem description='DVC pull failed: %%~1 (!ENGINE_DIR!)' identity='dvc_pull_%%~1_!ENGINE_DIR!']
+                echo ##teamcity[buildProblem description='DVC pull failed: %%~1 !ENGINE_DIR!' identity='dvc_pull_%%~1_!ENGINE_DIR!']
                 exit /b 1
             """.trimIndent()
         }
