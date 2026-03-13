@@ -6,31 +6,26 @@ $REPO_ROOT = (Get-Location).Path
 $BASE_PATH = Join-Path $REPO_ROOT "test\deltares_testbench\data\cases\$EngineDir"
 
 Write-Host "=== DVC doc pull started for engine_dir: $EngineDir ==="
-Write-Host "[DEBUG] REPO_ROOT = $REPO_ROOT"
-Write-Host "[DEBUG] BASE_PATH = $BASE_PATH"
 
 if (-not (Test-Path $BASE_PATH)) {
     Write-Host "[ERROR] Base path not found: $BASE_PATH"
-    "##teamcity[buildProblem description='DVC base path not found' identity='dvc_base_path_missing']"
+    "##teamcity[buildProblem description='DVC base path not found: $BASE_PATH' identity='dvc_base_path_missing']"
     exit 1
 }
 
 Push-Location $BASE_PATH
 
-Write-Host "[DEBUG] Top-level files in engine root:"
-Get-ChildItem . | Format-Table Name, Length, LastWriteTime -AutoSize
-
-Write-Host "[INFO] Pulling root doc.dvc (for functionalities/) + all under fNNN folders..."
+Write-Host "[INFO] Pulling root doc.dvc (brings /doc/functionalities/) + all under fNNN folders..."
 
 $allDocDvc = @()
 
-# 1. Root doc.dvc (the one that brings /doc/functionalities/)
-$rootDocDvcPath = Join-Path $BASE_PATH "doc.dvc"
-if (Test-Path $rootDocDvcPath) {
-    $allDocDvc += Get-Item $rootDocDvcPath
-    Write-Host "[ROOT SUCCESS] doc.dvc included"
+# 1. Root doc.dvc (critical for functionalities/)
+$rootDocDvc = Join-Path $BASE_PATH "doc.dvc"
+if (Test-Path $rootDocDvc) {
+    $allDocDvc += Get-Item $rootDocDvc
+    Write-Host "[ROOT] doc.dvc included"
 } else {
-    Write-Host "[ROOT MISSING] doc.dvc NOT FOUND - this is why functionalities is missing"
+    Write-Host "[WARNING] Root doc.dvc not found on disk"
 }
 
 # 2. All doc.dvc under fNNN folders
@@ -38,8 +33,7 @@ $featureDocs = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
     $fullName = $_.FullName
     if ($fullName -match 'doc\\doc\.dvc$') { return $false }
     $segments = $fullName -split '[\\\/]'
-    $hasFNNN = $segments | Where-Object { $_ -match '^f\d' }
-    $hasFNNN
+    $segments | Where-Object { $_ -match '^f\d' }
 }
 $allDocDvc += $featureDocs
 
@@ -77,7 +71,7 @@ if ($batch.Count -gt 0) {
     Write-Host "[PULL OK] Final batch $batchCount completed"
 }
 
-Write-Host "[DETECTION END] Total processed: $totalDetected"
+Write-Host "[DETECTION END] Total processed: $totalDetected (root + fNNN)"
 
 # === VERIFICATION PHASE ===
 Write-Host "[VERIFICATION START]"
