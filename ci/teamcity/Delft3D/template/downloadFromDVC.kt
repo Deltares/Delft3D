@@ -108,7 +108,7 @@ object TemplateDownloadFromDVC : Template({
                 echo === DVC doc pull completed ===
 
                 if !MISSING_COUNT! gtr 0 (
-                    echo ##teamcity[buildProblem description='!MISSING_COUNT! doc folders failed to materialize (!ENGINE_DIR!)' identity='dvc_missing_folders']
+                    echo ##teamcity[buildProblem description='!MISSING_COUNT! doc folders failed to materialize !ENGINE_DIR!' identity='dvc_missing_folders']
                     exit /b 1
                 )
 
@@ -116,7 +116,7 @@ object TemplateDownloadFromDVC : Template({
 
                 :report_failure
                 echo [ERROR] Failed to pull %%~1
-                echo ##teamcity[buildProblem description='DVC pull failed: %%~1 (!ENGINE_DIR!)' identity='dvc_pull_%%~1_!ENGINE_DIR!']
+                echo ##teamcity[buildProblem description='DVC pull failed: %%~1 !ENGINE_DIR!' identity='dvc_pull_%%~1_!ENGINE_DIR!']
                 exit /b 1
             """.trimIndent()
         }
