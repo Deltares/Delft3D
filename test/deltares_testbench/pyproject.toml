@@ -75,6 +75,7 @@ package = true
 name = "nexus"
 url = "https://artifacts.deltares.nl/repository/python-internal/simple/"
 default = true
+authenticate = "always"
 
 [tool.ruff.format]
 quote-style = "double"
