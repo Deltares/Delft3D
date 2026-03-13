@@ -21,6 +21,7 @@ Write-Host "[DETECTION START] Looking for doc.dvc files..."
 $allDocDvc = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
     $segments = $_.FullName -split '[\\\/]'
     $hasGoodFeatureFolder = $segments | Where-Object { $_ -match '^f\d' }
+    $hasGoodFeatureFolder -and $_.FullName -notmatch 'doc\\doc\.dvc$'
 }
 
 $totalDetected = $allDocDvc.Count
