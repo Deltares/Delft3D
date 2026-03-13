@@ -50,22 +50,18 @@ object TemplateDownloadFromDVC : Template({
                 for /r %%%%a in (doc.dvc) do (
                     echo "%%%%~a" ^| findstr /i "f[0-9]" ^>nul
                     if not errorlevel 1 (
-                        :: Skip nested doc/doc.dvc files (they live inside already-pulled doc\ folders)
-                        echo "%%%%~a" ^| findstr /i "\\\\doc\\\\doc\\.dvc" ^>nul
-                        if errorlevel 1 (
-                            echo [DETECTED] %%%%~a
-                            set /a TOTAL_DETECTED+=1
-                            set /a COUNT+=1
-                            set "BATCH=!BATCH! "%%%%~a""
+                        echo [DETECTED] %%%%~a
+                        set /a TOTAL_DETECTED+=1
+                        set /a COUNT+=1
+                        set "BATCH=!BATCH! "%%%%~a""
 
-                            if !COUNT! equ 100 (
-                                set /a BATCH_COUNT+=1
-                                echo [BATCH !BATCH_COUNT!] Pulling next 100 doc.dvc files...
-                                dvc pull !BATCH! || call :report_failure "batch !BATCH_COUNT!"
-                                echo [PULL OK] Batch !BATCH_COUNT! completed successfully
-                                set "BATCH="
-                                set "COUNT=0"
-                            )
+                        if !COUNT! equ 100 (
+                            set /a BATCH_COUNT+=1
+                            echo [BATCH !BATCH_COUNT!] Pulling next 100 doc.dvc files...
+                            dvc pull !BATCH! || call :report_failure "batch !BATCH_COUNT!"
+                            echo [PULL OK] Batch !BATCH_COUNT! completed successfully
+                            set "BATCH="
+                            set "COUNT=0"
                         )
                     )
                 )
@@ -105,6 +101,7 @@ object TemplateDownloadFromDVC : Template({
                 echo === DVC doc pull completed ===
 
                 if !MISSING_COUNT! gtr 0 (
+                    echo [ERROR] !MISSING_COUNT! doc folders failed to materialize for !ENGINE_DIR!
                     echo ##teamcity[buildProblem description='!MISSING_COUNT! doc folders failed to materialize (!ENGINE_DIR!)' identity='dvc_missing_folders']
                     exit /b 1
                 )
