@@ -70,10 +70,10 @@ foreach ($file in $allDocDvc) {
     Write-Host "[DOC_DIR constructed] $checkPath"
 
     if (Test-Path $checkPath) {
-        Write-Host "[VERIFIED] $($file.FullName) → doc folder materialized"
+        Write-Host "[VERIFIED] $($file.FullName) -> doc folder materialized"
         $verified++
     } else {
-        Write-Host "[MISSING] $($file.FullName) → doc folder NOT materialized"
+        Write-Host "[MISSING] $($file.FullName) -> doc folder NOT materialized"
         $missing++
     }
 }
