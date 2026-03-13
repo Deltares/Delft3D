@@ -37,7 +37,7 @@ object TemplateDownloadFromDVC : Template({
                     exit /b 1
                 )
 
-                pushd "%BASE_PATH%"
+                pushd "%%BASE_PATH%%"
 
                 echo [INFO] Pulling ALL feature doc.dvc files in batches of 100 (to limit memory use)...
 
