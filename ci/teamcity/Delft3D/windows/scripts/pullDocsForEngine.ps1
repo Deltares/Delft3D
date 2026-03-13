@@ -21,14 +21,9 @@ Write-Host "[DETECTION START] Looking for doc.dvc files..."
 $allDocDvc = Get-ChildItem -Recurse -Filter "doc.dvc" | Where-Object {
     $fullName = $_.FullName
 
-    # Skip the weird doc/doc.dvc
-    if ($fullName -match 'doc\\doc\.dvc$') { return $false }
+    $isRootDoc = $fullName -eq (Join-Path $BASE_PATH "doc.dvc")
 
-    # 1. Always include the engine ROOT doc.dvc
-    $parent = Split-Path $fullName -Parent
-    $isRootDoc = $parent -eq $BASE_PATH
-
-    # 2. Or any folder in the path starts with f + digit (f01, f030, f120, etc.)
+    # 2. Anything under an fNNN folder
     $segments = $fullName -split '[\\\/]'
     $hasFNNN = $segments | Where-Object { $_ -match '^f\d' }
 
@@ -69,7 +64,7 @@ if ($batch.Count -gt 0) {
     Write-Host "[PULL OK] Final batch $batchCount completed"
 }
 
-Write-Host "[DETECTION END] Total processed: $totalDetected (root + fNNN folders)"
+Write-Host "[DETECTION END] Total processed: $totalDetected (root doc.dvc + fNNN)"
 
 # === VERIFICATION PHASE ===
 Write-Host "[VERIFICATION START]"
