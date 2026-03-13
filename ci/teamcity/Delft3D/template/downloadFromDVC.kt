@@ -100,8 +100,8 @@ object TemplateDownloadFromDVC : Template({
                 goto :eof
 
                 :report_failure
-                echo [ERROR] Failed to pull %~1
-                echo ##teamcity[buildProblem description='DVC pull failed: %~1 (!ENGINE_DIR!)' identity='dvc_pull_%~1_!ENGINE_DIR!']
+                echo [ERROR] Failed to pull %%~1
+                echo ##teamcity[buildProblem description='DVC pull failed: %%~1 (!ENGINE_DIR!)' identity='dvc_pull_%%~1_!ENGINE_DIR!']
                 goto :eof
             """.trimIndent()
         }
