@@ -10,14 +10,16 @@ namespace csumo_precice
     /**
      * @details Entry point into the C-SUMO preCICE library.
      * @param csumoConfigFileName Path and filename of C-SUMO configuration xml file.
-     * @param preciceConfigFileName Path and filename of preCICE configuration xml file.
+     * @param adapterConfigFileName Path and filename of preCICE adapter configuration file.
      */
-    int csumo_precice(const std::string_view csumoConfigFileName, const std::string_view preciceConfigFileName)
+    int csumo_precice(const std::string_view csumoConfigFileName, const std::string_view adapterConfigFileName)
     {
-        (void)csumoConfigFileName; // Unused parameter, avoid compiler warning
+        (void)csumoConfigFileName;   // Unused parameter, avoid compiler warning
+        (void)adapterConfigFileName; // Unused parameter, avoid compiler warning
+        constexpr std::string_view csumo_config_file = "csumo_config.xml";
         constexpr int mpiRank = 0;
         constexpr int mpiSize = 1;
-        precice::Participant participant{"C-SUMO", preciceConfigFileName, mpiRank, mpiSize};
+        precice::Participant participant{"C-SUMO", csumo_config_file, mpiRank, mpiSize};
         return 0;
     }
 

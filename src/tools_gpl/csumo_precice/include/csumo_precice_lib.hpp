@@ -9,10 +9,10 @@ namespace csumo_precice
      * @brief Entry point into the C-SUMO preCICE library.
      *
      * @param csumoConfigFileName Path and filename of C-SUMO configuration xml file.
-     * @param preciceConfigFileName Path and filename of preCICE configuration xml file.
+     * @param adapterConfigFileName Path and filename of preCICE adapter configuration file.
      * @return int Return 0 on success, non-zero on failure
      */
-    int csumo_precice(const std::string_view csumoConfigFileName, const std::string_view preciceConfigFileName);
+    int csumo_precice(const std::string_view csumoConfigFileName, const std::string_view adapterConfigFileName);
 
     /**
      * @brief Basic function for testing (legacy)

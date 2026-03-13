@@ -12,7 +12,7 @@ namespace po = boost::program_options;
 int main(int argc, char** argv)
 {
     std::string csumoConfigFileName;
-    std::string preciceConfigFileName;
+    std::string adapterConfigFileName;
 
     boost::program_options::options_description description("Options");
     // clang-format off
@@ -21,18 +21,18 @@ int main(int argc, char** argv)
             "Show this help message")
         ("csumo-config-file,c", boost::program_options::value<std::string>(&csumoConfigFileName)->required(),
             "Path and filename of C-SUMO configuration xml file")
-        ("precice-config-file,p", boost::program_options::value<std::string>(&preciceConfigFileName)->default_value("precice_config.xml"),
-            "Path and filename of preCICE configuration xml file");
+        ("adapter-config-file,a", boost::program_options::value<std::string>(&adapterConfigFileName)->default_value("precice_config.xml"),
+            "Path and filename of preCICE adapter configuration file");
     // clang-format on
 
     boost::program_options::positional_options_description positionals;
     positionals.add("csumo-config-file", 1);
-    positionals.add("precice-config-file", 1);
+    positionals.add("adapter-config-file", 1);
 
     const auto usage = [&description] {
         std::ostringstream oss;
-        oss << "Usage: csumo_precice -c <csumoConfigFile> -p <preciceConfigFile> [options]\n"
-            << "       csumo_precice <csumoConfigFile> <preciceConfigFile> [options]\n\n"
+        oss << "Usage: csumo_precice -c <csumoConfigFile> -a <adapterConfigFile> [options]\n"
+            << "       csumo_precice <csumoConfigFile> <adapterConfigFile> [options]\n\n"
             << description << '\n';
         return oss.str();
     }();
@@ -59,5 +59,5 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    return csumo_precice::csumo_precice(csumoConfigFileName, preciceConfigFileName);
+    return csumo_precice::csumo_precice(csumoConfigFileName, adapterConfigFileName);
 }
