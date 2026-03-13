@@ -3,7 +3,7 @@ if(UNIX)
     pkg_check_modules(precice REQUIRED IMPORTED_TARGET libprecice GLOBAL)
     add_library(precice::precice ALIAS PkgConfig::precice)
     find_package(Boost REQUIRED COMPONENTS log log_setup program_options thread GLOBAL)
-    find_package(LibXml2 REQUIRED)
+    find_package(LibXml2 REQUIRED GLOBAL)
     install(FILES
             ${precice_LINK_LIBRARIES}
             ${LIBXML2_LIBRARIES}
@@ -27,7 +27,7 @@ if(WIN32)
     )
     set(Boost_USE_STATIC_LIBS OFF)
     find_package(Boost REQUIRED COMPONENTS log log_setup program_options thread PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../boost/boost_1_90_0/lib/cmake" GLOBAL)
-    find_package(LibXml2 REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../libxml2/libxml2-v2.15.1/lib/cmake/libxml2")
+    find_package(LibXml2 REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../libxml2/libxml2-v2.15.1/lib/cmake/libxml2" GLOBAL)
 
     # Add Boost libraries as public interface link libraries to precice::precice to make them available through TARGET_RUNTIME_DLLS
     target_link_libraries(precice::precice INTERFACE

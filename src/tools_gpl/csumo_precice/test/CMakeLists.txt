@@ -1,5 +1,8 @@
 enable_testing()
-set(source_files test_csumo_precice_lib.cpp)
+set(source_files
+    test_csumo_precice_lib.cpp
+    test_csumo_settings_reader.cpp
+)
 
 add_executable(test_csumo_precice_lib ${source_files})
 

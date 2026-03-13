@@ -11,28 +11,28 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
-    std::string configFileName;
-    std::string solverName;
+    std::string csumoConfigFileName;
+    std::string preciceConfigFileName;
 
     boost::program_options::options_description description("Options");
     // clang-format off
     description.add_options()
         ("help,h",
             "Show this help message")
-        ("config-file,c", boost::program_options::value<std::string>(&configFileName)->required(),
-            "Path and filename of preCICE configuration")
-        ("solver-name,s", boost::program_options::value<std::string>(&solverName)->required(),
-            "Participant name in preCICE configuration");
+        ("csumo-config-file,c", boost::program_options::value<std::string>(&csumoConfigFileName)->required(),
+            "Path and filename of C-SUMO configuration xml file")
+        ("precice-config-file,p", boost::program_options::value<std::string>(&preciceConfigFileName)->default_value("precice_config.xml"),
+            "Path and filename of preCICE configuration xml file");
     // clang-format on
 
     boost::program_options::positional_options_description positionals;
-    positionals.add("config-file", 1);
-    positionals.add("solver-name", 1);
+    positionals.add("csumo-config-file", 1);
+    positionals.add("precice-config-file", 1);
 
     const auto usage = [&description] {
         std::ostringstream oss;
-        oss << "Usage: csumo_precice -c <configFile> -s <solverName> [options]\n"
-            << "       csumo_precice <configFile> <solverName> [options]\n\n"
+        oss << "Usage: csumo_precice -c <csumoConfigFile> -p <preciceConfigFile> [options]\n"
+            << "       csumo_precice <csumoConfigFile> <preciceConfigFile> [options]\n\n"
             << description << '\n';
         return oss.str();
     }();
@@ -59,5 +59,5 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    return csumo_precice::csumo_precice(configFileName, solverName);
+    return csumo_precice::csumo_precice(csumoConfigFileName, preciceConfigFileName);
 }

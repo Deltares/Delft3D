@@ -6,13 +6,13 @@
 namespace csumo_precice
 {
     /**
-     * @brief Run the preCICE solver dummy coupling
+     * @brief Entry point into the C-SUMO preCICE library.
      *
-     * @param configFileName Path to the preCICE configuration file
-     * @param solverName Name of the solver participant
+     * @param csumoConfigFileName Path and filename of C-SUMO configuration xml file.
+     * @param preciceConfigFileName Path and filename of preCICE configuration xml file.
      * @return int Return 0 on success, non-zero on failure
      */
-    int csumo_precice(const std::string_view configFileName, const std::string_view solverName);
+    int csumo_precice(const std::string_view csumoConfigFileName, const std::string_view preciceConfigFileName);
 
     /**
      * @brief Basic function for testing (legacy)

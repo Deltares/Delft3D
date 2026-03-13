@@ -1,11 +1,18 @@
-set(source_files csumo_precice_lib.cpp)
+set(source_files
+    csumo_precice_lib.cpp
+    csumo_settings_reader.cpp
+)
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-set(header_files ${include_dir}/csumo_precice_lib.hpp)
+set(header_files
+    ${include_dir}/csumo_precice_lib.hpp
+    ${include_dir}/csumo_settings_reader.hpp
+)
 
-add_library(csumo_precice_lib ${source_files})
+add_library(csumo_precice_lib ${source_files} ${header_files})
 target_link_libraries(csumo_precice_lib PRIVATE
     compiler_warnings_settings
     PUBLIC precice::precice
+    LibXml2::LibXml2
 )
 target_include_directories(csumo_precice_lib PUBLIC ${include_dir})
 
