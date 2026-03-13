@@ -422,7 +422,7 @@ subroutine set_default_fractions(this)
 end subroutine set_default_fractions
 
 !> Update underlayer bookkeeping system for given erosion/sedimentation flux
-function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, morft, messages) result (istat)
+function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) result (istat)
     use precision
     use message_module, only: message_stack, message_len, addmessage
     implicit none
@@ -435,8 +435,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, morft, messages) res
     type(message_stack)                                                                          :: messages !< message stack
     real(hp)                                                                       , intent(in)  :: morft    !< morphological time [days since reference date]
     real(fp)                                                                       , intent(in)  :: dtmor    !< morphological time step [s]
-    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength   !  length of the dunes, units : m 
-    real(fp)                                                                       , intent(in)  :: hdt          !  half time step
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength   !  length of the dunes, units : m        !  half time step
     real(fp), dimension(this%settings%nmlb:this%settings%nmub, this%settings%nfrac), intent(in)  :: sbot    
     integer                                                                                      :: istat    !< function status
     !
@@ -656,7 +655,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, morft, messages) res
                     thick = thick + thickd
                 else
                     !
-                    ! only erosion … preload and svfrac don’t need updating
+                    ! only erosion ï¿½ preload and svfrac donï¿½t need updating
                     !
                 endif
             endif
@@ -858,7 +857,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, morft, messages) res
              !
              ! retrieve mass to be stored in coarse layer
              !
-             call updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi_crs)
+             call updcrslyr(this, nm, dtmor, sbot, dunelength, thick, dmi_crs)
              !
              do l = 1, this%settings%nfrac
                  msed(l, 1, nm) = msed(l, 1, nm) + dmi_crs(l) 
@@ -947,7 +946,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, morft, messages) res
                 !
                 ! store surplus of mass in underlayers
                 !
-                call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm))
+                call lyrsedimentation(this , nm, thdiff2, dmi, svfrac(2, nm), sdbodsed, td(2, nm))
                 !
              elseif ( thdiff2 < 0.0_fp ) then
                 !
@@ -1748,7 +1747,7 @@ end subroutine lyrerosion
 !
 !
 !==============================================================================
-subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
+subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep, preloaddep, tddep)    
 !!--description-----------------------------------------------------------------
 !
 !    Function:
@@ -2704,7 +2703,7 @@ end subroutine getalluvthick
 !! on the solid volume. This second definition of the volume
 !! fraction is equal to the mass fraction if the specific densities
 !! of all sediment fractions are the same.
-subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, ifracreq,kfrom, kto))
+subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto, ifracreq,kfrom, kto)
     use precision 
     !
     implicit none
@@ -3107,6 +3106,7 @@ subroutine getmfrac(this, frac, nmfrom, nmto, kfrom, kto)
           enddo
        endif
     enddo
+    endselect
 end subroutine getmfrac
 
 

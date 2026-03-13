@@ -70,7 +70,8 @@ contains
                               sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, &
                               ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, &
                               ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, ithresh, &
-                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he
+                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he, &
+                              poros, tcrero_bed, eropar_bed, iconsolidate
    
       if (.not. stm_included) then
          return

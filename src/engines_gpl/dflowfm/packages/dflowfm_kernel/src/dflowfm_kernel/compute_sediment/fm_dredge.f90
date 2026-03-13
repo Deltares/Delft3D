@@ -164,10 +164,10 @@ contains
          if (stmpar%morpar%moroutput%morstats) then
             call morstats(dbodsd)
          end if
-         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy, mtd%messages, -999.0_fp, 0.0_fp) /= 0) then
          dtmor = 0 
          sbtot = 0.0_fp
-         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,bfmpar%dunelength, sbtot, dtmor, mtd%messages) /= 0) then
+         morft = -999.0_fp
+         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,bfmpar%dunelength, sbtot, dtmor, morft, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             error = .true.
             return

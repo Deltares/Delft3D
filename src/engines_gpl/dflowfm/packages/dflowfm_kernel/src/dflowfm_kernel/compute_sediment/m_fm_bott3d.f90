@@ -83,7 +83,7 @@ contains
                              bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, &
                              stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt,&
                              hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy, sedd50, taub, rhosol, &
-                             hidexp
+                             hidexp, iconsolidate
       use m_sediment, only: kcsmor
       use m_partitioninfo, only: jampi, ITYPE_Sall, update_ghosts
       use m_fm_morstatistics, only: morstats, morstatt0
