@@ -1,6 +1,3 @@
-# ci/teamcity/Delft3D/windows/scripts/pullDvcDocs.ps1
-# Called from TeamCity Kotlin template — no recursive dvc pull, safe 40-file batches, full logging
-
 param(
     [string]$EngineDir = $env:engine_dir
 )
@@ -17,7 +14,7 @@ if (-not (Test-Path $BASE_PATH)) {
 
 Push-Location $BASE_PATH
 
-Write-Host "[INFO] Pulling ALL feature doc.dvc files in safe batches of 40..."
+Write-Host "[INFO] Pulling ALL feature doc.dvc files in safe batches of 100..."
 
 # === DETECTION PHASE ===
 Write-Host "[DETECTION START] Listing every doc.dvc the script sees before any pull:"
@@ -33,9 +30,9 @@ foreach ($file in $allDocDvc) {
     Write-Host "[DETECTED] $($file.FullName)"
     $batch += "`"$($file.FullName)`""   # quoted so paths with spaces are safe
 
-    if ($batch.Count -eq 40) {
+    if ($batch.Count -eq 100) {
         $batchCount++
-        Write-Host "[BATCH $batchCount] Pulling next 40 doc.dvc files..."
+        Write-Host "[BATCH $batchCount] Pulling next 100 doc.dvc files..."
         & dvc pull $batch
         if ($LASTEXITCODE -ne 0) { 
             Write-Host "[ERROR] Failed to pull batch $batchCount"
