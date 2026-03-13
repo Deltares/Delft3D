@@ -37,12 +37,9 @@ object TemplateDownloadFromDVC : Template({
                     exit /b 1
                 )
 
-                pushd "%%BASE_PATH%%"
+                pushd "%BASE_PATH%"
 
-                echo [INFO] 1/2 Pulling root doc.dvc ...
-                dvc pull doc.dvc || call :report_failure "root doc.dvc"
-
-                echo [INFO] 2/2 Pulling ONLY feature doc.dvc files in batches of 100 (to limit memory usage)...
+                echo [INFO] Pulling ALL feature doc.dvc files in batches of 100 (to limit memory use)...
 
                 set "BATCH="
                 set "COUNT=0"
