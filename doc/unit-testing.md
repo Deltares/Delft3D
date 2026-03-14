@@ -287,14 +287,14 @@ add_subdirectory(package-2 test_package_2) #package-2 refers to the name of the 
 - Windows: After building the source code, execute ctest in the build directory. Then run ctest followed by the config.
 
 ```bash
-cd build_all
+cd install_all
 ctest -C debug
 ```
 
 - or you can use the `test-dir` flag to point ctest to the directory where the build is.
 
 ```bash
-ctest -C debug --test-dir build_all
+ctest -C debug --test-dir install_all
 ```
 
 ### 2.1 Linux
@@ -302,7 +302,7 @@ ctest -C debug --test-dir build_all
 - Linux: After building the source code, execute ctest in the build directory
 
 ```bash
-cd build_all
+cd install_all
 ctest -C debug
 ```
 

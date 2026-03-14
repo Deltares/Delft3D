@@ -10,7 +10,7 @@ nProc=3
 
 # set DIMR version to be used
 if [ -z "$1" ]; then
-    dimrdir=../../../build_all/lnx64/bin
+    dimrdir=../../../install_all/lnx64/bin
 else
     dimrdir=$1
 fi
