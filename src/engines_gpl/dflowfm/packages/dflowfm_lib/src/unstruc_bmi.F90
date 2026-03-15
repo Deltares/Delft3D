@@ -2452,6 +2452,9 @@ contains
 
       integer :: item_index, k1, constituent_index
       character(len=MAXSTRLEN) :: constituent_name, direction_string
+
+      c_lateral_pointer = c_null_ptr
+
       call getLateralIndex(item_name, item_index)
       if (item_index <= 0) then
          return

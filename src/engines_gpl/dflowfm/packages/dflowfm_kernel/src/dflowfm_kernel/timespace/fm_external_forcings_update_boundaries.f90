@@ -293,7 +293,7 @@ contains
 
       ! Error handling:
 888   continue
-      msgbuf = dumpECMessageStack(LEVEL_WARN, callback_msg)
+      msgbuf = dump_ec_message_stack(LEVEL_WARN, callback_msg)
       iresult = DFM_EXTFORCERROR
       write (msgbuf, '(a,f13.3)') 'Error while updating boundary forcing at time=', time
       call mess(LEVEL_WARN, trim(msgbuf))

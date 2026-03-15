@@ -99,7 +99,7 @@ contains
 
 !> print_error_message
    subroutine print_error_message(time_in_seconds)
-      use m_ec_message, only: dumpECMessageStack
+      use m_ec_message, only: dump_ec_message_stack
       use unstruc_messages, only: callback_msg
       use messagehandling, only: LEVEL_WARN, mess
 
@@ -109,7 +109,7 @@ contains
 
       write (tmpstr, '(f22.11)') time_in_seconds
       call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time='//trim(tmpstr))
-      tmpstr = dumpECMessageStack(LEVEL_WARN, callback_msg)
+      tmpstr = dump_ec_message_stack(LEVEL_WARN, callback_msg)
    end subroutine print_error_message
 
 !> prepare_wind_model_data
