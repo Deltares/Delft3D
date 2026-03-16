@@ -32,7 +32,6 @@ contains
       call read_weir_as_general_structure(general_structure, input_pointer, structure_id, forcing_list, success)
 
       ! Assert
-      ! call f90_expect_eq(success, .true., 'Reading of weir structure input was unsuccessful')
       call f90_expect_eq(general_structure%cgf_pos, expected_cgf_pos, 'Default weir friction coefficient (`cgf_pos`) does not match expected value')
 
    end subroutine test_read_weir_as_general_structure_missing_corrcoeff
