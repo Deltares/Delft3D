@@ -25,12 +25,19 @@ docker login \
     containers.deltares.nl <"${HOME}/.harbor/verschillentool"
 
 # Run verschillentool (all configs).
-find "${VAHOME}/${JSON_CONFIGS_PATH}" -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
-    --volume="${VAHOME}/${MODELS_PATH}:/data/input:ro" \
-    --volume="${VAHOME}/${JSON_CONFIGS_PATH}:/data/config:ro" \
-    --volume="${VAHOME}/reference:/data/reference:ro" \
-    --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
-    containers.deltares.nl/verschillentool/verschillentool:release_v1.1.1  --config "/data/config/$(basename {})" \;
+find "${VAHOME}/${JSON_CONFIGS_PATH}" -type f -name '*.json' -iregex "${MODEL_REGEX}" -print0 |
+    while IFS= read -r -d '' file; do
+        rel_path="${file#${VAHOME}/${JSON_CONFIGS_PATH}}" # strip host prefix
+        rel_path="${rel_path#/}"                          # and leading /
+        docker run \
+            --rm \
+            --volume="${VAHOME}/${MODELS_PATH}:/data/input:ro" \
+            --volume="${VAHOME}/${JSON_CONFIGS_PATH}:/data/config:ro" \
+            --volume="${VAHOME}/reference:/data/reference:ro" \
+            --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
+            containers.deltares.nl/verschillentool/verschillentool:release_v1.1.1 \
+            --config "/data/config/${rel_path}"
+    done
 
 # Use the last part of the REFERENCE_PREFIX as the REFERENCE_TAG
 REFERENCE_TAG="${REFERENCE_PREFIX##*/}"
