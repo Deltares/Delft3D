@@ -1,6 +1,10 @@
 # syntax=containers.deltares.nl/docker-proxy/docker/dockerfile:1.4
 
-FROM containers.deltares.nl/base_linux_containers/8-base:latest AS buildtools
+# note that although the BASE_IMAGE_URL argument allows you to easily change the base image,
+# all the following code assumes that you're running an Alma Linux or compatible environment.
+ARG BASE_IMAGE_URL=containers.deltares.nl/base_linux_containers/8-base:latest
+
+FROM ${BASE_IMAGE_URL} AS buildtools
 
 ARG INTEL_ONEAPI_VERSION=2024
 
