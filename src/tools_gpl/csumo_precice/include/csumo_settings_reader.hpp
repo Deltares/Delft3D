@@ -34,7 +34,7 @@ namespace csumo_precice
      */
     struct Discharge
     {
-            double m3s{}; ///< Volume flow rate [m³/s] (&lt;M3s&gt;)
+            double flow_rate{}; ///< Volume flow rate [m³/s] (&lt;M3s&gt;)
             std::vector<double>
                 constituents; ///< Concentrations: temperature, salinity, sediments, tracers (&lt;constituents&gt;)
     };
@@ -47,9 +47,9 @@ namespace csumo_precice
     struct DiffuserSettings
     {
             // --- general section ---
-            std::string id;              ///< Diffuser identifier (&lt;ID&gt;)
-            std::string sub_grid_model;  ///< Sub-grid model type (&lt;subGridModel&gt;)
-            std::string far_field_model; ///< Far-field model name (&lt;farFieldModel&gt;)
+            std::optional<std::string> id;              ///< Diffuser identifier (&lt;ID&gt;, optional)
+            std::optional<std::string> sub_grid_model;  ///< Sub-grid model type (&lt;subGridModel&gt;, optional)
+            std::optional<std::string> far_field_model; ///< Far-field model name (&lt;farFieldModel&gt;, optional)
 
             // --- data section ---
             Point2D position; ///< Diffuser position in the flow grid (&lt;XYdiff&gt;)
@@ -57,10 +57,10 @@ namespace csumo_precice
                 ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
             Point2D intake;        ///< Intake location (&lt;XYintake&gt;)
             Discharge discharge;   ///< Discharge characteristics (&lt;discharge&gt;)
-            double d0{};           ///< Nozzle diameter [m] (&lt;D0&gt;)
-            double h0{};           ///< Height above the bed [m] (&lt;H0&gt;)
-            double theta0{};       ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
-            double sigma0{};       ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
+            double nozzle_diameter{}; ///< Nozzle diameter [m] (&lt;D0&gt;)
+            double nozzle_elevation{}; ///< Height above the bed [m] (&lt;H0&gt;)
+            double vertical_angle{};  ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
+            double horizontal_angle{}; ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
             std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional)
 
             // --- comm section ---

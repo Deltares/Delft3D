@@ -5,6 +5,8 @@
 #include <string_view>
 #include <vector>
 
+#include "csumo_settings_reader.hpp"
+
 namespace csumo_precice
 {
     /**
@@ -14,7 +16,17 @@ namespace csumo_precice
      */
     int csumo_precice(const std::string_view csumoConfigFileName, const std::string_view adapterConfigFileName)
     {
-        (void)csumoConfigFileName;   // Unused parameter, avoid compiler warning
+        auto expectedCsumoSettings = CSumoSettingsReader::fromFile(csumoConfigFileName);
+
+        if (!expectedCsumoSettings.has_value())
+        {
+            std::println(stderr, "Error parsing C-SUMO configuration: {}", expectedCsumoSettings.error().message);
+            return 1;
+        }
+        const auto csumoSettings = std::move(expectedCsumoSettings).value();
+
+        std::println("Successfully parsed C-SUMO configuration file version: {}", csumoSettings.fileVersion());
+
         (void)adapterConfigFileName; // Unused parameter, avoid compiler warning
         constexpr std::string_view csumo_config_file = "csumo_config.xml";
         constexpr int mpiRank = 0;

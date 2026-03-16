@@ -151,7 +151,7 @@ TEST(CSumoSettingsReaderTest, ParsesDischarge)
     const auto result = csumo_precice::CSumoSettingsReader::fromXml(full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& discharge = result->diffusers().front().discharge;
-    EXPECT_DOUBLE_EQ(discharge.m3s, 10.0);
+    EXPECT_DOUBLE_EQ(discharge.flow_rate, 10.0);
     ASSERT_EQ(discharge.constituents.size(), 3u);
     EXPECT_DOUBLE_EQ(discharge.constituents[0], 10.0);
     EXPECT_DOUBLE_EQ(discharge.constituents[1], 0.0);
@@ -163,10 +163,10 @@ TEST(CSumoSettingsReaderTest, ParsesGeometryParameters)
     const auto result = csumo_precice::CSumoSettingsReader::fromXml(full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& diffuser = result->diffusers().front();
-    EXPECT_DOUBLE_EQ(diffuser.d0, 50000.0);
-    EXPECT_DOUBLE_EQ(diffuser.h0, 3.2);
-    EXPECT_DOUBLE_EQ(diffuser.theta0, 15.0);
-    EXPECT_DOUBLE_EQ(diffuser.sigma0, 180.0);
+    EXPECT_DOUBLE_EQ(diffuser.nozzle_diameter, 50000.0);
+    EXPECT_DOUBLE_EQ(diffuser.nozzle_elevation, 3.2);
+    EXPECT_DOUBLE_EQ(diffuser.vertical_angle, 15.0);
+    EXPECT_DOUBLE_EQ(diffuser.horizontal_angle, 180.0);
 }
 
 TEST(CSumoSettingsReaderTest, ParsesNf2ffFile)

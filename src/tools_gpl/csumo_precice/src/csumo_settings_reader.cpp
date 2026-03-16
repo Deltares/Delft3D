@@ -130,14 +130,15 @@ namespace
         return text;
     }
 
-    std::string optionalChildText(const xmlNodePtr parent, const char* child_name)
+    std::string childText(const xmlNodePtr parent, const char* child_name)
     {
         const xmlNodePtr child = findChild(parent, child_name);
         return child ? nodeText(child) : std::string{};
     }
 
     // Converts an XML path string to a std::filesystem::path, normalizing
-    // backslashes to forward slashes and stripping any trailing separator.
+    // backslashes to forward slashes and stripping any trailing separator,
+    // because the settings XML may contain paths with either forward or backward slashes on either Windows or Unix.
     std::filesystem::path toPath(std::string text)
     {
         std::replace(text.begin(), text.end(), '\\', '/');
@@ -146,7 +147,7 @@ namespace
         return std::filesystem::path(std::move(text));
     }
 
-    std::optional<std::string> optionalChildTextOrNull(const xmlNodePtr parent, const char* child_name)
+    std::optional<std::string> optionalChildText(const xmlNodePtr parent, const char* child_name)
     {
         const xmlNodePtr child = findChild(parent, child_name);
         if (child == nullptr)
@@ -168,7 +169,7 @@ namespace
     std::expected<csumo_precice::Point2D, csumo_precice::ParseError> parseRequiredPoint2D(const xmlNodePtr parent,
                                                                                           const char* element_name)
     {
-        return requiredChildText(parent, element_name).and_then([element_name](const std::string& text) {
+        return requiredChildText(parent, element_name).and_then([element_name](const std::string_view text) {
             return parsePoint2D(text, element_name);
         });
     }
@@ -176,10 +177,40 @@ namespace
     std::expected<double, csumo_precice::ParseError> parseRequiredDouble(const xmlNodePtr parent,
                                                                          const char* element_name)
     {
-        return requiredChildText(parent, element_name).and_then([element_name](const std::string& text) {
+        return requiredChildText(parent, element_name).and_then([element_name](const std::string_view text) {
             return parseDouble(text, element_name);
         });
     }
+
+    // -------------------------------------------------------------------------
+    // Local structs mirroring the XML section hierarchy
+    // -------------------------------------------------------------------------
+
+    struct GeneralSection
+    {
+            std::optional<std::string> id;
+            std::optional<std::string> sub_grid_model;
+            std::optional<std::string> far_field_model;
+    };
+
+    struct DataSection
+    {
+            csumo_precice::Point2D position;
+            std::vector<csumo_precice::Point2D> ambient_positions;
+            csumo_precice::Point2D intake;
+            csumo_precice::Discharge discharge;
+            double nozzle_diameter{};
+            double nozzle_elevation{};
+            double vertical_angle{};
+            double horizontal_angle{};
+            std::optional<std::string> nf2ff_file;
+    };
+
+    struct CommSection
+    {
+            std::filesystem::path ff2nf_dir;
+            std::filesystem::path ff_run_dir;
+    };
 
     // -------------------------------------------------------------------------
     // Section parsers
@@ -213,31 +244,30 @@ namespace
         {
             return std::unexpected(csumo_precice::ParseError{"Required element <discharge> not found in <data>"});
         }
-        return parseRequiredDouble(discharge_node, "M3s").and_then([discharge_node](double m3s) {
-            return parseDoubleVector(optionalChildText(discharge_node, "constituents"), "constituents")
-                .transform([m3s](std::vector<double> constituents) {
-                    return csumo_precice::Discharge{m3s, std::move(constituents)};
+        return parseRequiredDouble(discharge_node, "M3s").and_then([discharge_node](const double flow_rate) {
+            return parseDoubleVector(childText(discharge_node, "constituents"), "constituents")
+                .transform([flow_rate](std::vector<double> constituents) {
+                    return csumo_precice::Discharge{flow_rate, std::move(constituents)};
                 });
         });
     }
 
-    // Fills the general-section fields; returns the settings unchanged if <general> is absent.
-    csumo_precice::DiffuserSettings parseGeneralSection(const xmlNodePtr settings_node,
-                                                        csumo_precice::DiffuserSettings settings)
+    // Returns a GeneralSection; all fields are potentially empty so absence of <general> yields an empty struct.
+    GeneralSection parseGeneralSection(const xmlNodePtr settings_node)
     {
         const xmlNodePtr general_node = findChild(settings_node, "general");
         if (general_node == nullptr)
         {
-            return settings;
+            return {};
         }
-        settings.id = optionalChildText(general_node, "ID");
-        settings.sub_grid_model = optionalChildText(general_node, "subGridModel");
-        settings.far_field_model = optionalChildText(general_node, "farFieldModel");
-        return settings;
+        return GeneralSection{
+            .id = optionalChildText(general_node, "ID"),
+            .sub_grid_model = optionalChildText(general_node, "subGridModel"),
+            .far_field_model = optionalChildText(general_node, "farFieldModel"),
+        };
     }
 
-    std::expected<csumo_precice::DiffuserSettings, csumo_precice::ParseError> parseDataSection(
-        const xmlNodePtr settings_node, csumo_precice::DiffuserSettings settings)
+    std::expected<DataSection, csumo_precice::ParseError> parseDataSection(const xmlNodePtr settings_node)
     {
         const xmlNodePtr data_node = findChild(settings_node, "data");
         if (data_node == nullptr)
@@ -262,44 +292,44 @@ namespace
             return std::unexpected(discharge.error());
         }
 
-        const auto d0 = parseRequiredDouble(data_node, "D0");
-        if (!d0)
+        const auto nozzle_diameter = parseRequiredDouble(data_node, "D0");
+        if (!nozzle_diameter)
         {
-            return std::unexpected(d0.error());
+            return std::unexpected(nozzle_diameter.error());
         }
 
-        const auto h0 = parseRequiredDouble(data_node, "H0");
-        if (!h0)
+        const auto nozzle_elevation = parseRequiredDouble(data_node, "H0");
+        if (!nozzle_elevation)
         {
-            return std::unexpected(h0.error());
+            return std::unexpected(nozzle_elevation.error());
         }
 
-        const auto theta0 = parseRequiredDouble(data_node, "Theta0");
-        if (!theta0)
+        const auto vertical_angle = parseRequiredDouble(data_node, "Theta0");
+        if (!vertical_angle)
         {
-            return std::unexpected(theta0.error());
+            return std::unexpected(vertical_angle.error());
         }
 
-        const auto sigma0 = parseRequiredDouble(data_node, "Sigma0");
-        if (!sigma0)
+        const auto horizontal_angle = parseRequiredDouble(data_node, "Sigma0");
+        if (!horizontal_angle)
         {
-            return std::unexpected(sigma0.error());
+            return std::unexpected(horizontal_angle.error());
         }
 
-        settings.position = *position;
-        settings.ambient_positions = parseAmbientPoints(data_node);
-        settings.intake = *intakePoint;
-        settings.discharge = std::move(*discharge);
-        settings.d0 = *d0;
-        settings.h0 = *h0;
-        settings.theta0 = *theta0;
-        settings.sigma0 = *sigma0;
-        settings.nf2ff_file = optionalChildTextOrNull(data_node, "NF2FFFile");
-        return settings;
+        return DataSection{
+            .position = *position,
+            .ambient_positions = parseAmbientPoints(data_node),
+            .intake = *intakePoint,
+            .discharge = std::move(*discharge),
+            .nozzle_diameter = *nozzle_diameter,
+            .nozzle_elevation = *nozzle_elevation,
+            .vertical_angle = *vertical_angle,
+            .horizontal_angle = *horizontal_angle,
+            .nf2ff_file = optionalChildText(data_node, "NF2FFFile"),
+        };
     }
 
-    std::expected<csumo_precice::DiffuserSettings, csumo_precice::ParseError> parseCommSection(
-        const xmlNodePtr settings_node, csumo_precice::DiffuserSettings settings)
+    std::expected<CommSection, csumo_precice::ParseError> parseCommSection(const xmlNodePtr settings_node)
     {
         const xmlNodePtr comm_node = findChild(settings_node, "comm");
         if (comm_node == nullptr)
@@ -318,26 +348,50 @@ namespace
             return std::unexpected(ff_run_dir.error());
         }
 
-        settings.ff2nf_dir = toPath(std::move(*ff2nf_dir));
-        settings.ff_run_dir = toPath(std::move(*ff_run_dir));
-        return settings;
+        return CommSection{
+            .ff2nf_dir = toPath(std::move(*ff2nf_dir)),
+            .ff_run_dir = toPath(std::move(*ff_run_dir)),
+        };
     }
 
     std::expected<csumo_precice::DiffuserSettings, csumo_precice::ParseError> parseOneDiffuser(
         const xmlNodePtr settings_node)
     {
-        csumo_precice::DiffuserSettings partial = parseGeneralSection(settings_node, {});
-        return parseDataSection(settings_node, std::move(partial))
-            .and_then([settings_node](csumo_precice::DiffuserSettings settings) {
-                return parseCommSection(settings_node, std::move(settings));
-            });
+        const GeneralSection general = parseGeneralSection(settings_node);
+
+        auto onData =
+            [settings_node,
+             &general](DataSection data) -> std::expected<csumo_precice::DiffuserSettings, csumo_precice::ParseError> {
+            auto onComm = [&general,
+                           data = std::move(data)](CommSection comm) mutable -> csumo_precice::DiffuserSettings {
+                return csumo_precice::DiffuserSettings{
+                    .id = general.id,
+                    .sub_grid_model = general.sub_grid_model,
+                    .far_field_model = general.far_field_model,
+                    .position = data.position,
+                    .ambient_positions = std::move(data.ambient_positions),
+                    .intake = data.intake,
+                    .discharge = std::move(data.discharge),
+                    .nozzle_diameter = data.nozzle_diameter,
+                    .nozzle_elevation = data.nozzle_elevation,
+                    .vertical_angle = data.vertical_angle,
+                    .horizontal_angle = data.horizontal_angle,
+                    .nf2ff_file = std::move(data.nf2ff_file),
+                    .ff2nf_dir = std::move(comm.ff2nf_dir),
+                    .ff_run_dir = std::move(comm.ff_run_dir),
+                };
+            };
+            return parseCommSection(settings_node).transform(std::move(onComm));
+        };
+
+        return parseDataSection(settings_node).and_then(std::move(onData));
     }
 
     // -------------------------------------------------------------------------
     // Top-level document parsers
     // -------------------------------------------------------------------------
 
-    std::expected<XmlDocPtr, csumo_precice::ParseError> parseDocument(std::string_view xml)
+    std::expected<XmlDocPtr, csumo_precice::ParseError> parseDocument(const std::string_view xml)
     {
         XmlDocPtr doc{xmlReadMemory(xml.data(), static_cast<int>(xml.size()), nullptr, nullptr, 0), xmlFreeDoc};
         if (!doc)
@@ -408,10 +462,10 @@ namespace csumo_precice
         return fromXml(buffer.str());
     }
 
-    std::expected<CSumoSettingsReader, ParseError> CSumoSettingsReader::fromXml(std::string_view xml)
+    std::expected<CSumoSettingsReader, ParseError> CSumoSettingsReader::fromXml(const std::string_view xml)
     {
         return parseDocument(xml).and_then([](const XmlDocPtr doc) {
-            return validateRoot(doc.get()).and_then([&doc](const xmlNodePtr root) {
+            return validateRoot(doc.get()).and_then([](const xmlNodePtr root) {
                 return parseFileVersion(root).and_then([root](std::string version) {
                     return parseAllDiffusers(root).transform(
                         [version = std::move(version)](std::vector<DiffuserSettings> diffusers) mutable {
