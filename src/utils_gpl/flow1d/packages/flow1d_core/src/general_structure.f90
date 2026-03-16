@@ -39,14 +39,14 @@ module m_general_structure
    private
 
    ! Publics
-   public :: EXTRA_RESISTANCE_GENERAL_STRUCTURE
-   public :: GATE_FRACTION_EPS
+   public EXTRA_RESISTANCE_GENERAL_STRUCTURE
+   public GATE_FRACTION_EPS
    
-   public :: GEN_SYMMETRIC
-   public :: GEN_FROMLEFT
-   public :: GEN_FROMRIGHT
+   public GEN_SYMMETRIC
+   public GEN_FROMLEFT
+   public GEN_FROMRIGHT
 
-   public :: t_GeneralStructure
+   public t_GeneralStructure
 
    public compute_general_structure
    public dealloc
