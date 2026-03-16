@@ -79,6 +79,7 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     integer                                  :: istat
     integer                                  :: ndomains ! number of DD domains or MPI partitions
     real(fp)                                 :: hdtmor
+    real(fp)                                 :: morft   
 
 ! Struiksma Hirano merge
     real(fp), dimension(:)  , allocatable  :: dunelength  
@@ -130,7 +131,7 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
        dunelength = 1.0e10_fp !A very large dune length causes the flux to be negligible. 
        !
        hdtmor    = 0.0_fp
-       morft = -999.0_hp
+       morft = -999.0_hp 
        if (gdmorpar%moroutput%morstats) then
            call morstats(gderosed, gdmorpar, dbodsd, nmlb, nmub, lsedtot)
        endif   
