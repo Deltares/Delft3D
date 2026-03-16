@@ -1067,7 +1067,7 @@ contains
             end if
 
             if (closedGateWidthR > 0.0_dp) then
-               help = min (wu(Lf), closedGateWidthR)
+               help = min(wu(Lf), closedGateWidthR)
                closedGateWidthR = closedGateWidthR - help
          
                if (wu(Lf) > 0.0_dp) then

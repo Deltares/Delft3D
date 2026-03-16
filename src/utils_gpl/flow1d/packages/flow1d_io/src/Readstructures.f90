@@ -54,6 +54,7 @@ module m_readstructures
    public readDambreak
    public allowedFlowDirtoInt
    public get_value_or_addto_forcinglist
+   public read_weir_as_general_structure
 
    !> The file version number of the structure file format: d.dd, [config_major].[config_minor], e.g., 1.03
    !!
@@ -277,7 +278,7 @@ contains
             select case (iStrucType)
             case (ST_WEIR)
                ! support for version >= 2.0 structure files weirs as general structure
-               call readWeirAsGenstru(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
+               call read_weir_as_general_structure(pstru%generalst, md_ptr%child_nodes(i)%node_ptr, st_id, network%forcinglist, success)
             case (ST_UNI_WEIR)
                call readUniversalWeir(pstru%uniweir, md_ptr%child_nodes(i)%node_ptr, st_id, success)
             case (ST_CULVERT)
@@ -1107,7 +1108,7 @@ contains
 
    !> Read the weir parameters and define a general structure.
    !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
-   subroutine readWeirAsGenStru(generalst, md_ptr, st_id, forcinglist, success)
+   subroutine read_weir_as_general_structure(generalst, md_ptr, st_id, forcinglist, success)
 
       use messageHandling
 
@@ -1130,7 +1131,9 @@ contains
       success = success .and. check_input_result(success1, st_id, 'crestLevel')
 
       generalst%cgf_pos = 1.0_dp
-      if (success) call prop_get(md_ptr, '', 'corrCoeff', generalst%cgf_pos)
+      if (success) then
+         call prop_get(md_ptr, '', 'corrCoeff', generalst%cgf_pos)
+      end if
 
       generalst%velheight = .true.
       call prop_get(md_ptr, '', 'useVelocityHeight', generalst%velheight)
@@ -1165,7 +1168,7 @@ contains
       generalst%crestlength = 0.0_dp
       generalst%openingDirection = GEN_SYMMETRIC
 
-   end subroutine readWeirAsGenStru
+   end subroutine read_weir_as_general_structure
 
    !> Read the orifice or gate parameters and define a general structure.
    !! The common fields for the structure (e.g. branchId) must have been read elsewhere.
