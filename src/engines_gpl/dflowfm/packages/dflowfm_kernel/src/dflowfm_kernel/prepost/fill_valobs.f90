@@ -133,7 +133,7 @@ contains
          ! Allocate as 2D aray, determine wet,1, or dry, 0
          call realloc(wetordry, ndx, keepExisting=.false., fill=1)
          do k = 1, ndx
-             if (water_depth(k) < 0.10) wetordry(k) = 0
+             if (water_depth(k) < 0.10_dp) wetordry(k) = 0
          end do
       end if
       

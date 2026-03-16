@@ -1232,15 +1232,6 @@ contains
       allocate (valuesT(maxlay * n_data), stat=istat)
       valuesT = ec_undef_hp
       
-      ! TK_Temp: If either values at T0 or T1 is not defined, set them both to undefined
-      if (all(valuesT0 == dmiss)) then 
-          valuesT1 = dmiss 
-      end if
-      if (all(valuesT1 == dmiss)) then 
-          valuesT0 = dmiss 
-      end if
-           
-      
       if (connection%converterPtr%interpolationType == interpolate_passthrough) then
          !
          ! ===== block function (no interpolation in time) =====
@@ -1261,32 +1252,37 @@ contains
          !
          ! ===== interpolation in time =====
          !
-         if (.not. connection%sourceItemsPtr(1)%ptr%quantityptr%constant) then
-            select case (connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
-            case (timeint_lin, timeint_lin_extrapol, timeint_rainfall)
-               ! linear interpolation in time
-               call time_weight_factors(a0, a1, timesteps, t0, t1, &
-                                        timeint=connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
-            case (timeint_bto)
-               a0 = 0.0_dp
-               a1 = 1.0_dp
-            case (timeint_bfrom)
-               a0 = 1.0_dp
-               a1 = 0.0_dp
-            end select
-            !
-            do i = 1, size(valuesT0, dim=1)
-               ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
-               valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
-            end do
-         else
-            do i = 1, size(valuesT0, dim=1)
-               ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
-               valuesT(i) = valuesT0(i)
-            end do
+         ! Only interpolate if both T0 and T1 contain at least 1 valid value, else set valuesT to dmiss
+         if (all(valuesT0 == dmiss) .or.  all(valuesT1 == dmiss)) then
+             valuesT = dmiss
+         else    
+            if (.not. connection%sourceItemsPtr(1)%ptr%quantityptr%constant) then
+               select case (connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
+               case (timeint_lin, timeint_lin_extrapol, timeint_rainfall)
+                  ! linear interpolation in time
+                  call time_weight_factors(a0, a1, timesteps, t0, t1, &
+                                           timeint=connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
+               case (timeint_bto)
+                  a0 = 0.0_dp
+                  a1 = 1.0_dp
+               case (timeint_bfrom)
+                  a0 = 1.0_dp
+                  a1 = 0.0_dp
+               end select
+               !
+               do i = 1, size(valuesT0, dim=1)
+                  ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
+                  valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
+               end do
+            else
+               do i = 1, size(valuesT0, dim=1)
+                  ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
+                  valuesT(i) = valuesT0(i)
+               end do
+            end if
          end if
       end if
-
+      
       select case (connection%converterPtr%interpolationType)
       case (interpolate_passthrough, interpolate_timespace)
          ! ===== operation =====
@@ -1655,7 +1651,6 @@ contains
       !! meteo1 : polyint
    function ecConverterPolytim(connection, timesteps) result(success)
       use m_ec_elementset, only: ecElementSetGetAbsZ
-      use m_ec_parameters, only: ec_undef_hp
       use m_missing,       only: dmiss
       use m_ec_message
       logical :: success !< function status
@@ -1757,16 +1752,20 @@ contains
             if (kL > 0) then
                kbeginL = vectormax * maxlay_src * (kL - 1) +  1! refers to source right column
                kendL   = kbeginL + vectormax*maxlay_src - 1  
-               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginL:kendL) == missing) ) then
+               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginL:kendL) == dmiss) ) then
                   kL = 0
+                  wR = 1.0_dp
+                  wL = 0.0_dp
                end if
             end if
            ! TK_Temp: Right side
            if (kR > 0) then
                kbeginR = vectormax * maxlay_src * (kR - 1) +  1! refers to source right column
                kendR   = kbeginR + vectormax*maxlay_src -1  
-               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginR:kendR) == missing) ) then
+               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginR:kendR) == dmiss ) ) then
                   kR = 0
+                  wR = 0.0_dp
+                  wL = 1.0_dp
                end if
             end if
             
@@ -1779,11 +1778,9 @@ contains
                   ! deal with one-sided interpolation
                   if (kL == 0 .and. kR /= 0) then
                      kL = kR
-                     wL = 0.0_dp
                   end if
                   if (kR == 0 .and. kL /= 0) then
                      kR = kL
-                     wR = 0.0_dp
                  end if
                      
                   if (kL > 0) then
