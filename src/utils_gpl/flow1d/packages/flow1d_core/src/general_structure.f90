@@ -133,7 +133,7 @@ contains
       integer,                           intent(in   ) :: direction           !< Orientation of flow link w.r.t. the structure. (1 for same direction, -1 for reverse.)
       integer,                           intent(in   ) :: L0                  !< Local link index.
       real(kind=dp),                     intent(inout) :: maxWidth            !< Maximal width of the structure. Normally the the width of the flow link.
-      real(kind=dp), dimension(2)        intent(in   ) :: bob0                !< Bed level of channel upstream and downstream of the structure.
+      real(kind=dp), dimension(2),       intent(in   ) :: bob0                !< Bed level of channel upstream and downstream of the structure.
       real(kind=dp),                     intent(  out) :: fuL                 !< fu component of momentum equation.
       real(kind=dp),                     intent(  out) :: ruL                 !< Right hand side component of momentum equation.
       real(kind=dp),                     intent(inout) :: auL                 !< Flow area of structure opening.
