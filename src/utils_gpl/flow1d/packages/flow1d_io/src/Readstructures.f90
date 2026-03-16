@@ -1129,7 +1129,7 @@ contains
       call get_value_or_addto_forcinglist(md_ptr, 'crestLevel', generalst%zs, st_id, ST_WEIR, forcinglist, success1)
       success = success .and. check_input_result(success1, st_id, 'crestLevel')
 
-      generalst%mugf_pos = 1.0_dp
+      generalst%cgf_pos = 1.0_dp
       if (success) call prop_get(md_ptr, '', 'corrCoeff', generalst%cgf_pos)
 
       generalst%velheight = .true.
