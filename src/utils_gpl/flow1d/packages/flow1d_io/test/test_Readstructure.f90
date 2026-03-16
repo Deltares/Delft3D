@@ -16,12 +16,12 @@ contains
       use tree_structures, only: tree_data
 
       ! Local variables
-      type(t_GeneralStructure), pointer :: general_structure
+      type(t_GeneralStructure), pointer :: general_structure !< Pointer to the general structure to be filled by the subroutine
       type(tree_data), pointer :: input_pointer !< Pointer to the user input tree data
-      character(len=256) :: structure_id
-      type(t_forcingList) :: forcing_list
-      logical :: success
-      real(kind=dp) :: expected_cgf_pos
+      character(len=256) :: structure_id !< Structure ID to read
+      type(t_forcingList) :: forcing_list !< Forcing list (not used in this test, but required by the subroutine)
+      logical :: success !< Flag indicating whether the reading was successful
+      real(kind=dp) :: expected_cgf_pos !< Expected default friction coefficient value for the weir structure
 
       ! Set up
       expected_cgf_pos = 1.0_dp
