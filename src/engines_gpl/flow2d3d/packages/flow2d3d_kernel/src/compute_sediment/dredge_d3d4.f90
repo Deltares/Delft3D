@@ -79,7 +79,7 @@ subroutine dredge_d3d4(dps, s1, timhr, nst, gdp)
     integer                                  :: istat
     integer                                  :: ndomains ! number of DD domains or MPI partitions
     real(fp)                                 :: hdtmor
-    real(fp)                                 :: morft   
+    real(hp)                                 :: morft   
 
 ! Struiksma Hirano merge
     real(fp), dimension(:)  , allocatable  :: dunelength  
