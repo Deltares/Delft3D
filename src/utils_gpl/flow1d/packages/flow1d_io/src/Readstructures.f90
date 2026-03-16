@@ -39,7 +39,7 @@ module m_readstructures
    use m_Culvert
    use m_Bridge
    use m_pump
-   use m_General_Structure
+   use m_general_structure
 
    use properties
    use m_hash_search
