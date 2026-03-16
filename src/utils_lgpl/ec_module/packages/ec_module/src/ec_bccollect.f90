@@ -416,7 +416,7 @@ module m_ec_bccollect
                   case ('ASTRONOMIC')
                      bc%func = BC_FUNC_ASTRO
                   case default
-                     call setECMessage("Unknown function """//trim(hdrvals(ifld))//"""")
+                     call set_ec_message("Unknown function """//trim(hdrvals(ifld))//"""")
                   return
                end select 
           case ('OFFSET')                           
