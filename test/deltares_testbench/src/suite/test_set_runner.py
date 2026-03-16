@@ -152,10 +152,19 @@ class TestSetRunner(ABC):
         config_process_count = sum(config.process_count for config in self.__settings.configs_to_run)
         max_processes = min(config_process_count, multiprocessing.cpu_count())
 
-        self.__logger.info(f"Creating {max_processes} processes to run test cases on.")
+        # Size the pool to the max number of tests that can run concurrently.
+        # Each test spawns external processes (MPI launchers + rank processes),
+        # so creating more pool workers than concurrent tests wastes OS resources
+        # and can exhaust MPI shared memory on Windows.
+        max_process_count = max(config.process_count for config in self.__settings.configs_to_run)
+        pool_size = max(1, min(max_processes // max_process_count, n_testcases))
+
+        self.__logger.info(
+            f"Creating pool of {pool_size} workers to run test cases " f"(max {max_processes} concurrent processes)."
+        )
         process_manager = multiprocessing.Manager()
 
-        with multiprocessing.Pool(processes=max_processes) as pool:
+        with multiprocessing.Pool(processes=pool_size) as pool:
             self.finished_tests = 0
 
             result_futures: List[AsyncResult] = []
