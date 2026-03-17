@@ -985,6 +985,7 @@ contains
       
 
       character(len=INI_VALUE_LEN) :: location_file
+      character(len=INI_VALUE_LEN) :: sourcesink_id
 
       integer :: num_coordinates
       integer :: ierr
@@ -1054,8 +1055,8 @@ contains
          call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
          if (is_read) then
             if (num_coordinates <= 0) then
-               !write (msgbuf, '(a)') 'SourceSink ''' // trim(sourcesink_id) // ''': numCoordinates must be greater than 0.'
-               write (msgbuf, '(a)') 'numCoordinates must be greater than 0.'
+               call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
+               write (msgbuf, '(a)') 'SourceSink ''' // trim(sourcesink_id) // ''': numCoordinates must be greater than 0.'
                call err_flush()
                return
             end if

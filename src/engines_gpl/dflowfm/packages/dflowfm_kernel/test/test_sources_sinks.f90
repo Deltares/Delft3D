@@ -6,33 +6,13 @@ module test_sources_sinks
    use MessageHandling, only: popLastMessage, LEVEL_ERROR, resetMessageCount_MH
    use precision_basics, only: dp
    use m_missing, only: dmiss
+   use m_file_helpers, only: create_file
 
    implicit none
 
    character(len=*), parameter :: EXT_FILENAME = "sourcesinks.ext"
 
 contains
-
-   ! Create a file with the specified name and content. If the file already exists it will be replaced.
-   subroutine create_file(file_name, lines)
-      implicit none
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: lines(:)
-      integer :: error_code, i, file_lun
-      open (newunit=file_lun, file=file_name, status='replace', action='write', &
-            form='formatted', iostat=error_code)
-      if (error_code /= 0) then
-         error stop "Failed to open file "//trim(file_name)
-      end if
-      do i = 1, size(lines)
-         write (file_lun, '(A)', iostat=error_code) trim(lines(i))
-         if (error_code /= 0) then
-            close (file_lun)
-            error stop "Failed to write to file "//trim(file_name)
-         end if
-      end do
-      close (file_lun)
-   end subroutine create_file
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_polyline_file_missing, test_polyline_file_missing,
    subroutine test_polyline_file_missing() bind(C)
@@ -334,7 +314,7 @@ contains
 
       call create_file("my_polyline.pliz", [ &
                        "L1", &
-                       "3 4", &
+                       "3 5", &
                        "25.0 5.0 -11.5 -10.0 0", &
                        "7.0 11.0 0.0 0.0 0", &
                        "17.0 9.0 -7.5 -6.0 0"])

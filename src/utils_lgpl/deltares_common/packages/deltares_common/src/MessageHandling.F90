@@ -454,7 +454,7 @@ subroutine popLastMessage(level, msg)
    integer,          intent(out) :: level !< Level of the message.
    character(len=*), intent(out) :: msg   !< Message text.
 
-   integer itrimlen
+   integer :: itrimlen
 
    if (messagecount == 0) then
       level = LEVEL_NONE
@@ -471,7 +471,6 @@ end subroutine popLastMessage
 
 
 !> Returns the number of messages that are still in the message buffer queue.
-!! Note: it is advised to use popLastMessage to pop messages from the queue.
 integer function getMessageCount()
    getMessageCount = messagecount
 end function
