@@ -111,7 +111,7 @@ module MessageHandling
    public mess
    public err
    public GetMessage_MH
-   public popLastMessage
+   public getLastMessage
    public resetMessageCount_MH
    public getMaxErrorLevel
    public resetMaxerrorLevel
@@ -448,9 +448,9 @@ subroutine pushMessage(level, string)
 end subroutine pushMessage
 
 
-!> Pops the most recently added message from the message queue.
+!> Returns the most recently added message in the message queue.
 !! When the message queue is empty, level=LEVEL_NONE is returned.
-subroutine popLastMessage(level, msg)
+subroutine getLastMessage(level, msg)
    integer,          intent(out) :: level !< Level of the message.
    character(len=*), intent(out) :: msg   !< Message text.
 
@@ -466,8 +466,7 @@ subroutine popLastMessage(level, msg)
 
    msg   = messages(ibuffertail)(1:itrimlen)
    level = levels(ibuffertail)
-   messagecount = messagecount-1
-end subroutine popLastMessage
+end subroutine getLastMessage
 
 
 !> Returns the number of messages that are still in the message buffer queue.

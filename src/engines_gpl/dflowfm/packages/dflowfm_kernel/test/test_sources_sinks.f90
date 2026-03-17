@@ -3,7 +3,7 @@ module test_sources_sinks
    use fm_external_forcings, only: sourcesink_parse_coordinates
    use tree_structures, only: tree_data, tree_create
    use properties, only: prop_inifile
-   use MessageHandling, only: popLastMessage, LEVEL_ERROR, resetMessageCount_MH
+   use MessageHandling, only: getLastMessage, LEVEL_ERROR, resetMessageCount_MH
    use precision_basics, only: dp
    use m_missing, only: dmiss
    use m_file_helpers, only: create_file
@@ -52,7 +52,7 @@ contains
       success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       call f90_assert_false(success)
       
-      call popLastMessage(error_level, error_message)
+      call getLastMessage(error_level, error_message)
       call f90_expect_eq(error_level, LEVEL_ERROR)
       call f90_expect_true(error_message == "Error in source sink initialization, failed to read polyline file 'this_file_does_not_exist.pliz'")
 
@@ -105,7 +105,7 @@ contains
       success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       call f90_assert_false(success)
 
-      call popLastMessage(error_level, error_message)
+      call getLastMessage(error_level, error_message)
       call f90_expect_eq(error_level, LEVEL_ERROR)
       call f90_expect_true(error_message == "Error in source sink initialization, source/sink z information cannot be specified bothin the ext file and in the polyline file. Make sure the polyline file only contains x and y columns")
    end subroutine test_double_z_data_specification
@@ -377,9 +377,9 @@ contains
                        "[SourceSink]", &
                        "id             = left", &
                        "name           = cool_name", &
-                       "numCoordinates = 1", &
-                       "xCoordinates   = 25.0", &
-                       "yCoordinates   = 5.0", &
+                       "numCoordinates = 2", &
+                       "xCoordinates   = 25.0 26.0", &
+                       "yCoordinates   = 5.0 6.0", &
                        "zSource        = -7.5", &
                        "zSink          = -13.5", &
                        "Area           = 0.0", &
@@ -393,11 +393,13 @@ contains
       success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       call f90_assert_true(success)
 
-      call f90_assert_eq(size(x_coordinates), 1)
+      call f90_assert_eq(size(x_coordinates), 2)
       call f90_expect_eq(x_coordinates(1), 25.0_dp)
+      call f90_expect_eq(x_coordinates(2), 26.0_dp)
 
-      call f90_assert_eq(size(y_coordinates), 1)
+      call f90_assert_eq(size(y_coordinates), 2)
       call f90_expect_eq(y_coordinates(1), 5.0_dp)
+      call f90_expect_eq(y_coordinates(2), 6.0_dp)
 
       call f90_assert_eq(size(z_range_source), 2)
       call f90_expect_eq(z_range_source(1), -7.5_dp)
@@ -430,9 +432,9 @@ contains
                        "[SourceSink]", &
                        "id             = left", &
                        "name           = cool_name", &
-                       "numCoordinates = 1", &
-                       "xCoordinates   = 25.0", &
-                       "yCoordinates   = 5.0", &
+                       "numCoordinates = 2", &
+                       "xCoordinates   = 25.0 26.0", &
+                       "yCoordinates   = 5.0 6.0", &
                        "zSource        = -7.5 -3.0", &
                        "zSink          = -10.0 -6.0", &
                        "Area           = 0.0", &
@@ -446,11 +448,13 @@ contains
       success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       call f90_assert_true(success)
 
-      call f90_assert_eq(size(x_coordinates), 1)
+      call f90_assert_eq(size(x_coordinates), 2)
       call f90_expect_eq(x_coordinates(1), 25.0_dp)
+      call f90_expect_eq(x_coordinates(2), 26.0_dp)
 
-      call f90_assert_eq(size(y_coordinates), 1)
+      call f90_assert_eq(size(y_coordinates), 2)
       call f90_expect_eq(y_coordinates(1), 5.0_dp)
+      call f90_expect_eq(y_coordinates(2), 6.0_dp)
 
       call f90_assert_eq(size(z_range_source), 2)
       call f90_expect_eq(z_range_source(1), -7.5_dp)
