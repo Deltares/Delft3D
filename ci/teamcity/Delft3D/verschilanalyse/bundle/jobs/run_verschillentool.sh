@@ -27,7 +27,7 @@ docker login \
 # Run verschillentool (all configs).
 find "${VAHOME}/${JSON_CONFIGS_PATH}" -type f -name '*.json' -iregex "${MODEL_REGEX}" -print0 |
     while IFS= read -r -d '' file; do
-        rel_path="${file#${VAHOME}/${JSON_CONFIGS_PATH}}" # strip host prefix
+        rel_path="${file#"${VAHOME}"/"${JSON_CONFIGS_PATH}"}" # strip host prefix
         rel_path="${rel_path#/}"                          # and leading /
         docker run \
             --rm \
