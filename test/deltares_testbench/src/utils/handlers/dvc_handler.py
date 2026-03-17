@@ -86,10 +86,27 @@ class DvcHandler(IHandler):
                     all_targets.append(stage.addressing)
 
             logger.info(f"Fetching {len(all_targets)} DVC targets in one batch (jobs={jobs})")
-            self.__repo.fetch(targets=all_targets, jobs=jobs)
+            fetch_result = self.__repo.fetch(targets=all_targets, jobs=jobs)
+            logger.info(f"Fetch result: {fetch_result}")
 
             logger.info(f"Checking out {len(all_targets)} DVC targets in one batch")
-            self.__repo.checkout(targets=all_targets, force=True)
+            checkout_result = self.__repo.checkout(targets=all_targets, force=True)
+            logger.info(f"Checkout result: {checkout_result}")
+
+            # Verify that the expected output directories actually exist
+            missing = []
+            for dvc_file in dvc_files:
+                # .dvc file at e.g. .../input.dvc should produce .../input directory
+                expected_dir = os.path.splitext(dvc_file)[0]
+                if not os.path.isdir(expected_dir):
+                    missing.append(expected_dir)
+            if missing:
+                logger.error(f"DVC checkout completed but {len(missing)} expected directories are missing:")
+                for m in missing:
+                    logger.error(f"  - {m}")
+                raise FileNotFoundError(
+                    f"DVC checkout did not produce {len(missing)} expected directories. " f"First missing: {missing[0]}"
+                )
 
             logger.info(f"Batch DVC download complete for {len(dvc_files)} .dvc files")
 
