@@ -31,7 +31,7 @@ echo.
 cd /d "%argPath%"
 echo executing in this window: %bindir%agrhyd.exe "%argName%"
 echo.
-%bindir%\"agrhyd.exe" "%argName%"
+"%bindir%\agrhyd.exe" "%argName%"
 cd /d "%currentdir%"
 
 goto end
@@ -40,7 +40,7 @@ goto end
 echo Purpose: Sets PATH and runs agrhyd on Windows.
 echo.
 echo Usage:
-echo run_agrhyd.bat [^<ini-file^> ^| -h ^| --help ^| --usage] 
+echo run_agrhyd.bat [^<ini-file^> ^| -h ^| --help ^| --usage]
 echo.
 echo     ^<ini-file^>              agrhyd ini-input file (mandatory)
 echo     -h ^| --help ^| --usage   show this usage (optional)
