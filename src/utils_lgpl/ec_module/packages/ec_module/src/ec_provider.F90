@@ -102,7 +102,7 @@ contains
 
       inquire (FILE=forcingfile, EXIST=file_exists)
       if (.not. file_exists) then
-         call setECMessage("Forcing file ("//trim(forcingfile)//") not found.")
+         call set_ec_message("Forcing file ("//trim(forcingfile)//") not found.")
          return
       end if
       if (index(trim(forcingfile)//'|', '.bc|') > 0) then ! ASCII: bc-format  : detection is extension-based
@@ -110,7 +110,7 @@ contains
       else if (index(trim(forcingfile)//'|', '.nc|') > 0) then ! NETCDF: nc-format
          forcingfiletype = BC_FTYPE_NETCDF
       else
-         call setECMessage("Forcing file ("//trim(forcingfile)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
+         call set_ec_message("Forcing file ("//trim(forcingfile)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
          return
       end if
 
@@ -232,7 +232,7 @@ contains
       case (BC_FUNC_TIM3D)
          success = ecProviderCreatet3DItems(instancePtr, fileReaderPtr)
       case default
-         call setECMessage("ERROR: unknown function type.") ! RL666 Todo: expand info on which file this is ...
+         call set_ec_message("ERROR: unknown function type.") ! RL666 Todo: expand info on which file this is ...
       end select
    end function ecProviderInitializeBCBlock
    ! =======================================================================
@@ -261,7 +261,7 @@ contains
       fileReaderPtr => null()
       !
       if (len_trim(fileName) > maxFileNameLen) then
-         call setECMessage("ERROR: ec_provider::ecProviderInitializeFileReader: The filename string is too long.")
+         call set_ec_message("ERROR: ec_provider::ecProviderInitializeFileReader: The filename string is too long.")
          return
       end if
       !
@@ -280,7 +280,7 @@ contains
             end if
             if (size(fileReaderPtr%dim_length) >= 5) then
                if (fileReaderPtr%relndx > fileReaderPtr%dim_length(3)) then
-                  call setECMessage("ERROR: ec_provider::ecProviderInitializeFileReader: Number of realizations is outside the ensemble size.")
+                  call set_ec_message("ERROR: ec_provider::ecProviderInitializeFileReader: Number of realizations is outside the ensemble size.")
                   return
                end if
             end if
@@ -333,13 +333,13 @@ contains
       success = .false.
       select case (fileReaderPtr%ofType)
       case (provFile_undefined)
-         call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type.")
       case (provFile_uniform, provFile_unimagdir)
          success = ecProviderCreateUniformItems(instancePtr, fileReaderPtr)
       case (provFile_svwp)
-         call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: svwp.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: svwp.")
       case (provFile_svwp_weight)
-         call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: svwp_weight.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: svwp_weight.")
       case (provFile_arcinfo)
          success = ecProviderCreateArcinfoItems(instancePtr, fileReaderPtr)
       case (provFile_spiderweb)
@@ -347,17 +347,17 @@ contains
       case (provFile_curvi)
          success = ecProviderCreateCurviItems(instancePtr, fileReaderPtr)
       case (provFile_curvi_weight)
-         call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: curvi_weight.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: curvi_weight.")
       case (provFile_samples)
          success = ecProviderCreateSampleItems(instancePtr, fileReaderPtr)
       case (provFile_triangulationmagdir)
-         call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: triangulation_magdir.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: triangulation_magdir.")
       case (provFile_qhtable)
          success = ecProviderCreateQhtableItems(instancePtr, fileReaderPtr)
       case (provFile_poly_tim)
          if (present(bctfilename)) then
             if (.not. present(quantityname)) then
-               call setECMessage("ERROR: ec_provider::ecProviderCreateItems: BC type, but no quantity name.")
+               call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: BC type, but no quantity name.")
                return
             end if
             success = ecProviderCreatePolyTimItemsBC(instancePtr, fileReaderPtr, bctfilename, quantityname)
@@ -367,7 +367,7 @@ contains
       case (provFile_fourier)
          success = ecProviderCreateFourierItems(instancePtr, fileReaderPtr)
       case (provFile_grib)
-         call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: grib.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: grib.")
       case (provFile_netcdf)
          if (present(quantityname)) then
             select case (str_tolower(trim(quantityname)))
@@ -403,7 +403,7 @@ contains
                else if (index(quantityName, 'initialtracer') == 1) then
                   success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                else
-                  call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported quantity name '" &
+                  call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unsupported quantity name '" &
                                     //trim(quantityname)//"', file='"//trim(fileReaderPtr%filename)//"'.")
                   return
                   ! TODO: user defined quantity name
@@ -411,12 +411,12 @@ contains
                end if
             end select
          else
-            call setECMessage("ERROR: ec_provider::ecProviderCreateItems: NetCDF requires a quantity name.")
+            call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: NetCDF requires a quantity name.")
          end if
       case (provFile_t3D)
          success = ecProviderCreatet3DItems(instancePtr, fileReaderPtr)
       case default
-         call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unknown file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateItems: Unknown file type.")
       end select
    end function ecProviderCreateItems
 
@@ -445,7 +445,7 @@ contains
       integer :: n1, n2 !< helper variables
       character(len=:), allocatable :: elementSetName
       character(len=maxNameLen) :: quantityName
-      character(len=maxMessageLen) :: msgstr
+      character(len=MAXIMUM_EC_MESSAGE_LENGTH) :: msgstr
 
       !
       success = .true.
@@ -618,17 +618,17 @@ contains
             if (i > 1) then
                if (discharges(i) > 0 .and. discharges(i) <= discharges(n2)) then
                   write (msgstr, '(a,i0,a,i0,a,f0.5,a,f0.5)') "  On rows ", i, " and ", n2, ":", discharges(i), " >= ", discharges(n2)
-                  call setECMessage(msgstr)
-                  call setECMessage("  "//trim(fileReaderPtr%bc%fname)//", location = "//trim(fileReaderPtr%bc%bcname))
-                  call setECMessage("First column in QH-table should be strictly increasing if negative.")
+                  call set_ec_message(msgstr)
+                  call set_ec_message("  "//trim(fileReaderPtr%bc%fname)//", location = "//trim(fileReaderPtr%bc%bcname))
+                  call set_ec_message("First column in QH-table should be strictly increasing if negative.")
                   success = .false.
                   return
                end if
                if (discharges(i) < 0 .and. discharges(i) >= discharges(n2)) then
                   write (msgstr, '(a,i0,a,i0,a,f0.5,a,f0.5)') "  On rows ", i, " and ", n2, ":", discharges(i), " >= ", discharges(n2)
-                  call setECMessage(msgstr)
-                  call setECMessage("  "//trim(fileReaderPtr%bc%fname)//", location = "//trim(fileReaderPtr%bc%bcname))
-                  call setECMessage("First column in QH-table should be strictly decreasing if negative.")
+                  call set_ec_message(msgstr)
+                  call set_ec_message("  "//trim(fileReaderPtr%bc%fname)//", location = "//trim(fileReaderPtr%bc%bcname))
+                  call set_ec_message("First column in QH-table should be strictly decreasing if negative.")
                   success = .false.
                   return
                end if
@@ -812,9 +812,9 @@ contains
 
             if (istat /= 0) then
                if (associated(fileReaderPtr%bc)) then
-                  call setECMessage("Error in file "//trim(fileReaderPtr%bc%fname))
+                  call set_ec_message("Error in file "//trim(fileReaderPtr%bc%fname))
                else
-                  call setECMessage("Error in file "//trim(fileReaderPtr%fileName))
+                  call set_ec_message("Error in file "//trim(fileReaderPtr%fileName))
                end if
 
                success = .false.
@@ -930,7 +930,7 @@ contains
       case (provFile_bc)
          item%sourceT0FieldPtr%timesteps = 54321.0d+10
          if (.not. ecBCReadBlock(fileReaderPtr, item%sourceT0FieldPtr%timesteps, item%sourceT0FieldPtr%arr1dPtr)) then
-            call setECMessage("Failed reading timelevel 0 from file '" &
+            call set_ec_message("Failed reading timelevel 0 from file '" &
                               //trim(fileReaderPtr%bc%fname)//"', location:'"//trim(fileReaderPtr%bc%bcname)//"'.")
             return
          end if
@@ -939,7 +939,7 @@ contains
             ! read second line for T1-Field
             if (.not. ecBCReadBlock(fileReaderPtr, item%sourceT1FieldPtr%timesteps, item%sourceT1FieldPtr%arr1dPtr)) then
                if (.not. fileReaderPtr%bc%timeint == BC_TIMEINT_LIN_EXTRAPOL) then
-                  call setECMessage("Failed reading timelevel 1 from file '" &
+                  call set_ec_message("Failed reading timelevel 1 from file '" &
                                     //trim(fileReaderPtr%bc%fname)//"', location:'"//trim(fileReaderPtr%bc%bcname)//"'.")
                   return
                end if
@@ -1070,7 +1070,7 @@ contains
                success = .false.
             end if
          else
-            call setECMessage('extension not recognized in '//trim(fileReaderPtr%fileName))
+            call set_ec_message('extension not recognized in '//trim(fileReaderPtr%fileName))
             success = .false.
          end if
          field0Id = ecInstanceCreateField(instancePtr)
@@ -1188,7 +1188,7 @@ contains
       end do
       close (minp)
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreateCurviElementSet: Unable to read data block from curvilinear grid file.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateCurviElementSet: Unable to read data block from curvilinear grid file.")
          success = .false.
          return
       end if
@@ -1241,16 +1241,16 @@ contains
       !
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'n_quantity')
       if (len_trim(rec) == 0) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreateCurviItems: Missing keyword n_quantity in file header: "//trim(fileReaderPtr%fileName))
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateCurviItems: Missing keyword n_quantity in file header: "//trim(fileReaderPtr%fileName))
          return
       end if
       read (rec, *) n_quantity
       if (n_quantity < 1) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreateCurviItems: Less then one quantity specified in header: "//trim(fileReaderPtr%fileName))
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateCurviItems: Less then one quantity specified in header: "//trim(fileReaderPtr%fileName))
          return
       end if
       if (n_quantity > 9) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreateCurviItems: More then nine quantities specified in header: "//trim(fileReaderPtr%fileName))
+         call set_ec_message("ERROR: ec_provider::ecProviderCreateCurviItems: More then nine quantities specified in header: "//trim(fileReaderPtr%fileName))
          return
       end if
       !
@@ -1399,7 +1399,7 @@ contains
          ! check if these are z-layers or sigma-layers
          rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'LAYER_TYPE')
          if (len_trim(rec) == 0) then
-            call setECMessage("Unable to find LAYER_TYPE in file header.")
+            call set_ec_message("Unable to find LAYER_TYPE in file header.")
             return
          end if
          !
@@ -1409,14 +1409,14 @@ contains
          else if (index(rec, 'z') /= 0) then
             vptyp = BC_VPTYP_ZBED
          else
-            call setECMessage("Invalid LAYER_TYPE specified in header.")
+            call set_ec_message("Invalid LAYER_TYPE specified in header.")
             return
          end if
          !
          ! Acquire the number of layers by the number of readable columns in LAYERS field of header
          rec = ect3DFindInFile(fileReaderPtr%fileHandle, 'LAYERS')
          if (len_trim(rec) == 0) then
-            call setECMessage("Unable to find LAYER in file header.")
+            call set_ec_message("Unable to find LAYER in file header.")
             return
          end if
          !
@@ -1444,7 +1444,7 @@ contains
          if (numlay > 0) then
             allocate (zws(numlay))
          else
-            call setECMessage("No LAYERS found in header")
+            call set_ec_message("No LAYERS found in header")
             return
          end if
          !
@@ -1456,7 +1456,7 @@ contains
       case (provFile_bc)
          ! Check if these are z-layers or sigma-layers
          if (.not. associated(fileReaderPtr%bc)) then
-            call setECMessage("BC-filetype, but no bc instance associated to filereader")
+            call set_ec_message("BC-filetype, but no bc instance associated to filereader")
             return
          end if
          bcptr => fileReaderPtr%bc
@@ -1474,7 +1474,7 @@ contains
          if (numlay > 0) then
             allocate (zws(numlay))
          else
-            call setECMessage("ERROR: ec_provider::ecProviderCreatet3DItems: no layers found in header")
+            call set_ec_message("ERROR: ec_provider::ecProviderCreatet3DItems: no layers found in header")
             return
          end if
          xws = (/(-1.0)/)
@@ -1482,7 +1482,7 @@ contains
          zws = (/(bcptr%vp(i), i=1, numlay)/)
 
       case default
-         call setECMessage("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
          return
       end select
       !
@@ -1524,7 +1524,7 @@ contains
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT0FieldPtr%arr1dPtr, valueptr%sourceT0FieldPtr%timesteps)) return
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
       case default
-         call setECMessage("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
          return
       end select
 
@@ -1595,7 +1595,7 @@ contains
       do
          call GetLine(fileReaderPtr%fileHandle, rec, istat)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_provider::ecProviderCreatePolyTimItems: Unexpected end of file.")
+            call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItems: Unexpected end of file.")
             return
          end if
          if (rec(1:1) /= '*') exit
@@ -1605,12 +1605,12 @@ contains
       ! Read the number of support points.
       read (fileReaderPtr%fileHandle, *, iostat=istat) n_points
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreatePolyTimItems: Unable to read the number of points.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItems: Unable to read the number of points.")
          return
       end if
       ! Sanity check
       if (n_points < 2) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreatePolyTimItems: Less then two support points found.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItems: Less then two support points found.")
          return
       end if
       ! Read the support point coordinate pairs.
@@ -1631,8 +1631,8 @@ contains
          istat = 0
          read (rec, *, iostat=istat) xs(i), ys(i) ! see if we can at least read a coordinate pair
          if (istat /= 0) then
-            call setECMessage("   '"//trim(rec)//"'")
-            call setECMessage("Unable to read a coordinate pair from file "//trim(fileReaderPtr%fileName))
+            call set_ec_message("   '"//trim(rec)//"'")
+            call set_ec_message("Unable to read a coordinate pair from file "//trim(fileReaderPtr%fileName))
             return
          end if
          !lblstart = index(rec,'{')
@@ -1721,7 +1721,7 @@ contains
                   signaltype = BC_FUNC_TIM3D
                else ! No file with data for this point
                   if (has_label) then ! Report explicitly labelled point without data
-                     call setECMessage("No .tim, .cmp or .t3d file found for labelled point '" &
+                     call set_ec_message("No .tim, .cmp or .t3d file found for labelled point '" &
                                        //trim(plipointlbl)//"' (required).")
                      return
                   end if ! labelled point ?
@@ -1736,7 +1736,7 @@ contains
          end if
       end do ! loop over support points
       if (n_signals <= 0) then
-         call setECMessage("ERROR: ec_provider::ecProviderPolyTimItems: No forcing signals (.tim/.cmp/.t3d/.qh) could be attached for polyline file '"//trim(fileReaderPtr%filename)//"'.")
+         call set_ec_message("ERROR: ec_provider::ecProviderPolyTimItems: No forcing signals (.tim/.cmp/.t3d/.qh) could be attached for polyline file '"//trim(fileReaderPtr%filename)//"'.")
          return
       end if
 
@@ -1803,7 +1803,7 @@ contains
       do
          call GetLine(fileReaderPtr%fileHandle, rec, istat)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: Unexpected end of file.")
+            call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: Unexpected end of file.")
             return
          end if
          if (rec(1:1) /= '*') exit
@@ -1813,18 +1813,18 @@ contains
       ! Read the number of support points.
       read (fileReaderPtr%fileHandle, *, iostat=istat) n_points
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: Unable to read the number of points.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: Unable to read the number of points.")
          return
       end if
       ! Sanity check
       if (n_points < 2) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: Less then two support points found.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: Less then two support points found.")
          return
       end if
       ! Read the support point coordinate pairs.
       allocate (xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), plipointlbls(n_points), stat=istat)
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: allocation error. N_points = ", n_points)
+         call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: allocation error. N_points = ", n_points)
       end if
       mask = 1
       itemIDList = ec_undef_int
@@ -1836,8 +1836,8 @@ contains
          istat = 0
          read (rec, *, iostat=istat) xs(i), ys(i) ! see if we can at least read a coordinate pair
          if (istat /= 0) then
-            call setECMessage("   '"//trim(rec)//"'")
-            call setECMessage("Unable to read a coordinate pair from file "//trim(fileReaderPtr%fileName))
+            call set_ec_message("   '"//trim(rec)//"'")
+            call set_ec_message("Unable to read a coordinate pair from file "//trim(fileReaderPtr%fileName))
             return
          end if
          lblstart = index(rec, 'label=')
@@ -1869,7 +1869,7 @@ contains
 
       inquire (FILE=bctfilename, EXIST=file_exists)
       if (.not. file_exists) then
-         call setECMessage("Forcing file ("//trim(bctfilename)//") not found.")
+         call set_ec_message("Forcing file ("//trim(bctfilename)//") not found.")
          return
       end if
       if (index(trim(bctfilename)//'|', '.bc|') > 0) then ! ASCII: bc-format  : detection is extension-based
@@ -1877,7 +1877,7 @@ contains
       else if (index(trim(bctfilename)//'|', '.nc|') > 0) then ! NETCDF: nc-format
          bctfiletype = BC_FTYPE_NETCDF
       else
-         call setECMessage("Forcing file ("//trim(bctfilename)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
+         call set_ec_message("Forcing file ("//trim(bctfilename)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
          return
       end if
 
@@ -1907,7 +1907,7 @@ contains
          if (.not. ecProviderInitializeBCBlock(InstancePtr, bcBlockId, fileReaderPtr%tframe%k_refdate, fileReaderPtr%tframe%k_timezone, fileReaderPtr%tframe%k_timestep_unit, &
                                                id, bctfilename, bctfiletype, quantityname, plipointlbl, istat, dtnodal=fileReaderPtr%tframe%dtnodal)) then
             if (has_label) then ! for explicitly labelled pli-points, require data
-               call setECMessage("BC-File "//trim(bctfilename)//" contains no data for labelled point '" &
+               call set_ec_message("BC-File "//trim(bctfilename)//" contains no data for labelled point '" &
                                  //trim(plipointlbl)//"' and quantity '"//trim(quantityname)//"' (required).")
                return
             else
@@ -1923,7 +1923,7 @@ contains
             all_points_are_corr = .false.
             ! For non-harmonic, check if the source side vectormax equals the one requested on the target side
             if (fileReaderPtr%vectormax /= bcBlockPtr%quantity%vectormax) then
-               call setECMessage("BC-File '"//trim(bctfilename)//"' quantity '"//trim(quantityname) &
+               call set_ec_message("BC-File '"//trim(bctfilename)//"' quantity '"//trim(quantityname) &
                                  //"' has the wrong vector rank, please check the vector definition.")
                mask(i) = 0
                exit
@@ -1956,8 +1956,8 @@ contains
       end if
 
       if (n_signals <= 0) then
-         call setECMessage("    for polyline "//trim(polyline_name)//" and quantity "//trim(quantityname)//".")
-         call setECMessage("No signals for polyline file "//trim(fileReaderPtr%filename)//" found in "//trim(bctfilename))
+         call set_ec_message("    for polyline "//trim(polyline_name)//" and quantity "//trim(quantityname)//".")
+         call set_ec_message("No signals for polyline file "//trim(fileReaderPtr%filename)//" found in "//trim(bctfilename))
          success = .false.
          return
       end if
@@ -2033,12 +2033,12 @@ contains
          do isrc = 1, itemPT%connectionsptr(iconn)%ptr%nSourceItems ! ... check with all followinf source items
             itemSRC => itemPT%connectionsptr(iconn)%ptr%sourceItemsptr(isrc)%ptr
             if (itemPT%quantityptr%vectormax /= vectormax) then
-               call setECMessage("ERROR: ec_provider::ecProvider3DVectmax: Polytim subitems have different vectormax.")
+               call set_ec_message("ERROR: ec_provider::ecProvider3DVectmax: Polytim subitems have different vectormax.")
                continue
             end if
             if (maxlay > 0) then
                if (itemPT%quantityptr%zInterpolationType /= zInterpolationType) then
-                  call setECMessage("ERROR: ec_provider::ecProvider3DVectmax: Polytim subitems have different interpolation types.")
+                  call set_ec_message("ERROR: ec_provider::ecProvider3DVectmax: Polytim subitems have different interpolation types.")
                   continue
                end if
             end if
@@ -2076,7 +2076,7 @@ contains
          if (present(qname)) then
             magnitude = ecFileReaderFindItem(instancePtr, fileReaderId, trim(qname))
             if (magnitude == ec_undef_int) then ! new BC-format has items labelled with the quantity
-               call setECMessage("ecProviderConnectSourceItemsToTargets: cannot find filereader item with quantity "//trim(qname)//".")
+               call set_ec_message("ecProviderConnectSourceItemsToTargets: cannot find filereader item with quantity "//trim(qname)//".")
                magnitude = ecFileReaderFindItem(instancePtr, fileReaderId, 'uniform_item')
             end if
          else
@@ -2084,7 +2084,7 @@ contains
          end if
 
          if (magnitude == ec_undef_int) then
-            call setECMessage("ecProviderConnectSourceItemsToTargets: cannot find filereader item with quantity 'uniform_item'.")
+            call set_ec_message("ecProviderConnectSourceItemsToTargets: cannot find filereader item with quantity 'uniform_item'.")
             return
          end if
          ! Initialize the new Converter.
@@ -2131,7 +2131,7 @@ contains
          if (present(qname)) then
             magnitude = ecFileReaderFindItem(instancePtr, fileReaderId, trim(qname))
             if (magnitude == ec_undef_int) then ! new BC-format has items labelled with the quantity
-               call setECMessage("ecProviderConnectSourceItemsToTargets: cannot find filereader item with quantity "//trim(qname)//".")
+               call set_ec_message("ecProviderConnectSourceItemsToTargets: cannot find filereader item with quantity "//trim(qname)//".")
                magnitude = ecFileReaderFindItem(instancePtr, fileReaderId, 'uniform_item')
             end if
          else
@@ -2139,7 +2139,7 @@ contains
          end if
 
          if (magnitude == ec_undef_int) then
-            call setECMessage("ecProviderConnectSourceItemsToTargets: cannot find filereader item with quantity 'uniform_item'.")
+            call set_ec_message("ecProviderConnectSourceItemsToTargets: cannot find filereader item with quantity 'uniform_item'.")
             return
          end if
 
@@ -2361,15 +2361,15 @@ contains
       arraySize = size(sourceItemPtr%sourceT0FieldPtr%arr1d)
       if (present(arrayPtr)) then
          if (.not. associated(arrayPtr)) then
-            call setECMessage("ecProviderCreateTimeInterpolatedItem: pointer to target array unassociated.")
+            call set_ec_message("ecProviderCreateTimeInterpolatedItem: pointer to target array unassociated.")
             return
          end if
          if (size(arrayPtr) /= arraySize) then ! check size
-            call setECMessage("ecProviderCreateTimeInterpolatedItem: reserved target size and source size do not match.")
+            call set_ec_message("ecProviderCreateTimeInterpolatedItem: reserved target size and source size do not match.")
             return
          end if
          if (.not. ecFieldSet1dArrayPointer(instancePtr, fieldId, arrayPtr)) then
-            call setECMessage("ecProviderCreateTimeInterpolatedItem: setting pointer to target array failed.")
+            call set_ec_message("ecProviderCreateTimeInterpolatedItem: setting pointer to target array failed.")
             return
          end if
       else
@@ -2378,11 +2378,11 @@ contains
 
       if (present(scalarPtr)) then
          if (.not. associated(scalarPtr)) then
-            call setECMessage("ecProviderCreateTimeInterpolatedItem: pointer to target scalar unassociated.")
+            call set_ec_message("ecProviderCreateTimeInterpolatedItem: pointer to target scalar unassociated.")
             return
          end if
          if (.not. ecFieldSetScalarPointer(instancePtr, fieldId, scalarPtr)) then
-            call setECMessage("ecProviderCreateTimeInterpolatedItem: setting pointer to target scalar failed.")
+            call set_ec_message("ecProviderCreateTimeInterpolatedItem: setting pointer to target scalar failed.")
             return
          end if
       end if
@@ -2584,7 +2584,7 @@ contains
          if (size(nccustomnames) /= expectedLength) then
             write (cnum1, '(i2)') expectedLength
             write (cnum2, '(i2)') size(ncvarnames)
-            call setECMessage("Quantity '"//trim(quantityName)//"' should have"//cnum1//' sub-names, but found'//cnum2//' in ext-file.')
+            call set_ec_message("Quantity '"//trim(quantityName)//"' should have"//cnum1//' sub-names, but found'//cnum2//' in ext-file.')
          end if
       end if
 
@@ -2599,7 +2599,7 @@ contains
             else
                nameVar = trim(ncvarnames(i))
             end if
-            call setECMessage("Variable '"//nameVar//"' not found in NetCDF file '"//trim(fileReaderPtr%filename)//"'.")
+            call set_ec_message("Variable '"//nameVar//"' not found in NetCDF file '"//trim(fileReaderPtr%filename)//"'.")
             return
          end if
          fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
@@ -2677,7 +2677,7 @@ contains
                end if
             end if
          else
-            call setECMessage("coordsystem is not set for EC instance")
+            call set_ec_message("coordsystem is not set for EC instance")
             return
          end if
 
@@ -2695,7 +2695,7 @@ contains
                if (len_trim(coord_names(j)) > 0) then
                   call ecProviderSearchStdOrVarnames(fileReaderPtr, j, varid, ncvarnames=coord_names, ignore_case=.true.)
                   if (varid < 0) then
-                     call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+                     call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                        //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.")
                   else
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
@@ -2721,11 +2721,11 @@ contains
 
          if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
-               call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+               call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
             end if
             if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
-               call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
+               call set_ec_message("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
                                  //"' either requires 'latitude' and 'longitude' or 'grid_latitude' and 'grid_longitude'.")
             end if
             return
@@ -2902,7 +2902,7 @@ contains
                allocate (fgd_data_trans(crd_dimlen(1, 1) * crd_dimlen(2, 1)))
                allocate (sgd_data_trans(crd_dimlen(1, 2) * crd_dimlen(2, 2)))
                if (.not. ecElementSetSetType(instancePtr, elementSetId, grid_type)) then
-                  call setECMessage("Setting element type failed for "//trim(fileReaderPtr%filename)//".")
+                  call set_ec_message("Setting element type failed for "//trim(fileReaderPtr%filename)//".")
                   return
                end if
 
@@ -2912,24 +2912,24 @@ contains
                   call gb2lla(fgd_data_1d, sgd_data_1d, fgd_data_trans, sgd_data_trans, pdiri, size(fgd_data_1d), &
                               gsplon, gsplat, 0.0_dp, 0.0_dp, -90.0_dp, 0.0_dp)
                   if (.not. ecElementSetSetXArray(instancePtr, elementSetId, fgd_data_trans)) then
-                     call setECMessage("Setting latitude array failed for "//trim(fileReaderPtr%filename)//".")
+                     call set_ec_message("Setting latitude array failed for "//trim(fileReaderPtr%filename)//".")
                      return
                   end if
                   if (.not. ecElementSetSetYArray(instancePtr, elementSetId, sgd_data_trans)) then
-                     call setECMessage("Setting longitude array failed for "//trim(fileReaderPtr%filename)//".")
+                     call set_ec_message("Setting longitude array failed for "//trim(fileReaderPtr%filename)//".")
                      return
                   end if
                   if (.not. ecElementSetSetDirectionArray(instancePtr, elementSetId, pdiri)) then
-                     call setECMessage("Setting rotation array for vector for transformed vector quantities failed for "//trim(fileReaderPtr%filename)//".")
+                     call set_ec_message("Setting rotation array for vector for transformed vector quantities failed for "//trim(fileReaderPtr%filename)//".")
                      return
                   end if
                else
                   if (.not. ecElementSetSetXArray(instancePtr, elementSetId, fgd_data_1d)) then
-                     call setECMessage("Setting longitude array failed for "//trim(fileReaderPtr%filename)//".")
+                     call set_ec_message("Setting longitude array failed for "//trim(fileReaderPtr%filename)//".")
                      return
                   end if
                   if (.not. ecElementSetSetYArray(instancePtr, elementSetId, sgd_data_1d)) then
-                     call setECMessage("Setting latitude array failed for "//trim(fileReaderPtr%filename)//".")
+                     call set_ec_message("Setting latitude array failed for "//trim(fileReaderPtr%filename)//".")
                      return
                   end if
                end if
@@ -2954,14 +2954,14 @@ contains
                   if (z_positive == 'down') vptyp = BC_VPTYP_PERCSURF
                case ('hybrid_height')
                case default
-                  call setECMessage("Setting Z-array failed for "//trim(fileReaderPtr%filename)//".")
+                  call set_ec_message("Setting Z-array failed for "//trim(fileReaderPtr%filename)//".")
                   return
                end select
                if (.not. ecElementSetSetProperties(instancePtr, elementSetId, vptyp=vptyp)) then
                   return
                end if
                if (.not. ecElementSetSetZArray(instancePtr, elementSetId, tgd_data_1d)) then
-                  call setECMessage("Setting Z-array failed for "//trim(fileReaderPtr%filename)//".")
+                  call set_ec_message("Setting Z-array failed for "//trim(fileReaderPtr%filename)//".")
                   return
                end if
             end if
@@ -3153,13 +3153,13 @@ contains
       end do
       if (idvar_q > size(fileReaderPtr%standard_names)) then
          ! ERROR: standard name not found in this filereader, Try the variable names
-         call setECMessage("No standard_name='"//trim(quantityName)//"' found in file '"//trim(fileReaderPtr%filename)//"'.")
+         call set_ec_message("No standard_name='"//trim(quantityName)//"' found in file '"//trim(fileReaderPtr%filename)//"'.")
          do idvar_q = 1, size(fileReaderPtr%variable_names)
             if (strcmpi(fileReaderPtr%variable_names(idvar_q), quantityName)) exit
          end do
          if (idvar_q > size(fileReaderPtr%standard_names)) then
             ! ERROR: variable name not found in this filereader, TODO: handle exception
-            call setECMessage("No variable_name='"//trim(quantityName)//"' found in file '"//trim(fileReaderPtr%filename)//"'.")
+            call set_ec_message("No variable_name='"//trim(quantityName)//"' found in file '"//trim(fileReaderPtr%filename)//"'.")
             return
          end if
       end if
@@ -3211,7 +3211,7 @@ contains
       end if
       if (.not. success) then
          write (message, '(2a)') "ERROR: ec_provider::ecProviderCreateWaveNetcdfItems: unable to create sourceItem for ", quantityName
-         call setECMessage(trim(message))
+         call set_ec_message(trim(message))
       end if
    end function ecProviderCreateWaveNetcdfItems
 
@@ -3253,13 +3253,13 @@ contains
       !
       select case (fileReaderPtr%ofType)
       case (provFile_undefined)
-         call setECMessage("ERROR: ec_provider::ecProviderInitializeTimeFrame: No file type specified.")
+         call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: No file type specified.")
       case (provFile_uniform, provFile_unimagdir)
          success = ecUniInitializeTimeFrame(fileReaderPtr)
       case (provFile_svwp)
-         call setECMessage("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
       case (provFile_svwp_weight)
-         call setECMessage("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
       case (provFile_arcinfo)
          success = ecDefaultInitializeTimeFrame(fileReaderPtr)
       case (provFile_spiderweb)
@@ -3267,12 +3267,12 @@ contains
       case (provFile_curvi)
          success = ecDefaultInitializeTimeFrame(fileReaderPtr)
       case (provFile_curvi_weight)
-         call setECMessage("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
       case (provFile_samples)
          ! Time independent: ec timeframe params were already defaulted to kernel's timeframe params (above).
          success = .true.
       case (provFile_triangulationmagdir)
-         call setECMessage("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
       case (provFile_qhtable)
          fileReaderPtr%tframe%ec_refdate = fileReaderPtr%tframe%k_refdate
          ! The nr_timesteps is infinity.
@@ -3289,7 +3289,7 @@ contains
          ! The nr_timesteps is infinity, as values at a moment in time are calculated from the seeds in the file, not read from file as records.
          success = .true.
       case (provFile_grib)
-         call setECMessage("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unsupported file type.")
       case (provFile_netcdf)
          success = ecNetcdfInitializeTimeFrame(fileReaderPtr)
          if (.not. success) then
@@ -3297,7 +3297,7 @@ contains
                   fileReaderPtr%lonx_id, fileReaderPtr%laty_id, fileReaderPtr%tframe%ec_refdate, fileReaderPtr%tframe%ec_timezone, fileReaderPtr%hframe, success)
          end if
          if (.not. success) then
-            call setECMessage('ERROR: ec_provider::ecProviderInitializeTimeFrame: Failed to initialize from NetCDF file.')
+            call set_ec_message('ERROR: ec_provider::ecProviderInitializeTimeFrame: Failed to initialize from NetCDF file.')
          end if
       case (provFile_t3D)
          success = ecDefaultInitializeTimeFrame(fileReaderPtr)
@@ -3310,7 +3310,7 @@ contains
             success = .true.
          end if
       case default
-         call setECMessage("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unknown file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderInitializeTimeFrame: Unknown file type.")
       end select
    end function ecProviderInitializeTimeFrame
 
@@ -3338,7 +3338,7 @@ contains
          if (.not. ecSupportTimestringToUnitAndRefdate(rec, fileReaderPtr%tframe%ec_timestep_unit, fileReaderPtr%tframe%ec_refdate, &
                                                        tzone=fileReaderPtr%tframe%ec_timezone)) return
       else
-         call setECMessage("ERROR: ec_provider::ecDefaultInitializeTimeFrame: Unable to identify the first data block.")
+         call set_ec_message("ERROR: ec_provider::ecDefaultInitializeTimeFrame: Unable to identify the first data block.")
          return
       end if
       ! =========================================
@@ -3356,7 +3356,7 @@ contains
          !!!   ! Store the total number of available timesteps in the ecFileReader's ecTimeFrame.
          !!!   fileReaderPtr%tframe%nr_timesteps = time_steps
          !!!else
-         !!!   call setECMessage("ERROR: ec_provider::ecDefaultInitializeTimeFrame: Unable to read the stop time.")
+         !!!   call set_ec_message("ERROR: ec_provider::ecDefaultInitializeTimeFrame: Unable to read the stop time.")
          !!!end if
       success = .true.
    end function ecDefaultInitializeTimeFrame
@@ -3516,7 +3516,7 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
       ! Find phase variable
       phase_id = ecNetcdfFindVariableId(fileHandle, fileName, standard_names, variable_names, 'PHASE')
       if (phase_id == ec_undef_int) then
-         call setECMessage('ERROR: Phase variable not found in NetCDF file.')
+         call set_ec_message('ERROR: Phase variable not found in NetCDF file.')
          success = .false.
       end if
 
@@ -3545,7 +3545,7 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
       call ecSupportNetcdfCheckErrorAccumulate(ierr, success, "Failed to read phase units", fileName)
 
       if (units /= 'deg') then
-         call setECMessage('ERROR: Phase unit must be degrees, got: '//trim(units))
+         call set_ec_message('ERROR: Phase unit must be degrees, got: '//trim(units))
          success = .false.
       end if
 
@@ -3567,7 +3567,7 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
 
          is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), lonx_id, laty_id)
       else
-         call setECMessage('ERROR: Phase variable must have 1 or 2 dimensions')
+         call set_ec_message('ERROR: Phase variable must have 1 or 2 dimensions')
          success = .false.
       end if
 
@@ -3586,7 +3586,7 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
          hframe%phase_dims = dim_sizes
       end if
       if (.not. success) then
-         call setECMessage('ERROR: ec_provider::ecNetcdfInitializeHarmonicsFrame: Failed to initialize harmonics frame.')
+         call set_ec_message('ERROR: ec_provider::ecNetcdfInitializeHarmonicsFrame: Failed to initialize harmonics frame.')
       end if
 
    end subroutine ecNetcdfInitializeHarmonicsFrame
@@ -3709,11 +3709,11 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
       end if
 
       if (num_columns < 0) then
-         call setECMessage('ERROR: Could not find n_cols/num_columns value in header of arcinfo file')
+         call set_ec_message('ERROR: Could not find n_cols/num_columns value in header of arcinfo file')
          goto 999
       end if
       if (num_rows < 0) then
-         call setECMessage('ERROR: Could not find n_rows/num_rows value in header of arcinfo file')
+         call set_ec_message('ERROR: Could not find n_rows/num_rows value in header of arcinfo file')
          goto 999
       end if
 
@@ -3727,25 +3727,25 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
       ! error handling
       !
 100   continue
-      call setECMessage('ERROR: Unexpected end of file while reading header of arcinfo file')
+      call set_ec_message('ERROR: Unexpected end of file while reading header of arcinfo file')
       goto 999
 101   continue
-      call setECMessage('ERROR: Looking for ncols (arc-info), but getting: ', trim(rec))
+      call set_ec_message('ERROR: Looking for ncols (arc-info), but getting: ', trim(rec))
       goto 999
 102   continue
-      call setECMessage('ERROR: Looking for nrows (arc-info), but getting: ', trim(rec))
+      call set_ec_message('ERROR: Looking for nrows (arc-info), but getting: ', trim(rec))
       goto 999
 103   continue
-      call setECMessage('ERROR: Looking for xll (arc-info), but getting: ', trim(rec))
+      call set_ec_message('ERROR: Looking for xll (arc-info), but getting: ', trim(rec))
       goto 999
 104   continue
-      call setECMessage('ERROR: Looking for yll (arc-info), but getting: ', trim(rec))
+      call set_ec_message('ERROR: Looking for yll (arc-info), but getting: ', trim(rec))
       goto 999
 105   continue
-      call setECMessage('ERROR: Looking for cellsize (dx, dy) (arc-info), but getting: ', trim(rec))
+      call set_ec_message('ERROR: Looking for cellsize (dx, dy) (arc-info), but getting: ', trim(rec))
       goto 999
 106   continue
-      call setECMessage('ERROR: Looking for missing value (arc-info), but getting: ', trim(rec))
+      call set_ec_message('ERROR: Looking for missing value (arc-info), but getting: ', trim(rec))
       goto 999
 999   continue
       success = .false.
@@ -3829,7 +3829,7 @@ subroutine ecNetcdfInitializeHarmonicsFrame(fileHandle, fileName, standard_names
       ierror = nf90_inquire(fileReaderPtr%fileHandle, nvariables=nvar)
       if (ierror /= NF90_NOERR) then
          ! todo: error handling with message
-         call setECMessage('ecProviderNetcdfReadvars: '//nf90_strerror(ierror))
+         call set_ec_message('ecProviderNetcdfReadvars: '//nf90_strerror(ierror))
          return
       end if
 
