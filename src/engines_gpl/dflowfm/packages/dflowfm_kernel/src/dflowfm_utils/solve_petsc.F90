@@ -682,7 +682,8 @@ contains
 
    !> Solve the linear system with PETSc KSP solver
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
-      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm, eKSPConvergedReason
+      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm, &
+         eKSPConvergedReason, KSPGetConvergedReasonString
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
       use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver
@@ -704,6 +705,7 @@ contains
       PetscErrorCode :: ierr
       KSPConvergedReason :: Reason
       character(len=100) :: message
+      character(len=100) :: reason_string
 
       jasucces = 0
       ierr = PETSC_OK
@@ -756,7 +758,8 @@ contains
             call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
          end if
       else if (Reason%v < 0) then
-         call mess(LEVEL_WARN, 'Other kind of divergence: this should not happen, reason = ', Reason%v)
+         call KSPGetConvergedReasonString(Solver, reason_string, ierr)
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: ', reason_string)
          ! see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason
       else
          call KSPGetIterationNumber(Solver, its, ierr)
