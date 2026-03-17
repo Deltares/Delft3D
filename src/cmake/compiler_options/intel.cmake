@@ -29,7 +29,7 @@ if (WIN32)
     set(check_nopointers_flag                 /check:nopointer)
     set(check_uninit_flag                     /check:uninit)
     set(check_stack_flag                      /check:stack)
-    set(openmp_flag                           /Qopenmp-stubs)   # To disable: set to /Qopenmp-stubs
+    set(openmp_flag                           /Qopenmp-stubs)   # To disable: set to /Qopenmp-stubs, to enable: set to /Qopenmp
     set(avx2_flag                             /arch:CORE-AVX2)
     set(generate_reentrancy_threaded_flag     /reentrancy:threaded)
     set(floating_point_exception_flag         /fpe:0)
@@ -98,7 +98,7 @@ if (UNIX)
     set(check_nopointers_flag                    "-check nopointers")
     set(check_uninit_flag                        "-check uninit")
     set(check_stack_flag                         "-check stack")
-    set(openmp_flag                              "-qopenmp")     # To disable: set to -qopenmp-stubs
+    set(openmp_flag                              "-qopenmp-stubs")     # To disable: set to -qopenmp-stubs, to enable: set to -qopenmp
     set(avx2_flag                                "-arch CORE-AVX2")
     set(generate_reentrancy_threaded_flag        "-reentrancy threaded")
     set(floating_point_exception_flag            "-fpe0")
