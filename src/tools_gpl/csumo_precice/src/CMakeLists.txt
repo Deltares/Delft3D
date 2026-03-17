@@ -11,8 +11,8 @@ set(header_files
 add_library(csumo_precice_lib ${source_files} ${header_files})
 target_link_libraries(csumo_precice_lib PRIVATE
     compiler_warnings_settings
-    PUBLIC precice::precice
-    LibXml2::LibXml2
+    precice::precice
+    pugixml::pugixml
 )
 target_include_directories(csumo_precice_lib PUBLIC ${include_dir})
 

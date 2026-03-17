@@ -1,14 +1,13 @@
 #include "csumo_settings_reader.hpp"
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-
 #include <algorithm>
+#include <cctype>
 #include <charconv>
 #include <format>
 #include <fstream>
-#include <memory>
 #include <optional>
+#include <pugixml.hpp>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -16,8 +15,6 @@
 
 namespace
 {
-    using XmlDocPtr = std::unique_ptr<xmlDoc, decltype(&xmlFreeDoc)>;
-
     // -------------------------------------------------------------------------
     // Numeric parsing
     // -------------------------------------------------------------------------
@@ -88,41 +85,31 @@ namespace
     // XML node utilities
     // -------------------------------------------------------------------------
 
-    std::string nodeText(const xmlNodePtr node)
+    bool case_insensitive_equals(const std::string_view lhs, const std::string_view rhs)
     {
-        for (xmlNodePtr child = node->children; child != nullptr; child = child->next)
-        {
-            if (child->type == XML_TEXT_NODE && child->content != nullptr)
-            {
-                return reinterpret_cast<const char*>(child->content);
-            }
-        }
-        return {};
+        return std::ranges::equal(lhs, rhs, [](char a, char b) {
+            return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
+        });
     }
 
-    xmlNodePtr findChild(const xmlNodePtr parent, const char* name)
+    pugi::xml_node findChild(const pugi::xml_node parent, const std::string_view name)
     {
-        for (xmlNodePtr child = parent->children; child != nullptr; child = child->next)
-        {
-            if (child->type == XML_ELEMENT_NODE &&
-                xmlStrcasecmp(child->name, reinterpret_cast<const xmlChar*>(name)) == 0)
-            {
-                return child;
-            }
-        }
-        return nullptr;
+        const auto children = parent.children();
+        const auto it = std::ranges::find_if(
+            children, [name](const pugi::xml_node child) { return case_insensitive_equals(child.name(), name); });
+        return it != children.end() ? *it : pugi::xml_node{};
     }
 
-    std::expected<std::string, csumo_precice::ParseError> requiredChildText(const xmlNodePtr parent,
-                                                                            const char* child_name)
+    std::expected<std::string, csumo_precice::ParseError> requiredChildText(const pugi::xml_node parent,
+                                                                            const std::string_view child_name)
     {
-        const xmlNodePtr child = findChild(parent, child_name);
-        if (child == nullptr)
+        const pugi::xml_node child = findChild(parent, child_name);
+        if (!child)
         {
             return std::unexpected(
                 csumo_precice::ParseError{std::format("Required element <{}> not found", child_name)});
         }
-        const std::string text = nodeText(child);
+        const std::string text = child.child_value();
         if (text.empty())
         {
             return std::unexpected(csumo_precice::ParseError{std::format("Element <{}> is empty", child_name)});
@@ -130,10 +117,10 @@ namespace
         return text;
     }
 
-    std::string childText(const xmlNodePtr parent, const char* child_name)
+    std::string childText(const pugi::xml_node parent, const std::string_view child_name)
     {
-        const xmlNodePtr child = findChild(parent, child_name);
-        return child ? nodeText(child) : std::string{};
+        const pugi::xml_node child = findChild(parent, child_name);
+        return child ? child.child_value() : std::string{};
     }
 
     // Converts an XML path string to a std::filesystem::path, normalizing
@@ -147,14 +134,14 @@ namespace
         return std::filesystem::path(std::move(text));
     }
 
-    std::optional<std::string> optionalChildText(const xmlNodePtr parent, const char* child_name)
+    std::optional<std::string> optionalChildText(const pugi::xml_node parent, const std::string_view child_name)
     {
-        const xmlNodePtr child = findChild(parent, child_name);
-        if (child == nullptr)
+        const pugi::xml_node child = findChild(parent, child_name);
+        if (!child)
         {
             return std::nullopt;
         }
-        const std::string text = nodeText(child);
+        const std::string text = child.child_value();
         if (text.empty())
         {
             return std::nullopt;
@@ -166,16 +153,16 @@ namespace
     // Typed element parsers
     // -------------------------------------------------------------------------
 
-    std::expected<csumo_precice::Point2D, csumo_precice::ParseError> parseRequiredPoint2D(const xmlNodePtr parent,
-                                                                                          const char* element_name)
+    std::expected<csumo_precice::Point2D, csumo_precice::ParseError> parseRequiredPoint2D(
+        const pugi::xml_node parent, const std::string_view element_name)
     {
         return requiredChildText(parent, element_name).and_then([element_name](const std::string_view text) {
             return parsePoint2D(text, element_name);
         });
     }
 
-    std::expected<double, csumo_precice::ParseError> parseRequiredDouble(const xmlNodePtr parent,
-                                                                         const char* element_name)
+    std::expected<double, csumo_precice::ParseError> parseRequiredDouble(const pugi::xml_node parent,
+                                                                         const std::string_view element_name)
     {
         return requiredChildText(parent, element_name).and_then([element_name](const std::string_view text) {
             return parseDouble(text, element_name);
@@ -216,31 +203,21 @@ namespace
     // Section parsers
     // -------------------------------------------------------------------------
 
-    std::vector<csumo_precice::Point2D> parseAmbientPoints(const xmlNodePtr data_node)
+    std::vector<csumo_precice::Point2D> parseAmbientPoints(const pugi::xml_node data_node)
     {
-        std::vector<csumo_precice::Point2D> result;
-        for (xmlNodePtr child = data_node->children; child != nullptr; child = child->next)
-        {
-            if (child->type != XML_ELEMENT_NODE)
-            {
-                continue;
-            }
-            if (xmlStrcasecmp(child->name, reinterpret_cast<const xmlChar*>("xyambient")) != 0)
-            {
-                continue;
-            }
-            if (auto point = parsePoint2D(nodeText(child), "XYambient"))
-            {
-                result.push_back(*point);
-            }
-        }
-        return result;
+        return data_node.children() | std::views::filter([](const pugi::xml_node child) {
+                   return case_insensitive_equals(child.name(), "xyambient");
+               }) |
+               std::views::transform(
+                   [](const pugi::xml_node child) { return parsePoint2D(child.child_value(), "XYambient"); }) |
+               std::views::filter([](const auto& result) { return result.has_value(); }) |
+               std::views::transform([](const auto& result) { return *result; }) | std::ranges::to<std::vector>();
     }
 
-    std::expected<csumo_precice::Discharge, csumo_precice::ParseError> parseDischarge(const xmlNodePtr data_node)
+    std::expected<csumo_precice::Discharge, csumo_precice::ParseError> parseDischarge(const pugi::xml_node data_node)
     {
-        const xmlNodePtr discharge_node = findChild(data_node, "discharge");
-        if (discharge_node == nullptr)
+        const pugi::xml_node discharge_node = findChild(data_node, "discharge");
+        if (!discharge_node)
         {
             return std::unexpected(csumo_precice::ParseError{"Required element <discharge> not found in <data>"});
         }
@@ -253,10 +230,10 @@ namespace
     }
 
     // Returns a GeneralSection; all fields are potentially empty so absence of <general> yields an empty struct.
-    GeneralSection parseGeneralSection(const xmlNodePtr settings_node)
+    GeneralSection parseGeneralSection(const pugi::xml_node settings_node)
     {
-        const xmlNodePtr general_node = findChild(settings_node, "general");
-        if (general_node == nullptr)
+        const pugi::xml_node general_node = findChild(settings_node, "general");
+        if (!general_node)
         {
             return {};
         }
@@ -267,10 +244,10 @@ namespace
         };
     }
 
-    std::expected<DataSection, csumo_precice::ParseError> parseDataSection(const xmlNodePtr settings_node)
+    std::expected<DataSection, csumo_precice::ParseError> parseDataSection(const pugi::xml_node settings_node)
     {
-        const xmlNodePtr data_node = findChild(settings_node, "data");
-        if (data_node == nullptr)
+        const pugi::xml_node data_node = findChild(settings_node, "data");
+        if (!data_node)
         {
             return std::unexpected(csumo_precice::ParseError{"Required element <data> not found in <settings>"});
         }
@@ -329,10 +306,10 @@ namespace
         };
     }
 
-    std::expected<CommSection, csumo_precice::ParseError> parseCommSection(const xmlNodePtr settings_node)
+    std::expected<CommSection, csumo_precice::ParseError> parseCommSection(const pugi::xml_node settings_node)
     {
-        const xmlNodePtr comm_node = findChild(settings_node, "comm");
-        if (comm_node == nullptr)
+        const pugi::xml_node comm_node = findChild(settings_node, "comm");
+        if (!comm_node)
         {
             return std::unexpected(csumo_precice::ParseError{"Required element <comm> not found in <settings>"});
         }
@@ -355,7 +332,7 @@ namespace
     }
 
     std::expected<csumo_precice::DiffuserSettings, csumo_precice::ParseError> parseOneDiffuser(
-        const xmlNodePtr settings_node)
+        const pugi::xml_node settings_node)
     {
         const GeneralSection general = parseGeneralSection(settings_node);
 
@@ -391,52 +368,36 @@ namespace
     // Top-level document parsers
     // -------------------------------------------------------------------------
 
-    std::expected<XmlDocPtr, csumo_precice::ParseError> parseDocument(const std::string_view xml)
+    std::expected<pugi::xml_node, csumo_precice::ParseError> validateRoot(const pugi::xml_document& doc)
     {
-        XmlDocPtr doc{xmlReadMemory(xml.data(), static_cast<int>(xml.size()), nullptr, nullptr, 0), xmlFreeDoc};
-        if (!doc)
-        {
-            const xmlError* error = xmlGetLastError();
-            const bool has_detail = error != nullptr && error->message != nullptr;
-            return std::unexpected(csumo_precice::ParseError{
-                has_detail ? std::format("Failed to parse XML: {}", error->message) : "Failed to parse XML"});
-        }
-        return doc;
-    }
-
-    std::expected<xmlNodePtr, csumo_precice::ParseError> validateRoot(const xmlDoc* doc)
-    {
-        const xmlNodePtr root = xmlDocGetRootElement(doc);
-        if (root == nullptr)
+        const pugi::xml_node root = doc.document_element();
+        if (!root)
         {
             return std::unexpected(csumo_precice::ParseError{"XML document is empty"});
         }
-        if (xmlStrcasecmp(root->name, reinterpret_cast<const xmlChar*>("COSUMO")) != 0 &&
-            xmlStrcasecmp(root->name, reinterpret_cast<const xmlChar*>("CSUMO")) != 0)
+        if (!case_insensitive_equals(root.name(), "COSUMO") && !case_insensitive_equals(root.name(), "CSUMO"))
         {
-            return std::unexpected(csumo_precice::ParseError{
-                std::format("Root element must be <COSUMO>, got: <{}>", reinterpret_cast<const char*>(root->name))});
+            return std::unexpected(
+                csumo_precice::ParseError{std::format("Root element must be <COSUMO>, got: <{}>", root.name())});
         }
         return root;
     }
 
-    std::expected<std::string, csumo_precice::ParseError> parseFileVersion(const xmlNodePtr root)
+    std::expected<std::string, csumo_precice::ParseError> parseFileVersion(const pugi::xml_node root)
     {
         return requiredChildText(root, "fileVersion");
     }
 
     std::expected<std::vector<csumo_precice::DiffuserSettings>, csumo_precice::ParseError> parseAllDiffusers(
-        const xmlNodePtr root)
+        const pugi::xml_node root)
     {
+        auto settings_nodes = root.children() | std::views::filter([](const pugi::xml_node child) {
+                                  return case_insensitive_equals(child.name(), "settings");
+                              });
         std::vector<csumo_precice::DiffuserSettings> result;
-        for (xmlNodePtr child = root->children; child != nullptr; child = child->next)
+        for (const pugi::xml_node node : settings_nodes)
         {
-            if (child->type != XML_ELEMENT_NODE ||
-                xmlStrcasecmp(child->name, reinterpret_cast<const xmlChar*>("settings")) != 0)
-            {
-                continue;
-            }
-            auto diffuser = parseOneDiffuser(child);
+            auto diffuser = parseOneDiffuser(node);
             if (!diffuser)
             {
                 return std::unexpected(diffuser.error());
@@ -464,14 +425,18 @@ namespace csumo_precice
 
     std::expected<CSumoSettingsReader, ParseError> CSumoSettingsReader::fromXml(const std::string_view xml)
     {
-        return parseDocument(xml).and_then([](const XmlDocPtr doc) {
-            return validateRoot(doc.get()).and_then([](const xmlNodePtr root) {
-                return parseFileVersion(root).and_then([root](std::string version) {
-                    return parseAllDiffusers(root).transform(
-                        [version = std::move(version)](std::vector<DiffuserSettings> diffusers) mutable {
-                            return CSumoSettingsReader{std::move(version), std::move(diffusers)};
-                        });
-                });
+        pugi::xml_document doc;
+        const pugi::xml_parse_result parse_result = doc.load_buffer(xml.data(), xml.size());
+        if (!parse_result)
+        {
+            return std::unexpected(ParseError{std::format("Failed to parse XML: {}", parse_result.description())});
+        }
+        return validateRoot(doc).and_then([](const pugi::xml_node root) {
+            return parseFileVersion(root).and_then([root](std::string version) {
+                return parseAllDiffusers(root).transform(
+                    [version = std::move(version)](std::vector<DiffuserSettings> diffusers) mutable {
+                        return CSumoSettingsReader{std::move(version), std::move(diffusers)};
+                    });
             });
         });
     }
