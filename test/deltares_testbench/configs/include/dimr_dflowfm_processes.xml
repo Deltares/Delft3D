@@ -1614,7 +1614,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c402_Course_bacteria" ref="dflowfm_platform_specific_refs">
-  <path version="2026-03-17T10:22:14.180000">e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria</path>
+  <path version="2026-03-17T16:30:04.651000">e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria</path>
   <checks>
     <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
       <parameters>
@@ -1632,7 +1632,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c403_Course_eutrophication" ref="dflowfm_platform_specific_refs">
-  <path version="2026-03-17T10:22:42.324000">e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication</path>
+  <path version="2026-03-17T16:30:15.201000">e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication</path>
   <checks>
     <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
       <parameters>
