@@ -36,7 +36,7 @@ touch ~/.history/.bash_history
 EOF
 
 # Install uv, python, and python tools.
-RUN curl -LsSf https://astral.sh/uv/0.10.4/install.sh | sh
+RUN curl -LsSf https://astral.sh/uv/0.8.4/install.sh | sh
 ENV PATH=/home/dev/.local/bin:$PATH \
     UV_LINK_MODE=copy
 RUN <<"EOF"

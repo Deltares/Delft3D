@@ -2,6 +2,7 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
+
     "postCreateCommand": "bash .devcontainer/delft3d/scripts/post_create_command.sh",
     "mounts": [
         // Persist the bash history into a Docker volume, so you don't lose your bash history when restarting the container.
@@ -9,25 +10,16 @@
         {
             "type": "volume",
             "source": "delft3d-history",
-            "target": "/home/dev/.history"
+            "target": "/home/dev/.history",
         },
         // Volume for the `~/.aws/` directory. You can store your MinIO credentials here.
         {
             "type": "volume",
             "source": "delft3d-aws",
-            "target": "/home/dev/.aws"
+            "target": "/home/dev/.aws",
         },
-        // Mount X11 socket for GUI applications
-        {
-            "type": "bind",
-            "source": "/tmp/.X11-unix",
-            "target": "/tmp/.X11-unix"
-        }
     ],
     "runArgs": ["--ulimit", "stack=-1:-1"],
-    "containerEnv": {
-        "DISPLAY": "${localEnv:DISPLAY}"
-    },
     "customizations": {
         "vscode": {
             "extensions": [
@@ -41,7 +33,7 @@
                 "ms-python.mypy-type-checker",
                 "charliermarsh.ruff",
                 "tamasfe.even-better-toml",
-                "ms-vscode.hexeditor"
+                "ms-vscode.hexeditor",
             ]
         }
     }
