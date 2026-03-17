@@ -816,10 +816,10 @@ class TestSetRunner(ABC):
     def __set_absolute_paths(self, config: TestCaseConfig, location_type: PathType, local_path: str) -> None:
         """Set absolute paths on the config based on location type."""
         if location_type == PathType.INPUT:
-            input_path = Path(local_path)
+            input_path = Path(local_path).resolve()
             config.absolute_test_case_path = str(input_path.with_name(f"{input_path.name}_work"))
         elif location_type == PathType.REFERENCE:
-            config.absolute_test_case_reference_path = local_path
+            config.absolute_test_case_reference_path = str(Path(local_path).resolve())
 
     def __download_files(
         self,
