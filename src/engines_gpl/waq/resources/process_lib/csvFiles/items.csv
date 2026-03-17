@@ -2748,7 +2748,7 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "FloFnAlg30","x"," ",   -999.000    ,"(-)                 ","flocculation function on settling algae type 30   ","volume    ","volume    "," ","                              "
 "ZSedIM1   ","x"," ",    0.00000    ,"(g/m2/d)            ","zeroth-order sedimentation flux IM1               ","volume    ","volume    "," ","                              "
 "TaucSIM1  ","x"," ",   0.100000    ,"(N/m2)              ","critical shear stress for sedimentation IM1       ","volume    ","volume    "," ","                              "
-"MinDepth  ","x"," ",   0.100000    ,"(m)                 ","minimum waterdepth for sedimentation/resuspension ","volume    ","volume    "," ","                              "
+"MinDepth  ","x"," ",   0.000000    ,"(m)                 ","minimum waterdepth for sedimentation/resuspension ","volume    ","volume    "," ","                              "
 "PSedIM1   ","x"," ",   -999.000    ,"(-)                 ","sedimentation probability <0-1> IM1               ","volume    ","volume    "," ","                              "
 "fSedIM1   ","x"," ",    0.00000    ,"(g/m2/d)            ","sedimentation flux IM1 towards S1                 ","volume    ","volume    "," ","                              "
 "VxSedIM1  "," ","x",    0.00000    ,"(m/s)               ","sedimentation velocity IM1                        ","volume    ","volume    "," ","                              "
