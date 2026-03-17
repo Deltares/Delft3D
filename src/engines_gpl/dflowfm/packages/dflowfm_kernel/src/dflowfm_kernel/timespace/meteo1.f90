@@ -6250,7 +6250,7 @@ module m_meteo
    implicit none
 
    type(tEcInstance), pointer, save :: ecInstancePtr !< FM's instance of the EC-module.
-   character(maxMessageLen) :: message !< EC's message, to be passed to FM's log.
+   character(MAXIMUM_EC_MESSAGE_LENGTH) :: message !< EC's message, to be passed to FM's log.
    !
    integer, dimension(:), allocatable, target :: item_tracerbnd !< dim(numtracers)
    integer, dimension(:), allocatable, target :: item_sedfracbnd !< dim(numfracs)
@@ -7096,14 +7096,14 @@ contains
       ! FM re-initialize call: First destroy the EC-module instance.
       if (associated(ecInstancePtr)) then
          if (.not. ecFreeInstance(ecInstancePtr)) then
-            message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          end if
       end if
       ! FM initialize call or second phase of re-initialize call.
       if (.not. associated(ecInstancePtr)) then
          call init_variables()
          if (.not. ecCreateInstance(ecInstancePtr)) then
-            message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          end if
       end if
       if (jsferic == 1) then
@@ -7269,7 +7269,7 @@ contains
       arr1dPtr => ecItemGetArr1DPtr(instancePtr, itemId, 2)
       blksize = size(arr1dPtr)
 
-      call clearECMessage()
+      call clear_ec_message()
       do while (t0 + it * dt < t1)
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, itemId, irefdate, tzone, tunit, t0 + it * dt, &
                                                   target_array(it * blksize + 1:(it + 1) * blksize))) then

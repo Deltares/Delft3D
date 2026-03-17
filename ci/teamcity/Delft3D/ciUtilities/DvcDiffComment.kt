@@ -13,6 +13,11 @@ object DvcDiffComment : BuildType({
     templates(
         TemplateMergeRequest,
     )
+
+    params {
+        param("minio_testbench_access_key_id", DslContext.getParameter("minio_testbench_access_key_id"))
+        password("minio_testbench_access_secret", DslContext.getParameter("minio_testbench_access_secret"))
+    }
     
     vcs {
         root(DslContext.settingsRoot)
@@ -23,10 +28,9 @@ object DvcDiffComment : BuildType({
         script {
             name = "place a comment on the PR"
             scriptContent = """
-            cd ci/teamcity/Delft3D/ciUtilities/
-            uv sync 
-            source .venv/bin/activate
-            ./scripts/postDvcDiffReport.sh "%teamcity.pullRequest.target.branch%" "%teamcity.pullRequest.number%" "%github_deltares-service-account_access_token%" 
+            UV_PROJECT="ci/teamcity/Delft3D/ciUtilities/" uv sync 
+            source ci/teamcity/Delft3D/ciUtilities/.venv/bin/activate
+            AWS_ACCESS_KEY_ID="%minio_testbench_access_key_id%" AWS_SECRET_ACCESS_KEY="%minio_testbench_access_secret%" ./ci/teamcity/Delft3D/ciUtilities/scripts/postDvcDiffReport.sh "%teamcity.pullRequest.target.branch%" "%teamcity.pullRequest.number%" "%github_deltares-service-account_access_token%" 
             """
         }
         

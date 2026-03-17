@@ -17,11 +17,8 @@ Using another container platform `podman` should also work.
 ## Buildtools container
 The `buildtools.Dockerfile` contains build instructions to build the `buildtools` container image. 
 It uses a 'base' almalinux 8 image copied from [dockerhub](https://hub.docker.com/_/almalinux) and  pushed to our own [Harbor registry](https://containers.deltares.nl/harbor/projects/21/repositories/almalinux/artifacts-tab).
-Outside Deltares, you may need to point to the original image.
-In that case replace the first line of the Dockerfile starting with `FROM` by
-```
-FROM almalinux:8 as buildtools
-```
+Outside Deltares, you may need to point to the original image; see the `BASE_IMAGE_URL` build argument.
+
 The Dockerfile continues by installing a few essential tools and programs using `dnf` (including `make` and `wget`) along with the C, C++ and Fortran compilers, MPI tools and libraries and the math kernel library from Intel.
 Unfortunately we need quite a lot of tools to be able to build all of the third party libraries required.
 Some libraries have a complex configuration set-up.
@@ -32,8 +29,12 @@ These can also be installed using `dnf`, but unfortunately even the most recent 
 Some libraries that we want to compile from source code can't be built using the outdated versions of this software.
 
 ### Build arguments
-The dockerfile has a single build argument: 
+The dockerfile has two build arguments: 
+- `BASE_IMAGE_URL` (default value: `containers.deltares.nl/base_linux_containers/8-base:latest`)
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
+
+The `BASE_IMAGE_URL` points to the repository where the base image is located.
+This URL can be set to `almalinux:8` when you would like to create a `buildtools` image based on the default Alma Linux 8 image available on DockerHub.
 
 Valid values for `INTEL_ONEAPI_VERSION` are `2023` and `2024`.
 This build argument allows you to choose which versions of the C, C++ and Fortran compilers you want to install in the `buildtools` image.
@@ -42,7 +43,8 @@ This build argument allows you to choose which versions of the C, C++ and Fortra
 From the Delft3D repository root:
 ```bash
 export TAG=oneapi-2024
-sudo docker build . -f ci/dockerfiles/linux/buildtools.Dockerfile -t localhost/buildtools:$TAG --build-arg INTEL_ONEAPI_VERSION=2024
+sudo docker build . -f ci/dockerfiles/linux/buildtools.Dockerfile -t localhost/buildtools:$TAG \
+    --build-arg INTEL_ONEAPI_VERSION=2024
 ```
 Note: Passing the build arguments is not necessary if the default value is required.
 
@@ -93,7 +95,7 @@ make install
 ### Build arguments
 The dockerfile has several build arguments:
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
-- `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
+- `INTEL_FORTRAN_COMPILER` (default value: `ifx`)
 - `DEBUG` (default value: `0`)
 - `BUILDTOOLS_IMAGE_URL` (default value: `containers.deltares.nl/delft3d-dev/delft3d-buildtools`)
 - `BUILDTOOLS_IMAGE_TAG` (default value: `oneapi-${INTEL_ONEAPI_VERSION}`)
