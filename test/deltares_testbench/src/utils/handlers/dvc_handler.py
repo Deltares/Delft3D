@@ -83,9 +83,12 @@ class DvcHandler(IHandler):
                     raise FileNotFoundError(f"DVC file not found: {dvc_file}")
                 dvcfile = load_file(self.__repo, dvc_file)
                 for stage in dvcfile.stages.values():
+                    logger.debug(f"Stage addressing: {stage.addressing}")
                     all_targets.append(stage.addressing)
 
             logger.info(f"Fetching {len(all_targets)} DVC targets in one batch (jobs={jobs})")
+            logger.debug(f"DVC repo root: {self.__repo.root_dir}")
+            logger.debug(f"DVC targets: {all_targets}")
             fetch_result = self.__repo.fetch(targets=all_targets, jobs=jobs)
             logger.info(f"Fetch result: {fetch_result}")
 
@@ -105,7 +108,7 @@ class DvcHandler(IHandler):
                 for m in missing:
                     logger.error(f"  - {m}")
                 raise FileNotFoundError(
-                    f"DVC checkout did not produce {len(missing)} expected directories. " f"First missing: {missing[0]}"
+                    f"DVC checkout did not produce {len(missing)} expected directories. First missing: {missing[0]}"
                 )
 
             logger.info(f"Batch DVC download complete for {len(dvc_files)} .dvc files")
@@ -189,10 +192,13 @@ class DvcHandler(IHandler):
             Path to the DVC repository root.
         """
         current = os.path.dirname(os.path.abspath(path))
-        while current != "/":
+        while True:
             if os.path.isdir(os.path.join(current, ".dvc")):
                 # Resolve to true filesystem casing so DVC/scmrepo path
                 # comparisons work on case-insensitive (Windows) file systems.
                 return os.path.realpath(current)
-            current = os.path.dirname(current)
+            parent = os.path.dirname(current)
+            if parent == current:
+                break
+            current = parent
         raise ValueError("Could not find DVC repository root (.dvc directory)")
