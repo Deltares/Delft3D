@@ -74,10 +74,9 @@ class DvcHandler(IHandler):
             os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.password
 
         try:
-            # Collect all .dvc file paths as targets, relative to repo root.
-            # We cannot use stage.addressing because it computes paths relative
-            # to cwd instead of repo root, causing fetch to silently miss files
-            # when cwd differs from the repo root (e.g. on Windows CI).
+            # Collect absolute paths to .dvc files as targets.
+            # DVC resolves relative targets against CWD, not repo root,
+            # so we use absolute paths to avoid ambiguity.
             all_targets: list[str] = []
             for dvc_file in dvc_files:
                 # Resolve to real path so casing matches the repo root on Windows
@@ -85,9 +84,7 @@ class DvcHandler(IHandler):
                 logger.debug(f"Loading DVC file: {dvc_file}")
                 if not os.path.isfile(dvc_file):
                     raise FileNotFoundError(f"DVC file not found: {dvc_file}")
-                target = os.path.relpath(dvc_file, self.__repo.root_dir)
-                logger.debug(f"DVC target (relative to repo root): {target}")
-                all_targets.append(target)
+                all_targets.append(dvc_file)
 
             logger.info(f"Fetching {len(all_targets)} DVC targets in one batch (jobs={jobs})")
             logger.debug(f"DVC repo root: {self.__repo.root_dir}")
@@ -159,11 +156,9 @@ class DvcHandler(IHandler):
             if not os.path.isfile(dvc_file):
                 raise FileNotFoundError(f"DVC file not found: {dvc_file}")
 
-            # Use relative path from repo root instead of stage.addressing,
-            # which computes relative to cwd and breaks when cwd != repo root.
-            target = os.path.relpath(dvc_file, self.__repo.root_dir)
-            self.__repo.fetch(targets=[target])
-            self.__repo.checkout(targets=[target], force=True)
+            # Use absolute path to avoid CWD vs repo root ambiguity.
+            self.__repo.fetch(targets=[dvc_file])
+            self.__repo.checkout(targets=[dvc_file], force=True)
 
             logger.info(f"Downloading DVC directory complete: {dvc_file}")
 
