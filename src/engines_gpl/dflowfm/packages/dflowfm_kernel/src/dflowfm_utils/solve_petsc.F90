@@ -752,8 +752,6 @@ contains
          go to 1234
       end if
 
-      reason%v = -9
-
       ! check for convergence
       if (Reason%v == KSP_DIVERGED_INDEFINITE_PC%v) then
          if (my_rank == 0) then
