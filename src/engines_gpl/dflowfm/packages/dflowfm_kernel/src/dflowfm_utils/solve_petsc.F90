@@ -682,7 +682,7 @@ contains
 
    !> Solve the linear system with PETSc KSP solver
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
-      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm, &
+      use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, kspgetiterationnumber, kspgetresidualnorm, &
          eKSPConvergedReason, KSPGetConvergedReasonString
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
@@ -752,6 +752,8 @@ contains
          go to 1234
       end if
 
+      reason%v = -9
+
       ! check for convergence
       if (Reason%v == KSP_DIVERGED_INDEFINITE_PC%v) then
          if (my_rank == 0) then
@@ -763,8 +765,9 @@ contains
             Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
       else if (Reason%v < 0) then
          call KSPGetConvergedReasonString(Solver, reason_string, ierr)
-         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: ', reason_string)
-         ! see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: ', reason_string, '. &
+            Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
+         ! see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason            
       else
          call KSPGetIterationNumber(Solver, its, ierr)
          ! compute residual
