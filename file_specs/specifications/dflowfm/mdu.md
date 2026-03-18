@@ -101,8 +101,8 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `sillHeightMin` | Fixed weir only active if both ground heights are larger than this value. | `0.0` |  | [m AD] |
 | `makeOrthoCenters` | Switch from circumcentres to orthocenters in geominit. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `dCenterInside` | Limit cell center; 1.0:in cell <-> 0.0:on c/g. | `1.0` | `[0.0, 1.0]` | [-] |
-| `circumcenterMethod` | Circumcenter computation method. | `internalNetlinksEdge` | <ul><li>**`internalNetlinksEdge`**: iterate each edge</li><li>**`internalNetlinksLoop`**: iterate each loop</li><li>**`allNetlinksLoop`**: iterate each edge and each loop</li></ul> | [-] |
-| `circumcenterTolerance` | Tolerance for convergence of circumcenter method. | `0.001` |  | [m] |
+| `circumcenterMethod` | Circumcenter computation method. | `internalNetlinksEdge` | <ul><li>**`internalNetlinksEdge`**: iterate each edge</li><li>**`internalNetlinksLoop`**: iterate each loop</li><li>**`allNetlinksLoop`**: iterate each edge and each loop</li><li>**`status`**: deprecated</li></ul> | [-] |
+| `circumcenterTolerance` ⚠️ | Tolerance for convergence of circumcenter method. | `0.001` |  | [m] |
 | `baMin` | Minimum grid cell area, i.c.m. cutcells. | `1e-06` |  | [m²] |
 | `openBoundaryTolerance` | Search tolerance factor between boundary polyline and grid cells. | `3.0` |  | [cell size] |
 | `renumberFlowNodes` | Renumber the flow nodes. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
@@ -358,7 +358,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | `schmidtNumberSalinity` 🔬 | Turbulent Schmidt number for salinity. |  |  |  |
 | `schmidtNumberTracer` 🔬 | Turbulent Schmidt number for tracer(s). |  |  |  |
 | `umodLin` 🔬 | Linear friction umod. |  |  |  |
-| `jadelvappos` | Only positive forced evaporation fluxes. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
+| `jadelvappos` ⚠️ | Only positive forced evaporation fluxes. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `freeConvectionCoefficient` 🔬 | Free convection turbulence coefficient. | `0.14` |  |  |
 | `uniffrictcoef1dgrlay` 🔬 | Uniform ground layer friction coefficient for ocean models. |  |  | [m/s] |
 | `salinityDependentFreezingPoint` | Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |

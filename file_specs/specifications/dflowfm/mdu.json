@@ -422,7 +422,8 @@
                     "enum_values": {
                     "internalNetlinksEdge": "iterate each edge",
                     "internalNetlinksLoop": "iterate each loop",
-                    "allNetlinksLoop": "iterate each edge and each loop"
+                    "allNetlinksLoop": "iterate each edge and each loop",
+					"status": "deprecated"
                     }
                 },
                 {
@@ -430,7 +431,8 @@
                     "value_type": "float",
                     "default_value": 1e-3,
                     "description": "Tolerance for convergence of circumcenter method.",
-                    "unit": "m"
+                    "unit": "m",
+					"status": "deprecated"
                 },
                 {
                     "key": "baMin",
