@@ -961,65 +961,102 @@ contains
 
    end function init_meteo_forcings
 
-   !> Read sourcesink blocks from new external forcings file.
-   function init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+   !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
+   module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
-      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
-      use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
-      use dfm_error, only: DFM_NOERR
+      use m_filez, only: oldfil
+      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
+      use m_reapol, only: reapol
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
 
-      character(len=INI_VALUE_LEN) :: sourcesink_id
-      character(len=INI_VALUE_LEN) :: sourcesink_name
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+      integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink
+      
+
       character(len=INI_VALUE_LEN) :: location_file
-      character(len=INI_VALUE_LEN) :: discharge_input
-      character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
-      character(len=NAMLEN) :: const_name_with_prefix
-      character(len=INI_VALUE_LEN) :: quantity_id, property_name
+      character(len=INI_VALUE_LEN) :: sourcesink_id
 
       integer :: num_coordinates
-      real(kind=dp), dimension(:), allocatable :: x_coordinates
-      real(kind=dp), dimension(:), allocatable :: y_coordinates
-      ! only constant profiles (1 value) or linear profiles (2 values) are allowed
-      integer, parameter :: num_range_points = 2
-      real(kind=dp), dimension(num_range_points) :: z_range_source
-      real(kind=dp), dimension(num_range_points) :: z_range_sink
-      real(kind=dp) :: area
-      integer :: i_const
       integer :: ierr
+      integer :: polyline_file_lun ! polyline file logical unit number
       logical :: is_successful
       logical :: is_read
+      logical :: source_z_in_ext_file, sink_z_in_ext_file
       logical :: have_location_file, have_location_coordinates
 
       is_successful = .false.
-
-      sourcesink_id = ' '
-      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
-      if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
-         call err_flush()
-         return
-      end if
-      call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
-
+      z_range_source(:) = dmiss
+      z_range_sink(:) = dmiss
+      
+      ! Read source/sink z range information from ext file, load it from the polyline file later on as a fallback.
+      source_z_in_ext_file = .false.
+      sink_z_in_ext_file = .false.
+      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, source_z_in_ext_file)
+      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, sink_z_in_ext_file)
+      
       call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
       if (have_location_file) then
+         ! Read data from polyline file
          call resolvePath(location_file, base_dir)
+         
+         call oldfil(polyline_file_lun, location_file)
+         if (polyline_file_lun == 0) then
+            write (msgbuf, '(a)') "Error in source sink initialization, failed to read polyline file '" // trim(location_file) // "'"
+            call err_flush()
+            return
+         end if
+         
+         call reapol(polyline_file_lun, 0)
+         if (npl == 0) then
+            write (msgbuf, '(a)') "Error in source sink initialization, no data in polyline file '" // trim(location_file) // "'"
+            call err_flush()
+            return
+         end if
+         
+         ! Avoid having two places specifying the same (and potentially conflicting) z data.
+         if (colpl > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
+            write (msgbuf, '(a)') 'Error in source sink initialization, source/sink z information cannot be specified both' &
+               // 'in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
+            call err_flush()
+            return
+         end if
+         
+         if (.not. source_z_in_ext_file) then
+            z_range_source(1) = zpl(npl)
+            if (colpl > 3) then 
+               z_range_source(2) = dzL(npl) ! 3rd and 4th column contain z range
+            end if
+         end if
+         
+         if (.not. sink_z_in_ext_file) then
+            z_range_sink(1) = zpl(1)
+            if (colpl > 3) then 
+               z_range_sink(2) = dzL(1) ! 3rd and 4th column contain z range
+            end if
+         end if
+         
+         allocate (x_coordinates(npl), stat=ierr)
+         allocate (y_coordinates(npl), stat=ierr)
+         x_coordinates = xpl(1:npl)
+         y_coordinates = ypl(1:npl)
       else
+         ! Read data directly from ext file
          call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
          if (is_read) then
             if (num_coordinates <= 0) then
-               write (msgbuf, '(3a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
+               call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
+               write (msgbuf, '(a)') 'SourceSink ''' // trim(sourcesink_id) // ''': numCoordinates must be greater than 0.'
                call err_flush()
                return
             end if
@@ -1032,21 +1069,76 @@ contains
          end if
          have_location_coordinates = is_read
       end if
+      
       if (.not. have_location_file .and. .not. have_location_coordinates) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Location information is incomplete or missing.'
          call err_flush()
          return
       end if
+      
+      is_successful = .true.
+   end function
+   
+   !> Read sourcesink blocks from new external forcings file.
+   function init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+      use messageHandling, only: err_flush, msgbuf
+      use tree_data_types, only: tree_data
+      use properties, only: prop_get
+      use unstruc_files, only: resolvePath
+      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
+      use netcdf_utils, only: ncu_sanitize_name
+      use m_missing, only: dmiss
+      use m_addsorsin, only: addsorsin
+      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
+      use dfm_error, only: DFM_NOERR
+      use m_filez, only: oldfil
+      use m_polygon, only: xpl, ypl, zpl, dzL
+      use m_reapol, only: reapol
 
-      ! read optional vertical profiles.
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+      character(len=INI_VALUE_LEN) :: sourcesink_id
+      character(len=INI_VALUE_LEN) :: sourcesink_name
+      character(len=INI_VALUE_LEN) :: discharge_input
+      character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
+      character(len=NAMLEN) :: const_name_with_prefix
+      character(len=INI_VALUE_LEN) :: quantity_id, property_name
+
+      real(kind=dp), dimension(:), allocatable :: x_coordinates
+      real(kind=dp), dimension(:), allocatable :: y_coordinates
+      integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
+      real(kind=dp), dimension(num_range_points) :: z_range_source
+      real(kind=dp), dimension(num_range_points) :: z_range_sink
+      real(kind=dp) :: area
+      integer :: i_const
+      integer :: ierr
+      logical :: is_successful
+      logical :: is_read
+
+      is_successful = .false.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
-      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
-      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, is_read)
 
+      sourcesink_id = ' '
+      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
+      if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
+         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Field ''id'' is missing.'
+         call err_flush()
+         return
+      end if
+      call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
+
+      is_successful = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      if (.not. is_successful) then
+         return ! Error message already printed in sourcesink_parse_coordinates
+      end if
+      
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
@@ -1054,17 +1146,12 @@ contains
       ! read optional value 'area' to compute the momentum released
       area = 0.0_dp
       call prop_get(block_ptr, '', 'area', area, is_read)
-
-      if (have_location_file) then
-         call addsorsin_from_polyline_file(location_file, sourcesink_id, z_range_source, z_range_sink, area, ierr)
-      else
-         call addsorsin(sourcesink_id, x_coordinates, y_coordinates, &
-                        z_range_source, z_range_sink, area, ierr)
-      end if
-
+      
+      ! Create the actual source/sink based on the parsed data
+      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
+         write (msgbuf, '(a)') 'Error while processing ''' // trim(file_name) // ''': [' // trim(group_name), ']. ' &
+            // 'Source sink with id=' //trim(sourcesink_id) //'. could not be added.'
          call err_flush()
          return
       end if
@@ -1075,8 +1162,8 @@ contains
                                                     1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
+         write (msgbuf, '(a)') 'Error while processing ''' // trim(file_name) // ''': [' // trim(group_name) // ']. ' &
+            // 'Could not initialize discharge data in ''' // trim(discharge_input) // ''' for source sink with id=' // trim(sourcesink_id)//'.'
          call err_flush()
          return
       end if
@@ -1260,6 +1347,7 @@ contains
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
       use m_bubblescreen
       use m_setsorsin
+      use m_missing, only: dmiss
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1313,7 +1401,7 @@ contains
                   write(srcid, '(A,I0)') trim(id), bubble_source_count + 1
 
                   tmsz = (zws(i) + zws(i-1)) / 2.0_dp
-                  call addsorsin(srcid, [tmsx], [tmsy], [tmsz], [tmsz], 0.0_dp, ierr)
+                  call addsorsin(srcid, [tmsx], [tmsy], [tmsz, dmiss], [tmsz, dmiss], 0.0_dp, ierr)
                                     
                   write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, tmsz
                   call msg_flush()
