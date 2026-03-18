@@ -101,8 +101,8 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `sillHeightMin` | Fixed weir only active if both ground heights are larger than this value. | `0.0` |  | [m AD] |
 | `makeOrthoCenters` | Switch from circumcentres to orthocenters in geominit. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `dCenterInside` | Limit cell center; 1.0:in cell <-> 0.0:on c/g. | `1.0` | `[0.0, 1.0]` | [-] |
-| `circumcenterMethod` | Circumcenter computation method. | `internalNetlinksEdge` | <ul><li>**`internalNetlinksEdge`**: iterate each edge</li><li>**`internalNetlinksLoop`**: iterate each loop</li><li>**`allNetlinksLoop`**: iterate each edge and each loop</li><li>**`status`**: deprecated</li></ul> | [-] |
-| `circumcenterTolerance` ⚠️ | Tolerance for convergence of circumcenter method. | `0.001` |  | [m] |
+| `circumcenterMethod` | Circumcenter computation method. | `allNetlinksLoop` | <ul><li>**`internalNetlinksEdge`**: iterate each edge</li><li>**`internalNetlinksLoop`**: iterate each loop</li><li>**`allNetlinksLoop`**: iterate each edge and each loop</li></ul> | [-] |
+| `circumcenterTolerance` | Tolerance for convergence of circumcenter method. | `1e-15` |  | [m] |
 | `baMin` | Minimum grid cell area, i.c.m. cutcells. | `1e-06` |  | [m²] |
 | `openBoundaryTolerance` | Search tolerance factor between boundary polyline and grid cells. | `3.0` |  | [cell size] |
 | `renumberFlowNodes` | Renumber the flow nodes. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |

@@ -416,7 +416,7 @@
                 {
                     "key": "circumcenterMethod",
                     "value_type": "enum",
-                    "default_value": "internalNetlinksEdge",
+                    "default_value": "allNetlinksLoop",
                     "description": "Circumcenter computation method.",
                     "unit": "-",
                     "enum_values": {
@@ -429,7 +429,7 @@
                 {
                     "key": "circumcenterTolerance",
                     "value_type": "float",
-                    "default_value": 1e-3,
+                    "default_value": 1e-15,
                     "description": "Tolerance for convergence of circumcenter method.",
                     "unit": "m",
 					"status": "deprecated"
