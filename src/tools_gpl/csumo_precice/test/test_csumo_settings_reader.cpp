@@ -33,6 +33,7 @@ namespace
       <XYintake>567.0 350.0</XYintake>
       <discharge>
         <M3s>10.0</M3s>
+        <constituentsOperator>excess</constituentsOperator>
         <constituents>10.0 0.0 0.0</constituents>
       </discharge>
       <D0>50000</D0>
@@ -158,6 +159,95 @@ TEST(CSumoSettingsReaderTest, ParsesDischarge)
     EXPECT_DOUBLE_EQ(discharge.constituents[2], 0.0);
 }
 
+TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorExcess)
+{
+    const auto result = csumo_precice::CSumoSettingsReader::fromXml(full_settings_xml);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->diffusers().front().discharge.constituents_operator, csumo_precice::ConstituentsOperator::Excess);
+}
+
+TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorAbsolute)
+{
+    constexpr std::string_view xml = R"(<?xml version="1.0"?>
+<COSUMO>
+  <fileVersion>0.3</fileVersion>
+  <settings>
+    <general><ID>D1</ID><subGridModel/><farFieldModel/></general>
+    <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
+    <data>
+      <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
+      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
+      <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
+    </data>
+  </settings>
+</COSUMO>)";
+    const auto result = csumo_precice::CSumoSettingsReader::fromXml(xml);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->diffusers().front().discharge.constituents_operator,
+              csumo_precice::ConstituentsOperator::Absolute);
+}
+
+TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorCaseInsensitive)
+{
+    constexpr std::string_view xml = R"(<?xml version="1.0"?>
+<COSUMO>
+  <fileVersion>0.3</fileVersion>
+  <settings>
+    <general><ID>D1</ID><subGridModel/><farFieldModel/></general>
+    <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
+    <data>
+      <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
+      <discharge><M3s>5.0</M3s><constituentsOperator>EXCESS</constituentsOperator></discharge>
+      <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
+    </data>
+  </settings>
+</COSUMO>)";
+    const auto result = csumo_precice::CSumoSettingsReader::fromXml(xml);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->diffusers().front().discharge.constituents_operator, csumo_precice::ConstituentsOperator::Excess);
+}
+
+TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingConstituentsOperator)
+{
+    constexpr std::string_view xml = R"(<?xml version="1.0"?>
+<COSUMO>
+  <fileVersion>0.3</fileVersion>
+  <settings>
+    <general><ID>D1</ID><subGridModel/><farFieldModel/></general>
+    <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
+    <data>
+      <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
+      <discharge><M3s>5.0</M3s></discharge>
+      <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
+    </data>
+  </settings>
+</COSUMO>)";
+    const auto result = csumo_precice::CSumoSettingsReader::fromXml(xml);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_PRED2(contains, result.error().message, "constituentsOperator");
+}
+
+TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidConstituentsOperator)
+{
+    constexpr std::string_view xml = R"(<?xml version="1.0"?>
+<COSUMO>
+  <fileVersion>0.3</fileVersion>
+  <settings>
+    <general><ID>D1</ID><subGridModel/><farFieldModel/></general>
+    <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
+    <data>
+      <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
+      <discharge><M3s>5.0</M3s><constituentsOperator>invalid</constituentsOperator></discharge>
+      <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
+    </data>
+  </settings>
+</COSUMO>)";
+    const auto result = csumo_precice::CSumoSettingsReader::fromXml(xml);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_PRED2(contains, result.error().message, "constituentsOperator");
+    EXPECT_PRED2(contains, result.error().message, "invalid");
+}
+
 TEST(CSumoSettingsReaderTest, ParsesGeometryParameters)
 {
     const auto result = csumo_precice::CSumoSettingsReader::fromXml(full_settings_xml);
@@ -188,7 +278,7 @@ TEST(CSumoSettingsReaderTest, Nf2ffFileIsNulloptWhenAbsent)
     <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
     <data>
       <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>5.0</M3s></discharge>
+      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
       <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
     </data>
   </settings>
@@ -231,7 +321,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingCommSection)
     <data>
       <XYdiff>1.0 2.0</XYdiff>
       <XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>1.0</M3s></discharge>
+      <discharge><M3s>1.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
       <D0>0.5</D0><H0>1.0</H0><Theta0>0.0</Theta0><Sigma0>0.0</Sigma0>
     </data>
   </settings>
@@ -291,7 +381,7 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidTokenInConstituents)
     <data>
       <XYdiff>1.0 2.0</XYdiff>
       <XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>1.0</M3s><constituents>10.0 bad 0.0</constituents></discharge>
+      <discharge><M3s>1.0</M3s><constituentsOperator>absolute</constituentsOperator><constituents>10.0 bad 0.0</constituents></discharge>
       <D0>0.5</D0><H0>1.0</H0><Theta0>0.0</Theta0><Sigma0>0.0</Sigma0>
     </data>
   </settings>
@@ -312,7 +402,7 @@ TEST(CSumoSettingsReaderTest, ParsesMultipleDiffusers)
     <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
     <data>
       <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>5.0</M3s></discharge>
+      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
       <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
     </data>
   </settings>
@@ -321,7 +411,7 @@ TEST(CSumoSettingsReaderTest, ParsesMultipleDiffusers)
     <comm><FF2NFdir>c</FF2NFdir><FFrundir>d</FFrundir></comm>
     <data>
       <XYdiff>5.0 6.0</XYdiff><XYintake>7.0 8.0</XYintake>
-      <discharge><M3s>9.0</M3s></discharge>
+      <discharge><M3s>9.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
       <D0>1.0</D0><H0>2.0</H0><Theta0>3.0</Theta0><Sigma0>4.0</Sigma0>
     </data>
   </settings>

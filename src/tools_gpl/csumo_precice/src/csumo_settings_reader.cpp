@@ -214,6 +214,25 @@ namespace
                std::views::transform([](const auto& result) { return *result; }) | std::ranges::to<std::vector>();
     }
 
+    std::expected<csumo_precice::ConstituentsOperator, csumo_precice::ParseError> parseConstituentsOperator(
+        const pugi::xml_node discharge_node)
+    {
+        return requiredChildText(discharge_node, "constituentsOperator")
+            .and_then([](const std::string& text)
+                          -> std::expected<csumo_precice::ConstituentsOperator, csumo_precice::ParseError> {
+                if (case_insensitive_equals(text, "absolute"))
+                {
+                    return csumo_precice::ConstituentsOperator::Absolute;
+                }
+                if (case_insensitive_equals(text, "excess"))
+                {
+                    return csumo_precice::ConstituentsOperator::Excess;
+                }
+                return std::unexpected(csumo_precice::ParseError{std::format(
+                    "<constituentsOperator> has unknown value: '{}'; expected 'absolute' or 'excess'", text)});
+            });
+    }
+
     std::expected<csumo_precice::Discharge, csumo_precice::ParseError> parseDischarge(const pugi::xml_node data_node)
     {
         const pugi::xml_node discharge_node = findChild(data_node, "discharge");
@@ -222,9 +241,12 @@ namespace
             return std::unexpected(csumo_precice::ParseError{"Required element <discharge> not found in <data>"});
         }
         return parseRequiredDouble(discharge_node, "M3s").and_then([discharge_node](const double flow_rate) {
-            return parseDoubleVector(childText(discharge_node, "constituents"), "constituents")
-                .transform([flow_rate](std::vector<double> constituents) {
-                    return csumo_precice::Discharge{flow_rate, std::move(constituents)};
+            return parseConstituentsOperator(discharge_node)
+                .and_then([discharge_node, flow_rate](const csumo_precice::ConstituentsOperator op) {
+                    return parseDoubleVector(childText(discharge_node, "constituents"), "constituents")
+                        .transform([flow_rate, op](std::vector<double> constituents) {
+                            return csumo_precice::Discharge{flow_rate, op, std::move(constituents)};
+                        });
                 });
         });
     }

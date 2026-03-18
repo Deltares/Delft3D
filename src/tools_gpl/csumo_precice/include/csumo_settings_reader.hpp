@@ -28,6 +28,19 @@ namespace csumo_precice
     };
 
     /**
+     * @brief Operator applied to constituent concentrations.
+     *
+     * Corresponds to the &lt;constituentsOperator&gt; element inside &lt;discharge&gt;.
+     * - Absolute: values are absolute concentrations.
+     * - Excess: values are excess (delta) concentrations relative to ambient.
+     */
+    enum class ConstituentsOperator
+    {
+        Absolute, ///< Absolute concentration values
+        Excess,   ///< Excess (delta) concentration values
+    };
+
+    /**
      * @brief Discharge characteristics of a near-field diffuser.
      *
      * Corresponds to the &lt;discharge&gt; element inside &lt;data&gt;.
@@ -35,6 +48,8 @@ namespace csumo_precice
     struct Discharge
     {
             double flow_rate{}; ///< Volume flow rate [m³/s] (&lt;M3s&gt;)
+            ConstituentsOperator
+                constituents_operator{}; ///< Operator for constituent values (&lt;constituentsOperator&gt;)
             std::vector<double>
                 constituents; ///< Concentrations: temperature, salinity, sediments, tracers (&lt;constituents&gt;)
     };
@@ -54,12 +69,12 @@ namespace csumo_precice
             // --- data section ---
             Point2D position; ///< Diffuser position in the flow grid (&lt;XYdiff&gt;)
             std::vector<Point2D>
-                ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
-            Point2D intake;        ///< Intake location (&lt;XYintake&gt;)
-            Discharge discharge;   ///< Discharge characteristics (&lt;discharge&gt;)
-            double nozzle_diameter{}; ///< Nozzle diameter [m] (&lt;D0&gt;)
+                ambient_positions;     ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
+            Point2D intake;            ///< Intake location (&lt;XYintake&gt;)
+            Discharge discharge;       ///< Discharge characteristics (&lt;discharge&gt;)
+            double nozzle_diameter{};  ///< Nozzle diameter [m] (&lt;D0&gt;)
             double nozzle_elevation{}; ///< Height above the bed [m] (&lt;H0&gt;)
-            double vertical_angle{};  ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
+            double vertical_angle{};   ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
             double horizontal_angle{}; ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
             std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional)
 
