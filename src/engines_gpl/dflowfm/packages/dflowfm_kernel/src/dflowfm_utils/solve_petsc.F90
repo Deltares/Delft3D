@@ -682,7 +682,8 @@ contains
 
    !> Solve the linear system with PETSc KSP solver
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
-      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm, eKSPConvergedReason
+      use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, kspgetiterationnumber, kspgetresidualnorm, &
+         eKSPConvergedReason, KSPGetConvergedReasonString
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
       use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver
@@ -704,6 +705,7 @@ contains
       PetscErrorCode :: ierr
       KSPConvergedReason :: Reason
       character(len=100) :: message
+      character(len=100) :: reason_string
 
       jasucces = 0
       ierr = PETSC_OK
@@ -755,9 +757,15 @@ contains
          if (my_rank == 0) then
             call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
          end if
+      else if (Reason%v == KSP_DIVERGED_NANORINF%v) then
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: a not a number or infinity was detected in a vector during the computation. &
+            The simulation became numerically unstable, generating invalid values (NaN/Infinity), which caused the model to crash. &
+            Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
       else if (Reason%v < 0) then
-         call mess(LEVEL_WARN, 'Other kind of divergence: this should not happen, reason = ', Reason%v)
-         ! see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason
+         call KSPGetConvergedReasonString(Solver, reason_string, ierr)
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: ', reason_string, '. &
+            Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
+         ! see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason            
       else
          call KSPGetIterationNumber(Solver, its, ierr)
          ! compute residual
