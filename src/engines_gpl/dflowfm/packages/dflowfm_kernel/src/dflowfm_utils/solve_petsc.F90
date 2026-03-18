@@ -757,6 +757,10 @@ contains
          if (my_rank == 0) then
             call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
          end if
+      else if (Reason%v == KSP_DIVERGED_NANORINF%v) then
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: a not a number or infinity was detected in a vector during the computation. &
+            The simulation became numerically unstable, generating invalid values (NaN/Infinity), which caused the model to crash. &
+            Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
       else if (Reason%v < 0) then
          call KSPGetConvergedReasonString(Solver, reason_string, ierr)
          call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: ', reason_string)
