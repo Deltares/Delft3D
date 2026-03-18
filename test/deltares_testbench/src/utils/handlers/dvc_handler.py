@@ -78,6 +78,8 @@ class DvcHandler(IHandler):
             # Collect all stage targets from all .dvc files
             all_targets: list[str] = []
             for dvc_file in dvc_files:
+                # Resolve to real path so casing matches the repo root on Windows
+                dvc_file = os.path.realpath(dvc_file)
                 logger.debug(f"Loading DVC file: {dvc_file}")
                 if not os.path.isfile(dvc_file):
                     raise FileNotFoundError(f"DVC file not found: {dvc_file}")
@@ -100,7 +102,7 @@ class DvcHandler(IHandler):
             missing = []
             for dvc_file in dvc_files:
                 # .dvc file at e.g. .../input.dvc should produce .../input directory
-                expected_dir = os.path.splitext(dvc_file)[0]
+                expected_dir = os.path.splitext(os.path.realpath(dvc_file))[0]
                 if not os.path.isdir(expected_dir):
                     missing.append(expected_dir)
             if missing:
@@ -148,6 +150,8 @@ class DvcHandler(IHandler):
             os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.password
 
         try:
+            # Resolve to real path so casing matches the repo root on Windows
+            dvc_file = os.path.realpath(dvc_file)
             logger.debug(f"Downloading DVC directory with file: {dvc_file}")
 
             # Check if .dvc file exists
