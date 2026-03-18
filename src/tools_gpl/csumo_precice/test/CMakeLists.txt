@@ -1,4 +1,13 @@
 enable_testing()
+
+# Generate cosumo_test_data.hpp from the authoritative XML example file.
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/../docs/full_settings_example.xml" FULL_SETTINGS_XML)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cosumo_test_data.hpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cosumo_test_data.hpp"
+    @ONLY
+)
+
 set(source_files
     test_csumo_precice_lib.cpp
     test_csumo_settings_reader.cpp
@@ -10,6 +19,10 @@ target_link_libraries(test_csumo_precice_lib PRIVATE
     compiler_warnings_settings
     csumo_precice_lib
     gtest
+)
+
+target_include_directories(test_csumo_precice_lib PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
 if(WIN32)

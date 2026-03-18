@@ -87,30 +87,7 @@ namespace csumo_precice
      * @brief Reads C-SUMO settings from a configuration XML file.
      *
      * Expected XML format:
-     * @code{.xml}
-     * <?xml version="1.0" encoding="utf-8"?>
-     * <COSUMO>
-     *   <fileVersion>0.3</fileVersion>
-     *   <settings>
-     *     <general>
-     *       <ID>Diffusor_1</ID>
-     *       <subGridModel>fixedNFSolution</subGridModel>
-     *       <farFieldModel>Delft3D</farFieldModel>
-     *     </general>
-     *     <comm>
-     *       <FF2NFdir>FF2NF\</FF2NFdir>
-     *       <FFrundir>rundir</FFrundir>
-     *     </comm>
-     *     <data>
-     *       <XYdiff>550.0 350.0</XYdiff>
-     *       <XYambient>823.0 344.8</XYambient>
-     *       <XYintake>567.0 350.0</XYintake>
-     *       <discharge><M3s>10.0</M3s><constituents>10.0 0.0 0.0</constituents></discharge>
-     *       <D0>0.5</D0><H0>3.2</H0><Theta0>15.0</Theta0><Sigma0>180</Sigma0>
-     *     </data>
-     *   </settings>
-     * </COSUMO>
-     * @endcode
+     * @include docs/full_settings_example.xml
      *
      * Use @ref fromFile to construct from a path, or @ref fromXml to construct
      * directly from XML text (useful in tests).

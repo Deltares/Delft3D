@@ -2,6 +2,7 @@
 
 #include <string_view>
 
+#include "cosumo_test_data.hpp"
 #include "csumo_settings_reader.hpp"
 
 namespace
@@ -9,40 +10,6 @@ namespace
     constexpr std::string_view valid_xml = R"(<?xml version="1.0" encoding="utf-8"?>
 <COSUMO>
   <fileVersion>0.3</fileVersion>
-</COSUMO>)";
-
-    // Full settings block derived from e38_f01_c29 COSUMOsettings.xml
-    constexpr std::string_view full_settings_xml = R"(<?xml version="1.0" encoding="utf-8"?>
-<COSUMO>
-  <fileVersion>0.3</fileVersion>
-  <settings>
-    <general>
-      <subGridModel>fixedNFSolution</subGridModel>
-      <ID>Diffusor_1</ID>
-      <farFieldModel>Delft3D</farFieldModel>
-    </general>
-    <comm>
-      <FF2NFdir>FF2NF\</FF2NFdir>
-      <FFrundir>rundir</FFrundir>
-    </comm>
-    <data>
-      <XYdiff>550.0 350.0</XYdiff>
-      <XYambient>823.0 344.8</XYambient>
-      <XYambient>465.8 793.2</XYambient>
-      <XYambient>587.4 509.2</XYambient>
-      <XYintake>567.0 350.0</XYintake>
-      <discharge>
-        <M3s>10.0</M3s>
-        <constituentsOperator>excess</constituentsOperator>
-        <constituents>10.0 0.0 0.0</constituents>
-      </discharge>
-      <D0>50000</D0>
-      <H0>3.2</H0>
-      <Theta0>15.0</Theta0>
-      <Sigma0>180</Sigma0>
-      <NF2FFFile>/path/to/NF2FF.xml</NF2FFFile>
-    </data>
-  </settings>
 </COSUMO>)";
 
     const auto starts_with = [](const std::string& message, const std::string& prefix) {
