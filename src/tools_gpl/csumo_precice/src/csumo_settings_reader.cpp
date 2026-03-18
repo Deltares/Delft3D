@@ -14,6 +14,8 @@
 #include <string_view>
 #include <vector>
 
+#include "expected_utility.hpp"
+
 namespace
 {
     // -------------------------------------------------------------------------
@@ -126,12 +128,12 @@ namespace
     // Converts an XML path string to a std::filesystem::path, normalizing
     // backslashes to forward slashes and stripping any trailing separator,
     // because the settings XML may contain paths with either forward or backward slashes on either Windows or Unix.
-    std::filesystem::path toPath(std::string text)
+    std::filesystem::path toPath(std::string xmlPath)
     {
-        std::replace(text.begin(), text.end(), '\\', '/');
-        text.erase(std::find_if_not(text.rbegin(), text.rend(), [](const char c) { return c == '/'; }).base(),
-                   text.end());
-        return std::filesystem::path(std::move(text));
+        std::replace(xmlPath.begin(), xmlPath.end(), '\\', '/');
+        xmlPath.erase(std::find_if_not(xmlPath.rbegin(), xmlPath.rend(), [](const char c) { return c == '/'; }).base(),
+                      xmlPath.end());
+        return std::filesystem::path(std::move(xmlPath));
     }
 
     std::optional<std::string> optionalChildText(const pugi::xml_node parent, const std::string_view child_name)
@@ -161,6 +163,16 @@ namespace
         });
     }
 
+    std::optional<csumo_precice::Point2D> parseOptionalPoint2D(const pugi::xml_node parent,
+                                                               const std::string_view element_name)
+    {
+        return optionalChildText(parent, element_name)
+            .and_then([element_name](const std::string& text) -> std::optional<csumo_precice::Point2D> {
+                const auto result = parsePoint2D(text, element_name);
+                return result.has_value() ? std::optional{*result} : std::nullopt;
+            });
+    }
+
     std::expected<double, csumo_precice::ParseError> parseRequiredDouble(const pugi::xml_node parent,
                                                                          const std::string_view element_name)
     {
@@ -184,7 +196,7 @@ namespace
     {
             csumo_precice::Point2D position;
             std::vector<csumo_precice::Point2D> ambient_positions;
-            csumo_precice::Point2D intake;
+            std::optional<csumo_precice::Point2D> intake;
             csumo_precice::Discharge discharge;
             double nozzle_diameter{};
             double nozzle_elevation{};
@@ -273,57 +285,23 @@ namespace
         {
             return std::unexpected(csumo_precice::ParseError{"Required element <data> not found in <settings>"});
         }
-        const auto position = parseRequiredPoint2D(data_node, "XYdiff");
-        if (!position)
-        {
-            return std::unexpected(position.error());
-        }
-
-        const auto intakePoint = parseRequiredPoint2D(data_node, "XYintake");
-        if (!intakePoint)
-        {
-            return std::unexpected(intakePoint.error());
-        }
-
-        auto discharge = parseDischarge(data_node);
-        if (!discharge)
-        {
-            return std::unexpected(discharge.error());
-        }
-
-        const auto nozzle_diameter = parseRequiredDouble(data_node, "D0");
-        if (!nozzle_diameter)
-        {
-            return std::unexpected(nozzle_diameter.error());
-        }
-
-        const auto nozzle_elevation = parseRequiredDouble(data_node, "H0");
-        if (!nozzle_elevation)
-        {
-            return std::unexpected(nozzle_elevation.error());
-        }
-
-        const auto vertical_angle = parseRequiredDouble(data_node, "Theta0");
-        if (!vertical_angle)
-        {
-            return std::unexpected(vertical_angle.error());
-        }
-
-        const auto horizontal_angle = parseRequiredDouble(data_node, "Sigma0");
-        if (!horizontal_angle)
-        {
-            return std::unexpected(horizontal_angle.error());
-        }
+        ASSIGN_OR_RETURN(const auto position, parseRequiredPoint2D(data_node, "XYdiff"));
+        const auto intakePoint = parseOptionalPoint2D(data_node, "XYintake");
+        ASSIGN_OR_RETURN(auto discharge, parseDischarge(data_node));
+        ASSIGN_OR_RETURN(const auto nozzle_diameter, parseRequiredDouble(data_node, "D0"));
+        ASSIGN_OR_RETURN(const auto nozzle_elevation, parseRequiredDouble(data_node, "H0"));
+        ASSIGN_OR_RETURN(const auto vertical_angle, parseRequiredDouble(data_node, "Theta0"));
+        ASSIGN_OR_RETURN(const auto horizontal_angle, parseRequiredDouble(data_node, "Sigma0"));
 
         return DataSection{
-            .position = *position,
+            .position = position,
             .ambient_positions = parseAmbientPoints(data_node),
-            .intake = *intakePoint,
-            .discharge = std::move(*discharge),
-            .nozzle_diameter = *nozzle_diameter,
-            .nozzle_elevation = *nozzle_elevation,
-            .vertical_angle = *vertical_angle,
-            .horizontal_angle = *horizontal_angle,
+            .intake = intakePoint,
+            .discharge = std::move(discharge),
+            .nozzle_diameter = nozzle_diameter,
+            .nozzle_elevation = nozzle_elevation,
+            .vertical_angle = vertical_angle,
+            .horizontal_angle = horizontal_angle,
             .nf2ff_file = optionalChildText(data_node, "NF2FFFile"),
         };
     }
@@ -335,21 +313,12 @@ namespace
         {
             return std::unexpected(csumo_precice::ParseError{"Required element <comm> not found in <settings>"});
         }
-        auto ff2nf_dir = requiredChildText(comm_node, "FF2NFdir");
-        if (!ff2nf_dir)
-        {
-            return std::unexpected(ff2nf_dir.error());
-        }
-
-        auto ff_run_dir = requiredChildText(comm_node, "FFrundir");
-        if (!ff_run_dir)
-        {
-            return std::unexpected(ff_run_dir.error());
-        }
+        ASSIGN_OR_RETURN(auto ff2nf_dir, requiredChildText(comm_node, "FF2NFdir"));
+        ASSIGN_OR_RETURN(auto ff_run_dir, requiredChildText(comm_node, "FFrundir"));
 
         return CommSection{
-            .ff2nf_dir = toPath(std::move(*ff2nf_dir)),
-            .ff_run_dir = toPath(std::move(*ff_run_dir)),
+            .ff2nf_dir = toPath(std::move(ff2nf_dir)),
+            .ff_run_dir = toPath(std::move(ff_run_dir)),
         };
     }
 
@@ -435,17 +404,17 @@ namespace csumo_precice
     std::expected<CSumoSettingsReader, ParseError> CSumoSettingsReader::fromFile(
         const std::filesystem::path& csumoConfigFile)
     {
-        const std::ifstream file(csumoConfigFile);
+        std::ifstream file(csumoConfigFile);
         if (!file)
         {
             return std::unexpected(ParseError{std::format("Cannot open file: {}", csumoConfigFile.string())});
         }
         std::ostringstream buffer;
         buffer << file.rdbuf();
-        return fromXml(buffer.str());
+        return fromString(buffer.str());
     }
 
-    std::expected<CSumoSettingsReader, ParseError> CSumoSettingsReader::fromXml(const std::string_view xml)
+    std::expected<CSumoSettingsReader, ParseError> CSumoSettingsReader::fromString(const std::string_view xml)
     {
         pugi::xml_document doc;
         const pugi::xml_parse_result parse_result = doc.load_buffer(xml.data(), xml.size());
@@ -468,7 +437,7 @@ namespace csumo_precice
     {
     }
 
-    std::string_view CSumoSettingsReader::fileVersion() const noexcept { return file_version_; }
+    std::string_view CSumoSettingsReader::fileVersion() const { return file_version_; }
 
-    const std::vector<DiffuserSettings>& CSumoSettingsReader::diffusers() const noexcept { return diffusers_; }
+    const std::vector<DiffuserSettings>& CSumoSettingsReader::diffusers() const { return diffusers_; }
 } // namespace csumo_precice

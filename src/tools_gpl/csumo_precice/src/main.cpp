@@ -59,5 +59,5 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    return csumo_precice::csumo_precice(csumoConfigFileName, adapterConfigFileName);
+    return csumo_precice::run(csumoConfigFileName, adapterConfigFileName);
 }

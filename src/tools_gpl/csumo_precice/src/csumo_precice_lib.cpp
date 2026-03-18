@@ -11,10 +11,8 @@ namespace csumo_precice
 {
     /**
      * @details Entry point into the C-SUMO preCICE library.
-     * @param csumoConfigFileName Path and filename of C-SUMO configuration xml file.
-     * @param adapterConfigFileName Path and filename of preCICE adapter configuration file.
      */
-    int csumo_precice(const std::string_view csumoConfigFileName, const std::string_view adapterConfigFileName)
+    int run(const std::string_view csumoConfigFileName, const std::string_view adapterConfigFileName)
     {
         auto expectedCsumoSettings = CSumoSettingsReader::fromFile(csumoConfigFileName);
 
@@ -38,7 +36,7 @@ namespace csumo_precice
     /**
      * @details This function prints a greeting message to the console using C++23's std::println.
      */
-    int csumo_precice()
+    int run()
     {
         std::println("Hello, world from C-SUMO PreCICE library!");
         return 0;

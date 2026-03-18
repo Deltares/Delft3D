@@ -12,14 +12,14 @@ namespace csumo_precice
      * @param adapterConfigFileName Path and filename of preCICE adapter configuration file.
      * @return int Return 0 on success, non-zero on failure
      */
-    int csumo_precice(std::string_view csumoConfigFileName, std::string_view adapterConfigFileName);
+    int run(std::string_view csumoConfigFileName, std::string_view adapterConfigFileName);
 
     /**
-     * @brief Basic function for testing (legacy)
+     * @brief Legacy entry point for testing without preCICE. Not intended for production use.
      *
      * @return int Return 0 on success
      */
-    int csumo_precice();
+    int run();
 } // namespace csumo_precice
 
 #endif // SRC_TOOLS_GPL_CSUMO_PRECICE_CSUMO_PRECICE_LIB_HPP

@@ -5,7 +5,7 @@
 // Basic test to verify the library function executes successfully
 TEST(CsumoPreciceLibTest, BasicFunctionCallReturnsZero)
 {
-    int result = csumo_precice::csumo_precice();
+    int result = csumo_precice::run();
     EXPECT_EQ(result, 0);
 }
 

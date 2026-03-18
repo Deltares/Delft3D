@@ -69,13 +69,13 @@ namespace csumo_precice
             // --- data section ---
             Point2D position; ///< Diffuser position in the flow grid (&lt;XYdiff&gt;)
             std::vector<Point2D>
-                ambient_positions;     ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
-            Point2D intake;            ///< Intake location (&lt;XYintake&gt;)
-            Discharge discharge;       ///< Discharge characteristics (&lt;discharge&gt;)
-            double nozzle_diameter{};  ///< Nozzle diameter [m] (&lt;D0&gt;)
-            double nozzle_elevation{}; ///< Height above the bed [m] (&lt;H0&gt;)
-            double vertical_angle{};   ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
-            double horizontal_angle{}; ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
+                ambient_positions;         ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
+            std::optional<Point2D> intake; ///< Intake location (&lt;XYintake&gt;, optional)
+            Discharge discharge;           ///< Discharge characteristics (&lt;discharge&gt;)
+            double nozzle_diameter{};      ///< Nozzle diameter [m] (&lt;D0&gt;)
+            double nozzle_elevation{};     ///< Height above the bed [m] (&lt;H0&gt;)
+            double vertical_angle{};       ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
+            double horizontal_angle{};     ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
             std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional)
 
             // --- comm section ---
@@ -89,7 +89,7 @@ namespace csumo_precice
      * Expected XML format:
      * @include docs/full_settings_example.xml
      *
-     * Use @ref fromFile to construct from a path, or @ref fromXml to construct
+     * Use @ref fromFile to construct from a path, or @ref fromString to construct
      * directly from XML text (useful in tests).
      */
     class CSumoSettingsReader
@@ -112,17 +112,17 @@ namespace csumo_precice
              * @param xml Raw UTF-8 XML content.
              * @return The reader on success, or a @ref ParseError describing the failure.
              */
-            [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromXml(std::string_view xml);
+            [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromString(std::string_view xml);
 
             /**
              * @brief The file format version (value of &lt;fileVersion&gt;).
              */
-            [[nodiscard]] std::string_view fileVersion() const noexcept;
+            [[nodiscard]] std::string_view fileVersion() const;
 
             /**
              * @brief All diffuser settings blocks read from the XML, in document order.
              */
-            [[nodiscard]] const std::vector<DiffuserSettings>& diffusers() const noexcept;
+            [[nodiscard]] const std::vector<DiffuserSettings>& diffusers() const;
 
         private:
             explicit CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers);
