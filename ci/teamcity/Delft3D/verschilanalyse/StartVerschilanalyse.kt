@@ -76,8 +76,6 @@ object StartVerschilanalyse : BuildType({
                     name=harbor_webhook.repository::template=${'$'}{harbor_webhook.repository}::regex=${DslContext.getParameter("va_harbor_repository")}
                     name=harbor_webhook.image.tag::template=${'$'}{harbor_webhook.image.tag}::regex=${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
                     name=current_prefix::template=output/weekly/${'$'}{harbor_webhook.image.tag}::regex=output/weekly/${DslContext.getParameter("va_harbor_webhook_image_tag_regex")}
-                    name=models_path::template=${'$'}{models_path}::regex=${DslContext.getParameter("va_models_path")}
-                    name=json_configs_path::template=${'$'}{json_configs_path}::regex=${DslContext.getParameter("va_json_configs_path")}
                 """.trimIndent())
                 param("webhook.build.trigger.include.payload", "true")
             }
