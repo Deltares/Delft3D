@@ -485,7 +485,7 @@ contains
    subroutine average_valstruct(valstruct, istrtypein, istru)
       use m_missing, only: dmiss
       use m_1d_structures
-      use m_General_Structure, only: t_GeneralStructure
+      use m_general_structure, only: t_GeneralStructure
       use m_GlobalParameters
       implicit none
       real(kind=dp), dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valpump(:)):
@@ -664,7 +664,7 @@ contains
 !> Gets discharge through gate opening per link.
    real(kind=dp) function get_discharge_through_gate_opening(genstr, L0, s1m1, s1m2)
       use m_missing
-      use m_General_Structure
+      use m_general_structure
       implicit none
       type(t_GeneralStructure), pointer, intent(in) :: genstr !< Derived type containing general structure information.
       integer, intent(in) :: L0 !< Local link index in genstr%..(:) link-based arrays.
@@ -675,7 +675,7 @@ contains
       dsL = s1m2 - s1m1
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
-      if (gatefraction < 1.0_dp - gatefrac_eps) then
+      if (gatefraction < 1.0_dp - GATE_FRACTION_EPS) then
          u1L = genstr%ru(3, L0) - genstr%fu(3, L0) * dsL
          get_discharge_through_gate_opening = genstr%au(3, L0) * u1L
       else
@@ -687,7 +687,7 @@ contains
 !> Gets discharge over gate opening per link.
    real(kind=dp) function get_discharge_over_gate(genstr, L0, s1m1, s1m2)
       use m_missing
-      use m_General_Structure
+      use m_general_structure
       implicit none
       type(t_GeneralStructure), pointer, intent(in) :: genstr !< Derived type containing general structure information
       integer, intent(in) :: L0 !< Local link index in genstr%..(:) link-based arrays.
@@ -698,7 +698,7 @@ contains
       dsL = s1m2 - s1m1
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
-      if (gatefraction > gatefrac_eps) then
+      if (gatefraction > GATE_FRACTION_EPS) then
          u1L = genstr%ru(2, L0) - genstr%fu(2, L0) * dsL
          get_discharge_over_gate = genstr%au(2, L0) * u1L
       else
@@ -710,7 +710,7 @@ contains
 !> Gets discharge under gate per link.
    real(kind=dp) function get_discharge_under_gate(genstr, L0, s1m1, s1m2)
       use m_missing
-      use m_General_Structure
+      use m_general_structure
       implicit none
       type(t_GeneralStructure), pointer, intent(in) :: genstr !< Derived type containing general structure information
       integer, intent(in) :: L0 !< Local link index in genstr%..(:) link-based arrays.
@@ -721,7 +721,7 @@ contains
       dsL = s1m2 - s1m1
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
-      if (gatefraction > gatefrac_eps) then
+      if (gatefraction > GATE_FRACTION_EPS) then
          u1L = genstr%ru(1, L0) - genstr%fu(1, L0) * dsL
          get_discharge_under_gate = genstr%au(1, L0) * u1L
       else
@@ -1381,7 +1381,7 @@ contains
    subroutine fill_valstruct_per_structure(valstruct, istrtypein, istru, nlinks)
       use m_missing, only: dmiss
       use m_1d_structures
-      use m_General_Structure, only: t_GeneralStructure
+      use m_general_structure, only: t_GeneralStructure
       use m_GlobalParameters
       implicit none
       real(kind=dp), dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valweirgen(:)):
