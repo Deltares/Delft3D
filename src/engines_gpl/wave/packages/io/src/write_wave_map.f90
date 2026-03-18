@@ -1,4 +1,4 @@
-subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, gamma0, output_ice, nautconv, northdir)
+subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, gamma0, output_ice, nautical_convention, north_direction)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -34,6 +34,7 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
 !!--declarations----------------------------------------------------------------
    use wave_data
    use swan_flow_grid_maps
+   use angle_convention, only : reflect_between_nautical_and_cartesian
    !
    implicit none
 !
@@ -52,8 +53,8 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    logical :: prevtime ! true: the time to be written is the "previous time"
    real, intent(in) :: gamma0 ! JONSWAP peak enhancement factor
    integer, intent(in) :: output_ice ! switch for writing ice quantities
-   logical, intent(in) :: nautconv ! .true. if nautical directional convention is used, .false. if cartesian directional convention is used
-   real, intent(in) :: northdir ! direction of north in degrees (clockwise from east)
+   logical, intent(in) :: nautical_convention ! .true. if nautical directional convention is used, .false. if cartesian directional convention is used
+   real, intent(in) :: north_direction ! direction of north in degrees (clockwise from east)
 !
 ! Local variables
 !
@@ -153,7 +154,7 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
       elmunt(17) = '[  DEG  ]'
       elmunt(18) = '[  DEG  ]'
    end if
-   if (nautconv) then
+   if (nautical_convention) then
       elmdes(4) = 'mean wave direction from (nautical)                           '
       elmdes(5) = 'peak wave direction from (nautical)                           '
    end if
@@ -256,10 +257,10 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
              & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
              & elmnms(3), celidt, wrswch, error, sof%hs)
 
-   if (nautconv) then
+   if (nautical_convention) then
       ! dir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
       ! Here we convert it back to nautical convention for output to Nefis
-      call convert_cart_tofrom_naut(sof%dir, ndim*mdim, northdir, rbuf)
+      rbuf = reflect_between_nautical_and_cartesian(sof%dir, north_direction)
       call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
                 & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
                 & elmnms(4), celidt, wrswch, error, rbuf)
@@ -269,10 +270,10 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
                 & elmnms(4), celidt, wrswch, error, sof%dir)
    end if
    
-   if (nautconv) then
+   if (nautical_convention) then
       ! pdir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
       ! Here we convert it back to nautical convention for output to Nefis
-      call convert_cart_tofrom_naut(sof%pdir, ndim*mdim, northdir, rbuf)
+      rbuf = reflect_between_nautical_and_cartesian(sof%pdir, north_direction)
       call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
                 & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
                 & elmnms(5), celidt, wrswch, error, rbuf)

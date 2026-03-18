@@ -33,6 +33,7 @@ function nc_def_var(idfile, name, datatype, ndims, dims, standardname, longname,
 ! NONE
 !!--declarations----------------------------------------------------------------
     use netcdf
+    use nc_check, only : nc_check_err
     !
     implicit none
     !

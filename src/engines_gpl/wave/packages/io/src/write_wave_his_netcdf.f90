@@ -1,4 +1,4 @@
-subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautconv)
+subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautical_convention)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -36,6 +36,7 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautc
     use swan_flow_grid_maps
     use swan_input
     use netcdf
+    use nc_check, only : nc_create_and_check, nc_check_err
     use dwaves_version_module
     !
     implicit none
@@ -67,7 +68,7 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautc
     type (grid)               :: sg           ! swan grid
     type (output_fields)      :: sof          ! output fields defined on swan grid
     type (wave_data_type)     :: wavedata
-    logical     , intent(in)  :: nautconv     ! .true. if nautical directional convention is used, .false. if cartesian directional convention is used
+    logical     , intent(in)  :: nautical_convention     ! .true. if nautical directional convention is used, .false. if cartesian directional convention is used
 !
 ! Local variables
 !
@@ -277,7 +278,7 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautc
        !
        ! create file
        !
-       ierror = nf90_create(filename, wavedata%output%ncmode, idfile); call nc_check_err(ierror, "creating file", filename)
+       ierror = nc_create_and_check(filename, wavedata%output%ncmode, "creating file", idfile)
        !
        ! global attributes
        !
@@ -287,7 +288,7 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautc
        ierror = nf90_put_att(idfile, nf90_global,  'history', &
               'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
               ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename)
-      if (nautconv) then
+      if (nautical_convention) then
          ierror = nf90_put_att(idfile, nf90_global, 'Directional_convention', 'nautical'); call nc_check_err(ierror, "put_att global institution", filename)
       else
          ierror = nf90_put_att(idfile, nf90_global, 'Directional_convention', 'cartesian'); call nc_check_err(ierror, "put_att global institution", filename)
@@ -315,21 +316,21 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautc
        ierror        = nf90_put_att(idfile, idvar_statnam , 'cf_role', 'timeseries_id')
        idvar_statid  = nc_def_var  (idfile, 'station_id'  , nf90_char, 2, (/iddim_statnamlen, iddim_nstat/), ''    , 'Observation station identifier', ''  , .false., filename)
        ierror        = nf90_put_att(idfile, idvar_statid  , 'cf_role', 'timeseries_id')
-       idvar_depth   = nc_def_var(idfile, 'Depth'  , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Water depth', 'm'  , .true., filename)
-       idvar_hsig    = nc_def_var(idfile, 'Hsig'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Significant wave height', 'm'  , .true., filename)
-       if (nautconv) then
-          idvar_dir     = nc_def_var(idfile, 'Dir'    , precision, 2, (/iddim_nstat, iddim_time/), 'sea_surface_wave_from_direction'    , 'Mean wave direction', 'degree'  , .true., filename)
+       idvar_depth   = nc_def_var(idfile, 'depth'  , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Water depth', 'm'  , .true., filename)
+       idvar_hsig    = nc_def_var(idfile, 'hsign'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Significant wave height', 'm'  , .true., filename)
+       if (nautical_convention) then
+          idvar_dir     = nc_def_var(idfile, 'dir'    , precision, 2, (/iddim_nstat, iddim_time/), 'sea_surface_wave_from_direction'    , 'Mean wave direction', 'deg'  , .true., filename)
        else
-          idvar_dir     = nc_def_var(idfile, 'Dir'    , precision, 2, (/iddim_nstat, iddim_time/), 'sea_surface_wave_to_direction'    , 'Mean wave direction', 'degree'  , .true., filename)
+          idvar_dir     = nc_def_var(idfile, 'dir'    , precision, 2, (/iddim_nstat, iddim_time/), 'sea_surface_wave_to_direction'    , 'Mean wave direction', 'deg'  , .true., filename)
        endif
-       idvar_rtpeak  = nc_def_var(idfile, 'RTpeak' , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Peak period', 's'  , .true., filename)
-       idvar_tm01    = nc_def_var(idfile, 'Tm01'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Mean absolute wave period', 's'  , .true., filename)
-       idvar_dspr    = nc_def_var(idfile, 'Dspr'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Directional spreading of the waves', 'degree'  , .true., filename)
-       idvar_ubot    = nc_def_var(idfile, 'Ubot'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Rms-value of the maxima of the orbital velocity near the bottom', 'm s-1'  , .true., filename)
-       idvar_xwindv  = nc_def_var(idfile, 'X-Windv', precision, 2, (/iddim_nstat, iddim_time/), ''    , 'X component of the wind velocity', 'm s-1'  , .true., filename)
-       idvar_ywindv  = nc_def_var(idfile, 'Y-Windv', precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Y component of the wind velocity', 'm s-1'  , .true., filename)
-       idvar_xvel    = nc_def_var(idfile, 'X-Vel'  , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'X component of the current velocity', 'm s-1'  , .true., filename)
-       idvar_yvel    = nc_def_var(idfile, 'Y-Vel'  , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Y component of the current velocity', 'm s-1'  , .true., filename)
+       idvar_rtpeak  = nc_def_var(idfile, 'rtp'    , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Relative peak wave period', 'sec'  , .true., filename)
+       idvar_tm01    = nc_def_var(idfile, 'tm01'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Mean absolute wave period', 'sec'  , .true., filename)
+       idvar_dspr    = nc_def_var(idfile, 'dspr'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Directional spreading of the waves', 'deg'  , .true., filename)
+       idvar_ubot    = nc_def_var(idfile, 'ubot'   , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Rms value maximum of the orbital velocity near bed level', 'm/s'  , .true., filename)
+       idvar_xwindv  = nc_def_var(idfile, 'windu'  , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Wind velocity (x-component)', 'm/s'  , .true., filename)
+       idvar_ywindv  = nc_def_var(idfile, 'windv'  , precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Wind velocity (y-component)', 'm/s'  , .true., filename)
+       idvar_xvel    = nc_def_var(idfile, 'veloc-x', precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Current velocity (x-component)', 'm/s'  , .true., filename)
+       idvar_yvel    = nc_def_var(idfile, 'veloc-y', precision, 2, (/iddim_nstat, iddim_time/), ''    , 'Current velocity (y-component)', 'm/s'  , .true., filename)
        !
        ierror = nf90_enddef(idfile); call nc_check_err(ierror, "enddef", filename)
        !
@@ -355,36 +356,36 @@ subroutine write_wave_his_netcdf (sg, sof, n_swan_grids, i_swan, wavedata, nautc
        ierror = nf90_open(filename, NF90_WRITE, idfile); call nc_check_err(ierror, "opening file", filename)
        !
        ierror = nf90_inq_varid(idfile, 'time'   , idvar_time  ); call nc_check_err(ierror, "inq_varid time   ", filename)
-       ierror = nf90_inq_varid(idfile, 'Depth'  , idvar_depth ); call nc_check_err(ierror, "inq_varid Depth  ", filename)
-       ierror = nf90_inq_varid(idfile, 'Hsig'   , idvar_hsig  ); call nc_check_err(ierror, "inq_varid Hsig   ", filename)
-       ierror = nf90_inq_varid(idfile, 'Dir'    , idvar_dir   ); call nc_check_err(ierror, "inq_varid Dir    ", filename)
-       ierror = nf90_inq_varid(idfile, 'RTpeak' , idvar_rtpeak); call nc_check_err(ierror, "inq_varid RTpeak ", filename)
-       ierror = nf90_inq_varid(idfile, 'Tm01'   , idvar_tm01  ); call nc_check_err(ierror, "inq_varid Tm01   ", filename)
-       ierror = nf90_inq_varid(idfile, 'Dspr'   , idvar_dspr  ); call nc_check_err(ierror, "inq_varid Dspr   ", filename)
-       ierror = nf90_inq_varid(idfile, 'Ubot'   , idvar_ubot  ); call nc_check_err(ierror, "inq_varid Ubot   ", filename)
-       ierror = nf90_inq_varid(idfile, 'X-Windv', idvar_xwindv); call nc_check_err(ierror, "inq_varid X-Windv", filename)
-       ierror = nf90_inq_varid(idfile, 'Y-Windv', idvar_ywindv); call nc_check_err(ierror, "inq_varid Y-Windv", filename)
-       ierror = nf90_inq_varid(idfile, 'X-Vel'  , idvar_xvel  ); call nc_check_err(ierror, "inq_varid X-Vel  ", filename)
-       ierror = nf90_inq_varid(idfile, 'Y-Vel'  , idvar_yvel  ); call nc_check_err(ierror, "inq_varid Y-Vel  ", filename)
+       ierror = nf90_inq_varid(idfile, 'depth'  , idvar_depth ); call nc_check_err(ierror, "inq_varid depth  ", filename)
+       ierror = nf90_inq_varid(idfile, 'hsig'   , idvar_hsig  ); call nc_check_err(ierror, "inq_varid hsig   ", filename)
+       ierror = nf90_inq_varid(idfile, 'dir'    , idvar_dir   ); call nc_check_err(ierror, "inq_varid dir    ", filename)
+       ierror = nf90_inq_varid(idfile, 'rtpeak' , idvar_rtpeak); call nc_check_err(ierror, "inq_varid rtpeak ", filename)
+       ierror = nf90_inq_varid(idfile, 'tm01'   , idvar_tm01  ); call nc_check_err(ierror, "inq_varid tm01   ", filename)
+       ierror = nf90_inq_varid(idfile, 'dspr'   , idvar_dspr  ); call nc_check_err(ierror, "inq_varid dspr   ", filename)
+       ierror = nf90_inq_varid(idfile, 'ubot'   , idvar_ubot  ); call nc_check_err(ierror, "inq_varid ubot   ", filename)
+       ierror = nf90_inq_varid(idfile, 'windu'  , idvar_xwindv); call nc_check_err(ierror, "inq_varid windu  ", filename)
+       ierror = nf90_inq_varid(idfile, 'windv'  , idvar_ywindv); call nc_check_err(ierror, "inq_varid windv  ", filename)
+       ierror = nf90_inq_varid(idfile, 'veloc-x', idvar_xvel  ); call nc_check_err(ierror, "inq_varid veloc-x", filename)
+       ierror = nf90_inq_varid(idfile, 'veloc-y', idvar_yvel  ); call nc_check_err(ierror, "inq_varid veloc-y", filename)
     endif
     !
     ! put vars (time dependent)
     !
     ierror = nf90_put_var(idfile, idvar_time   , wavedata%time%calctimtscale * wavedata%time%tscale, start=(/ hisoutputcount /)); call nc_check_err(ierror, "put_var time", filename)
     do istat=1,nstat
-       ierror = nf90_put_var(idfile, idvar_depth , rval(istat,COL_DEPTH ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Depth  ", filename)
-       ierror = nf90_put_var(idfile, idvar_hsig  , rval(istat,COL_HSIG  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Hsig   ", filename)
+       ierror = nf90_put_var(idfile, idvar_depth , rval(istat,COL_DEPTH ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var depth  ", filename)
+       ierror = nf90_put_var(idfile, idvar_hsig  , rval(istat,COL_HSIG  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var hsig   ", filename)
        ! Cartesian or Nautical directional convention for the wave direction:
        ! D-Waves output matches SWAN output, no conversion needed.
-       ierror = nf90_put_var(idfile, idvar_dir   , rval(istat,COL_DIR   ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Dir    ", filename)
-       ierror = nf90_put_var(idfile, idvar_rtpeak, rval(istat,COL_RTPEAK), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var RTpeak ", filename)
-       ierror = nf90_put_var(idfile, idvar_tm01  , rval(istat,COL_TM01  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Tm01   ", filename)
-       ierror = nf90_put_var(idfile, idvar_dspr  , rval(istat,COL_DSPR  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Dspr   ", filename)
-       ierror = nf90_put_var(idfile, idvar_ubot  , rval(istat,COL_UBOT  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Ubot   ", filename)
-       ierror = nf90_put_var(idfile, idvar_xwindv, rval(istat,COL_XWINDV), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var X-Windv", filename)
-       ierror = nf90_put_var(idfile, idvar_ywindv, rval(istat,COL_YWINDV), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Y-Windv", filename)
-       ierror = nf90_put_var(idfile, idvar_xvel  , rval(istat,COL_XVEL  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var X-Vel  ", filename)
-       ierror = nf90_put_var(idfile, idvar_yvel  , rval(istat,COL_YVEL  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var Y-Vel  ", filename)
+       ierror = nf90_put_var(idfile, idvar_dir   , rval(istat,COL_DIR   ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var dir    ", filename)
+       ierror = nf90_put_var(idfile, idvar_rtpeak, rval(istat,COL_RTPEAK), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var rtpeak ", filename)
+       ierror = nf90_put_var(idfile, idvar_tm01  , rval(istat,COL_TM01  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var tm01   ", filename)
+       ierror = nf90_put_var(idfile, idvar_dspr  , rval(istat,COL_DSPR  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var dspr   ", filename)
+       ierror = nf90_put_var(idfile, idvar_ubot  , rval(istat,COL_UBOT  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var ubot   ", filename)
+       ierror = nf90_put_var(idfile, idvar_xwindv, rval(istat,COL_XWINDV), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var windu  ", filename)
+       ierror = nf90_put_var(idfile, idvar_ywindv, rval(istat,COL_YWINDV), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var windv  ", filename)
+       ierror = nf90_put_var(idfile, idvar_xvel  , rval(istat,COL_XVEL  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var veloc-x", filename)
+       ierror = nf90_put_var(idfile, idvar_yvel  , rval(istat,COL_YVEL  ), start=(/ istat, hisoutputcount /)); call nc_check_err(ierror, "put_var veloc-y", filename)
     enddo
     ierror = nf90_close(idfile); call nc_check_err(ierror, "closing file", filename)
     deallocate(rval, stat=ierror)
