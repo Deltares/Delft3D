@@ -352,7 +352,7 @@ contains
       type(t_GeneralStructure), pointer, intent(in) :: genstr !< Derived type containing general structure information
       integer, intent(in) :: L0 !< Internal link number
       real(kind=dp), intent(in) :: maxWidth !<  Maximal width of the structure. Normally the the width of the flowlink
-      real(kind=dp), intent(in), dimension(2) :: bobstru !< bed level of channel left and right of the structure (w.r.t. structure orientation)
+      real(kind=dp), dimension(2), intent(in) :: bobstru !< bed level of channel left and right of the structure (w.r.t. structure orientation)
       real(kind=dp), intent(out) :: cgd !< Contraction coefficient for drowned gate flow
       real(kind=dp), intent(out) :: cgf !< Contraction coefficient for gate flow
       real(kind=dp), intent(out) :: cwd !< Contraction coefficient for drowned weir flow.
