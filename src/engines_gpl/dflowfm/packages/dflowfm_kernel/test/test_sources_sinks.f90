@@ -16,9 +16,9 @@ contains
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_polyline_file_missing, test_polyline_file_missing,
    subroutine test_polyline_file_missing() bind(C)
-      character(len=256) :: base_dir
-      character(len=256) :: file_name
-      character(len=256) :: group_name
+      character(len=256) :: base_dir = ""
+      character(len=256) :: file_name = ""
+      character(len=256) :: group_name = ""
 
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
@@ -61,9 +61,9 @@ contains
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_double_z_data_specification, test_double_z_data_specification,
    subroutine test_double_z_data_specification() bind(C)
-      character(len=256) :: base_dir
-      character(len=256) :: file_name
-      character(len=256) :: group_name
+      character(len=256) :: base_dir = ""
+      character(len=256) :: file_name = ""
+      character(len=256) :: group_name = ""
 
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
@@ -113,9 +113,9 @@ contains
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_xy_in_polyline_file_2_columns, test_xy_in_polyline_file_2_columns,
    subroutine test_xy_in_polyline_file_2_columns() bind(C)
-      character(len=256) :: base_dir
-      character(len=256) :: file_name
-      character(len=256) :: group_name
+      character(len=256) :: base_dir = ""
+      character(len=256) :: file_name = ""
+      character(len=256) :: group_name = ""
 
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
@@ -175,9 +175,9 @@ contains
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_xyz_in_polyline_file_3_columns, test_xyz_in_polyline_file_3_columns,
    subroutine test_xyz_in_polyline_file_3_columns() bind(C)
-      character(len=256) :: base_dir
-      character(len=256) :: file_name
-      character(len=256) :: group_name
+      character(len=256) :: base_dir = ""
+      character(len=256) :: file_name = ""
+      character(len=256) :: group_name = ""
 
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
@@ -236,9 +236,9 @@ contains
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_xyz_in_polyline_file_4_columns, test_xyz_in_polyline_file_4_columns,
    subroutine test_xyz_in_polyline_file_4_columns() bind(C)
-      character(len=256) :: base_dir
-      character(len=256) :: file_name
-      character(len=256) :: group_name
+      character(len=256) :: base_dir = ""
+      character(len=256) :: file_name = ""
+      character(len=256) :: group_name = ""
 
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
@@ -297,9 +297,9 @@ contains
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_xyz_in_polyline_file_5_columns, test_xyz_in_polyline_file_5_columns,
    subroutine test_xyz_in_polyline_file_5_columns() bind(C)
-      character(len=256) :: base_dir
-      character(len=256) :: file_name
-      character(len=256) :: group_name
+      character(len=256) :: base_dir = ""
+      character(len=256) :: file_name = ""
+      character(len=256) :: group_name = ""
 
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
@@ -358,9 +358,9 @@ contains
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_xy_in_ext_file_single_z, test_xy_in_ext_file_single_z,
    subroutine test_xy_in_ext_file_single_z() bind(C)
-      character(len=256) :: base_dir
-      character(len=256) :: file_name
-      character(len=256) :: group_name
+      character(len=256) :: base_dir = ""
+      character(len=256) :: file_name = ""
+      character(len=256) :: group_name = ""
 
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
@@ -413,9 +413,9 @@ contains
 
 !$f90tw TESTCODE(TEST, test_sources_sinks, test_xy_in_ext_file_z_ranges, test_xy_in_ext_file_z_ranges,
    subroutine test_xy_in_ext_file_z_ranges() bind(C)
-      character(len=256) :: base_dir
-      character(len=256) :: file_name
-      character(len=256) :: group_name
+      character(len=256) :: base_dir = ""
+      character(len=256) :: file_name = ""
+      character(len=256) :: group_name = ""
 
       real(kind=dp), dimension(:), allocatable :: x_coordinates
       real(kind=dp), dimension(:), allocatable :: y_coordinates
