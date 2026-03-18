@@ -593,7 +593,7 @@ module m_ec_item
                         end if
                         if (item%quantityPtr%timeint == timeint_bfrom) then
                            item%sourceT0FieldPtr%arr1d = item%sourceT1FieldPtr%arr1d
-                           success = .true.
+                           success = .true. ! by block-from definition, we use the last value indefinitely
                         end if
                      
                         if (interpol_type == interpolate_time_extrapolation_ok) then
@@ -609,7 +609,7 @@ module m_ec_item
                   success = ecItemFromTimeseries(item, timesteps%mjd())
                endif
                if (item%quantityPtr%timeint == timeint_bfrom) then
-                  success = .true.
+                  success = .true. ! by block-from definition, we use the last value indefinitely and that is alread in the item
                end if
             endif
          end if
