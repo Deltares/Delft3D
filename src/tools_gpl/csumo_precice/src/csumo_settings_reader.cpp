@@ -1,6 +1,7 @@
 #include "csumo_settings_reader.hpp"
 
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 #include <cctype>
 #include <charconv>
 #include <format>
@@ -19,51 +20,50 @@ namespace
     // Numeric parsing
     // -------------------------------------------------------------------------
 
-    std::expected<double, csumo_precice::ParseError> parseDouble(std::string_view text,
-                                                                 const std::string_view element_name)
-    {
-        const auto start = text.find_first_not_of(" \t\r\n");
-        if (start == std::string_view::npos)
-        {
-            return std::unexpected(csumo_precice::ParseError{std::format("<{}> has no value", element_name)});
-        }
-        text = text.substr(start);
-        double value{};
-        const auto [ptr, error_code] = std::from_chars(text.data(), text.data() + text.size(), value);
-        if (error_code != std::errc{})
-        {
-            return std::unexpected(
-                csumo_precice::ParseError{std::format("<{}> contains invalid number: '{}'", element_name, text)});
-        }
-        return value;
-    }
-
     std::expected<std::vector<double>, csumo_precice::ParseError> parseDoubleVector(const std::string_view text,
                                                                                     const std::string_view element_name)
     {
-        const auto is_whitespace = [](const char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; };
-        std::vector<double> result;
-        const char* ptr = text.data();
-        const char* const end = ptr + text.size();
-        for (ptr = std::find_if_not(ptr, end, is_whitespace); ptr < end;
-             ptr = std::find_if_not(ptr, end, is_whitespace))
+        std::vector<std::string> tokens;
+        boost::algorithm::split(tokens, text, boost::algorithm::is_space(), boost::algorithm::token_compress_on);
+
+        auto expectedDoubles =
+            tokens | std::ranges::views::filter([](const std::string_view token) { return !token.empty(); }) |
+            std::ranges::views::transform(
+                [element_name](const std::string_view token) -> std::expected<double, csumo_precice::ParseError> {
+                    double value{};
+                    const auto [_, error_code] = std::from_chars(token.data(), token.data() + token.size(), value);
+                    if (error_code != std::errc{})
+                    {
+                        return std::unexpected(csumo_precice::ParseError{
+                            std::format("<{}> contains invalid token: '{}'", element_name, token)});
+                    }
+                    return value;
+                });
+
+        if (auto errorIt =
+                std::ranges::find_if(expectedDoubles, [](const auto& result) { return !result.has_value(); });
+            errorIt != expectedDoubles.end())
         {
-            double value{};
-            const auto [next, error_code] = std::from_chars(ptr, end, value);
-            if (error_code != std::errc{})
-            {
-                break;
-            }
-            result.push_back(value);
-            ptr = next;
+            return std::unexpected((*errorIt).error());
         }
-        const char* const trailing = std::find_if_not(ptr, end, is_whitespace);
-        if (trailing != end)
-        {
-            return std::unexpected(csumo_precice::ParseError{
-                std::format("<{}> contains invalid token: '{}'", element_name, std::string_view{trailing, end})});
-        }
-        return result;
+
+        return expectedDoubles | std::ranges::views::transform([](const auto& result) { return *result; }) |
+               std::ranges::to<std::vector>();
+    }
+
+    std::expected<double, csumo_precice::ParseError> parseDouble(const std::string_view text,
+                                                                 const std::string_view element_name)
+    {
+        return parseDoubleVector(text, element_name)
+            .and_then(
+                [element_name](const std::vector<double>& values) -> std::expected<double, csumo_precice::ParseError> {
+                    if (values.size() != 1)
+                    {
+                        return std::unexpected(csumo_precice::ParseError{
+                            std::format("<{}> must contain exactly one numeric value", element_name)});
+                    }
+                    return values[0];
+                });
     }
 
     std::expected<csumo_precice::Point2D, csumo_precice::ParseError> parsePoint2D(const std::string_view text,

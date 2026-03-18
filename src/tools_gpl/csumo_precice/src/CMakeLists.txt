@@ -9,11 +9,14 @@ set(header_files
 )
 
 add_library(csumo_precice_lib ${source_files} ${header_files})
+
 target_link_libraries(csumo_precice_lib PRIVATE
     compiler_warnings_settings
     precice::precice
     pugixml::pugixml
+    Boost::headers
 )
+
 target_include_directories(csumo_precice_lib PUBLIC ${include_dir})
 
 add_executable(csumo_precice main.cpp)
@@ -22,6 +25,7 @@ target_link_libraries(csumo_precice PRIVATE
     csumo_precice_lib
     Boost::program_options
 )
+
 # GCC 14 false-positive: at release optimisation levels it inlines deeply through
 # boost::program_options::typed_value<string>::notify -> std::string::operator= ->
 # basic_string.h and then fires -Wnull-dereference on GCC's own standard-library header.
