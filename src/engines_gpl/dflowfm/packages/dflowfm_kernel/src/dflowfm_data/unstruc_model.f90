@@ -2380,13 +2380,16 @@ contains
 
       call prop_get(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
       call prop_get(md_ptr, 'output', 'VelocityDirectionClassesInterval', map_classes_ucdirstep, success)
-      if (success) then
-         call createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
-      else
-         allocate (map_classes_ucdir(0))
-      end if
 
       if (ti_classmap > 0.0_dp) then
+         if (map_classes_ucdirstep > 0.0_dp .and. map_classes_ucdirstep <= 360.0_dp) then
+            call create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
+         else if (map_classes_ucdirstep /= dmiss) then
+            call mess(LEVEL_FATAL, 'Step size for classes out of range; must be > 0 and <= 360; found: ', map_classes_ucdirstep)
+         else
+            allocate (map_classes_ucdir(0))
+         end if
+
          call readClasses('WaterlevelClasses', map_classes_s1)
          call readClasses('WaterdepthClasses', map_classes_hs)
          call readClasses('VelocityMagnitudeClasses', map_classes_ucmag)
@@ -2584,22 +2587,22 @@ contains
 
 !> helper routine to convert step size to the class boundaries
 !! give error if step size is not valid (e.g. negative, > 360, number of steps is not an integer)
-   subroutine createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
+   subroutine create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
       use MessageHandling, only: mess, LEVEL_FATAL
       use m_alloc, only: aerr
+      
+      ! Parameters
       real(kind=dp), allocatable, intent(inout) :: map_classes_ucdir(:) !< the constructed classes
       real(kind=dp), intent(in) :: map_classes_ucdirstep !< the input step size
 
-      real(kind=dp), parameter :: wholeCircle = 360.0_dp
+      ! Local variables
+      real(kind=dp), parameter :: WHOLE_CIRCLE = 360.0_dp
       integer :: n !< number of classes
-      integer :: i, ierr
+      integer :: i
+      integer :: ierr
 
-      if (map_classes_ucdirstep <= 0.0_dp .or. map_classes_ucdirstep > wholeCircle) then
-         call mess(LEVEL_FATAL, 'Step size for classes out of range; must be > 0 and <= 360; found: ', map_classes_ucdirstep)
-      end if
-
-      n = nint(wholeCircle / map_classes_ucdirstep)
-      if (comparereal(wholeCircle, n * map_classes_ucdirstep) /= 0) then
+      n = nint(WHOLE_CIRCLE / map_classes_ucdirstep)
+      if (comparereal(WHOLE_CIRCLE, n * map_classes_ucdirstep) /= 0) then
          call mess(LEVEL_FATAL, 'Step size for classes must meet: 360 / step size gives an integer')
       else if (n > 127) then
          call mess(LEVEL_FATAL, 'Step size too small. To many classes to fit in a signed byte')
@@ -2612,7 +2615,8 @@ contains
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
-   end subroutine createDirectionClasses
+      
+   end subroutine create_direction_classes
 
 !> Write a model definition to a file.
    subroutine writeMDUFile(filename, istat)

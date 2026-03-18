@@ -94,7 +94,7 @@ module m_ec_elementSet
          ! The maskArray array is allocated on-demand.
          allocate(elementSetPtr, stat = istat)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_elementSet::ecElementSetCreate: Unable to allocate additional memory")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetCreate: Unable to allocate additional memory")
             elementSetPtr => null()
             return
          end if
@@ -178,7 +178,7 @@ module m_ec_elementSet
          success = .true.
          !
          if (.not. associated(elementSetPtr)) then
-            call setECMessage("WARNING: ec_elementSet::ecElementSetFree1dArray: Dummy argument elementSetPtr is already disassociated.")
+            call set_ec_message("WARNING: ec_elementSet::ecElementSetFree1dArray: Dummy argument elementSetPtr is already disassociated.")
          else
             ! Free and deallocate all tEcElementSetPtrs in the 1d array.
             do i=1, nElementSets
@@ -216,7 +216,7 @@ module m_ec_elementSet
             elementSetPtr%name = trim(newName)
             success = .true.
          else
-            call setECMessage("ERROR: ec_elementset::ecElementSetSetName: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementset::ecElementSetSetName: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetName
       
@@ -236,7 +236,7 @@ module m_ec_elementSet
             elementSetPtr%ofType = ofType
             success = .true.
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetType: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetType: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetType
       
@@ -272,7 +272,7 @@ module m_ec_elementSet
                success = .true.
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetXyen: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetXyen: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetXyen
       
@@ -311,10 +311,10 @@ module m_ec_elementSet
                   success = .true.
                end if
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetXArray: Won't set x-coordinate array for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetXArray: Won't set x-coordinate array for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetXArray: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetXArray: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetXArray
       
@@ -353,10 +353,10 @@ module m_ec_elementSet
                   success = .true.
                end if
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetYArray: Won't set y-coordinate array for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetYArray: Won't set y-coordinate array for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetYArray: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetYArray: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetYArray
       
@@ -408,10 +408,10 @@ module m_ec_elementSet
                   end if
                end if ! if ( Lpointer) 
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetZArray: Won't set z/sigma-coordinate array for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetZArray: Won't set z/sigma-coordinate array for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetZArray: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetZArray: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetZArray
       
@@ -474,10 +474,10 @@ module m_ec_elementSet
                elementSetPtr%dx = dx
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetX0Dx: Won't set (x0,dx) for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetX0Dx: Won't set (x0,dx) for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetX0Dx: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetX0Dx: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetX0Dx
       
@@ -503,10 +503,10 @@ module m_ec_elementSet
                elementSetPtr%dy = dy
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetY0Dy: Won't set (y0,dy) array for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetY0Dy: Won't set (y0,dy) array for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetY0Dy: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetY0Dy: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetY0Dy
       
@@ -538,10 +538,10 @@ module m_ec_elementSet
                   success = .true.
                end if
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetDirectionArray: Won't set directional array for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetDirectionArray: Won't set directional array for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetDirectionArray: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetDirectionArray: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetDirectionArray
       
@@ -567,10 +567,10 @@ module m_ec_elementSet
                elementSetPtr%dlon = dlon
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetLon0Dlon: Won't set (lon0,dlon) for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetLon0Dlon: Won't set (lon0,dlon) for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetLon0Dlon: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetLon0Dlon: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetLon0Dlon
       
@@ -596,10 +596,10 @@ module m_ec_elementSet
                elementSetPtr%dlat = dlat
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetLat0Dlat: Won't set (lat0,dlat) for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetLat0Dlat: Won't set (lat0,dlat) for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetLat0Dlat: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetLat0Dlat: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetLat0Dlat
       
@@ -627,10 +627,10 @@ module m_ec_elementSet
                elementSetPtr%nCoordinates = size(maskPointer)
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetMaskPointer: Won't set a mask for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetMaskPointer: Won't set a mask for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetMaskPointer: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetMaskPointer: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetMaskPointer
       
@@ -664,14 +664,14 @@ module m_ec_elementSet
                if (allocated(elementSetPtr%maskArray)) then
                   deallocate(elementSetPtr%maskArray, stat = istat)
                   if (istat /= 0) then
-                     call setECMessage("ERROR: ec_elementSet::ecElementSetSetMaskArray: Unable to deallocate memory.")
+                     call set_ec_message("ERROR: ec_elementSet::ecElementSetSetMaskArray: Unable to deallocate memory.")
                      success = .false.
                   end if
                end if
                if (success) then
                   allocate(elementSetPtr%maskArray(newSize), stat = istat)
                   if (istat /= 0) then
-                     call setECMessage("ERROR: ec_elementSet::ecFieldCreate1dArray: Unable to allocate additional memory.")
+                     call set_ec_message("ERROR: ec_elementSet::ecFieldCreate1dArray: Unable to allocate additional memory.")
                      success = .false.
                   end if
                end if
@@ -683,12 +683,12 @@ module m_ec_elementSet
                end if
             else
                if (isFirst) then
-                  call setECMessage("WARNING: ec_elementSet::ecElementSetSetMaskArray: Won't set a mask for this ElementSet type.")
+                  call set_ec_message("WARNING: ec_elementSet::ecElementSetSetMaskArray: Won't set a mask for this ElementSet type.")
                   isFirst = .false.
                endif
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetMaskArray: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetMaskArray: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetMaskArray
       
@@ -706,7 +706,7 @@ module m_ec_elementSet
          elementSetPtr => null()
          elementSetPtr => ecSupportFindElementSet(instancePtr, elementSetId)
          if (.not.associated(elementSetPtr)) then
-            call setECMessage("ElementSet not found.")
+            call set_ec_message("ElementSet not found.")
             return
          end if
 
@@ -731,7 +731,7 @@ module m_ec_elementSet
          !
          elementSetPtr => ecSupportFindElementSet(instancePtr, elementSetId)
          if (.not.associated(elementSetPtr)) then
-            call setECMessage("ElementSet not found.")
+            call set_ec_message("ElementSet not found.")
             return
          end if
 
@@ -748,10 +748,10 @@ module m_ec_elementSet
                   elementSetPtr%nCoordinates = ncoords
                   success = .true.
                else
-                  call setECMessage("WARNING: ec_elementSet::ecElementSetSetNumberOfCoordinates: Won't set the number of coordinates for this ElementSet type.")
+                  call set_ec_message("WARNING: ec_elementSet::ecElementSetSetNumberOfCoordinates: Won't set the number of coordinates for this ElementSet type.")
                end if
             else
-               call setECMessage("ERROR: ec_elementSet::ecElementSetSetNumberOfCoordinates: Cannot find an ElementSet with the supplied id.")
+               call set_ec_message("ERROR: ec_elementSet::ecElementSetSetNumberOfCoordinates: Cannot find an ElementSet with the supplied id.")
             end if
          end if
          if (present(vptyp)) then
@@ -759,7 +759,7 @@ module m_ec_elementSet
             case (BC_VPTYP_PERCBED:BC_VPTYP_ZSURF)
                elementSetPtr%vptyp = vptyp
             case default
-               call setECMessage("Invalid type of vertical coordinate")
+               call set_ec_message("Invalid type of vertical coordinate")
             end select
          end if
          success = .true.
@@ -785,7 +785,7 @@ module m_ec_elementSet
             case (BC_VPTYP_PERCBED:BC_VPTYP_ZSURF)
                elementSetPtr%vptyp = vptyp
             case default
-               call setECMessage("Invalid type of vertical coordinate")
+               call set_ec_message("Invalid type of vertical coordinate")
             end select
          end if
          success = .true.
@@ -821,10 +821,10 @@ module m_ec_elementSet
                elementSetPtr%nCoordinates = nCoordinates
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetNumberOfCoordinates: Won't set the number of coordinates for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetNumberOfCoordinates: Won't set the number of coordinates for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetNumberOfCoordinates: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetNumberOfCoordinates: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetNumberOfCoordinates
       
@@ -848,10 +848,10 @@ module m_ec_elementSet
                elementSetPtr%latsp = newLat
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetSouthPoleLatitude: Won't set the latitude of south pole for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetSouthPoleLatitude: Won't set the latitude of south pole for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetSouthPoleLatitude: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetSouthPoleLatitude: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetSouthPoleLatitude
       
@@ -875,10 +875,10 @@ module m_ec_elementSet
                elementSetPtr%lonsp = newLon
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetSouthPoleLongitude: Won't set the longitude of south pole for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetSouthPoleLongitude: Won't set the longitude of south pole for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetSouthPoleLongitude: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetSouthPoleLongitude: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetSouthPoleLongitude
       
@@ -911,7 +911,7 @@ module m_ec_elementSet
                if (istat == 0) then
                   do i=1, newSize
                      if (len_trim(locArray(i)) > maxNameLen) then
-                        call setECMessage("WARNING: ec_elementSet::ecElementSetSetLocations: A new location string is too long and will be truncated.")
+                        call set_ec_message("WARNING: ec_elementSet::ecElementSetSetLocations: A new location string is too long and will be truncated.")
                      end if
                      location = locArray(i)
                      locations(i) = location
@@ -920,10 +920,10 @@ module m_ec_elementSet
                   success = .true.
                end if
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetLocations: Won't set location array for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetLocations: Won't set location array for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetLocations: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetLocations: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetLocations
       
@@ -945,7 +945,7 @@ module m_ec_elementSet
          elementSetPtr => null()
          !
          if (len_trim(newUnits) > maxNameLen) then
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetRadius: The new units string is too long, unable to change units.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetRadius: The new units string is too long, unable to change units.")
             return
          else
             units = newUnits
@@ -958,10 +958,10 @@ module m_ec_elementSet
                elementSetPtr%radius_unit = units
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetRadius: Won't set radius for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetRadius: Won't set radius for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetRadius: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetRadius: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetRadius
       
@@ -987,7 +987,7 @@ module m_ec_elementSet
             elementSetPtr%n_cols = n_cols
             success = .true.
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetrOWSCols: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetrOWSCols: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetRowsCols
       
@@ -1013,7 +1013,7 @@ module m_ec_elementSet
             elementSetPtr%n_layers = n_layers
             success = .true.
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetRowsColsLayers: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetRowsColsLayers: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetRowsColsLayers
       
@@ -1036,7 +1036,7 @@ module m_ec_elementSet
             elementSetPtr%vptyp = vptyp
             success = .true.
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetvptyp: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetvptyp: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetvptyp
 
@@ -1063,7 +1063,7 @@ module m_ec_elementSet
          case(BC_VPTYP_ZDATUM)      ! absolute positive distance from datum, nothing to be done, just copy!
                zArray = elementSetPtr%z(kbegin:kend)
          case default
-               call setECMessage("ERROR: ec_elementSet::ecElementSetGetAbsZ: Unknown vertical coordinate type.")
+               call set_ec_message("ERROR: ec_elementSet::ecElementSetGetAbsZ: Unknown vertical coordinate type.")
                return
          end select
          success = .true.
@@ -1089,7 +1089,7 @@ module m_ec_elementSet
             success = ecElementSetGetAbsZbyPtr(elementSetPtr, kbegin, kend, zmin, zmax, zArray)
             return
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetGetAbsZ: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetGetAbsZ: Cannot find an ElementSet with the supplied id.")
             return
          end if
       end function ecElementSetGetAbsZbyId

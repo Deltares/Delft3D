@@ -32,7 +32,7 @@
 module m_ec_spatial_extrapolation
    use precision, only : hp
    use m_ec_typedefs, only : tEcField, tEcElementSet, tEcItem, tEcIndexWeight, tFlexibleIndexWeightFactor
-   use m_ec_message, only : setECMessage
+   use m_ec_message, only : set_ec_message
 
    use kdtree2Factory
    implicit none
@@ -187,7 +187,7 @@ module m_ec_spatial_extrapolation
             Ns = dim1 * dim2
             allocate(xs(Ns), ys(Ns), stat=ierror)
             if (ierror /= 0) then
-               call setECMessage("Allocate error in nearest_sample_wrapper with size ", 4*Ns)
+               call set_ec_message("Allocate error in nearest_sample_wrapper with size ", 4*Ns)
                success = .false.
             else
                ii = 0

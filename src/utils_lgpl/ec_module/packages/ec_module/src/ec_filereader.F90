@@ -76,7 +76,7 @@ module m_ec_filereader
             end if
          end if
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_filereader::ecFileReaderCreate: Unable to allocate additional memory.")
+            call set_ec_message("ERROR: ec_filereader::ecFileReaderCreate: Unable to allocate additional memory.")
             fileReaderPtr => null()
             return
          end if
@@ -152,7 +152,7 @@ module m_ec_filereader
          success = .true.
          !
          if (.not. associated(ptr)) then
-            call setECMessage("WARNING: ec_filereader::ecFileReaderFree1dArray: Dummy argument ptr is already disassociated.")
+            call set_ec_message("WARNING: ec_filereader::ecFileReaderFree1dArray: Dummy argument ptr is already disassociated.")
          else
             ! Free and deallocate all tEcFileReaderPtrs in the 1d array.
             do i=1, nFileReaders
@@ -213,7 +213,7 @@ module m_ec_filereader
          !
          select case(fileReaderPtr%ofType)
             case (provFile_undefined)
-               call setECMessage("ERROR: ec_filereader::ecFileReaderReadNextRecord: Unknown file type.")
+               call set_ec_message("ERROR: ec_filereader::ecFileReaderReadNextRecord: Unknown file type.")
             case (provFile_uniform, provFile_unimagdir)
                ! read the next record into t0
                success = ecUniReadBlock(fileReaderPtr, fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%timesteps, &
@@ -297,7 +297,7 @@ module m_ec_filereader
                   end do
                   success = .true.
                case default
-                  call setECMessage("ERROR: ec_filereader::ecFileReaderReadNextRecord: Unsupported BC function type.")
+                  call set_ec_message("ERROR: ec_filereader::ecFileReaderReadNextRecord: Unsupported BC function type.")
                end select
             case (provFile_t3D)
                 numlay = size(fileReaderPtr%items(1)%ptr%elementsetptr%z)
@@ -425,12 +425,12 @@ module m_ec_filereader
             case (provFile_svwp, provFile_svwp_weight, provFile_curvi_weight, provFile_samples, &
                   provFile_triangulationmagdir, provFile_poly_tim, provFile_grib)
                ! NOTE for provFile_samples: don't support readNextRecord, because sample data is read once by ecSampleReadAll upon init.
-               call setECMessage("ERROR: ec_filereader::ecFileReaderReadNextRecord: Unsupported file type.")
+               call set_ec_message("ERROR: ec_filereader::ecFileReaderReadNextRecord: Unsupported file type.")
             case default
-               call setECMessage("ERROR: ec_filereader::ecFileReaderReadNextRecord: Unknown file type.")
+               call set_ec_message("ERROR: ec_filereader::ecFileReaderReadNextRecord: Unknown file type.")
                do i=1, fileReaderPtr%nItems
                   if (fileReaderPtr%items(i)%ptr%sourceT1FieldPtr%timesteps<fileReaderPtr%items(i)%ptr%sourceT0FieldPtr%timesteps) then
-                     call setECMessage('Non-progressive time variable detected in file: '//trim(fileReaderPtr%fileName))
+                     call set_ec_message('Non-progressive time variable detected in file: '//trim(fileReaderPtr%fileName))
                      return
                   end if
                end do
@@ -462,7 +462,7 @@ module m_ec_filereader
          end if
 
          if (itemId == ec_undef_int) then
-            call setECMessage("ERROR: ec_filereader::ecFileReaderFindItem: Cannot find a FileReader with the supplied name: "//trim(name))
+            call set_ec_message("ERROR: ec_filereader::ecFileReaderFindItem: Cannot find a FileReader with the supplied name: "//trim(name))
          end if
       end function ecFileReaderFindItem
 
@@ -483,12 +483,12 @@ module m_ec_filereader
          fileReaderPtr => ecSupportFindFileReader(instancePtr, fileReaderId)
          if (associated(fileReaderPtr)) then
             if (x > fileReaderPtr%nItems) then
-               call setECMessage("ERROR: ec_filereader::ecFileReaderGetItem: Index out of bounds.")
+               call set_ec_message("ERROR: ec_filereader::ecFileReaderGetItem: Index out of bounds.")
             else
                itemId = fileReaderPtr%items(x)%ptr%id
             end if
          else
-            call setECMessage("ERROR: ec_filereader::ecFileReaderGetItem: Cannot find a FileReader with the supplied id.")
+            call set_ec_message("ERROR: ec_filereader::ecFileReaderGetItem: Cannot find a FileReader with the supplied id.")
          end if
       end function ecFileReaderGetItem
 
@@ -509,7 +509,7 @@ module m_ec_filereader
          if (associated(fileReaderPtr)) then
             nr = fileReaderPtr%nItems
          else
-            call setECMessage("ERROR: ec_filereader::ecFileReaderGetNumberOfItems: Cannot find a FileReader with the supplied id.")
+            call set_ec_message("ERROR: ec_filereader::ecFileReaderGetNumberOfItems: Cannot find a FileReader with the supplied id.")
          end if
       end function ecFileReaderGetNumberOfItems
 
@@ -602,7 +602,7 @@ module m_ec_filereader
             allocate (fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_kbnumber(kcmp))
             nmissing = asc_map_components(kcmp, fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_components, fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%astro_kbnumber)
             if (nmissing > 0) then
-               call setECMessage("Failed to read all astronomical constituents from file '" // trim(fileReaderPtr%FILENAME) // "'. See the user manual for an overview of all supported constituents.")
+               call set_ec_message("Failed to read all astronomical constituents from file '" // trim(fileReaderPtr%FILENAME) // "'. See the user manual for an overview of all supported constituents.")
             end if
          end if
       end function ecFileReaderLookupAstroComponents
@@ -644,7 +644,7 @@ module m_ec_filereader
 !!!!!  svwpfile = .false.
 !!!!!  if (provFileType == provFile_undefined) then
 !!!!!     if (index(iniString,'.nc') > 0 .or. index(iniString,'.NC') > 0) then
-!!!!!        call setECMessage("NetCDF not supported.");
+!!!!!        call set_ec_message("NetCDF not supported.");
 !!!!!        success = .false.
 !!!!!        return
 !!!!!     endif

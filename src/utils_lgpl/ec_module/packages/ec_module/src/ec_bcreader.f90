@@ -92,7 +92,7 @@ contains
     case (BC_FTYPE_ASCII)
        if (bc%bcFilePtr%fhandle<0) then                   ! check if file already opened in our adminstration
           if (.not.ecSupportOpenExistingFileGnu(fhandle, bc%bcFilePtr%bcfilename)) then
-             call setECMessage("Unable to open "//trim(bc%bcFilePtr%bcfilename))
+             call set_ec_message("Unable to open "//trim(bc%bcFilePtr%bcfilename))
              return
           else
              bc%bcFilePtr%fhandle = fhandle
@@ -128,7 +128,7 @@ contains
        bc%quantity%factor  = bc%ncptr%scales(bc%ncvarndx(1))
        bc%quantity%offset  = bc%ncptr%offsets(bc%ncvarndx(1))
     case default
-       call setECMessage("Forcing file ("//trim(bc%fname)//") should either be of type .nc (netcdf timeseries file) or .bc (ascii BC-file).")
+       call set_ec_message("Forcing file ("//trim(bc%fname)//") should either be of type .nc (netcdf timeseries file) or .bc (ascii BC-file).")
        return
     end select
     success=.true.
@@ -219,7 +219,7 @@ contains
                    nfld = 0                                          ! count the number of fields in this header block
                    nq = 0                                            ! count the (maximum) number of quantities in this block
                 else
-                   call setECMessage("Unknown block type '"//trim(rec)//           &
+                   call set_ec_message("Unknown block type '"//trim(rec)//           &
                                 "' in file "//trim(bc%fname)//", block "//trim(bc%bcname)//".") 
                    return
                 endif
@@ -553,13 +553,13 @@ contains
           case ('BLOCK-FROM')
              bc%timeint = BC_TIMEINT_BFROM
           case ('BLOCK', 'BLOCKTO', 'BLOCKFROM')
-             call setECMessage("Unknown time interpolation Block in file "//trim(bc%fname)//", block " &
+             call set_ec_message("Unknown time interpolation Block in file "//trim(bc%fname)//", block " &
                                 //trim(bc%bcname)//". Use Block-To or Block-From.")
              return
           case ('AMOUNTTORATE')
              bc%timeint = BC_TIMEINT_AMOUNT_TO_RATE
           case default
-             call setECMessage("Unknown time interpolation '"//trim(adjustl(hdrvals(ifld)%s))//           &
+             call set_ec_message("Unknown time interpolation '"//trim(adjustl(hdrvals(ifld)%s))//           &
                                 "' in file "//trim(bc%fname)//", block "//trim(bc%bcname)//".") 
              return
           end select
@@ -582,7 +582,7 @@ contains
              bc%zInterpolationType = zinterpolate_mean
           case default
              bc%zInterpolationType = zinterpolate_unknown
-             call setECMessage("Unknown vertical interpolation '"//trim(adjustl(hdrvals(ifld)%s))//           &
+             call set_ec_message("Unknown vertical interpolation '"//trim(adjustl(hdrvals(ifld)%s))//           &
                                 "' in file "//trim(bc%fname)//", block "//trim(bc%bcname)//".") 
              return
           end select
@@ -606,7 +606,7 @@ contains
           case ('ZSURF')
              bc%vptyp = BC_VPTYP_ZSURF
           case default
-             call setECMessage("Unknown vertical position type '"//trim(adjustl(hdrvals(ifld)%s))//           &
+             call set_ec_message("Unknown vertical position type '"//trim(adjustl(hdrvals(ifld)%s))//           &
                                 "' in file "//trim(bc%fname)//", block "//trim(bc%bcname)//".") 
              return
           end select
@@ -615,9 +615,9 @@ contains
            ! related to vertical positions is used, but is not recoqnized.
            ! Note that key "NAME" is ignored here.
            if (index(hdrkeys(ifld)%s, "VERT") > 0 .and. index(hdrkeys(ifld)%s, "POS") > 0) then
-               call setECMessage("Unknown keyword '"//trim(adjustl(hdrkeys(ifld)%s))//           &
+               call set_ec_message("Unknown keyword '"//trim(adjustl(hdrkeys(ifld)%s))//           &
                                 "' in file "//trim(bc%fname)//", block "//trim(bc%bcname)//".")
-               call setECMessage("Use one of: 'VERTICALPOSITION', 'VERTPOSITIONINDEX', " // &
+               call set_ec_message("Use one of: 'VERTICALPOSITION', 'VERTPOSITIONINDEX', " // &
                                               "'VERTICALPOSITIONSPECIFICATION', 'VERTPOSITIONS'")
                return
            end if
@@ -703,7 +703,7 @@ contains
         enddo
         if (success) then
             if (.not. warningPrinted) then
-               call setECMessage("converting layer percentages in bc-file to fractions.")
+               call set_ec_message("converting layer percentages in bc-file to fractions.")
                warningPrinted = .true.
             endif
             vp = vp * 0.01_hp
@@ -722,9 +722,9 @@ contains
      write(strMin,'(f8.3)') minvp
      write(strMax,'(f8.3)') maxvp
 
-     call setECMessage("sigma positions must be in range 0.0 - 1.0")
+     call set_ec_message("sigma positions must be in range 0.0 - 1.0")
      errorMessage = "range for " // trim(name) // " is " // strMin // " - " // strMax // "."
-     call setECMessage(errorMessage)
+     call set_ec_message(errorMessage)
   end subroutine printErrMessageLayers
 
   end function checkAndFixLayers
@@ -790,8 +790,8 @@ contains
           if (bcPtr%feof) then
              select case (BCPtr%func)
              case (BC_FUNC_TSERIES, BC_FUNC_TIM3D, BC_FUNC_CONSTANT)
-                call setECMessage("   File: "//trim(bcPtr%fname)//", Location: "//trim(bcPtr%fname)//", Quantity: "//trim(bcPtr%qname))
-                call setECMessage("Datablock end (eof) has been reached (READING BEYOND FINAL TIME).")
+                call set_ec_message("   File: "//trim(bcPtr%fname)//", Location: "//trim(bcPtr%fname)//", Quantity: "//trim(bcPtr%qname))
+                call set_ec_message("Datablock end (eof) has been reached (READING BEYOND FINAL TIME).")
              end select
              if (present(eof)) then
                 eof = .true.
@@ -815,8 +815,8 @@ contains
           if (index(rec,'[')>0 .and. index(rec,']')>0) then ! lines with [ and ] are assumed as block headings
              select case (BCPtr%func)
              case (BC_FUNC_TSERIES, BC_FUNC_TIM3D)
-                call setECMessage("   File: "//trim(bcPtr%fname)//", Location: "//trim(bcPtr%bcname)//", Quantity: "//trim(bcPtr%qname))
-                call setECMessage("Datablock end (new [forcing] block) has been prematurely reached.")
+                call set_ec_message("   File: "//trim(bcPtr%fname)//", Location: "//trim(bcPtr%bcname)//", Quantity: "//trim(bcPtr%qname))
+                call set_ec_message("Datablock end (new [forcing] block) has been prematurely reached.")
              end select
              if (present(eof)) then
                 eof = .true.
@@ -830,10 +830,10 @@ contains
        if (istat /= 0) then
           ! error handling, report column number i, field content columns(i) and record rec  ....
           ! TODO: hookup MessageHandlign and print rec and column stats here directly
-          call setECMessage("   File: "//trim(bcPtr%fname)//", Location: "//trim(bcPtr%fname)//", Quantity: "//trim(bcPtr%qname))
-          call setECMessage("ec_bcreader::ecBCReadBlock: Read failure.")
+          call set_ec_message("   File: "//trim(bcPtr%fname)//", Location: "//trim(bcPtr%fname)//", Quantity: "//trim(bcPtr%qname))
+          call set_ec_message("ec_bcreader::ecBCReadBlock: Read failure.")
           write (ncolstr,'(a,i0,a,i0,a)') '(expecting ',n_col,' columns)'
-          call setECMessage("   ''"//trim(rec)//"'' "//trim(ncolstr))
+          call set_ec_message("   ''"//trim(rec)//"'' "//trim(ncolstr))
           success = .false.
           return
        endif
@@ -854,7 +854,7 @@ contains
                    values(j)=values(j)*BCPtr%quantity%factor+BCPtr%quantity%offset      ! apply using given offset and factor to this quantity
                    if (istat/=0) then
                       ! error handling, report column number i, field content columns(i) and record rec  ....
-                      call setECMessage("Read failure in file: "//trim(bcPtr%fname))
+                      call set_ec_message("Read failure in file: "//trim(bcPtr%fname))
                       return
                    endif
                 endif
@@ -867,8 +867,8 @@ contains
                         &                                                   * BCPtr%quantity%factor                    &
                         &                                                   + BCPtr%quantity%offset
                    if (istat>0) then
-                      call setECMessage("   line = "//trim(rec))
-                      call setECMessage("Read failure in file: "//trim(bcPtr%fname))
+                      call set_ec_message("   line = "//trim(rec))
+                      call set_ec_message("Read failure in file: "//trim(bcPtr%fname))
                       return
                    endif
                 endif
@@ -895,7 +895,7 @@ contains
 
     case (BC_FTYPE_NETCDF)
        if (BCPtr%nctimndx>BCPtr%ncptr%dimlen(BCPtr%ncptr%timedimid)) then
-          call setECMessage("Datablock end (eof) has been reached in file: "//trim(bcPtr%fname))
+          call set_ec_message("Datablock end (eof) has been reached in file: "//trim(bcPtr%fname))
           return
        endif
        
@@ -921,7 +921,7 @@ contains
           time_steps = ecSupportThisTimeToMJD(fileReaderPtr%tframe, ec_timesteps(1))
        endif
     case default
-       call setECMessage("Invalid filetype set for file: "//trim(bcPtr%fname)//' (internal EC-error)')
+       call set_ec_message("Invalid filetype set for file: "//trim(bcPtr%fname)//' (internal EC-error)')
        return
     end select
 
@@ -949,7 +949,7 @@ contains
        ! ......
     end if
     if (istat /= 0) then
-       call setECMessage("ec_bcreader::ecBCBlockCreate: Unable to allocate additional memory.")
+       call set_ec_message("ec_bcreader::ecBCBlockCreate: Unable to allocate additional memory.")
        bcBlockPtr => null()
        return
     end if
@@ -1011,7 +1011,7 @@ contains
     success = .true.
     !
     if (.not. associated(BCBlockPtr)) then
-       call setECMessage("WARNING: ec_bcreader::ecBCBlockFree1dArray: Dummy argument BCBlockPtr is already disassociated.")
+       call set_ec_message("WARNING: ec_bcreader::ecBCBlockFree1dArray: Dummy argument BCBlockPtr is already disassociated.")
     else
        ! Free and deallocate all tEcFieldPtrs in the 1d array.
        do i=1, nBCBlocks

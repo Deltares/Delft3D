@@ -65,7 +65,7 @@ contains
       success = .false.
       allocate (netcdf_ptr, stat=istat)
       if (istat /= 0) then
-         call setECMessage("ec_netcdf_timeseries::ecNetCDFCreate: Unable to allocate additional memory.")
+         call set_ec_message("ec_netcdf_timeseries::ecNetCDFCreate: Unable to allocate additional memory.")
          netcdf_ptr => null()
          return
       end if
@@ -84,7 +84,7 @@ contains
       success = .false.
       ierr = nf90_close(netcdf%id)
       if (ierr /= NF90_NOERR) then
-         call setECMessage("ec_netcdf_timeseries::ecNetCDFFree: Unable to close file")
+         call set_ec_message("ec_netcdf_timeseries::ecNetCDFFree: Unable to close file")
       end if
       if (allocated(netcdf%dimlen)) then
          deallocate (netcdf%dimlen)
@@ -167,7 +167,7 @@ contains
 
       ierr = nf90_open(trim(ncname), NF90_NOWRITE, ncptr%ncid)
       if (ierr /= NF90_NOERR) then
-         call setECmessage("ec_netcdf_timeseries::ecNetCDFInit: Error opening "//trim(ncname))
+         call set_ec_message("ec_netcdf_timeseries::ecNetCDFInit: Error opening "//trim(ncname))
          return
       end if
       ierr = nf90_inquire(ncptr%ncid, n_dims, nVars, nGlobalAtts, unlimdimid)
