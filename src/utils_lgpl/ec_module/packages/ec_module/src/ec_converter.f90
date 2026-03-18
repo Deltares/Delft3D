@@ -1679,8 +1679,6 @@ contains
       integer :: vectormax
       integer :: from, thru !< contiguous range of indices in the target array
       character(MAXIMUM_EC_MESSAGE_LENGTH) :: errormsg
-      logical :: oneSided
-      character(maxMessageLen) :: errormsg
 
       !
       success = .false.
