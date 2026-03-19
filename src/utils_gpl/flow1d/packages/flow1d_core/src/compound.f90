@@ -37,7 +37,7 @@ module m_compound
    use m_CrossSections
    use m_Culvert
    use m_pump
-   use m_General_Structure
+   use m_general_structure
    use m_Universal_Weir
    use m_Bridge
    use m_hash_search

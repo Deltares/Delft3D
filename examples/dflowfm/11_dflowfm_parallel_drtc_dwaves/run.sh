@@ -10,14 +10,11 @@ nProc=3
 
 # set DIMR version to be used
 if [ -z "$1" ]; then
-    dimrdir=../../../build_all/lnx64/bin
+    dimrdir=../../../install_all/lnx64/bin
 else
     dimrdir=$1
 fi
 
-
-# select queue; one of : normal-e3-c7 , normal-e5-c7
-queue=normal-e3-c7
 
 nPart=$((nNodes * nProc))
 

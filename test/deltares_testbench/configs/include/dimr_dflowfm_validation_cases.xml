@@ -444,7 +444,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f012_c032_alloutrealistic" ref="dflowfm_default">
-      <path version="2025-10-15T18:42:40.561000">e02_dflowfm/f012_inout/c032_alloutrealistic</path>
+      <path version="2026-03-17T15:44:42.773000">e02_dflowfm/f012_inout/c032_alloutrealistic</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/westerscheldt_his.nc" type="netCDF">
@@ -540,7 +540,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c010_frisianinlet_schematized" ref="dflowfm_default">
-      <path version="2025-10-15T18:43:05.258000">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
+      <path version="2026-03-17T10:09:59.561000">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/f34_his.nc" type="netCDF">
@@ -559,7 +559,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c020_frisianinlet_realistic" ref="dflowfm_default">
-      <path version="2025-10-15T18:43:08.709000">e02_dflowfm/f013_waves/c020_frisianinlet_realistic</path>
+      <path version="2026-03-17T10:10:08.019000">e02_dflowfm/f013_waves/c020_frisianinlet_realistic</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/r17_his.nc" type="netCDF">
