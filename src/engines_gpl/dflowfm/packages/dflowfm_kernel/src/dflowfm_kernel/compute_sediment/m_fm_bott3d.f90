@@ -2314,6 +2314,11 @@ width_out = 0_dp
 water_discharge_out = 0_dp
 n_links_out=0
 n_links_in=0
+links_out=0
+links_in=0
+flownode_junction=0
+flownode_out=0
+n_links=0
 !
 ! Apply nodal relations to transport
 !

@@ -217,6 +217,12 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
                elseif (pNodRel%Method == 'bollapittaluga') then   
                   call prop_get(block_ptr, '*', 'alpha_BP', pNodRel%alpha_BP)
                   write (lundia, '(2a,e12.4)') '    alpha_BP            ', ':', pNodRel%alpha_BP
+                  !The fallback option when there is more than one incoming branch or different than 2 outgoing branches is the function method.
+                  write (lundia, '(a)') 'Function parameters (fallback option):'
+                  call prop_get(block_ptr, '*', 'k', pNodRel%expQ)
+                  write (lundia, '(2a,e12.4)') '    K                   ', ':', pNodRel%expQ
+                  call prop_get(block_ptr, '*', 'm', pNodRel%expW)
+                  write (lundia, '(2a,e12.4)') '    M                   ', ':', pNodRel%expW
                else
                  call SetMessage(LEVEL_FATAL, 'Unknown Method Specified in File: '//trim(fileName)//' Method: '//trim(pNodRel%Method))  
                endif
