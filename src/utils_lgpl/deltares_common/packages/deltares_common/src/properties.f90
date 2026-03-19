@@ -1789,8 +1789,8 @@ contains
                   k = index(localvalue, '#')
                   if (k > 0) then
                      localvalue = localvalue(1:k - 1)
-                     call mess(LEVEL_WARN, "Encountered value '#" // localvalue // "#'. Parsing values enclosed with # characters is " &
-                        //"deprecated functionality and will be removed in the future. Remove the # characters.")
+                     call mess(LEVEL_WARN, "Encountered value '#" // localvalue // "#'. Parsing values enclosed in '#' is " &
+                        //"deprecated and will be removed in a future release. Please remove the '#' characters to ensure compatibility.")
                   end if
                   localvalue = adjustl(localvalue)
                end if
