@@ -2321,6 +2321,7 @@ do inod = 1, network%nds%Count
             total_width_out(n_junctions) = total_width_out(n_junctions) + wb1d
             total_water_discharge_out(n_junctions) = total_water_discharge_out(n_junctions) + qb1d
             do ised = 1, lsedtot
+               !ATTENTION! is the index below `kl1` correct or should it be `n_links`??
                sb_dir(n_junctions, ised, kl1) = -1 ! set direction to outgoing
             end do
             !Find the flownode connected to a downstream link `flownode_out` which is not the junction flownode (with index `flownode_idx`)
