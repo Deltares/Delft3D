@@ -354,7 +354,12 @@ aws_secret_access_key=<your-secret-access-key>
 ```
 
 The directory `/home/dev/.aws` is mounted in the devcontainer as a volume. So any files written there will
-be persisted. You only have to write your MinIO keys to this file once.
+be persisted. You only have to write your MinIO keys to this file once:
+```bash
+cd /home/dev/.aws
+code credentials #write here the credentials and save
+cd /workspaces/delft3d/test/deltares_testbench #to go back to the testbench location
+```
 
 ##### Running a test case
 You can try running a test case to verify that the path to the binaries and your credentials work. This
