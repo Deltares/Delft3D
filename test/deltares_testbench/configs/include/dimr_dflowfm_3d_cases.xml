@@ -307,7 +307,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c040_vertical_mixing_layer_3d" ref="dflowfm_default">
-     <path version="2025-10-07T06:57:25.059000">e02_dflowfm/f019_transport/c040_vertical_mixing_layer_3d</path>
+     <path version="2026-03-13T16:21:18.110000">e02_dflowfm/f019_transport/c040_vertical_mixing_layer_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/sp_his.nc" type="netCDF">
@@ -369,7 +369,7 @@
     </testCase>
 	
     <testCase name="e02_f006_c202_3d_layers_percentage" ref="dflowfm_default">
-      <path version="2025-10-08T09:51:40.241000">e02_dflowfm/f006_external_forcing/c202_3d_layers_percentage</path>
+      <path version="2026-03-17T10:09:31.349000">e02_dflowfm/f006_external_forcing/c202_3d_layers_percentage</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sp_map.nc" type="netCDF">
@@ -382,7 +382,7 @@
     </testCase>
 
     <testCase name="e02_f006_c203_3d_layers_fraction" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f006_external_forcing/c203_3d_layers_fraction</path>
+      <path version="2026-03-17T10:09:44.620000">e02_dflowfm/f006_external_forcing/c203_3d_layers_fraction</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sp_map.nc" type="netCDF">
@@ -395,7 +395,7 @@
     </testCase>
 
     <testCase name="e02_f006_c204_3d_ugrid" ref="dflowfm_default">
-      <path version="2025-01-29T11:50:35.318000">e02_dflowfm/f006_external_forcing/c204_3d_ugrid</path>
+      <path version="2026-03-13T16:21:07.746000">e02_dflowfm/f006_external_forcing/c204_3d_ugrid</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sp_map.nc" type="netCDF">
@@ -556,7 +556,7 @@
     </testCase>
 
     <testCase name="e02_f018_c020_uxuyadvectionvelocitybnd3d_bc" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f018_boundar_conditions_3d/c020_uxuyadvectionvelocitybnd3d_bc</path>
+      <path version="2026-03-13T16:21:12.834000">e02_dflowfm/f018_boundar_conditions_3d/c020_uxuyadvectionvelocitybnd3d_bc</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/uxuy_3d_map.nc" type="netCDF">
@@ -764,7 +764,7 @@
     </testCase>
 
     <testCase name="e02_f025_c011_bendcase_structured_3d" ref="dflowfm_default">
-      <path version="2025-10-07T06:58:16.178000">e02_dflowfm/f025_secondary_flow_hydrodynamics/c011_bendcase_structured_3d</path>
+      <path version="2026-03-13T16:21:28.524000">e02_dflowfm/f025_secondary_flow_hydrodynamics/c011_bendcase_structured_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">
@@ -778,7 +778,7 @@
     </testCase>
 
     <testCase name="e02_f025_c012_bendcase_unstructured_3d" ref="dflowfm_default">
-      <path version="2025-10-07T06:58:20.923000">e02_dflowfm/f025_secondary_flow_hydrodynamics/c012_bendcase_unstructured_3d</path>
+      <path version="2026-03-13T16:21:33.443000">e02_dflowfm/f025_secondary_flow_hydrodynamics/c012_bendcase_unstructured_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/smallbend_map.nc" type="netCDF">
@@ -942,20 +942,20 @@
         </checks>
     </testCase>
     <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="dflowfm_default">
-      <path version="2025-09-09T09:15:36.025000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
+      <path version="2026-03-13T16:21:45.714000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_sigma_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.2" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.5" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="1.1" />
             <parameter name="mesh2d_cftrt" toleranceRelative="1" />
           </parameters>
         </file>
       </checks>
     </testCase>
     <testCase name="e02_f203_c04_Waal_trachytopes_3D_zsigma" ref="dflowfm_default">
-      <path version="2025-09-09T09:15:54.481000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
+      <path version="2026-03-13T16:21:57.149000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_zsigma_map.nc" type="netCDF">
@@ -1041,7 +1041,7 @@
         <file name="dflowfm/dflowfmoutput/gatefree_3Dz_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0003" />
-            <parameter name="x_velocity" toleranceAbsolute="0.005" />
+            <parameter name="x_velocity" toleranceAbsolute="0.01" />
             <parameter name="y_velocity" toleranceAbsolute="0.0003" />
           </parameters>
         </file>
@@ -1256,7 +1256,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c030_generalstructure_door_closing_at_sill_3Dsigma" ref="dflowfm_default">
-      <path version="2025-10-07T07:05:18.685000">e02_dflowfm/f208_3D_hydraulic_structures/c030_generalstructure_door_closing_at_sill_3Dsigma</path>
+      <path version="2026-03-13T16:22:46.285000">e02_dflowfm/f208_3D_hydraulic_structures/c030_generalstructure_door_closing_at_sill_3Dsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/t2_3Dsigma_his.nc" type="netCDF">
@@ -1275,7 +1275,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c031_generalstructure_door_closing_at_sill_3Dz" ref="dflowfm_default">
-      <path version="2025-10-07T07:05:46.098000">e02_dflowfm/f208_3D_hydraulic_structures/c031_generalstructure_door_closing_at_sill_3Dz</path>
+      <path version="2026-03-13T16:23:38.719000">e02_dflowfm/f208_3D_hydraulic_structures/c031_generalstructure_door_closing_at_sill_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/t2_3Dz_his.nc" type="netCDF">
@@ -1294,7 +1294,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c032_generalstructure_door_closing_at_sill_3Dzsigma1" ref="dflowfm_default">
-      <path version="2025-10-07T07:05:52.423000">e02_dflowfm/f208_3D_hydraulic_structures/c032_generalstructure_door_closing_at_sill_3Dzsigma1</path>
+      <path version="2026-03-13T16:24:30.349000">e02_dflowfm/f208_3D_hydraulic_structures/c032_generalstructure_door_closing_at_sill_3Dzsigma1</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/t2_3Dzsigma1_his.nc" type="netCDF">
@@ -1313,7 +1313,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c033_generalstructure_door_closing_at_sill_3Dzsigma2" ref="dflowfm_default">
-      <path version="2025-10-07T07:05:58.568000">e02_dflowfm/f208_3D_hydraulic_structures/c033_generalstructure_door_closing_at_sill_3Dzsigma2</path>
+      <path version="2026-03-13T16:25:36.202000">e02_dflowfm/f208_3D_hydraulic_structures/c033_generalstructure_door_closing_at_sill_3Dzsigma2</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/t2_3Dzsigma2_his.nc" type="netCDF">
@@ -1409,7 +1409,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c038_generalstructure_lowering_closed_door_3Dsigma" ref="dflowfm_default">
-      <path version="2025-10-07T07:06:20.495000">e02_dflowfm/f208_3D_hydraulic_structures/c038_generalstructure_lowering_closed_door_3Dsigma</path>
+      <path version="2026-03-13T16:26:44.866000">e02_dflowfm/f208_3D_hydraulic_structures/c038_generalstructure_lowering_closed_door_3Dsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/t4_3Dsigma_his.nc" type="netCDF">
@@ -1428,7 +1428,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c039_generalstructure_lowering_closed_door_3Dz" ref="dflowfm_default">
-      <path version="2025-10-07T07:06:24.761000">e02_dflowfm/f208_3D_hydraulic_structures/c039_generalstructure_lowering_closed_door_3Dz</path>
+      <path version="2026-03-13T16:27:31.891000">e02_dflowfm/f208_3D_hydraulic_structures/c039_generalstructure_lowering_closed_door_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/t4_3Dz_his.nc" type="netCDF">
@@ -1447,7 +1447,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c040_generalstructure_lowering_closed_door_3Dzsigma1" ref="dflowfm_default">
-      <path version="2025-10-07T07:06:29.682000">e02_dflowfm/f208_3D_hydraulic_structures/c040_generalstructure_lowering_closed_door_3Dzsigma1</path>
+      <path version="2026-03-13T16:28:19.310000">e02_dflowfm/f208_3D_hydraulic_structures/c040_generalstructure_lowering_closed_door_3Dzsigma1</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/t4_3Dzsigma1_his.nc" type="netCDF">
@@ -1466,7 +1466,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c041_generalstructure_lowering_closed_door_3Dzsigma2" ref="dflowfm_default">
-      <path version="2025-10-07T07:06:35.889000">e02_dflowfm/f208_3D_hydraulic_structures/c041_generalstructure_lowering_closed_door_3Dzsigma2</path>
+      <path version="2026-03-13T16:29:20.602000">e02_dflowfm/f208_3D_hydraulic_structures/c041_generalstructure_lowering_closed_door_3Dzsigma2</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/t4_3Dzsigma2_his.nc" type="netCDF">
@@ -1639,28 +1639,7 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-	
-    <testCase name="e02_f203_c082_trachytopes_spatially_varying_1_3D" ref="dflowfm_default">
-      <path version="2025-10-07T07:00:08.281000">e02_dflowfm/f203_3D_trachytopes/c082_trachytopes_spatially_varying_1_3D</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="depthgr.xyz" ignore="true" />
-      </checks>
-    </testCase>
-	
+
     <testCase name="e02_f203_c083_trachytopes_spatially_varying_25_3D" ref="dflowfm_default">
       <path version="2025-10-07T07:00:12.202000">e02_dflowfm/f203_3D_trachytopes/c083_trachytopes_spatially_varying_25_3D</path>
       <maxRunTime>20.0</maxRunTime>

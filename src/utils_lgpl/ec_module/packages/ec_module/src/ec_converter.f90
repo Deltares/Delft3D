@@ -42,7 +42,7 @@ module m_ec_converter
    use time_class
    use, intrinsic :: ieee_arithmetic
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -73,7 +73,7 @@ contains
       ! allocation
       allocate (converterPtr, stat=istat)
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_converter::ecConverterCreate: Unable to allocate additional memory.")
+         call set_ec_message("ERROR: ec_converter::ecConverterCreate: Unable to allocate additional memory.")
          converterPtr => null()
          return
       end if
@@ -125,7 +125,7 @@ contains
       success = .true.
       !
       if (.not. associated(converterPtr)) then
-         call setECMessage("WARNING: ec_converter::ecConverterFree1dArray: Dummy argument converterPtr is already disassociated.")
+         call set_ec_message("WARNING: ec_converter::ecConverterFree1dArray: Dummy argument converterPtr is already disassociated.")
       else
          ! Free and deallocate all tEcConverterPtrs in the 1d array.
          do i = 1, nConverters
@@ -188,7 +188,7 @@ contains
          converterPtr%srcmask%msk = srcmask%msk
          success = .true.
       else
-         call setECMessage("ERROR: ec_converter::ecConverterSetMask: Cannot find a Converter with the supplied id.")
+         call set_ec_message("ERROR: ec_converter::ecConverterSetMask: Cannot find a Converter with the supplied id.")
       end if
    end function ecConverterSetMask
 
@@ -211,7 +211,7 @@ contains
          converterPtr%ofType = ofType
          success = .true.
       else
-         call setECMessage("ERROR: ec_converter::ecConverterSetType: Cannot find a Converter with the supplied id.")
+         call set_ec_message("ERROR: ec_converter::ecConverterSetType: Cannot find a Converter with the supplied id.")
       end if
    end function ecConverterSetType
 
@@ -234,7 +234,7 @@ contains
          converterPtr%operandType = operand
          success = .true.
       else
-         call setECMessage("ERROR: ec_converter::ecConverterSetOperand: Cannot find a Converter with the supplied id.")
+         call set_ec_message("ERROR: ec_converter::ecConverterSetOperand: Cannot find a Converter with the supplied id.")
       end if
    end function ecConverterSetOperand
 
@@ -257,7 +257,7 @@ contains
          converterPtr%inputptr => inputptr
          success = .true.
       else
-         call setECMessage("ERROR: ec_converter::ecConverterSetInputPointer: Cannot find a Converter with the supplied id.")
+         call set_ec_message("ERROR: ec_converter::ecConverterSetInputPointer: Cannot find a Converter with the supplied id.")
       end if
    end function ecConverterSetInputPointer
 
@@ -280,7 +280,7 @@ contains
          converterPtr%interpolationType = interpolationType
          success = .true.
       else
-         call setECMessage("ERROR: ec_converter::ecConverterSetInterpolation: Cannot find a Converter with the supplied id.")
+         call set_ec_message("ERROR: ec_converter::ecConverterSetInterpolation: Cannot find a Converter with the supplied id.")
       end if
    end function ecConverterSetInterpolation
 
@@ -303,7 +303,7 @@ contains
          converterPtr%targetIndex = indx
          success = .true.
       else
-         call setECMessage("ERROR: ec_converter::ecConverterSetElement: Cannot find a Converter with the supplied id.")
+         call set_ec_message("ERROR: ec_converter::ecConverterSetElement: Cannot find a Converter with the supplied id.")
       end if
    end function ecConverterSetElement
 
@@ -312,11 +312,10 @@ contains
    !> Update the weight factors of a Converter.
    function ecConverterUpdateWeightFactors(instancePtr, connection) result(success)
       use kdtree2Factory
-      use m_ec_basic_interpolation
       use m_alloc
       use ieee_arithmetic, only: ieee_is_nan
       use m_ec_triangle, only: jagetwf, indxx, wfxx
-      use m_ec_basic_interpolation, only: triinterp2
+      use m_ec_basic_interpolation, only: triinterp2, nearest_neighbour
       use m_ec_parameters, only: ec_undef_hp
       implicit none
       logical :: success !< function status
@@ -438,7 +437,7 @@ contains
                                       weight%indices(1, :), ec_undef_hp, &
                                       sourceElementSet%x, sourceElementSet%y, sourceElementSet%n_cols, jsferic, 0)
             else
-               call setECMessage("ERROR: ec_converter::ecConverterUpdateWeightFactors: The supplied interpolationMethod is not supported for samples type.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUpdateWeightFactors: The supplied interpolationMethod is not supported for samples type.")
             end if
             connection%converterPtr%indexWeight => weight
          end do
@@ -620,7 +619,7 @@ contains
             else ! old style, not using kdtree
                allocate (edge_poly_x(2 * n_cols + 2 * n_rows - 2), edge_poly_y(2 * n_cols + 2 * n_rows - 2), stat=ierr)
                if (ierr /= 0) then
-                  call setECMessage("ERROR: ec_converter::ecConverterUpdateWeightFactors: Unable to allocate additional memory.")
+                  call set_ec_message("ERROR: ec_converter::ecConverterUpdateWeightFactors: Unable to allocate additional memory.")
                   return
                end if
                j = 1
@@ -682,7 +681,7 @@ contains
                deallocate (edge_poly_y)
             end if ! old style, not using kdtree
          case default
-            call setECMessage("Unknown element type set for interpolation weights in NetCDF file.")
+            call set_ec_message("Unknown element type set for interpolation weights in NetCDF file.")
             return
          end select
 
@@ -1095,7 +1094,7 @@ contains
       case (convType_samples)
          success = ecConverterSamples(connection, timesteps%mjd())
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterPerformConversions: Unknown Converter type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterPerformConversions: Unknown Converter type requested.")
       end select
       if (success) then
          success = ecConverterUpdateScalar(connection)
@@ -1255,7 +1254,7 @@ contains
          ! Check target Item(s).
          do i = 1, connection%nTargetItems
             if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniform: Target ElementSet's number of coordinates not set.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Target ElementSet's number of coordinates not set.")
                return
             end if
          end do
@@ -1306,12 +1305,12 @@ contains
                   targetField%timesteps = timesteps
                end do
             else
-               call setECMessage("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
                return
             end if
          case (operand_replace_element) ! TODO: AvD/EB: why does operand_replace require a targetIndex, whereas operand_add does not?
             if (connection%converterPtr%targetIndex == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
             end if
             targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
@@ -1352,12 +1351,12 @@ contains
                   targetField%timesteps = timesteps
                end do
             else
-               call setECMessage("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
                return
             end if
          case (operand_add_element)
             if (connection%converterPtr%targetIndex == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
             end if
             targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
@@ -1368,7 +1367,7 @@ contains
             targetField%arr1dPtr(from:thru) = targetField%arr1dPtr(from:thru) + valuesT
             targetField%timesteps = timesteps
          case default
-            call setECMessage("ERROR: ec_converter::ecConverterUniform: Unsupported operand type requested.")
+            call set_ec_message("ERROR: ec_converter::ecConverterUniform: Unsupported operand type requested.")
             return
          end select
       case (interpolate_time, interpolate_time_extrapolation_ok) ! performs implicit space conversion from 2D to 3D,
@@ -1376,7 +1375,7 @@ contains
          select case (connection%converterPtr%operandType)
          case (operand_replace_element)
             if (connection%converterPtr%targetIndex == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
             end if
             targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
@@ -1392,11 +1391,11 @@ contains
             ! NOTE: RL: Currently this most definitely not the case: targetindex is not set correctly upon init.
             targetField%timesteps = timesteps
          case default
-            call setECMessage("ERROR: ec_converter::ecConverterUniform: Unsupported operand type requested.")
+            call set_ec_message("ERROR: ec_converter::ecConverterUniform: Unsupported operand type requested.")
             return
          end select
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterUniform: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterUniform: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -1450,7 +1449,7 @@ contains
          select case (connection%converterPtr%operandType)
          case (operand_replace, operand_replace_if_value)
             if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
                return
             end if
             do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
@@ -1459,14 +1458,14 @@ contains
             targetField%timesteps = timesteps
          case (operand_replace_element)
             if (connection%converterPtr%targetIndex == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniformToMagnitude: Converter's target Field array index not set.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Converter's target Field array index not set.")
                return
             end if
             targetField%arr1dPtr(connection%converterPtr%targetIndex) = magnitude
             targetField%timesteps = timesteps
          case (operand_add)
             if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
+               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
                return
             end if
             do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
@@ -1474,11 +1473,11 @@ contains
             end do
             targetField%timesteps = timesteps
          case default
-            call setECMessage("ERROR: ec_converter::ecConverterUniformToMagnitude: Unsupported operand type requested.")
+            call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Unsupported operand type requested.")
             return
          end select
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterUniformToMagnitude: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -1553,11 +1552,11 @@ contains
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
          case default
-            call setECMessage("ERROR: ec_converter::ecConverterUnimagdir: Unsupported operand type requested.")
+            call set_ec_message("ERROR: ec_converter::ecConverterUnimagdir: Unsupported operand type requested.")
             return
          end select
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterUnimagdir: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterUnimagdir: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -1632,7 +1631,7 @@ contains
       integer :: idx !< helper variable
       integer :: vectormax
       integer :: from, thru !< contiguous range of indices in the target array
-      character(maxMessageLen) :: errormsg
+      character(MAXIMUM_EC_MESSAGE_LENGTH) :: errormsg
 
       !
       success = .false.
@@ -1644,7 +1643,7 @@ contains
             ! Highly specific: 1 source Item with 1 value.
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(idx) = connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(idx)
          case default
-            call setECMessage("ERROR: ec_converter::ecConverterPolytim: Unsupported operand type requested.")
+            call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported operand type requested.")
             return
          end select
       case (interpolate_spacetimeSaveWeightFactors, interpolate_spacetime)
@@ -1760,7 +1759,7 @@ contains
                         if (maxlay_srcR < 1) then
                            write (errormsg, '(a,i0,a,i5.5)') "ERROR: ec_converter::ecConverterPolytim: No valid sigma (layer) associated with point ", &
                               kR, " of polytim item ", connection%sourceItemsPtr(1)%ptr%id
-                           call setECMessage(errormsg)
+                           call set_ec_message(errormsg)
                            return
                         end if
 
@@ -1782,7 +1781,7 @@ contains
                         if (maxlay_srcL < 1) then
                            write (errormsg, '(a,i0,a,i5.5)') "ERROR: ec_converter::ecConverterPolytim: No valid sigma (layer) associated with point ", &
                               kL, " of polytim item ", connection%sourceItemsPtr(1)%ptr%id
-                           call setECMessage(errormsg)
+                           call set_ec_message(errormsg)
                            return
                         end if
 
@@ -1791,14 +1790,14 @@ contains
                            if (ndxmax - ndxmin < 1) then
                               write (errormsg, '(a,i0,a,i5.5)') "ERROR: ec_converter::ecConverterPolytim: No valid layer for averaging for point ", &
                                  kL, " of polytim item ", connection%sourceItemsPtr(1)%ptr%id
-                              call setECMessage(errormsg)
+                              call set_ec_message(errormsg)
                               return
                            end if
                            valR1 = ecConverterVerticalMean(sigmaRR, valR, zmin(i), zmax(i), ndxmin, ndxmax)
                            if (ndxmax - ndxmin < 1) then
                               write (errormsg, '(a,i0,a,i5.5)') "ERROR: ec_converter::ecConverterPolytim: No valid layer for averaging for point ", &
                                  kR, " of polytim item ", connection%sourceItemsPtr(1)%ptr%id
-                              call setECMessage(errormsg)
+                              call set_ec_message(errormsg)
                               return
                            end if
                            val = wL * valL1 + wR * valR1
@@ -1831,7 +1830,7 @@ contains
                               select case (connection%sourceItemsPtr(1)%ptr%quantityPtr%zInterpolationType)
                               case (zinterpolate_unknown)
                                  if (.not. alreadyPrinted) then
-                                    call setECMessage("WARNING: ec_converter::ecConverterPolytim: Unknown vertical interpolation type given, will proceed with linear method.")
+                                    call set_ec_message("WARNING: ec_converter::ecConverterPolytim: Unknown vertical interpolation type given, will proceed with linear method.")
                                     alreadyPrinted = .true.
                                  end if
                                  val = wL * (wwL * valL1 + (1.0_dp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_dp - wwR) * valR2)
@@ -1842,7 +1841,7 @@ contains
                               case (zinterpolate_log)
                                  val = wL * (valL1**wwL) * (valL2**(1.0_dp - wwL)) + wR * (valR1**wwR) * (valR2**(1.0_dp - wwR))
                               case default
-                                 call setECMessage("ERROR: ec_converter::ecConverterPolytim: Unsupported vertical interpolation type requested.")
+                                 call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported vertical interpolation type requested.")
                                  return
                               end select
                               !
@@ -1892,13 +1891,13 @@ contains
                   end if ! valid left or right point ?
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
             case default
-               call setECMessage("ERROR: ec_converter::ecConverterPolytim: Unsupported operand type requested.")
+               call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported operand type requested.")
                return
             end select
          end do
 
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterPolytim: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported interpolation type requested.")
          return
       end select
       if (allocated(sigma)) deallocate (sigma)
@@ -1970,7 +1969,7 @@ contains
       sourceElementSet => null()
       !
       if (connection%nSourceItems /= connection%nTargetItems) then
-         call setECMessage("ERROR: ec_converter::ecConverterCurvi: The number of source and target Items differ and should have been identical.")
+         call set_ec_message("ERROR: ec_converter::ecConverterCurvi: The number of source and target Items differ and should have been identical.")
          return
       end if
       !
@@ -2034,7 +2033,7 @@ contains
             !
          end do
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterCurvi: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterCurvi: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -2158,12 +2157,12 @@ contains
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) + rr
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             case default
-               call setECMessage("ERROR: ec_converter::ecConverterArcinfo: Unsupported operand type requested.")
+               call set_ec_message("ERROR: ec_converter::ecConverterArcinfo: Unsupported operand type requested.")
                return
             end select
          end do
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterArcinfo: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterArcinfo: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -2197,7 +2196,7 @@ contains
          nSamples = connection%sourceItemsPtr(1)%ptr%elementSetPtr%nCoordinates
          sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
 
-         call setECMessage('ERROR: ec_converter::ecConverterSamples: triangle interpolation is work in progress.')
+         call set_ec_message('ERROR: ec_converter::ecConverterSamples: triangle interpolation is work in progress.')
          return
          rr = 0.0_dp ! TODO: AvD: WIP
          !select case(connection%converterPtr%operandType)
@@ -2208,11 +2207,11 @@ contains
          !      connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) + rr
          !      connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
          !   case default
-         !      call setECMessage("ERROR: ec_converter::ecConverterSamples: Unsupported operand type requested.")
+         !      call set_ec_message("ERROR: ec_converter::ecConverterSamples: Unsupported operand type requested.")
          !      return
          !end select
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterSamples: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterSamples: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -2256,11 +2255,11 @@ contains
                                                                                   + connection%sourceItemsPtr(4)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1)
             end if
          case default
-            call setECMessage("ERROR: ec_converter::ecConverterQhtable: Unsupported operand type requested.")
+            call set_ec_message("ERROR: ec_converter::ecConverterQhtable: Unsupported operand type requested.")
             return
          end select
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterQhtable: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterQhtable: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -2326,18 +2325,18 @@ contains
          case (operand_replace_element)
             ! Only used by poly_tim.
             if (connection%converterPtr%targetIndex == ec_undef_int) then
-               call setECMessage("ERROR: ec_converter::ecConverterFourier: Converter's target Field array index not set.")
+               call set_ec_message("ERROR: ec_converter::ecConverterFourier: Converter's target Field array index not set.")
                return
             end if
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(connection%converterPtr%targetIndex) = deflection
          case (operand_add)
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) + deflection
          case default
-            call setECMessage("ERROR: ec_converter::ecConverterFourier: Unsupported operand type requested.")
+            call set_ec_message("ERROR: ec_converter::ecConverterFourier: Unsupported operand type requested.")
             return
          end select
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterFourier: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterFourier: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -2477,7 +2476,7 @@ contains
          twx = 1
          twy = 2
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterSpiderweb: '" &
+         call set_ec_message("ERROR: ec_converter::ecConverterSpiderweb: '" &
                            //trim(connection%targetItemsPtr(1)%ptr%quantityPtr%name) &
                            //"' is not a known spiderweb quantity.")
          return
@@ -2645,7 +2644,7 @@ contains
                end if
             end if
          case default
-            call setECMessage("ERROR: ec_converter::ecConverterSpiderweb: Unsupported operand type requested.")
+            call set_ec_message("ERROR: ec_converter::ecConverterSpiderweb: Unsupported operand type requested.")
             return
          end select
       end do
@@ -2703,7 +2702,7 @@ contains
       logical :: has_wave_direction
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
       real(dp), dimension(:), pointer :: targetValues
-      real(dp), dimension(:), allocatable :: zsrc
+      real(dp), dimension(:), allocatable :: source_sink_z_bottom
       real(dp) :: ztgt
       real(dp) :: PI, phi, xtmp
       integer :: time_interpolation
@@ -2856,11 +2855,39 @@ contains
                t0 = sourceT0Field%timesteps
                t1 = sourceT1Field%timesteps
 
-               call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
+               ! Check if this is harmonic data
+               if (has_harmonics) then
+                  ! No time interpolation, but we DO have to update source values based on phase and amplitude.
+                  ! FieldT0 should contain the currently calculated values. (hence a0 = 1, a1 = 0)
+                  a0 = 1.0
+                  a1 = 0.0
+                  ! FOR SIMPLE HARMONIC only one step needed:
+                  !   1. calculate with cosine, and time, phase and source (T1) amplitude.
+                  ! note: source file Amplitude lives in T1
+                  omega = 2.0_dp * PI / sourceItem%hframe%ec_period ! period from seconds to radians
+                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_dp ! delta t in seconds since refdate
+                  
+                  ! Loop over all source sample points and evaluate harmonic function
+                  do ipt = 1, n_cols
+                     amplitude = sourceT1Field%arr1d(ipt)
+                     phase0 = sourceItem%hframe%phases(ipt, 1)  ! Linear indexing: phases(point, 1)
+                     
+                     if (comparereal(amplitude, sourceMissing, .true.) == 0 .or. &
+                         comparereal(phase0, sourceMissing, .true.) == 0) then
+                        sourceT0Field%arr1d(ipt) = sourceMissing
+                     else
+                        sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
+                     end if
+                  end do
+               else
+                  ! Normal time interpolation for time-series data
+                  call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
+               end if
+
                if (n_layers == 0) then
                   do j = 1, n_points
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
-                         (connection%converterPtr%operandType == operand_replace_if_value)) then ! Dit hoort in de loop beneden per target gridpunt!
+                         (connection%converterPtr%operandType == operand_replace_if_value)) then
                         targetValues(j) = 0.0_dp
                      end if
                      do i_weight_index = 1, size(indexWeight%indices, 1)
@@ -2868,7 +2895,7 @@ contains
                         if (mp > 0 .and. mp <= n_cols) then
                            if (comparereal(sourceT0Field%arr1d(mp), sourceMissing, .true.) == 0 .or. &
                                comparereal(sourceT1Field%arr1d(mp), sourceMissing, .true.) == 0) then
-                              call setECMessage("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
+                              call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
                               return
                            end if
                            weight_factor = indexWeight%weightfactors(i_weight_index, j)
@@ -2877,7 +2904,7 @@ contains
                      end do
                   end do
                else
-                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Multiple layers sources not yet supported for meteo from stations.")
+                  call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Multiple layers sources not yet supported for meteo from stations.")
                   return
                end if
             else
@@ -2963,7 +2990,7 @@ contains
                end if
 
                if (n_layers > 0 .and. associated(targetElementSet%z) .and. associated(sourceElementSet%z)) then
-                  allocate (zsrc(n_layers))
+                  allocate (source_sink_z_bottom(n_layers))
                   if (issparse == 1) then
                      Ndatasize = ia(n_rows + 1) - 1
                      s2D_T0(1:Ndatasize, 1:n_layers) => sourceT0Field%arr1d
@@ -3010,13 +3037,13 @@ contains
                         end select
 
                         ! scale source coordinates with factors of target
-                        zsrc = (a_s * sourceElementSet%z + b_s - b_t) / a_t
+                        source_sink_z_bottom = (a_s * sourceElementSet%z + b_s - b_t) / a_t
 
                         ! initialize upper layer kp
                         kp = 2
 
-                        ! dkp: increase direction of (scaled) source z-coordinate zsrc, i.e. zrsc(kp) > zsrc(kp-dkp)
-                        if (zsrc(2) - zsrc(1) > 0) then
+                        ! dkp: increase direction of (scaled) source z-coordinate source_sink_z_bottom, i.e. zrsc(kp) > source_sink_z_bottom(kp-dkp)
+                        if (source_sink_z_bottom(2) - source_sink_z_bottom(1) > 0) then
                            dkp = 1
                         else
                            dkp = -1
@@ -3029,15 +3056,15 @@ contains
                         do k = kbot, ktop
                            ztgt = targetElementSet%z(k)
 
-                           ! get search direction in zsrc
-                           if (dkp * (ztgt - zsrc(kp)) > 0) then
+                           ! get search direction in source_sink_z_bottom
+                           if (dkp * (ztgt - source_sink_z_bottom(kp)) > 0) then
                               k_inc = 1
                            else
                               k_inc = -1
                            end if
 
                            ! get new upper layer kp
-                           do while ((zsrc(kp - dkp) > ztgt) .or. (zsrc(kp) <= ztgt))
+                           do while ((source_sink_z_bottom(kp - dkp) > ztgt) .or. (source_sink_z_bottom(kp) <= ztgt))
                               kp = kp + k_inc
                               if (kp > n_layers .or. kp < 1) exit
                               if (kp - dkp > n_layers .or. kp - dkp < 1) exit
@@ -3086,12 +3113,12 @@ contains
                                  end do
                               end do
                               ! get weights for vertical interpolation
-                              wb = (zsrc(kp) - ztgt) / (zsrc(kp) - zsrc(kp - dkp))
+                              wb = (source_sink_z_bottom(kp) - ztgt) / (source_sink_z_bottom(kp) - source_sink_z_bottom(kp - dkp))
                               wb = min(max(wb, 0.0_dp), 1.0_dp) ! zeroth-order extrapolation beyond range of source vertical coordinates
                               wt = (1.0_dp - wb)
 
                               if (has_harmonics) then
-                                 call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Harmonics not (yet) implemented for layers.")
+                                 call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Harmonics not (yet) implemented for layers.")
                                  return
                               else
                                  ! interpolating between times and between vertical layers
@@ -3120,7 +3147,7 @@ contains
                         end do ! loop over vertical
                      end if ! valid mp and np
                   end do ! loop over the target elementset
-                  if (allocated(zsrc)) deallocate (zsrc)
+                  if (allocated(source_sink_z_bottom)) deallocate (source_sink_z_bottom)
                else
                   if (issparse == 1) then
                      Ndatasize = ia(n_rows + 1) - 1
@@ -3266,21 +3293,21 @@ contains
             t1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%timesteps
             targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
             if (t0 > t1) then
-               call setECMessage("WARNING: ec_converter::ecConverterNetcdf: Only one data field available.")
+               call set_ec_message("WARNING: ec_converter::ecConverterNetcdf: Only one data field available.")
                if (connection%converterPtr%interpolationType == interpolate_time) then
-                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Extrapolation not allowed.")
+                  call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Extrapolation not allowed.")
                   return
                end if
                ! ===== operation =====
                select case (connection%converterPtr%operandType)
                case (operand_replace, operand_replace_if_value)
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-                     call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
+                     call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
                      return
                   end if
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates /= &
                     & connection%sourceItemsPtr(i)%ptr%elementSetPtr%nCoordinates) then
-                     call setECMessage("ERROR: ec_converter::ecConverterNetcdf: ElementSet's number of coordinates differs (Source vs. Target).")
+                     call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: ElementSet's number of coordinates differs (Source vs. Target).")
                      return
                   end if
                   do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
@@ -3288,25 +3315,25 @@ contains
                   end do
                   targetField%timesteps = timesteps
                case default
-                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Unsupported operand type requested.")
+                  call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Unsupported operand type requested.")
                   return
                end select
             else
                call time_weight_factors(a0, a1, timesteps, t0, t1, extrapolated)
                if (extrapolated .and. connection%converterPtr%interpolationType == interpolate_time) then
-                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Extrapolation not allowed.")
+                  call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Extrapolation not allowed.")
                   return
                end if
                ! ===== operation =====
                select case (connection%converterPtr%operandType)
                case (operand_replace, operand_replace_if_value)
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-                     call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
+                     call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
                      return
                   end if
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates /= &
                     & connection%sourceItemsPtr(i)%ptr%elementSetPtr%nCoordinates) then
-                     call setECMessage("ERROR: ec_converter::ecConverterNetcdf: ElementSet's number of coordinates differs (Source vs. Target).")
+                     call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: ElementSet's number of coordinates differs (Source vs. Target).")
                      return
                   end if
                   do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
@@ -3316,13 +3343,13 @@ contains
                   end do
                   targetField%timesteps = timesteps
                case default
-                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Unsupported operand type requested.")
+                  call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Unsupported operand type requested.")
                   return
                end select
             end if
          end do
       case default
-         call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Unsupported interpolation type requested.")
+         call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Unsupported interpolation type requested.")
          return
       end select
       success = .true.
@@ -3704,7 +3731,7 @@ contains
                indices(idownup, i) = idx
             else
 !                 error
-               call setECMessage("ERROR: conversion to sparse indices failed for point ", i)
+               call set_ec_message("ERROR: conversion to sparse indices failed for point ", i)
             end if
          end do
 

@@ -34,14 +34,14 @@
 
 module m_petsc
 #include <petsc/finclude/petscksp.h>
-
+   use iso_c_binding, only: c_int32_t, c_int64_t, c_double
    use precision, only: dp
    use petsc
    PetscInt :: numrows ! number of rows in this domain
    integer :: numallrows ! number of rows of whole system
    integer, dimension(:), allocatable :: rowtoelem ! local row to local element list, dim(numrows)
 
-!  CRS matrices for PETSc/MatCreateMPIAIJWithSplitArrays
+   ! CRS matrices for PETSc/MatCreateMPIAIJWithSplitArrays
    PetscInt :: numdia ! number of non-zero entries in diagonal block
    real(kind=dp), dimension(:), allocatable :: adia ! non-zero matrix entries, diagonal block
    PetscInt, dimension(:), allocatable :: idia, jdia ! column indices and row pointers of off-diagonal block
@@ -68,7 +68,7 @@ module m_petsc
    KSP :: Solver ! Solver for the equation Amat * sol = rhs
    logical :: isKSPCreated = .false. ! A flag to determine whether KSP is created
 
-!  preconditioner
+   ! preconditioner
    PC :: Preconditioner
    KSP :: SubSolver
    PC :: SubPrec
@@ -78,12 +78,13 @@ module m_petsc
 end module m_petsc
 
 submodule(m_solve_petsc) m_solve_petsc_
+   use iso_c_binding, only: c_int32_t, c_int64_t, c_double
    use precision, only: dp
    implicit none
 
 contains
 
-!> initialze PETSc
+   !> Initialize PETSc
    module subroutine startpetsc()
 #ifdef HAVE_PETSC
       use m_petsc, only: PETSC_OK, petsc_comm_world, petscinitialize, petsc_null_character, petscpopsignalhandler
@@ -106,7 +107,7 @@ contains
       return
    end subroutine startpetsc
 
-!> initialze PETSc
+   !> Clean up PETSc
    module subroutine stoppetsc()
 #ifdef HAVE_PETSC
       use mpi, only: mpi_comm_free
@@ -127,8 +128,8 @@ contains
       return
    end subroutine stoppetsc
 
-!> allocate arrays for petsc matrix construction,
-!>   and get sparsity pattern in RCS format
+   !> Allocate arrays for PETSc matrix construction,
+   !> and get sparsity pattern in RCS format
    module subroutine ini_petsc(Ndx, ierror)
       use m_reduce, only: nocg, noel, nogauss, ndn, row
       use m_partitioninfo, only: get_global_numbers, iglobal, numcells, jampi, my_rank, ndomains, numghost_sall, ighostlist_sall
@@ -155,7 +156,7 @@ contains
 
       ierror = 1
 
-!     make global numbering; the first call fails in debug mode when nocg = 0 and hence nogauss = len(noel)
+      ! Make global numbering; the first call fails in debug mode when nocg = 0 and hence nogauss = len(noel)
       if (nocg > 0) then
          call get_global_numbers(nocg, noel(nogauss + 1:nogauss + nocg), iglobal, numcells, 0)
       else
@@ -163,69 +164,32 @@ contains
       end if
 
       if (jampi == 1) then
-!        the number of cells in this domain
+         ! the number of cells in this domain
          numrows = numcells(my_rank)
 
-!        the total number of rows
+         ! the total number of rows
          numallrows = sum(numcells(0:ndomains - 1))
       else
          numrows = nocg
          numallrows = nocg
       end if
 
-!     allocate local variables
       allocate (mask(Ndx))
       allocate (inonzerodia(numrows))
       allocate (inonzerooff(numrows))
 
-!     mark active cells
+      ! mark active cells
       mask = 0
       do n = nogauss + 1, nogauss + nocg
          mask(noel(n)) = 1
       end do
 
-!     unmark all ghost cells
+      ! unmark all ghost cells
       do i = 1, numghost_sall
          mask(ighostlist_sall(i)) = 0
       end do
 
-!     unmark deactivated ghost cells
-!      open(newunit=lunfil,file='tmp'//sdmn//'.xyz')
-!      do n=nogauss+1,nogauss+nocg
-!         ndn = noel(n)
-
-!         if ( mask(ndn).eq.1 ) then
-!!           unmask cell if it is a deactivated ghost cell
-!            if ( idomain(ndn).ne.my_rank ) then
-!               Lactive = .false.
-!               do i=1,nd(ndn)%lnx
-!                  L = abs(nd(ndn)%ln(i))
-!                  if ( wu(L).ne.0d0 ) then
-!                     Lactive = .true.
-!                  end if
-!               end do
-!               if ( .not.Lactive ) then
-!                  mask(ndn) = 0
-!                  write(6,"('disabled ghost cell, my_rank=', I3, ', ndn=', I5)") my_rank, ndn
-!                  write(lunfil,"(3E17.5)") xz(ndn), yz(ndn), dble(my_rank)
-!               end if
-!            end if
-!         end if
-!
-!!         if ( mask(ndn).eq.1 ) then
-!!            do i=1,row(ndn)%l
-!!               j=row(ndn)%j(i)
-!!
-!!               if ( iglobal(j).eq.0 ) then
-!!                  write(6,"('zero global cell number, my_rank=', I3, ', j=', I5)") my_rank, ndn
-!!                  write(lunfil,"(3E17.5)") xz(j), yz(j), dble(my_rank)
-!!               end if
-!!            end do
-!!         end if
-!      end do
-!      close(lunfil)
-
-!     count nonzero elements
+      ! count nonzero elements
       irow = 0
       ndn_glob_first = 0
       numdia = 0
@@ -236,7 +200,7 @@ contains
             irow = irow + 1
             ndn_glob = iglobal(ndn) ! global cell number
 
-!           check global cell numbering (safety)
+            ! check global cell numbering (safety)
             if (ndn_glob_first == 0) then
                ndn_glob_first = ndn_glob
             else
@@ -246,10 +210,10 @@ contains
                end if
             end if
 
-!           diagonal element
+            ! diagonal element
             numdia = numdia + 1
 
-!           count non-zero row entries for this row
+            ! count non-zero row entries for this row
             do i = 1, row(ndn)%l
                j = row(ndn)%j(i)
                if (iglobal(j) == 0) then
@@ -265,7 +229,7 @@ contains
          end if
       end do
 
-!     allocate module variables
+      ! allocate module variables
       if (allocated(rowtoelem)) then
          deallocate (rowtoelem)
       end if
@@ -334,7 +298,7 @@ contains
       allocate (sol_val(1:numrows))
       allocate (res_val(1:numrows))
 
-!     make the RCS index arrays
+      ! make the RCS index arrays
       irow = 0
       numdia = 0
       numoff = 0
@@ -351,7 +315,7 @@ contains
 
             rowtoelem(irow) = ndn
 
-!           diagonal element
+            ! diagonal element
             numdia = numdia + 1
             jdia(numdia) = iglobal(ndn)
             guusidxdia(numdia) = -ndn
@@ -360,7 +324,7 @@ contains
                write (6, *) '--> iglobal=0', my_rank, ndn
             end if
 
-!           count non-zero row entries for this row
+            ! count non-zero row entries for this row
             do i = 1, row(ndn)%l
                j = row(ndn)%j(i)
                if (iglobal(j) == 0) then
@@ -377,7 +341,7 @@ contains
                end if
             end do
 
-!         end if
+            ! end if
             idia(irow + 1) = numdia + 1
             ioff(irow + 1) = numoff + 1
          end if
@@ -390,7 +354,7 @@ contains
          inonzerooff = 0
       end if
 
-!     sort the row indices
+      ! sort the row indices
       num = max(maxval(inonzerodia), maxval(inonzerooff))
       allocate (idx(num))
       allocate (idum(num))
@@ -419,21 +383,21 @@ contains
          end if
       end do
 
-!     make indices zero-based
+      ! make indices zero-based
       idia = idia - 1
       jdia = jdia - 1
       ioff = ioff - 1
       joff = joff - 1
 
-!     diagonal row-indices need to be local
+      ! diagonal row-indices need to be local
       if (jampi == 1 .and. numrows > 0) then
          jdia = jdia - iglobal(rowtoelem(1)) + 1
       end if
 
-!     store
+      ! store
       joffsav = joff
 
-!     create vectors
+      ! create vectors
       rhs_val = 0.0_dp
       sol_val = 0.0_dp
       res_val = 0.0_dp
@@ -472,7 +436,7 @@ contains
 
 1234  continue
 
-!     deallocate local variables
+      ! deallocate local variables
       if (allocated(mask)) then
          deallocate (mask)
       end if
@@ -492,9 +456,7 @@ contains
       return
    end subroutine ini_petsc
 
-!> compose the global matrix and solver for PETSc
-!>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
-!>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
+   !> Fill the PETSc matrix entries with values from bbr and ccr
    subroutine setPETSCmatrixEntries()
       use m_reduce, only: bbr, ccr
       use m_partitioninfo, only: iglobal
@@ -508,7 +470,7 @@ contains
 
       logical :: Lstop
 
-!     count zero rows
+      ! count zero rows
       numzerorows = 0
       izerorow = 0
       adia = 0.0_dp
@@ -516,7 +478,7 @@ contains
 
       Lstop = .false.
 
-!     fill matrix entries
+      ! fill matrix entries
       do n = 1, numdia
          i = guusidxdia(n)
          if (i < 0) then ! diagonal entry in diagonal block
@@ -533,32 +495,13 @@ contains
          end if
       end do
 
-!     BEGIN DEBUG
-!
-!      call MPI_barrier(DFM_COMM_DFMWORLD,ierr)
-!
-!      if ( my_rank.eq.1 ) then
-!         do i=1,numghost_sall
-!            ndn = ighostlist_sall(i)
-!            if ( kfs(ndn) > 0 ) write(6,*) ndn, 'kfs=', kfs(ndn)
-!         end do
-!         do i=1,numoff
-!            if ( joff(i).ne.joffsav(i) ) then
-!               write(6,*) 'unequal:', i, joff(i), joffsav(i)
-!            end if
-!         end do
-!      end if
-!
-!      call MPI_barrier(DFM_COMM_DFMWORLD,ierr)
-!     END DEBUG
-
       do irow = 1, numrows
          istart = ioff(irow) + 1 ! ioff is zeros-based
          iend = ioff(irow + 1)
          do n = istart, iend
             i = guusidxoff(n)
             if (i <= 0) then
-!              should not happen
+               ! should not happen
                write (6, *) 'irow=', irow, 'istart=', istart, 'iend=', iend, 'numrows=', numrows, 'n=', n, 'i=', i
                call mess(LEVEL_ERROR, 'conjugategradientPETSC: numbering error')
             else
@@ -566,165 +509,101 @@ contains
             end if
          end do
       end do
-
-!     BEGIN DEBUG
-!      call newfil(mout, 'matrix_' // sdmn // '.m')
-!      write(mout, "('numrows=', I, ';')")  numrows
-!      write(mout, "('numdia=', I, ';')")  numdia
-!      write(mout, "('numoff=', I, ';')")  numoff
-!
-!      write(mout, "('idia= [', $)")
-!      do i=1,numrows+1
-!         write(mout, "(I10)") idia(i)
-!      end do
-!      write(mout, "('];')")
-!
-!
-!      write(mout, "('jdia= [', $)")
-!      do i=1,numdia
-!         write(mout, "(I10)") jdia(i) + iglobal(rowtoelem(1)) - 1
-!      end do
-!      write(mout, "('];')")
-!
-!      write(mout, "('adia= [', $)")
-!      do i=1,numdia
-!         write(mout, "(E15.5)") adia(i)
-!      end do
-!      write(mout, "('];')")
-!
-!      write(mout, "('ioff= [', $)")
-!      do i=1,numrows+1
-!         write(mout, "(I10)") ioff(i)
-!      end do
-!      write(mout, "('];')")
-!
-!
-!      write(mout, "('joff= [', $)")
-!      do i=1,numoff
-!         write(mout, "(I10)") joffsav(i)
-!      end do
-!      write(mout, "('];')")
-!
-!      write(mout, "('aoff= [', $)")
-!      do i=1,numoff
-!         write(mout, "(E15.5)") aoff(i)
-!      end do
-!      write(mout, "('];')")
-!     END DEBUG
-
-!      if ( numzerorows.gt.0 ) then
-!         call mess(LEVEL_ERROR, 'setPETSCmatrixEntries: zero rows not supported yet')
-!         call mess(LEVEL_INFO, 'number of nonzero rows:', numrows-numzerorows)
-!         call mess(LEVEL_INFO, 'number of zero rows:', numzerorows)
-!         call matZeroRowsColumns(Amat, numzerorows, izerorow, 0d0, ierr)
-!      end if
-
    end subroutine setPETSCmatrixEntries
 
-!> compose the global matrix and solver for PETSc
-!>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
-!>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
+   !> Configure the preconditioner for the PETSc KSP solver
    subroutine createPETSCPreconditioner(iprecnd)
-      use petsc, only: kspgetpc, pcdestroy, pccreate, petsc_comm_world, pcsetoperators, kspsetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, petsc_null_integer
-      use m_petsc, only: PETSC_OK, PreconditioningType, Solver, Preconditioner, Amat, SubSolver, SubPrec
+      use petsc, only: kspgetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, pcasmrestoresubksp, petsc_null_integer, tKSP, kspsetreusepreconditioner, petsc_false
+      use m_petsc, only: PETSC_OK, Solver, Preconditioner, SubSolver, SubPrec
       use MessageHandling, only: mess, level_error
 
       integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
 
       integer :: jasucces
 
-      integer, save :: jafirst = 1
-
       PetscErrorCode :: ierr = PETSC_OK
+      KSP, pointer, dimension(:) :: sub_solvers
+      character(len=8) :: preconditioning_type
 
       jasucces = 0
 
-      if (iprecnd == 0) then
-!         call mess(LEVEL_INFO, 'default preconditioner')
-      else if (iprecnd == 1) then
-!         call mess(LEVEL_INFO, 'no preconditioner')
-         PreconditioningType = PCNONE
-      else if (iprecnd == 2) then
-         PreconditioningType = PCICC
-      else if (iprecnd == 3) then
-         PreconditioningType = PCCHOLESKY
-      else if (iprecnd == 4) then ! not supported
-         PreconditioningType = PCGAMG
-      else
-         call mess(LEVEL_ERROR, 'conjugategradientPETSC: unsupported preconditioner')
+      ! Ensure preconditioner will be recomputed with new matrix values
+      call KSPSetReusePreconditioner(Solver, PETSC_FALSE, ierr)
+      if (ierr /= PETSC_OK) then
          goto 1234
       end if
 
-      ! Destroy the preconditioner and then create a new one
-      if (ierr == PETSC_OK) then
-         call KSPGetPC(Solver, Preconditioner, ierr)
-      end if
-
-      if (jafirst == 1) then
-!     do not destroy the preconditioner
-         jafirst = 0
-      else
-         if (ierr == PETSC_OK) then
-            call PCDestroy(Preconditioner, ierr)
-         end if
-      end if
-
-      if (ierr == PETSC_OK) then
-         call PCCreate(PETSC_COMM_WORLD, Preconditioner, ierr)
-      end if
-      if (ierr == PETSC_OK) then
-         call PCSetOperators(Preconditioner, Amat, Amat, ierr)
-      end if
-      if (ierr == PETSC_OK) then
-         call KSPSetPC(Solver, Preconditioner, ierr)
-      end if
-
-      ! Configure the preconditioner
-      if (iprecnd /= 0) then
-         if (PreconditioningType == PCCHOLESKY .or. PreconditioningType == PCICC) then
-            if (ierr == PETSC_OK) then
-               call PCSetType(Preconditioner, PCASM, ierr)
-            end if
-            if (ierr == PETSC_OK) then
-               call PCASMSetOverlap(Preconditioner, 2, ierr)
-            end if
-            if (ierr == PETSC_OK) then
-               call KSPSetUp(Solver, ierr)
-            end if
-            if (ierr == PETSC_OK) then
-               call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolver, ierr)
-            end if
-            if (ierr == PETSC_OK) then
-               call KSPGetPC(SubSolver, SubPrec, ierr)
-            end if
-            if (ierr == PETSC_OK) then
-               call PCSetType(SubPrec, PreconditioningType, ierr)
-            end if
-         else
-            if (ierr == PETSC_OK) then
-               call PCSetType(Preconditioner, PreconditioningType, ierr)
-            end if
-            if (ierr == PETSC_OK) then
-               call KSPSetUp(Solver, ierr)
-            end if
-         end if
-      end if
-
+      call KSPGetPC(Solver, Preconditioner, ierr)
       if (ierr /= PETSC_OK) then
-         call mess(LEVEL_ERROR, 'createPETSCPreconditioner: error')
+         goto 1234
+      end if
+
+      ! Configure the preconditioner type
+      if (iprecnd == 0) then
+         ! Use default preconditioner, just set up with current matrix
+         call KSPSetUp(Solver, ierr)
+      else if (iprecnd == 1) then
+         ! No preconditioner
+         call PCSetType(Preconditioner, 'none', ierr)
+         if (ierr /= PETSC_OK) then
+            goto 1234
+         end if
+         call KSPSetUp(Solver, ierr)
+      else if (iprecnd == 2 .or. iprecnd == 3) then
+         ! Incomplete Cholesky with ASM (2) or Cholesky with ASM (3)
+         if (iprecnd == 2) then
+            preconditioning_type = 'icc'
+         else
+            preconditioning_type = 'cholesky'
+         end if
+         call PCSetType(Preconditioner, 'asm', ierr)
+         if (ierr /= PETSC_OK) then
+            goto 1234
+         end if
+         call PCASMSetOverlap(Preconditioner, 2, ierr)
+         if (ierr /= PETSC_OK) then
+            goto 1234
+         end if
+         call KSPSetUp(Solver, ierr)
+         if (ierr /= PETSC_OK) then
+            goto 1234
+         end if
+         call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, sub_solvers, ierr)
+         if (ierr /= PETSC_OK) then
+            goto 1234
+         end if
+         SubSolver = sub_solvers(1)
+         call PCASMRestoreSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, sub_solvers, ierr)
+         if (ierr /= PETSC_OK) then
+            goto 1234
+         end if
+         call KSPGetPC(SubSolver, SubPrec, ierr)
+         if (ierr /= PETSC_OK) then
+            goto 1234
+         end if
+         call PCSetType(SubPrec, trim(preconditioning_type), ierr)
+      else if (iprecnd == 4) then
+         call PCSetType(Preconditioner, 'gamg', ierr)
+         if (ierr /= PETSC_OK) then
+            goto 1234
+         end if
+         call KSPSetUp(Solver, ierr)
+      else
+         call mess(LEVEL_ERROR, 'conjugategradientPETSC: unsupported preconditioner')
+         return
       end if
 
 1234  continue
 
-      return
+      if (ierr /= PETSC_OK) then
+         call mess(LEVEL_ERROR, 'createPETSCPreconditioner: error')
+      end if
    end subroutine createPETSCPreconditioner
 
-!> compose the global matrix and solver for PETSc
-!>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
-!>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
+   !> Compose the global matrix and solver for PETSc.
+   !> It is assumed that the global cell numbers iglobal, dim(Ndx) are available
+   !> NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    module subroutine preparePETSCsolver(japipe)
-! fix for missing definition of KSPPIPECG in finclude/petscdef.h:
-#define KSPPIPECG 'pipecg'
       use petsc, only: petsc_default_real, matcreateseqaijwitharrays, petsc_comm_world, matcreatempiaijwithsplitarrays, petsc_determine, matassemblybegin, mat_final_assembly, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances
       use m_reduce, only: dp
       use m_partitioninfo, only: ndomains
@@ -742,32 +621,20 @@ contains
 
       jasucces = 0
 
-!     Restore joff with stored values
+      ! Restore joff with stored values
       joff = joffsav
 
-!     Set ridiculous values so that it will be detected if the correct values are not
-!     filled in before use
+      ! Set ridiculous values so that it will be detected if the correct values are not
+      ! filled in before use
       adia = 123.4
       aoff = 432.1
 
-!     the following will destroy joff
+      ! the following will destroy joff
       if (ndomains == 1) then
          if (ierr == PETSC_OK) then
             call MatCreateSeqAIJWithArrays(PETSC_COMM_WORLD, numrows, numrows, idia, jdia, adia, Amat, ierr)
          end if
       else
-!         do i=0,ndomains-1
-!            if ( my_rank.eq.i ) then
-!               write(6,"('my_rank:', i5, ', numrows:', I5, ', numdia:', I5)") my_rank, numrows, numdia
-!               write(6,"('idia:   ', 100000i5)") idia(1:numrows)
-!               write(6,"('jdia:   ', 100000i5)") jdia(1:numrows)
-!             end if
-!             call flush(6)
-!
-!            CALL MPI_BARRIER(DFM_COMM_DFMWORLD, I)
-!         end do
-!         stop
-
          if (ierr == PETSC_OK) then
             call MatCreateMPIAIJWithSplitArrays(PETSC_COMM_WORLD, numrows, numrows, PETSC_DETERMINE, PETSC_DETERMINE, idia, jdia, adia, ioff, joff, aoff, Amat, ierr)
          end if
@@ -795,12 +662,11 @@ contains
       end if
       if (ierr == PETSC_OK) then
          if (japipe /= 1) then
-            call KSPSetType(Solver, KSPCG, ierr)
+            call KSPSetType(Solver, 'cg', ierr)
          else
-            call KSPSetType(Solver, KSPPIPECG, ierr)
+            call KSPSetType(Solver, 'pipecg', ierr)
          end if
       end if
-!      if (ierr == PETSC_OK) call KSPSetType(Solver, KSPGMRES, ierr)
       if (ierr == PETSC_OK) then
          call KSPSetInitialGuessNonzero(Solver, PETSC_TRUE, ierr)
       end if
@@ -808,17 +674,16 @@ contains
          call KSPSetTolerances(Solver, RelTol, AbsTol, dTol, maxits, ierr)
       end if
 
-!     Soheil: for imaginairy matrix entries use KSPCGSetType(Solver, ... )
+      ! Soheil: for imaginairy matrix entries use KSPCGSetType(Solver, ... )
 
 1234  continue
 
    end subroutine preparePETSCsolver
 
-!> compose the global matrix and solve with PETSc
-!>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
-!>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
+   !> Solve the linear system with PETSc KSP solver
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
-      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm
+      use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, kspgetiterationnumber, kspgetresidualnorm, &
+         eKSPConvergedReason, KSPGetConvergedReasonString
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
       use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver
@@ -837,29 +702,25 @@ contains
 
       integer :: i, n, jasucces
 
-      PetscScalar, dimension(1) :: dum
-      PetscOffset :: idum
-
-      PetscErrorCode :: ierr = PETSC_OK
+      PetscErrorCode :: ierr
       KSPConvergedReason :: Reason
       character(len=100) :: message
+      character(len=100) :: reason_string
 
       jasucces = 0
+      ierr = PETSC_OK
 
       its = 0
 
-!     fill matrix
+      ! fill matrix
       call setPETSCmatrixEntries()
 
       if (jacompprecond == 1) then
-!        compute preconditioner
+         ! compute preconditioner
          call createPETSCPreconditioner(iprecond)
       end if
 
-!     fill vector rhs
-      if (ierr == PETSC_OK) then
-         call VecGetArray(rhs, dum, idum, ierr)
-      end if
+      ! fill vector rhs
       i = 0
       rhs_val = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
@@ -870,15 +731,7 @@ contains
          end if
       end do
 
-      if (ierr == PETSC_OK) then
-         call VecRestoreArray(rhs, dum, idum, ierr)
-      end if
-
-!     fill vector sol
-      if (ierr == PETSC_OK) then
-         call VecGetArray(sol, dum, idum, ierr)
-      end if
-
+      ! fill vector sol
       sol_val = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
@@ -887,48 +740,44 @@ contains
             sol_val(i) = s1(ndn)
          end if
       end do
-      if (ierr == PETSC_OK) then
-         call VecRestoreArray(sol, dum, idum, ierr)
-      end if
-      if (ierr /= PETSC_OK) then
-         call mess(LEVEL_INFO, 'conjugategradientPETSC: PETSC_ERROR (3)')
-      end if
 
+      ! solve system
+      call KSPSolve(Solver, rhs, sol, ierr)
       if (ierr /= PETSC_OK) then
          go to 1234
       end if
 
-!     solve system
-      if (ierr == PETSC_OK) then
-         call KSPSolve(Solver, rhs, sol, ierr)
+      call KSPGetConvergedReason(Solver, Reason, ierr)
+      if (ierr /= PETSC_OK) then
+         go to 1234
       end if
 
-      if (ierr == PETSC_OK) then
-         call KSPGetConvergedReason(Solver, Reason, ierr)
-      end if
-
-!     check for convergence
-      if (ierr == PETSC_OK) then
-         if (reason == KSP_DIVERGED_INDEFINITE_PC) then
-            if (my_rank == 0) then
-               call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
-            end if
-         else if (Reason < 0) then
-            call mess(LEVEL_WARN, 'Other kind of divergence: this should not happen, reason = ', Reason)
-!            see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason
-         else
-            call KSPGetIterationNumber(Solver, its, ierr)
-            !           compute residual
-            call KSPGetResidualNorm(Solver, rnorm, ierr)
-            !
-            if (ierr == PETSC_OK .and. my_rank == 0) then
-               if (jalogsolverconvergence == 1) then
-                  write (message, '(a,i0,a,g11.4,a,f8.4)') 'Solver converged in ', its, ' iterations, res=', rnorm, ' dt = ', dts
-                  call mess(LEVEL_INFO, message)
-               end if
-            end if
-            jasucces = 1
+      ! check for convergence
+      if (Reason%v == KSP_DIVERGED_INDEFINITE_PC%v) then
+         if (my_rank == 0) then
+            call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
          end if
+      else if (Reason%v == KSP_DIVERGED_NANORINF%v) then
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: a not a number or infinity was detected in a vector during the computation. &
+            The simulation became numerically unstable, generating invalid values (NaN/Infinity), which caused the model to crash. &
+            Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
+      else if (Reason%v < 0) then
+         call KSPGetConvergedReasonString(Solver, reason_string, ierr)
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: ', reason_string, '. &
+            Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
+         ! see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason            
+      else
+         call KSPGetIterationNumber(Solver, its, ierr)
+         ! compute residual
+         call KSPGetResidualNorm(Solver, rnorm, ierr)
+         !
+         if (ierr == PETSC_OK .and. my_rank == 0) then
+            if (jalogsolverconvergence == 1) then
+               write (message, '(a,i0,a,g11.4,a,f8.4)') 'Solver converged in ', its, ' iterations, res=', rnorm, ' dt = ', dts
+               call mess(LEVEL_INFO, message)
+            end if
+         end if
+         jasucces = 1
       end if
       if (ierr /= PETSC_OK) then
          call mess(LEVEL_ERROR, 'conjugategradientPETSC: PETSC_ERROR (after solve)')
@@ -937,7 +786,7 @@ contains
          go to 1234
       end if
 
-!     fill vector sol
+      ! fill vector sol
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          if (iglobal(ndn) > 0 .and. kfs(ndn) > 0) then
@@ -948,7 +797,7 @@ contains
 
 1234  continue
 
-!     mark fail by setting number of iterations to -999
+      ! mark fail by setting number of iterations to -999
       if (jasucces /= 1) then
          its = -999
          call mess(LEVEL_DEBUG, 'conjugategradientPETSC: error.')
@@ -957,15 +806,14 @@ contains
    end subroutine conjugategradientPETSC
 
    subroutine killSolverPETSC()
-!#include <finclude/petscdef.h>
       use petsc, only: kspdestroy
       use m_petsc, only: PETSC_OK, isKSPCreated, Solver
 
-      PetscErrorCode :: ierr = PETSC_OK
+      PetscErrorCode :: ierr
 
+      ierr = PETSC_OK
       if (isKSPCreated) then
          call KSPDestroy(Solver, ierr)
       end if
    end subroutine killSolverPETSC
-
 end submodule m_solve_petsc_

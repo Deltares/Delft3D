@@ -31,6 +31,7 @@ add_library(${library_name} ${meteo_sources} ${sources})
 target_link_libraries(${library_name} ${oss_dependencies})
 
 set_source_files_properties(${src_path}/ec_parameters.F90
+                            ${src_path}/ec_basic_interpolation.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Create the folder structure in vfproj

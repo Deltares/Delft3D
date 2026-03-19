@@ -9,7 +9,7 @@ ARG BUILDTOOLS_IMAGE_PATH=${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG}
 FROM ${BUILDTOOLS_IMAGE_PATH} AS base
 
 ARG INTEL_ONEAPI_VERSION
-ARG INTEL_FORTRAN_COMPILER=ifort
+ARG INTEL_FORTRAN_COMPILER=ifx
 ARG DEBUG=0
 ARG CACHE_ID_SUFFIX=cache-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${DEBUG}
 
@@ -86,9 +86,10 @@ RUN --mount=type=cache,target=/var/cache/src/,id=metis-${CACHE_ID_SUFFIX} <<"EOF
 source /etc/bashrc
 set -eo pipefail
 
-GKLIB_COMMIT_ID='8bd6bad750b2b0d90800c632cf18e8ee93ad72d7'
+GKLIB_COMMIT_ID='6e7951358fd896e2abed7887196b6871aac9f2f8'
+METIS_COMMIT_ID='a6e6a2cfa92f93a3ee2971ebc9ddfc3b0b581ab2'
 for BASEDIR_URL in \
-    'METIS-5.2.1,https://github.com/KarypisLab/METIS/archive/refs/tags/v5.2.1.tar.gz' \
+    "METIS-${METIS_COMMIT_ID},https://github.com/KarypisLab/METIS/archive/${METIS_COMMIT_ID}.tar.gz" \
     "GKlib-${GKLIB_COMMIT_ID},https://github.com/KarypisLab/GKlib/archive/${GKLIB_COMMIT_ID}.tar.gz"
 do
     BASEDIR="${BASEDIR_URL%%,*}"
@@ -112,7 +113,7 @@ make install
 
 popd
 
-pushd "/var/cache/src/METIS-5.2.1"
+pushd "/var/cache/src/METIS-${METIS_COMMIT_ID}"
 if [[ $DEBUG = "0" ]]; then
     make config prefix=/usr/local cc=icx shared=1
 else
@@ -196,7 +197,7 @@ RUN --mount=type=cache,target=/var/cache/src/,id=petsc-${CACHE_ID_SUFFIX} <<"EOF
 source /etc/bashrc
 set -eo pipefail
 
-URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.19.0.tar.gz'
+URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.24.5.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
@@ -215,7 +216,7 @@ pushd "/var/cache/src/${BASEDIR}"
     --prefix=/usr/local \
     --with-cc=mpiicx --with-cxx=mpiicpx --with-fc=$MPIFC \
     --with-debugging=0 --COPTFLAGS="$FLAGS" --CXXOPTFLAGS="$FLAGS" --FOPTFLAGS="$FLAGS" \
-    --FFLAGS="$FFLAGS"
+    --FFLAGS+="$FFLAGS"
 make
 make install
 popd
@@ -263,7 +264,7 @@ RUN --mount=type=cache,target=/var/cache/src/,id=tiff-${CACHE_ID_SUFFIX} <<"EOF-
 source /etc/bashrc
 set -eo pipefail
 
-URL='https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz'
+URL='https://download.osgeo.org/libtiff/tiff-4.7.1.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
@@ -428,7 +429,7 @@ export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
 export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
 export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
 
-URL='https://download.osgeo.org/proj/proj-9.2.0.tar.gz'
+URL='https://download.osgeo.org/proj/proj-9.7.1.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
@@ -518,8 +519,8 @@ RUN --mount=type=cache,target=/var/cache/src/,id=esmf-${CACHE_ID_SUFFIX} <<"EOF-
 source /etc/bashrc
 set -eo pipefail
 
-URL='https://github.com/esmf-org/esmf/archive/refs/tags/v8.8.0.tar.gz'
-BASEDIR='esmf-8.8.0'
+URL='https://github.com/esmf-org/esmf/archive/refs/tags/v8.9.1.tar.gz'
+BASEDIR='esmf-8.9.1'
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
@@ -675,29 +676,28 @@ pushd "/var/cache/src/${BASEDIR}"
 [[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
 
 cmake --preset=development \
-    -D CMAKE_C_COMPILER=icx -D CMAKE_CXX_COMPILER=icpx \
+    -D CMAKE_CXX_COMPILER=icpx \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
     -D CMAKE_INSTALL_LIBDIR=lib \
+    -D PRECICE_HIDE_SYMBOLS=OFF \
     -D PRECICE_FEATURE_PETSC_MAPPING=OFF \
     -D PRECICE_FEATURE_GINKGO_MAPPING=OFF \
     -D PRECICE_FEATURE_PYTHON_ACTIONS=OFF \
     -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
     -D BUILD_SHARED_LIBS=ON \
-    -D BUILD_TESTING=OFF \
-    -D CMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion"
+    -D BUILD_TESTING=OFF
 
 cmake --build build --parallel $(nproc)
 cmake --install build
 popd
 EOF-precice
 
-
 FROM base AS vtk
 
 ARG DEBUG
 ARG CACHE_ID_SUFFIX
 
-RUN --mount=type=cache,target=/var/cache/src/,id=precice-${CACHE_ID_SUFFIX} <<"EOF-vtk"
+RUN --mount=type=cache,target=/var/cache/src/,id=vtk-${CACHE_ID_SUFFIX} <<"EOF-vtk"
 source /etc/bashrc
 set -eo pipefail
 
@@ -733,7 +733,6 @@ cmake --install build
 popd
 EOF-vtk
 
-
 FROM base AS aste
 
 ARG DEBUG
@@ -745,7 +744,7 @@ COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=precice --link /usr/local/ /usr/local/
 COPY --from=vtk --link /usr/local/ /usr/local/
 
-RUN --mount=type=cache,target=/var/cache/src/,id=precice-${CACHE_ID_SUFFIX} <<"EOF-aste"
+RUN --mount=type=cache,target=/var/cache/src/,id=aste-${CACHE_ID_SUFFIX} <<"EOF-aste"
 source /etc/bashrc
 set -eo pipefail
 

@@ -65,7 +65,6 @@ if(WIN32)
 
     # Define preprocessor definitions
     target_compile_definitions(${library_name} PRIVATE WIN32;_WINDOWS;_USRDLL;DIMR_EXPORTS)
-    target_compile_definitions(${library_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
 
     target_include_directories(${library_name} 
                                PRIVATE  
