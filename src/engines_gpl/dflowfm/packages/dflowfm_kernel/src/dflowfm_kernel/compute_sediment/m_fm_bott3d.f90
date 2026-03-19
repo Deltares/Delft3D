@@ -628,7 +628,7 @@ contains
       integer, dimension (:,:), allocatable :: links_in ![n_junctions]
       integer, dimension (:), allocatable :: flownode_junction ![n_junctions]
       real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node      
-      integer, dimension(:, :, :), allocatable :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
+      !integer, dimension(:, :, :), allocatable :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
                                                          !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
                                                          !  1: Sediment enters the flow node.
                                                          ! -1: Sediment exits the flow node.                       
@@ -668,8 +668,9 @@ contains
    !!
    !! Execute
    !!
+      !ATTENTION! `sb_dir`  is not used. Check other variables which are not used as well and remove if possible.
       call nodal_point_relation_data( & 
-         total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir,idx_junctions,& !output
+         total_water_discharge_out, total_width_out, total_sediment_transport_out,idx_junctions,& !output
          n_junctions,n_links_out,links_out,link_dir_out,width_out,water_discharge_out,flownode_junction,& !output
          n_links_in,links_in,flownode_out) !output
       !
@@ -717,12 +718,11 @@ contains
                            facCheck,e_sbcn(L, ised),& !output
                            pNodRel,link_dir_out,width_out,total_width_out,water_discharge_out,& !input
                            total_water_discharge_out,total_sediment_transport_out,kinod,j,ised) !input  
-                      endif           
-
-                      call nodal_point_relation_BollaPittaluga(&
-                      e_sbcn(L,ised), & !output
-                      pNodRel,total_sediment_transport_out(kinod, ised),links_in(kinod,1),links_out(kinod,1:2),flownode_out(kinod,1:2),ised) !input
-                      
+                      else 
+                         call nodal_point_relation_BollaPittaluga(&
+                         e_sbcn(L,ised), & !output
+                         pNodRel,total_sediment_transport_out(kinod, ised),links_in(kinod,1),links_out(kinod,1:2),flownode_out(kinod,1:2),ised) !input
+                      endif          
                       e_sbct(L, ised) = 0.0       
                   else
                      call mess(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
@@ -2197,7 +2197,7 @@ contains
    end subroutine
 
 subroutine nodal_point_relation_data( &
-total_water_discharge_out, total_width_out, total_sediment_transport_out, sb_dir,idx_junctions,n_junctions,n_links_out,links_out,link_dir_out,width_out,water_discharge_out,flownode_junction,n_links_in,links_in,flownode_out)
+total_water_discharge_out, total_width_out, total_sediment_transport_out,idx_junctions,n_junctions,n_links_out,links_out,link_dir_out,width_out,water_discharge_out,flownode_junction,n_links_in,links_in,flownode_out)
 
 !Modules
 use precision, only: dp
@@ -2209,7 +2209,7 @@ use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
 use Messagehandling, only: LEVEL_FATAL, mess, errmsg
 
 !Output
-integer, dimension(:, :, :), allocatable, intent(out) :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
+! integer, dimension(:, :, :), allocatable, intent(out) :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
                                                    !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
                                                    !  1: Sediment enters the flow node.
                                                    ! -1: Sediment exits the flow node.                       
@@ -2249,7 +2249,7 @@ integer, dimension (:,:), allocatable, intent(out) :: flownode_out ! Flow node i
 !Locals
 logical :: error
 integer :: inod, kl1, link_junction, link_dir, flownode_idx, ised, istat, n_links
-
+integer :: sb_dir
 type(t_node), pointer :: pnod
 real(kind=dp) :: qb1d, wb1d, sb1d
 
@@ -2264,9 +2264,9 @@ end if
 if (istat == 0) then
    allocate (total_sediment_transport_out(network%nds%Count, lsedtot), stat=istat)
 end if
-if (istat == 0) then
-   allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
-end if
+! if (istat == 0) then
+!    allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
+! end if
 if (istat == 0) then
    allocate (idx_junctions(network%nds%Count), stat=istat)
 end if
@@ -2309,7 +2309,7 @@ end if
 total_water_discharge_out(:) = 0_dp !Total water discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches.
 total_width_out(:) = 0_dp !Width of the downstream branches.
 total_sediment_transport_out(:, :) = 0_dp !Total sediment discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. 
-sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometry (flow) node. 
+!sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometry (flow) node. 
 width_out = 0_dp
 water_discharge_out = 0_dp
 n_links_out=0
@@ -2349,10 +2349,11 @@ do inod = 1, network%nds%Count
             water_discharge_out(n_junctions,n_links) = qb1d
             total_width_out(n_junctions) = total_width_out(n_junctions) + wb1d
             total_water_discharge_out(n_junctions) = total_water_discharge_out(n_junctions) + qb1d
-            do ised = 1, lsedtot
-               !ATTENTION! is the index below `kl1` correct or should it be `n_links`??
-               sb_dir(n_junctions, ised, kl1) = -1 ! set direction to outgoing
-            end do
+            ! do ised = 1, lsedtot
+            !    !ATTENTION! is the index below `kl1` correct or should it be `n_links`??
+            !    sb_dir(n_junctions, ised, kl1) = -1 ! set direction to outgoing
+            ! end do
+            sb_dir = -1
             !Find the flownode connected to a downstream link `flownode_out` which is not the junction flownode (with index `flownode_idx`)
             if (ln(1,link_junction) == flownode_idx) then
                flownode_out(n_junctions,n_links) = ln(2,link_junction)
@@ -2363,6 +2364,7 @@ do inod = 1, network%nds%Count
             ! Incoming discharge
             n_links_in=n_links_in+1 
             links_in(n_junctions,n_links_in)=link_junction
+            sb_dir = 1
          end if
          
          do ised = 1, lsedtot
@@ -2374,14 +2376,14 @@ do inod = 1, network%nds%Count
                !We apply this to the standard scheme and to the nodes with only 2 connections, as in this second case
                !we have not modified the link direction and the same logic applies as for the standard scheme.
                ! this works for one incoming branch TO DO: WO
-               if (sb_dir(n_junctions, ised, kl1) == -1) then
+               if (sb_dir == -1) then
                   total_sediment_transport_out(n_junctions, ised) = total_sediment_transport_out(n_junctions, ised) + max(-wb1d * sb1d, 0.0_fp) ! outgoing transport is negative
                end if
             else !FM1DIMP
                !V: In the FM1DIMP scheme at <e_sbcn> of the incoming links we have the upwind transport, i.e., the transport
                !in the ghost cell for multivaluedness of each branch. By summing over all of them we have the total
                !transport incoming to the junction, which we want to redistribute.
-               if (sb_dir(n_junctions, ised, kl1) == 1) then
+               if (sb_dir == 1) then
                   total_sediment_transport_out(n_junctions, ised) = total_sediment_transport_out(n_junctions, ised) + wb1d * sb1d ! incoming transport is positive
                end if
             end if
