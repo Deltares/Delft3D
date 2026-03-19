@@ -120,6 +120,8 @@ contains
       logical :: spinup
       real(fp), dimension(:), allocatable :: dz_dummy
       integer :: istat
+      real(kind=fp) :: dtmor 
+      real(kind=fp) :: sbtot(ndx,stmpar%lsedtot)
       !
    !! executable statements -------------------------------------------------------
       !
@@ -162,7 +164,10 @@ contains
          if (stmpar%morpar%moroutput%morstats) then
             call morstats(dbodsd)
          end if
-         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy, mtd%messages) /= 0) then
+         !In case of coarse-layer (HANNEKE) model, we do not want to update coarse layer fluxes.
+         dtmor = 0 
+         sbtot = 0.0_fp
+         if (updmorlyr(stmpar%morlyr, dbodsd, dz_dummy,bfmpar%dunelength, sbtot, dtmor, mtd%messages) /= 0) then
             call writemessages(mtd%messages, mdia)
             error = .true.
             return

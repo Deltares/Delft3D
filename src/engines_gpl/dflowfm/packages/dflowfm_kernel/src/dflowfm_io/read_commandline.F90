@@ -61,7 +61,8 @@ contains
       use m_circumcenter_method, only: circumcenter_method, extract_circumcenter_method
       use m_missing, only: jadelnetlinktyp
       use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
-      implicit none
+      use precice, only: precicef_get_version_information
+      implicit none(type, external)
 
       integer :: istat !< Returned result status
       integer :: ncount
@@ -233,6 +234,12 @@ contains
                end if
             end do
 
+         case ('precice')
+            call precicef_get_version_information(msgbuf, LEN(msgbuf))
+            write (*, '(a)') 'Using preCICE: '//trim(msgbuf)
+            istat = DFM_EXIT ! For now: return and just exit without any error.
+            return
+            
          case ('h', 'help')
             call print_help_commandline()
             istat = DFM_EXIT ! Exit without any error.

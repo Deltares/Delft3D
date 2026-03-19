@@ -37,12 +37,12 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, &
                       item_pump, qpump, item_longculvert_valve_relative_opening, nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, &
-                      item_lateraldischarge, npumpswithlevels, numsrc, item_discharge_salinity_temperature_sorsin, qstss, &
+                      item_lateraldischarge, npumpswithlevels, num_source_sink, item_discharge_salinity_temperature_sorsin, source_sink_all_discharges, &
                       item_sourcesink_discharge, item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, &
                       jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, item_relative_humidity, &
                       btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, &
                       item_long_wave_radiation, btempforcingtypd, relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
-                      dumpecmessagestack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
+                      dump_ec_message_stack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
                       twavcom, flow_without_waves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, &
                       item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, &
                       item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, item_rainfall_rate, item_pump_capacity, &
@@ -109,6 +109,7 @@ contains
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
 
       integer :: i_const
+      real(kind=dp), dimension(:), pointer :: source_sink_discharge_1d !< 1D pointer view of 2D source_sink_all_discharges array
 
       call timstrt('External forcings', handle_ext)
 
@@ -209,12 +210,14 @@ contains
          call update_pumps_with_levels()
       end if
 
-      if (numsrc > 0) then
-         ! qstss must be an argument when calling ec_gettimespacevalue.
-         ! It might be reallocated after initialization (when coupled to Cosumo).
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, qstss)
+      if (num_source_sink > 0) then
+         ! Create 1D pointer view of 2D source_sink_all_discharges array to pass to ec_gettimespacevalue
+         ! This avoids copying while satisfying the 1D array interface requirement
+         source_sink_discharge_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
+         
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_discharge_1d)
 
-         !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds, qstss)
+         !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds)
          call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)
          do i_const = 1, numconst
             call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_constituent_delta(i_const), time_in_seconds)
@@ -458,7 +461,7 @@ contains
                   ! - Just try it the next timestep again
                   ! - success must be set to .true., otherwise the calculation is aborted
                   !
-                  message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+                  message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                   success = .true.
                end if
             end if
@@ -470,7 +473,7 @@ contains
             write (msgbuf, '(a,i0,a)') 'set_external_forcings:: Offline wave coupling with waveforcing=', waveforcing, '. &
                & Error reading data from nc file.'
             call warn_flush() ! ECMessage stack is not very informative
-            message = dumpECMessageStack(LEVEL_ERROR, callback_msg)
+            message = dump_ec_message_stack(LEVEL_ERROR, callback_msg)
          end if
 
          if (jawave == WAVE_NC_OFFLINE) then
