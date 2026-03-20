@@ -51,8 +51,6 @@ function(copy_dflowfm_test_dependencies TARGET_NAME)
     endif()
 endfunction()
 
-add_subdirectory(helpers)
-
 f90twtest(test_dflowfm_kernel_example
     CFILES test_dflowfm_kernel_example.cpp
     F90FILES test_dflowfm_kernel_example.f90
