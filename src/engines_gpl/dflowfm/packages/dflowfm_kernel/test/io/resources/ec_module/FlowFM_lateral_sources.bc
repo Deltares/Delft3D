@@ -16,4 +16,16 @@
     150 300
     200 0
 
-
+[forcing]
+    name                  = 10                   
+    function              = timeseries          
+    timeInterpolation     = block-to          
+    quantity              = time                
+    unit                  = seconds since 2000-01-01 00:00:00
+    quantity              = lateral_discharge   
+    unit                  = m³/s
+    0 0 
+    10 100 
+    20 20 
+    30 300
+    40 0
