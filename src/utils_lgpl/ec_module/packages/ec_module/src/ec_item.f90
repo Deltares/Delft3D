@@ -560,6 +560,7 @@ module m_ec_item
          endif
 
 
+         print *, "Timestep0", timesteps%mjd(), "T0", item%sourceT0FieldPtr%timesteps, "T1", item%sourceT1FieldPtr%timesteps
          ! Update all source Items which belong to the found FileReader, if associated .
          if (associated(fileReaderPtr)) then
             if (.not. fileReaderPtr%end_of_data) then
@@ -576,12 +577,6 @@ module m_ec_item
                            end if
                         end if
                         if (comparereal(item%sourceT1FieldPtr%timesteps, timesteps%mjd()) /= -1) then
-                           if (item%quantityPtr%timeint == timeint_bfrom) then
-                              if (comparereal(item%sourceT1FieldPtr%timesteps, timesteps%mjd(), 1.0D-7) == 0) then
-                                 ! Adjust the value in T0 field (the converter will only use the T0-field)s
-                                 item%sourceT0FieldPtr%arr1d = item%sourceT1FieldPtr%arr1d
-                              end if
-                           end if
                            success = .true.
                            exit
                         end if

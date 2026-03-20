@@ -11,10 +11,10 @@
     quantity              = lateral_discharge   
     unit                  = m³/s
     0 0 
-    60 100 
-    100 20 
-    150 300
-    200 0
+    10 100 
+    20 20 
+    30 300
+    40 0
 
 [forcing]
     name                  = 10                   
