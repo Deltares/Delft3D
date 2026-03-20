@@ -48,6 +48,6 @@ contains
       real, intent(in) :: north_direction !> Direction of north in degrees (clockwise from east)
       real :: angle_out !> In degrees, either Nautical or Cartesian  convention, depending on the input
       !
-      angle_out = MOD(180.0 + north_direction - angle_in, 360.0)
+      angle_out = MODULO(180.0 + north_direction - angle_in, 360.0)
    end function reflect_between_nautical_and_cartesian
 end module angle_convention
