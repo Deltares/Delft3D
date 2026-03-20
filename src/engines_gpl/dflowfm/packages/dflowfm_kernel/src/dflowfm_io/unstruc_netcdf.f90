@@ -15571,7 +15571,6 @@ contains
 !> Writes the unstructured flow geometry in UGRID format to an already opened netCDF dataset.
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
-
       use m_flowgeom
       use network_data
       use m_sferic
@@ -15603,7 +15602,7 @@ contains
       integer :: ndx1d !< Number of internal 1D nodes.
 
       integer :: nn
-      integer, allocatable :: edge_nodes(:, :), face_nodes(:, :), edge_type(:), contacts(:, :)
+      integer, allocatable, target :: edge_nodes(:, :), face_nodes(:, :), edge_type(:), contacts(:, :)
       integer, dimension(:, :), pointer :: edge_faces => null()
       integer :: layer_count, layer_type
    !! Geometry options
@@ -15623,10 +15622,14 @@ contains
       integer, allocatable :: contacttype(:)
 
       ! re-mapping of 1d mesh coordinates for UGrid
-      real(kind=dp), allocatable :: xue(:), yue(:)
+      real(kind=dp), allocatable, target :: xue(:), yue(:)
       ! re-mapping of 2d mesh coordinates for UGrid
-      real(kind=dp), allocatable :: x2dn(:), y2dn(:), z2dn(:)
+      real(kind=dp), allocatable, target :: x2dn(:), y2dn(:), z2dn(:)
       integer :: netNodeReMappedIndex, nnSize
+         ! Build meshgeom for 2D mesh and write via ug_write_mesh_struct
+
+            type(t_ug_meshgeom) :: meshgeom2d
+            type(t_ug_network)  :: networkids_dummy
 
       jaInDefine = 0
       n1d2dcontacts = 0
@@ -15785,17 +15788,45 @@ contains
                end if
             end do
          end do
-         ! face_nodes does not need to be re-mapped: 2d cells come first
+
+            meshgeom2d%meshName        = mesh2dname
+            meshgeom2d%dim             = 2
+            meshgeom2d%start_index     = start_index
+            meshgeom2d%numNode         = numk2d
+            meshgeom2d%numEdge         = numl2d
+            meshgeom2d%numFace         = ndx2d
+            meshgeom2d%maxNumFaceNodes = numNodes
+            meshgeom2d%num_layers      = layer_count
+            meshgeom2d%layertype       = layer_type
+            meshgeom2d%numtopsig       = numtopsig
+
+            meshgeom2d%nodex      => x2dn
+            meshgeom2d%nodey      => y2dn
+            meshgeom2d%nodez      => z2dn
+            meshgeom2d%edgex      => xue
+            meshgeom2d%edgey      => yue
+            meshgeom2d%facex      => xz(1:ndx2d)
+            meshgeom2d%facey      => yz(1:ndx2d)
+            meshgeom2d%edge_nodes => edge_nodes
+            meshgeom2d%face_nodes => face_nodes
+            meshgeom2d%edge_faces => edge_faces
+
+            if (layer_count > 0) then
+               meshgeom2d%layer_zs     => layer_zs
+               meshgeom2d%interface_zs => interface_zs
+            end if
+
+            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, meshgeom2d)
          ! TODO: AvD: lnx1d+1:lnx includes open bnd links, which may *also* be 1D boundaries (don't want that in mesh2d)
          ! note edge_faces does not need re-indexing, cell number are flow variables and 2d comes first
 
-         ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids2d, mesh2dname, 2, UG_LOC_EDGE + UG_LOC_FACE, numk2d, numl2d, ndx2d, numNodes, &
-                                     edge_nodes, face_nodes, edge_faces, null(), null(), x2dn, y2dn, xue, yue, xz(1:ndx2d), yz(1:ndx2d), &
-                                     crs, -999, dmiss, start_index, layer_count, layer_type, &
-                                     layer_zs=layer_zs, interface_zs=interface_zs, &
-                                     nsigma_opt=numtopsig, &
-                                     waterlevelname=trim(waterlevelname), bldepthname=trim(bldepthname), &
-                                     writeopts=unc_writeopts)
+         !ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids2d, mesh2dname, 2, UG_LOC_EDGE + UG_LOC_FACE, numk2d, numl2d, ndx2d, numNodes, &
+         !                            edge_nodes, face_nodes, edge_faces, null(), null(), x2dn, y2dn, xue, yue, xz(1:ndx2d), yz(1:ndx2d), &
+         !                            crs, -999, dmiss, start_index, layer_count, layer_type, &
+         !                            layer_zs=layer_zs, interface_zs=interface_zs, &
+         !                            nsigma_opt=numtopsig, &
+         !                            waterlevelname=trim(waterlevelname), bldepthname=trim(bldepthname), &
+         !                            writeopts=unc_writeopts)
 
          ! Add edge type variable (edge-flowlink relation)
          call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, edge_type)
