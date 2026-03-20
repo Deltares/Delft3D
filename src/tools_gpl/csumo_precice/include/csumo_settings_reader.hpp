@@ -97,11 +97,11 @@ namespace csumo_precice
         public:
             /**
              * @brief Create by reading and parsing an XML file.
-             * @param csumoConfigFile Path to the C-SUMO configuration xml file.
+             * @param csumo_config_file Path to the C-SUMO configuration xml file.
              * @return The reader on success, or a @ref ParseError describing the failure.
              */
             [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromFile(
-                const std::filesystem::path& csumoConfigFile);
+                const std::filesystem::path& csumo_config_file);
 
             /**
              * @brief Create by parsing XML from an in-memory string.

@@ -144,7 +144,7 @@ TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorAbsolute)
     <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
     <data>
       <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
+      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator><constituents>0.0</constituents></discharge>
       <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
     </data>
   </settings>
@@ -165,7 +165,7 @@ TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorCaseInsensitive)
     <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
     <data>
       <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>5.0</M3s><constituentsOperator>EXCESS</constituentsOperator></discharge>
+      <discharge><M3s>5.0</M3s><constituentsOperator>EXCESS</constituentsOperator><constituents>0.0</constituents></discharge>
       <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
     </data>
   </settings>
@@ -193,6 +193,26 @@ TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingConstituentsOperator)
     const auto result = csumo_precice::CSumoSettingsReader::fromString(xml);
     ASSERT_FALSE(result.has_value());
     EXPECT_PRED2(contains, result.error().message, "constituentsOperator");
+}
+
+TEST(CSumoSettingsReaderTest, ReturnsErrorOnMissingConstituents)
+{
+    constexpr std::string_view xml = R"(<?xml version="1.0"?>
+<COSUMO>
+  <fileVersion>0.3</fileVersion>
+  <settings>
+    <general><ID>D1</ID><subGridModel/><farFieldModel/></general>
+    <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
+    <data>
+      <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
+      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
+      <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
+    </data>
+  </settings>
+</COSUMO>)";
+    const auto result = csumo_precice::CSumoSettingsReader::fromString(xml);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_PRED2(contains, result.error().message, "constituents");
 }
 
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidConstituentsOperator)
@@ -246,7 +266,7 @@ TEST(CSumoSettingsReaderTest, Nf2ffFileIsNulloptWhenAbsent)
     <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
     <data>
       <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
+      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator><constituents>0.0</constituents></discharge>
       <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
     </data>
   </settings>
@@ -370,7 +390,7 @@ TEST(CSumoSettingsReaderTest, ParsesMultipleDiffusers)
     <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
     <data>
       <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
+      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator><constituents>0.0</constituents></discharge>
       <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
     </data>
   </settings>
@@ -379,7 +399,7 @@ TEST(CSumoSettingsReaderTest, ParsesMultipleDiffusers)
     <comm><FF2NFdir>c</FF2NFdir><FFrundir>d</FFrundir></comm>
     <data>
       <XYdiff>5.0 6.0</XYdiff><XYintake>7.0 8.0</XYintake>
-      <discharge><M3s>9.0</M3s><constituentsOperator>absolute</constituentsOperator></discharge>
+      <discharge><M3s>9.0</M3s><constituentsOperator>absolute</constituentsOperator><constituents>0.0</constituents></discharge>
       <D0>1.0</D0><H0>2.0</H0><Theta0>3.0</Theta0><Sigma0>4.0</Sigma0>
     </data>
   </settings>
