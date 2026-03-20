@@ -6,7 +6,7 @@ set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
     ${include_dir}/csumo_precice_lib.hpp
     ${include_dir}/csumo_settings_reader.hpp
-    ${include_dir}/assign_or_return.hpp
+    ${include_dir}/monadic_utils.hpp
 )
 
 add_library(csumo_precice_lib ${source_files} ${header_files})

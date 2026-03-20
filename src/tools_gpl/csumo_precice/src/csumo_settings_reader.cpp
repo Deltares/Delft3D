@@ -15,7 +15,7 @@
 #include <string_view>
 #include <vector>
 
-#include "assign_or_return.hpp"
+#include "monadic_utils.hpp"
 
 namespace
 {
@@ -44,17 +44,15 @@ namespace
         };
 
         auto expected_doubles = space_separated_tokens | std::ranges::views::filter(is_non_empty) |
-                                std::ranges::views::transform(to_double);
+                                std::ranges::views::transform(to_double) | std::ranges::to<std::vector>();
 
-        if (auto errorIt =
-                std::ranges::find_if(expected_doubles, [](const auto& result) { return !result.has_value(); });
+        if (auto errorIt = std::ranges::find_if(expected_doubles, monadic_utils::is_invalid);
             errorIt != expected_doubles.end())
         {
             return std::unexpected((*errorIt).error());
         }
 
-        return expected_doubles | std::ranges::views::transform([](const auto& result) { return *result; }) |
-               std::ranges::to<std::vector>();
+        return expected_doubles | std::ranges::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
     }
 
     std::expected<double, csumo_precice::ParseError> parseDouble(const std::string_view text,
@@ -193,8 +191,8 @@ namespace
         };
 
         return data_node.children() | std::views::filter(is_ambient) | std::views::transform(to_expected_point2d) |
-               std::views::filter([](const auto& result) { return result.has_value(); }) |
-               std::views::transform([](const auto& result) { return *result; }) | std::ranges::to<std::vector>();
+               std::views::filter(monadic_utils::is_valid) | std::views::transform(monadic_utils::unwrap) |
+               std::ranges::to<std::vector>();
     }
 
     std::expected<csumo_precice::ConstituentsOperator, csumo_precice::ParseError> parseConstituentsOperator(
@@ -338,20 +336,16 @@ namespace
     std::expected<std::vector<csumo_precice::DiffuserSettings>, csumo_precice::ParseError> parseAllDiffusers(
         const pugi::xml_node root)
     {
-        auto settings_nodes = root.children() | std::views::filter([](const pugi::xml_node child) {
-                                  return boost::iequals(child.name(), "settings");
-                              });
-        std::vector<csumo_precice::DiffuserSettings> result;
-        for (const pugi::xml_node node : settings_nodes)
+        auto expected_diffusers =
+            root.children() |
+            std::views::filter([](const pugi::xml_node child) { return boost::iequals(child.name(), "settings"); }) |
+            std::views::transform(parseOneDiffuser) | std::ranges::to<std::vector>();
+        if (auto errorIt = std::ranges::find_if(expected_diffusers, monadic_utils::is_invalid);
+            errorIt != expected_diffusers.end())
         {
-            auto diffuser = parseOneDiffuser(node);
-            if (!diffuser)
-            {
-                return std::unexpected(diffuser.error());
-            }
-            result.push_back(std::move(*diffuser));
+            return std::unexpected((*errorIt).error());
         }
-        return result;
+        return expected_diffusers | std::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
     }
 } // namespace
 
