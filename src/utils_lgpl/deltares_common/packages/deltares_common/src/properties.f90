@@ -1222,7 +1222,6 @@ contains
    ! --------------------------------------------------------------------
    !
    integer function preprocINI(infilename, error, outfilename) result(outfilenumber)
-      use MessageHandling
       !
       ! Parameters
       !
@@ -1715,6 +1714,8 @@ contains
    !!    Use the delimiters "#". Example:
    !!    StringIn = # AFileName # Comments are allowed behind the second "#"
    subroutine prop_get_alloc_string(tree, chapterin, keyin, value, success)
+      use MessageHandling, only: mess, LEVEL_WARN
+
       type(tree_data), pointer, intent(in) :: tree !< The property tree
       character(*), intent(in) :: chapterin !< Name of the chapter (case-insensitive) or "*" to get any key
       character(*), intent(in) :: keyin !< Name of the key (case-insensitive)
@@ -1788,6 +1789,8 @@ contains
                   k = index(localvalue, '#')
                   if (k > 0) then
                      localvalue = localvalue(1:k - 1)
+                     call mess(LEVEL_WARN, "Encountered value '#" // localvalue // "#'. Parsing values enclosed in '#' is " &
+                        //"deprecated and will be removed in a future release. Please remove the '#' characters to ensure compatibility.")
                   end if
                   localvalue = adjustl(localvalue)
                end if
