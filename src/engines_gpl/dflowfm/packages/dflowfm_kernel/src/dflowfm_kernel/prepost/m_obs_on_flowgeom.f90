@@ -261,7 +261,7 @@ contains
    !> Inits interpolation neighbours and weights for observation stations using 2D triangulation.
    subroutine init_interpolation_data_for_all_observation_stations(n_start, n_end,neighbour_nodes_obs,neighbour_weights_obs)
       
-      use m_observations_data      , only: xobs, yobs, numobs, nummovobs  
+      use m_observations_data      , only: xobs, yobs, numobs, nummovobs, kobs, namobs  
       use m_flowgeom               , only: xz, yz, ndx2d
       use m_missing                , only: dmiss
       use m_sferic                 , only: jsferic, jasfer3D
@@ -269,6 +269,7 @@ contains
       use m_polygon                , only: npl, xpl, ypl, zpl
       use m_samples                , only: mxsam, mysam 
       use precision                , only: dp
+      use messagehandling          , only: msgbuf, msg_flush
       use m_alloc
       
       use m_ec_basic_interpolation, only: triinterp2
@@ -301,6 +302,10 @@ contains
        do i = n_start, n_end
          neighbour_nodes_obs  (:, i) = indxx(:, i)
          neighbour_weights_obs(:, i) = wfxx (:, i)
+         if (neighbour_nodes_obs(1,i) == 0 .and. kobs(i) > 0) then
+            write (msgbuf, '(a,i0,a,a,a)') 'No interpolation possible for support point from boundary pli. Observation station nr:', i, ' (', trim(namobs(i)), '). Taking nearest support point with valid signals.'
+            call msg_flush()
+         end if
       end do
       
       jagetwf = jagetwf_org
