@@ -2141,15 +2141,19 @@ contains
 
    ! Local variables
 
-   real(kind=dp) :: dbl_dy
-   real(kind=dp) :: B_a, B_b, B_c
-   real(kind=dp) :: D_a, D_b, D_c, D_abc
-   real(kind=dp) :: Q_a, Q_b, Q_c, Q_y
-   real(kind=dp) :: Q_sy, Q_sb !<sediment transport 
-   real(kind=dp) :: sq_sa, sq_sy !specific sediment transport
-   real(kind=dp) :: L_a
-   real(kind=dp) :: u, v
-   real(kind=dp) :: ftheta
+   ! `_a` = incoming branch
+   ! `_b` = first outgoing branch
+   ! `_c` = second outgoing branch
+   ! `_y` = transverse direction between the two outgoing branches
+   real(kind=dp) :: dbl_dy !< transverse bed slope between the two outgoing branches
+   real(kind=dp) :: B_a, B_b, B_c !< widths of the incoming branch, and the two outgoing branches, respectively
+   real(kind=dp) :: D_a, D_b, D_c, D_abc !< flow depths of the incoming branch, and the two outgoing branches, and a representative flow depth for the node, respectively
+   real(kind=dp) :: Q_a, Q_b, Q_c, Q_y !< discharges of the incoming branch, and the two outgoing branches, and the transverse discharge respectively
+   real(kind=dp) :: Q_sy, Q_sb !< sediment transport rates in the transverse direction and at the outgoing branch of interest, respectively
+   real(kind=dp) :: sq_sa, sq_sy !< specific sediment transport
+   real(kind=dp) :: L_a !< representative length scale for the node, taken as `alpha_BP` times the width of the incoming branch
+   real(kind=dp) :: u, v !< flow velocity in the incoming branch, and transverse flow velocity at the node, respectively
+   real(kind=dp) :: ftheta !< correction factor for the transverse sediment transport, which accounts for the effect of bed slope on sediment transport. 
    
    type(t_noderelation), pointer :: pNodRel
 
@@ -2166,16 +2170,17 @@ contains
    B_b=wu_mor(links_out(1))
    B_c=wu_mor(links_out(2))
    
-   D_a=max(q1_main(links_in),Q_THRESH)/(max(u1(links_in) * u_to_umain(links_in),U_THRESH))
-   D_b=max(q1_main(links_out(1)),Q_THRESH)/(max(u1(links_out(1)) * u_to_umain(links_out(1)),U_THRESH))
-   D_c=max(q1_main(links_out(2)),Q_THRESH)/(max(u1(links_out(2)) * u_to_umain(links_out(2)),U_THRESH))
+   !Flow depth. `s1-bl` could be used, but we stay closer to the original formulation of Bolla and Pittaluga (2003) by using `q/(u*B)` 
+   !Note that their cross-section is rectangular. We take values from the main channel. 
+   D_a=max(q1_main(links_in),Q_THRESH)/max(u1(links_in) * u_to_umain(links_in),U_THRESH)/B_a
+   D_b=max(q1_main(links_out(1)),Q_THRESH)/max(u1(links_out(1)) * u_to_umain(links_out(1)),U_THRESH)/B_b
+   D_c=max(q1_main(links_out(2)),Q_THRESH)/max(u1(links_out(2)) * u_to_umain(links_out(2)),U_THRESH)/B_c
    
-   Q_a=q1_main(links_in)*B_a
-   Q_b=q1_main(links_out(1))*B_b
-   Q_c=q1_main(links_out(2))*B_c
-   
-   !Q_sa=total_sediment_transport_out(inod, ised)
-   
+   !Total discharge. We take values from the main channel.
+   Q_a=q1_main(links_in)
+   Q_b=q1_main(links_out(1))
+   Q_c=q1_main(links_out(2))
+      
    L_a=pNodRel%alpha_BP*B_a
    
    !u=Q_a/D_a/B_a
