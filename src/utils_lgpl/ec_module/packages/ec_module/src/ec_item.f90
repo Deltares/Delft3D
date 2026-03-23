@@ -591,6 +591,12 @@ module m_ec_item
                            success = ecItemFromTimeseries(item, timesteps%mjd())
                            return
                         end if
+                        ! by block-from definition, we use the last value indefinitely
+                        if (item%quantityPtr%timeint == timeint_bfrom) then
+                           item%sourceT0FieldPtr%arr1d = item%sourceT1FieldPtr%arr1d
+                           success = .true. 
+                        end if
+                     
                         if (interpol_type == interpolate_time_extrapolation_ok) then
                            exit
                         else
@@ -603,6 +609,10 @@ module m_ec_item
                if (item%quantityPtr%periodic) then
                   success = ecItemFromTimeseries(item, timesteps%mjd())
                endif
+               ! by block-from definition, we use the last value indefinitely and that is already in the T0 field
+               if (item%quantityPtr%timeint == timeint_bfrom) then
+                  success = .true.
+               end if
             endif
          end if
       end function ecItemUpdateSourceItem
