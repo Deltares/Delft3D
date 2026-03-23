@@ -27,8 +27,7 @@ project {
         param("nexus_username", DslContext.getParameter("nexus_username"))
         password("nexus_password", DslContext.getParameter("nexus_password"))
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
-        param("env.UV_INDEX_NEXUS_USERNAME", "%nexus_username%")
-        param("env.UV_INDEX_NEXUS_PASSWORD", "%nexus_password%")
+        param("env.UV_INDEX_URL", DslContext.getParameter("env.UV_INDEX_URL"))
 
         param("product", "dummy_value")
 
