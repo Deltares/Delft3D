@@ -82,15 +82,18 @@ module m_laterals
    real(kind=dp), allocatable, target, public :: geomYLat(:) !< [m] y coordinates of laterals.
    logical, public :: model_has_laterals_across_partitions = .false.
 
-   real(kind=dp), allocatable, target, dimension(:, :, :), public :: outgoing_lat_concentration !< Average concentration per lateral discharge location.
+   real(kind=dp), allocatable, target, dimension(:, :, :), public :: outgoing_lat_concentration !< Average (time and space) concentration per lateral discharge location.
    real(kind=dp), allocatable, target, dimension(:, :, :), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
-   real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Total water volume per layer, for each lateral (kmx,numlatsg).
+   real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Instantaneous total water volume per layer, for each lateral (kmx,numlatsg).
+   real(kind=dp), allocatable, target, dimension(:, :), public :: outgoing_lat_volume !< Average (time and space) volume per lateral discharge location.
 
    real(kind=dp), dimension(:), allocatable, public :: qlatwaq !< Cumulative qsrc within current waq-timestep
    real(kind=dp), dimension(:), allocatable, public :: qlatwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
 
    type t_flow_parameter !< General class for Flow parameters that require averaging.
       real(kind=dp), dimension(:), allocatable :: values !< Averaged values of the flow parameter.
+      real(kind=dp), dimension(:), allocatable  :: cumulative_value
+      real(kind=dp), dimension(:), allocatable  :: cumulative_weight
       logical :: is_used = .false. !< Indicates whether this flow parameter is used.
       real(kind=dp), dimension(:), pointer :: input_variable !< Input variable to be averaged.
       real(kind=dp), dimension(:), pointer :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
@@ -175,8 +178,7 @@ module m_laterals
    !! In average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    interface finish_outgoing_lat_concentration
-      module subroutine finish_outgoing_lat_concentration(time_interval)
-         real(kind=dp), intent(in) :: time_interval
+      module subroutine finish_outgoing_lat_concentration()
       end subroutine finish_outgoing_lat_concentration
    end interface finish_outgoing_lat_concentration
 
@@ -192,8 +194,7 @@ module m_laterals
 
    !> Compute water volume per layer in each lateral
    interface get_lateral_volume_per_layer
-      module subroutine get_lateral_volume_per_layer(lateral_volume_per_layer)
-         real(kind=dp), dimension(:, :), intent(out) :: lateral_volume_per_layer !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
+      module subroutine get_lateral_volume_per_layer()
       end subroutine get_lateral_volume_per_layer
    end interface get_lateral_volume_per_layer
 

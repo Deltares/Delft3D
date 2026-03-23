@@ -276,7 +276,7 @@ contains
       n1latsg = (/1, 3/)
       n2latsg = (/2, 4/)
 
-      call get_lateral_volume_per_layer(lateral_volume_per_layer)
+      call get_lateral_volume_per_layer()
       call assert_comparable(lateral_volume_per_layer(1, 1), 2d0, tolerance, "get_lateral_volume_per_layer(1,1) output lateral_volume_per_layer is not correct")
       call assert_comparable(lateral_volume_per_layer(2, 1), 2d0, tolerance, "get_lateral_volume_per_layer(2,1) output lateral_volume_per_layer is not correct")
       call assert_comparable(lateral_volume_per_layer(3, 1), 2d0, tolerance, "get_lateral_volume_per_layer(3,1) output lateral_volume_per_layer is not correct")
