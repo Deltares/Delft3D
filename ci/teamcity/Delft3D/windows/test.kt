@@ -103,31 +103,28 @@ object WindowsTest : BuildType({
                 """.trimIndent()
             }
         }
-        powerShell {
+        python {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
-            edition = PowerShellStep.Edition.Desktop
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
             workingDir = "test/deltares_testbench/"
-            scriptMode = script {
-                content = """
-                    ${'$'}ErrorActionPreference = "Stop"
-                    python TestBench.py `
-                        --username '%s3_dsctestbench_accesskey%' `
-                        --password '%s3_dsctestbench_secret%' `
-                        --compare `
-                        --config 'configs/%configfile%' `
-                        --filter 'testcase=%case_filter%' `
-                        --log-level DEBUG `
-                        --parallel `
-                        --teamcity
-                    if (${'$'}LASTEXITCODE -ne 0) { exit ${'$'}LASTEXITCODE }
+            command = file {
+                filename = "TestBench.py"
+                scriptArguments = """
+                    --username "%s3_dsctestbench_accesskey%"
+                    --password "%s3_dsctestbench_secret%"
+                    --compare
+                    --config "configs/%configfile%"
+                    --filter "testcase=%case_filter%"
+                    --log-level DEBUG
+                    --parallel
+                    --teamcity
                 """.trimIndent()
             }
-            param("plugin.docker.imageId", "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%")
-            param("plugin.docker.imagePlatform", "windows")
-            param("plugin.docker.pull.enabled", "true")
-            param("plugin.docker.run.parameters", "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%")
+            dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
         script {
             name = "Copy cases"
