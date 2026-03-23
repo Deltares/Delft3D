@@ -513,8 +513,8 @@ contains
 
    !> Configure the preconditioner for the PETSc KSP solver
    subroutine createPETSCPreconditioner(iprecnd)
-      use petsc, only: kspgetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, pcasmrestoresubksp, petsc_null_integer, tKSP, kspsetreusepreconditioner, petsc_false
-      use m_petsc, only: PETSC_OK, Solver, Preconditioner, SubSolver, SubPrec
+      use petsc, only: kspgetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, pcasmrestoresubksp, petsc_null_integer, tKSP, kspsetreusepreconditioner, petsc_false, matassemblybegin, matassemblyend, mat_final_assembly
+      use m_petsc, only: PETSC_OK, Solver, Preconditioner, SubSolver, SubPrec, Amat
       use MessageHandling, only: mess, level_error
 
       integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
@@ -527,6 +527,17 @@ contains
 
       jasucces = 0
 
+      ! Bump PETSc's internal matrix state counter so it knows values have changed.
+      ! WithArrays matrices are updated in-place in setPETSCmatrixEntries (bypassing MatSetValues), so MatAssembly
+      ! is the only way to inform PETSc and force a fresh preconditioner factorization.
+      call MatAssemblyBegin(Amat, MAT_FINAL_ASSEMBLY, ierr)
+      if (ierr /= PETSC_OK) then
+         goto 1234
+      end if
+      call MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY, ierr)
+      if (ierr /= PETSC_OK) then
+         goto 1234
+      end if
       ! Ensure preconditioner will be recomputed with new matrix values
       call KSPSetReusePreconditioner(Solver, PETSC_FALSE, ierr)
       if (ierr /= PETSC_OK) then
