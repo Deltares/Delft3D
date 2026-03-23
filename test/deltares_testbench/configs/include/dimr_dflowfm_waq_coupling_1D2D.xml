@@ -400,7 +400,7 @@
     </checks>
   </testCase>
   <testCase name="e02_f029_c501_junction-advection-acceleration-equidistant_WAQ" ref="dwaq_default">
-    <path version="DVC">e02_dflowfm/f029_hyd_file/c501_junction-advection-acceleration-equidistant</path>
+    <path version="DVC">e02_dflowfm/f029_hyd_file/c501_junction-advection-acceleration-equidistant_WAQ</path>
     <programs>
       <program ref="dimr_waq" seq="1">
           </program>
