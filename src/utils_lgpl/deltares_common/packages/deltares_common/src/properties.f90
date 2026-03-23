@@ -39,7 +39,7 @@ module properties
    implicit none
    integer, parameter, public :: max_prop_length = 1024
    
-   logical, public :: deprecate_pound_wrapped_values = .false.
+   logical, public :: deprecate_pound_wrapped_values = .false. !> Controls whether deprecation warnings are emitted when a #value# is encountered.
    
    private
 
