@@ -18,6 +18,7 @@ add_executable(test_csumo_precice_lib ${source_files})
 target_link_libraries(test_csumo_precice_lib PRIVATE
     compiler_warnings_settings
     csumo_precice_lib
+    gtest
     gtest_main
 )
 
