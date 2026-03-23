@@ -152,19 +152,10 @@ class TestSetRunner(ABC):
         config_process_count = sum(config.process_count for config in self.__settings.configs_to_run)
         max_processes = min(config_process_count, multiprocessing.cpu_count())
 
-        # Size the pool to the max number of tests that can run concurrently.
-        # Each test spawns external processes (MPI launchers + rank processes),
-        # so creating more pool workers than concurrent tests wastes OS resources
-        # and can exhaust MPI shared memory on Windows.
-        max_process_count = max(config.process_count for config in self.__settings.configs_to_run)
-        pool_size = max(1, min(max_processes // max_process_count, n_testcases))
-
-        self.__logger.info(
-            f"Creating pool of {pool_size} workers to run test cases " f"(max {max_processes} concurrent processes)."
-        )
+        self.__logger.info(f"Creating {max_processes} processes to run test cases on.")
         process_manager = multiprocessing.Manager()
 
-        with multiprocessing.Pool(processes=pool_size) as pool:
+        with multiprocessing.Pool(processes=max_processes) as pool:
             self.finished_tests = 0
 
             result_futures: List[AsyncResult] = []
@@ -816,10 +807,10 @@ class TestSetRunner(ABC):
     def __set_absolute_paths(self, config: TestCaseConfig, location_type: PathType, local_path: str) -> None:
         """Set absolute paths on the config based on location type."""
         if location_type == PathType.INPUT:
-            input_path = Path(local_path).resolve()
+            input_path = Path(local_path)
             config.absolute_test_case_path = str(input_path.with_name(f"{input_path.name}_work"))
         elif location_type == PathType.REFERENCE:
-            config.absolute_test_case_reference_path = str(Path(local_path).resolve())
+            config.absolute_test_case_reference_path = local_path
 
     def __download_files(
         self,
