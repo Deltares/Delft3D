@@ -27,7 +27,9 @@ project {
         param("nexus_username", DslContext.getParameter("nexus_username"))
         password("nexus_password", DslContext.getParameter("nexus_password"))
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
-        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@artifacts.deltares.nl/repository/python-internal/simple/")
+        param("nexus_user", DslContext.getParameter("nexus_user"))
+        param("nexus_pass", DslContext.getParameter("nexus_pass"))
+        param("env.UV_INDEX_URL", "https://%nexus_user%:%nexus_pass%@artifacts.deltares.nl/repository/python-internal/simple/")
 
         param("product", "dummy_value")
 
