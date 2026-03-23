@@ -560,7 +560,6 @@ module m_ec_item
          endif
 
 
-         print *, "Timestep0", timesteps%mjd(), "T0", item%sourceT0FieldPtr%timesteps, "T1", item%sourceT1FieldPtr%timesteps
          ! Update all source Items which belong to the found FileReader, if associated .
          if (associated(fileReaderPtr)) then
             if (.not. fileReaderPtr%end_of_data) then
