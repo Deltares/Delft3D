@@ -23,6 +23,8 @@
 module test_text_file_processor
    use precision
    use assertions_gtest
+   use m_text_file_processor, only: TextFileProcessor
+   use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
 
    implicit none
 
@@ -30,8 +32,6 @@ contains
 
    !$f90tw TESTCODE(TEST, test_text_file_processor, test_notfound, test_notfound,
    subroutine test_notfound() bind(C)
-      use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
-      use text_file_processor, only: TextFileProcessor
       type(TextFileProcessor) :: processor
 
       processor = TextFileProcessor('example.txt')
@@ -47,8 +47,6 @@ contains
 
    !$f90tw TESTCODE(TEST, test_text_file_processor, test_basic, test_basic,
    subroutine test_basic() bind(C)
-      use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
-      use text_file_processor, only: TextFileProcessor
       type(TextFileProcessor) :: processor
 
       processor = TextFileProcessor('tt3.mdu')
@@ -63,8 +61,7 @@ contains
 
    !$f90tw TESTCODE(TEST, test_text_file_processor, test_required_verifier, test_required_verifier,
    subroutine test_required_verifier() bind(C)
-      use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
-      use text_file_processor, only: TextFileProcessor, ChapterPropsVerifier
+      use m_text_file_validators, only: ChapterPropsVerifier
       type(TextFileProcessor) :: processor
       type(ChapterPropsVerifier) :: verifier
       character(len=:), allocatable :: required_strings(:)
@@ -88,8 +85,8 @@ contains
 
    !$f90tw TESTCODE(TEST, test_text_file_processor, test_and_verifier, test_and_verifier,
    subroutine test_and_verifier() bind(C)
-      use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
-      use text_file_processor, only: TextFileProcessor, ChapterPropsVerifier, AndVerifier
+      use m_text_file_validators, only: ChapterPropsVerifier, AndVerifier
+
       type(TextFileProcessor) :: processor
       type(ChapterPropsVerifier) :: verifier1, verifier2
       type(AndVerifier) :: and_verifier
@@ -122,9 +119,10 @@ contains
 
    !$f90tw TESTCODE(TEST, test_text_file_processor, test_x_y_coord, test_x_y_coord,
    subroutine test_x_y_coord() bind(C)
-      use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess, msg_flush
-      use text_file_processor
 
+      use m_text_file_validators, only: TextFileProcessorVerifier, ArraysLengthVerifier
+
+      
       type(TextFileProcessor) :: processor
       class(TextFileProcessorVerifier), allocatable :: verifier
       character(len=:), allocatable :: required_strings(:)
