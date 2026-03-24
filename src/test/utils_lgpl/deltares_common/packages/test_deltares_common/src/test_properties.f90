@@ -303,7 +303,7 @@ contains
    end subroutine test_properties_get_strings
 
    subroutine test_parse_pound_wrapped_value()
-      use MessageHandling, only: getLastMessage, LEVEL_WARN, LEVEL_NONE
+      use MessageHandling, only: getLastMessage, resetMessageCount_MH, LEVEL_WARN, LEVEL_NONE
 
       integer :: error_code
       character(len=256) :: value
@@ -321,6 +321,7 @@ contains
       call assert_equal(error_code, 0, "Failed to read ini file")
 
       ! Deprecation warning disabled by default, so no warning expected here
+      call resetMessageCount_MH()
       call prop_get(tree%child_nodes(1)%node_ptr, '', 'id', value, is_read)
       call assert_true(is_read, "")
       call assert_equal(value, "pound", "")
