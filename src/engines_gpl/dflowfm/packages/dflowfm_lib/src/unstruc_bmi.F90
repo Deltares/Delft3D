@@ -2452,6 +2452,9 @@ contains
 
       integer :: item_index, k1, constituent_index
       character(len=MAXSTRLEN) :: constituent_name, direction_string
+
+      c_lateral_pointer = c_null_ptr
+
       call getLateralIndex(item_name, item_index)
       if (item_index <= 0) then
          return
@@ -2544,7 +2547,7 @@ contains
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
-      use m_General_Structure, only: update_widths
+      use m_general_structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
       use string_module, only: str_token

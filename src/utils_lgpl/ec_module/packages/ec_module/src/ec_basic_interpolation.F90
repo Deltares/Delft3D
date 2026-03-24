@@ -154,26 +154,25 @@ module m_ec_basic_interpolation
 #else
 #  define TRICALL_SYMBOL 'tricall_'
 #endif
-      interface
-         subroutine TRICALL(jatri, xs, ys, ns, indx, numtri, edgeidx, numedge, triedge, xs3, ys3, ns3, trisize) &
-            bind(C, name=TRICALL_SYMBOL)
-            use iso_c_binding
-            integer(c_int), intent(in) :: jatri ! C reads *jatri only, never writes back
-            real(c_double), intent(in) :: xs(*), ys(*)
-            integer(c_int), intent(in) :: ns
-            integer(c_int), intent(inout) :: indx(*)
-            integer(c_int), intent(inout) :: numtri
-            integer(c_int), intent(inout) :: edgeidx(*)
-            integer(c_int), intent(inout) :: numedge
-            integer(c_int), intent(inout) :: triedge(*)
-            real(c_double), intent(inout) :: xs3(*), ys3(*)
-            integer(c_int), intent(inout) :: ns3
-            real(c_double), intent(inout) :: trisize
-         end subroutine TRICALL
-      end interface
+   interface
+      subroutine TRICALL(jatri, xs, ys, ns, indx, numtri, edgeidx, numedge, triedge, xs3, ys3, ns3, trisize) &
+         bind(C, name=TRICALL_SYMBOL)
+         use iso_c_binding
+         integer(c_int), intent(in) :: jatri ! C reads *jatri only, never writes back
+         real(c_double), intent(in) :: xs(*), ys(*)
+         integer(c_int), intent(in) :: ns
+         integer(c_int), intent(inout) :: indx(*)
+         integer(c_int), intent(inout) :: numtri
+         integer(c_int), intent(inout) :: edgeidx(*)
+         integer(c_int), intent(inout) :: numedge
+         integer(c_int), intent(inout) :: triedge(*)
+         real(c_double), intent(inout) :: xs3(*), ys3(*)
+         integer(c_int), intent(inout) :: ns3
+         real(c_double), intent(inout) :: trisize
+      end subroutine TRICALL
+   end interface
 
 contains
-
 
    !> Bilinear interpolation for uniform rectangular.
    !! TODO: move to ec_basic_interpolation or bilin5
@@ -1159,7 +1158,7 @@ contains
       real(kind=hp) :: zn
       real(kind=hp) :: sum_weights
 
-      real(kind=hp), parameter :: EPS_BARY = 1.0e-11_hp ! snapping distance to points in the mapped triangle space
+      real(kind=hp), parameter :: EPS_BARY = 1.0e-10_hp ! snapping distance to points in the mapped triangle space
 
       ZP = dmiss
       SLO = dmiss

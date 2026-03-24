@@ -2634,15 +2634,18 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_R), valobs(:, IPNT_WAVER))
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UORB), valobs(:, IPNT_WAVEU))
-            if (model_is_3D() .and. .not. flow_without_waves) then
-               temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCXST:IPNT_UCXST + kmx - 1)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), temp_pointer)
+            if (.not. flow_without_waves) then
 
-               temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCYST:IPNT_UCYST + kmx - 1)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), temp_pointer)
-            else
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), valobs(:, IPNT_UCXST))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), valobs(:, IPNT_UCYST))
+               if (model_is_3D()) then
+                  temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCXST:IPNT_UCXST + kmx - 1)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), temp_pointer)
+
+                  temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCYST:IPNT_UCYST + kmx - 1)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), temp_pointer)
+               else
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), valobs(:, IPNT_UCXST))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), valobs(:, IPNT_UCYST))
+               end if
             end if
          end if
          if (jahistaucurrent > 0) then

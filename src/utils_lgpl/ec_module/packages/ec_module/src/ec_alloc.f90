@@ -69,7 +69,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecConnectionPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecConnectionPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -82,7 +82,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecConnectionPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecConnectionPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecConnectionPtrArrayIncrease
@@ -103,7 +103,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecConverterPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecConverterPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -116,7 +116,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecConverterPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecConverterPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecConverterPtrArrayIncrease
@@ -137,7 +137,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecElementSetPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecElementSetPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -150,7 +150,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecElementSetPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecElementSetPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecElementSetPtrArrayIncrease
@@ -171,7 +171,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecFieldPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecFieldPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -184,7 +184,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecFieldPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecFieldPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecFieldPtrArrayIncrease
@@ -205,7 +205,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecFileReaderPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecFileReaderPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -218,7 +218,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecFileReaderPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecFileReaderPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecFileReaderPtrArrayIncrease
@@ -239,7 +239,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecBCBlockPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecBCBlockPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -252,7 +252,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecBCBlockPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecBCBlockPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecBCBlockPtrArrayIncrease
@@ -273,7 +273,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecNetCDFPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecNetCDFPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -286,7 +286,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecNetCDFPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecNetCDFPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecNetCDFPtrArrayIncrease
@@ -307,7 +307,7 @@ module m_ec_alloc
          istat = 1
 
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecItemPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecItemPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -320,7 +320,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecItemPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecItemPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecItemPtrArrayIncrease
@@ -341,7 +341,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecQuantityPtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecQuantityPtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -354,7 +354,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecQuantityPtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecQuantityPtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecQuantityPtrArrayIncrease
@@ -373,7 +373,7 @@ module m_ec_alloc
          istat = 1
          !
          if (.not. associated(ptr)) then
-            call setECMessage("ec_alloc::ecBCFilePtrArrayIncrease: Dummy argument ptr is not associated.")
+            call set_ec_message("ec_alloc::ecBCFilePtrArrayIncrease: Dummy argument ptr is not associated.")
          else
             allocate(new_ptr(size(ptr)+10), STAT = istat)
             if (istat == 0) then
@@ -386,7 +386,7 @@ module m_ec_alloc
                new_ptr => null()
                success = .true.
             else
-               call setECMessage("ec_alloc::ecBCFilePtrArrayIncrease: Unable to allocate additional memory.")
+               call set_ec_message("ec_alloc::ecBCFilePtrArrayIncrease: Unable to allocate additional memory.")
             end if
          end if
       end function ecBCFilePtrArrayIncrease

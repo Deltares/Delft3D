@@ -137,7 +137,7 @@ contains
       success = .false.
       !
       if (len_trim(rec) == 0) then
-         call setECMessage("ec_support::ecGetTimesteps: Input string is empty.")
+         call set_ec_message("ec_support::ecGetTimesteps: Input string is empty.")
          return
       end if
 
@@ -151,14 +151,14 @@ contains
 
       if (posTimeUnit > 0) then
          if (.not. ecSupportTimestringToUnitAndRefdate(time_string(posTimeUnit:), unit, ref_date, tzone=tzone)) then
-            call setECMessage("ec_support::ecGetTimesteps: can not convert time unit string: "//time_string//".")
+            call set_ec_message("ec_support::ecGetTimesteps: can not convert time unit string: "//time_string//".")
          end if
       end if
 
       if (posTimeUnit > 0) then
          read (time_string(index(time_string, '=') + 1:posTimeUnit - 1), *) time_in
       else if (.not. ecSupportTimestringArcInfo(time_string, time_steps=time_in)) then
-         call setECMessage("ec_support::ecGetTimesteps: can not find time step in: "//time_string//".")
+         call set_ec_message("ec_support::ecGetTimesteps: can not find time step in: "//time_string//".")
          return
       end if
 
@@ -179,7 +179,7 @@ contains
       case (ec_day)
          time_steps = ref_date + tzone / 24.0_hp + time_in
       case default
-         call setECMessage("ec_support::ecGetTimesteps: Unable to identify the time unit.")
+         call set_ec_message("ec_support::ecGetTimesteps: Unable to identify the time unit.")
          return
       end select
       success = .true.
@@ -200,7 +200,7 @@ contains
 
       minp = mf_open(filename)
       if (minp <= 0) then
-         call setECMessage("ec_support::ecSupportOpenExistingFileGnu: Opening "//trim(filename)//" failed.")
+         call set_ec_message("ec_support::ecSupportOpenExistingFileGnu: Opening "//trim(filename)//" failed.")
          return
       end if
       success = .true.
@@ -225,12 +225,12 @@ contains
       unitused = .false.
       ! Sanity checks.
       if (len_trim(filename) == 0) then
-         call setECMessage("ec_support::ecSupportOpenExistingFile: Name is empty")
+         call set_ec_message("ec_support::ecSupportOpenExistingFile: Name is empty")
          return
       end if
       inquire (file=trim(filename), exist=success)
       if (.not. success) then
-         call setECMessage("ec_support::ecSupportOpenExistingFile: File does not exist: ", trim(filename))
+         call set_ec_message("ec_support::ecSupportOpenExistingFile: File does not exist: ", trim(filename))
          return
       end if
       ! Special case: NetCDF.
@@ -246,7 +246,7 @@ contains
          success = .true.
       else
          minp = ec_undef_int
-         call setECMessage("ec_support::ecSupportOpenExistingFile: opening file "//trim(filename)//" failed")
+         call set_ec_message("ec_support::ecSupportOpenExistingFile: opening file "//trim(filename)//" failed")
       end if
    end function ecSupportOpenExistingFile
 
@@ -266,7 +266,7 @@ contains
       if (associated(instancePtr)) then
          quantityPtr => instancePtr%ecQuantitiesPtr(quantityId)%ptr
       else
-         call setECMessage("ec_support::ecSupportFindQuantity: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindQuantity: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindQuantity
 
@@ -526,7 +526,7 @@ contains
             ncvarnames(1) = varname ! wave period
             ncstdnames(1) = varname
          else
-            call setECMessage("Variable name for quantity 'waveperiod' not provided for file "//trim(fileName)//".")
+            call set_ec_message("Variable name for quantity 'waveperiod' not provided for file "//trim(fileName)//".")
          end if
       case ('wavedirection')
          allocate (ncvarnames(1:2))
@@ -573,7 +573,7 @@ contains
             ncstdnames(1) = quantityName(14:)
          else
             ! we have faulty
-            call setECMessage("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)//", unknown.")
+            call set_ec_message("Quantity '"//trim(quantityName)//"', requested from file "//trim(fileName)//", unknown.")
             !TODO: user defined quantity name
             !ncvarnames(1) = varname
             !ncstdnames(1) = varname
@@ -593,7 +593,7 @@ contains
       if (associated(instancePtr)) then
          elementSetPtr => instancePtr%ecElementSetsPtr(elementSetId)%ptr
       else
-         call setECMessage("ec_support::ecSupportFindElementSet: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindElementSet: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindElementSet
 
@@ -610,7 +610,7 @@ contains
       if (associated(instancePtr)) then
          fieldPtr => instancePtr%ecFieldsPtr(fieldId)%ptr
       else
-         call setECMessage("ec_support::ecSupportFindField: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindField: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindField
 
@@ -774,7 +774,7 @@ contains
             itemPtr => instancePtr%ecItemsPtr(itemId)%ptr
          end if
       else
-         call setECMessage("ec_support::ecSupportFindItem: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindItem: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindItem
 
@@ -793,7 +793,7 @@ contains
             connectionPtr => instancePtr%ecConnectionsPtr(connectionId)%ptr
          end if
       else
-         call setECMessage("ec_support::ecSupportFindConnection: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindConnection: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindConnection
 
@@ -812,7 +812,7 @@ contains
             converterPtr => instancePtr%ecConvertersPtr(converterId)%ptr
          end if
       else
-         call setECMessage("ec_support::ecSupportFindConverter: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindConverter: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindConverter
 
@@ -831,7 +831,7 @@ contains
             fileReaderPtr => instancePtr%ecFileReadersPtr(fileReaderId)%ptr
          end if
       else
-         call setECMessage("ec_support::ecSupportFindFileReader: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindFileReader: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindFileReader
 
@@ -859,7 +859,7 @@ contains
             end if
          end do
       else
-         call setECMessage("ec_support::ecSupportFindFileReader: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindFileReader: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindFileReaderByFilename
 
@@ -878,7 +878,7 @@ contains
             bcBlockPtr => instancePtr%ecbcBlocksPtr(bcBlockId)%ptr
          end if
       else
-         call setECMessage("ec_support::ecSupportFindBCBlock: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindBCBlock: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindBCBlock
 
@@ -897,7 +897,7 @@ contains
             netCDFPtr => instancePtr%ecNetCDFsPtr(netCDFId)%ptr
          end if
       else
-         call setECMessage("ec_support::ecSupportFindNetCDF: Dummy argument instancePtr is not associated.")
+         call set_ec_message("ec_support::ecSupportFindNetCDF: Dummy argument instancePtr is not associated.")
       end if
    end function ecSupportFindNetCDF
 
@@ -940,14 +940,14 @@ contains
       !
       if (ierror /= nf90_noerr) then
          write (message, '(a,i0,a)') 'NetCDF error message : [', ierror, '] '//trim(nf90_strerror(ierror))
-         call setECMessage(message)
+         call set_ec_message(message)
          if (present(filename)) then
             write (message, '(a)') 'NetCDF file : "'//trim(filename)
-            call setECMessage(message)
+            call set_ec_message(message)
          end if
          if (present(description)) then
             write (message, '(a)') trim(description)
-            call setECMessage(message)
+            call set_ec_message(message)
          end if
          success = .false.
       else
@@ -970,15 +970,15 @@ contains
       if (.not. ok) then
          if (present(errmsg)) then
             if (present(filename)) then
-               call setECMessage('ERROR: '//trim(errmsg)//' in file '//trim(filename)//': '//trim(nf90_strerror(ierr)))
+               call set_ec_message('ERROR: '//trim(errmsg)//' in file '//trim(filename)//': '//trim(nf90_strerror(ierr)))
             else
-               call setECMessage('ERROR: '//trim(errmsg)//': '//trim(nf90_strerror(ierr)))
+               call set_ec_message('ERROR: '//trim(errmsg)//': '//trim(nf90_strerror(ierr)))
             end if
          else
             if (present(filename)) then
-               call setECMessage('ERROR: NetCDF error in file '//trim(filename)//': '//trim(nf90_strerror(ierr)))
+               call set_ec_message('ERROR: NetCDF error in file '//trim(filename)//': '//trim(nf90_strerror(ierr)))
             else
-               call setECMessage('ERROR: NetCDF error: '//trim(nf90_strerror(ierr)))
+               call set_ec_message('ERROR: NetCDF error: '//trim(nf90_strerror(ierr)))
             end if
          end if
       end if
@@ -1014,7 +1014,7 @@ contains
       ! copy only relevant part of rec into string:
       jcomment = index(rec, '#')
       if (jcomment == 1) then
-         call setECMessage("ec_support::ecSupportTimestringToRefdate: only found comments.")
+         call set_ec_message("ec_support::ecSupportTimestringToRefdate: only found comments.")
          return
       else if (jcomment > 1) then
          string = trim(rec(:jcomment - 1))
@@ -1028,7 +1028,7 @@ contains
 
       ok = split_date_time(str_toupper(string), date, time, tz)
       if (.not. ok) then
-         call setECMessage("ec_support::ecSupportTimestringToRefdate: splitting of date and time fails. Date time = ", string(i:))
+         call set_ec_message("ec_support::ecSupportTimestringToRefdate: splitting of date and time fails. Date time = ", string(i:))
          return
       end if
 
@@ -1044,7 +1044,7 @@ contains
       end if
 
       if (.not. ok) then
-         call setECMessage("ec_support::ecSupportTimestringToRefdate: Unable to parse date time in: ", rec)
+         call set_ec_message("ec_support::ecSupportTimestringToRefdate: Unable to parse date time in: ", rec)
          return
       end if
 
@@ -1106,7 +1106,7 @@ contains
       ! copy only relevant part of rec into string:
       jcomment = index(rec, '#')
       if (jcomment == 1) then
-         call setECMessage("ec_support::ecSupportTimestringToUnitAndRefdate: only found comments.")
+         call set_ec_message("ec_support::ecSupportTimestringToUnitAndRefdate: only found comments.")
          return
       else if (jcomment > 1) then
          string = trim(rec(:jcomment - 1))
@@ -1118,8 +1118,8 @@ contains
 
       ! Determine the time unit.
       if (.not. ecSupportTimeUnitstringToUnitEnum(string, unit)) then
-         call setECMessage("unitstring = '"//trim(string)//"'.")
-         call setECMessage("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to identify the time unit.")
+         call set_ec_message("unitstring = '"//trim(string)//"'.")
+         call set_ec_message("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to identify the time unit.")
          return
       end if
       ! Determine the reference date.
@@ -1130,12 +1130,12 @@ contains
          ok = .true.
          tzone = 0.0_hp
       else
-         call setECMessage("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to identify keyword: since and not an ArcInfo format.")
+         call set_ec_message("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to identify keyword: since and not an ArcInfo format.")
          return
       end if
 
       if (.not. ok) then
-         call setECMessage("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to parse date time in: ", rec)
+         call set_ec_message("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to parse date time in: ", rec)
          return
       end if
 
@@ -1257,7 +1257,7 @@ contains
       end if
 
       success = (ierr == 0)
-      if (.not. success) call setECMessage("ec_support::parseTimezone: error parsing time zone "//trim(string))
+      if (.not. success) call set_ec_message("ec_support::parseTimezone: error parsing time zone "//trim(string))
    end function parseTimezone
 
    ! =======================================================================
@@ -1417,14 +1417,14 @@ contains
             select case (trim(units))
             case ('degrees_east', 'degree_east', 'degree_E', 'degrees_E', 'degreeE', 'degreesE')
                if (lon_varid > 0) then
-                  call setECmessage("redefinition of lon_varid; not supported")
+                  call set_ec_message("redefinition of lon_varid; not supported")
                   return
                end if
                lon_varid = ivar
                lon_dimid = dimids(1)
             case ('degrees_north', 'degree_north', 'degree_N', 'degrees_N', 'degreeN', 'degreesN')
                if (lat_varid > 0) then
-                  call setECmessage("redefinition of lat_varid; not supported")
+                  call set_ec_message("redefinition of lat_varid; not supported")
                   return
                end if
                lat_varid = ivar
@@ -1442,7 +1442,7 @@ contains
                      lat_dimid = dimids(1)
                   end select
                else
-                  call setECmessage("attribute 'standard_name' not found for variable "//trim(varname))
+                  call set_ec_message("attribute 'standard_name' not found for variable "//trim(varname))
                end if
                !RL Set lon and lat dimids ??
             case ('m', 'meters', 'km', 'kilometers')
@@ -1477,7 +1477,7 @@ contains
                end if
                if (ierr /= 0) then
                   ierr = nf90_inquire_variable(ncid, ivar, name=varname)
-                  call setECmessage("attribute 'axis' not found for variable "//trim(varname)//", nor 'projection_x/y_coordinate' was found.")
+                  call set_ec_message("attribute 'axis' not found for variable "//trim(varname)//", nor 'projection_x/y_coordinate' was found.")
                end if
             case default
                ! see if is the time dimension
@@ -1507,7 +1507,7 @@ contains
                      grid_lon_varid = ivar
                   end select
                else
-                  call setECmessage("attribute 'standard_name' not found for variable "//trim(varname))
+                  call set_ec_message("attribute 'standard_name' not found for variable "//trim(varname))
                end if
             case ('m', 'meter', 'meters', 'km', 'kilometers')
                stdname = ''

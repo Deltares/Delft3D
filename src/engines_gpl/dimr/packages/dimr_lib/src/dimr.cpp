@@ -283,7 +283,7 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
         (cb->unit.component->dllGetEndTime) (&cb->tEnd);
     }
     cb->tStep = tStep;
-    log->Write(INFO, my_rank, "%s.Update(%6.1f)", cb->unit.component->name, cb->tStep);
+    log->Write(DEBUG, my_rank, "%s.Update(%6.1f)", cb->unit.component->name, cb->tStep);
     timerStart(cb->unit.component);
     int state = (cb->unit.component->dllUpdate) (cb->tStep);
     if (state != 0)
@@ -765,7 +765,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
     // Initialize time parameters
     double* currentTime = &masterComponent->tCur;
 
-    log->Write(INFO, my_rank, "Parallel Update: Current time: %15.5f -- %s -- %d", *currentTime, masterComponent->unit.component->name, tStep);
+    log->Write(DEBUG, my_rank, "Parallel Update: Current time: %15.5f -- %s -- %d", *currentTime, masterComponent->unit.component->name, tStep);
 
     // already requested in "runParallelInit" ... is this really nessary?
     // masterComponent->tStart : simulation start time as obtained from the masterComponent
@@ -833,7 +833,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
         // tStep is the minimum allowed time step over all followers
         // Start with maximum value defined by masterComponent
         double tStep = masterComponent->tNext - *currentTime;
-        log->Write(INFO, my_rank, "TIME LOOP %15.5f -- %15.5f -- %15.5f", tStep, masterComponent->tNext, *currentTime);
+        log->Write(DEBUG, my_rank, "TIME LOOP %15.5f -- %15.5f -- %15.5f", tStep, masterComponent->tNext, *currentTime);
         for (int i = 0; i < cb->numSubBlocks; i++) {
             if (i != cb->masterSubBlockId) {
                 // follower.tNext is the next point in time that this follower must be executed
@@ -857,7 +857,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                     // This follower is not active yet
                     tStep = std::min(tStep, tStepFollower);
                 }
-                log->Write(INFO, my_rank, "TIME LOOP %15.5f -- %15.5f -- %15.5f -- %15.5f ", tStep, masterComponent->tNext, cb->subBlocks[i].tNext, tStepFollower);
+                log->Write(DEBUG, my_rank, "TIME LOOP %15.5f -- %15.5f -- %15.5f -- %15.5f ", tStep, masterComponent->tNext, cb->subBlocks[i].tNext, tStepFollower);
             }
         }
 
@@ -873,7 +873,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
             if (i == cb->masterSubBlockId) {
                 // masterComponent
                 chdir(masterComponent->unit.component->workingDir);
-                log->Write(INFO, my_rank, "%10.1f:    %s.Update(%15.5f)", *currentTime, masterComponent->unit.component->name, tStep);
+                log->Write(DEBUG, my_rank, "%10.1f:    %s.Update(%15.5f)", *currentTime, masterComponent->unit.component->name, tStep);
                 timerStart(masterComponent->unit.component);
                 int state = 0; // state returned by local call to component (0 if not called)
                 int state0 = 0; // state returned by call to component by the first thread calling that component
@@ -922,7 +922,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             double tUpdate;
                             double subblock_time = cb->subBlocks[i].tCur; // Shortcut to keep the code readable
                             tUpdate = *currentTime - masterComponent->tStart - subblock_time;
-                            log->Write(INFO, my_rank, "Parallel Startgroup: Current time: %15.5f -- %15.5f", *currentTime, subblock_time);
+                            log->Write(DEBUG, my_rank, "Parallel Startgroup: Current time: %15.5f -- %15.5f", *currentTime, subblock_time);
                             // Hack: Always call RTCTools.Update with argument -1.0
                             if (cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_RTC) {
                                 tUpdate = -1.0;
@@ -941,7 +941,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             }
                             // Update
                             chdir(thisComponent->workingDir);
-                            log->Write(INFO, my_rank, "%10.1f:    %s.Update(%10.1f)", *currentTime, thisComponent->name, tUpdate);
+                            log->Write(DEBUG, my_rank, "%10.1f:    %s.Update(%10.1f)", *currentTime, thisComponent->name, tUpdate);
                             timerStart(thisComponent);
                             int state = (thisComponent->dllUpdate) (tUpdate);
                             if (state != 0)
@@ -1055,11 +1055,11 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                     for (int j = 0; j < cb->subBlocks[i].numSubBlocks; j++) {  // look for the WAVE component (wave-library)
                         if (j != cb->masterSubBlockId && cb->subBlocks[i].subBlocks[j].unit.component != nullptr && cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_WAVE) {
                             cb->subBlocks[i].tCur = *currentTime;
-                            log->Write(INFO, my_rank, "Parallel Child: Current time: %15.5f -- %d", *currentTime, i);
+                            log->Write(DEBUG, my_rank, "Parallel Child: Current time: %15.5f -- %d", *currentTime, i);
                         }
                         else {
                             cb->subBlocks[i].tCur = *currentTime - masterComponent->tStart;
-                            log->Write(INFO, my_rank, "Parallel Child 2: Current time: %15.5f -- %d", *currentTime, i);
+                            log->Write(DEBUG, my_rank, "Parallel Child 2: Current time: %15.5f -- %d", *currentTime, i);
                         }
                     }
                     cb->subBlocks[i].tNext = cb->subBlocks[i].tNext + cb->subBlocks[i].tStep;
