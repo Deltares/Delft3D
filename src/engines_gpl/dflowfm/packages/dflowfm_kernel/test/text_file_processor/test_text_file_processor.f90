@@ -172,13 +172,13 @@ contains
          group_name = trim(tree_get_name(block_ptr))
          if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower('BlockXYBad')))) then
             tmpProcessor = TextFileProcessor(block_ptr)
-            verifier  = ArraysLengthChapterVerifier([ 'xCoordinates', 'yCoordinates' ])
+            verifier  = ArraysLengthChapterVerifier([ 'xCoordinates', 'yCoordinates' ], 'numCoordinates')
             call f90_assert_eq(verifier%verify(block_ptr), .false., 'BlockXYBad should not pass the verification as xCoordinates and yCoordinates have different lengths.')
          end if
 
          if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower('BlockXYGood')))) then
             tmpProcessor = TextFileProcessor(block_ptr)
-            verifier  = ArraysLengthChapterVerifier([ 'xCoordinates', 'yCoordinates' ])
+            verifier  = ArraysLengthChapterVerifier([ 'xCoordinates', 'yCoordinates' ], 'numCoordinates')
             call f90_assert_eq(verifier%verify(block_ptr), .true., 'BlockXYGood should pass the verification as xCoordinates and yCoordinates have the same length.')
          end if
 

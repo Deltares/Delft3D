@@ -28,7 +28,7 @@ temperatureDelta = leftsor.bc
 [BlockXYGood]
 id               = leftsor
 name             = discharge_salinity_temperature_sorsin
-numCoordinates   = 3
+numCoordinates   = 2
 yCoordinates     = 12.950216 6.350155
 xCoordinates     = 12.950216 6.350155
 zSource          = -4.2

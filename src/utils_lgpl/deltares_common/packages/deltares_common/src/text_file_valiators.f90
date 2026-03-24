@@ -202,6 +202,7 @@ contains
       logical :: anything_found
       integer :: num_values
       character(len=:), allocatable :: value
+      character(len=:), allocatable :: prop_list
 
       is_valid = .true.
       first_length = -1
@@ -249,8 +250,16 @@ contains
 
          ! If checking for specific length, verify it
          if (anything_found .and. this%check_specific_length .and. first_length /= read_expected_length) then
-            write (msgbuf, '(a,i0,a,i0,a)') 'Array length mismatch. Expected ', &
-               read_expected_length, ' but got ', first_length, '.'
+            ! Build comma-separated list of property names
+            prop_list = trim(this%property_names(1))
+            do j = 2, size(this%property_names)
+               prop_list = prop_list // ', ' // trim(this%property_names(j))
+            end do
+            
+            write (msgbuf, '(a,i0,a,i0,a,a,a,a,a)') 'Array length mismatch. Expected ', &
+               read_expected_length, ' but got ', first_length, &
+               ' (expected_length property: ', trim(this%expected_length), &
+               ', properties: ', trim(prop_list), ').'
             is_valid = .false.
             return
          end if
