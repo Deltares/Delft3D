@@ -35,8 +35,7 @@ contains
       type(TextFileProcessor) :: processor
 
       processor = TextFileProcessor('example.txt')
-      call processor%init()
-
+      call msg_flush()
       call f90_assert_eq(processor%is_error, .true., 'Processor should indicate error for non-existing file.')
 
       ! Check if msgbuf starts with "File does not exist"
@@ -53,12 +52,9 @@ contains
       type(TextFileProcessor) :: processor
 
       processor = TextFileProcessor('tt3.mdu')
-      call processor%init()
       call msg_flush()
 
       call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
-
-      call processor%parse()
 
       call msg_flush()
 
@@ -77,12 +73,9 @@ contains
       verifier = ChapterPropsVerifier('output', required_strings)
 
       processor = TextFileProcessor('tt3.mdu')
-      call processor%init()
       call msg_flush()
 
       call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
-
-      call processor%parse()
 
       ! Verify required strings
       call f90_assert_eq(verifier%verify(processor), .true., 'All required strings should be present in the file.')
@@ -108,12 +101,10 @@ contains
       verifier2 = ChapterPropsVerifier('output', required_strings2)
 
       processor = TextFileProcessor('tt3.mdu')
-      call processor%init()
       call msg_flush()
 
       call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
 
-      call processor%parse()
 
       ! Test AndVerifier with all conditions passing
       and_verifier = AndVerifier([ verifier1, verifier2 ])
@@ -140,12 +131,9 @@ contains
       character(len=1024) :: cwd_string
 
       processor = TextFileProcessor('sorsin3D-new.ext')
-      call processor%init()
       call msg_flush()
 
       call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
-
-      call processor%parse()
 
       verifier  = ArraysLengthVerifier('BlockXYBad', [ 'xCoordinates', 'yCoordinates' ])
       call f90_assert_eq(verifier%verify(processor), .false., 'All xCoordinates and yCoordinates have the same length.')

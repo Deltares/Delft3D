@@ -11,12 +11,14 @@ module text_file_processor
       logical :: is_error = .false.
       type(tree_data), pointer   :: tree
    contains
-      procedure :: init => text_file_processor_init
-      procedure :: parse => text_file_processor_parse
+      procedure, private :: init => text_file_processor_init
+      procedure, private :: parse => text_file_processor_parse
+
    end type TextFileProcessor
 
    interface TextFileProcessor
       module procedure :: text_file_processor_constructor
+      module procedure :: text_file_processor_constructor_with_tree
    end interface TextFileProcessor
 
    !> Abstract interface for verification
@@ -77,7 +79,18 @@ contains
       type(TextFileProcessor) :: processor
 
       processor%filename = filename
+      call processor%init()
+      if (.not. processor%is_error) then
+         call processor%parse()
+      end if
    end function text_file_processor_constructor
+
+   function text_file_processor_constructor_with_tree(tree) result(processor)
+      type(tree_data), pointer :: tree
+      type(TextFileProcessor) :: processor
+
+      processor%tree => tree
+   end function text_file_processor_constructor_with_tree
 
    !> Constructor for ChapterPropsVerifier
    function string_array_verifier_constructor(chapter_name, strings) result(verifier)
