@@ -14,7 +14,8 @@ object WindowsCollect : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Collect"
@@ -40,6 +41,8 @@ object WindowsCollect : BuildType({
         python {
             name = "Run artifacts_cleaner.py"
             dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
             command = file {
                 filename = "src/scripts_lgpl/artifacts_cleaner.py"
                 scriptArguments = "--product dimrset --root ."
@@ -48,18 +51,20 @@ object WindowsCollect : BuildType({
                 equals("dep.${WindowsBuild.id}.product", "fm-suite")
             }
         }      
-        powerShell {
+        script {
             name = "Copy DLLs"
             dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
-            scriptMode = script {
-            content = """
-                Copy-Item "C:\Windows\System32\vcomp140.dll" -Destination "x64\lib" -Force
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
+            dockerPull = true
+            scriptContent = """
+                copy /Y C:\Windows\System32\vcomp140.dll x64\lib\
             """.trimIndent()
-            }
         }
         python {
             name = "Generate list of version numbers (from what-strings)"
             dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
             command = file {
                 filename = """ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py"""
                 scriptArguments = "--srcdir x64 --output dimrset_version_x64.txt"
@@ -68,6 +73,8 @@ object WindowsCollect : BuildType({
         python {
             name = "Verify (un)signed binaries and directory structure"
             dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
             command = file {
                 filename = "ci/python/ci_tools/dimrset_delivery/validate_signing.py"
                 scriptArguments = """
@@ -127,6 +134,12 @@ object WindowsCollect : BuildType({
     }
 
     dependencies {
+        dependency(WindowsCollectEnvironment) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
         dependency(AbsoluteId("${DslContext.getParameter("delft3d_signing_project_root")}_Sign")) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
