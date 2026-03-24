@@ -122,7 +122,7 @@ contains
 
       use m_text_file_validators, only: TextFileProcessorVerifier, ArraysLengthVerifier
 
-      
+
       type(TextFileProcessor) :: processor
       class(TextFileProcessorVerifier), allocatable :: verifier
       character(len=:), allocatable :: required_strings(:)
@@ -142,5 +142,44 @@ contains
       call msg_flush()
    end subroutine
    !$f90tw)
+   
+   !$f90tw TESTCODE(TEST, test_text_file_processor, test_block_verifier, test_block_verifier,
+   subroutine test_block_verifier() bind(C)
+      use properties, only: prop_inifile
+      use tree_data_types, only: tree_data
+      use tree_structures, only: tree_num_nodes, tree_get_name
+      use m_text_file_validators, only: TextFileProcessorVerifier, ArraysLengthVerifier
+      use string_module, only: str_tolower
+
+
+      type(TextFileProcessor) :: processor, tmpProcessor
+      class(TextFileProcessorVerifier), allocatable :: verifier
+
+      type(tree_data), pointer   :: tree
+      integer :: istat
+      integer :: num_items_in_file, i
+      type(tree_data), pointer :: block_ptr
+      character(len=:), allocatable :: group_name
+
+      processor = TextFileProcessor('sorsin3D-new.ext')
+      call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
+
+      ! call prop_inifile('sorsin3D-new.ext', tree, istat)
+      ! call f90_assert_eq(istat, 0, 'File should be parsed successfully.')
+      num_items_in_file = tree_num_nodes(processor%tree)
+      do i = 1, num_items_in_file
+         block_ptr => processor%tree%child_nodes(i)%node_ptr
+         group_name = trim(tree_get_name(block_ptr))
+         if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower('BlockXYBad')))) then
+            tmpProcessor = TextFileProcessor(block_ptr)
+            verifier  = ArraysLengthVerifier('BlockXYBad', [ 'xCoordinates', 'yCoordinates' ])
+            call f90_assert_eq(verifier%verify(tmpProcessor), .false., 'All xCoordinates and yCoordinates have the same length.')
+         end if
+
+      end do
+
+   end subroutine
+   !$f90tw)
+   
 
 end module test_text_file_processor

@@ -1,6 +1,6 @@
 module m_text_file_processor
    use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARN, LEVEL_INFO
-   use properties
+   use properties, only: prop_inifile
    use tree_data_types
    use string_module, only: str_tolower
 
