@@ -627,38 +627,15 @@ contains
       integer, dimension (:), allocatable :: n_links_in ![n_junctions]
       integer, dimension (:,:), allocatable :: links_in ![n_junctions]
       integer, dimension (:), allocatable :: flownode_junction ![n_junctions]
-      real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node      
-      !integer, dimension(:, :, :), allocatable :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
-                                                         !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
-                                                         !  1: Sediment enters the flow node.
-                                                         ! -1: Sediment exits the flow node.                       
-      !                                                        
-      !                               sb_dir                   
-      !                                                        
-      !                                               []       
-      !                                              /         
-      !                                          -1 /          
-      !                                           ^/           
-      !                                           /            
-      !      discharge                      1    /             
-      !      -------->        _______[]_____^___[]             
-      !                                          \              
-      !                                           \-1          
-      !                                            \^           
-      !                                             \           
-      !                                              \          
-      !                                               \         
-      !                                                []       
-      !                                                        
+      real(fp), dimension(:, :), allocatable :: total_sediment_transport_out !< sum of incoming sediment transport at 1d node                                                      
       real(fp), dimension(:), allocatable :: total_water_discharge_out !< sum of outgoing discharge at 1d node
       integer, dimension(:,:), allocatable :: flownode_out !< Index of the flow node of each out branch [n_junctions,maxnumberofconnections]
       real(kind=dp) :: faccheck
 
       type(t_noderelation), pointer :: pNodRel
       
-      !real(kind=dp) :: sbrratio, qbrratio, Qbr1, Qbr2 !q_sb
-      !real(kind=dp) :: sediment_transport_rate
-
+      integer :: number_prints_switch_noda_point_relation
+      integer, parameter :: MAX_NUMBER_PRINTS_SWITCH_NODAL_POINT_RELATION = 10
    !!
    !! Allocate and initialize
    !!
@@ -708,11 +685,15 @@ contains
                         total_water_discharge_out,total_sediment_transport_out,kinod,j,ised) !input      
                      e_sbct(L, ised) = 0.0                     
                   elseif (pNodRel%Method == 'bollapittaluga') then
-                      if (n_links_out(kinod) /= 2 .OR. n_links_in(kinod) /= 1) then
+                      if (n_links_out(kinod) /= 2 .OR. n_links_in(kinod) /= 1 .and. number_prints_switch_noda_point_relation <= MAX_NUMBER_PRINTS_SWITCH_NODAL_POINT_RELATION) then
+                         number_prints_switch_noda_point_relation = number_prints_switch_noda_point_relation + 1
                          call mess(LEVEL_INFO, 'There must be 2 out branches and 1 in branch to use the nodal point relation `BollaPittaluga`. Now there are:')
                          call mess(LEVEL_INFO, 'Out branches: ',n_links_out(kinod))
                          call mess(LEVEL_INFO, ' In branches: ',n_links_in(kinod))
                          call mess(LEVEL_INFO, 'Switching to `function`.')
+                         if (number_prints_switch_noda_point_relation == MAX_NUMBER_PRINTS_SWITCH_NODAL_POINT_RELATION) then
+                            call mess(LEVEL_INFO, 'Maximum number of prints reached for nodal point relation warning. No more warnings will be printed.')
+                         end if
                          
                          call nodal_point_relation_function(&
                            facCheck,e_sbcn(L, ised),& !output
@@ -2193,7 +2174,7 @@ contains
    call compute_ftheta(ftheta,ised,links_out(1))
    
    sq_sa=Q_sa/B_a
-   sq_sy=q_sa*(v/u-1/ftheta*dbl_dy)
+   sq_sy=sq_sa*(v/u-1/ftheta*dbl_dy)
    Q_sy=sq_sy*L_a
    
    Q_sb=Q_sa+Q_sy
@@ -2213,29 +2194,7 @@ use m_fm_erosed, only: lsedtot, e_sbcn
 use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
 use Messagehandling, only: LEVEL_FATAL, mess, errmsg
 
-!Output
-! integer, dimension(:, :, :), allocatable, intent(out) :: sb_dir !< direction of transport at geometry (junction) node (nnod, lsedtot, nbr). 
-                                                   !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
-                                                   !  1: Sediment enters the flow node.
-                                                   ! -1: Sediment exits the flow node.                       
-!                                                        
-!                               sb_dir                   
-!                                                        
-!                                               []       
-!                                              /         
-!                                          -1 /          
-!                                           ^/           
-!                                           /            
-!      discharge                      1    /             
-!      -------->        _______[]_____^___[]             
-!                                          \              
-!                                           \-1          
-!                                            \^           
-!                                             \           
-!                                              \          
-!                                               \         
-!                                                []       
-!                                                        
+!Output                                                      
 real(fp), dimension(:), allocatable, intent(out) :: total_water_discharge_out !< Total water discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. [n_junctions]
 real(fp), dimension(:), allocatable, intent(out) :: total_width_out !< Total width that exits the geometry (flow) node at the junction. [n_junctions]
 real(fp), dimension(:, :), allocatable, intent(out) :: total_sediment_transport_out !< Total sediment transport that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. [n_junctions, lsedtot]
@@ -2254,7 +2213,28 @@ integer, dimension (:,:), allocatable, intent(out) :: flownode_out ! Flow node i
 !Locals
 logical :: error
 integer :: inod, kl1, link_junction, link_dir, flownode_idx, ised, istat, n_links
-integer :: sb_dir
+integer :: sb_dir !< direction of transport at geometry (junction) node
+                                                         !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
+                                                         !  1: Sediment enters the flow node.
+                                                         ! -1: Sediment exits the flow node.                       
+      !                                                        
+      !                               sb_dir                   
+      !                                                        
+      !                                               []       
+      !                                              /         
+      !                                          -1 /          
+      !                                           ^/           
+      !                                           /            
+      !      discharge                      1    /             
+      !      -------->        _______[]_____^___[]             
+      !                                          \              
+      !                                           \-1          
+      !                                            \^           
+      !                                             \           
+      !                                              \          
+      !                                               \         
+      !                                                []       
+      !        
 type(t_node), pointer :: pnod
 real(kind=dp) :: qb1d, wb1d, sb1d
 
@@ -2269,9 +2249,6 @@ end if
 if (istat == 0) then
    allocate (total_sediment_transport_out(network%nds%Count, lsedtot), stat=istat)
 end if
-! if (istat == 0) then
-!    allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
-! end if
 if (istat == 0) then
    allocate (idx_junctions(network%nds%Count), stat=istat)
 end if
@@ -2314,7 +2291,6 @@ end if
 total_water_discharge_out(:) = 0_dp !Total water discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches.
 total_width_out(:) = 0_dp !Width of the downstream branches.
 total_sediment_transport_out(:, :) = 0_dp !Total sediment discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. 
-!sb_dir(:, :, :) = 1 !Initially, all directions as if sediment enters the geometry (flow) node. 
 width_out = 0_dp
 water_discharge_out = 0_dp
 n_links_out=0
@@ -2324,14 +2300,8 @@ links_in=0
 flownode_junction=0
 flownode_out=0
 n_links=0
-!
-! Apply nodal relations to transport
-!
-!Output = `total_sediment_transport_out`
-!`total_sediment_transport_out` is the sediment that exits the flow node and must be redistributed over the downstream branches. 
-!The sediment that is redistributed to the downstream branches is computed as the sum of the sediment that
-!exits the geometry (flow) node at the junction. 
 n_junctions=0
+
 do inod = 1, network%nds%Count
    pnod => network%nds%node(inod)
    if (pnod%numberofconnections == 1) then
@@ -2359,10 +2329,6 @@ do inod = 1, network%nds%Count
             water_discharge_out(n_junctions,n_links) = qb1d
             total_width_out(n_junctions) = total_width_out(n_junctions) + wb1d
             total_water_discharge_out(n_junctions) = total_water_discharge_out(n_junctions) + qb1d
-            ! do ised = 1, lsedtot
-            !    !ATTENTION! is the index below `kl1` correct or should it be `n_links`??
-            !    sb_dir(n_junctions, ised, kl1) = -1 ! set direction to outgoing
-            ! end do
             sb_dir = -1
             !Find the flownode connected to a downstream link `flownode_out` which is not the junction flownode (with index `flownode_idx`)
             if (ln(1,link_junction) == flownode_idx) then
