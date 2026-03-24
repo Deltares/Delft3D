@@ -1,4 +1,4 @@
-module test_ec_module_simple
+module test_ec_module_block
    use precision
    use assertions_gtest
    use cwd
@@ -8,7 +8,7 @@ module test_ec_module_simple
    implicit none
 
 contains
-   !$f90tw TESTCODE(TEST, test_ec_module_simple, test_ec_block_from, test_ec_block_from,
+   !$f90tw TESTCODE(TEST, test_ec_module_block, test_ec_block_from, test_ec_block_from,
    subroutine test_ec_block_from() bind(C)
       character(len=1024) :: current_directory
       integer :: status
@@ -48,7 +48,7 @@ contains
    end subroutine test_ec_block_from
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_ec_module_simple, test_ec_block_from_skip, test_ec_block_from_skip,
+   !$f90tw TESTCODE(TEST, test_ec_module_block, test_ec_block_from_skip, test_ec_block_from_skip,
    subroutine test_ec_block_from_skip() bind(C)
       character(len=1024) :: current_directory
       integer :: status
@@ -88,7 +88,7 @@ contains
    end subroutine test_ec_block_from_skip
    !$f90tw)   
 
-   !$f90tw TESTCODE(TEST, test_ec_module_simple, test_ec_block_to, test_ec_block_to,
+   !$f90tw TESTCODE(TEST, test_ec_module_block, test_ec_block_to, test_ec_block_to,
    subroutine test_ec_block_to() bind(C)
       character(len=1024) :: current_directory
       integer :: status
@@ -127,4 +127,4 @@ contains
    end subroutine test_ec_block_to
    !$f90tw)
 
-end module test_ec_module_simple
+end module test_ec_module_block
