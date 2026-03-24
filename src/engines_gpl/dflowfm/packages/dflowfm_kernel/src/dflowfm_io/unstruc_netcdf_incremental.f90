@@ -113,6 +113,7 @@ contains
       integer :: nclasses_s1, nclasses_hs, nclasses_ucmag, nclasses_ucdir
 
       ierr = nf90_noerr
+      call output_mask_full%create_mask_arrays()
 
       ! Close/reset any previous clm file.
       if (incids%ncid > 0 .and. time_index == 0) then
@@ -416,14 +417,14 @@ contains
 
 !> helper routine to define NetCDF variables
    function def_var_classmap_ugrid(name, ncid, output_mask, id_twodim, var_id_class_bnds, var_id_jumps, incids) result(ierr)
-      use m_output_to_polygon, only: t_output_mask
+      use m_output_to_polygon, only: t_variables_inside_polygon
 
       use m_missing, only: dmiss
       use fm_location_types
       type(t_unc_mapids), intent(inout) :: incids !< class file and other NetCDF ids.
       character(len=*), intent(in) :: name !< name of the variable
       integer, intent(in) :: ncid !< the NetCDF file Id
-      type(t_output_mask), intent(in) :: output_mask !< Output mask for variables
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for variables
       integer, intent(in) :: id_twodim !< the NetCDF dimension id for "Two", used in the class bounds table variable.
       integer, intent(out) :: var_id_class_bnds !< variable Id for the class boundaries
       integer, intent(out) :: var_id_jumps !< variable Id for the jumps (only for type 1)

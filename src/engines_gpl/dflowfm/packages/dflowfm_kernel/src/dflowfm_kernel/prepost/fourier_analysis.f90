@@ -1770,6 +1770,7 @@ contains
 
       ierr = unc_meta_add_user_defined(fileids%ncid)
 
+      call output_mask_full%create_mask_arrays()
       call unc_write_flowgeom_filepointer_ugrid(fileids%ncid, fileids%id_tsp, output_mask_full, jafou=.true.)
 
       call realloc(all_unc_loc, nofou)

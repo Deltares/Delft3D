@@ -746,6 +746,7 @@ contains
       real(kind=dp) :: startTime, endTime !< Timers.
 
       ierr = UG_NOERR
+      call output_mask_full%create_mask_arrays()
 
       ! Add global attributes to NetCDF file.
       ierr = ug_addglobalatts(igeomfile, ug_meta_fm)

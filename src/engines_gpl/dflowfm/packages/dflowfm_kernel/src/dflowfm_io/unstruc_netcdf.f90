@@ -60,7 +60,7 @@ module unstruc_netcdf
    use m_waveconst
    use m_get_Lbot_Ltop_max, only: getLbotLtopmax
    use m_reconstruct_hydrodynamics, only: reconstruct_hu_2D_from_3D
-   use m_output_to_polygon, only: t_output_mask
+   use m_output_to_polygon, only: t_variables_inside_polygon
 
    implicit none
 
@@ -82,7 +82,7 @@ module unstruc_netcdf
               unc_def_idomain, unc_def_iglobal, fill_netlink_geometry, &
               open_files_, open_datasets_, nopen_files_, unc_read_merged_map, t_unc_merged, &
               read_mesh2d_face_z, face_z_stdname
-   type(t_output_mask), target, public :: output_mask_full, output_mask_map
+   type(t_variables_inside_polygon), target, public :: output_mask_full, output_mask_map
 
    integer, parameter :: UNC_CONV_CFOLD = 1 !< Old CF-only conventions.
    integer, parameter :: UNC_CONV_UGRID = 2 !< New CF+UGRID conventions.
@@ -587,7 +587,7 @@ module unstruc_netcdf
          type(t_unc_timespace_id), intent(in) :: id_tsp
          integer, intent(in) :: id_var(:)
          integer, intent(in) :: iloc
-         type(t_output_mask), intent(in) :: output_mask
+         type(t_variables_inside_polygon), intent(in) :: output_mask
          integer, dimension(:), intent(in) :: integers
          real(kind=dp), optional :: default_value
          integer, optional, intent(in) :: jabndnd
@@ -600,7 +600,7 @@ module unstruc_netcdf
          type(t_unc_timespace_id), intent(in) :: id_tsp
          integer, intent(in) :: id_var(:)
          integer, intent(in) :: iloc
-         type(t_output_mask), intent(in) :: output_mask
+         type(t_variables_inside_polygon), intent(in) :: output_mask
          real(kind=4), dimension(:), intent(in) :: reals
          real(kind=dp), optional :: default_value
          integer, optional, intent(in) :: jabndnd
@@ -612,7 +612,7 @@ module unstruc_netcdf
          type(t_unc_timespace_id), intent(in) :: id_tsp
          integer, intent(in) :: id_var(:)
          integer, intent(in) :: iloc
-         type(t_output_mask), intent(in) :: output_mask
+         type(t_variables_inside_polygon), intent(in) :: output_mask
          real(kind=dp), intent(in) :: values(:)
          real(kind=dp), optional, intent(in) :: default_value
          integer, optional, intent(in) :: jabndnd
@@ -626,7 +626,7 @@ module unstruc_netcdf
          type(t_unc_timespace_id), intent(in) :: id_tsp
          integer, intent(in) :: id_var(:)
          integer, intent(in) :: iloc
-         type(t_output_mask), intent(in) :: output_mask
+         type(t_variables_inside_polygon), intent(in) :: output_mask
          real(kind=dp), intent(in) :: values(:, :)
          real(kind=dp), optional, intent(in) :: default_value
          integer, optional, intent(in) :: locdim
@@ -675,7 +675,7 @@ module unstruc_netcdf
          integer, intent(in) :: ncid
          type(t_unc_timespace_id), intent(in) :: id_tsp
          integer, intent(in) :: id_var(:)
-         type(t_output_mask), intent(in) :: output_mask
+         type(t_variables_inside_polygon), intent(in) :: output_mask
          real(kind=dp), intent(in) :: values(:)
          integer, intent(in) :: jabndnd_
       end function unc_put_var_map_nodes
@@ -964,7 +964,7 @@ contains
       character(len=*), intent(in) :: standard_name !< Standard name (CF-compliant) for 'standard_name' attribute in this variable.
       character(len=*), intent(in) :: long_name !< Long name for 'long_name' attribute in this variable (use empty string if not wanted).
       character(len=*), intent(in) :: unit !< Unit of this variable (CF-compliant) (use empty string for dimensionless quantities).
-      type(t_output_mask), intent(in) :: output_mask !< Mask to select on which mesh(s) this variable should be defined and written.
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Mask to select on which mesh(s) this variable should be defined and written.
       integer, optional, intent(in) :: is_timedep !< (Optional) Whether or not (1/0) this variable is time-dependent. (Default: 1)
       integer, optional, intent(in) :: dimids(:) !< (Optional) Array with dimension ids, replaces default dimension ordering. Default: ( layerdim, spatialdim, timedim ).
                                                  !! This array may contain special dummy values: -1 will be replaced by time dim, -2 by spatial dim, -3 by layer dim. Example: [ -2, id_seddim, -1 ].
@@ -4325,7 +4325,7 @@ contains
 
       type(t_unc_mapids), intent(inout) :: mapids !< Set of file and variable ids for this map-type file.
       real(kind=hp), intent(in) :: tim
-      type(t_output_mask), intent(inout) :: output_mask !< Mask specifying which nodes to include in output. If not present, all nodes are included.
+      type(t_variables_inside_polygon), intent(inout) :: output_mask !< Mask specifying which nodes to include in output. If not present, all nodes are included.
       integer, optional, intent(in) :: jabndnd !< Whether to include boundary nodes (1) or not (0). Default: no.
 
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
@@ -10197,6 +10197,7 @@ contains
             meta%modelname = md_ident
          end if
          ierr = ug_addglobalatts(mapids%ncid, meta)
+         call output_mask_full%create_mask_arrays()
          call unc_write_net_ugrid2(mapids%ncid, mapids%id_tsp, output_mask_full, janetcell=janetcell_loc, jaidomain=jaidomain_loc, jaiglobal_s=jaiglobal_s_loc)
       else
          call unc_write_net_filepointer(inetfile, janetcell=janetcell_loc, janetbnd=janetbnd_loc, jaidomain=jaidomain_loc, jaiglobal_s=jaiglobal_s_loc)
@@ -10876,7 +10877,7 @@ contains
 
       integer, intent(in) :: ncid !< NetCDF file id
       type(t_unc_timespace_id), intent(inout) :: id_tsp !< struct holding NetCDF ids
-      type(t_output_mask), intent(inout) :: output_mask !< Mask for output variables
+      type(t_variables_inside_polygon), intent(inout) :: output_mask !< Mask for output variables
       integer, optional, intent(in) :: janetcell !< write net cell (1) or not (0, default)
       integer, optional, intent(in) :: jaidomain !< write subdomain numbers (1) or not (0, default)
       integer, optional, intent(in) :: jaiglobal_s !< write global netcell numbers (1) or not (0, default)
@@ -14372,6 +14373,7 @@ contains
          call check_error(ierr)
          return
       end if
+      call output_mask_full%create_mask_arrays()
       call unc_write_flowgeom_filepointer_ugrid(geomids%ncid, geomids%id_tsp, output_mask_full) ! UNC_CONV_UGRID
 
       ierr = unc_close(geomids%ncid)
@@ -14389,7 +14391,7 @@ contains
       integer, intent(out) :: edge_type(:) !< Edge type array to be filled.
       real(kind=dp), intent(out) :: xue(:) !< Edge x coordinate array to be filled.
       real(kind=dp), intent(out) :: yue(:) !< Edge y coordinate array to be filled.
-      type(t_output_mask), intent(in) :: output_mask !< Mask containing the indices of the edges to be written, as well as the mapping from net links to nodes and faces.
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Mask containing the indices of the edges to be written, as well as the mapping from net links to nodes and faces.
       integer, optional, intent(out) :: edge_mapping_table(:) !< Mapping from original edges to ordered edges (first flow links, then closed edges). To be filled if present.
       integer, optional, intent(out) :: reverse_edge_mapping_table(:) !< Mapping from ordered edges (first flow links, then closed edges) to original edges. To be filled if present.
 
@@ -14605,7 +14607,7 @@ contains
 
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(inout) :: id_tsp !< Set of time and space related variable id's
-      type(t_output_mask), intent(in) :: output_mask !< Mask containing the indices of the edges to be written, as well as the mapping from net links to nodes and faces.
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Mask containing the indices of the edges to be written, as well as the mapping from net links to nodes and faces.
       integer, optional, intent(in) :: jabndnd !< Whether to include boundary nodes (1) or not (0). Default: no.
       logical, optional, intent(in) :: jaFou !< Whether this flowgeom writing is part of a Fourier file or not (affects 3D layer writing)
       logical, optional, intent(in) :: ja2D !< Whether to include the 2D grid (default = .true.)
@@ -14977,7 +14979,7 @@ contains
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
       type(t_unc_timespace_id), intent(inout) :: id_tsp !< Set of time and space related variable id's
-      type(t_output_mask), intent(in) :: output_mask !< Output mask for variables
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for variables
       real(kind=dp), optional, pointer, intent(in) :: interface_zs(:) !< layer interface coordinates
       integer, optional, intent(in) :: jabndnd !< Whether to include boundary nodes (1) or not (0). Default: no.
       logical, optional, intent(in) :: jaFou !< Whether this flowgeom writing is part of a Fourier file or not (affects 3D layer writing)
@@ -17656,7 +17658,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Variable ID
       integer, intent(in) :: data_location !< Data location
-      type(t_output_mask), intent(in) :: output_mask !< Output mask for variables
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for variables
       real(kind=dp), allocatable, intent(in) :: array(:) !< 2D case array to be written
       integer, optional, intent(in) :: jabndnd !< Flag specifying whether boundary nodes are to be written.
 
@@ -17707,7 +17709,7 @@ contains
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
       integer, intent(in) :: id_var(:) !< Variable ID
       integer, intent(in) :: data_location !< Data location
-      type(t_output_mask), intent(in) :: output_mask !< Output mask for variables
+      type(t_variables_inside_polygon), intent(in) :: output_mask !< Output mask for variables
       real(kind=dp), allocatable, intent(in) :: array(:) !< array to be written
       integer, optional, intent(in) :: jabndnd !< Flag specifying whether boundary nodes are to be written.
 

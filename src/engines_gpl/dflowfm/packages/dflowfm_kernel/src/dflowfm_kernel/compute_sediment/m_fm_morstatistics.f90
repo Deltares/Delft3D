@@ -611,6 +611,7 @@ contains
       if (ndim == 0) then
          !
          ierr = ug_addglobalatts(sedids%ncid, ug_meta_fm)
+         call output_mask_full%create_mask_arrays()
          call unc_write_flowgeom_filepointer_ugrid(sedids%ncid, sedids%id_tsp, output_mask_full)
          !
          ierr = nf90_def_dim(sedids%ncid, 'time', nf90_unlimited, sedids%id_tsp%id_timedim)
