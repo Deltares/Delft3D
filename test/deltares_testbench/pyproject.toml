@@ -68,15 +68,6 @@ exclude = [
     "conversion-sobek",  # Contains python2 code.
 ]
 
-[tool.uv]
-package = true
-
-[[tool.uv.index]]
-name = "nexus"
-url = "https://artifacts.deltares.nl/repository/python-internal/simple/"
-default = true
-authenticate = "always"
-
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
