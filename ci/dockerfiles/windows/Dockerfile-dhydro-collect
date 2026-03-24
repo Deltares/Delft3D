@@ -1,0 +1,29 @@
+# escape=`
+# Use the Windows Server Core 2022 image from ICT.
+FROM containers.deltares.nl/base_windows_containers/server:ltsc2022
+
+# Set PowerShell as the default shell.
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
+
+# Enable long pathnames.
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
+
+# Download and install the Windows SDK (provides signtool.exe) for windows 11, Feb 2026.
+# https://developer.microsoft.com/windows/downloads/windows-sdk/
+RUN Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/?linkid=2349110' -OutFile 'C:\winsdksetup.exe' -UseBasicParsing; `
+    Start-Process -FilePath 'C:\winsdksetup.exe' -ArgumentList '/features OptionId.DesktopCPPx64 /q /norestart' -Wait; `
+    Remove-Item 'C:\winsdksetup.exe'
+
+# Download and install the Visual C++ Redistributable 2022 x64 (provides vcomp140.dll).
+RUN Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vc_redist.x64.exe' -OutFile 'C:\vc_redist.x64.exe' -UseBasicParsing; `
+    Start-Process -FilePath 'C:\vc_redist.x64.exe' -ArgumentList '/install /passive /norestart' -Wait; `
+    Remove-Item 'C:\vc_redist.x64.exe'
+
+# Download and install Python 3.12.10.
+RUN Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe' -OutFile 'C:\python.exe' -UseBasicParsing; `
+    Start-Process -FilePath 'C:\python.exe' -ArgumentList '/quiet InstallAllUsers=1' -Wait; `
+    Remove-Item 'C:\python.exe'
+RUN New-Item -ItemType SymbolicLink -Path 'C:\Program Files\Python312\python3.exe' -Target 'C:\Program Files\Python312\python.exe'
+
+# Add signtool.exe and Python to PATH.
+ENV PATH="C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64;C:\Program Files\Python312\;C:\Program Files\Python312\Scripts\;${PATH}"

@@ -39,6 +39,7 @@ object WindowsCollect : BuildType({
     steps {
         python {
             name = "Run artifacts_cleaner.py"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
             command = file {
                 filename = "src/scripts_lgpl/artifacts_cleaner.py"
                 scriptArguments = "--product dimrset --root ."
@@ -49,15 +50,16 @@ object WindowsCollect : BuildType({
         }      
         powerShell {
             name = "Copy DLLs"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
             scriptMode = script {
             content = """
                 Copy-Item "C:\Windows\System32\vcomp140.dll" -Destination "x64\lib" -Force
-                Copy-Item "C:\Windows\System32\ucrtbased.dll" -Destination "x64\lib" -Force
             """.trimIndent()
             }
         }
         python {
             name = "Generate list of version numbers (from what-strings)"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
             command = file {
                 filename = """ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py"""
                 scriptArguments = "--srcdir x64 --output dimrset_version_x64.txt"
@@ -65,11 +67,11 @@ object WindowsCollect : BuildType({
         }
         python {
             name = "Verify (un)signed binaries and directory structure"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
             command = file {
                 filename = "ci/python/ci_tools/dimrset_delivery/validate_signing.py"
                 scriptArguments = """
-                    "ci\\python\\ci_tools\\dimrset_delivery\\%dep.${WindowsBuild.id}.product%-binaries.json" 
-                    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat"
+                    "ci\\python\\ci_tools\\dimrset_delivery\\%dep.${WindowsBuild.id}.product%-binaries.json"
                     "x64"
                 """.trimIndent()
             }
@@ -140,8 +142,6 @@ object WindowsCollect : BuildType({
         }
     }
     requirements {
-        exists("env.PYTHON_PATH")
-        contains("teamcity.agent.jvm.os.name", "Windows")
-        exists("VS2022")
+        equals("docker.server.osType", "windows")
     }
 })
