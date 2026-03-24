@@ -6878,7 +6878,7 @@ contains
                      work1d_z(i, :) = output_mask%remap(ctheta(i, :), 1, ndxndxi, UNC_LOC_S)
                   end do
                   ierr = nf90_put_var(mapids%ncid, mapids%id_ctheta(1), work1d_z, start=[1, 1, itim], count=[ntheta, ndxndxi, 1])
-               else 
+               else
                   ierr = nf90_put_var(mapids%ncid, mapids%id_ctheta(2), ctheta(:, :), start=[1, 1, itim], count=[ntheta, ndxndxi, 1])
                end if
             end if
