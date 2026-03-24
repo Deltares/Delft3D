@@ -683,7 +683,7 @@ contains
    !> Solve the linear system with PETSc KSP solver
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
       use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, KSPGetIterationNumber, KSPGetResidualNorm, &
-                       eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MatAssemblyBegin
+                       eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MatAssemblyBegin, MAT_FINAL_ASSEMBLY
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
       use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver, Amat
