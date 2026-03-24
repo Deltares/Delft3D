@@ -1598,7 +1598,7 @@ contains
             if (ti_st_array(1) > 0.0_dp) then
                ti_st_array(1) = max(ti_st_array(1), dt_user)
             end if
-            call getOutputTimeArrays(ti_st_array, ti_sts, ti_st, ti_ste, success)
+            call set_time_interval(ti_st_array, ti_sts, ti_st, ti_ste, tstart_user, tstop_user, success)
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
 
             call str_lower(sedtrails_analysis)
@@ -1939,7 +1939,7 @@ contains
       call prop_get(md_ptr, 'output', 'HisFile', md_hisfile, success)
       ti_his_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'HisInterval', ti_his_array, 3, success)
-      call getOutputTimeArrays(ti_his_array, ti_hiss, ti_his, ti_hise, success)
+      call set_time_interval(ti_his_array, ti_hiss, ti_his, ti_hise, tstart_user, tstop_user, success, interval_name='HisInterval')
       call check_time_interval(ti_hiss, ti_his, ti_hise, dt_user, 'HisInterval', tstart_user)
 
       call prop_get(md_ptr, 'output', 'XLSInterval', ti_xls, success)
@@ -1950,14 +1950,14 @@ contains
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
-      call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
+      call set_time_interval(ti_map_array, ti_maps, ti_map, ti_mape, tstart_user, tstop_user, success, interval_name='MapInterval')
       call check_time_interval(ti_maps, ti_map, ti_mape, dt_user, 'MapInterval', tstart_user)
 
       if (jawave == WAVE_SWAN_ONLINE) then
          ti_com_array = 0.0_hp
          ti_com = dt_user !< defaults to backward compatible behaviour
          call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
-         call getOutputTimeArrays(ti_com_array, ti_coms, ti_com, ti_come, success)
+         call set_time_interval(ti_com_array, ti_coms, ti_com, ti_come, tstart_user, tstop_user, success)
          call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
    
          call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
@@ -2209,7 +2209,7 @@ contains
 
       ti_rst_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'RstInterval', ti_rst_array, 3, success)
-      call getOutputTimeArrays(ti_rst_array, ti_rsts, ti_rst, ti_rste, success)
+      call set_time_interval(ti_rst_array, ti_rsts, ti_rst, ti_rste, tstart_user, tstop_user, success, interval_name='RstInterval')
       call check_time_interval(ti_rsts, ti_rst, ti_rste, dt_user, 'RstInterval', tstart_user)
 
       call prop_get(md_ptr, 'output', 'MbaInterval', ti_mba, success)
@@ -2233,7 +2233,7 @@ contains
 
       ti_waq_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'WaqInterval', ti_waq_array, 3, success)
-      call getOutputTimeArrays(ti_waq_array, ti_waqs, ti_waq, ti_waqe, success)
+      call set_time_interval(ti_waq_array, ti_waqs, ti_waq, ti_waqe, tstart_user, tstop_user, success)
       call prop_get(md_ptr, 'output', 'WaqHorAggr', md_waqhoraggr, success)
       call prop_get(md_ptr, 'output', 'WaqVertAggr', md_waqvertaggr, success)
       call prop_get(md_ptr, 'waves', 'waveSwartDelwaq', jawaveSwartDelwaq, success)
@@ -2327,7 +2327,7 @@ contains
             ti_wav_array(2) = 0.0_dp
             ti_wav_array(3) = 0.0_dp
          end if
-         call getOutputTimeArrays(ti_wav_array, ti_wavs, ti_wav, ti_wave, success)
+         call set_time_interval(ti_wav_array, ti_wavs, ti_wav, ti_wave, tstart_user, tstop_user, success)
 
          if (jaavgwavquant > 0 .and. ti_wav > (tstop_user - tstart_user)) then
             ti_wav = tstop_user - tstart_user
@@ -2375,7 +2375,7 @@ contains
       ! Map classes output (formerly: incremental file)
       ti_classmap_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'ClassMapInterval', ti_classmap_array, 3, success)
-      call getOutputTimeArrays(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, success)
+      call set_time_interval(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, tstart_user, tstop_user, success)
       call check_time_interval(ti_classmaps, ti_classmap, ti_classmape, dt_user, 'ClassMapInterval', tstart_user)
 
       call prop_get(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
@@ -4161,39 +4161,58 @@ contains
       return
    end function getoutputdir
 
-   subroutine getOutputTimeArrays(ti_output, ti_outs, ti_out, ti_oute, success)
-
-      use m_flowtimes
-
+   subroutine set_time_interval(interval_input, interval_start, interval_step, interval_end, simulation_start, simulation_stop, success, interval_name)
+      use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
       implicit none
 
-      real(kind=hp), intent(in) :: ti_output(3)
-      real(kind=hp), intent(out) :: ti_outs, ti_out, ti_oute
-      logical, intent(inout) :: success
+      real(kind=dp), intent(in) :: interval_input(3)
+      real(kind=dp), intent(out) :: interval_start, interval_step, interval_end
+      real(kind=dp), intent(in) :: simulation_start, simulation_stop
+      logical, intent(in) :: success
+      character(len=*), intent(in), optional :: interval_name
 
-      if (success) then
-         ti_out = ti_output(1)
-         if (ti_output(2) == 0.0_dp) then
-            ti_outs = tstart_user
-         else
-            ti_outs = ti_output(2)
-         end if
-         if (ti_output(3) == 0.0_dp) then
-            ti_oute = tstop_user
-         else
-            ti_oute = ti_output(3)
-         end if
-      else
-         ! ti_out stays at default, only set output start/end time to current simulation start/end
-         ti_outs = tstart_user
-         ti_oute = tstop_user
+      character(len=:), allocatable :: interval_name_
+
+      interval_name_ = ''
+      if (present(interval_name)) then
+         interval_name_ = ' ' // trim(interval_name)  ! Prepend extra space to get nice string formatting.
       end if
 
-   end subroutine getOutputTimeArrays
+      ! Set `ti_outs` to the simulation start and `ti_oute` to the simulation stop by default. Even on `.not. success`.
+      interval_start = simulation_start
+      interval_end = simulation_stop
+      if (.not. success) then
+         return
+      end if
 
-!> Check time interval:
-!! If time interval is smaller than DtUser, time interval will be set equal to DtUser.
-!! If time interval is not multiple of DtUser, error will be raised.
+      interval_step = interval_input(1)
+
+      if (interval_input(2) /= 0) then  ! A value of zero means: Use `simulation_start`.
+         if (simulation_start <= interval_input(2) .and. interval_input(2) <= simulation_stop) then
+            interval_start = interval_input(2)
+         else
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Start time (', floor(interval_input(2)), &
+               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
+               '). Setting' // trim(interval_name_) // ' start time to TStart.'
+            call warn_flush()
+         end if
+      end if
+
+      if (interval_input(3) /= 0) then  ! A value of zero means: Use `simulation_stop`.
+         if (simulation_start <= interval_input(3) .and. interval_input(3) <= simulation_stop) then
+            interval_end = interval_input(3)
+         else
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Stop time (', floor(interval_input(3)), &
+               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
+               '). Setting' // trim(interval_name_) // ' stop time to TStop.'
+            call warn_flush()
+         end if
+      end if
+   end subroutine set_time_interval
+
+   !> Check time interval:
+   !! If time interval is smaller than DtUser, time interval will be set equal to DtUser.
+   !! If time interval is not multiple of DtUser, error will be raised.
    subroutine check_time_interval(time_interval_start, time_interval, time_interval_end, user_time_step, time_interval_name, time_start_user)
 
       real(kind=hp), intent(in) :: time_interval_start !< Start of time output interval to be checked.
