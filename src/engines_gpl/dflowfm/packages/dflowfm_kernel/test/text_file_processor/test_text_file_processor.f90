@@ -85,32 +85,34 @@ contains
 
    !$f90tw TESTCODE(TEST, test_text_file_processor, test_and_verifier, test_and_verifier,
    subroutine test_and_verifier() bind(C)
-      use m_text_file_validators, only: ChapterPropsVerifier, AndVerifier
+      use m_text_file_validators, only: ChapterPropsVerifier, AndVerifier, ArraysLengthVerifier, TextFileProcessorVerifier, VerifierPtr
 
       type(TextFileProcessor) :: processor
-      type(ChapterPropsVerifier) :: verifier1, verifier2
+      class(TextFileProcessorVerifier), allocatable :: verifier1, verifier2
       type(AndVerifier) :: and_verifier
       character(len=:), allocatable :: required_strings1(:), required_strings2(:)
+      class(VerifierPtr), DIMENSION(:), allocatable :: verifiers
 
-      required_strings1 = [ 'OutputDir', 'MapFormat' ]
-      required_strings2 = [ 'CrsFile' ]
-      verifier1 = ChapterPropsVerifier('output', required_strings1)
-      verifier2 = ChapterPropsVerifier('output', required_strings2)
+      required_strings1 = [ 'discharge', 'salinityDelta' ]
+      verifier1 = ChapterPropsVerifier('BlockXYMissing', required_strings1)
+      verifier2  = ArraysLengthVerifier('BlockXYGood', [ 'xCoordinates', 'yCoordinates' ])
 
-      processor = TextFileProcessor('tt3.mdu')
+      processor = TextFileProcessor('sorsin3D-new.ext')
       call msg_flush()
 
       call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
 
 
       ! Test AndVerifier with all conditions passing
-      and_verifier = AndVerifier([ verifier1, verifier2 ])
+      verifiers = [ VerifierPtr(verifier1), VerifierPtr(verifier2) ]
+      and_verifier = AndVerifier(verifiers)
       call f90_assert_eq(and_verifier%verify(processor), .true., 'AndVerifier should pass when all sub-verifiers pass.')
       call msg_flush()
 
       ! Test AndVerifier with one condition failing
-      verifier2 = ChapterPropsVerifier('output', [ 'NonExistentProperty' ])
-      and_verifier = AndVerifier([ verifier1, verifier2 ])
+      verifier1 = ChapterPropsVerifier('BlockXYGood', [ 'NonExistentProperty' ])
+      verifiers = [ VerifierPtr(verifier1), VerifierPtr(verifier2) ]
+      and_verifier = AndVerifier(verifiers)
       call f90_assert_eq(and_verifier%verify(processor), .false., 'AndVerifier should fail when any sub-verifier fails.')
 
       call msg_flush()

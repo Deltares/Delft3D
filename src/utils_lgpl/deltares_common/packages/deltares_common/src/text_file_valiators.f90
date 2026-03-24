@@ -15,6 +15,11 @@ module m_text_file_validators
       procedure(verify_interface), deferred :: verify
    end type TextFileProcessorVerifier
 
+   !> Wrapper type for polymorphic verifier pointers
+   type :: VerifierPtr
+      class(TextFileProcessorVerifier), allocatable :: ptr
+   end type VerifierPtr
+
    type, abstract :: ChapterVerifier
    contains
       procedure(verify_chapter_interface), deferred :: verify
@@ -45,7 +50,7 @@ module m_text_file_validators
    end type ChapterPropsVerifier
 
    type, extends(TextFileProcessorVerifier) :: AndVerifier
-      class(TextFileProcessorVerifier), allocatable :: verifiers(:)
+      type(VerifierPtr), allocatable :: verifiers(:)
    contains
       procedure :: verify => and_verifier_verify
    end type AndVerifier
@@ -73,9 +78,9 @@ module m_text_file_validators
       module procedure :: string_array_verifier_constructor
    end interface ChapterPropsVerifier
 
-   interface AndVerifier
-      module procedure :: and_verifier_constructor
-   end interface AndVerifier
+!    interface AndVerifier
+!       module procedure :: and_verifier_constructor
+!    end interface AndVerifier
 
    interface ArraysLengthVerifier
       module procedure :: arrays_length_verifier_constructor
@@ -96,12 +101,16 @@ contains
    end function string_array_verifier_constructor
 
    !> Constructor for AndVerifier
-   function and_verifier_constructor(verifiers) result(verifier)
-      class(TextFileProcessorVerifier), intent(in) :: verifiers(:)
-      type(AndVerifier) :: verifier
+!    function and_verifier_constructor(verifiers) result(verifier)
+!       class(TextFileProcessorVerifier), intent(in) :: verifiers(:)
+!       type(AndVerifier) :: verifier
+!       integer :: i
 
-      allocate (verifier%verifiers, source=verifiers)
-   end function and_verifier_constructor
+!       allocate (verifier%verifiers(size(verifiers)))
+!       do i = 1, size(verifiers)
+!          allocate (verifier%verifiers(i)%ptr, source=verifiers(i))
+!       end do
+!    end function and_verifier_constructor
 
    function arrays_length_chapter_verifier_constructor(property_names, expected_length) result(verifier)
       character(len=*), intent(in) :: property_names(:)
@@ -152,7 +161,7 @@ contains
          do i = 1, num_items_in_file
             block_ptr => processor%tree%child_nodes(i)%node_ptr
             group_name = trim(tree_get_name(block_ptr))
-            if (group_name == trim(this%chapter_name)) then
+            if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower(this%chapter_name)))) then
                do j = 1, size(this%required_props)
                   call prop_get_alloc_string(block_ptr, this%chapter_name, this%required_props(j), value, found)
                   ! print *, 'Verifying presence of string: ', trim(this%required_props(j))
@@ -182,9 +191,11 @@ contains
       ! Call all verifiers and fail if any one fails
       if (allocated(this%verifiers)) then
          do i = 1, size(this%verifiers)
-            if (.not. this%verifiers(i)%verify(processor)) then
-               is_valid = .false.
-               exit  ! Stop on first failure
+            if (allocated(this%verifiers(i)%ptr)) then
+               if (.not. this%verifiers(i)%ptr%verify(processor)) then
+                  is_valid = .false.
+                  exit  ! Stop on first failure
+               end if
             end if
          end do
       end if
