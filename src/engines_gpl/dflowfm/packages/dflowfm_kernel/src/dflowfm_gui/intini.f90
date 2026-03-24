@@ -40,6 +40,11 @@ module m_intini
    use precision, only: dp
    implicit none
 
+   interface
+      subroutine patch_interacter_sendmessage() bind(c, name='patch_interacter_sendmessage')
+      end subroutine
+   end interface
+
 contains
 
    subroutine INTINI()
@@ -71,17 +76,20 @@ contains
          NCOLR = 16
 !        CALL VGA@()
       end if
+
+!     Patch interacter.dll's IAT to replace SendMessageA with a timeout
+!     variant, preventing deadlock when another process has a hung message
+!     queue (Outlook, Acrobat, etc.) at the time IScreenOpen broadcasts.
+      call patch_interacter_sendmessage()
+
       call ISCREENOPEN(' ', 'GR', NXPIX, NYPIX, NCOLR)
 
       call ISCREENTITLE('G', trim(company)//'-'//trim(product_name)//' '//trim(version_full))
-
-      !CALL ISCREENTITLE('G', PROGNM)
 
       call SETGRAFMOD()
       call SETCOLORTABLE()
 
       call INIKEYS()
-!      CALL INSERTOVER('OVER')
 
 !     set size crosshair cursor
       ICRHF = 1.0_dp / CROSHRSZ
@@ -111,9 +119,6 @@ contains
       call IFRAMEOPTIONS(6, 15)
       call IFRAMEOPTIONS(7, 0)
 
-!     CALL IFRAMETYPE(9)
-!     CALL IFORMDEFAULTS(3)
-
       call SETTEXTSIZE()
       call IGRFILLPATTERN(4, 0, 0)
 
@@ -121,7 +126,6 @@ contains
       XLEFT = 0.0_dp
       JAXIS = 0
       call viewport(0.0, 0.0, 1.0, 1.0)
-!      CALL IPGAREA(0.0,0.0,1.0,1.0)
 
       XMIN = 0.0_dp
       XMAX = 1.0_dp

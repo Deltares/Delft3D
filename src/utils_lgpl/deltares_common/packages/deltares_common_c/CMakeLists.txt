@@ -38,6 +38,9 @@ set(source  src/bmi_shared_lib_fortran_api.c
             src/throwexception.cpp
             src/universally_unique_id_generator.c)
 
+if (WIN32)
+    list(APPEND source src/patch_sendmessage.c)
+endif()
 set(library_name deltares_common_c)
 add_library(${library_name} ${source} ${headers})
 
