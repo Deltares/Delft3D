@@ -240,7 +240,6 @@ contains
       use m_partitioninfo
       use check_mpi_env
       use m_init_openmp, only: init_openmp
-      use properties, only: deprecate_pound_wrapped_values
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -251,8 +250,6 @@ contains
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
       logical :: mpi_initd
-      
-      deprecate_pound_wrapped_values = .true.
 
       c_iresult = 0 ! TODO: is this return value BMI-compliant?
       jampi = 0

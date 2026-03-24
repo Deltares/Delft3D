@@ -119,7 +119,6 @@ program unstruc
    use m_iset_jaopengl, only: iset_jaopengl
    use m_resetb, only: resetb
    use m_init_openmp, only: init_openmp
-   use properties, only: deprecate_pound_wrapped_values
 
    implicit none
 
@@ -136,8 +135,6 @@ program unstruc
    character(len=maxnamelen) :: md_flowgeomfile_base !< storing the user-defined flowgeom file
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
    real(kind=dp) :: tstartall, tstopall
-
-   deprecate_pound_wrapped_values = .true.
    
    call wall_clock_time(tstartall)
 #if HAVE_DISPLAY==0
