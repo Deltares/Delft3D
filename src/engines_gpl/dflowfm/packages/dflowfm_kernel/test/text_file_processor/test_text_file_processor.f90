@@ -134,10 +134,10 @@ contains
       call f90_assert_eq(processor%is_error, .false., 'Processor should indicate no error for existing file.')
 
       verifier  = ArraysLengthVerifier('BlockXYBad', [ 'xCoordinates', 'yCoordinates' ])
-      call f90_assert_eq(verifier%verify(processor), .false., 'All xCoordinates and yCoordinates have the same length.')
+      call f90_assert_eq(verifier%verify(processor), .false., 'BlockXYBad should not pass the verification as xCoordinates and yCoordinates have different lengths.')
 
       verifier  = ArraysLengthVerifier('BlockXYGood', [ 'xCoordinates', 'yCoordinates' ])
-      call f90_assert_eq(verifier%verify(processor), .true., 'All xCoordinates and yCoordinates have the same length.')
+      call f90_assert_eq(verifier%verify(processor), .true., 'BlockXYGood should pass the verification as xCoordinates and yCoordinates have the same length.')
 
       call msg_flush()
    end subroutine
@@ -148,12 +148,12 @@ contains
       use properties, only: prop_inifile
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_num_nodes, tree_get_name
-      use m_text_file_validators, only: TextFileProcessorVerifier, ArraysLengthVerifier
+      use m_text_file_validators, only: ChapterVerifier, ArraysLengthChapterVerifier
       use string_module, only: str_tolower
 
 
       type(TextFileProcessor) :: processor, tmpProcessor
-      class(TextFileProcessorVerifier), allocatable :: verifier
+      class(ChapterVerifier), allocatable :: verifier
 
       type(tree_data), pointer   :: tree
       integer :: istat
@@ -172,8 +172,14 @@ contains
          group_name = trim(tree_get_name(block_ptr))
          if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower('BlockXYBad')))) then
             tmpProcessor = TextFileProcessor(block_ptr)
-            verifier  = ArraysLengthVerifier('BlockXYBad', [ 'xCoordinates', 'yCoordinates' ])
-            call f90_assert_eq(verifier%verify(tmpProcessor), .false., 'All xCoordinates and yCoordinates have the same length.')
+            verifier  = ArraysLengthChapterVerifier([ 'xCoordinates', 'yCoordinates' ])
+            call f90_assert_eq(verifier%verify(block_ptr), .false., 'BlockXYBad should not pass the verification as xCoordinates and yCoordinates have different lengths.')
+         end if
+
+         if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower('BlockXYGood')))) then
+            tmpProcessor = TextFileProcessor(block_ptr)
+            verifier  = ArraysLengthChapterVerifier([ 'xCoordinates', 'yCoordinates' ])
+            call f90_assert_eq(verifier%verify(block_ptr), .true., 'BlockXYGood should pass the verification as xCoordinates and yCoordinates have the same length.')
          end if
 
       end do
