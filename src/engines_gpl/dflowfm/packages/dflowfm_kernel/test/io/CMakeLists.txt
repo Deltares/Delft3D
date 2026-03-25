@@ -76,7 +76,7 @@ f90twtest(test_ec_module_block
     F90FILES test_ec_module_block.f90
     F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_ec_module_block.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
-    LIBRARIES dflowfm_kernel
+    LIBRARIES dflowfm_kernel test_helpers
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
