@@ -26,4 +26,4 @@ RUN Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.12.10/python-3.1
 RUN New-Item -ItemType SymbolicLink -Path 'C:\Program Files\Python312\python3.exe' -Target 'C:\Program Files\Python312\python.exe'
 
 # Add signtool.exe and Python to PATH.
-ENV PATH="C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64;C:\Program Files\Python312\;C:\Program Files\Python312\Scripts\;${PATH}"
+RUN setx /M PATH $($Env:PATH + ';C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64;C:\Program Files\Python312\;C:\Program Files\Python312\Scripts\')
