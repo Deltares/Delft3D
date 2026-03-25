@@ -553,7 +553,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     if (gdp%gdsedpar%stressStrainRelation) then
        do l = 1, lsed
           seddif(:, :, l) = dicww(:, :)
-          kmxsed(:, l) = kfsmin(:)
+          kmxsed(:, l) = kmax
        enddo
        return
     endif
