@@ -4161,6 +4161,10 @@ contains
       return
    end function getoutputdir
 
+   !> Set the `interval_{start,step,end}` based on the values in the `interval_input` array, which is read from the MDU file.
+   ! The first value in `interval_input` is the step size, followed by the start and end of the interval. When the start and
+   ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the 
+   ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds. 
    subroutine set_time_interval(interval_input, interval_start, interval_step, interval_end, simulation_start, simulation_stop, success, interval_name)
       use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
       implicit none
