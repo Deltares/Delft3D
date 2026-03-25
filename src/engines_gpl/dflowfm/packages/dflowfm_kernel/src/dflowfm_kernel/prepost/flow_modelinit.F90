@@ -120,7 +120,7 @@ contains
       use m_fm_erosed, only: taub
       use m_transport, only: numconst, constituents
       use m_laterals, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
-                            finish_outgoing_lat_concentration, get_lateral_volume_per_layer !, average_waterlevels_per_lateral
+                            finish_outgoing_lat_concentration, get_lateral_volume_per_layer
       use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
       use m_structure_parameters
       use m_set_frcu_mor

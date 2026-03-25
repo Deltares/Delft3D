@@ -104,9 +104,11 @@ contains
 
       end do
 
+      if (average_waterlevels_per_lateral%is_used) then
+         call average_waterlevels_per_lateral%update()
+      end if
       if (apply_transport_is_used) then
          call get_lateral_volume_per_layer()
-         call average_waterlevels_per_lateral%update()
          if (jampi == 1) then
             call reduce_lateral_output()
          end if
