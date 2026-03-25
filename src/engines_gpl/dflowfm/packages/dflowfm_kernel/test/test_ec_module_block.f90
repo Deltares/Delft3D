@@ -37,24 +37,19 @@ contains
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
 
       call initialize_ec_module()
-
       call setup_block_from()
-
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '9', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
-
       block
          integer :: i
          real(dp), dimension(:), allocatable :: indices, results, expected_results
          indices = [5.0_dp, 15.0_dp, 25.0_dp, 35.0_dp, 45.0_dp]
          allocate (results(size(indices)))
          expected_results = [0.0_dp, 100.0_dp, 20.0_dp, 300.0_dp, 0.0_dp]
-
          do i = 1, size(indices)
             success = ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, 20000101, 0.0_dp, 1, indices(i))
             results(i) = test_array(1)
          end do
-
          call f90_expect_near(results, expected_results, 1e-8_dp, "results do not match expected values")
       end block
 
@@ -68,24 +63,19 @@ contains
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
 
       call setup_block_from()
-
       call initialize_ec_module()
-
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '9', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
-
       block
          integer :: i
          real(dp), dimension(:), allocatable :: indices, results, expected_results
          indices = [5.0_dp, 25.0_dp]
          allocate (results(size(indices)))
          expected_results = [0.0_dp, 20.0_dp]
-
          do i = 1, size(indices)
             success = ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, 20000101, 0.0_dp, 1, indices(i))
             results(i) = test_array(1)
          end do
-
          call f90_expect_near(results, expected_results, 1e-8_dp, "results do not match expected values")
       end block
 
@@ -115,26 +105,20 @@ contains
                        "    20 20", &
                        "    30 300", &
                        "    40 0"])
-
       call initialize_ec_module()
-
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '10', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
-
       block
          integer :: i
          real(dp), dimension(:), allocatable :: indices, results, expected_results
          indices = [5.0_dp, 15.0_dp, 25.0_dp, 35.0_dp]
          allocate (results(size(indices)))
          expected_results = [100.0_dp, 20.0_dp, 300.0_dp, 0.0_dp]
-
          do i = 1, size(indices)
             success = ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, 20000101, 0.0_dp, 1, indices(i))
             results(i) = test_array(1)
          end do
-
          call f90_expect_near(results, expected_results, 1e-8_dp, "results do not match expected values")
-
       end block
 
    end subroutine test_ec_block_to
