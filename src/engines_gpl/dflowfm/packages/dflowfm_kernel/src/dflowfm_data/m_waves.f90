@@ -97,7 +97,6 @@ module m_waves
 
    ! parameters, may be overwritten by user in mdu-file
    real(kind=dp) :: gammax !< Maximum wave height/water depth ratio
-   real(kind=dp) :: alfdeltau = 20.0_dp !< coeff for thickness of wave bed boundary layer
    real(kind=dp) :: hminlw !< [m] minimum depth for wave forcing in flow momentum equation RHS.
    integer :: jatpwav = TPWAVDEFAULT !< TPWAV, TPWAVSMOOTH, TPWAVRELATIVE
    integer :: jauorb !< multiply with factor sqrt(pi)/2 (=0), or not (=1). Default 0, delft3d style

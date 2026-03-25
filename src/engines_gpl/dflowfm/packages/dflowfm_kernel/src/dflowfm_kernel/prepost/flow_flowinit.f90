@@ -684,28 +684,15 @@ contains
 !> Insert friction coefficient by initial fields
    subroutine set_friction_coefficient_by_initial_fields()
       use m_flowgeom, only: lnx, lnx1D, kcu
-      use m_flow, only: frcu, ifrcutp, dynveg, frcu0
-      use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcumin, frcmax, ifrctypuni, dynroughveg
+      use m_flow, only: frcu, ifrcutp
+      use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
       use m_missing, only: dmiss, imiss
-      use m_alloc
-      use unstruc_model, only: md_dynvegpol
-      use timespace_parameters, only: LOCTP_POLYGON_FILE
-      use timespace, only: selectelset_internal_links
-      use m_delpol
-      use MessageHandling
 
       implicit none
 
       integer, parameter :: MANNING = 1
 
       integer :: link
-      integer :: ierr
-      integer :: k
-      integer :: pointscount
-      logical :: ex
-
-      integer, dimension(:), allocatable :: kp
-      integer, dimension(:), allocatable :: kcsveg
 
       do link = 1, lnx
          if (frcu(link) == dmiss) then
@@ -734,39 +721,69 @@ contains
             frcmax = frcu(link)
          end if
       end do
-      !
-      if (dynroughveg > 0) then
-         !
-         inquire (file=trim(md_dynvegpol), exist=ex)
-         if (ex) then
-            frcu0 = frcu
-            call realloc(kcsveg, lnx, stat=ierr, fill=0, keepExisting=.false.)
-            if (allocated(kp)) deallocate (kp)
-            allocate (kp(1:lnx))
-            kp = 0
-            ! find cells inside polygon
-            call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
-            
-            do k = 1, pointscount
-               kcsveg(kp(k)) = 1
-            end do
-            call delpol()
-            !
-            do link = 1, lnx
-               if (frcu(link) > frcumin .and. kcsveg(link) > 0) then
-                  dynveg(link) = .true.
-               else
-                  dynveg(link) = .false.
-               end if
-            end do
-         else
-            call mess(LEVEL_WARN, 'No polygon found for dynamic vegetation update. Process switched off.')
-            dynroughveg = 0
-         end if
-         !
-      end if
+      
+      call init_dynamic_vegetation_roughness()
 
    end subroutine set_friction_coefficient_by_initial_fields
+
+!> initialize dynamic vegetation roughness   
+   subroutine init_dynamic_vegetation_roughness
+      use m_flowgeom, only: lnx
+      use m_flow, only: frcu, frcu0, dynveg
+      use m_physcoef, only: frcumin, dynroughveg
+      use m_alloc
+      use unstruc_model, only: md_dynvegpol
+      use timespace_parameters, only: LOCTP_POLYGON_FILE
+      use timespace, only: selectelset_internal_links
+      use m_delpol
+      use MessageHandling
+
+      implicit none
+
+      integer, parameter :: MANNING = 1
+
+      integer :: link
+      integer :: ierr
+      integer :: k
+      integer :: pointscount
+      logical :: ex
+
+      integer, dimension(:), allocatable :: kp
+      integer, dimension(:), allocatable :: kcsveg
+   
+      if (.not. dynroughveg) then
+         return
+      end if
+   
+      inquire (file=trim(md_dynvegpol), exist=ex)
+      if (.not. ex) then
+         call mess(LEVEL_WARN, 'No polygon found for dynamic vegetation update. Process switched off.')
+         dynroughveg = 0
+         return
+      end if
+
+      frcu0 = frcu
+      call realloc(kcsveg, lnx, stat=ierr, fill=0, keepExisting=.false.)
+      if (allocated(kp)) deallocate (kp)
+      allocate (kp(1:lnx))
+      kp = 0
+      ! find links inside polygon
+      call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
+      
+      do k = 1, pointscount
+         kcsveg(kp(k)) = 1
+      end do
+      call delpol()
+      !
+      do link = 1, lnx
+         if (frcu(link) > frcumin .and. kcsveg(link) > 0) then
+            dynveg(link) = .true.
+         else
+            dynveg(link) = .false.
+         end if
+      end do
+      
+   end subroutine init_dynamic_vegetation_roughness
 
 !> set friction uniform value on links where_friction_is_not_set
    subroutine set_friction_uniform_value_on_links_where_friction_is_not_set()

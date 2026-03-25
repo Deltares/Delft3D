@@ -172,10 +172,8 @@ contains
          end do
       end if
       !
-      if (fforc > 0.0_dp) then
-         wavfu = fforc * wavfu
-         wavfv = fforc * wavfv
-      end if
+      wavfu = fforc * wavfu
+      wavfv = fforc * wavfv
 1234  continue
       return
    end subroutine setwavfu

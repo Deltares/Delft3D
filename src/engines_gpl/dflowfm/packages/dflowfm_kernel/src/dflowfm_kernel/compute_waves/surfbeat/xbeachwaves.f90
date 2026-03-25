@@ -4897,7 +4897,7 @@ contains
       integer, dimension(:, :), allocatable :: indx
       integer :: niter
       integer :: sweep, k, iter, count, k1, k2, ierr
-      real(dp) :: Afac, Bfac, Cfac, Drst, percok
+      real(dp) :: Afac, Bfac, Cfac, cfac_lim, Drst, percok
       real(dp) :: x1, x2, xk, y1, y2, yk
       real(dp) :: costh1, costh2, costhk, sinth1, sinth2, sinthk
       real(dp) :: dtol
@@ -4966,9 +4966,10 @@ contains
                         costhk = cos(thetam(k))
                         sinthk = sin(thetam(k))
                         Cfac = x1 * (y2 - yk) + x2 * (yk - y1) + xk * (y1 - y2)
+                        cfac_lim = sign(max(abs(Cfac), dtol), Cfac)
                         Afac = (F(k1) * costh1 * (y2 - yk) + F(k2) * costh2 * (yk - y1) &
-                                - F(k1) * sinth1 * (x2 - xk) - F(k2) * sinth2 * (xk - x1)) / sign(max(abs(Cfac), dtol), Cfac)
-                        Bfac = (costhk * (y1 - y2) - sinthk * (x1 - x2)) / sign(max(abs(Cfac), dtol), Cfac)
+                                - F(k1) * sinth1 * (x2 - xk) - F(k2) * sinth2 * (xk - x1)) / cfac_lim
+                        Bfac = (costhk * (y1 - y2) - sinthk * (x1 - x2)) / cfac_lim
                         Drst = 2.0_dp * ag * beta / c(k)**2
                         F(k) = (Dw(k) - Afac) / (Bfac + Drst)
                         Er(k) = F(k) / c(k)

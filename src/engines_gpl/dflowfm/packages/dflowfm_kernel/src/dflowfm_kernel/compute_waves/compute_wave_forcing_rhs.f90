@@ -104,7 +104,7 @@ contains
             call tauwave()
          end if
          !
-         call xbeach_flow_bc()     ! JRE todo: make MPI compatible
+         call xbeach_flow_bc()
       end if
       !
       ! Uniform wave field

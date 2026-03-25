@@ -817,7 +817,7 @@ contains
          case ('qext')
             ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
             if (jaQext == 0) then
-               write (msgbuf, '(7a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+               write (msgbuf, '(5a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
                   '] is missing QExt=1 in MDU.'
                call err_flush()
                return
@@ -847,7 +847,7 @@ contains
             res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
             return ! This was a special case, don't continue with timespace processing below.
          case default
-            write (msgbuf, '(7a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name// &
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name// &
                '].'
             call err_flush()
             return

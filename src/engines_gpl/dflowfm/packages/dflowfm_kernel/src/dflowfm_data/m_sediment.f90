@@ -108,7 +108,7 @@ module m_sediment
    integer :: jamormergedtuser
    real(kind=dp) :: upperlimitssc
    integer :: inmorphopol !< value of the update inside morphopol (only 0 or 1 make sense)
-   real(kind=dp) :: difparam !< scale diffusion below reference level with settling velocity, Default 10.0
+   real(kind=dp) :: difparam !< switch (not applied when <= 0) and scale factor between the sediment diffusion and settling velocity (below the reference height), default 10
    real(kind=dp) :: seddif_cal !< scale seddif
    !
    !-------------------------------------------------- old sediment transport and morphology
