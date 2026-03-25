@@ -1680,7 +1680,7 @@ contains
       integer :: from, thru !< contiguous range of indices in the target array
       character(MAXIMUM_EC_MESSAGE_LENGTH) :: errormsg
       logical :: oneSided
-      character(maxMessageLen) :: errormsg
+!      character(maxMessageLen) :: errormsg
 
       !
       success = .false.
