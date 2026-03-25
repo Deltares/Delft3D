@@ -64,7 +64,7 @@ contains
 
       integer :: istat
       integer :: pli_lun
-      integer :: z_size ! Intended size of z_source_ and z_sink_ arrays, either 1 or 2.
+      integer, parameter :: Z_SIZE = 2
       real(kind=dp), dimension(:), allocatable :: z_source_, z_sink_
       logical :: have_z_range
       character(len=0) :: path, ext
@@ -80,11 +80,6 @@ contains
       end if
 
       have_z_range = colpl > 3
-      if (have_z_range) then
-         z_size = 2
-      else
-         z_size = 1
-      end if
 
       ! Either take the z-source values from input, or from polyline's last point.
       if (present(z_source)) then
@@ -93,7 +88,7 @@ contains
             return
          end if
       else
-         allocate (z_source_(z_size), source=dmiss, stat=istat)
+         allocate (z_source_(Z_SIZE), source=dmiss, stat=istat)
          if (istat /= 0) then
             return
          end if
@@ -111,7 +106,7 @@ contains
             return
          end if
       else
-         allocate (z_sink_(z_size), source=dmiss, stat=istat)
+         allocate (z_sink_(Z_SIZE), source=dmiss, stat=istat)
          if (istat /= 0) then
             return
          end if
