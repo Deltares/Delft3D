@@ -10,14 +10,6 @@ module test_unstruc_model
 
 contains
 
-    subroutine set_messaging(unit)
-        use MessageHandling
-        implicit none
-        integer, intent(in) :: unit
-
-        call SetMessageHandling(lunMessages=unit)
-    end subroutine set_messaging
-
     !$f90tw TESTCODE(TEST, test_unstruc_model, test_set_time_interval__default_simulation_start_stop, test_set_time_interval__default_simulation_start_stop,
     subroutine test_set_time_interval__default_simulation_start_stop() bind(C)
         implicit none
