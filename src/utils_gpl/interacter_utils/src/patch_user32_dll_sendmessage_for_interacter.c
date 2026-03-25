@@ -1,5 +1,5 @@
 /*
- * patch_sendmessage.c
+ * patch_user32_dll_sendmessage_for_interacter.c
  *
  * Patches the IAT (Import Address Table) of the main executable at runtime,
  * replacing SendMessageA with a wrapper that uses SendMessageTimeoutA
