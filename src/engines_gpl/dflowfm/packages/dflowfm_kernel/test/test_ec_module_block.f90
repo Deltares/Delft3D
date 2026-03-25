@@ -115,7 +115,7 @@ contains
                        "    10 100", &
                        "    20 20", &
                        "    30 300", &
-                       "    40 0"]);
+                       "    40 0"])
 
       call initialize_ec_module()
 
