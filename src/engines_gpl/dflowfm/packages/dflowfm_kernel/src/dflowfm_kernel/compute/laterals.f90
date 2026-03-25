@@ -194,7 +194,8 @@ module m_laterals
 
    !> Compute water volume per layer in each lateral
    interface get_lateral_volume_per_layer
-      module subroutine get_lateral_volume_per_layer()
+      module subroutine get_lateral_volume_per_layer(lateral_volume_per_layer)
+         real(kind=dp), dimension(:, :), intent(out) :: lateral_volume_per_layer !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
       end subroutine get_lateral_volume_per_layer
    end interface get_lateral_volume_per_layer
 

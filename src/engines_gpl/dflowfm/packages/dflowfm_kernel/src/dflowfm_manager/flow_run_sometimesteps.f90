@@ -50,7 +50,7 @@ contains
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_laterals, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
                             qqlat, qplat, get_lateral_volume_per_layer, &
-                            distribute_lateral_discharge, average_waterlevels_per_lateral 
+                            lateral_volume_per_layer, distribute_lateral_discharge, average_waterlevels_per_lateral 
       use m_partitioninfo, only: reduce_lateral_output, distribute_lateral_input, jampi 
 
       real(kind=dp), intent(in) :: dtrange
@@ -108,7 +108,7 @@ contains
          call average_waterlevels_per_lateral%update()
       end if
       if (apply_transport_is_used) then
-         call get_lateral_volume_per_layer()
+         call get_lateral_volume_per_layer(lateral_volume_per_layer)
          if (jampi == 1) then
             call reduce_lateral_output()
          end if

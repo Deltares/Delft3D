@@ -3736,12 +3736,12 @@ contains
 
       implicit none
 
-      integer :: ierror, i_element
-      real(kind=dp), dimension(:, :), allocatable :: lateral_volume_per_layer_buffer
-      real(kind=dp), dimension(:, :), allocatable :: outgoing_lat_volume_buffer
-      real(kind=dp), dimension(:, :, :), allocatable :: outgoing_lat_concentration_buffer
-      real(kind=dp), dimension(:), allocatable  :: cumulative_value_buffer
-      real(kind=dp), dimension(:), allocatable  :: cumulative_weight_buffer
+      integer :: ierror, i_element, num_lateral_layer, num_lateral_layer_constituent
+      real(kind=dp), dimension(:, :), allocatable, save :: lateral_volume_per_layer_buffer
+      real(kind=dp), dimension(:, :), allocatable, save :: outgoing_lat_volume_buffer
+      real(kind=dp), dimension(:, :, :), allocatable, save :: outgoing_lat_concentration_buffer
+      real(kind=dp), dimension(:), allocatable, save  :: cumulative_value_buffer
+      real(kind=dp), dimension(:), allocatable, save  :: cumulative_weight_buffer
       real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
 
 #ifdef HAVE_MPI
@@ -3751,14 +3751,15 @@ contains
       outgoing_lat_concentration_buffer = outgoing_lat_concentration
       outgoing_lat_volume_buffer = outgoing_lat_volume
       if (kmx > 0) then
-         call MPI_reduce(outgoing_lat_concentration_buffer, outgoing_lat_concentration, kmx * numconst * numlatsg, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
-         call MPI_reduce(outgoing_lat_volume_buffer, outgoing_lat_volume, kmx * numlatsg, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
-         call MPI_allreduce(lateral_volume_per_layer_buffer, lateral_volume_per_layer, kmx * numlatsg, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+         num_lateral_layer = kmx * numlatsg
+         num_lateral_layer_constituent = kmx * numlatsg * numconst
       else
-         call MPI_reduce(outgoing_lat_concentration_buffer, outgoing_lat_concentration, numconst * numlatsg, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
-         call MPI_reduce(outgoing_lat_volume_buffer, outgoing_lat_volume, numlatsg, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
-         call MPI_allreduce(lateral_volume_per_layer_buffer, lateral_volume_per_layer, numlatsg, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+         num_lateral_layer = numlatsg
+         num_lateral_layer_constituent = numlatsg * numconst
       end if
+      call MPI_reduce(outgoing_lat_concentration_buffer, outgoing_lat_concentration, num_lateral_layer_constituent, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_reduce(outgoing_lat_volume_buffer, outgoing_lat_volume, num_lateral_layer, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_allreduce(lateral_volume_per_layer_buffer, lateral_volume_per_layer, num_lateral_layer, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
 
       if (average_waterlevels_per_lateral%is_used) then
          cumulative_value_buffer = average_waterlevels_per_lateral%cumulative_value
@@ -3792,7 +3793,7 @@ contains
 
       implicit none
 
-      integer :: ierror
+      integer :: ierror, num_lateral_layer, num_lateral_layer_constituent
       real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
 
 #ifdef HAVE_MPI
@@ -3802,12 +3803,14 @@ contains
          incoming_lat_concentration = 0.0_dp
       end if
       if (kmx > 0) then
-         call MPI_bcast(qplat, kmx * numlatsg, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
-         call MPI_bcast(incoming_lat_concentration, kmx * numconst * numlatsg, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
+         num_lateral_layer = kmx * numlatsg
+         num_lateral_layer_constituent = kmx * numlatsg * numconst
       else
-         call MPI_bcast(qplat, numlatsg, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
-         call MPI_bcast(incoming_lat_concentration, numconst * numlatsg, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
+         num_lateral_layer = numlatsg
+         num_lateral_layer_constituent = numlatsg * numconst
       end if
+      call MPI_bcast(qplat, num_lateral_layer, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_bcast(incoming_lat_concentration, num_lateral_layer_constituent, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
 #endif
       return
    end subroutine distribute_lateral_input    

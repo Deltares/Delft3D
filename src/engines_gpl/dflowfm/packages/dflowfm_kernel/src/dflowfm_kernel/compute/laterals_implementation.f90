@@ -221,11 +221,13 @@ contains
    !> Compute water volume per layer in each lateral.
    !! The water volume in a lateral means the sum of water volumes in all
    !! grid cells belonging to the lateral (per layer).
-   module subroutine get_lateral_volume_per_layer()
+   module subroutine get_lateral_volume_per_layer(lateral_volume_per_layer)
 
       use m_flow, only: vol1, kmx, kmxn
       use m_get_kbot_ktop, only: getkbotktop
       use m_partitioninfo, only: is_ghost_node
+      
+      real(kind=dp), dimension(:, :), intent(out) :: lateral_volume_per_layer !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
 
       integer :: i_node, i_lateral, i_layer, i_nnlat, i_vol1, index_vol1_bottom_layer, index_vol1_top_layer, index_active_bottom_layer
 
