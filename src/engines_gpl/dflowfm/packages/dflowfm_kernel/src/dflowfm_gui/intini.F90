@@ -76,9 +76,8 @@ contains
 !        CALL VGA@()
       end if
 
-!     Patch interacter.dll's IAT to replace SendMessageA with a timeout
-!     variant, preventing deadlock when another process has a hung message
-!     queue (Outlook, Acrobat, etc.) at the time IScreenOpen broadcasts.
+!     Patch user32.dll's IAT to replace SendMessageA called by ISCREENOPEN with a timeout
+!     variant, preventing deadlock when another process does not respond (Outlook, Acrobat, etc.).
 #ifdef HAVE_DISPLAY
       call patch_user32_dll_sendmessage_for_interacter()
 #endif
