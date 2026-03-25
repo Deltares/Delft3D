@@ -30,6 +30,7 @@ object WindowsCollect : BuildType({
 
     params {
         param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+        param("container.tag", "collect-environment")
     }
 
     vcs {
@@ -40,7 +41,7 @@ object WindowsCollect : BuildType({
     steps {
         python {
             name = "Run artifacts_cleaner.py"
-            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
             command = file {
@@ -53,7 +54,7 @@ object WindowsCollect : BuildType({
         }      
         script {
             name = "Copy DLLs"
-            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             scriptContent = """
@@ -62,7 +63,7 @@ object WindowsCollect : BuildType({
         }
         python {
             name = "Generate list of version numbers (from what-strings)"
-            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
             command = file {
@@ -72,7 +73,7 @@ object WindowsCollect : BuildType({
         }
         python {
             name = "Verify (un)signed binaries and directory structure"
-            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:ltsc2022"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
             command = file {

@@ -24,7 +24,7 @@ object WindowsCollectEnvironment : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "collect-windows")
+        param("container.tag", "collect-environment")
     }
 
     vcs {
@@ -63,7 +63,9 @@ object WindowsCollectEnvironment : BuildType({
                     containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%
                 """.trimIndent()
             }
-            enabled = "%trigger.type%" == "vcs"
+            conditions {
+                equals("trigger.type", "vcs")
+            }
         }
     }
 
