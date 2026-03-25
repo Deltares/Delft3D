@@ -33,6 +33,5 @@ endif()
 set_target_properties(${library_name} PROPERTIES FOLDER utils_lgpl/interacter_utils)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES
-    src/patch_sendmessage.c
     src/interacter_utils.f90
 )
