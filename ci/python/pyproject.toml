@@ -41,7 +41,6 @@ all = ["ci-tools[verschilanalyse,dimrset_delivery,dev]"]
 [project.scripts]
 minio-sync = "ci_tools.minio.synchronize.cli:CommandLine.run"
 
-
 [tool.uv]
 package = true
 
