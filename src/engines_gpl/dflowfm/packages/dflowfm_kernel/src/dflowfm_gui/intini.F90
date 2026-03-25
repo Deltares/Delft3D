@@ -38,7 +38,7 @@ module m_intini
    use m_minmaxworld
 
    use precision, only: dp
-   #ifdef HAVE_DISPLAY
+   #if HAVE_DISPLAY==1
       use interacter_utils, only: patch_user32_dll_sendmessage_for_interacter
    #endif
 
@@ -78,7 +78,7 @@ contains
 
 !     Patch user32.dll's IAT to replace SendMessageA called by ISCREENOPEN with a timeout
 !     variant, preventing deadlock when another process does not respond (Outlook, Acrobat, etc.).
-#ifdef HAVE_DISPLAY
+#if HAVE_DISPLAY==1
       call patch_user32_dll_sendmessage_for_interacter()
 #endif
       call ISCREENOPEN(' ', 'GR', NXPIX, NYPIX, NCOLR)
