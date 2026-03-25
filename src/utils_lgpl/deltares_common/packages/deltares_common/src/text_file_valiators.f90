@@ -44,8 +44,8 @@ module m_text_file_validators
 
    !> String array verifier implementation
    type, extends(TextFileProcessorVerifier) :: PropertiesVerifier
-      character(len=:), allocatable :: required_props(:)
       character(len=:), allocatable :: chapter_name
+      class(ChapterPropertiesVerifier), allocatable :: chapter_verifier
    contains
       procedure :: verify => properties_verifier_verify
    end type PropertiesVerifier
@@ -53,6 +53,12 @@ module m_text_file_validators
    interface PropertiesVerifier
       module procedure :: properties_verifier_constructor
    end interface PropertiesVerifier
+
+   type, extends(ChapterVerifier) :: ChapterPropertiesVerifier
+      character(len=:), allocatable :: required_props(:)
+   contains
+      procedure :: verify => chapter_properties_verifier_verify
+   end type ChapterPropertiesVerifier
 
    !> Check if one of more arrays have the same length, and optionally check against expected length
    !> Chapter level
@@ -97,9 +103,8 @@ contains
       type(PropertiesVerifier) :: verifier
       integer :: n
 
-      ! Allocate from source to preserve deferred character length
-      allocate (verifier%required_props, source=strings)
       verifier%chapter_name = chapter_name
+      verifier%chapter_verifier = ChapterPropertiesVerifier(strings)
    end function properties_verifier_constructor
 
    function arrays_length_chapter_verifier_constructor(property_names, expected_length) result(verifier)
@@ -127,42 +132,41 @@ contains
 
    end function arrays_length_verifier_constructor
 
+   function chapter_properties_verifier_verify(this, block_ptr) result(is_valid)
+      class(ChapterPropertiesVerifier), intent(in) :: this
+      type(tree_data), pointer, intent(in) :: block_ptr
+      logical :: is_valid
+      integer :: j
+      character(len=:), allocatable :: value
+      logical :: found
+
+      is_valid = .true.
+
+      if (allocated(this%required_props)) then
+         do j = 1, size(this%required_props)
+            call prop_get_alloc_string(block_ptr, '', this%required_props(j), value, found)
+            if (.not. found) then
+               write (msgbuf, '(a,a,a)') 'Missing required property: ', trim(this%required_props(j)), '.'
+               is_valid = .false.
+            else if (allocated(value)) then
+               DEALLOCATE (value)
+            end if
+         end do
+      end if
+
+   end function chapter_properties_verifier_verify
+
    function properties_verifier_verify(this, processor) result(is_valid)
       class(PropertiesVerifier), intent(in) :: this
       type(TextFileProcessor), intent(in) :: processor
       logical :: is_valid
-      integer :: i, j
-      integer :: num_items_in_file
-      type(tree_data), pointer :: block_ptr
-      character(len=:), allocatable :: group_name
 
-      character(len=:), allocatable :: value
-      logical :: found
-
-      ! Check if processor is valid first
-      is_valid = .not. processor%is_error
-
-      num_items_in_file = tree_num_nodes(processor%tree)
-
-      ! If valid, check required strings
-      if (is_valid .and. allocated(this%required_props)) then
-         do i = 1, num_items_in_file
-            block_ptr => processor%tree%child_nodes(i)%node_ptr
-            group_name = trim(tree_get_name(block_ptr))
-            if (trim(adjustl(str_tolower(group_name))) == trim(adjustl(str_tolower(this%chapter_name)))) then
-               do j = 1, size(this%required_props)
-                  call prop_get_alloc_string(block_ptr, this%chapter_name, this%required_props(j), value, found)
-                  ! print *, 'Verifying presence of string: ', trim(this%required_props(j))
-                  if (.not. found) then
-                     write (msgbuf, '(a,a,a)') 'Missing required property: ', trim(this%required_props(j)), '.'
-                     is_valid = .false.
-                  else if (allocated(value)) then
-                     DEALLOCATE (value)
-                  end if
-                  ! For now, just return true
-               end do
-            end if
-         end do
+      ! Find the chapter and check array lengths
+      if (allocated(this%chapter_verifier)) then
+         is_valid = apply_chapter_verifier_to_chapter(processor%tree, this%chapter_name, this%chapter_verifier)
+         if (.not. is_valid) then
+             write (msgbuf, '(a,a,a)') 'Verification failed for chapter: ', trim(this%chapter_name), '.'
+         end if
       end if
 
    end function properties_verifier_verify
@@ -278,6 +282,9 @@ contains
       ! Find the chapter and check array lengths
       if (allocated(this%chapter_verifier)) then
          is_valid = apply_chapter_verifier_to_chapter(processor%tree, this%chapter_name, this%chapter_verifier)
+         if (.not. is_valid) then
+             write (msgbuf, '(a,a,a)') 'Array length verification failed for chapter: ', trim(this%chapter_name), '.'
+         end if
       end if
 
    end function arrays_length_verifier_verify
