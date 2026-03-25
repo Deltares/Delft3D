@@ -4161,19 +4161,21 @@ contains
       return
    end function getoutputdir
 
-   !> Set the `interval_{start,step,end}` based on the values in the `interval_input` array, which is read from the MDU file.
+   !> Set the `interval_{start,step,end}` based on the values in the `interval_input` array, as read from the MDU file.
    ! The first value in `interval_input` is the step size, followed by the start and end of the interval. When the start and
    ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the 
    ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds. 
-   subroutine set_time_interval(interval_input, interval_start, interval_step, interval_end, simulation_start, simulation_stop, success, interval_name)
+   ! If `read_interval_input` is `.false.`. Don't read `interval_input`, and only set the defaults.
+   subroutine set_time_interval(interval_input, interval_start, interval_step, interval_end, simulation_start, simulation_stop, read_interval_input, interval_name)
       use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
+      use precision_basics, only: equal
       implicit none
 
       real(kind=dp), intent(in) :: interval_input(3)
       real(kind=dp), intent(out) :: interval_start, interval_step, interval_end
       real(kind=dp), intent(in) :: simulation_start, simulation_stop
-      logical, intent(in) :: success
-      character(len=*), intent(in), optional :: interval_name
+      logical, intent(in) :: read_interval_input
+      character(len=*), optional, intent(in) :: interval_name
 
       character(len=:), allocatable :: interval_name_
 
@@ -4182,16 +4184,16 @@ contains
          interval_name_ = ' ' // trim(interval_name)  ! Prepend extra space to get nice string formatting.
       end if
 
-      ! Set `ti_outs` to the simulation start and `ti_oute` to the simulation stop by default. Even on `.not. success`.
+      ! If `read_interval_input` is `.false.`: Only set `interval_start/stop` to `simulation_start/stop`.
       interval_start = simulation_start
       interval_end = simulation_stop
-      if (.not. success) then
+      if (.not. read_interval_input) then
          return
       end if
 
       interval_step = interval_input(1)
 
-      if (interval_input(2) /= 0) then  ! A value of zero means: Use `simulation_start`.
+      if (.not. equal(interval_input(2), 0.0_dp)) then  ! A value of zero means: Use `simulation_start`.
          if (simulation_start <= interval_input(2) .and. interval_input(2) <= simulation_stop) then
             interval_start = interval_input(2)
          else
@@ -4202,7 +4204,7 @@ contains
          end if
       end if
 
-      if (interval_input(3) /= 0) then  ! A value of zero means: Use `simulation_stop`.
+      if (.not. equal(interval_input(3), 0.0_dp)) then  ! A value of zero means: Use `simulation_stop`.
          if (simulation_start <= interval_input(3) .and. interval_input(3) <= simulation_stop) then
             interval_end = interval_input(3)
          else
