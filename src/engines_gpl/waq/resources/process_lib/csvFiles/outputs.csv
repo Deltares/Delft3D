@@ -1061,15 +1061,18 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Sed_IM1   ","PSedIM1   ",   1,"x",1
 "Sed_IM1   ","fSedIM1   ",   2,"x",1
 "Sed_IM1   ","fSedIM1S2 ",   3," ",1
-"Sed_IM1   ","VxSedIM1  ",   4,"x",0
+"Sed_IM1   ","WSSedim1  ",   4," ",1
+"Sed_IM1   ","VxSedIM1  ",   5,"x",0
 "Sed_IM2   ","PSedIM2   ",   1,"x",1
 "Sed_IM2   ","fSedIM2   ",   2,"x",1
 "Sed_IM2   ","fSedIM2S2 ",   3," ",1
-"Sed_IM2   ","VxSedIM2  ",   4,"x",0
+"Sed_IM2   ","WSSedim2  ",   4," ",1
+"Sed_IM2   ","VxSedIM2  ",   5,"x",0
 "Sed_IM3   ","PSedIM3   ",   1,"x",1
 "Sed_IM3   ","fSedIM3   ",   2,"x",1
 "Sed_IM3   ","fSedIM3S2 ",   3," ",1
-"Sed_IM3   ","VxSedIM3  ",   4,"x",0
+"Sed_IM3   ","WSSedim3  ",   4," ",1
+"Sed_IM3   ","VxSedIM3  ",   5,"x",0
 "SedDiat   ","PSedDiat  ",   1,"x",1
 "SedDiat   ","fSedDiat  ",   2,"x",1
 "SedDiat   ","VxSedDiat ",   3,"x",0
@@ -1224,27 +1227,33 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Sed_Opal  ","PSedOpal  ",   1,"x",1
 "Sed_Opal  ","fSedOpal  ",   2,"x",1
 "Sed_Opal  ","fSedOpalS2",   3,"x",1
-"Sed_Opal  ","VxSedOpal ",   4,"x",0
+"Sed_Opal  ","WSSedOpal ",   4," ",1
+"Sed_Opal  ","VxSedOpal ",   5,"x",0
 "Sed_POC1  ","PSedPOC1  ",   1,"x",1
 "Sed_POC1  ","fSedPOC1  ",   2,"x",1
 "Sed_POC1  ","fSedPOC1S2",   3,"x",1
-"Sed_POC1  ","VxSedPOC1 ",   4,"x",0
+"Sed_POC1  ","WSSedPOC1 ",   4," ",1
+"Sed_POC1  ","VxSedPOC1 ",   5,"x",0
 "Sed_POC2  ","PSedPOC2  ",   1,"x",1
 "Sed_POC2  ","fSedPOC2  ",   2,"x",1
 "Sed_POC2  ","fSedPOC2S2",   3,"x",1
-"Sed_POC2  ","VxSedPOC2 ",   4,"x",0
+"Sed_POC2  ","WSSedPOC2 ",   4," ",1
+"Sed_POC2  ","VxSedPOC2 ",   5,"x",0
 "Sed_POC3  ","PSedPOC3  ",   1,"x",1
 "Sed_POC3  ","fSedPOC3  ",   2,"x",1
 "Sed_POC3  ","fSedPOC3S2",   3,"x",1
-"Sed_POC3  ","VxSedPOC3 ",   4,"x",0
+"Sed_POC3  ","WSSedPOC3 ",   4," ",1
+"Sed_POC3  ","VxSedPOC3 ",   5,"x",0
 "Sed_POC4  ","PSedPOC4  ",   1,"x",1
 "Sed_POC4  ","fSedPOC4  ",   2,"x",1
 "Sed_POC4  ","fSedPOC4S2",   3,"x",1
-"Sed_POC4  ","VxSedPOC4 ",   4,"x",0
+"Sed_POC4  ","WSSedPOC4 ",   4," ",1
+"Sed_POC4  ","VxSedPOC4 ",   5,"x",0
 "Sed_POC5  ","PSedPOC5  ",   1,"x",1
 "Sed_POC5  ","fSedPOC5  ",   2,"x",1
 "Sed_POC5  ","fSedPOC5S2",   3,"x",1
-"Sed_POC5  ","VxSedPOC5 ",   4,"x",0
+"Sed_POC5  ","WSSedPOC5 ",   4," ",1
+"Sed_POC5  ","VxSedPOC5 ",   5,"x",0
 "Sed_VivP  ","PSedVIVP  ",   1,"x",1
 "Sed_VivP  ","fSedVIVP  ",   2,"x",1
 "Sed_VivP  ","VxSedVIVP ",   3,"x",0

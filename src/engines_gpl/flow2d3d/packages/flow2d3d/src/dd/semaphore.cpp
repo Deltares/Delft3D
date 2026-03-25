@@ -61,9 +61,9 @@ Semaphore::Semaphore (
     this->waiting = 0;
 
     if (pthread_mutex_init (&this->mutex, NULL) != 0)
-        throw new Exception (true, "Pthreads error in Semaphore: pthread_mutex_init fails for semaphore, errno=%d", errno);
+        throw new Exception("Pthreads error in Semaphore: pthread_mutex_init fails for semaphore, errno=%d", errno);
     if (pthread_cond_init (&this->syncv, NULL) != 0)
-        throw new Exception (true, "Pthreads error in Semaphore: pthread_cond_init fails for semaphore, errno=%d", errno);
+        throw new Exception("Pthreads error in Semaphore: pthread_cond_init fails for semaphore, errno=%d", errno);
 
     if (this->log != NULL)
         this->log->Write (Log::CONFIG_MINOR, "Semaphore \"%s\" (0x%x) created", this->name, (char *) this);
@@ -93,7 +93,7 @@ Semaphore::PSem (
     //  Get mutex to this semaphore object
 
     if (pthread_mutex_lock (&this->mutex) != 0)
-        throw new Exception (true, "Pthreads error in Semaphore: pthread_mutex_lock fails in PSem \"%s\", errno=%d", this->name, errno);
+        throw new Exception("Pthreads error in Semaphore: pthread_mutex_lock fails in PSem \"%s\", errno=%d", this->name, errno);
 
     //  If the semaphore's value is zero, block until some thread does a V,
     //  otherwise decrement value.
@@ -103,7 +103,7 @@ Semaphore::PSem (
 
         this->waiting++;
         if (pthread_cond_wait (&this->syncv, &this->mutex) != 0)
-            throw new Exception (true, "Pthreads error in Semaphore: pthread_cond_wait fails in PSem \"%s\", errno=%d", this->name, errno);
+            throw new Exception("Pthreads error in Semaphore: pthread_cond_wait fails in PSem \"%s\", errno=%d", this->name, errno);
 
         this->log->Write (Log::DD_SEMAPHORE, "PSem \"%s\" has been signalled, continuing", this->name);
         }
@@ -116,7 +116,7 @@ Semaphore::PSem (
     //  Relinquish mutex to my element in Semaphore array
 
     if (pthread_mutex_unlock (&this->mutex) != 0)
-       throw new Exception (true, "Pthreads error in Semaphore: pthread_mutex_unlock fails in PSem \"%s\", errno=%d", this->name, errno);
+       throw new Exception("Pthreads error in Semaphore: pthread_mutex_unlock fails in PSem \"%s\", errno=%d", this->name, errno);
     }
 
 
@@ -127,7 +127,7 @@ Semaphore::VSem (
     //  Get mutex to Semaphore object
 
     if (pthread_mutex_lock (&this->mutex) != 0)
-        throw new Exception (true, "Pthreads error in Semaphore: pthread_mutex_lock fails in VSem \"%s\", errno=%d", this->name, errno);
+        throw new Exception("Pthreads error in Semaphore: pthread_mutex_lock fails in VSem \"%s\", errno=%d", this->name, errno);
 
     //  Signal a waiting thread if there is one, or else increment semaphore
 
@@ -135,7 +135,7 @@ Semaphore::VSem (
         this->log->Write (Log::DD_SEMAPHORE, "VSem \"%s\" signalling a blocked thread", this->name);
         this->waiting--;
         if (pthread_cond_signal (&this->syncv) != 0)
-            throw new Exception (true, "Pthreads error in Semaphore: pthread_cond_signal fails in VSem \"%s\", errno=%d", this->name, errno);
+            throw new Exception("Pthreads error in Semaphore: pthread_cond_signal fails in VSem \"%s\", errno=%d", this->name, errno);
         }
     else {
         this->log->Write (Log::DD_SEMAPHORE, "VSem \"%s\" incrementing semaphore", this->name);
@@ -145,5 +145,5 @@ Semaphore::VSem (
     //  Relinquish mutex to my element in Semaphore array
 
     if (pthread_mutex_unlock (&this->mutex) != 0)
-        throw new Exception (true, "Pthreads error in Semaphore: pthread_mutex_unlock fails in VSem \"%s\", errno=%d", this->name, errno);
+        throw new Exception("Pthreads error in Semaphore: pthread_mutex_unlock fails in VSem \"%s\", errno=%d", this->name, errno);
     }

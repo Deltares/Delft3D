@@ -147,6 +147,14 @@ if [ $# -gt 0 ]; then
             PARAM_COUNT=$((PARAM_COUNT + 1))
         fi
     done
+    BRANCH_NAME_JSON=""
+    for param in "$@"; do
+        if [[ "$param" == branchName=* ]]; then
+            BRANCH_NAME=$(echo "$param" | cut -d= -f2-)
+            BRANCH_NAME_JSON="\"branchName\": \"$BRANCH_NAME\","
+            break
+        fi
+    done
     if [ $PARAM_COUNT -gt 0 ]; then
         PROPERTIES_JSON="\"properties\": { \"count\": $PARAM_COUNT, \"property\": [ $PROPERTY_ARRAY ] },"
     fi
@@ -159,6 +167,7 @@ if [ -n "$SUMBIT_BUILD_ID" ]; then
     # Create JSON payload with snapshot dependency
     JSON_PAYLOAD="{
         \"buildTypeId\": \"$CONFIGURATION_ID\",
+        $BRANCH_NAME_JSON
         $PROPERTIES_JSON
         \"snapshot-dependencies\": {
             \"count\": 1,
@@ -178,8 +187,9 @@ else
     
     # Create JSON payload without dependencies
     JSON_PAYLOAD="{
-        \"buildTypeId\": \"$CONFIGURATION_ID\"$([ -n "$PROPERTIES_JSON_CLEAN" ] && echo ",
-        $PROPERTIES_JSON_CLEAN" || echo "")
+        \"buildTypeId\": \"$CONFIGURATION_ID\",
+        $BRANCH_NAME_JSON
+        $PROPERTIES_JSON_CLEAN
     }"
 fi
 

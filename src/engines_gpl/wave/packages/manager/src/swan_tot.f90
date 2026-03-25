@@ -147,7 +147,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          end if
          !
          ! Vegetation map
-         if (dom%vegetation == 1) then
+         if (.not.dom%veg_from_flow) then
             if (dom%vegfil /= '') then
                write (*, '(a)') '  Allocate and read vegetation map'
                call get_vegi_map(swan_input_fields, dom%vegfil)
@@ -303,7 +303,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                 & sumvars, 0.0)
          end if
          mult = 1.0
-         if (dom%vegetation == 2 .or. (dom%vegetation == 1 .and. dom%vegfil /= '')) then
+         if (dom%veg_from_flow .or. (dom%vegetation >= 1 .and. dom%vegfil /= '')) then
             !
             ! Write Vegetation map file
             !
@@ -311,7 +311,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             !
             ! mult needed for writing correct stem density to output
             ! in SWAN, the applied density is veg*nstems
-            if (dom%vegetation == 1) then
+            if (.not.dom%veg_from_flow) then
                mult = dom%veg_nstems
             end if
             !
@@ -385,7 +385,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                DataFromPreviousTimestep = .true.
                call write_wave_map(swan_grids(i_swan), swan_output_fields, swan_input_fields,&
                                   & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                                  & swan_run%gamma0, swan_run%output_ice)
+                                  & swan_run%gamma0, swan_run%output_ice, swan_run%nautical_convention, swan_run%north_direction)
                if (swan_run%swmapwritenetcdf) then
                   if (allocated(tempveg)) deallocate(tempveg)
                   allocate(tempveg(swan_input_fields%mmax, swan_input_fields%nmax))
@@ -393,7 +393,8 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                   write (*, '(a,i10,a,f10.3)') '  Write WAVE NetCDF map file, nest ', i_swan, ' time ', wavedata%time%timmin
                   call write_wave_map_netcdf(swan_grids(i_swan), swan_output_fields, swan_input_fields, &
                                      & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                                     & swan_run%netcdf_sp, swan_input_fields%mmax, swan_input_fields%nmax, tempveg, swan_run%output_ice, swan_run%output_veg)
+                                     & swan_run%netcdf_sp, swan_input_fields%mmax, swan_input_fields%nmax, &
+                                     & tempveg, swan_run%output_ice, swan_run%output_veg, swan_run%nautical_convention, swan_run%north_direction)
                end if
                call setoutputcount(wavedata%output, wavedata%output%count + 1)
             end if
@@ -431,7 +432,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             DataFromPreviousTimestep = .false.
             call write_wave_map(swan_grids(i_swan), swan_output_fields, swan_input_fields, &
                                & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                               & swan_run%gamma0, swan_run%output_ice)
+                               & swan_run%gamma0, swan_run%output_ice, swan_run%nautical_convention, swan_run%north_direction)
             if (swan_run%swmapwritenetcdf) then
                if (allocated(tempveg)) deallocate(tempveg)
                allocate(tempveg(swan_input_fields%mmax, swan_input_fields%nmax))
@@ -439,13 +440,14 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                write (*, '(a,i10,a,f10.3)') '  Write WAVE NetCDF map file, nest ', i_swan, ' time ', wavedata%time%timmin
                call write_wave_map_netcdf(swan_grids(i_swan), swan_output_fields, swan_input_fields, &
                                   & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                                  & swan_run%netcdf_sp, swan_input_fields%mmax, swan_input_fields%nmax, tempveg, swan_run%output_ice, swan_run%output_veg)
+                                  & swan_run%netcdf_sp, swan_input_fields%mmax, swan_input_fields%nmax, &
+                                  & tempveg, swan_run%output_ice, swan_run%output_veg, swan_run%nautical_convention, swan_run%north_direction)
             end if
          end if
          if (swan_run%output_points .and. swan_run%output_table) then
             write (*, '(a,i10,a,f10.3)') '  Write WAVE NetCDF his file, nest ', i_swan, ' time ', wavedata%time%timmin
             call write_wave_his_netcdf(swan_grids(i_swan), swan_output_fields, n_swan_grids, i_swan, &
-                               & wavedata)
+                               & wavedata, swan_run%nautical_convention)
          end if
 
          call dealloc_input_fields(swan_input_fields, wavedata%mode)

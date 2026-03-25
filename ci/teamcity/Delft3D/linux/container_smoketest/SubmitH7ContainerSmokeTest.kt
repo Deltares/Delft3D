@@ -10,6 +10,7 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 object LinuxSubmitH7ContainerSmokeTest : BuildType({
     templates(
+        TemplateLinuxAgentNoFips,
         TemplateMonitorPerformance,
         TemplateDockerRegistry
     )
@@ -85,9 +86,10 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
                 cp ${'$'}hpc_smoke_path/run_all_models.sh .
                 cp ${'$'}hpc_smoke_path/schedule_teamcity_receive_job.sh .
                 cp ${'$'}hpc_smoke_path/schedule_teamcity_receive_job_wrapper.sh .
-                sed -i 's/CONFIGURATION_ID="${'$'}1"/CONFIGURATION_ID="%teamcity_receive_config%"/' schedule_teamcity_receive_job_wrapper.sh
-                sed -i 's/DEPENDENCY_BUILD_ID="${'$'}2"/DEPENDENCY_BUILD_ID="%teamcity.build.id%"/' schedule_teamcity_receive_job_wrapper.sh
-                sed -i 's/VCS_COMMIT_HASH="${'$'}3"/VCS_COMMIT_HASH="%build.vcs.number%"/' schedule_teamcity_receive_job_wrapper.sh
+                sed -i 's|CONFIGURATION_ID="${'$'}1"|CONFIGURATION_ID="%teamcity_receive_config%"|' schedule_teamcity_receive_job_wrapper.sh
+                sed -i 's|DEPENDENCY_BUILD_ID="${'$'}2"|DEPENDENCY_BUILD_ID="%teamcity.build.id%"|' schedule_teamcity_receive_job_wrapper.sh
+                sed -i 's|VCS_COMMIT_HASH="${'$'}3"|VCS_COMMIT_HASH="%build.vcs.number%"|' schedule_teamcity_receive_job_wrapper.sh
+                sed -i 's|BRANCH_NAME="${'$'}4"|BRANCH_NAME="%teamcity.build.branch%"|' schedule_teamcity_receive_job_wrapper.sh
             """.trimIndent()
         }
         script {
@@ -166,9 +168,5 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })

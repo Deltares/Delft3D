@@ -86,14 +86,14 @@ DredgeMerge_Function (
         int blobtype;
         part[i]->Receive (initBlob, &blobtype);
         if (blobtype != DredgeMerge::F2DM_init)
-            throw new Exception (true, "Unexpected message (%d) from Flow %s",blobtype,part[i]->name);
+            throw new Exception("Unexpected message (%d) from Flow %s",blobtype,part[i]->name);
 
         if (inimesg[0] == -1)
             part[i] = NULL; // this neighbor has nothing to do with dredge and dump, remove from list
 
         else {
             if (! firstDredgeDomain && numelements != inimesg[0])
-                throw new Exception (true, "Inconsistent number of dredging elements received by DredgeMergeFunction");
+                throw new Exception("Inconsistent number of dredging elements received by DredgeMergeFunction");
 
             numelements = inimesg[0];
             firstDredgeDomain = false;
@@ -149,12 +149,12 @@ DredgeMerge_Function (
                 int blobtype;
                 part[ipart]->Receive (sblob, &blobtype);
                 if (blobtype != DredgeMerge::F2DM_voldred)
-                    throw new Exception (true, "Unexpected message (%d) from Flow %s",blobtype,part[ipart]->name);
+                    throw new Exception("Unexpected message (%d) from Flow %s",blobtype,part[ipart]->name);
 
                 if (ipart == 0)
                     numelements = numeldomain;
                 else if (numeldomain != numelements)
-                    throw new Exception (true, "Dredge array size (%d) from Flow %s deviates from size (%d) from Flow %s", numeldomain,part[ipart]->name, numelements,part[0]->name);
+                    throw new Exception("Dredge array size (%d) from Flow %s deviates from size (%d) from Flow %s", numeldomain,part[ipart]->name, numelements,part[0]->name);
                 }
 
             REAL_FP *mesg = new REAL_FP[numelements];
@@ -170,7 +170,7 @@ DredgeMerge_Function (
                 int blobtype;
                 part[ipart]->Receive (mblob, &blobtype);
                 if (blobtype != DredgeMerge::F2DM_voldred)
-                    throw new Exception (true, "Unexpected message (%d) from Flow %s", blobtype,part[ipart]->name);
+                    throw new Exception("Unexpected message (%d) from Flow %s", blobtype,part[ipart]->name);
                 for (iarr = 0 ; iarr < numelements ; iarr++)
                     mergedvoldred[iarr] += mesg[iarr];
                 }
@@ -210,11 +210,11 @@ START_DD_DREDGECOMMUNICATION (
 
     Iterator * self = IteratorSelf ();
     if (self == NULL)
-        throw new Exception (true, "Cannot get iterator self in DD_DredgeCommunicate");
+        throw new Exception("Cannot get iterator self in DD_DredgeCommunicate");
 
     SubdomGlobals * subdomglobals = NULL;
     if ((subdomglobals = (SubdomGlobals *) self->GetValue ()) == NULL)
-        throw new Exception (true, "Cannot get subdomain globals pointer in DD_DredgeCommunicate");
+        throw new Exception("Cannot get subdomain globals pointer in DD_DredgeCommunicate");
 
     subdomglobals->dredgefirst = false;
 
@@ -231,7 +231,7 @@ START_DD_DREDGECOMMUNICATION (
     int blobtype;
     dredgemIterator->Receive (initBlob, &blobtype);
     if (blobtype != DredgeMerge::DM2F_init)
-        throw new Exception (true, "Unexpected message (%d) in %s from DredgeMerge",blobtype,self->name);
+        throw new Exception("Unexpected message (%d) in %s from DredgeMerge",blobtype,self->name);
 
     *domainnumber = inimesg[0];
     *numdomains = inimesg[1];
@@ -259,11 +259,11 @@ DD_DREDGECOMMUNICATE (
 
     Iterator * self = IteratorSelf ();
     if (self == NULL)
-        throw new Exception (true, "Cannot get iterator self in DD_DredgeCommunicate");
+        throw new Exception("Cannot get iterator self in DD_DredgeCommunicate");
 
     SubdomGlobals * subdomglobals = NULL;
     if ((subdomglobals = (SubdomGlobals *) self->GetValue ()) == NULL)
-        throw new Exception (true, "Cannot get subdomain globals pointer in DD_DredgeCommunicate");
+        throw new Exception("Cannot get subdomain globals pointer in DD_DredgeCommunicate");
 
     // Return immediately unless we're enabled
 
@@ -290,7 +290,7 @@ DD_DREDGECOMMUNICATE (
     int blobtype;
     dredgemIterator->Receive (mblob,&blobtype);
     if (blobtype != DredgeMerge::DM2F_mergedvoldred)
-        throw new Exception (true, "Unexpected message (%d) in %s from DredgeMerge",blobtype,self->name);
+        throw new Exception("Unexpected message (%d) in %s from DredgeMerge",blobtype,self->name);
 
     for (int i = 0 ; i < *numelements ; i++)
        voldred[i] = mesg[i];

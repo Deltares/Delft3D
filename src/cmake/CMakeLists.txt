@@ -6,6 +6,12 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with 
+# std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
+if (WIN32)
+    add_compile_definitions(NOMINMAX)
+endif()
+
 message(STATUS "Configuring")
 if (UNIX)
     include(linux_scripts.cmake)
@@ -24,6 +30,11 @@ cmake_path(GET PARENT_DIR PARENT_PATH dir)
 # Set unit and integration test root directory
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
+
+# Specify C++ standard for all targets, disable compiler specific extentions
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(modules.cmake)
 
@@ -94,14 +105,8 @@ if (WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    if(intel_version EQUAL 23)
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
-    else()
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.21.3/include)
-    endif()
-
-    #also set PETSC library directory
-    set (petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
+    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.24.5/include)
+    set(petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
     message(STATUS "PETSC")
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
     message(STATUS "path ${petsc_path}")

@@ -164,7 +164,7 @@ contains
       call update_values_on_cross_sections
       call updateValuesOnRunupGauges()
       if (jampi == 0 .or. (jampi == 1 .and. my_rank == 0)) then
-         if (numsrc > 0) then
+         if (num_source_sink > 0) then
             call updateValuesonSourceSinks(time1) ! Compute discharge and volume on sources and sinks
          end if
       end if
