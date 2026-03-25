@@ -271,7 +271,7 @@ contains
                    if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
                 end if
                 if (ncptr%vptyp < 1) then
-                   call set_EC_Message("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
+                   call setECMessage("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
                 end if
              end if
          end if
@@ -347,7 +347,7 @@ contains
             end do
          end if
       else
-         call set_EC_Message("ec_netcdf_timeseries::ecNetCDFScan: Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")
+         call setECMessage("ec_netcdf_timeseries::ecNetCDFScan: Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")
          q_id(1) = -1
       end if
 

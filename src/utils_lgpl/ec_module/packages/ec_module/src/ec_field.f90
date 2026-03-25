@@ -218,13 +218,13 @@ module m_ec_field
             if (allocated(fieldPtr%arrz)) then
                deallocate(fieldPtr%arrz, stat = istat)
                if (istat /= 0) then
-                  call set_EC_Message("ERROR: ec_field::ecFieldCreate1dArray: Unable to deallocate memory.")
+                  call setECMessage("ERROR: ec_field::ecFieldCreate1dArray: Unable to deallocate memory.")
                   return
                end if
             end if
             allocate(fieldPtr%arrz(arraySize), stat = istat)
             if (istat /= 0) then
-               call set_EC_Message("ERROR: ec_field::ecFieldCreate1dArray: Unable to allocate additional memory.")
+               call setECMessage("ERROR: ec_field::ecFieldCreate1dArray: Unable to allocate additional memory.")
                return
             else
                fieldPtr%arrz = ec_undef_hp

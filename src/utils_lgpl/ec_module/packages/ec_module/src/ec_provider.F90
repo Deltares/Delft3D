@@ -1535,7 +1535,7 @@ contains
          end if
               
          case default
-         call set_EC_Message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
+         call setECMessage("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
          return
       end select
 
