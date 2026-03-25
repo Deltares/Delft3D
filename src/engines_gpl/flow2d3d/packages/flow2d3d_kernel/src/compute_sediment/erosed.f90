@@ -550,15 +550,13 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     !
     allocate (localpar (npar), stat = istat)
     !
-    do nm = 1, nmmax 
-       do k = 0, kmax
-          do l = 1, lsed
-             seddif(nm, k, l) = dicww(nm, k)
-             if (sedtyp(l) == SEDTYP_SAND) kmxsed(nm, l) = kmax
-          enddo
+    if (gdp%gdsedpar%stressStrainRelation) then
+       do l = 1, lsed
+          seddif(:, :, l) = dicww(:, :)
+          kmxsed(:, l) = kfsmin(:)
        enddo
-    enddo
-    return
+       return
+    endif
     !
     if (varyingmorfac .and. icall==1) then
        call updmorfac(gdp%gdmorpar, timhr, julday)
