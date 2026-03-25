@@ -1328,7 +1328,7 @@ contains
                         ! Time-interpolated value will be placed in qpump(n) when calling ec_gettimespacevalue.
                         success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
                         if (.not. success) then
-                           message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+                           message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                            call qnerror(message, ' for ', strid)
                         end if
                      end if
@@ -1336,7 +1336,7 @@ contains
                         ! Evaluated harmonic signals value will be placed in qpump(n) when calling ec_gettimespacevalue.
                         success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
                         if (.not. success) then
-                           message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+                           message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                            call qnerror(message, ' for ', strid)
                         end if
                      end if

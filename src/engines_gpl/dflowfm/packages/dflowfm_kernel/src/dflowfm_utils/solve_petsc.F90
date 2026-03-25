@@ -87,7 +87,7 @@ contains
    !> Initialize PETSc
    module subroutine startpetsc()
 #ifdef HAVE_PETSC
-      use m_petsc, only: PETSC_OK, petsc_comm_world, petscinitialize, petsc_null_character, petscpopsignalhandler
+      use m_petsc, only: PETSC_OK, PETSC_COMM_WORLD, PetscInitialize, PETSC_NULL_CHARACTER, PetscPopSignalHandler, PetscLogDefaultBegin
       use mpi, only: mpi_comm_dup
       use m_flowparameters, only: Icgsolver
       use m_partitioninfo, only: DFM_COMM_DFMWORLD, jampi
@@ -111,7 +111,7 @@ contains
    module subroutine stoppetsc()
 #ifdef HAVE_PETSC
       use mpi, only: mpi_comm_free
-      use m_petsc, only: PETSC_OK, petscfinalize, petsc_comm_world, petscinitialized
+      use m_petsc, only: PETSC_OK, PetscFinalize, PETSC_COMM_WORLD
       use m_flowparameters, only: Icgsolver
       use m_partitioninfo, only: jampi
 
@@ -513,7 +513,7 @@ contains
 
    !> Configure the preconditioner for the PETSc KSP solver
    subroutine createPETSCPreconditioner(iprecnd)
-      use petsc, only: kspgetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, pcasmrestoresubksp, petsc_null_integer, tKSP, kspsetreusepreconditioner, petsc_false
+      use petsc, only: KSPGetPC, PCSetType, PCASMSetOverlap, KSPSetUp, PCASMGetSubKSP, PCASMRestoreSubKSP, PETSC_NULL_INTEGER, tKSP, KSPSetReusePreconditioner, PETSC_FALSE
       use m_petsc, only: PETSC_OK, Solver, Preconditioner, SubSolver, SubPrec
       use MessageHandling, only: mess, level_error
 
@@ -604,7 +604,7 @@ contains
    !> It is assumed that the global cell numbers iglobal, dim(Ndx) are available
    !> NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    module subroutine preparePETSCsolver(japipe)
-      use petsc, only: petsc_default_real, matcreateseqaijwitharrays, petsc_comm_world, matcreatempiaijwithsplitarrays, petsc_determine, matassemblybegin, mat_final_assembly, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances
+      use petsc, only: PETSC_DEFAULT_REAL, matcreateseqaijwitharrays, PETSC_COMM_WORLD, matcreatempiaijwithsplitarrays, PETSC_DETERMINE, matassemblybegin, MAT_FINAL_ASSEMBLY, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances
       use m_reduce, only: dp
       use m_partitioninfo, only: ndomains
       use m_petsc, only: PETSC_OK, joff, joffsav, adia, aoff, numrows, idia, jdia, Amat, ioff, Solver, isKSPCreated
@@ -682,17 +682,18 @@ contains
 
    !> Solve the linear system with PETSc KSP solver
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
-      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm, eKSPConvergedReason
+      use petsc, only: kspsolve, kspgetconvergedreason, KSP_DIVERGED_INDEFINITE_PC, KSP_DIVERGED_NANORINF, KSPGetIterationNumber, KSPGetResidualNorm, &
+                       eKSPConvergedReason, KSPGetConvergedReasonString, MatAssemblyBegin, MatAssemblyEnd, MatAssemblyBegin, MAT_FINAL_ASSEMBLY
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
-      use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver
+      use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver, Amat
       use MessageHandling, only: mess, level_info, level_warn, level_error, level_debug
       use m_flowgeom, only: kfs
       use m_flowtimes, only: dts ! for logging
       use m_flowparameters, only: jalogsolverconvergence
 
       integer, intent(in) :: ndx
-      real(kind=dp), dimension(Ndx), intent(inout) :: s1
+      real(kind=dp), dimension(ndx), intent(inout) :: s1
       integer, intent(out) :: its
       integer, intent(in) :: jacompprecond !< compute preconditioner (1) or not (0)
       integer, intent(in) :: iprecond !< preconditioner type
@@ -704,6 +705,7 @@ contains
       PetscErrorCode :: ierr
       KSPConvergedReason :: Reason
       character(len=100) :: message
+      character(len=100) :: reason_string
 
       jasucces = 0
       ierr = PETSC_OK
@@ -712,10 +714,16 @@ contains
 
       ! fill matrix
       call setPETSCmatrixEntries()
-
-      if (jacompprecond == 1) then
-         ! compute preconditioner
-         call createPETSCPreconditioner(iprecond)
+      ! Notify PETSc that matrix values have changed. WithArrays matrices are updated
+      ! in-place in setPETSCmatrixEntries (bypassing MatSetValues), so MatAssembly is
+      ! the only way to inform PETSc and invalidate any cached internal state.
+      ! MatAssemblyBegin initiates MPI communication for the off-diagonal block and
+      ! returns immediately. We fill the rhs and initial-guess vectors in between so
+      ! that CPU work overlaps with that communication, hiding the MPI latency before
+      ! MatAssemblyEnd blocks to complete it.
+      call MatAssemblyBegin(Amat, MAT_FINAL_ASSEMBLY, ierr)
+      if (ierr /= PETSC_OK) then
+         go to 1234
       end if
 
       ! fill vector rhs
@@ -739,6 +747,16 @@ contains
          end if
       end do
 
+      call MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY, ierr)
+      if (ierr /= PETSC_OK) then
+         go to 1234
+      end if
+
+      if (jacompprecond == 1) then
+         ! compute preconditioner
+         call createPETSCPreconditioner(iprecond)
+      end if
+
       ! solve system
       call KSPSolve(Solver, rhs, sol, ierr)
       if (ierr /= PETSC_OK) then
@@ -755,9 +773,15 @@ contains
          if (my_rank == 0) then
             call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
          end if
+      else if (Reason%v == KSP_DIVERGED_NANORINF%v) then
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: a not a number or infinity was detected in a vector during the computation. &
+            The simulation became numerically unstable, generating invalid values (NaN/Infinity), which caused the model to crash. &
+            Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
       else if (Reason%v < 0) then
-         call mess(LEVEL_WARN, 'Other kind of divergence: this should not happen, reason = ', Reason%v)
-         ! see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason
+         call KSPGetConvergedReasonString(Solver, reason_string, ierr)
+         call mess(LEVEL_WARN, 'PETSc solver diverged. Divergence reason: ', reason_string, '. &
+            Review the model input and inspect the output results to identify unrealistic values or sources of instability.')
+         ! see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason            
       else
          call KSPGetIterationNumber(Solver, its, ierr)
          ! compute residual

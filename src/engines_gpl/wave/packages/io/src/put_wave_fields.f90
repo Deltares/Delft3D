@@ -698,6 +698,7 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
     use wave_data
     use swan_flow_grid_maps
     use netcdf
+    use nc_check, only : nc_check_err
     use precision_basics
     !
     implicit none

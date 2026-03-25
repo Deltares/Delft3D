@@ -1,0 +1,122 @@
+name: Cancel TeamCity builds
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_hash:
+        description: "Commit hash"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  cancel-teamcity-builds:
+    runs-on: ubuntu-latest
+
+    env:
+      BRANCH: ${{ github.ref_name }}
+      OWNER: ${{ github.repository_owner }}
+      REPO: ${{ github.event.repository.name }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure
+        id: configure
+        run: |
+          set -eou pipefail
+
+          # do not allow running this workflow on the default and release branches
+          default_branch="${{ github.event.repository.default_branch }}"
+          release_branch_regex='^all/release/\d{4}\.\d+$'
+          if [[ "${{ env.BRANCH }}" == "${default_branch}" || \
+                "${{ env.BRANCH }}" =~ ${release_branch_regex} ]]; then
+            echo "This workflow was dispatched on branch {{ env.BRANCH }}."
+            echo "Dispatching this workflow on ${default_branch} and release branches is forbidden."
+            exit 1
+          fi
+
+          # commit hash validation
+          commit_hash="${{ github.event.inputs.commit_hash }}"
+          if [[ -z "${commit_hash}" ]]; then
+            echo "A commit hash was not provided, the latest one on this branch will be used."
+            commit_hash=$(
+              curl \
+                --silent \
+                --fail \
+                --show-error \
+                --request GET \
+                --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
+                --header "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/branches/${{ env.BRANCH }}" \
+              | jq -r .commit.sha
+            )
+            echo "Latest commit hash: ${commit_hash}."
+          elif ! git merge-base --is-ancestor "${commit_hash}" "${{ env.BRANCH }}"; then
+            echo "Commit ${commit_hash} does not exist on branch ${{ env.BRANCH }}. Validate your input."
+            exit 1
+          fi
+
+          echo "commit_hash=${commit_hash}" >> $GITHUB_OUTPUT
+
+      - name: Find PR for current branch
+        id: find-pr
+        run: |
+          set -eou pipefail
+
+          pr_list=$(
+            curl \
+              --silent \
+              --fail \
+              --show-error \
+              --request GET \
+              --header "Authorization: Bearer ${{ env.GITHUB_TOKEN }}" \
+              --header "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ env.OWNER }}/${{ env.REPO }}/pulls?state=open&head=${{ env.OWNER}}:${{ env.BRANCH}}"
+          )
+
+          pr_count=$(echo "${pr_list}" | jq 'length')
+
+          if [ "${pr_count}" -eq 0 ]; then
+            echo "No open pull request found for branch ${{ env.BRANCH }}."
+            exit 0
+          fi
+
+          if [ "${pr_count}" -gt 1 ]; then
+            echo "Multiple pull requests found for branch ${{ env.BRANCH }}. Cannot proceed further."
+            exit 1
+          fi
+
+          pr_number=$(echo "$pr_list" | jq -r '.[0].number')
+
+          echo "Found pull request #${pr_number}."
+          echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
+
+      - name: Retrieve KSM credentials
+        id: retrieve-ksm-credentials
+        env:
+          KSM_APP_CONFIG: ${{ secrets.KSM_APP_CONFIG }}
+          KSM_RECORD_UID: ${{ secrets.KSM_RECORD_UID }}
+        uses: Keeper-Security/ksm-action@v1.1.0
+        with:
+          keeper-secret-config: ${{ env.KSM_APP_CONFIG }}
+          secrets: |-
+            keeper://${{ env.KSM_RECORD_UID }}/field/password > teamcity_token
+
+      - name: Cancel TeamCity builds
+        if: steps.retrieve-ksm-credentials.outcome == 'success'
+        run: |
+          set -eou pipefail
+          teamcity_base_url="https://dpcbuild.deltares.nl"
+          teamcity_project_id="Delft3D"
+          branch="pull/${{ steps.find-pr.outputs.pr_number }}"
+          commit_hash="${{ steps.configure.outputs.commit_hash }}"
+
+          ./ci/github/cancel_teamcity_builds.sh \
+            --teamcity-base-url "${teamcity_base_url}" \
+            --teamcity-token "${{ steps.retrieve-ksm-credentials.outputs.teamcity_token }}" \
+            --teamcity-project-id "${teamcity_project_id}" \
+            --branch "${branch}" \
+            --commit-hash "${commit_hash}"

@@ -67,7 +67,7 @@ contains
 
       allocate (netcdf_ptr, stat=istat)
       if (istat /= 0) then
-         call setECMessage("ec_netcdf_timeseries::ecNetCDFCreate: Unable to allocate additional memory.")
+         call set_ec_message("ec_netcdf_timeseries::ecNetCDFCreate: Unable to allocate additional memory.")
          netcdf_ptr => null()
          return
       end if
@@ -88,7 +88,7 @@ contains
 
       ierr = nf90_close(netcdf%id)
       if (ierr /= NF90_NOERR) then
-         call setECMessage("ec_netcdf_timeseries::ecNetCDFFree: Unable to close file")
+         call set_ec_message("ec_netcdf_timeseries::ecNetCDFFree: Unable to close file")
       end if
 
       if (allocated(netcdf%dimlen)) then
@@ -178,7 +178,7 @@ contains
 
       ierr = nf90_open(trim(ncname), NF90_NOWRITE, ncptr%ncid)
       if (ierr /= NF90_NOERR) then
-         call setECmessage("ec_netcdf_timeseries::ecNetCDFInit: Error opening "//trim(ncname))
+         call set_ec_message("ec_netcdf_timeseries::ecNetCDFInit: Error opening "//trim(ncname))
          return
       end if
 
@@ -369,7 +369,7 @@ contains
             end if
 
             if (ncptr%vptyp < 1) then
-               call setECMessage("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
+               call set_ec_message("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
             end if
          end if
       end do
@@ -460,7 +460,7 @@ contains
          end if
       else
          ! If quantity not found, give error message and set q_id to -1
-         call setECMessage("ec_netcdf_timeseries::ecNetCDFScan: Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")
+         call set_ec_message("ec_netcdf_timeseries::ecNetCDFScan: Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")
          q_id(1) = -1
       end if
 
