@@ -38,7 +38,7 @@ module m_intini
    use m_minmaxworld
 
    use precision, only: dp
-   use interacter_utils, only: patch_interacter_sendmessage
+   use interacter_utils, only: patch_user32_dll_sendmessage_for_interacter
 
    implicit none
 
@@ -77,7 +77,7 @@ contains
 !     Patch interacter.dll's IAT to replace SendMessageA with a timeout
 !     variant, preventing deadlock when another process has a hung message
 !     queue (Outlook, Acrobat, etc.) at the time IScreenOpen broadcasts.
-      call patch_interacter_sendmessage()
+      call patch_user32_dll_sendmessage_for_interacter()
 
       call ISCREENOPEN(' ', 'GR', NXPIX, NYPIX, NCOLR)
 

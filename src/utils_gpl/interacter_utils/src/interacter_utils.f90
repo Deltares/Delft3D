@@ -7,10 +7,10 @@ module interacter_utils
    implicit none
    private
 
-   public :: patch_interacter_sendmessage
+   public :: patch_user32_dll_sendmessage_for_interacter
 
    interface
-      subroutine patch_interacter_sendmessage() bind(c, name='patch_interacter_sendmessage')
+      subroutine patch_user32_dll_sendmessage_for_interacter() bind(c, name='patch_user32_dll_sendmessage_for_interacter')
       end subroutine
    end interface
 
