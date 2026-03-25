@@ -9,13 +9,8 @@ module test_ec_module_block
 
    character(len=*), parameter :: BC_FILENAME = "test.bc"
 contains
-   !$f90tw TESTCODE(TEST, test_ec_module_block, test_ec_block_from, test_ec_block_from,
-   subroutine test_ec_block_from() bind(C)
-      logical :: success
-      real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
 
-      call initialize_ec_module()
-
+   subroutine setup_block_from() 
       call create_file(BC_FILENAME, [ &
                        "[General]", &
                        "    fileVersion           = 1.01", &
@@ -34,7 +29,16 @@ contains
                        "    20 20", &
                        "    30 300", &
                        "    40 0"])
+   end subroutine setup_block_from
 
+   !$f90tw TESTCODE(TEST, test_ec_module_block, test_ec_block_from, test_ec_block_from,
+   subroutine test_ec_block_from() bind(C)
+      logical :: success
+      real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
+
+      call initialize_ec_module()
+
+      call setup_block_from()
       
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '9', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
@@ -63,25 +67,8 @@ contains
       logical :: success
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
 
-      call create_file(BC_FILENAME, [ &
-                       "[General]", &
-                       "    fileVersion           = 1.01", &
-                       "    fileType              = boundConds", &
-                       "", &
-                       "[forcing]", &
-                       "    name                  = 9", &
-                       "    function              = timeseries", &
-                       "    timeInterpolation     = block-from", &
-                       "    quantity              = time", &
-                       "    unit                  = seconds since 2000-01-01 00:00:00", &
-                       "    quantity              = lateral_discharge", &
-                       "    unit                  = m³/s", &
-                       "    0 0", &
-                       "    10 100", &
-                       "    20 20", &
-                       "    30 300", &
-                       "    40 0"])
-
+      call setup_block_from()
+      
       call initialize_ec_module()
 
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '9', 'discharge', BC_FILENAME, 1, &
