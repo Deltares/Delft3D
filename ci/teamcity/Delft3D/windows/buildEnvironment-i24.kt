@@ -83,9 +83,6 @@ object WindowsBuildEnvironmentI24 : BuildType({
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                 """.trimIndent()
             }
-            conditions {
-                equals("trigger.type", "vcs")
-            }
         }
     }
 
