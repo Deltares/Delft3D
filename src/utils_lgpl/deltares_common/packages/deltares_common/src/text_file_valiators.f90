@@ -20,6 +20,7 @@ module m_text_file_validators
       class(TextFileProcessorVerifier), allocatable :: ptr
    end type VerifierPtr
 
+   !> Abstract interface for chapter-level verification (operates on tree_data pointer for the chapter)
    type, abstract :: ChapterVerifier
    contains
       procedure(verify_chapter_interface), deferred :: verify
@@ -42,19 +43,19 @@ module m_text_file_validators
    end interface
 
    !> String array verifier implementation
-   type, extends(TextFileProcessorVerifier) :: ChapterPropsVerifier
+   type, extends(TextFileProcessorVerifier) :: PropertiesVerifier
       character(len=:), allocatable :: required_props(:)
       character(len=:), allocatable :: chapter_name
    contains
-      procedure :: verify => string_array_verifier_verify
-   end type ChapterPropsVerifier
+      procedure :: verify => properties_verifier_verify
+   end type PropertiesVerifier
 
-   type, extends(TextFileProcessorVerifier) :: AndVerifier
-      type(VerifierPtr), allocatable :: verifiers(:)
-   contains
-      procedure :: verify => and_verifier_verify
-   end type AndVerifier
+   interface PropertiesVerifier
+      module procedure :: properties_verifier_constructor
+   end interface PropertiesVerifier
 
+   !> Check if one of more arrays have the same length, and optionally check against expected length
+   !> Chapter level
    type, extends(ChapterVerifier) :: ArraysLengthChapterVerifier
       character(len=:), allocatable :: property_names(:)
       character(len=:), allocatable :: expected_length
@@ -67,6 +68,8 @@ module m_text_file_validators
       module procedure :: arrays_length_chapter_verifier_constructor
    end interface ArraysLengthChapterVerifier
 
+   !> Check if one of more arrays have the same length, and optionally check against expected length
+   !> File Level
    type, extends(TextFileProcessorVerifier) :: ArraysLengthVerifier
       character(len=:), allocatable :: chapter_name
       class(ArraysLengthChapterVerifier), allocatable :: chapter_verifier
@@ -74,43 +77,30 @@ module m_text_file_validators
       procedure :: verify => arrays_length_verifier_verify
    end type ArraysLengthVerifier
 
-   interface ChapterPropsVerifier
-      module procedure :: string_array_verifier_constructor
-   end interface ChapterPropsVerifier
-
-!    interface AndVerifier
-!       module procedure :: and_verifier_constructor
-!    end interface AndVerifier
-
    interface ArraysLengthVerifier
       module procedure :: arrays_length_verifier_constructor
    end interface ArraysLengthVerifier
 
+   !> Combines multiple verifiers and requires all to pass
+   type, extends(TextFileProcessorVerifier) :: AndVerifier
+      type(VerifierPtr), allocatable :: verifiers(:)
+   contains
+      procedure :: verify => and_verifier_verify
+   end type AndVerifier
+
+
 contains
 
-   !> Constructor for ChapterPropsVerifier
-   function string_array_verifier_constructor(chapter_name, strings) result(verifier)
+   function properties_verifier_constructor(chapter_name, strings) result(verifier)
       character(len=*), intent(in) :: chapter_name
       character(len=*), intent(in) :: strings(:)
-      type(ChapterPropsVerifier) :: verifier
+      type(PropertiesVerifier) :: verifier
       integer :: n
 
       ! Allocate from source to preserve deferred character length
       allocate (verifier%required_props, source=strings)
       verifier%chapter_name = chapter_name
-   end function string_array_verifier_constructor
-
-   !> Constructor for AndVerifier
-!    function and_verifier_constructor(verifiers) result(verifier)
-!       class(TextFileProcessorVerifier), intent(in) :: verifiers(:)
-!       type(AndVerifier) :: verifier
-!       integer :: i
-
-!       allocate (verifier%verifiers(size(verifiers)))
-!       do i = 1, size(verifiers)
-!          allocate (verifier%verifiers(i)%ptr, source=verifiers(i))
-!       end do
-!    end function and_verifier_constructor
+   end function properties_verifier_constructor
 
    function arrays_length_chapter_verifier_constructor(property_names, expected_length) result(verifier)
       character(len=*), intent(in) :: property_names(:)
@@ -126,7 +116,6 @@ contains
       end if
    end function arrays_length_chapter_verifier_constructor
 
-   !> Constructor for ArraysLengthVerifier
    function arrays_length_verifier_constructor(chapter_name, property_names, expected_length) result(verifier)
       character(len=*), intent(in) :: chapter_name
       character(len=*), intent(in) :: property_names(:)
@@ -138,9 +127,8 @@ contains
 
    end function arrays_length_verifier_constructor
 
-   !> String array verifier implementation
-   function string_array_verifier_verify(this, processor) result(is_valid)
-      class(ChapterPropsVerifier), intent(in) :: this
+   function properties_verifier_verify(this, processor) result(is_valid)
+      class(PropertiesVerifier), intent(in) :: this
       type(TextFileProcessor), intent(in) :: processor
       logical :: is_valid
       integer :: i, j
@@ -177,7 +165,7 @@ contains
          end do
       end if
 
-   end function string_array_verifier_verify
+   end function properties_verifier_verify
 
    !> AndVerifier implementation - verifies all sub-verifiers
    function and_verifier_verify(this, processor) result(is_valid)
@@ -264,9 +252,9 @@ contains
             ! Build comma-separated list of property names
             prop_list = trim(this%property_names(1))
             do j = 2, size(this%property_names)
-               prop_list = prop_list // ', ' // trim(this%property_names(j))
+               prop_list = prop_list//', '//trim(this%property_names(j))
             end do
-            
+
             write (msgbuf, '(a,i0,a,i0,a,a,a,a,a)') 'Array length mismatch. Expected ', &
                read_expected_length, ' but got ', first_length, &
                ' (expected_length property: ', trim(this%expected_length), &
@@ -289,11 +277,12 @@ contains
 
       ! Find the chapter and check array lengths
       if (allocated(this%chapter_verifier)) then
-        is_valid = apply_chapter_verifier_to_chapter(processor%tree, this%chapter_name, this%chapter_verifier)
+         is_valid = apply_chapter_verifier_to_chapter(processor%tree, this%chapter_name, this%chapter_verifier)
       end if
 
    end function arrays_length_verifier_verify
 
+   !> Helper function to apply a chapter verifier to the specified chapter in the tree
    function apply_chapter_verifier_to_chapter(tree, chapter_name, chapter_verifier) result(is_valid)
       type(tree_data), pointer, intent(in) :: tree
       character(len=*), intent(in) :: chapter_name
