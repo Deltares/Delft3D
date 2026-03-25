@@ -166,7 +166,7 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
-    target_link_libraries(${library_name} PRIVATE
+    target_link_libraries(${library_name} PUBLIC
                           interacter_stub
                           PkgConfig::PETSC
                           uuid
@@ -183,10 +183,11 @@ if (WIN32)
         if(NOT lib_interacter)
            message(SEND_ERROR "Required Interacter library (intmwi64.lib) is missing for dflowfm_kernel.")
         else()
-           target_link_libraries(${library_name} PRIVATE ${lib_interacter})
+           target_link_libraries(${library_name} PUBLIC ${lib_interacter})
         endif()
     else()
-        target_link_libraries(${library_name} PRIVATE interacter_stub)
+        target_link_libraries(${library_name} PUBLIC interacter_stub)
+        target_link_libraries(${library_name} PUBLIC interacter_utils)
     endif()
 
     target_link_directories(${library_name} PUBLIC
@@ -217,6 +218,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/menuv1.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/setwor.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/viewport.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/intini.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/read_commandline.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/write_some_final_output.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/wrwaq.F90

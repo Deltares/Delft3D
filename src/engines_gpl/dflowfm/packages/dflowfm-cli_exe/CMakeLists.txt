@@ -6,21 +6,6 @@ set(resource_path ${dflowfm_path}/res)
 
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-# Interacter
-if(WITH_INTERACTER)
-    message(CHECK_START "Looking for Interacter library (intmwi64.lib)")
-    find_library (lib_interacter intmwi64.lib
-              HINTS ENV INTERACTER_DIR
-                  PATHS "${checkout_src_root}/third_party/interacter/bin/win32/x64")
-
-    if(NOT lib_interacter)
-       message(CHECK_FAIL "not found")
-       message(SEND_ERROR "Required Interacter library is missing.")
-    else()
-       message(CHECK_PASS "found")
-    endif()
-endif()
-
 set(source ${dflowfm_cli_path}/net_main.F90)
 
 set(icon_file ${resource_path}/dflowfm_icon.rc)
@@ -29,31 +14,6 @@ set(rc_version_file ${dflowfm_path}/version/dflowfm_cli_version.rc)
 # Define the executable
 set(executable_name dflowfm-cli)
 add_executable(${executable_name} ${source})
-
-# Add dependencies
-if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
-
-    target_link_libraries(${executable_name} PRIVATE
-         PkgConfig::PETSC
-         interacter_stub
-    )
-endif(UNIX)
-
-if(WIN32)
-    if(WITH_INTERACTER)
-        # Add lib_interacter before adding the other libraries. Sometimes it seems to make a difference
-        target_link_libraries(${executable_name} PRIVATE ${lib_interacter})
-        target_link_libraries(${executable_name} PRIVATE interacter_utils)
-    else()
-        target_link_libraries(${executable_name} PRIVATE interacter_stub)
-    endif()
-    target_link_libraries(${executable_name} PRIVATE
-                          petsc
-    )
-endif(WIN32)
 
 target_link_libraries(${executable_name} PRIVATE
                       dflowfm_kernel
