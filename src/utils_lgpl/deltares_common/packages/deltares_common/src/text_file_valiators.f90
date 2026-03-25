@@ -42,12 +42,18 @@ module m_text_file_validators
       end function verify_chapter_interface
    end interface
 
-   !> String array verifier implementation
-   type, extends(TextFileProcessorVerifier) :: PropertiesVerifier
+   !> Base verifier for chapter-based verification (delegates to a ChapterVerifier)
+   type, extends(TextFileProcessorVerifier) :: ChapterBasedVerifier
       character(len=:), allocatable :: chapter_name
-      class(ChapterPropertiesVerifier), allocatable :: chapter_verifier
+      class(ChapterVerifier), allocatable :: chapter_verifier
+      character(len=:), allocatable :: error_message_prefix
    contains
-      procedure :: verify => properties_verifier_verify
+      procedure :: verify => chapter_based_verifier_verify
+   end type ChapterBasedVerifier
+
+   !> String array verifier implementation
+   type, extends(ChapterBasedVerifier) :: PropertiesVerifier
+   contains
    end type PropertiesVerifier
 
    interface PropertiesVerifier
@@ -76,11 +82,8 @@ module m_text_file_validators
 
    !> Check if one of more arrays have the same length, and optionally check against expected length
    !> File Level
-   type, extends(TextFileProcessorVerifier) :: ArraysLengthVerifier
-      character(len=:), allocatable :: chapter_name
-      class(ArraysLengthChapterVerifier), allocatable :: chapter_verifier
+   type, extends(ChapterBasedVerifier) :: ArraysLengthVerifier
    contains
-      procedure :: verify => arrays_length_verifier_verify
    end type ArraysLengthVerifier
 
    interface ArraysLengthVerifier
@@ -105,6 +108,7 @@ contains
 
       verifier%chapter_name = chapter_name
       verifier%chapter_verifier = ChapterPropertiesVerifier(strings)
+      verifier%error_message_prefix = 'Verification failed for chapter'
    end function properties_verifier_constructor
 
    function arrays_length_chapter_verifier_constructor(property_names, expected_length) result(verifier)
@@ -129,6 +133,7 @@ contains
 
       verifier%chapter_name = chapter_name
       verifier%chapter_verifier = ArraysLengthChapterVerifier(property_names, expected_length)
+      verifier%error_message_prefix = 'Array length verification failed for chapter'
 
    end function arrays_length_verifier_constructor
 
@@ -156,20 +161,27 @@ contains
 
    end function chapter_properties_verifier_verify
 
-   function properties_verifier_verify(this, processor) result(is_valid)
-      class(PropertiesVerifier), intent(in) :: this
+   !> Base implementation for chapter-based verification - delegates to chapter_verifier
+   function chapter_based_verifier_verify(this, processor) result(is_valid)
+      class(ChapterBasedVerifier), intent(in) :: this
       type(TextFileProcessor), intent(in) :: processor
       logical :: is_valid
 
-      ! Find the chapter and check array lengths
+      is_valid = .not. processor%is_error
+      if (.not. is_valid) return
+
       if (allocated(this%chapter_verifier)) then
          is_valid = apply_chapter_verifier_to_chapter(processor%tree, this%chapter_name, this%chapter_verifier)
          if (.not. is_valid) then
-             write (msgbuf, '(a,a,a)') 'Verification failed for chapter: ', trim(this%chapter_name), '.'
+            if (allocated(this%error_message_prefix)) then
+               write (msgbuf, '(a,a,a)') trim(this%error_message_prefix), ': ', trim(this%chapter_name)
+            else
+               write (msgbuf, '(a,a,a)') 'Verification failed for chapter: ', trim(this%chapter_name), '.'
+            end if
          end if
       end if
 
-   end function properties_verifier_verify
+   end function chapter_based_verifier_verify
 
    !> AndVerifier implementation - verifies all sub-verifiers
    function and_verifier_verify(this, processor) result(is_valid)
@@ -269,25 +281,6 @@ contains
       end if
 
    end function arrays_length_chapter_verifier_verify
-
-   !> ArraysLengthVerifier implementation - verifies all specified arrays have consistent length
-   function arrays_length_verifier_verify(this, processor) result(is_valid)
-      class(ArraysLengthVerifier), intent(in) :: this
-      type(TextFileProcessor), intent(in) :: processor
-      logical :: is_valid
-
-      is_valid = .not. processor%is_error
-      if (.not. is_valid) return
-
-      ! Find the chapter and check array lengths
-      if (allocated(this%chapter_verifier)) then
-         is_valid = apply_chapter_verifier_to_chapter(processor%tree, this%chapter_name, this%chapter_verifier)
-         if (.not. is_valid) then
-             write (msgbuf, '(a,a,a)') 'Array length verification failed for chapter: ', trim(this%chapter_name), '.'
-         end if
-      end if
-
-   end function arrays_length_verifier_verify
 
    !> Helper function to apply a chapter verifier to the specified chapter in the tree
    function apply_chapter_verifier_to_chapter(tree, chapter_name, chapter_verifier) result(is_valid)
