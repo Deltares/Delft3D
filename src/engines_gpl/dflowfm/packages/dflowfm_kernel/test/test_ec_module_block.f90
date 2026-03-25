@@ -10,7 +10,7 @@ module test_ec_module_block
    character(len=*), parameter :: BC_FILENAME = "test.bc"
 contains
 
-   subroutine setup_block_from() 
+   subroutine setup_block_from()
       call create_file(BC_FILENAME, [ &
                        "[General]", &
                        "    fileVersion           = 1.01", &
@@ -39,7 +39,7 @@ contains
       call initialize_ec_module()
 
       call setup_block_from()
-      
+
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '9', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
 
@@ -68,7 +68,7 @@ contains
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
 
       call setup_block_from()
-      
+
       call initialize_ec_module()
 
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '9', 'discharge', BC_FILENAME, 1, &
@@ -97,7 +97,6 @@ contains
       logical :: success
       real(dp), dimension(3) :: test_array = [1.0_dp, 2.0_dp, 3.0_dp]
 
-
       call create_file(BC_FILENAME, [ &
                        "[General]", &
                        "    fileVersion           = 1.01", &
@@ -118,7 +117,6 @@ contains
                        "    40 0"])
 
       call initialize_ec_module()
-
 
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '10', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
