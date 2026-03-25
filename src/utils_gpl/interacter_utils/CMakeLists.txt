@@ -6,7 +6,7 @@ set(c_library_name interacter_utils_c)
 
 if(WIN32)
     add_library(${c_library_name} STATIC
-        src/patch_sendmessage.c
+        src/patch_user32_dll_sendmessage_for_interacter.c
     )
     target_link_libraries(${c_library_name} PRIVATE no_compiler_warnings)
 else()
