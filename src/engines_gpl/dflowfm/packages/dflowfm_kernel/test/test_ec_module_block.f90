@@ -4,6 +4,7 @@ module test_ec_module_block
    use fm_external_forcings, only: adduniformtimerelation_objects
    use m_meteo, only: initialize_ec_module, ecInstancePtr, item_lateraldischarge, ec_gettimespacevalue
    use m_file_helpers, only: create_file
+   
 
    implicit none
 
@@ -40,6 +41,7 @@ contains
       call setup_block_from()
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '9', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
+      call f90_expect_true(success, "adduniformtimerelation_objects failed to add object with block-from interpolation")
       block
          integer :: i
          real(dp), dimension(:), allocatable :: indices, results, expected_results
@@ -48,6 +50,7 @@ contains
          expected_results = [0.0_dp, 100.0_dp, 20.0_dp, 300.0_dp, 0.0_dp]
          do i = 1, size(indices)
             success = ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, 20000101, 0.0_dp, 1, indices(i))
+            call f90_expect_true(success, "ec_gettimespacevalue failed")
             results(i) = test_array(1)
          end do
          call f90_expect_near(results, expected_results, 1e-8_dp, "results do not match expected values")
@@ -66,6 +69,7 @@ contains
       call initialize_ec_module()
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '9', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
+      call f90_expect_true(success, "adduniformtimerelation_objects failed to add object with block-from interpolation")
       block
          integer :: i
          real(dp), dimension(:), allocatable :: indices, results, expected_results
@@ -74,6 +78,7 @@ contains
          expected_results = [0.0_dp, 20.0_dp]
          do i = 1, size(indices)
             success = ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, 20000101, 0.0_dp, 1, indices(i))
+            call f90_expect_true(success, "ec_gettimespacevalue failed")
             results(i) = test_array(1)
          end do
          call f90_expect_near(results, expected_results, 1e-8_dp, "results do not match expected values")
@@ -108,6 +113,7 @@ contains
       call initialize_ec_module()
       success = adduniformtimerelation_objects('lateral_discharge', '', 'lateral', '10', 'discharge', BC_FILENAME, 1, &
                                                1, test_array)
+      call f90_expect_true(success, "adduniformtimerelation_objects failed to add block-to forcing")
       block
          integer :: i
          real(dp), dimension(:), allocatable :: indices, results, expected_results
@@ -116,6 +122,7 @@ contains
          expected_results = [100.0_dp, 20.0_dp, 300.0_dp, 0.0_dp]
          do i = 1, size(indices)
             success = ec_gettimespacevalue(ecInstancePtr, item_lateraldischarge, 20000101, 0.0_dp, 1, indices(i))
+            call f90_expect_true(success, "ec_gettimespacevalue failed")
             results(i) = test_array(1)
          end do
          call f90_expect_near(results, expected_results, 1e-8_dp, "results do not match expected values")
