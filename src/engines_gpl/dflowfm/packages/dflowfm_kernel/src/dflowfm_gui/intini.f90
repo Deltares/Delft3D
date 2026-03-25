@@ -38,12 +38,9 @@ module m_intini
    use m_minmaxworld
 
    use precision, only: dp
-   implicit none
+   use interacter_utils, only: patch_interacter_sendmessage
 
-   interface
-      subroutine patch_interacter_sendmessage() bind(c, name='patch_interacter_sendmessage')
-      end subroutine
-   end interface
+   implicit none
 
 contains
 

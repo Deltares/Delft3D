@@ -42,3 +42,5 @@ set(rr_rtc_tools_module ${rr_rtc_tools_module_path}/rr_rtc_tools)
 # wl_openmi_support
 set(wl_openmi_support_module_path "${utils_gpl_path}/wl_openmi_support/packages")
 set(wl_openmi_support_module "${wl_openmi_support_module_path}/wl_openmi_support")
+
+set(interacter_utils_module ${utils_gpl_path}/interacter_utils/)

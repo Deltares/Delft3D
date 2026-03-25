@@ -46,6 +46,7 @@ if(WIN32)
     if(WITH_INTERACTER)
         # Add lib_interacter before adding the other libraries. Sometimes it seems to make a difference
         target_link_libraries(${executable_name} PRIVATE ${lib_interacter})
+        target_link_libraries(${executable_name} PRIVATE interacter_utils)
     else()
         target_link_libraries(${executable_name} PRIVATE interacter_stub)
     endif()
