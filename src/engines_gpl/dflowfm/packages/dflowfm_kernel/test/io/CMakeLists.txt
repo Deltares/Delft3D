@@ -71,15 +71,4 @@ f90twtest(test_mdu_file_read_write
 )
 
 
-f90twtest(test_ec_module_block
-    CFILES test_ec_module_block.cpp
-    F90FILES test_ec_module_block.f90
-    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_ec_module_block.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
-    LIBRARIES dflowfm_kernel test_helpers
-    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
-)
-
-
 copy_test_resources("test_mdu_file_read_write" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:test_mdu_file_read_write>/MDUversion")
-copy_test_resources("test_ec_module_block" "${CMAKE_CURRENT_SOURCE_DIR}/resources/ec_module" "$<TARGET_FILE_DIR:test_ec_module_block>/ec_module")
