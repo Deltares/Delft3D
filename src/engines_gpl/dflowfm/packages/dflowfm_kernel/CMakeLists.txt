@@ -184,10 +184,10 @@ if (WIN32)
            message(SEND_ERROR "Required Interacter library (intmwi64.lib) is missing for dflowfm_kernel.")
         else()
            target_link_libraries(${library_name} PUBLIC ${lib_interacter})
+           target_link_libraries(${library_name} PUBLIC interacter_utils)
         endif()
     else()
         target_link_libraries(${library_name} PUBLIC interacter_stub)
-        target_link_libraries(${library_name} PUBLIC interacter_utils)
     endif()
 
     target_link_directories(${library_name} PUBLIC
