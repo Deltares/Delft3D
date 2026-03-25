@@ -124,6 +124,7 @@ f90twtest(test_unstruc_model
     LIBRARIES dflowfm_kernel
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
+copy_dflowfm_test_dependencies(test_unstruc_model)
 
 add_subdirectory(io)
 add_subdirectory(helpers)
