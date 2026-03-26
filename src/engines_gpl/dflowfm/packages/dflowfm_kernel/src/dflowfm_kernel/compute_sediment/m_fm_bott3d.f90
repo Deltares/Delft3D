@@ -118,21 +118,18 @@ contains
       real(kind=dp) :: sbtot(ndx,stmpar%lsedtot)
       real(fp), dimension(:), pointer :: dunelength
       real(fp), dimension(1:0), target :: empty_dunelength
-      logical, pointer :: cmpupd
 
    !!
    !! Point
    !!
 
-      associate (&
-         cmpupd => stmpar%morpar%cmpupd &
-         )
+      associate ( cmpupd => stmpar%morpar%cmpupd )
 
       if (associated(bfmpar%dunelength)) then
          dunelength => bfmpar%dunelength
       else
          dunelength => empty_dunelength
-      end if      cmpupd => stmpar%morpar%cmpupd
+      end if
 
    !!
    !! Execute
@@ -314,7 +311,8 @@ contains
 
       !
       call timstop(handle_extra(89))
-   end associate
+      !
+      end associate
    end subroutine fm_bott3d
 
    !< Calculate suspended sediment transport correction vector (for SAND)

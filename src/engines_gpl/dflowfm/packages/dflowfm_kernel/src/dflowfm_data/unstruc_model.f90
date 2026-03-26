@@ -1720,9 +1720,10 @@ contains
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fbreak<0.0, reset to 0.0. Wave breaking contribution to tke switched off.')
          fbreak = 0.0_dp
       end if
-      if (fforc < 0.0_dp) then
-         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fforc<0.0, reset to 0.0. Wave forces switched off.')
+      if (fforc <= 0.0_dp) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fforc<=0.0, reset to 0.0. Wave forces switched off.')
          fforc = 0.0_dp
+         jawaveforces = WAVE_FORCES_OFF
       end if
 
       if (jawave <= WAVE_FETCH_YOUNG) then

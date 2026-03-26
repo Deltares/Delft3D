@@ -62,7 +62,7 @@ contains
 
       integer :: k1, k2
 
-      if (jawaveforces == WAVE_FORCES_OFF .or. comparereal(fforc, 0.0_dp) == 0) then
+      if (jawaveforces == WAVE_FORCES_OFF) then
          wavfu = 0.0_dp
          wavfv = 0.0_dp
          return
