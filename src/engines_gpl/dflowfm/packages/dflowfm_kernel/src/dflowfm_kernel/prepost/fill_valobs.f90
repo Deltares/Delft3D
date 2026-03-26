@@ -56,6 +56,7 @@ contains
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
+      use m_flowparameters, only: epshs
       use m_observations_data, only: valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
                                      ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, &
                                      ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, &
@@ -133,7 +134,7 @@ contains
          ! Allocate as 2D aray, determine wet,1, or dry, 0
          call realloc(wet_or_dry, ndx, keepExisting=.false., fill=1)
          do k = 1, ndx
-             if (water_depth(k) < 0.10_dp) wet_or_dry(k) = 0
+             if (water_depth(k) < epshs) wet_or_dry(k) = 0
          end do
       end if
       
@@ -241,9 +242,10 @@ contains
             neighbour_nodes_obs(1,i)   = k
             neighbour_nodes_obs(2,i)   = k
             neighbour_nodes_obs(3,i)   = k
-            neighbour_weights_obs(1,i) = 1.0
-            neighbour_weights_obs(2,i) = 0.0
-            neighbour_weights_obs(3,i) = 0.0
+            neighbour_weights_obs(1,i)           = 1.0_dp
+            neighbour_weights_obs(2,i)           = 0.0_dp
+            neighbour_weights_obs(3,i)           = 0.0_dp
+            wet_or_dry(neighbour_nodes_obs(:,i)) = 1
          end if
 
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
@@ -749,11 +751,11 @@ contains
       use m_get_layer_indices, only: getlayerindices
       use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_W
 
-      real(kind=dp), intent(in) :: values_on_grid(:) !< Array containing the actual values to be interpolated. Typically a state array from m_flow.
-      integer      , intent(in) :: wet_or_dry(:)       !< Array indicating wheter point is wet or dry
-      integer, intent(in) :: i_station !< Station index (in all relevant observation arrays, such as xobs, valobs).
-      integer, intent(in) :: ipnt_valobs !< Starting index of this quantity inside the valobs(i_station, :) slice, typically one of the IPNT_* integers from m_observations_data.
-      integer, intent(in) :: loc_type !< Location type, one of the constants from fm_location_types, .e.g., UNC_LOC_S3D.
+      real(kind=dp), intent(in)    :: values_on_grid(:) !< Array containing the actual values to be interpolated. Typically a state array from m_flow.
+      integer      , intent(in)    :: wet_or_dry(:)       !< Array indicating wheter point is wet or dry
+      integer, intent(in)          :: i_station !< Station index (in all relevant observation arrays, such as xobs, valobs).
+      integer, intent(in)          :: ipnt_valobs !< Starting index of this quantity inside the valobs(i_station, :) slice, typically one of the IPNT_* integers from m_observations_data.
+      integer, intent(in)          :: loc_type !< Location type, one of the constants from fm_location_types, .e.g., UNC_LOC_S3D.
 
       real(kind=dp) :: value
       real(kind=dp) :: weighttot
@@ -763,7 +765,7 @@ contains
       ! Interpolation needed, however no surroundig wet points, return, value remains dmiss!
       if (intobs(i_station) == 1) then
           if (neighbour_nodes_obs(1,i_station)                  == 0)   return
-          if (sum(wet_or_dry(neighbour_nodes_obs(:,i_station))) == 0 )  return                 
+          if (sum(wet_or_dry(neighbour_nodes_obs(:,i_station))) == 0 )  return
       end if 
       
       oneDown = 0
