@@ -11,7 +11,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(src_path src)
 
 # Gather the source files
-set(headers include/blasfm.h)
+set(headers include/blasfm.inc)
 
 # Set version file variables
 set(dflowfm_version_header_path ${dflowfm_path}/version)

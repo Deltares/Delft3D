@@ -34,23 +34,21 @@
 //  (c) Deltares, 2026
 //
 
-
 #if (!defined(DIOSHM_DATASET_H))
-#define DIOSHM_DATASET_H
+    #define DIOSHM_DATASET_H
 
 //
 // Put/Get bytes to/from a Named Datablock
 //
 
-void DioShmPutDataBlock(char * name, int dSize, char * data);
-int DioShmGetDataBlock(char * name, int dSize, char * data);
-void DioShmFreeDataBlock(char * name);
+void DioShmPutDataBlock(char* name, int dSize, char* data);
+int DioShmGetDataBlock(char* name, int dSize, char* data);
+void DioShmFreeDataBlock(char* name);
 
 //
 // Cleanup the Named Datablock administration
 //
 
 void DioShmDataBlockCleanup(void);
-
 
 #endif

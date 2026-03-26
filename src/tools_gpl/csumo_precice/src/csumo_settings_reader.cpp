@@ -155,28 +155,28 @@ namespace
 
     struct GeneralSection
     {
-            std::optional<std::string> id;
-            std::optional<std::string> sub_grid_model;
-            std::optional<std::string> far_field_model;
+        std::optional<std::string> id;
+        std::optional<std::string> sub_grid_model;
+        std::optional<std::string> far_field_model;
     };
 
     struct DataSection
     {
-            csumo_precice::Point2D position;
-            std::vector<csumo_precice::Point2D> ambient_positions;
-            std::optional<csumo_precice::Point2D> intake;
-            csumo_precice::Discharge discharge;
-            double nozzle_diameter{};
-            double nozzle_elevation{};
-            double vertical_angle{};
-            double horizontal_angle{};
-            std::optional<std::string> nf2ff_file;
+        csumo_precice::Point2D position;
+        std::vector<csumo_precice::Point2D> ambient_positions;
+        std::optional<csumo_precice::Point2D> intake;
+        csumo_precice::Discharge discharge;
+        double nozzle_diameter{};
+        double nozzle_elevation{};
+        double vertical_angle{};
+        double horizontal_angle{};
+        std::optional<std::string> nf2ff_file;
     };
 
     struct CommSection
     {
-            std::filesystem::path ff2nf_dir;
-            std::filesystem::path ff_run_dir;
+        std::filesystem::path ff2nf_dir;
+        std::filesystem::path ff_run_dir;
     };
 
     // -------------------------------------------------------------------------
