@@ -45,6 +45,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
     use wave_data
     use swan_flow_grid_maps
     use netcdf
+    use nc_check, only : nc_check_err
     use dwaves_version_module
     !
     implicit none
