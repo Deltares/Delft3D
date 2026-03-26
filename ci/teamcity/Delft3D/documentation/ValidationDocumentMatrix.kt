@@ -9,7 +9,7 @@ import Delft3D.template.*
 
 object ValidationDocumentMatrix : BuildType({
     templates(
-        TemplateDownloadFromS3,
+        TemplateDownloadFromDVC,
         TemplateValidationDocumentation
     )
 
