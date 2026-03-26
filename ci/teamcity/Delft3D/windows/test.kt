@@ -100,6 +100,8 @@ object WindowsTest : BuildType({
                     Expand-Archive -Path %file_path% -DestinationPath "temp_extract"
 
                     robocopy "temp_extract/x64" ${'$'}dest /E /XC /XN /XO
+
+                    Start-Sleep -Seconds 3
                 """.trimIndent()
             }
         }
