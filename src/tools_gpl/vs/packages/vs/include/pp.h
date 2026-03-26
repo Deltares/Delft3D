@@ -28,13 +28,9 @@
 // $HeadURL$
 
 #ifndef _PP_INCLUDED
-#   define _PP_INCLUDED
-    extern BVoid             PP_write_var_to_pipe ( FILE *,
-                                      struct St_var * );
-    extern struct St_var * PP_read_var_from_pipe ( FILE * ) ;
-    extern struct St_var * PP_create_new_var (
-                                      BText   , BText, BInt4    , BInt4,
-                                      BInt4 [], BInt4, BInt4 [] );
-    extern BInt4            PP_calc_number_of_variables (
-                                      struct St_var * );
+#define _PP_INCLUDED
+extern BVoid PP_write_var_to_pipe(FILE*, struct St_var*);
+extern struct St_var* PP_read_var_from_pipe(FILE*);
+extern struct St_var* PP_create_new_var(BText, BText, BInt4, BInt4, BInt4[], BInt4, BInt4[]);
+extern BInt4 PP_calc_number_of_variables(struct St_var*);
 #endif
