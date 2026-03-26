@@ -246,7 +246,7 @@ module swan_input
       logical :: curviwind
       logical :: fshift
       logical :: hotfile
-      logical :: nautconv
+      logical :: nautical_convention
       logical :: output_points
       logical :: output_pnt_file
       logical :: output_spec1d
@@ -302,7 +302,7 @@ module swan_input
       real :: grav
       real, dimension(7) :: icecoeff
       real :: icewind
-      real :: northdir
+      real :: north_direction
       real :: percwet
       real :: rho
       real :: rhomud
@@ -739,9 +739,9 @@ contains
       call str_lower(parname, len(parname))
       select case (parname)
       case ('nautical')
-         sr%nautconv = .true.
+         sr%nautical_convention = .true.
       case ('cartesian')
-         sr%nautconv = .false.
+         sr%nautical_convention = .false.
       case default
          write (*, *) 'SWAN_INPUT: missing or invalid direction convention'
          call handle_errors_mdw(sr)
@@ -1047,14 +1047,14 @@ contains
       !
       sr%grav = 9.81
       sr%rho = 1025.0
-      sr%northdir = 90.0
+      sr%north_direction = 90.0
       sr%depmin = 0.05
       sr%inrhog = 1
       sr%wlevelcorr = 0.0
       sr%maxerr = 2
       call prop_get(mdw_ptr, 'Constants', 'Gravity', sr%grav)
       call prop_get(mdw_ptr, 'Constants', 'WaterDensity', sr%rho)
-      call prop_get(mdw_ptr, 'Constants', 'NorthDir', sr%northdir)
+      call prop_get(mdw_ptr, 'Constants', 'NorthDir', sr%north_direction)
       call prop_get(mdw_ptr, 'Constants', 'MinimumDepth', sr%depmin)
       call prop_get(mdw_ptr, 'Constants', 'WaterLevelCorrection', sr%wlevelcorr)
       call prop_get(mdw_ptr, 'Constants', 'MaxErrorLevel', sr%maxerr)
@@ -2803,7 +2803,7 @@ contains
       line(1:22) = 'SET   LEVEL =         '
       line(23:47) = 'NOR =           DEPMIN = '
       write (line(15:21), '(F6.2)') wlevelcorr
-      write (line(29:34), '(F6.2)') sr%northdir
+      write (line(29:34), '(F6.2)') sr%north_direction
       write (line(48:53), '(F6.2)') sr%depmin
       line(54:55) = ' _'
       write (luninp, '(1X,A)') line
@@ -2820,7 +2820,7 @@ contains
       line(54:55) = ' _'
       write (luninp, '(1X,A)') line
       line = ' '
-      if (sr%nautconv) then
+      if (sr%nautical_convention) then
          line(7:11) = 'NAUT '
       else
          line(7:11) = 'CART '

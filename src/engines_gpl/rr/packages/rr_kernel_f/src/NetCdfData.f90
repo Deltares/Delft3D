@@ -501,7 +501,7 @@ contains
            tEnd   = ref_date - tzone / 24.0_hp +  Date_arr(ndx1)
            NrSecs = RTimestepSize * 60.0_hp * 24.0_hp * 60.0_hp
        else
-           call setECMessage("ec_support::ecGetTimesteps: Unable to identify the time unit.")
+           call set_ec_message("ec_support::ecGetTimesteps: Unable to identify the time unit.")
            return
        endif
 

@@ -93,21 +93,15 @@ contains
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
                                   flow_without_waves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
-                             kmxsed, taub, uuu, vvv
-      use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, &
-                             sxtot, sytot, ucxq_mor, ucyq_mor
-      use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
-      use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, &
-                             sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
-      use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, &
-                             sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
-      use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, &
-                             dzbdt, tratyp, ws, wslc
-      use m_fm_erosed, only: max_integers, max_strings, dll_integers, dll_strings, dll_function, dll_handle
-      use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
-      use m_fm_erosed, only: i10, i15, i50, i90
-      use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, &
-                             factsd, pmcrit, uau
+                             kmxsed, taub, uuu, vvv, e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, &
+                             sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor, sourf, sourse, sour_im, sinkf, sinkse, hs_mor, &
+                             mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, sedtrcfac, sedd50, rhosol, nmudfrac, &
+                             taucr, tetacr, dstar, iform, dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, &
+                             nxx, sedd50fld, sedtyp, xx, min_dxx_sedtyp, logsedsig, asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, &
+                             iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc, max_integers, max_strings, dll_integers, &
+                             dll_strings, dll_function, dll_handle, mfluff, wetslope, oldmudfrac, i10, i15, i50, i90, bed, bedw, camax, &
+                             cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
+                             frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -124,6 +118,9 @@ contains
       use m_sand_mud
       use m_get_kbot_ktop
       use m_get_chezy, only: get_chezy
+      use m_compdiam, only: compdiam
+      use m_comphidexp, only: comphidexp
+      use m_getfixfac, only: getfixfac
       !
       implicit none
       !
@@ -243,6 +240,10 @@ contains
       real(kind=dp) :: z0u, czu
       !
       real(fp), dimension(:), allocatable :: localpar !< local array for sediment transport parameters
+
+      integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
+      integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
+      integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
@@ -535,7 +536,7 @@ contains
       dtmor = dts * morfac
       !
       call getfixfac(stmpar%morlyr, 1, ndx, lsedtot, & ! Update underlayer bookkeeping system for erosion/sedimentation
-                   & ndx, fixfac, ffthresh)
+                   & ndx, fixfac, ffthresh, ithresh)
       !
       ! Set fixfac to 1.0 for tracer sediments and adjust frac
       !
@@ -589,9 +590,27 @@ contains
          !
          ! determine hiding & exposure factors
          !
-         call comphidexp(frac, dm, ndx, lsedtot, &
-            & sedd50, hidexp, ihidexp, asklhe, &
-            & mwwjhe, 1, ndx)
+         if (stmpar%morlyr%settings%ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+            !In this case, the hiding and exposure factors are computed based on the mean grain
+            !size of the sediment in both the active layer (which is the top layer in the bed) and
+            !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
+            !in the second layer (the coarse layer) will influence the sediment transport rate. 
+            !`frac` is used for computing the sediment transport rate for each fraction. This should
+            !depend only on the sediment in the active layer, and therefore `frac` is not overwritten. 
+            call getfrac(stmpar%morlyr,frac_he    ,anymud    ,mudcnt    , &
+                        & mudfrac_he   ,1, ndx, BED_LAYER_FROM, BED_LAYER_TO)
+            call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+                        & logsedsig ,nseddia   ,logseddia ,ndx     ,1, &
+                        & ndx,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+                        & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
+            call comphidexp(frac_he   ,dm_he     ,ndx     ,lsedtot   , &
+                           & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
+                           & mwwjhe    ,1, ndx)
+         else
+            call comphidexp(frac, dm, ndx, lsedtot, &
+               & sedd50, hidexp, ihidexp, asklhe, &
+               & mwwjhe, 1, ndx)
+         endif
 
          !endif
          !
@@ -781,7 +800,7 @@ contains
             end if
          end if
          !
-         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, 1.0e-5_dp))
+         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
          !
          ! To be in line with rest of FM, this should be
          !ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)

@@ -2224,7 +2224,7 @@ contains
       use m_observations_data
       use m_density_parameters, only: apply_thermobaricity
       use m_statistical_output_types, only: process_data_interface_double
-      use m_transport, only: NUMCONST, itemp, isalt, ised1
+      use m_transport, only: itemp, isalt, ised1
       use m_sediment, only: stm_included, stmpar
       use m_longculverts_data, only: nlongculverts
       use m_monitoring_crosssections, only: ncrs
@@ -2308,20 +2308,20 @@ contains
       !
       ! Source-sink variables
       !
-      if (jahissourcesink > 0 .and. numsrc > 0) then
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), qstss(1:(numconst + 1) * numsrc:(numconst + 1)))
+      if (jahissourcesink > 0 .and. num_source_sink > 0) then
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), source_sink_all_discharges(1, :))
          i = 1
          if (isalt > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), qstss(i:(numconst + 1) * numsrc:(numconst + 1)))
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), source_sink_all_discharges(i, :))
          end if
          if (itemp > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), qstss(i:(numconst + 1) * numsrc:(numconst + 1)))
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), source_sink_all_discharges(i, :))
          end if
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), qsrc)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), vsrccum)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), qsrcavg)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), source_sink_water_discharge)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), source_sink_cumulative_volume)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), source_sink_average_discharge_previous)
       end if
 
       !
@@ -2634,15 +2634,18 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_R), valobs(:, IPNT_WAVER))
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UORB), valobs(:, IPNT_WAVEU))
-            if (model_is_3D() .and. .not. flow_without_waves) then
-               temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCXST:IPNT_UCXST + kmx - 1)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), temp_pointer)
+            if (.not. flow_without_waves) then
 
-               temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCYST:IPNT_UCYST + kmx - 1)
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), temp_pointer)
-            else
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), valobs(:, IPNT_UCXST))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), valobs(:, IPNT_UCYST))
+               if (model_is_3D()) then
+                  temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCXST:IPNT_UCXST + kmx - 1)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), temp_pointer)
+
+                  temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCYST:IPNT_UCYST + kmx - 1)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), temp_pointer)
+               else
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_USTOKES), valobs(:, IPNT_UCXST))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VSTOKES), valobs(:, IPNT_UCYST))
+               end if
             end if
          end if
          if (jahistaucurrent > 0) then

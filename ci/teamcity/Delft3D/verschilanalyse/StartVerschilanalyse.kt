@@ -42,6 +42,7 @@ object StartVerschilanalyse : BuildType({
         param("current_prefix", "output/weekly/development")
         param("models_path", "input")
         param("model_filter", "")
+        param("json_configs_path", "config")
         checkbox(
             "send_email",
             "true",
@@ -150,6 +151,7 @@ object StartVerschilanalyse : BuildType({
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
                     --model-filter='%model_filter%' \
+                    --json-configs-path='%json_configs_path%' \
                     --va-home="${'$'}{va_home}"
                 popd
             """.trimIndent()
