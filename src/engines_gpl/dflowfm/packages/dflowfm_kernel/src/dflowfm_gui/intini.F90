@@ -38,6 +38,10 @@ module m_intini
    use m_minmaxworld
 
    use precision, only: dp
+   #if HAVE_DISPLAY==1
+      use interacter_utils, only: patch_user32_dll_sendmessage_for_interacter
+   #endif
+
    implicit none
 
 contains
@@ -71,17 +75,20 @@ contains
          NCOLR = 16
 !        CALL VGA@()
       end if
+
+!     Patch user32.dll's IAT to replace SendMessageA called by ISCREENOPEN with a timeout
+!     variant, preventing deadlock when another process does not respond (Outlook, Acrobat, etc.).
+#if HAVE_DISPLAY==1
+      call patch_user32_dll_sendmessage_for_interacter()
+#endif
       call ISCREENOPEN(' ', 'GR', NXPIX, NYPIX, NCOLR)
 
       call ISCREENTITLE('G', trim(company)//'-'//trim(product_name)//' '//trim(version_full))
-
-      !CALL ISCREENTITLE('G', PROGNM)
 
       call SETGRAFMOD()
       call SETCOLORTABLE()
 
       call INIKEYS()
-!      CALL INSERTOVER('OVER')
 
 !     set size crosshair cursor
       ICRHF = 1.0_dp / CROSHRSZ
@@ -111,9 +118,6 @@ contains
       call IFRAMEOPTIONS(6, 15)
       call IFRAMEOPTIONS(7, 0)
 
-!     CALL IFRAMETYPE(9)
-!     CALL IFORMDEFAULTS(3)
-
       call SETTEXTSIZE()
       call IGRFILLPATTERN(4, 0, 0)
 
@@ -121,7 +125,6 @@ contains
       XLEFT = 0.0_dp
       JAXIS = 0
       call viewport(0.0, 0.0, 1.0, 1.0)
-!      CALL IPGAREA(0.0,0.0,1.0,1.0)
 
       XMIN = 0.0_dp
       XMAX = 1.0_dp
