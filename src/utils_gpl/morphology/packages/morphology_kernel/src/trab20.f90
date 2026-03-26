@@ -142,7 +142,6 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     !
     ! limit input parameters to sensible values
     !
-    facua = max(min(facua,1.0_fp),0.0_fp)
     facas = max(min(facas,1.0_fp),0.0_fp)
     facsk = max(min(facsk,1.0_fp),0.0_fp)
     if (.not. (waveform==1 .or. waveform==2)) waveform=2            ! van Thiel default
@@ -200,7 +199,6 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
    end if
    !
    if (alfad50 > 0.0_fp) then
-      !uamag =  uamag * (0.000225_fp/d50)**alfad50     ! hoe kan een snelheidsasymmetrie fie zijn van korrelgrootte?
       ceqb =  ceqb * (0.000225_fp/d50)**alfad50
       ceqs =  ceqs * (0.000225_fp/d50)**alfad50
    endif
