@@ -56,12 +56,17 @@ object WindowsCollectEnvironment : BuildType({
                 """.trimIndent()
             }
         }
-        dockerCommand {
-            name = "Docker push"
-            commandType = push {
-                namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%
-                """.trimIndent()
+        if (DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true") {
+            dockerCommand {
+                name = "Docker push"
+                commandType = push {
+                    namesAndTags = """
+                        containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%
+                    """.trimIndent()
+                }
+                conditions {
+                    equals("trigger.type", "vcs")
+                }
             }
         }
     }
