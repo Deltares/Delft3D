@@ -757,6 +757,8 @@ contains
    !> Read the current [Meteo] block from new external forcings file
    !! and do required initialisation for that quantity.
    function init_meteo_forcings(block_ptr, base_dir, file_name, group_name) result(res)
+      use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
+      use m_sferic, only: jsferic
       use string_module, only: str_tolower
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
@@ -867,6 +869,9 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
          call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+         ! Push search radius into EC module before registering the relation.
+         ! init_spatial_extrapolation only updates the radius if the given value > 0.
+         call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
          select case (trim(str_tolower(forcing_file_type)))
          case ('bcascii')
