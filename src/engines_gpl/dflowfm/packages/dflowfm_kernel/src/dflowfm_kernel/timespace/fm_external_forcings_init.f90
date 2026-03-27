@@ -628,7 +628,6 @@ contains
       use string_module, only: str_tolower
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
-      use fm_external_forcings_data, only: filetype
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, &
                         ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, &
@@ -670,6 +669,7 @@ contains
                  forcing_file => input%forcing_file, &
                  forcing_file_type => input%forcing_file_type, &
                  target_mask_file => input%target_mask_file, &
+                 filetype => input%filetype, &
                  invert_mask => input%invert_mask, &
                  oper => input%oper, &
                  method => input%method, &
