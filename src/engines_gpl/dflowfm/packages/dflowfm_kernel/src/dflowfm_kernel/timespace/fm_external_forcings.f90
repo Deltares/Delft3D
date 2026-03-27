@@ -1710,27 +1710,6 @@ contains
 
    end subroutine init_threttimes
 
-   subroutine allocatewindarrays()
-      use m_wind
-      use m_flow
-      use m_flowgeom
-
-      implicit none
-
-      integer :: ierr
-
-      if (.not. allocated(wx)) then
-         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
-         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
-         wx = 0.0_dp
-         wy = 0.0_dp
-         wdsu = 0.0_dp
-         wdsu_x = 0.0_dp
-         wdsu_y = 0.0_dp
-      end if
-
-   end subroutine allocatewindarrays
-
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
@@ -2968,45 +2947,6 @@ contains
       end if
 
    end subroutine finalize
-
-   !> Allocate and initialized atmosperic pressure variable(s)
-   function allocate_patm(default_value) result(status)
-      use m_wind, only: air_pressure
-      use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr, realloc
-
-      real(kind=dp), intent(in) :: default_value !< default atmospheric pressure value
-      integer :: status
-
-      call realloc(air_pressure, ndx, keepExisting=.true., fill=default_value, stat=status)
-      call aerr('air_pressure(ndx)', status, ndx)
-   end function allocate_patm
-
-   !> Allocate and initialized pseudo air pressure variable(s)
-   function allocate_pseudo_air_pressure(default_value) result(status)
-      use m_wind, only: pseudo_air_pressure
-      use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr, realloc
-
-      real(kind=dp), intent(in) :: default_value !< default pseudo air pressure value
-      integer :: status
-
-      call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=default_value, stat=status)
-      call aerr('pseudo_air_pressure(ndx)', status, ndx)
-   end function allocate_pseudo_air_pressure
-
-   !> Allocate and initialized water_level_correction variable(s)
-   function allocate_water_level_correction(default_value) result(status)
-      use m_wind, only: water_level_correction
-      use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr, realloc
-
-      real(kind=dp), intent(in) :: default_value !< default water level correction value
-      integer :: status
-
-      call realloc(water_level_correction, ndx, keepExisting=.true., fill=default_value, stat=status)
-      call aerr('water_level_correction(ndx)', status, ndx)
-   end function allocate_water_level_correction
 
    function check_keyword_zerozbndinflowadvection() result(success)
       use m_flowparameters, only: jaZerozbndinflowadvection

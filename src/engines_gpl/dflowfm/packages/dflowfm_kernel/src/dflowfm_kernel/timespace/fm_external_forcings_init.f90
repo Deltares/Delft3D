@@ -658,16 +658,16 @@ contains
       call prop_get(block_ptr, '', 'extrapolationAllowed', res%is_extrapolation_allowed)
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
       call prop_get(block_ptr, '', 'operand', res%oper)
-      call prop_get(block_ptr, '', 'averagingType',        res%averaging_type)
-      call prop_get(block_ptr, '', 'averagingRelSize',      res%averaging_rel_size)
-      call prop_get(block_ptr, '', 'averagingNumMin',       res%averaging_num_min)
-      call prop_get(block_ptr, '', 'averagingPercentile',   res%averaging_percentile)
+      call prop_get(block_ptr, '', 'averagingType', res%averaging_type)
+      call prop_get(block_ptr, '', 'averagingRelSize', res%averaging_rel_size)
+      call prop_get(block_ptr, '', 'averagingNumMin', res%averaging_num_min)
+      call prop_get(block_ptr, '', 'averagingPercentile', res%averaging_percentile)
 
    end function read_spatial_field_block
 
    !> Validate a t_spatial_field_input read by read_spatial_field_block.
    !! Derives method and filetype. Returns .false. and writes error messages on failure.
-   function validate_spatial_field_input(input, file_name, group_name) result(is_successful)
+   function validate_spatial_field_input(input, file_name, group_name, base_dir) result(is_successful)
       use messageHandling, only: err_flush, msgbuf
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
                            update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
@@ -676,11 +676,12 @@ contains
       use string_module, only: strcmpi
 
       type(t_spatial_field_input), intent(inout) :: input
-      character(len=*), intent(in)               :: file_name
-      character(len=*), intent(in)               :: group_name
-      logical                                    :: is_successful
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: group_name
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
 
-      logical :: has_interpolation_method
+      logical :: is_successful
+      logical :: has_interpolation_method, target_mask_file_exists
 
       is_successful = .false.
 
@@ -700,6 +701,19 @@ contains
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
+      end if
+
+      ! Resolve paths relative to the ext file base directory
+      call resolvePath(input%forcing_file, base_dir)
+      if (len_trim(input%target_mask_file) > 0) then
+         call resolvePath(input%target_mask_file, base_dir)
+         inquire (file=trim(input%target_mask_file), exist=target_mask_file_exists)
+         if (.not. target_mask_file_exists) then
+            write (msgbuf, '(7a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
+               ']. targetMaskFile ''', trim(input%target_mask_file), ''' does not exist.'
+            call err_flush()
+            return
+         end if
       end if
 
       ! Derive method
@@ -765,7 +779,7 @@ contains
       use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
                         ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, qext, pseudo_air_pressure_available, &
-                        water_level_correction_available
+                        water_level_correction_available, air_pressure, pseudo_air_pressure, water_level_correction, wx, wy
       use m_flowgeom, only: ndx, lnx, xz, yz
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
                                   btempforcingtypS, itempforcingtyp
@@ -775,7 +789,8 @@ contains
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
-      use m_alloc, only: aerr
+      use m_alloc, only: realloc
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -788,7 +803,7 @@ contains
       logical :: invert_mask
       logical :: is_variable_name_available
       character(len=INI_VALUE_LEN) :: variable_name
-      character(len=INI_VALUE_LEN) ::  forcing_file, forcing_file_type, quantity, target_mask_file
+      character(len=INI_VALUE_LEN) :: forcing_file, forcing_file_type, quantity, target_mask_file
       character(len=1) :: oper
       ! generalized properties+pointers to target element grid:
       integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set
@@ -798,11 +813,12 @@ contains
       integer :: ierr, method
       logical :: is_successful
       type(t_spatial_field_input) :: input
+      real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
       res = .false.
 
       input = read_spatial_field_block(block_ptr)
-      res = validate_spatial_field_input(input, file_name, group_name)
+      res = validate_spatial_field_input(input, file_name, group_name, base_dir)
 
       if (.not. res) return
 
@@ -813,71 +829,44 @@ contains
       if (.not. is_successful) then
          select case (quantity)
          case ('airdensity')
-            kx = 1
-            if (.not. allocated(air_density)) then
-               allocate (air_density(ndx), stat=ierr, source=0.0_dp)
-               call aerr('air_density(ndx)', ierr, ndx)
-            end if
+            call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.false.)
          case ('airpressure', 'atmosphericpressure')
-            kx = 1
-            ierr = allocate_patm(0.0_dp)
-
+            call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
          case ('pseudoAirPressure')
-            kx = 1
-            ierr = allocate_pseudo_air_pressure(0.0_dp)
-
+            call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
          case ('waterLevelCorrection')
-            kx = 1
-            ierr = allocate_water_level_correction(0.0_dp)
-
+            call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp)
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-            kx = 1
-            call allocatewindarrays()
+            call realloc(wx, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wy, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wdsu, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wdsu_x, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wdsu_y, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(air_pressure, ndx, keepExisting=.false., fill=DEFAULT_AIR_PRESSURE)
+            call realloc(ec_pwxwy_x, ndx, keepExisting=.false., fill=0.0_dp)
+            call realloc(ec_pwxwy_y, ndx, keepExisting=.false., fill=0.0_dp)
 
             jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
             jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
-
-            ierr = allocate_patm(100000.0_dp)
-
-            if (.not. allocated(ec_pwxwy_x)) then
-               allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0.0_dp)
-               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
-            end if
-
             if (jaspacevarcharn == 1) then
-               if (.not. allocated(ec_pwxwy_c)) then
-                  allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0.0_dp)
-                  call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
-               end if
+               call realloc(ec_pwxwy_c, ndx, keepExisting=.false., fill=0.0_dp)
+               call realloc(wcharnock, lnx, keepExisting=.false., fill=0.0_dp)
             end if
-
          case ('charnock')
-            kx = 1
-            if (.not. allocated(ec_charnock)) then
-               allocate (ec_charnock(ndx), stat=ierr, source=0.0_dp)
-               call aerr('ec_charnock(ndx)', ierr, ndx)
-            end if
-            if (.not. allocated(wcharnock)) then
-               allocate (wcharnock(lnx), stat=ierr)
-               call aerr('wcharnock(lnx)', ierr, lnx)
-            end if
-
+            call realloc(ec_charnock, ndx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wcharnock, lnx, keepExisting=.false., fill=0.0_dp)
          case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-            kx = 1
             target_location_type = UNC_LOC_U
-            call allocatewindarrays()
-
             jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
-
+            call realloc(wx, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wy, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wdsu, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wdsu_x, lnx, keepExisting=.false., fill=0.0_dp)
+            call realloc(wdsu_y, lnx, keepExisting=.false., fill=0.0_dp)
          case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
-            kx = 1
-            if (.not. allocated(rain)) then
-               allocate (rain(ndx), stat=ierr, source=0.0_dp)
-               call aerr('rain(ndx)', ierr, ndx)
-            end if
-
+            call realloc(rain, ndx, keepExisting=.false., fill=0.0_dp)
          case ('qext')
-      block
+            block
                character(len=INI_VALUE_LEN) :: location_type
                integer :: qext_ilattype
 
