@@ -42,7 +42,7 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, allocatewindarrays, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
@@ -2964,4 +2964,19 @@ contains
          success = .false.
       end if
    end function check_keyword_zerozbndinflowadvection
+
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy 
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx
+      use m_alloc, only: realloc
+
+       call realloc(wx, lnx, keepExisting=.false., fill=0.0_dp)
+       call realloc(wy, lnx, keepExisting=.false., fill=0.0_dp)
+       call realloc(wdsu, lnx, keepExisting=.false., fill=0.0_dp)
+       call realloc(wdsu_x, lnx, keepExisting=.false., fill=0.0_dp)
+       call realloc(wdsu_y, lnx, keepExisting=.false., fill=0.0_dp)
+
+   end subroutine allocatewindarrays
+
 end module fm_external_forcings

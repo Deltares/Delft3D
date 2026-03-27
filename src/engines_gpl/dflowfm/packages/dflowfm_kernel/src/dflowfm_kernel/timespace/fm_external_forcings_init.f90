@@ -185,8 +185,8 @@ contains
          case ('lateral')
             res = res .and. init_lateral_forcings(block_ptr, base_dir, i, major)
 
-         case ('meteo')
-            res = res .and. init_meteo_forcings(block_ptr, base_dir, file_name, group_name)
+         case ('spatial','meteo')
+            res = res .and. init_spatial_fields(block_ptr, base_dir, file_name, group_name)
 
          case ('sourcesink')
             res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
@@ -754,9 +754,10 @@ contains
 
    end function validate_spatial_field_input
 
-   !> Read the current [Meteo] block from new external forcings file
+   !> Read the current [Spatial] or [Meteo] block from new external forcings file
    !! and do required initialisation for that quantity.
-   function init_meteo_forcings(block_ptr, base_dir, file_name, group_name) result(res)
+   !! [Meteo] is the legacy block name and is handled identically to [Spatial].
+   function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
       use string_module, only: str_tolower
@@ -766,12 +767,11 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, &
                         ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, &
-                        air_pressure, pseudo_air_pressure, water_level_correction, wx, wy
+                        air_pressure, pseudo_air_pressure, water_level_correction
       use m_flowgeom, only: ndx, lnx
       use m_meteo, only: ec_addtimespacerelation
       use properties, only: prop_get
       use m_alloc, only: realloc
-      use m_flow, only: wdsu, wdsu_x, wdsu_y
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -826,16 +826,13 @@ contains
                call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp)
 
             case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-               call realloc(wx, lnx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wy, lnx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wdsu, lnx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wdsu_x, lnx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wdsu_y, lnx, keepExisting=.false., fill=0.0_dp)
+               call allocatewindarrays()
                call realloc(air_pressure, ndx, keepExisting=.false., fill=DEFAULT_AIR_PRESSURE)
                call realloc(ec_pwxwy_x, ndx, keepExisting=.false., fill=0.0_dp)
                call realloc(ec_pwxwy_y, ndx, keepExisting=.false., fill=0.0_dp)
                jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
                jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
+
                if (jaspacevarcharn == 1) then
                   call realloc(ec_pwxwy_c, ndx, keepExisting=.false., fill=0.0_dp)
                   call realloc(wcharnock, lnx, keepExisting=.false., fill=0.0_dp)
@@ -848,11 +845,7 @@ contains
             case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
                target_location_type = UNC_LOC_U
                jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
-               call realloc(wx, lnx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wy, lnx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wdsu, lnx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wdsu_x, lnx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wdsu_y, lnx, keepExisting=.false., fill=0.0_dp)
+               call allocatewindarrays()
             case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
                call realloc(rain, ndx, keepExisting=.false., fill=0.0_dp)
 
@@ -870,7 +863,6 @@ contains
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
          call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
          ! Push search radius into EC module before registering the relation.
-         ! init_spatial_extrapolation only updates the radius if the given value > 0.
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
          select case (trim(str_tolower(forcing_file_type)))
@@ -894,10 +886,10 @@ contains
 
       end associate
 
-   end function init_meteo_forcings
+   end function init_spatial_fields
 
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
-   !! Called after a successful ec_addtimespacerelation in init_meteo_forcings.
+   !! Called after a successful ec_addtimespacerelation in init_spatial_fields.
    !! Returns .false. on a conflict (e.g. solarradiation + netsolarradiation).
    function enable_quantity(quantity) result(is_successful)
       use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
