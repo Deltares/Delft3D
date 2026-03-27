@@ -90,6 +90,9 @@ object WindowsCollect : BuildType({
         }
         powerShell {
             name = "Prepare artifact to upload"
+            dockerImage = "containers.deltares.nl/base_windows_containers/server:ltsc2022"
+            dockerImagePlatform = PowerShellStep.ImagePlatform.Windows
+            dockerPull = true
             scriptMode = script {
                 content = """
                     ${'$'}ErrorActionPreference = "Stop"
