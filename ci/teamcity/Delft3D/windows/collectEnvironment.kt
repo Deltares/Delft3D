@@ -64,6 +64,9 @@ object WindowsCollectEnvironment : BuildType({
                         containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%
                     """.trimIndent()
                 }
+                conditions {
+                    equals("trigger.type", "vcs")
+                }
             }
         }
     }
