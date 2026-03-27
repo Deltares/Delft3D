@@ -88,22 +88,18 @@ object WindowsCollect : BuildType({
                 matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
         }
-        powerShell {
+        script {
             name = "Prepare artifact to upload"
             dockerImage = "containers.deltares.nl/base_windows_containers/server:ltsc2022"
-            dockerImagePlatform = PowerShellStep.ImagePlatform.Windows
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
-            scriptMode = script {
-                content = """
-                    ${'$'}ErrorActionPreference = "Stop"
-
-                    Write-Host "Creating %file_path% ..."
-
-                    Compress-Archive -Path "x64", "dimrset_version_x64.txt" -DestinationPath %file_path% -Force
-
-                    Write-Host "ZIP created: %file_path%"
-                """.trimIndent()
-            }
+            scriptContent = """
+                powershell -ExecutionPolicy Bypass -Command ^
+                    "${'$'}ErrorActionPreference = 'Stop'; ^
+                    Write-Host 'Creating %file_path% ...'; ^
+                    Compress-Archive -Path 'x64', 'dimrset_version_x64.txt' -DestinationPath %file_path% -Force; ^
+                    Write-Host 'ZIP created: %file_path%'"
+            """.trimIndent()
         }
         step {
             name = "Upload artifact to Nexus"
