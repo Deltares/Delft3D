@@ -96,7 +96,7 @@ contains
 
       integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
       integer :: link_id_nearest
-      integer :: kmx_const, kk_const, nlyrs
+      integer :: kmx_const, kk_const, nlyrs, i_neighbours
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens
       real(kind=dp) :: ux, uy, um
@@ -125,19 +125,18 @@ contains
          call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
          call realloc(ueuy, ndkx, keepExisting=.false., fill=0.0_dp)
       end if
+      
+      ! Allocate 2D aray to detrmine determine wet,1, or dry, 0
+      if (.not. allocated(wet_or_dry)) then
+         call realloc(wet_or_dry, ndx, keepExisting=.false., fill=1)
+      end if
+      
       if (.not. allocated(water_depth)) then
          ! Allocate as 2D arry for water levels
          call realloc(water_depth, ndx, keepExisting=.false., fill=0.0_dp)
          water_depth = s1 - bl
       end if
-      if (.not. allocated(wet_or_dry)) then
-         ! Allocate as 2D aray, determine wet,1, or dry, 0
-         call realloc(wet_or_dry, ndx, keepExisting=.false., fill=1)
-         do k = 1, ndx
-             if (water_depth(k) < epshs) wet_or_dry(k) = 0
-         end do
-      end if
-      
+          
       if (model_is_3D() .and. .not. allocated(cell_z_centers)) then
          ! Allocate as 2D arry for cell z centers
          call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=0.0_dp)
@@ -245,7 +244,14 @@ contains
             neighbour_weights_obs(1,i)           = 1.0_dp
             neighbour_weights_obs(2,i)           = 0.0_dp
             neighbour_weights_obs(3,i)           = 0.0_dp
-            wet_or_dry(neighbour_nodes_obs(:,i)) = 1
+            wet_or_dry(neighbour_nodes_obs(:,i)) = 1       ! normal stations always wet!
+         else ! check for drying or flooding for interpolated stations
+            if (neighbour_nodes_obs(1,i) /=0) then
+               do i_neighbours = 1,3
+                  ! Points that based on their depth are initially dry (epshs does not recognize temporary drying)
+                  if (water_depth(neighbour_nodes_obs(i_neighbours,i)) < epshs) wet_or_dry(neighbour_nodes_obs(i_neighbours,i)) = 0
+               end do
+            end if
          end if
 
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
