@@ -197,6 +197,9 @@ if (WIN32)
     target_link_libraries(${library_name} PUBLIC
                             "${mpi_fortran_library}"
                             petsc
+                            hdf5
+                            hdf5_hl
+                            zlib
     )
 endif(WIN32)
 
