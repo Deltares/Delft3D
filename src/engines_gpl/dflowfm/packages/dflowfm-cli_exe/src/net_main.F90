@@ -104,7 +104,7 @@ program unstruc
    use m_refine_from_commandline, only: refine_from_commandline
    use m_resetFullFlowModel, only: resetFullFlowModel
    use m_dobatch, only: dobatch
-   use m_generatepartitionmdufile, only: generatePartitionMDUFile
+   use m_generatepartitionmdufile, only: generate_partition_mdu_file
    use m_soltest, only: soltest
    use m_start_program, only: start_program
    use m_pressakey, only: pressakey
@@ -336,7 +336,7 @@ program unstruc
             if (len_trim(md_classmapfile_base) > 0) then
                md_classmap_file = md_classmapfile_base(1:index(md_classmapfile_base, '.nc', back=.true.) - 1)//'_'//sdmn_loc//".nc"
             end if
-            call generatePartitionMDUFile(trim(md_ident)//'_'//sdmn_loc//'.mdu')
+            call generate_partition_mdu_file(trim(md_ident)//'.mdu', trim(md_ident)//'_'//sdmn_loc//'.mdu')
          end do
       else
          call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)

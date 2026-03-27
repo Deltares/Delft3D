@@ -89,9 +89,28 @@ module fm_external_forcings
          integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
       end subroutine
    end interface
+   
+   interface
+      module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
+         use tree_data_types, only: tree_data
+
+         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
+         character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+         character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+         character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+         real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+         real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+         real(kind=dp), dimension(2), intent(out) :: z_range_source
+         real(kind=dp), dimension(2), intent(out) :: z_range_sink
+         
+         logical :: is_successful
+      end function sourcesink_parse_coordinates
+   end interface
 
    public :: set_external_forcings
    public :: calculate_wind_stresses
+   public :: sourcesink_parse_coordinates
 
    procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
 
@@ -99,7 +118,7 @@ contains
 
 !> print_error_message
    subroutine print_error_message(time_in_seconds)
-      use m_ec_message, only: dumpECMessageStack
+      use m_ec_message, only: dump_ec_message_stack
       use unstruc_messages, only: callback_msg
       use messagehandling, only: LEVEL_WARN, mess
 
@@ -109,7 +128,7 @@ contains
 
       write (tmpstr, '(f22.11)') time_in_seconds
       call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time='//trim(tmpstr))
-      tmpstr = dumpECMessageStack(LEVEL_WARN, callback_msg)
+      tmpstr = dump_ec_message_stack(LEVEL_WARN, callback_msg)
    end subroutine print_error_message
 
 !> prepare_wind_model_data

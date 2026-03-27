@@ -194,33 +194,33 @@ contains
 
       integer, parameter :: NUMGENERALKEYWRD_OLD = 26
       character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = [character(len=256) :: &
-                                                                        'widthleftW1', & ! ( 1)
-                                                                        'levelleftZb1', & ! ( 2)
-                                                                        'widthleftWsdl', & ! ( 3)
-                                                                        'levelleftZbsl', & ! ( 4)
-                                                                        'widthcenter', & ! ( 5)
-                                                                        'levelcenter', & ! ( 6)
-                                                                        'widthrightWsdr', & ! ( 7)
-                                                                        'levelrightZbsr', & ! ( 8)
-                                                                        'widthrightW2', & ! ( 9)
-                                                                        'levelrightZb2', & ! (10)
-                                                                        'gateheight', & ! (11)
-                                                                        'gateheightintervalcntrl', & ! (12)
-                                                                        'pos_freegateflowcoeff', & ! (13)
-                                                                        'pos_drowngateflowcoeff', & ! (14)
-                                                                        'pos_freeweirflowcoeff', & ! (15)
-                                                                        'pos_drownweirflowcoeff', & ! (16)
-                                                                        'pos_contrcoeffreegate', & ! (17)
-                                                                        'neg_freegateflowcoeff', & ! (18)
-                                                                        'neg_drowngateflowcoeff', & ! (19)
-                                                                        'neg_freeweirflowcoeff', & ! (20)
-                                                                        'neg_drownweirflowcoeff', & ! (21)
-                                                                        'neg_contrcoeffreegate', & ! (22)
-                                                                        'extraresistance', & ! (23)
-                                                                        'dynstructext', & ! (24)
-                                                                        'gatedoorheight', & ! (25)
-                                                                        'door_opening_width' & ! (26)
-                                                                        ]
+                                                                       'widthleftW1', & ! ( 1)
+                                                                       'levelleftZb1', & ! ( 2)
+                                                                       'widthleftWsdl', & ! ( 3)
+                                                                       'levelleftZbsl', & ! ( 4)
+                                                                       'widthcenter', & ! ( 5)
+                                                                       'levelcenter', & ! ( 6)
+                                                                       'widthrightWsdr', & ! ( 7)
+                                                                       'levelrightZbsr', & ! ( 8)
+                                                                       'widthrightW2', & ! ( 9)
+                                                                       'levelrightZb2', & ! (10)
+                                                                       'gateheight', & ! (11)
+                                                                       'gateheightintervalcntrl', & ! (12)
+                                                                       'pos_freegateflowcoeff', & ! (13)
+                                                                       'pos_drowngateflowcoeff', & ! (14)
+                                                                       'pos_freeweirflowcoeff', & ! (15)
+                                                                       'pos_drownweirflowcoeff', & ! (16)
+                                                                       'pos_contrcoeffreegate', & ! (17)
+                                                                       'neg_freegateflowcoeff', & ! (18)
+                                                                       'neg_drowngateflowcoeff', & ! (19)
+                                                                       'neg_freeweirflowcoeff', & ! (20)
+                                                                       'neg_drownweirflowcoeff', & ! (21)
+                                                                       'neg_contrcoeffreegate', & ! (22)
+                                                                       'extraresistance', & ! (23)
+                                                                       'dynstructext', & ! (24)
+                                                                       'gatedoorheight', & ! (25)
+                                                                       'door_opening_width' & ! (26)
+                                                                       ]
 
       if (minp == 0) then
          ja = 0
@@ -4909,103 +4909,6 @@ contains
    !
    ! ==========================================================================
    !>
-   subroutine linear(x, y, z, xp, yp, &
-                   & zp, jslo, slo)
-      use precision
-      implicit none
-      !
-      !
-      ! COMMON variables
-      !
-      real(kind=dp) :: dmiss
-
-      data dmiss/-999.0_dp/
-      !
-      ! Global variables
-      !
-      integer, intent(in) :: jslo
-      real(kind=dp), intent(out) :: slo
-      real(kind=dp) :: xp
-      real(kind=dp) :: yp
-      real(kind=dp) :: zp
-      real(kind=dp), dimension(3) :: x
-      real(kind=dp), dimension(3) :: y
-      real(kind=dp), dimension(3), intent(in) :: z
-      !
-      !
-      ! Local variables
-      !
-
-      real(kind=dp) :: a11
-      real(kind=dp) :: a12
-      real(kind=dp) :: a21
-      real(kind=dp) :: a22
-      real(kind=dp) :: a31
-      real(kind=dp) :: a32
-      real(kind=dp) :: b1
-      real(kind=dp) :: b2
-      real(kind=dp) :: det
-      real(kind=dp) :: r3
-      real(kind=dp) :: rlam
-      real(kind=dp) :: rmhu
-      real(kind=dp) :: x3
-      real(kind=dp) :: xn
-      real(kind=dp) :: xy
-      real(kind=dp) :: y3
-      real(kind=dp) :: yn
-      real(kind=dp) :: z3
-      real(kind=dp) :: zn
-      !
-      !
-   !! executable statements -------------------------------------------------------
-      !
-      !
-      !
-      !
-      !
-      zp = dmiss
-      a11 = x(2) - x(1)
-      a21 = y(2) - y(1)
-      a12 = x(3) - x(1)
-      a22 = y(3) - y(1)
-      b1 = xp - x(1)
-      b2 = yp - y(1)
-      !
-      det = a11 * a22 - a12 * a21
-      if (abs(det) < 1e-12) then
-         return
-      end if
-      !
-      rlam = (a22 * b1 - a12 * b2) / det
-      rmhu = (-a21 * b1 + a11 * b2) / det
-      !
-      zp = z(1) + rlam * (z(2) - z(1)) + rmhu * (z(3) - z(1))
-      if (jslo == 1) then
-         a31 = z(2) - z(1)
-         a32 = z(3) - z(1)
-         x3 = (a21 * a32 - a22 * a31)
-         y3 = -(a11 * a32 - a12 * a31)
-         z3 = (a11 * a22 - a12 * a21)
-         r3 = sqrt(x3 * x3 + y3 * y3 + z3 * z3)
-         if (r3 /= 0) then
-            xn = x3 / r3
-            yn = y3 / r3
-            zn = z3 / r3
-            xy = sqrt(xn * xn + yn * yn)
-            if (zn /= 0) then
-               slo = abs(xy / zn)
-            else
-               slo = dmiss
-            end if
-         else
-            slo = dmiss
-         end if
-      end if
-   end subroutine linear
-   !
-   !
-   ! ==========================================================================
-   !>
    subroutine get_extend2D(n, m, x, y, kcs, x_dummy, y_dummy)
 
       real(kind=dp), dimension(:, :) :: x
@@ -6347,7 +6250,7 @@ module m_meteo
    implicit none
 
    type(tEcInstance), pointer, save :: ecInstancePtr !< FM's instance of the EC-module.
-   character(maxMessageLen) :: message !< EC's message, to be passed to FM's log.
+   character(MAXIMUM_EC_MESSAGE_LENGTH) :: message !< EC's message, to be passed to FM's log.
    !
    integer, dimension(:), allocatable, target :: item_tracerbnd !< dim(numtracers)
    integer, dimension(:), allocatable, target :: item_sedfracbnd !< dim(numfracs)
@@ -6752,7 +6655,7 @@ contains
       case (10)
          ec_method = interpolate_unknown ! Not yet supported: only initial vertical profiles
       case (NEAREST_NEIGHBOUR)
-         ec_method = interpolate_nearest_neighbour 
+         ec_method = interpolate_nearest_neighbour
       case (7) ! TODO: EB: FM method 7, where does this come from? ! see hrms method 7
          ec_method = interpolate_time_extrapolation_ok
       case default
@@ -6781,13 +6684,13 @@ contains
 
    !> Convert quantity names as given in user input (ini/ext file)
    !! to a consistent internal representation.
-   pure function quantity_name_config_file_to_internal_name(quantity_input_name) result (quantity_internal_name)
+   pure function quantity_name_config_file_to_internal_name(quantity_input_name) result(quantity_internal_name)
       character(len=*), intent(in) :: quantity_input_name !< given by the user in ini/ext file
       character(len=:), allocatable :: quantity_internal_name !< consistent internal name
-      
+
       ! it's not safe to assume that the internal representation is always lower case
       quantity_internal_name = trim(quantity_input_name)
-      select case(str_tolower(quantity_internal_name))
+      select case (str_tolower(quantity_internal_name))
       case ('seaiceareafraction')
          quantity_internal_name = 'sea_ice_area_fraction'
       case ('seaicethickness')
@@ -6797,7 +6700,7 @@ contains
       case default
          ! keep other names unchanged
       end select
-         
+
    end function quantity_name_config_file_to_internal_name
 
    !> Convert quantity names as given in user input (ext file)
@@ -7193,14 +7096,14 @@ contains
       ! FM re-initialize call: First destroy the EC-module instance.
       if (associated(ecInstancePtr)) then
          if (.not. ecFreeInstance(ecInstancePtr)) then
-            message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          end if
       end if
       ! FM initialize call or second phase of re-initialize call.
       if (.not. associated(ecInstancePtr)) then
          call init_variables()
          if (.not. ecCreateInstance(ecInstancePtr)) then
-            message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          end if
       end if
       if (jsferic == 1) then
@@ -7366,7 +7269,7 @@ contains
       arr1dPtr => ecItemGetArr1DPtr(instancePtr, itemId, 2)
       blksize = size(arr1dPtr)
 
-      call clearECMessage()
+      call clear_ec_message()
       do while (t0 + it * dt < t1)
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, itemId, irefdate, tzone, tunit, t0 + it * dt, &
                                                   target_array(it * blksize + 1:(it + 1) * blksize))) then
@@ -7475,7 +7378,7 @@ contains
       ! C equals 240.97 in Eq (8) of Buck (1981)
       ! Eq (7.5) of ECMWF (2023) uses temperatures in Kelvin scale:
       ! with a1 * (td - t0) / (td - a4) where a1 = 17.502, t0 = 273.16, a4 = 32.19 (= 273.15 - 240.96)
-      
+
       rh = exp(B * td / (C + td) - B * tm / (C + tm)) * 100.0_dp
    end function calculate_relative_humidity
 

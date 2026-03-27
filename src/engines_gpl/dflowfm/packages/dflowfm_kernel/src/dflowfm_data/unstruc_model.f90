@@ -1349,6 +1349,11 @@ contains
       ! Physics
 
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef', frcuni)
+
+      ! Set default value for 1D and 1D2D uniform friction coefficients to the value of frcuni
+      frcuni1D = frcuni
+      frcuni1D2D = frcuni
+
       call prop_get(md_ptr, 'physics', 'UnifFrictType', ifrctypuni)
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D) ! TODO: LUMBRICUS: HK: ook UnifFrictType1D? EN/OF prof1d type --> frcutp(LF) zetten?
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', frcuni1D2D)
@@ -2375,13 +2380,16 @@ contains
 
       call prop_get(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
       call prop_get(md_ptr, 'output', 'VelocityDirectionClassesInterval', map_classes_ucdirstep, success)
-      if (success) then
-         call createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
-      else
-         allocate (map_classes_ucdir(0))
-      end if
 
       if (ti_classmap > 0.0_dp) then
+         if (map_classes_ucdirstep > 0.0_dp .and. map_classes_ucdirstep <= 360.0_dp) then
+            call create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
+         else if (map_classes_ucdirstep /= dmiss) then
+            call mess(LEVEL_FATAL, 'Step size for classes out of range; must be > 0 and <= 360; found: ', map_classes_ucdirstep)
+         else
+            allocate (map_classes_ucdir(0))
+         end if
+
          call readClasses('WaterlevelClasses', map_classes_s1)
          call readClasses('WaterdepthClasses', map_classes_hs)
          call readClasses('VelocityMagnitudeClasses', map_classes_ucmag)
@@ -2579,22 +2587,22 @@ contains
 
 !> helper routine to convert step size to the class boundaries
 !! give error if step size is not valid (e.g. negative, > 360, number of steps is not an integer)
-   subroutine createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
+   subroutine create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
       use MessageHandling, only: mess, LEVEL_FATAL
       use m_alloc, only: aerr
+      
+      ! Parameters
       real(kind=dp), allocatable, intent(inout) :: map_classes_ucdir(:) !< the constructed classes
       real(kind=dp), intent(in) :: map_classes_ucdirstep !< the input step size
 
-      real(kind=dp), parameter :: wholeCircle = 360.0_dp
+      ! Local variables
+      real(kind=dp), parameter :: WHOLE_CIRCLE = 360.0_dp
       integer :: n !< number of classes
-      integer :: i, ierr
+      integer :: i
+      integer :: ierr
 
-      if (map_classes_ucdirstep <= 0.0_dp .or. map_classes_ucdirstep > wholeCircle) then
-         call mess(LEVEL_FATAL, 'Step size for classes out of range; must be > 0 and <= 360; found: ', map_classes_ucdirstep)
-      end if
-
-      n = nint(wholeCircle / map_classes_ucdirstep)
-      if (comparereal(wholeCircle, n * map_classes_ucdirstep) /= 0) then
+      n = nint(WHOLE_CIRCLE / map_classes_ucdirstep)
+      if (comparereal(WHOLE_CIRCLE, n * map_classes_ucdirstep) /= 0) then
          call mess(LEVEL_FATAL, 'Step size for classes must meet: 360 / step size gives an integer')
       else if (n > 127) then
          call mess(LEVEL_FATAL, 'Step size too small. To many classes to fit in a signed byte')
@@ -2607,7 +2615,8 @@ contains
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
-   end subroutine createDirectionClasses
+      
+   end subroutine create_direction_classes
 
 !> Write a model definition to a file.
    subroutine writeMDUFile(filename, istat)
@@ -2666,7 +2675,7 @@ contains
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_map_his_precision
       use m_datum
-      use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
+      use m_circumcenter_method, only: ALL_NETLINKS_LOOP, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
       use m_fm_icecover, only: fm_ice_null, ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
@@ -2874,7 +2883,7 @@ contains
       if (writeall .or. (Dcenterinside /= 1.0_dp)) then
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
       end if
-      if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
+      if (writeall .or. (circumcenter_method /= ALL_NETLINKS_LOOP)) then
          call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', trim(md_circumcenter_method), 'Circumcenter computation method (iterate each edge: internalNetlinksEdge; iterate each loop: internalNetlinksLoop or allNetlinksLoop)')
       end if
       if (writeall .or. (circumcenter_tolerance /= 1.0e-3_dp)) then
@@ -3425,15 +3434,10 @@ contains
          end if
       end if
 
-      if (writeall .or. (jasal == 0 .and. (temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0))) then
-         call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
-      end if
+      call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
+      call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
 
-      if (writeall .or. (temperature_model == TEMPERATURE_MODEL_NONE .and. (jasal > 0 .or. jased > 0))) then
-         call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
-      end if
-
-      if (Jadelvappos /= 0) then
+      if (writeall .or. (Jadelvappos /= 0)) then
          call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
       end if
 
