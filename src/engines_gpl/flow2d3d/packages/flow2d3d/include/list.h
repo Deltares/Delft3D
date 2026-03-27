@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: list.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/list.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/list.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Linked List - DEFINITIONS
@@ -34,29 +36,29 @@
 //  27 may 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
 #include "flow2d3d.h"
 
+class List
+{
+public:
+    List(void);
+    ~List(void);
+    void Append(void* value);
+    void Insert(void* value);
+    bool Delete(void* value);
+    void Rewind(void);
+    void* Next(void);
 
-class List {
-    public:
-        List            (void);
-        ~List           (void);
-        void    Append  (void * value);
-        void    Insert  (void * value);
-        bool    Delete  (void * value);
-        void    Rewind  (void);
-        void *  Next    (void);
+private:
+    typedef struct node_struct
+    {
+        void* value;
+        struct node_struct* next;
+    }* node;
 
-    private:
-        typedef struct node_struct {
-            void * value;
-            struct node_struct * next;
-            } * node;
-
-        node head;      // first element
-        node tail;      // last element
-        node current;   // element pointer for Rewind/Next
-    };
+    node head;    // first element
+    node tail;    // last element
+    node current; // element pointer for Rewind/Next
+};

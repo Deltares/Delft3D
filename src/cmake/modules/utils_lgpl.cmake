@@ -67,3 +67,5 @@ set(test_nefis                  ${utils_lgpl_path}/nefis/tests)
 # Unit tests
 # utils_lgpl
 set(utils_lgpl_tests_module ${unit_tests_dir}/utils_lgpl)
+
+set(interacter_utils_module ${utils_lgpl_path}/interacter_utils/)
