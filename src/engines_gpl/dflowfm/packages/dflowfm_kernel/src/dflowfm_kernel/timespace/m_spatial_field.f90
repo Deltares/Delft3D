@@ -130,6 +130,14 @@ contains
          end if
       end if
 
+      ! Check for file extension conflicts
+      if (file_extension_conflicts_with_type(input%forcing_file, input%forcing_file_type)) then
+         write (msgbuf, '(9a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
+            ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', trim(input%forcing_file_type), '''.'
+         call err_flush()
+         return
+      end if
+
       ! Derive method
       has_interpolation_method = len_trim(input%interpolation_method) > 0
       if (has_interpolation_method) then
@@ -176,5 +184,31 @@ contains
       is_successful = .true.
 
    end function validate_spatial_field_input
+
+   function file_extension_conflicts_with_type(forcing_file, forcing_file_type) result(conflicts)
+      use string_module, only: str_tolower
+      character(len=*), intent(in) :: forcing_file
+      character(len=*), intent(in) :: forcing_file_type
+      logical :: conflicts
+
+      integer :: dot_pos
+      character(len=16) :: ext
+
+      conflicts = .false.
+      dot_pos = index(trim(forcing_file), '.', back=.true.)
+      if (dot_pos == 0) return
+
+      ext = str_tolower(trim(forcing_file(dot_pos:)))
+
+      select case (ext)
+      case ('.nc')
+         conflicts = str_tolower(trim(forcing_file_type)) /= 'netcdf'
+      case ('.tif', '.tiff')
+         conflicts = str_tolower(trim(forcing_file_type)) /= 'geotiff'
+      case ('.spw')
+         conflicts = str_tolower(trim(forcing_file_type)) /= 'spiderweb'
+      end select
+
+   end function file_extension_conflicts_with_type
 
 end module m_spatial_field

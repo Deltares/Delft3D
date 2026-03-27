@@ -25,27 +25,23 @@ contains
    !! valid file types with known method strings.
    subroutine test_validate_unrecognized_interpolation_method() bind(C)
       type(t_spatial_field_input) :: input
+      logical :: success
       call make_test_input(input)
-      call create_file('dummy.nc', [character(len=1) ::])
       input%interpolation_method = 'this_method_does_not_exist'
-      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                            "validation should fail when interpolationMethod is unrecognized")
+      success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
+      call f90_expect_false(success, "validation should fail when interpolationMethod is unrecognized")
    end subroutine test_validate_unrecognized_interpolation_method
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_file_type_with_no_default_method, test_validate_file_type_with_no_default_method,
-   !> A forcingFileType that has no associated default method, combined with no
-   !! interpolationMethod=, must fail. Integration tests never hit this because
-   !! they always supply file types that have a known default.
-   subroutine test_validate_file_type_with_no_default_method() bind(C)
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_file_type_extension_mismatch, test_validate_file_type_extension_mismatch,
+   subroutine test_validate_file_type_extension_mismatch() bind(C)
       type(t_spatial_field_input) :: input
       call make_test_input(input)
-      call create_file('dummy.nc', [character(len=1) ::])
       input%forcing_file_type    = 'bcascii'     ! bcascii has no spatial default method
       input%interpolation_method = ' '           ! no explicit method either
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                            "validation should fail when forcingFileType has no default method and no interpolationMethod is given")
-   end subroutine test_validate_file_type_with_no_default_method
+                            "validation should fail when forcingFileType does not match input file extension")
+   end subroutine test_validate_file_type_extension_mismatch
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_nonexistent_target_mask_file, test_validate_nonexistent_target_mask_file,
@@ -55,7 +51,6 @@ contains
    subroutine test_validate_nonexistent_target_mask_file() bind(C)
       type(t_spatial_field_input) :: input
       call make_test_input(input)
-      call create_file('dummy.nc', [character(len=1) ::])
       input%target_mask_file = 'this_mask_does_not_exist.pol'
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             "validation should fail when targetMaskFile does not exist on disk")
@@ -72,7 +67,6 @@ contains
       logical :: success_without, success_with
 
       call make_test_input(input_without_extrap)
-      call create_file('dummy.nc', [character(len=1) ::])
       input_without_extrap%is_extrapolation_allowed = .false.
       success_without = validate_spatial_field_input(input_without_extrap, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_assert_true(success_without, "baseline validation without extrapolation should succeed")
@@ -94,7 +88,6 @@ contains
    subroutine test_validate_qext_wrong_file_type() bind(C)
       type(t_spatial_field_input) :: input
       call make_test_input(input)
-      call create_file('dummy.nc', [character(len=1) ::])
       input%quantity          = 'qext'
       input%forcing_file_type = 'netcdf'   ! must be 'sample' for qext
       jaQext = 1

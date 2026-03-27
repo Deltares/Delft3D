@@ -113,6 +113,7 @@ f90twtest(test_init_spatial_field
     LIBRARIES dflowfm_kernel test_helpers
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
+copy_dflowfm_test_dependencies(test_init_spatial_field)
 
 f90twtest(test_sources_sinks
     CFILES test_sources_sinks.cpp
