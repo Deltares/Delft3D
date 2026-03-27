@@ -662,7 +662,7 @@ contains
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
 
-      if (.not. res) then !> Validation failed, error message already printed in validate_spatial_field_input
+      if (.not. res) then !> Validation failed, error will be printed at the call site
          return
       end if
 

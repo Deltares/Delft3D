@@ -39,19 +39,19 @@ module m_spatial_field
 
       !> Holds all parsed keyword values from a single [Spatial] / [Meteo] block.
    type :: t_spatial_field_input
-      character(len=INI_VALUE_LEN) :: quantity = ' '
-      character(len=INI_VALUE_LEN) :: forcing_file = ' '
-      character(len=INI_VALUE_LEN) :: forcing_file_type = ' '
-      character(len=INI_VALUE_LEN) :: target_mask_file = ' '
-      character(len=INI_VALUE_LEN) :: variable_name = ' '
-      character(len=INI_VALUE_LEN) :: interpolation_method = ' '
-      character(len=1) :: oper = 'O'
-      real(dp) :: max_search_radius = -1.0_dp
-      logical :: invert_mask = .false.
-      logical :: is_variable_name_available = .false.
-      logical :: is_extrapolation_allowed = .false.
-      integer :: method = -1
-      integer :: filetype = -1
+      character(len=INI_VALUE_LEN) :: quantity = ' '             !< Physical quantity name, e.g. 'windx', 'rainfall_rate'.
+      character(len=INI_VALUE_LEN) :: forcing_file = ' '         !< Path to the forcing data file; resolved relative to base_dir during validation.
+      character(len=INI_VALUE_LEN) :: forcing_file_type = ' '    !< File format identifier, e.g. 'netcdf', 'arcinfo', 'bcascii'.
+      character(len=INI_VALUE_LEN) :: target_mask_file = ' '     !< Optional polygon file (.pol) masking the target element set. Empty means no masking.
+      character(len=INI_VALUE_LEN) :: variable_name = ' '        !< Optional variable name within the forcing file. Only meaningful when is_variable_name_available is .true..
+      character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
+      character(len=1) :: oper = 'O'                             !< Operand: 'O' = override, '+' = add existing values.
+      real(dp) :: max_search_radius = -1.0_dp                    !< Maximum search radius (m) for spatial extrapolation. Negative means no limit.
+      logical :: invert_mask = .false.                           !< .true., the mask polygon selection must be inverted.
+      logical :: is_variable_name_available = .false.            !< .true. when the forcingVariableName= keyword was present in the block.
+      logical :: is_extrapolation_allowed = .false.              !< .true. when extrapolation beyond the source data extent is permitted.
+      integer :: method = -1                                     !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
+      integer :: filetype = -1                                   !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
    end type t_spatial_field_input
 
 contains
@@ -61,7 +61,7 @@ contains
       use tree_data_types, only: tree_data
       use properties, only: prop_get
 
-      type(tree_data), pointer, intent(in) :: block_ptr
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to the ini-file tree node for the current [Spatial] / [Meteo] block.
       type(t_spatial_field_input) :: res
 
       call prop_get(block_ptr, '', 'quantity', res%quantity)
@@ -88,10 +88,11 @@ contains
       use string_module, only: strcmpi
       use unstruc_files, only: resolvePath
 
-      type(t_spatial_field_input), intent(inout) :: input
-      character(len=*), intent(in) :: file_name
-      character(len=*), intent(in) :: group_name
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      type(t_spatial_field_input), intent(inout) :: input !< The spatial field input to validate; method and filetype are set on success.
+      character(len=*), intent(in) :: file_name           !< Name of the ext file, used only in error messages.
+      character(len=*), intent(in) :: group_name          !< Name of the current block (e.g. 'Spatial'), used only in error messages.
+      character(len=*), intent(in) :: base_dir            !< Base directory of the ext file, used to resolve relative paths for forcing_file and target_mask_file.
+
 
       logical :: is_successful
       logical :: has_interpolation_method, target_mask_file_exists
@@ -175,4 +176,5 @@ contains
       is_successful = .true.
 
    end function validate_spatial_field_input
+
 end module m_spatial_field
