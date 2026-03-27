@@ -49,12 +49,8 @@
 #include "nef-def.h"
 #include "wl-xdr.h"
 
-BInt4 convert_ieee ( voidp * pvp_getal    ,
-                     charp * pxdr_buffer ,
-                     BUInt8  num_bytes   ,
-                     BInt4   single_bytes,
-                     BText   elm_type    ,
-                     BInt4   from_xdr    )
+BInt4 convert_ieee(voidp* pvp_getal, charp* pxdr_buffer, BUInt8 num_bytes, BInt4 single_bytes, BText elm_type,
+                   BInt4 from_xdr)
 /*
  * pvp_getal   : pointer to BVoid pointer of array (integer, real, ...)
  * pxdr_buffer : pointer to character pointer
@@ -68,404 +64,393 @@ BInt4 convert_ieee ( voidp * pvp_getal    ,
  * max_num     : Number of array elements
  */
 {
-  BInt4   direction;
-  BInt4   i        ;
-  BChar   tmpchar  ;
+    BInt4 direction;
+    BInt4 i;
+    BChar tmpchar;
 
-  if      ( from_xdr == 0 )
-  {
-    direction = XDR_ENCODE;
-  }
-  else if ( from_xdr == 1 )
-  {
-    direction = XDR_DECODE;
-  }
-  else
-  {
-    direction = XDR_FREE;
-  }
+    if (from_xdr == 0)
+    {
+        direction = XDR_ENCODE;
+    }
+    else if (from_xdr == 1)
+    {
+        direction = XDR_DECODE;
+    }
+    else
+    {
+        direction = XDR_FREE;
+    }
 
-/*
- *----------------------------------------------------------------------------
- * INTEGER
- *----------------------------------------------------------------------------
- */
-  if ( strncmp(elm_type,"INTEGER",7) == 0 )
-  {
-    if ( single_bytes == sizeof(BInt2) )
+    /*
+     *----------------------------------------------------------------------------
+     * INTEGER
+     *----------------------------------------------------------------------------
+     */
+    if (strncmp(elm_type, "INTEGER", 7) == 0)
     {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=2 )
+        if (single_bytes == sizeof(BInt2))
         {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = tmpchar;
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 2)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 2)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = tmpchar;
+                }
+            }
         }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=2 )
+        else if (single_bytes == sizeof(BInt4))
         {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = tmpchar;
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 4)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 3);
+                    *((BText)(*pxdr_buffer) + i + 3) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = *((BText)(*pvp_getal) + i + 2);
+                    *((BText)(*pxdr_buffer) + i + 2) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 4)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 3);
+                    *((BText)(*pvp_getal) + i + 3) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = *((BText)(*pxdr_buffer) + i + 2);
+                    *((BText)(*pvp_getal) + i + 2) = tmpchar;
+                }
+            }
         }
-      }
+        else if (single_bytes == sizeof(BInt8))
+        {
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 8)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 7);
+                    *((BText)(*pxdr_buffer) + i + 7) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = *((BText)(*pvp_getal) + i + 6);
+                    *((BText)(*pxdr_buffer) + i + 6) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 2);
+                    *((BText)(*pxdr_buffer) + i + 2) = *((BText)(*pvp_getal) + i + 5);
+                    *((BText)(*pxdr_buffer) + i + 5) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 3);
+                    *((BText)(*pxdr_buffer) + i + 3) = *((BText)(*pvp_getal) + i + 4);
+                    *((BText)(*pxdr_buffer) + i + 4) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 8)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 7);
+                    *((BText)(*pvp_getal) + i + 7) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = *((BText)(*pxdr_buffer) + i + 6);
+                    *((BText)(*pvp_getal) + i + 6) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 2);
+                    *((BText)(*pvp_getal) + i + 2) = *((BText)(*pxdr_buffer) + i + 5);
+                    *((BText)(*pvp_getal) + i + 5) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 3);
+                    *((BText)(*pvp_getal) + i + 3) = *((BText)(*pxdr_buffer) + i + 4);
+                    *((BText)(*pvp_getal) + i + 4) = tmpchar;
+                }
+            }
+        }
+        else
+        {
+            nefis_errno = 10001;
+            nefis_errcnt += 1;
+            sprintf(error_text, "This size of integer (%d) is not supported\n", single_bytes);
+            return nefis_errno;
+        }
     }
-    else if ( single_bytes == sizeof(BInt4) )
+    /*
+     *----------------------------------------------------------------------------
+     * REAL
+     *----------------------------------------------------------------------------
+     */
+    else if (strncmp(elm_type, "REAL", 4) == 0)
     {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=4 )
+        if (single_bytes == sizeof(BRea4))
         {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+3 );
-          *( (BText)(*pxdr_buffer) + i+3 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = *( (BText)(*pvp_getal) + i+2 );
-          *( (BText)(*pxdr_buffer) + i+2 ) = tmpchar;
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 4)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 3);
+                    *((BText)(*pxdr_buffer) + i + 3) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = *((BText)(*pvp_getal) + i + 2);
+                    *((BText)(*pxdr_buffer) + i + 2) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 4)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 3);
+                    *((BText)(*pvp_getal) + i + 3) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = *((BText)(*pxdr_buffer) + i + 2);
+                    *((BText)(*pvp_getal) + i + 2) = tmpchar;
+                }
+            }
         }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=4 )
+        else if (single_bytes == sizeof(BRea8))
         {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+3 );
-          *( (BText)(*pvp_getal) + i+3 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = *( (BText)(*pxdr_buffer) + i+2 );
-          *( (BText)(*pvp_getal) + i+2 ) = tmpchar;
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 8)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 7);
+                    *((BText)(*pxdr_buffer) + i + 7) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = *((BText)(*pvp_getal) + i + 6);
+                    *((BText)(*pxdr_buffer) + i + 6) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 2);
+                    *((BText)(*pxdr_buffer) + i + 2) = *((BText)(*pvp_getal) + i + 5);
+                    *((BText)(*pxdr_buffer) + i + 5) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 3);
+                    *((BText)(*pxdr_buffer) + i + 3) = *((BText)(*pvp_getal) + i + 4);
+                    *((BText)(*pxdr_buffer) + i + 4) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 8)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 7);
+                    *((BText)(*pvp_getal) + i + 7) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = *((BText)(*pxdr_buffer) + i + 6);
+                    *((BText)(*pvp_getal) + i + 6) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 2);
+                    *((BText)(*pvp_getal) + i + 2) = *((BText)(*pxdr_buffer) + i + 5);
+                    *((BText)(*pvp_getal) + i + 5) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 3);
+                    *((BText)(*pvp_getal) + i + 3) = *((BText)(*pxdr_buffer) + i + 4);
+                    *((BText)(*pvp_getal) + i + 4) = tmpchar;
+                }
+            }
         }
-      }
+        else
+        {
+            nefis_errno = 10002;
+            nefis_errcnt += 1;
+            sprintf(error_text, "This size of real (%d) is not supported\n", single_bytes);
+            return nefis_errno;
+        }
     }
-    else if ( single_bytes == sizeof(BInt8) )
+    /*
+     *----------------------------------------------------------------------------
+     * Character
+     * Just copy the array, single bytes are still in IEEE format
+     *----------------------------------------------------------------------------
+     */
+    else if (strncmp(elm_type, "CHARACTE", 8) == 0)
     {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=8 )
+        if (1 == sizeof(BChar))
         {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+7 );
-          *( (BText)(*pxdr_buffer) + i+7 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = *( (BText)(*pvp_getal) + i+6 );
-          *( (BText)(*pxdr_buffer) + i+6 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+2 );
-          *( (BText)(*pxdr_buffer) + i+2 ) = *( (BText)(*pvp_getal) + i+5 );
-          *( (BText)(*pxdr_buffer) + i+5 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+3 );
-          *( (BText)(*pxdr_buffer) + i+3 ) = *( (BText)(*pvp_getal) + i+4 );
-          *( (BText)(*pxdr_buffer) + i+4 ) = tmpchar;
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i++)
+                {
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i);
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i++)
+                {
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i);
+                }
+            }
         }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=8 )
+        else
         {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+7 );
-          *( (BText)(*pvp_getal) + i+7 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = *( (BText)(*pxdr_buffer) + i+6 );
-          *( (BText)(*pvp_getal) + i+6 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+2 );
-          *( (BText)(*pvp_getal) + i+2 ) = *( (BText)(*pxdr_buffer) + i+5 );
-          *( (BText)(*pvp_getal) + i+5 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+3 );
-          *( (BText)(*pvp_getal) + i+3 ) = *( (BText)(*pxdr_buffer) + i+4 );
-          *( (BText)(*pvp_getal) + i+4 ) = tmpchar;
+            nefis_errno = 10003;
+            nefis_errcnt += 1;
+            sprintf(error_text, "This size of character (!=1) is not supported\n");
+            return nefis_errno;
         }
-      }
+    }
+    /*
+     *----------------------------------------------------------------------------
+     * COMPLEX
+     *  8 bytes: real 4 and imaginar 4 bytes
+     * 16 bytes: real 8 and imaginar 8 bytes
+     *----------------------------------------------------------------------------
+     */
+    else if (strncmp(elm_type, "COMPLEX", 7) == 0)
+    {
+        if (single_bytes == 2 * sizeof(BRea4))
+        {
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 4)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 3);
+                    *((BText)(*pxdr_buffer) + i + 3) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = *((BText)(*pvp_getal) + i + 2);
+                    *((BText)(*pxdr_buffer) + i + 2) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 4)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 3);
+                    *((BText)(*pvp_getal) + i + 3) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = *((BText)(*pxdr_buffer) + i + 2);
+                    *((BText)(*pvp_getal) + i + 2) = tmpchar;
+                }
+            }
+        }
+        else if (single_bytes == 2 * sizeof(BRea8))
+        {
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 8)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 7);
+                    *((BText)(*pxdr_buffer) + i + 7) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = *((BText)(*pvp_getal) + i + 6);
+                    *((BText)(*pxdr_buffer) + i + 6) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 2);
+                    *((BText)(*pxdr_buffer) + i + 2) = *((BText)(*pvp_getal) + i + 5);
+                    *((BText)(*pxdr_buffer) + i + 5) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 3);
+                    *((BText)(*pxdr_buffer) + i + 3) = *((BText)(*pvp_getal) + i + 4);
+                    *((BText)(*pxdr_buffer) + i + 4) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 8)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 7);
+                    *((BText)(*pvp_getal) + i + 7) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = *((BText)(*pxdr_buffer) + i + 6);
+                    *((BText)(*pvp_getal) + i + 6) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 2);
+                    *((BText)(*pvp_getal) + i + 2) = *((BText)(*pxdr_buffer) + i + 5);
+                    *((BText)(*pvp_getal) + i + 5) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 3);
+                    *((BText)(*pvp_getal) + i + 3) = *((BText)(*pxdr_buffer) + i + 4);
+                    *((BText)(*pvp_getal) + i + 4) = tmpchar;
+                }
+            }
+        }
+        else
+        {
+            nefis_errno = 10004;
+            nefis_errcnt += 1;
+            sprintf(error_text, "This size of complex (%d) is not supported\n", single_bytes);
+            return nefis_errno;
+        }
+    }
+    /*
+     *----------------------------------------------------------------------------
+     * Logical
+     *  4 bytes: fortran 66 standard
+     *----------------------------------------------------------------------------
+     */
+    else if (strncmp(elm_type, "LOGICAL", 7) == 0)
+    {
+        if (single_bytes == sizeof(BInt4))
+        {
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 4)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 3);
+                    *((BText)(*pxdr_buffer) + i + 3) = tmpchar;
+                    tmpchar = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = *((BText)(*pvp_getal) + i + 2);
+                    *((BText)(*pxdr_buffer) + i + 2) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 4)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 3);
+                    *((BText)(*pvp_getal) + i + 3) = tmpchar;
+                    tmpchar = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = *((BText)(*pxdr_buffer) + i + 2);
+                    *((BText)(*pvp_getal) + i + 2) = tmpchar;
+                }
+            }
+        }
+        else if (single_bytes == sizeof(BInt2))
+        {
+            if (direction == XDR_ENCODE)
+            {
+                for (i = 0; i < num_bytes; i += 2)
+                {
+                    tmpchar = *((BText)(*pvp_getal) + i);
+                    *((BText)(*pxdr_buffer) + i) = *((BText)(*pvp_getal) + i + 1);
+                    *((BText)(*pxdr_buffer) + i + 1) = tmpchar;
+                }
+            }
+            if (direction == XDR_DECODE)
+            {
+                for (i = 0; i < num_bytes; i += 2)
+                {
+                    tmpchar = *((BText)(*pxdr_buffer) + i);
+                    *((BText)(*pvp_getal) + i) = *((BText)(*pxdr_buffer) + i + 1);
+                    *((BText)(*pvp_getal) + i + 1) = tmpchar;
+                }
+            }
+        }
+        else
+        {
+            nefis_errno = 10005;
+            nefis_errcnt += 1;
+            sprintf(error_text, "This size of logical (%d) is not supported\n", single_bytes);
+            return nefis_errno;
+        }
     }
     else
     {
-      nefis_errno   = 10001;
-      nefis_errcnt += 1;
-      sprintf(error_text,
-        "This size of integer (%d) is not supported\n",
-      single_bytes);
-      return nefis_errno;
+        nefis_errno = 10006;
+        nefis_errcnt += 1;
+        sprintf(error_text, "This element type is not supported \'%s\'\n", elm_type);
+        return nefis_errno;
     }
-  }
-/*
- *----------------------------------------------------------------------------
- * REAL
- *----------------------------------------------------------------------------
- */
-  else if ( strncmp(elm_type,"REAL",4) == 0 )
-  {
-    if ( single_bytes == sizeof(BRea4) )
-    {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=4 )
-        {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+3 );
-          *( (BText)(*pxdr_buffer) + i+3 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = *( (BText)(*pvp_getal) + i+2 );
-          *( (BText)(*pxdr_buffer) + i+2 ) = tmpchar;
-        }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=4 )
-        {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+3 );
-          *( (BText)(*pvp_getal) + i+3 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = *( (BText)(*pxdr_buffer) + i+2 );
-          *( (BText)(*pvp_getal) + i+2 ) = tmpchar;
-        }
-      }
-    }
-    else if ( single_bytes == sizeof(BRea8) )
-    {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=8 )
-        {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+7 );
-          *( (BText)(*pxdr_buffer) + i+7 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = *( (BText)(*pvp_getal) + i+6 );
-          *( (BText)(*pxdr_buffer) + i+6 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+2 );
-          *( (BText)(*pxdr_buffer) + i+2 ) = *( (BText)(*pvp_getal) + i+5 );
-          *( (BText)(*pxdr_buffer) + i+5 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+3 );
-          *( (BText)(*pxdr_buffer) + i+3 ) = *( (BText)(*pvp_getal) + i+4 );
-          *( (BText)(*pxdr_buffer) + i+4 ) = tmpchar;
-        }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=8 )
-        {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+7 );
-          *( (BText)(*pvp_getal) + i+7 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = *( (BText)(*pxdr_buffer) + i+6 );
-          *( (BText)(*pvp_getal) + i+6 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+2 );
-          *( (BText)(*pvp_getal) + i+2 ) = *( (BText)(*pxdr_buffer) + i+5 );
-          *( (BText)(*pvp_getal) + i+5 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+3 );
-          *( (BText)(*pvp_getal) + i+3 ) = *( (BText)(*pxdr_buffer) + i+4 );
-          *( (BText)(*pvp_getal) + i+4 ) = tmpchar;
-        }
-      }
-    }
-    else
-    {
-      nefis_errno   = 10002;
-      nefis_errcnt += 1;
-      sprintf(error_text,
-       "This size of real (%d) is not supported\n",
-        single_bytes);
-      return nefis_errno;
-    }
-  }
-/*
- *----------------------------------------------------------------------------
- * Character
- * Just copy the array, single bytes are still in IEEE format
- *----------------------------------------------------------------------------
- */
-  else if ( strncmp(elm_type,"CHARACTE",8) == 0 )
-  {
-    if ( 1 == sizeof(BChar) )
-    {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i++ )
-        {
-          *( (BText)(*pxdr_buffer) +i ) = *( (BText)(*pvp_getal) +i );
-        }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i++ )
-        {
-          *( (BText)(*pvp_getal)+i )   = *( (BText)(*pxdr_buffer) +i ) ;
-        }
-      }
-    }
-    else
-    {
-      nefis_errno   = 10003;
-      nefis_errcnt += 1;
-      sprintf(error_text,
-       "This size of character (!=1) is not supported\n");
-      return nefis_errno;
-    }
-  }
-/*
- *----------------------------------------------------------------------------
- * COMPLEX
- *  8 bytes: real 4 and imaginar 4 bytes
- * 16 bytes: real 8 and imaginar 8 bytes
- *----------------------------------------------------------------------------
- */
-  else if ( strncmp(elm_type,"COMPLEX",7) == 0 )
-  {
-    if ( single_bytes == 2*sizeof(BRea4) )
-    {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=4 )
-        {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+3 );
-          *( (BText)(*pxdr_buffer) + i+3 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = *( (BText)(*pvp_getal) + i+2 );
-          *( (BText)(*pxdr_buffer) + i+2 ) = tmpchar;
-        }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=4 )
-        {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+3 );
-          *( (BText)(*pvp_getal) + i+3 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = *( (BText)(*pxdr_buffer) + i+2 );
-          *( (BText)(*pvp_getal) + i+2 ) = tmpchar;
-        }
-      }
-    }
-    else if ( single_bytes == 2*sizeof(BRea8) )
-    {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=8 )
-        {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+7 );
-          *( (BText)(*pxdr_buffer) + i+7 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = *( (BText)(*pvp_getal) + i+6 );
-          *( (BText)(*pxdr_buffer) + i+6 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+2 );
-          *( (BText)(*pxdr_buffer) + i+2 ) = *( (BText)(*pvp_getal) + i+5 );
-          *( (BText)(*pxdr_buffer) + i+5 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+3 );
-          *( (BText)(*pxdr_buffer) + i+3 ) = *( (BText)(*pvp_getal) + i+4 );
-          *( (BText)(*pxdr_buffer) + i+4 ) = tmpchar;
-        }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=8 )
-        {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+7 );
-          *( (BText)(*pvp_getal) + i+7 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = *( (BText)(*pxdr_buffer) + i+6 );
-          *( (BText)(*pvp_getal) + i+6 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+2 );
-          *( (BText)(*pvp_getal) + i+2 ) = *( (BText)(*pxdr_buffer) + i+5 );
-          *( (BText)(*pvp_getal) + i+5 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+3 );
-          *( (BText)(*pvp_getal) + i+3 ) = *( (BText)(*pxdr_buffer) + i+4 );
-          *( (BText)(*pvp_getal) + i+4 ) = tmpchar;
-        }
-      }
-    }
-    else
-    {
-      nefis_errno   = 10004;
-      nefis_errcnt += 1;
-      sprintf(error_text,
-        "This size of complex (%d) is not supported\n",
-        single_bytes);
-      return nefis_errno;
-    }
-  }
-/*
- *----------------------------------------------------------------------------
- * Logical
- *  4 bytes: fortran 66 standard
- *----------------------------------------------------------------------------
- */
-  else if ( strncmp(elm_type,"LOGICAL",7) == 0 )
-  {
-    if ( single_bytes == sizeof(BInt4) )
-    {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=4 )
-        {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+3 );
-          *( (BText)(*pxdr_buffer) + i+3 ) = tmpchar;
-          tmpchar                          = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = *( (BText)(*pvp_getal) + i+2 );
-          *( (BText)(*pxdr_buffer) + i+2 ) = tmpchar;
-        }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=4 )
-        {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+3 );
-          *( (BText)(*pvp_getal) + i+3 ) = tmpchar;
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = *( (BText)(*pxdr_buffer) + i+2 );
-          *( (BText)(*pvp_getal) + i+2 ) = tmpchar;
-        }
-      }
-    }
-    else if ( single_bytes == sizeof(BInt2) )
-    {
-      if ( direction == XDR_ENCODE )
-      {
-        for ( i=0; i<num_bytes; i+=2 )
-        {
-          tmpchar                          = *( (BText)(*pvp_getal) + i   );
-          *( (BText)(*pxdr_buffer) + i   ) = *( (BText)(*pvp_getal) + i+1 );
-          *( (BText)(*pxdr_buffer) + i+1 ) = tmpchar;
-        }
-      }
-      if ( direction == XDR_DECODE )
-      {
-        for ( i=0; i<num_bytes; i+=2 )
-        {
-          tmpchar                        = *( (BText)(*pxdr_buffer) + i   );
-          *( (BText)(*pvp_getal) + i   ) = *( (BText)(*pxdr_buffer) + i+1 );
-          *( (BText)(*pvp_getal) + i+1 ) = tmpchar;
-        }
-      }
-    }
-    else
-    {
-      nefis_errno   = 10005;
-      nefis_errcnt += 1;
-      sprintf(error_text,
-        "This size of logical (%d) is not supported\n",
-        single_bytes);
-      return nefis_errno;
-    }
-  }
-  else
-  {
-    nefis_errno   = 10006;
-    nefis_errcnt += 1;
-    sprintf(error_text,
-            "This element type is not supported \'%s\'\n",
-            elm_type);
+
     return nefis_errno;
-  }
-
-  return nefis_errno;
 }
