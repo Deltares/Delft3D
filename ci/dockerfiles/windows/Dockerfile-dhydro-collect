@@ -8,10 +8,10 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 # Enable long pathnames.
 RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
 
-# Download and install the Windows SDK (provides signtool.exe) for windows 11, Feb 2026.
-# https://developer.microsoft.com/windows/downloads/windows-sdk/
-RUN Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/?linkid=2349110' -OutFile 'C:\winsdksetup.exe' -UseBasicParsing; `
-    Start-Process -FilePath 'C:\winsdksetup.exe' -ArgumentList '/features OptionId.DesktopCPPx64 /q /norestart' -Wait; `
+# Download and install the Windows SDK 10.0.22621.5040 (provides signtool.exe) for windows 11, April 2025 (compatible with windows server 2022).
+# https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads
+RUN Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/?linkid=2311806' -OutFile 'C:\winsdksetup.exe' -UseBasicParsing; `
+    Start-Process -FilePath 'C:\winsdksetup.exe' -ArgumentList '/features OptionId.DesktopCPPx64 /installpath C:\WinSDK /q /norestart' -Wait; `
     Remove-Item 'C:\winsdksetup.exe'
 
 # Download and install the Visual C++ Redistributable 2022 x64 (provides vcomp140.dll).
@@ -26,4 +26,9 @@ RUN Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.12.10/python-3.1
 RUN New-Item -ItemType SymbolicLink -Path 'C:\Program Files\Python312\python3.exe' -Target 'C:\Program Files\Python312\python.exe'
 
 # Add signtool.exe and Python to PATH.
-RUN setx /M PATH $($Env:PATH + ';C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64;C:\Program Files\Python312\;C:\Program Files\Python312\Scripts\')
+# NOTE: setx truncates at 1024 chars; use SetEnvironmentVariable instead.
+# Dynamically find the signtool.exe directory so the SDK version number is not hardcoded.
+RUN $signtool = Get-ChildItem -Path 'C:\WinSDK' -Recurse -Filter 'signtool.exe' | `
+        Where-Object { $_.FullName -match 'x64' } | `
+        Select-Object -First 1; `
+    [Environment]::SetEnvironmentVariable('PATH', $Env:PATH + ';' + $signtool.DirectoryName + ';C:\Program Files\Python312\;C:\Program Files\Python312\Scripts\', 'Machine')
