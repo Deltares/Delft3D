@@ -116,6 +116,17 @@ f90twtest(test_sources_sinks
 )
 copy_dflowfm_test_dependencies(test_sources_sinks)
 
+f90twtest(test_ec_module_block
+    CFILES test_ec_module_block.cpp
+    F90FILES test_ec_module_block.f90
+    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_ec_module_block.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES dflowfm_kernel test_helpers
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)
+copy_dflowfm_test_dependencies(test_ec_module_block)
+
+
 f90twtest(test_unstruc_model
     CFILES test_unstruc_model.cpp
     F90FILES test_unstruc_model.f90

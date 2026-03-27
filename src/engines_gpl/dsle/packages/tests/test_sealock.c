@@ -1,12 +1,12 @@
-#include "sealock.h"
-#include "unity.h"
-#include "timestamp.h"
 #include "load_phase_wise.h"
+#include "sealock.h"
+#include "timestamp.h"
+#include "unity.h"
 
 #include <string.h>
 
 // defined in `load_phase_wise.c`
-extern int init_phase_wise_timeseries_csv_context(csv_context_t* context);
+extern int init_phase_wise_timeseries_csv_context(csv_context_t *context);
 
 void setUp(void) {}
 
@@ -30,11 +30,11 @@ static void test_sealock_defaults(void) {
 
   // Assert dfm_volume_t's are default.
   dfm_volumes_t *volumes[] = {
-    &lock.from_lake_volumes,
-    &lock.from_sea_volumes,
-    &lock.to_lake_volumes,
-    &lock.to_sea_volumes,
-    NULL,
+      &lock.from_lake_volumes,
+      &lock.from_sea_volumes,
+      &lock.to_lake_volumes,
+      &lock.to_sea_volumes,
+      NULL,
   };
   for (dfm_volumes_t **volumes_ptr = volumes; *volumes_ptr != NULL; ++volumes_ptr) {
     dfm_volumes_t *volumes = *volumes_ptr;
@@ -50,7 +50,8 @@ static void test_sealock_defaults(void) {
   TEST_ASSERT_EQUAL(2, profile->number_of_positions);
 
   double expected_discharge[2] = {1.0, 1.0};
-  TEST_ASSERT_EQUAL_MEMORY(expected_discharge, profile->relative_discharge_from_lock, 2 * sizeof(double));
+  TEST_ASSERT_EQUAL_MEMORY(expected_discharge, profile->relative_discharge_from_lock,
+                           2 * sizeof(double));
 
   double expected_z_position[2] = {0.0, 1.0};
   TEST_ASSERT_EQUAL_MEMORY(expected_z_position, profile->relative_z_position, 2 * sizeof(double));
@@ -112,11 +113,10 @@ static void test_sealock_set_parameters_for_time__cycle_average_mode(void) {
   csv_context->num_columns = 1;
   csv_context->num_column_defs = 1;
   csv_context->column_def_index[0] = 0;
-  csv_context->column_defs[0] = (csv_column_def_t){
-    .label = "the_answer_to_life_the_universe_and_everything",
-    .value_type = double_type,
-    .setter = double_setter
-  };
+  csv_context->column_defs[0] =
+      (csv_column_def_t){.label = "the_answer_to_life_the_universe_and_everything",
+                         .value_type = double_type,
+                         .setter = double_setter};
 
   // Act
   int result = sealock_set_parameters_for_time(&lock, 15);
@@ -131,22 +131,22 @@ static void test_sealock_set_parameters_for_time__cycle_average_mode(void) {
 
 static void make_phase_wise_csv_row(phase_wise_row_t in, csv_row_t out) {
   csv_row_t result = {
-    {.type = double_type, .data.double_value = in.time},
-    {.type = int_type, .data.int_value = in.routine},
-    {.type = double_type, .data.double_value = in.ship_volume_lake_to_sea},
-    {.type = double_type, .data.double_value = in.ship_volume_sea_to_lake},
-    {.type = double_type, .data.double_value = in.t_flushing},
-    {.type = double_type, .data.double_value = in.t_level},
-    {.type = double_type, .data.double_value = in.t_open_lake},
-    {.type = double_type, .data.double_value = in.t_open_sea},
-    {.type = double_type, .data.double_value = in.density_current_factor_lake},
-    {.type = double_type, .data.double_value = in.density_current_factor_sea},
-    {.type = double_type, .data.double_value = in.distance_door_bubble_screen_lake},
-    {.type = double_type, .data.double_value = in.distance_door_bubble_screen_sea},
-    {.type = double_type, .data.double_value = in.flushing_discharge_high_tide},
-    {.type = double_type, .data.double_value = in.flushing_discharge_low_tide},
-    {.type = double_type, .data.double_value = in.sill_height_lake},
-    {.type = double_type, .data.double_value = in.sill_height_sea},
+      {.type = double_type, .data.double_value = in.time},
+      {.type = int_type, .data.int_value = in.routine},
+      {.type = double_type, .data.double_value = in.ship_volume_lake_to_sea},
+      {.type = double_type, .data.double_value = in.ship_volume_sea_to_lake},
+      {.type = double_type, .data.double_value = in.t_flushing},
+      {.type = double_type, .data.double_value = in.t_level},
+      {.type = double_type, .data.double_value = in.t_open_lake},
+      {.type = double_type, .data.double_value = in.t_open_sea},
+      {.type = double_type, .data.double_value = in.density_current_factor_lake},
+      {.type = double_type, .data.double_value = in.density_current_factor_sea},
+      {.type = double_type, .data.double_value = in.distance_door_bubble_screen_lake},
+      {.type = double_type, .data.double_value = in.distance_door_bubble_screen_sea},
+      {.type = double_type, .data.double_value = in.flushing_discharge_high_tide},
+      {.type = double_type, .data.double_value = in.flushing_discharge_low_tide},
+      {.type = double_type, .data.double_value = in.sill_height_lake},
+      {.type = double_type, .data.double_value = in.sill_height_sea},
   };
 
   memset(out, 0, sizeof(csv_row_t));
@@ -174,24 +174,25 @@ static void test_sealock_set_parameters_for_time__phase_wise_mode__routine_negat
   };
   csv_row_t row;
   make_phase_wise_csv_row(
-    (phase_wise_row_t){
-      .routine = -1,
-      .time = 1.0,
-      .ship_volume_lake_to_sea = 2.0,
-      .ship_volume_sea_to_lake = 3.0,
-      .t_flushing = 4.0,
-      .t_level = 5.0,
-      .t_open_lake = 6.0,
-      .t_open_sea = 7.0,
-      .density_current_factor_lake = 8.0,
-      .density_current_factor_sea = 9.0,
-      .distance_door_bubble_screen_lake = 10.0,
-      .distance_door_bubble_screen_sea = 11.0,
-      .flushing_discharge_high_tide = 12.0,
-      .flushing_discharge_low_tide = 13.0,
-      .sill_height_lake = 14.0,
-      .sill_height_sea = 15.0,
-    }, row);
+      (phase_wise_row_t){
+          .routine = -1,
+          .time = 1.0,
+          .ship_volume_lake_to_sea = 2.0,
+          .ship_volume_sea_to_lake = 3.0,
+          .t_flushing = 4.0,
+          .t_level = 5.0,
+          .t_open_lake = 6.0,
+          .t_open_sea = 7.0,
+          .density_current_factor_lake = 8.0,
+          .density_current_factor_sea = 9.0,
+          .distance_door_bubble_screen_lake = 10.0,
+          .distance_door_bubble_screen_sea = 11.0,
+          .flushing_discharge_high_tide = 12.0,
+          .flushing_discharge_low_tide = 13.0,
+          .sill_height_lake = 14.0,
+          .sill_height_sea = 15.0,
+      },
+      row);
   make_phase_wise_csv_context(&row, 1, &lock.timeseries_data);
 
   // Act
@@ -215,7 +216,7 @@ static void test_sealock_set_parameters_for_time__phase_wise_mode__routine_negat
   TEST_ASSERT_EQUAL(14., lock.parameters.sill_height_lake);
   TEST_ASSERT_EQUAL(15., lock.parameters.sill_height_sea);
 
-  TEST_ASSERT_EQUAL(4., lock.phase_args.duration); // When routine < 0, t_flushing
+  TEST_ASSERT_EQUAL(4., lock.phase_args.duration);         // When routine < 0, t_flushing
   TEST_ASSERT_EQUAL(5, lock.phase_args.time_duration_end); // current_time + phase_args.duration
 }
 
@@ -223,10 +224,10 @@ static void test_sealock_set_parameters_for_time__phase_wise_mode__routine_one(v
   // Arrange
   time_t time = 0;
   sealock_state_t lock = {
-    .computation_mode = phase_wise_mode,
-    .current_row = NO_CURRENT_ROW,
-    .times = &time,
-    .times_len = 1,
+      .computation_mode = phase_wise_mode,
+      .current_row = NO_CURRENT_ROW,
+      .times = &time,
+      .times_len = 1,
   };
   csv_row_t row;
   make_phase_wise_csv_row((phase_wise_row_t){.routine = 1, .t_level = 42.0}, row);
@@ -245,10 +246,10 @@ static void test_sealock_set_parameters_for_time__phase_wise_mode__routine_two(v
   // Arrange
   time_t time = 0;
   sealock_state_t lock = {
-    .computation_mode = phase_wise_mode,
-    .current_row = NO_CURRENT_ROW,
-    .times = &time,
-    .times_len = 1,
+      .computation_mode = phase_wise_mode,
+      .current_row = NO_CURRENT_ROW,
+      .times = &time,
+      .times_len = 1,
   };
   csv_row_t row;
   make_phase_wise_csv_row(
@@ -272,10 +273,10 @@ static void test_sealock_set_parameters_for_time__phase_wise_mode__routine_three
   // Arrange
   time_t time = 0;
   sealock_state_t lock = {
-    .computation_mode = phase_wise_mode,
-    .current_row = NO_CURRENT_ROW,
-    .times = &time,
-    .times_len = 1,
+      .computation_mode = phase_wise_mode,
+      .current_row = NO_CURRENT_ROW,
+      .times = &time,
+      .times_len = 1,
   };
   csv_row_t row;
   make_phase_wise_csv_row((phase_wise_row_t){.routine = 3, .t_level = 42.0}, row);
@@ -294,13 +295,14 @@ static void test_sealock_set_parameters_for_time__phase_wise_mode__routine_four(
   // Arrange
   time_t time = 0;
   sealock_state_t lock = {
-    .computation_mode = phase_wise_mode,
-    .current_row = NO_CURRENT_ROW,
-    .times = &time,
-    .times_len = 1,
+      .computation_mode = phase_wise_mode,
+      .current_row = NO_CURRENT_ROW,
+      .times = &time,
+      .times_len = 1,
   };
   csv_row_t row;
-  make_phase_wise_csv_row((phase_wise_row_t){.routine = 4, .t_open_sea = 42.0, .ship_volume_sea_to_lake = 43.0}, row);
+  make_phase_wise_csv_row(
+      (phase_wise_row_t){.routine = 4, .t_open_sea = 42.0, .ship_volume_sea_to_lake = 43.0}, row);
   make_phase_wise_csv_context(&row, 1, &lock.timeseries_data);
 
   // Act
@@ -316,8 +318,8 @@ static void test_sealock_set_parameters_for_time__phase_wise_mode__routine_four(
 static void test_sealock_load_timeseries__time_averaged_mode(void) {
   // Arrange
   sealock_state_t lock = {
-    .computation_mode = cycle_average_mode,
-    .current_row = NO_CURRENT_ROW,
+      .computation_mode = cycle_average_mode,
+      .current_row = NO_CURRENT_ROW,
   };
 
   // Act
@@ -336,8 +338,8 @@ static void test_sealock_load_timeseries__time_averaged_mode(void) {
 static void test_sealock_load_timeseries__time_averaged_mode__time_non_increasing(void) {
   // Arrange
   sealock_state_t lock = {
-    .computation_mode = cycle_average_mode,
-    .current_row = NO_CURRENT_ROW,
+      .computation_mode = cycle_average_mode,
+      .current_row = NO_CURRENT_ROW,
   };
 
   // Act
@@ -351,8 +353,8 @@ static void test_sealock_load_timeseries__time_averaged_mode__time_non_increasin
 static void test_sealock_load_timeseries__phase_wise_mode(void) {
   // Arrange
   sealock_state_t lock = {
-    .computation_mode = phase_wise_mode,
-    .current_row = NO_CURRENT_ROW,
+      .computation_mode = phase_wise_mode,
+      .current_row = NO_CURRENT_ROW,
   };
 
   // Act

@@ -591,6 +591,10 @@
         {
             "file": "lib\\boost_program_options-vc143-mt-x64-1_90.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\pugixml.dll",
+            "issuedTo": "Stichting Deltares"
         }
     ],
     "notSigned": [

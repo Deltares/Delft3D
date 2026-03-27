@@ -6,19 +6,22 @@ IndentWidth: 4
 TabWidth: 4
 UseTab: Never
 
+# Macro's are indented if applicable
+IndentPPDirectives: BeforeHash
+
 # Line length
 ColumnLimit: 120
 
-# Include sorting and grouping
-SortIncludes: true
-IncludeBlocks: Regroup
+# Prevent changes to the include order
+SortIncludes: false
+IncludeBlocks: Preserve
 
 # Namespace formatting
 NamespaceIndentation: All
 
 # Access modifier and case label indentation
-IndentAccessModifiers: true
-IndentCaseLabels: true
+AccessModifierOffset: -4
+IndentAccessModifiers: false
 
 # Custom brace wrapping
 BreakBeforeBraces: Custom
@@ -38,3 +41,4 @@ SpacesBeforeTrailingComments: 1
 
 # Perform deterministic formatting
 DerivePointerAlignment: false
+
