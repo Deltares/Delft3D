@@ -812,7 +812,7 @@ contains
       real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set
       integer :: ierr, method
       integer :: kx
-      logical :: is_successful
+      logical :: success
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
@@ -828,8 +828,8 @@ contains
       ! Default location type: s-points. Only cases below that need u-points or different, will override.
       target_location_type = UNC_LOC_S
       kx = 1
-      is_successful = scan_for_heat_quantities(quantity, kx)
-      if (.not. is_successful) then
+      success = scan_for_heat_quantities(quantity, kx)
+      if (.not. success) then
          select case (quantity)
          case ('airdensity')
             call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.false.)
@@ -873,7 +873,7 @@ contains
                character(len=INI_VALUE_LEN) :: location_type
                integer :: qext_ilattype
 
-               call prop_get(block_ptr, '', 'locationType', location_type, is_successful)
+               call prop_get(block_ptr, '', 'locationType', location_type, success)
                select case (str_tolower(trim(location_type)))
                case ('1d')
                   qext_ilattype = ILATTP_1D
@@ -898,110 +898,131 @@ contains
 
       ! Derive target element set properties from the quantity's topological location type
       call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
-      if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
-            ']. Line ''quantity = ', trim(quantity), ''' has no known target grid properties.'
-         call err_flush()
-         return
-      end if
 
-      !> Prepare target mask for the quantity's target element set.
       call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-      if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(7a)') 'Unsupported data in file ''', file_name, ''': [', group_name, &
-            ']. Line ''quantity = ', trim(quantity), ''' cannot be combined with targetMaskFile.'
-         call err_flush()
-         return
-      end if
 
       select case (trim(str_tolower(forcing_file_type)))
       case ('bcascii')
          ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
-         is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
+         success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
                                                  method, oper, forcingfile=forcing_file)
       case default
          if (is_variable_name_available) then
-            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+            success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                     method, oper, varname=variable_name)
          else
-            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+            success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                     method, oper)
          end if
       end select
 
-      if (is_successful) then
-         select case (quantity)
-         case ('airdensity')
-            call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
-            ja_airdensity = 1
-
-         case ('airpressure', 'atmosphericpressure')
-            air_pressure_available = .true.
-
-         case ('pseudoAirPressure')
-            pseudo_air_pressure_available = .true.
-
-         case ('waterLevelCorrection')
-            water_level_correction_available = .true.
-
-         case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-            jawind = 1
-            air_pressure_available = .true.
-
-         case ('charnock')
-            jaspacevarcharn = 1
-
-         case ('rainfall', 'rainfall_rate')
-            jarain = 1
-            jaqin = 1
-
-         case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-            jawind = 1
-         case ('airtemperature')
-            btempforcingtypA = .true.
-         case ('cloudiness')
-            btempforcingtypC = .true.
-         case ('humidity')
-            btempforcingtypH = .true.
-         case ('dewpoint')
-            itempforcingtyp = 5
-            btempforcingtypD = .true.
-         case ('solarradiation')
-            if (net_solar_radiation_available) then
-               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
-               call err_flush()
-               return
-            end if
-            btempforcingtypS = .true.
-            solar_radiation_available = .true.
-         case ('netsolarradiation')
-            if (solar_radiation_available) then
-               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
-               call err_flush()
-               return
-            end if
-            btempforcingtypS = .true.
-            net_solar_radiation_available = .true.
-         case ('longwaveradiation')
-            btempforcingtypL = .true.
-            long_wave_radiation_available = .true.
-         case ('humidity_airtemperature_cloudiness')
-            itempforcingtyp = 1
-         case ('dewpoint_airtemperature_cloudiness')
-            itempforcingtyp = 3
-         case ('humidity_airtemperature_cloudiness_solarradiation')
-            itempforcingtyp = 2
-            solar_radiation_available = .true.
-         case ('dewpoint_airtemperature_cloudiness_solarradiation')
-            itempforcingtyp = 4
-            solar_radiation_available = .true.
-         end select
-
-         res = .true.
-
+      if (success) then
+           res = enable_quantity(input%quantity, file_name, group_name)
       end if
 
    end function init_meteo_forcings
+
+   !> Activate the model flags corresponding to a successfully loaded meteo quantity.
+   !! Called after a successful ec_addtimespacerelation in init_meteo_forcings.
+   !! Returns .false. on a conflict (e.g. solarradiation + netsolarradiation).
+   function enable_quantity(quantity, file_name, group_name) result(is_successful)
+      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
+      use m_wind, only: jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
+                        jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
+                        pseudo_air_pressure_available, water_level_correction_available
+      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
+                                  btempforcingtypS, itempforcingtyp
+
+      character(len=*), intent(in) :: quantity   !< The quantity name as read from the [Meteo] block.
+      character(len=*), intent(in) :: file_name  !< Name of the ext file, only used in error messages.
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages.
+
+      logical :: is_successful
+
+      is_successful = .true.
+
+      select case (trim(quantity))
+      case ('airdensity')
+         call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
+         ja_airdensity = 1
+
+      case ('airpressure', 'atmosphericpressure')
+         air_pressure_available = .true.
+
+      case ('pseudoAirPressure')
+         pseudo_air_pressure_available = .true.
+
+      case ('waterLevelCorrection')
+         water_level_correction_available = .true.
+
+      case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+         jawind = 1
+         air_pressure_available = .true.
+
+      case ('charnock')
+         jaspacevarcharn = 1
+
+      case ('rainfall', 'rainfall_rate')
+         jarain = 1
+         jaqin = 1
+
+      case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+         jawind = 1
+
+      case ('airtemperature')
+         btempforcingtypA = .true.
+
+      case ('cloudiness')
+         btempforcingtypC = .true.
+
+      case ('humidity')
+         btempforcingtypH = .true.
+
+      case ('dewpoint')
+         itempforcingtyp = 5
+         btempforcingtypD = .true.
+
+      case ('solarradiation')
+         if (net_solar_radiation_available) then
+            write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
+            call err_flush()
+            is_successful = .false.
+            return
+         end if
+         btempforcingtypS = .true.
+         solar_radiation_available = .true.
+
+      case ('netsolarradiation')
+         if (solar_radiation_available) then
+            write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
+            call err_flush()
+            is_successful = .false.
+            return
+         end if
+         btempforcingtypS = .true.
+         net_solar_radiation_available = .true.
+
+      case ('longwaveradiation')
+         btempforcingtypL = .true.
+         long_wave_radiation_available = .true.
+
+      case ('humidity_airtemperature_cloudiness')
+         itempforcingtyp = 1
+
+      case ('dewpoint_airtemperature_cloudiness')
+         itempforcingtyp = 3
+
+      case ('humidity_airtemperature_cloudiness_solarradiation')
+         itempforcingtyp = 2
+         solar_radiation_available = .true.
+
+      case ('dewpoint_airtemperature_cloudiness_solarradiation')
+         itempforcingtyp = 4
+         solar_radiation_available = .true.
+
+      end select
+
+   end function enable_quantity
 
    !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
    module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
