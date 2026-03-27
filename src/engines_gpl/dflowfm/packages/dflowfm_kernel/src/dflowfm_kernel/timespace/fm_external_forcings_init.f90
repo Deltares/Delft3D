@@ -773,7 +773,7 @@ contains
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
                            update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
                            convert_file_type_string_to_integer
-      use fm_external_forcings_data, only: filetype, transformcoef, kx
+      use fm_external_forcings_data, only: filetype, transformcoef
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
@@ -811,6 +811,7 @@ contains
       real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set
       real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set
       integer :: ierr, method
+      integer :: kx
       logical :: is_successful
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
@@ -820,11 +821,13 @@ contains
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
 
-      if (.not. res) return
+      if (.not. res) then !> Validation failed, error message already printed in validate_spatial_field_input
+         return
+      end if
 
       ! Default location type: s-points. Only cases below that need u-points or different, will override.
       target_location_type = UNC_LOC_S
-
+      kx = 1
       is_successful = scan_for_heat_quantities(quantity, kx)
       if (.not. is_successful) then
          select case (quantity)
@@ -883,7 +886,6 @@ contains
                end select
                call prepare_lateral_mask(mask, qext_ilattype)
             end block
-
             res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
             return ! This was a special case, don't continue with timespace processing below.
          case default
