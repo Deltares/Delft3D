@@ -34,136 +34,112 @@
 //  16 apr 11
 //------------------------------------------------------------------------------
 
-
 #include "dimr.h"
 
-
-Component::Component(Dimr * DH)
-{
-   this->DH = DH;
-}
-
+Component::Component(Dimr* DH) { this->DH = DH; }
 
 Component::~Component(void) {}
 
-
 //------------------------------------------------------------------------------
-
 
 void Component::Run(void)
 {
-   char * message = "A Dimr component's Run method was not overridden";
-   printf("ERROR: %s\n", message);
+    const char* message = "A Dimr component's Run method was not overridden";
+    printf("ERROR: %s\n", message);
 
-   // This throw is not caught, even though the invocation of Run() is in
-   // a try/catch block.  Why?
+    // This throw is not caught, even though the invocation of Run() is in
+    // a try/catch block.  Why?
 
-   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
-
 
 //------------------------------------------------------------------------------
 
-
-void
-Component::Init(void)
+void Component::Init(void)
 {
+    const char* message = "A Dimr component's Init method was not overridden";
+    printf("ERROR: %s\n", message);
 
-   char * message = "A Dimr component's Init method was not overridden";
-   printf("ERROR: %s\n", message);
+    // This throw is not caught, even though the invocation of Run() is in
+    // a try/catch block.  Why?
 
-   // This throw is not caught, even though the invocation of Run() is in
-   // a try/catch block.  Why?
-
-   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
-
 //------------------------------------------------------------------------------
-
 
 void Component::Step(double stepSize)
 {
-   char * message = "A Dimr component's Step method was not overridden";
-   printf("ERROR: %s\n", message);
+    const char* message = "A Dimr component's Step method was not overridden";
+    printf("ERROR: %s\n", message);
 
-   // This throw is not caught, even though the invocation of Run() is in
-   // a try/catch block.  Why?
+    // This throw is not caught, even though the invocation of Run() is in
+    // a try/catch block.  Why?
 
-   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
-
 //------------------------------------------------------------------------------
-
 
 void Component::Finish(void)
 {
-   char * message = "A Dimr component's Finish method was not overridden";
-   printf("ERROR: %s\n", message);
+    const char* message = "A Dimr component's Finish method was not overridden";
+    printf("ERROR: %s\n", message);
 
-   // This throw is not caught, even though the invocation of Run() is in
-   // a try/catch block.  Why?
+    // This throw is not caught, even though the invocation of Run() is in
+    // a try/catch block.  Why?
 
-   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
-
 //------------------------------------------------------------------------------
-
 
 double Component::GetStartTime(void)
 {
-   char * message = "A Dimr component's GetStartTime method was not overridden";
-   printf("ERROR: %s\n", message);
+    const char* message = "A Dimr component's GetStartTime method was not overridden";
+    printf("ERROR: %s\n", message);
 
-   // This throw is not caught, even though the invocation of Run() is in
-   // a try/catch block.  Why?
+    // This throw is not caught, even though the invocation of Run() is in
+    // a try/catch block.  Why?
 
-   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
-
 //------------------------------------------------------------------------------
-
 
 double Component::GetEndTime(void)
 {
-   char * message = "A Dimr component's GetEndTime method was not overridden";
-   printf("ERROR: %s\n", message);
+    const char* message = "A Dimr component's GetEndTime method was not overridden";
+    printf("ERROR: %s\n", message);
 
-   // This throw is not caught, even though the invocation of Run() is in
-   // a try/catch block.  Why?
+    // This throw is not caught, even though the invocation of Run() is in
+    // a try/catch block.  Why?
 
-   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
 
-
 //------------------------------------------------------------------------------
-
 
 double Component::GetCurrTime(void)
 {
-   char * message = "A Dimr component's GetCurrentTime method was not overridden";
-   printf("ERROR: %s\n", message);
+    const char* message = "A Dimr component's GetCurrentTime method was not overridden";
+    printf("ERROR: %s\n", message);
 
-   // This throw is not caught, even though the invocation of Run() is in
-   // a try/catch block.  Why?
+    // This throw is not caught, even though the invocation of Run() is in
+    // a try/catch block.  Why?
 
-   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }
-
 
 //------------------------------------------------------------------------------
 
-
 double Component::GetTimeStep(void)
 {
-   char * message = "A Dimr component's GetTimeStep method was not overridden";
-   printf("ERROR: %s\n", message);
+    const char* message = "A Dimr component's GetTimeStep method was not overridden";
+    printf("ERROR: %s\n", message);
 
-   // This throw is not caught, even though the invocation of Run() is in
-   // a try/catch block.  Why?
+    // This throw is not caught, even though the invocation of Run() is in
+    // a try/catch block.  Why?
 
-   throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
+    throw Exception(Exception::ERR_METHOD_NOT_IMPLEMENTED, message);
 }

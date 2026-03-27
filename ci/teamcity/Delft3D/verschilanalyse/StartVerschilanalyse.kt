@@ -19,14 +19,14 @@ object StartVerschilanalyse : BuildType({
     }
 
     params {
-        param("harbor_webhook.image.tag", "latest")
+        param("harbor_webhook.image.tag", "development")
         param("va_harbor_protocol", "docker")
         param(
             "harbor_webhook.image.url", 
             sequenceOf(
                 "containers.deltares.nl",
                 DslContext.getParameter("va_harbor_project"),
-                "${DslContext.getParameter("va_harbor_repository")}:latest"
+                "${DslContext.getParameter("va_harbor_repository")}:development"
             ).joinToString(separator="/")
         )         
         param("reference_prefix", "output/release/2025.01")
@@ -39,9 +39,10 @@ object StartVerschilanalyse : BuildType({
             checked = "true", 
             unchecked = "false",
         )
-        param("current_prefix", "output/weekly/latest")
+        param("current_prefix", "output/weekly/development")
         param("models_path", "input")
         param("model_filter", "")
+        param("json_configs_path", "config")
         checkbox(
             "send_email",
             "true",
@@ -102,7 +103,7 @@ object StartVerschilanalyse : BuildType({
             name = "Upload bundle"
             transportProtocol = SSHUpload.TransportProtocol.SCP
             sourcePath = """
-                ci/teamcity/Delft3D/verschilanalyse/bundle => bundle.tar.gz
+                ci/teamcity/Delft3D/verschilanalyse/bundle => bundle-%teamcity.build.id%.tar.gz
             """.trimIndent()
             targetUrl = "h7.directory.intra"
             authMethod = password {
@@ -115,11 +116,6 @@ object StartVerschilanalyse : BuildType({
             commands = """
                 set -eo pipefail
 
-                rm -rf bundle
-                mkdir bundle
-                tar -xzvf bundle.tar.gz -C bundle
-                rm -f bundle.tar.gz
-
                 export TEAMCITY_SERVER_URL='${DslContext.serverUrl.replace(Regex("/+$"), "")}'
                 export VCS_ROOT_ID='${DslContext.settingsRoot.id}'
                 export VCS_REVISION='%build.vcs.number%'
@@ -129,13 +125,34 @@ object StartVerschilanalyse : BuildType({
                 export BRANCH_NAME='%teamcity.build.branch%'
                 export SEND_EMAIL='%send_email%'
 
-                pushd bundle
+                # Create the builds dir if it does not exist
+                builds_dir="/p/devops-dsc/verschilanalyse/builds"
+                mkdir -p "${'$'}{builds_dir}"
+                # remove old build directories to clear space
+                find "${'$'}{builds_dir}" -mindepth 1 -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
+
+                # Create new build directory
+                va_home="${'$'}{builds_dir}/%teamcity.build.id%"
+                mkdir -p "${'$'}{va_home}"
+
+                # Extract the bundle to the build dir
+                bundle_dir="${'$'}{va_home}/bundle"
+                echo "bundle dir: ${'$'}{bundle_dir}"
+                rm -rf "${'$'}{bundle_dir}"
+                mkdir "${'$'}{bundle_dir}"
+                tar -xzvf bundle-%teamcity.build.id%.tar.gz -C "${'$'}{bundle_dir}"
+                rm -f bundle-%teamcity.build.id%.tar.gz
+
+                # start the VA
+                pushd "${'$'}{bundle_dir}"
                 ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
-                    --model-filter='%model_filter%'
+                    --model-filter='%model_filter%' \
+                    --json-configs-path='%json_configs_path%' \
+                    --va-home="${'$'}{va_home}"
                 popd
             """.trimIndent()
             targetUrl = "h7.directory.intra"

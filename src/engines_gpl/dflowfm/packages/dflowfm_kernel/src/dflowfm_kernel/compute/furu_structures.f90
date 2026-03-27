@@ -41,7 +41,7 @@ contains
       use m_flow, only: changestructuredimensions, hu, epshu, s1, frcu, u1, v, ifrcutp, au, fu, ru, q1, kmx, u0
       use m_flowgeom, only: lnx1d, wu, ln, kcu, bob0, bl, dx, teta
       use m_flowtimes, only: dts
-      use m_general_structure, only: update_widths, computegeneralstructure
+      use m_general_structure, only: update_widths, compute_general_structure
       use m_1d_structures, only: set_fu_ru_structure, check_for_changes_on_structures, t_structure
       use m_compound, only: computecompound, t_compound
       use m_Universal_Weir, only: computeuniversalweir
@@ -127,7 +127,7 @@ contains
                      end if
                      Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                      au(L) = pstru%au(L0)
-                     call computeGeneralStructure(pstru%generalst, direction, L0, width, bob0(:, L), fu(L), ru(L), &
+                     call compute_general_structure(pstru%generalst, direction, L0, width, bob0(:, L), fu(L), ru(L), &
                                                   au(L), as1, as2, width, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks)
                      if (kmx > 0) then
                         call distribute_linearized_3d_structure_coefficients(pstru)

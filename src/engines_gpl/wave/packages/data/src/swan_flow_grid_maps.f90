@@ -306,6 +306,7 @@ contains
    subroutine make_grid_map(i1, i2, g1, g2, gm, external_mapper)
       use system_utils, only: ARCH
       use netcdf
+      use nc_check, only : nc_check_err
       use m_polygon
       use m_tpoly
       implicit none
@@ -653,7 +654,7 @@ contains
       inpfld%v1 = sr%uy0(itide)
       pi = 4.0 * atan(1.0)
       d2r = pi / 180.0
-      if (sr%nautconv) then
+      if (sr%nautical_convention) then
          cartDir = 270.0 - sr%wdir(itide)
       else
          cartDir = sr%wdir(itide)

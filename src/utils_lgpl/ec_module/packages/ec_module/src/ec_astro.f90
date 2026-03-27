@@ -543,6 +543,7 @@ module m_ec_astro
       ! =======================================================================
 
       function asc_map_components(kcmp, inaam, knum) result (nmissing)
+         use m_ec_message, only: set_ec_message
          integer                                         :: nmissing
          integer,                            intent(in)  :: kcmp        !<
          character(len=8), dimension(kcmp),  intent(in)  :: inaam       !< Name of the referenced components
@@ -566,6 +567,7 @@ module m_ec_astro
             enddo
             if (knum(i) < 0) then
                nmissing = nmissing + 1
+               call set_ec_message("Unknown astronomical constituent '" // trim(inaam(i)) // "' encountered")
             endif
          enddo
       end function asc_map_components

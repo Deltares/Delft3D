@@ -32,7 +32,7 @@ set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
 
 # Specify C++ standard for all targets, disable compiler specific extentions
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -105,14 +105,8 @@ if (WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    if(intel_version EQUAL 23)
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
-    else()
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.21.3/include)
-    endif()
-
-    #also set PETSC library directory
-    set (petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
+    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.24.5/include)
+    set(petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
     message(STATUS "PETSC")
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
     message(STATUS "path ${petsc_path}")

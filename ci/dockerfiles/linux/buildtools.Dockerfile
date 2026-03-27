@@ -1,6 +1,10 @@
 # syntax=containers.deltares.nl/docker-proxy/docker/dockerfile:1.4
 
-FROM containers.deltares.nl/base_linux_containers/8-base:latest AS buildtools
+# note that although the BASE_IMAGE_URL argument allows you to easily change the base image,
+# all the following code assumes that you're running an Alma Linux or compatible environment.
+ARG BASE_IMAGE_URL=containers.deltares.nl/base_linux_containers/8-base:latest
+
+FROM ${BASE_IMAGE_URL} AS buildtools
 
 ARG INTEL_ONEAPI_VERSION=2024
 
@@ -47,6 +51,12 @@ elif [[ $INTEL_ONEAPI_VERSION = "2024" ]]; then
     COMPILER_FORTRAN_VERSION="2024.2.1"
     MKL_DEVEL_VERSION="2024.2.2"
     MPI_DEVEL_VERSION="2021.13.1"
+elif [[ $INTEL_ONEAPI_VERSION = "2025" ]]; then
+    COMMON_VARS_VERSION="2025.3.1"
+    COMPILER_DPCPP_CPP_VERSION="2025.3.2"
+    COMPILER_FORTRAN_VERSION="2025.3.2"
+    MKL_DEVEL_VERSION="2025.3.1"
+    MPI_DEVEL_VERSION="2021.17.2"
 fi
 
 dnf install --assumeyes \
@@ -111,7 +121,7 @@ RUN --mount=type=cache,target=/var/cache/src/,id=cmake-cache-${INTEL_ONEAPI_VERS
 source /etc/bashrc
 set -eo pipefail
 
-URL='https://github.com/Kitware/CMake/releases/download/v3.30.3/cmake-3.30.3.tar.gz'
+URL='https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
@@ -122,7 +132,7 @@ fi
 
 export CC=icx CXX=icpx CFLAGS="-O3" CXXFLAGS="-O3"
 
-pushd /var/cache/src/cmake-3.30.3
+pushd /var/cache/src/cmake-4.2.3
 ./bootstrap --parallel=$(nproc) -- -DCMAKE_USE_OPENSSL=OFF
 make --jobs=$(nproc)
 make install

@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: log.cpp 962 2011-10-31 21:52:47Z elshoff $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/packages/d_hydro_lib/src/log.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/packages/d_hydro_lib/src/log.cpp
+// $
 //------------------------------------------------------------------------------
 //  d_hydro
 //  Log Object - Implementation
@@ -34,133 +36,88 @@
 //  25 oct 11
 //------------------------------------------------------------------------------
 
-
 #include "log.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-
-#if defined (WIN32)
-#   define strdup _strdup
+#if defined(WIN32)
+    #define strdup _strdup
 #endif
 
-Log::Log (
-    FILE *  output,
-    Clock * clock,
-    Mask    mask
-    ) {
+Log::Log(FILE* output, Clock* clock, Mask mask)
+{
+    this->output = output;
+    this->clock = clock;
+    this->mask = mask;
 
-    this->output    = output;
-    this->clock     = clock;
-    this->mask      = mask;
+    if (pthread_key_create(&this->thkey, NULL) != 0)
+        throw new Exception("Pthreads error in Log: Cannot create thread-specific key: %s", strerror(errno));
+    if (pthread_setspecific(this->thkey, NULL) != 0)
+        throw new Exception("Pthreads error in Log constructor: Cannot set thread-specific key: %s", strerror(errno));
+}
 
-    if (pthread_key_create (&this->thkey, NULL) != 0)
-        throw new Exception("Pthreads error in Log: Cannot create thread-specific key: %s", strerror (errno));
-    if (pthread_setspecific (this->thkey, NULL) != 0)
-        throw new Exception("Pthreads error in Log constructor: Cannot set thread-specific key: %s", strerror (errno));
-    }
-
-
-Log::~Log (
-    void
-    ) {
-
+Log::~Log(void)
+{
     // nothing to do
-    }
-
+}
 
 //------------------------------------------------------------------------------
 
+Log::Mask Log::GetMask(void) { return this->mask; }
 
-Log::Mask
-Log::GetMask (
-    void
-    ) {
-
-    return this->mask;
-    }
-
-
-void
-Log::SetMask (
-    Mask mask
-    ) {
-
+void Log::SetMask(Mask mask)
+{
     this->mask = mask;
-    this->Write (Log::ALWAYS, "Log mask set to 0x%08x", this->mask);
-    }
+    this->Write(Log::ALWAYS, "Log mask set to 0x%08x", this->mask);
+}
 
+void Log::RegisterThread(const char* id)
+{
+    char* idCopy = strdup(id);
+    if (pthread_setspecific(this->thkey, (void*)idCopy) != 0)
+        throw new Exception("Pthreads error in Log::RegisterThread: Cannot set thread-specific key: %s",
+                            strerror(errno));
+}
 
-void
-Log::RegisterThread (
-    const char * id
-    ) {
+void Log::RenameThread(const char* id)
+{
+    this->UnregisterThread();
+    this->RegisterThread(id);
+}
 
-    char * idCopy = strdup (id);
-    if (pthread_setspecific (this->thkey, (void *) idCopy) != 0)
-        throw new Exception("Pthreads error in Log::RegisterThread: Cannot set thread-specific key: %s", strerror (errno));
-    }
+void Log::UnregisterThread(void)
+{
+    char* id = (char*)pthread_getspecific(this->thkey);
+    if (id == NULL) throw new Exception("Log thread key not set in UnregisterThread");
 
+    free(id);
+}
 
-void
-Log::RenameThread (
-    const char * id
-    ) {
+bool Log::Write(Mask mask, const char* format, ...)
+{
+    if ((mask & this->mask) == 0) return false;
 
-    this->UnregisterThread ();
-    this->RegisterThread (id);
-    }
-
-
-void
-Log::UnregisterThread (
-    void
-    ) {
-
-    char * id = (char *) pthread_getspecific (this->thkey);
-    if (id == NULL)
-        throw new Exception("Log thread key not set in UnregisterThread");
-
-    free (id);
-    }
-
-
-bool
-Log::Write (
-    Mask mask,
-    const char *  format,
-    ...
-    ) {
-
-    if ((mask & this->mask) == 0)
-        return false;
-
-    const int bufsize = 256*1024;
-    char * buffer = new char [bufsize]; // really big temporary buffer, just in case
+    const int bufsize = 256 * 1024;
+    char* buffer = new char[bufsize]; // really big temporary buffer, just in case
 
     va_list arguments;
-    va_start (arguments, format);
-    int len = vsnprintf (buffer, bufsize-1, format, arguments);
-    va_end (arguments);
-    buffer[bufsize-1] = '\0';
+    va_start(arguments, format);
+    int len = vsnprintf(buffer, bufsize - 1, format, arguments);
+    va_end(arguments);
+    buffer[bufsize - 1] = '\0';
 
-    char clock [100];
+    char clock[100];
     clock[0] = '\0';
-    this->clock->Now (clock);
+    this->clock->Now(clock);
 
-    char * threadID = (char *) pthread_getspecific (this->thkey);
-    if (threadID == NULL)
-        threadID = "<anonymous>";
+    const char* threadID = (const char*)pthread_getspecific(this->thkey);
+    if (threadID == NULL) threadID = "<anonymous>";
 
-    fprintf (this->output, "D_Hydro [%s] %s >> %s\n",
-                        clock,
-                        threadID,
-                        buffer
-                        );
+    fprintf(this->output, "D_Hydro [%s] %s >> %s\n", clock, threadID, buffer);
 
-    fflush (this->output);
-    delete [] buffer;
+    fflush(this->output);
+    delete[] buffer;
     return true;
-    }
+}

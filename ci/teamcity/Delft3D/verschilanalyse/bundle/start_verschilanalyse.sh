@@ -16,14 +16,15 @@ Usage: $0 -a <apptainer-image> -r <s3-path-prefix> -o <s3-path-prefix> [-m <mode
 -r|--reference-prefix path/to/references
     The reference output is read from this location in the verschilanalyse bucket.
 -m|--models-path input
-    The S3 path and local directory name for model data (default: input)
+    The S3 path and local directory name for model data
 -f|--model-filter grevelingen,volkerakzoommeer
     Comma-separated list of patterns. Only models with paths matching one of these patterns will be run.
+
 EOF
 }
 
 # Parse command line options
-PARSED_OPTIONS=$(getopt -o 'a:c:r:m:f:' -l 'apptainer:,current-prefix:,reference-prefix:,models-path:,model-filter:' -- "$@")
+PARSED_OPTIONS=$(getopt -o 'a:c:r:m:f:d:j:h' -l 'apptainer:,current-prefix:,reference-prefix:,models-path:,model-filter:,json-configs-path:,va-home:,help' -- "$@")
 eval set -- "$PARSED_OPTIONS"
 
 APPTAINER=
@@ -31,6 +32,8 @@ REFERENCE_PREFIX=
 CURRENT_PREFIX=
 MODELS_PATH=
 MODEL_FILTER=
+JSON_CONFIGS_PATH=
+VAHOME=
 
 while true; do
     case "$1" in
@@ -54,6 +57,18 @@ while true; do
         MODEL_FILTER="$2"
         shift 2
         ;;
+    -j | --json-configs-path)
+        JSON_CONFIGS_PATH="$2"
+        shift 2
+        ;;
+    -d | --va-home)
+        VAHOME="$2"
+        shift 2
+        ;;
+    -h | --help)
+        show_help
+        exit 0
+        ;;
     --)
         shift
         break
@@ -65,13 +80,9 @@ while true; do
     esac
 done
 
-if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX; then
+if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX VAHOME MODELS_PATH JSON_CONFIGS_PATH; then
     show_help
     exit 1
-fi
-
-if [[ -z "$MODELS_PATH" ]]; then
-    MODELS_PATH="input"
 fi
 
 if [[ -z "$MODEL_FILTER" ]]; then
@@ -85,32 +96,32 @@ echo "Using MODEL_REGEX: ${MODEL_REGEX}"
 
 export CURRENT_PREFIX
 export REFERENCE_PREFIX
+export MODELS_PATH
 export MODEL_REGEX
+export JSON_CONFIGS_PATH
 export BUCKET='s3://devops-test-verschilanalyse'
-export BUILDS_DIR='/p/devops-dsc/verschilanalyse/builds'
-export VAHOME="${BUILDS_DIR}/${BUILD_ID:-latest}"
+export VAHOME
 export LOG_DIR="${VAHOME}/logs"
 
 DELFT3D_SIF="${HOME}/.cache/verschilanalyse/delft3dfm.sif"
 
-# Create new build directory and remove old build directories to clear space.
-mkdir -p "$VAHOME"
-find "$BUILDS_DIR" -maxdepth 1 -type d -mtime +7 -execdir rm -rf {} +
-
 module purge
 module load apptainer/1.2.5
 
-# Create log dir and input dir.
-mkdir -p "${LOG_DIR}/models" "${VAHOME}/${MODELS_PATH}"
+# Create log, input and config dir.
+mkdir -p "${LOG_DIR}/models" "${VAHOME}/${MODELS_PATH}" "${VAHOME}/${JSON_CONFIGS_PATH}"
 
-# Get latest input data from MinIO.
-srun --nodes=1 --ntasks=1 --cpus-per-task=16 --partition=16vcpu_spot \
-    --account=verschilanalyse --qos=verschilanalyse \
-    docker run --rm --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VAHOME}/${MODELS_PATH}:/data" \
-    -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" \
-    docker.io/amazon/aws-cli:2.32.14 \
-    --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress "${BUCKET}/${MODELS_PATH}/" /data
+# Get latest input and config data from MinIO.
+MINIO_PATHS=("${MODELS_PATH}" "${JSON_CONFIGS_PATH}")
+for minio_path in "${MINIO_PATHS[@]}"; do
+    srun --nodes=1 --ntasks=1 --cpus-per-task=16 --partition=16vcpu_spot \
+        --account=verschilanalyse --qos=verschilanalyse \
+        docker run --rm --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VAHOME}/${minio_path}:/data" \
+        -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" \
+        docker.io/amazon/aws-cli:2.32.14 \
+        --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
+        s3 sync --delete --no-progress "${BUCKET}/${minio_path}/" /data
+done
 
 # Download reference output data.
 DOWNLOAD_REFS_JOB_ID=$(

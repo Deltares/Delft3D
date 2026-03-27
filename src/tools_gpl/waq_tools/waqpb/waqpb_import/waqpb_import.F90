@@ -515,9 +515,9 @@ subroutine cratab(grp, newtab, initialConfgId, initialConfgName)
 
    use m_string_utils
    use m_waqpb_data, only: &
-      nproc, nconf, ncnpr, nitem, ncnsb, ncnsbm, &
+      nproc, nconf, ncnpr, nitem, ncnsb, ncnsbm, nsgrp, &
       procid, confid, conpro, itemid, itemgr, r1_pid, r1_cid, &
-      r2_cid, r2_sid, sgrpid, grp, sgrpnm, confnm
+      r2_cid, r2_sid, sgrpid, sgrpnm, confnm
 
    character(len=30) :: grp
    character(len=10) :: initialConfgId
