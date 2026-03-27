@@ -105,6 +105,14 @@ f90twtest(test_bubblescreen
     LIBRARIES dflowfm_kernel
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
+f90twtest(test_init_spatial_field
+    CFILES test_init_spatial_field.cpp
+    F90FILES test_init_spatial_field.f90
+    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_init_spatial_field.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES dflowfm_kernel test_helpers
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)
 
 f90twtest(test_sources_sinks
     CFILES test_sources_sinks.cpp
