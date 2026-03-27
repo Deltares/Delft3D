@@ -138,12 +138,6 @@ object WindowsCollect : BuildType({
     }
 
     dependencies {
-        dependency(WindowsCollectEnvironment) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-        }
         dependency(AbsoluteId("${DslContext.getParameter("delft3d_signing_project_root")}_Sign")) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
