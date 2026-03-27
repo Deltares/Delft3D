@@ -30,7 +30,8 @@
 submodule(fm_external_forcings) fm_external_forcings_init
    use precision_basics, only: dp
    use m_missing, only: dmiss => dmiss_neg
-   implicit none
+
+   implicit none(type, external)
 
    integer, parameter :: INI_VALUE_LEN = 256
 
@@ -665,6 +666,7 @@ contains
                            convert_file_type_string_to_integer
       use m_wind, only: jaQext
       use string_module, only: strcmpi
+      use unstruc_files, only: resolvePath
 
       type(t_spatial_field_input), intent(inout) :: input
       character(len=*), intent(in) :: file_name

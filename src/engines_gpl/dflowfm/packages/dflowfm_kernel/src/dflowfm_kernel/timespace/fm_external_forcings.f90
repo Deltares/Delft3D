@@ -38,11 +38,11 @@ module fm_external_forcings
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
    use m_waveconst
 
-   implicit none
+   implicit none(type, external)
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
