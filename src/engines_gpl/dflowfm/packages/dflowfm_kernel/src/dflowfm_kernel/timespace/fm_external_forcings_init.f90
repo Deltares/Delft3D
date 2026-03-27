@@ -665,13 +665,96 @@ contains
 
    end function read_spatial_field_block
 
+   !> Validate a t_spatial_field_input read by read_spatial_field_block.
+   !! Derives method and filetype. Returns .false. and writes error messages on failure.
+   function validate_spatial_field_input(input, file_name, group_name) result(is_successful)
+      use messageHandling, only: err_flush, msgbuf
+      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
+                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
+                           convert_file_type_string_to_integer
+      use m_wind, only: jaQext
+      use string_module, only: strcmpi
+
+      type(t_spatial_field_input), intent(inout) :: input
+      character(len=*), intent(in)               :: file_name
+      character(len=*), intent(in)               :: group_name
+      logical                                    :: is_successful
+
+      logical :: has_interpolation_method
+
+      is_successful = .false.
+
+      if (len_trim(input%quantity) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         call err_flush()
+         return
+      end if
+
+      if (len_trim(input%forcing_file_type) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFileType'' is missing.'
+         call err_flush()
+         return
+      end if
+
+      if (len_trim(input%forcing_file) == 0) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         call err_flush()
+         return
+      end if
+
+      ! Derive method
+      has_interpolation_method = len_trim(input%interpolation_method) > 0
+      if (has_interpolation_method) then
+         input%method = convert_method_string_to_integer(input%interpolation_method)
+         call update_method_with_weightfactor_fallback(input%forcing_file_type, input%method)
+      else
+         input%method = get_default_method_for_file_type(input%forcing_file_type)
+      end if
+
+      if (input%method == -1) then !> No method could be derived, neither from interpolationMethod nor as a default for the given forcingFileType
+         if (has_interpolation_method) then
+            write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', &
+               trim(input%interpolation_method), ' in block in file ''', file_name, ''': [', group_name, '].'
+         else
+            write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
+               '] nor an internal value associated with given ''forcingFileType'':', trim(input%forcing_file_type), '.'
+         end if
+         call err_flush()
+         return
+      end if
+
+      call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
+
+      ! Derive filetype
+      input%filetype = convert_file_type_string_to_integer(input%forcing_file_type)
+
+      ! Quantity-specific constraints
+      select case (trim(input%quantity))
+      case ('qext')
+         if (jaQext == 0) then
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
+               ']. quantity ''qext'' requires QExt=1 in MDU.'
+            call err_flush()
+            return
+         end if
+         if (.not. strcmpi(input%forcing_file_type, 'sample')) then
+            write (msgbuf, '(7a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
+               ']. quantity ''qext'' requires forcingFileType=sample, got: ', trim(input%forcing_file_type), '.'
+            call err_flush()
+            return
+         end if
+      end select
+
+      is_successful = .true.
+
+   end function validate_spatial_field_input
+
    !> Read the current [Meteo] block from new external forcings file
       !! and do required initialisation for that quantity.
    function init_meteo_forcings(block_ptr, base_dir, file_name, group_name) result(res)
       use string_module, only: strcmpi, str_tolower
       use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess, warn_flush
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use m_missing, only: dmiss
       use tree_data_types, only: tree_data
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
                            update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
@@ -680,7 +763,7 @@ contains
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
-                        jaqin, jaqext, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
+                        jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
                         ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, qext, pseudo_air_pressure_available, &
                         water_level_correction_available
       use m_flowgeom, only: ndx, lnx, xz, yz
@@ -704,92 +787,24 @@ contains
       integer, allocatable :: mask(:)
       logical :: invert_mask
       logical :: is_variable_name_available
-      logical :: is_extrapolation_allowed
       character(len=INI_VALUE_LEN) :: variable_name
-      character(len=INI_VALUE_LEN) :: interpolation_method, forcing_file, forcing_file_type, item_type, quantity, target_mask_file
+      character(len=INI_VALUE_LEN) ::  forcing_file, forcing_file_type, quantity, target_mask_file
       character(len=1) :: oper
-      real(dp) :: max_search_radius
       ! generalized properties+pointers to target element grid:
       integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set
       integer :: target_num_points !< Number of points in target element set
       real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set
       real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set
-      integer :: ierr, method, ilattype
+      integer :: ierr, method
       logical :: is_successful
+      type(t_spatial_field_input) :: input
 
       res = .false.
 
-      call prop_get(block_ptr, '', 'quantity ', quantity, is_successful)
-      if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
-         call err_flush()
-         return
-      end if
+      input = read_spatial_field_block(block_ptr)
+      res = validate_spatial_field_input(input, file_name, group_name)
 
-      call prop_get(block_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
-      if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
-            ']. Field ''forcingFileType'' is missing.'
-         call err_flush()
-         return
-      end if
-
-      call prop_get(block_ptr, '', 'forcingFile ', forcing_file, is_successful)
-      if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
-            ']. Field ''forcingFile'' is missing.'
-         call err_flush()
-         return
-      else
-         call resolvePath(forcing_file, base_dir)
-      end if
-
-      target_mask_file = ''
-      call prop_get(block_ptr, '', 'targetMaskFile ', target_mask_file)
-
-      invert_mask = .false.
-      call prop_get(block_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
-
-      is_variable_name_available = .false.
-      variable_name = ' '
-      call prop_get(block_ptr, '', 'forcingVariableName ', variable_name, is_variable_name_available)
-
-      call prop_get(block_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
-      if (is_successful) then
-         method = convert_method_string_to_integer(interpolation_method)
-         call update_method_with_weightfactor_fallback(forcing_file_type, method)
-      else
-         method = get_default_method_for_file_type(forcing_file_type)
-      end if
-      if (method == -1) then
-         if (is_successful) then
-            write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', trim(interpolation_method), &
-               ' in block in file ''', file_name, ''': [', group_name, '].'
-         else
-            write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
-               '] nor an internal value associated with given ''forcingFileType'':', trim(forcing_file_type), '.'
-         end if
-         call err_flush()
-         return
-      end if
-
-      is_extrapolation_allowed = .false.
-      call prop_get(block_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
-      call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
-
-      max_search_radius = -1
-      call prop_get(block_ptr, '', 'extrapolationSearchRadius ', max_search_radius, is_successful)
-
-      oper = 'O'
-      call prop_get(block_ptr, '', 'operand ', oper, is_successful)
-
-      transformcoef = DMISS
-      call prop_get(block_ptr, '', 'averagingType ', transformcoef(4), is_successful)
-      call prop_get(block_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
-      call prop_get(block_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
-      call prop_get(block_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
-
-      filetype = convert_file_type_string_to_integer(forcing_file_type)
+      if (.not. res) return
 
       ! Default location type: s-points. Only cases below that need u-points or different, will override.
       target_location_type = UNC_LOC_S
@@ -862,34 +877,23 @@ contains
             end if
 
          case ('qext')
-            ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
-            if (jaQext == 0) then
-               write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-                  '] is missing QExt=1 in MDU.'
-               call err_flush()
-               return
-            end if
-            if (.not. strcmpi(forcing_file_type, 'sample')) then
-               write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
-                  ''': [', group_name, '], quantity=', trim(quantity), '.'
-               call err_flush()
-               return
-            end if
-            method = get_default_method_for_file_type(forcing_file_type)
-            call prop_get(block_ptr, '', 'locationType', item_type, is_successful)
-            select case (str_tolower(trim(item_type)))
-            case ('1d')
-               ilattype = ILATTP_1D
-            case ('2d')
-               ilattype = ILATTP_2D
-            case ('1d2d', 'all')
-               ilattype = ILATTP_ALL
-            case default
-               ilattype = ILATTP_ALL
-            end select
+      block
+               character(len=INI_VALUE_LEN) :: location_type
+               integer :: qext_ilattype
 
-            mask(:) = 0
-            call prepare_lateral_mask(mask, ilattype)
+               call prop_get(block_ptr, '', 'locationType', location_type, is_successful)
+               select case (str_tolower(trim(location_type)))
+               case ('1d')
+                  qext_ilattype = ILATTP_1D
+               case ('2d')
+                  qext_ilattype = ILATTP_2D
+               case ('1d2d', 'all')
+                  qext_ilattype = ILATTP_ALL
+               case default
+                  qext_ilattype = ILATTP_ALL
+               end select
+               call prepare_lateral_mask(mask, qext_ilattype)
+            end block
 
             res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
             return ! This was a special case, don't continue with timespace processing below.
