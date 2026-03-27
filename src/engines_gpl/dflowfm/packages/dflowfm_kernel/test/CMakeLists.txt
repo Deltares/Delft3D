@@ -124,7 +124,20 @@ f90twtest(test_ec_module_block
     LIBRARIES dflowfm_kernel test_helpers
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
+
 copy_dflowfm_test_dependencies(test_ec_module_block)
+
+f90twtest(test_text_file_processor
+    CFILES test_text_file_processor.cpp
+    F90FILES test_text_file_processor.f90
+    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_text_file_processor.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES dflowfm_kernel test_helpers
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)
+
+
+copy_dflowfm_test_dependencies(test_text_file_processor)
 
 
 add_subdirectory(io)

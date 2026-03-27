@@ -963,7 +963,7 @@ contains
 
    !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
    module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, msgbuf, msg_flush
       use tree_data_types, only: tree_data
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
@@ -971,6 +971,7 @@ contains
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
       use m_reapol, only: reapol
+      use m_text_file_validators, only: ArraysLengthChapterVerifier, ChapterVerifier
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -1052,21 +1053,23 @@ contains
          y_coordinates = ypl(1:npl)
       else
          ! Read data directly from ext file
-         call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
-         if (is_read) then
-            if (num_coordinates <= 0) then
-               call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
-               write (msgbuf, '(a)') 'SourceSink ''' // trim(sourcesink_id) // ''': numCoordinates must be greater than 0.'
+         block
+            class(ChapterVerifier), allocatable :: verifier
+            verifier = ArraysLengthChapterVerifier(['xCoordinates', 'yCoordinates'], 'numCoordinates')
+            call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
+            if (.not. verifier%verify(block_ptr)) then
+               call err_flush()               
+               write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(sourcesink_id) // ']'
                call err_flush()
                return
             end if
+            call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
             allocate (x_coordinates(num_coordinates), stat=ierr)
             call prop_get(block_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_read)
-            if (is_read) then
-               allocate (y_coordinates(num_coordinates), stat=ierr)
-               call prop_get(block_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
-            end if
-         end if
+            allocate (y_coordinates(num_coordinates), stat=ierr)
+            call prop_get(block_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
+
+         end block
          have_location_coordinates = is_read
       end if
       
