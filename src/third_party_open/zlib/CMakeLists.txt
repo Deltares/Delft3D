@@ -1,7 +1,4 @@
 if (WIN32)
-    # Register zlib as a proper SHARED IMPORTED target so CMake's
-    # TARGET_RUNTIME_DLLS machinery propagates it automatically to dependents,
-    # exactly as is done for PETSc in petsc/cmake_deltares/CMakeLists.txt.
     if(NOT TARGET zlib)
         add_library(zlib SHARED IMPORTED GLOBAL)
         set_target_properties(zlib PROPERTIES
