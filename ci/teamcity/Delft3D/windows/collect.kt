@@ -95,10 +95,10 @@ object WindowsCollect : BuildType({
             dockerPull = true
             scriptContent = """
                 powershell -ExecutionPolicy Bypass -Command ^
-                    "${'$'}ErrorActionPreference = 'Stop'; ^
-                    Write-Host 'Creating %file_path% ...'; ^
-                    Compress-Archive -Path 'x64', 'dimrset_version_x64.txt' -DestinationPath %file_path% -Force; ^
-                    Write-Host 'ZIP created: %file_path%'"
+                    "${'$'}ErrorActionPreference = 'Stop';" ^
+                    "Write-Host 'Creating %file_path% ...';" ^
+                    "Compress-Archive -Path 'x64', 'dimrset_version_x64.txt' -DestinationPath %file_path% -Force;" ^
+                    "Write-Host 'ZIP created: %file_path%'"
             """.trimIndent()
         }
         step {
