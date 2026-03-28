@@ -30,7 +30,4 @@
 
 #include "throwexception.h"
 
-void STDCALL THROWEXCEPTION(void)
-{
-    throw "An exception occurred";
-}
+void STDCALL THROWEXCEPTION(void) { throw "An exception occurred"; }

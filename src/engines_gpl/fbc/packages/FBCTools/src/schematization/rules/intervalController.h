@@ -21,7 +21,6 @@
  * @date 2011
  */
 
-
 #ifndef INTERVAL_CONTROLLER_H
 #define INTERVAL_CONTROLLER_H
 
@@ -29,39 +28,39 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class intervalController : public rule
-{
-private:
-    double settingBelow;
-    double settingAbove;
-    double settingMaxSpeed;
-    double settingMaxStep;
-    double deadbandSetpointAbsolute;
-    double deadbandSetpointRelative;
-    int iXIn;
-    int iSPIn;
-    int iYOut;
-    int iStatusOut;
+            class intervalController : public rule
+            {
+            private:
+                double settingBelow;
+                double settingAbove;
+                double settingMaxSpeed;
+                double settingMaxStep;
+                double deadbandSetpointAbsolute;
+                double deadbandSetpointRelative;
+                int iXIn;
+                int iSPIn;
+                int iYOut;
+                int iStatusOut;
 
-public:
-    intervalController(string id, string name,
-        double settingBelow, double settingAbove, double settingMaxSpeed, double settingMaxStep,
-        double deadbandSetpointAbsolute, double deadbandSetpointRelative,
-        int iXIn, int iSPIn, int iYOut, int iStatusOut);
-    ~intervalController(void);
+            public:
+                intervalController(string id, string name, double settingBelow, double settingAbove,
+                                   double settingMaxSpeed, double settingMaxStep, double deadbandSetpointAbsolute,
+                                   double deadbandSetpointRelative, int iXIn, int iSPIn, int iYOut, int iStatusOut);
+                ~intervalController(void);
 
-    void solve(double *stateOld, double *stateNew, long long t, double dt);
-    void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew);
-        virtual int getIYOut() const override { return iYOut; }
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                              double* dStateNew);
+                virtual int getIYOut() const override { return iYOut; }
+            };
 
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif // INTERVAL_CONTROLLER_H

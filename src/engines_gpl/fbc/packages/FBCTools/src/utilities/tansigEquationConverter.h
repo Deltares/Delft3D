@@ -21,7 +21,6 @@
  * @date 2012
  */
 
-
 #ifndef TANSIG_EQUATION_CONVERTER_H
 #define TANSIG_EQUATION_CONVERTER_H
 
@@ -29,25 +28,25 @@
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-class tansigEquationConverter : public converter
-{
-public:
-	tansigEquationConverter();
-	~tansigEquationConverter(void);
+        class tansigEquationConverter : public converter
+        {
+        public:
+            tansigEquationConverter();
+            ~tansigEquationConverter(void);
 
-	void checkProperty(converter::propertyEnum prop) {};
+            void checkProperty(converter::propertyEnum prop) {};
 
-	double convert(double xVal);
-	double convertDer(double xVal);
-	double reverseConvert(double yVal);
-	double reverseConvertDer(double yVal);
-	converter* getIntegrator();
-};
+            double convert(double xVal);
+            double convertDer(double xVal);
+            double reverseConvert(double yVal);
+            double reverseConvertDer(double yVal);
+            converter* getIntegrator();
+        };
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
-#endif //TANSIG_EQUATION_CONVERTER_H
+#endif // TANSIG_EQUATION_CONVERTER_H

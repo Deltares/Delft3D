@@ -21,11 +21,10 @@
  * @date 2013
  */
 
-
 #ifndef RTCTOOLS_H
 #define RTCTOOLS_H
 
 void usage();
-int main(int argc, char *argv[]);
+int main(int argc, char* argv[]);
 
-#endif //RTCTOOLS_H
+#endif // RTCTOOLS_H

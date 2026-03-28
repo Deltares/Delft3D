@@ -43,6 +43,10 @@ if(NOT TARGET precice::precice)
     add_subdirectory(${checkout_src_root}/${precice_module} precice)
 endif()
 
+if (NOT TARGET pugixml::pugixml)
+    add_subdirectory(${checkout_src_root}/${pugixml_module} pugixml)
+endif()
+
 # Tools_gpl
 # Mormerge
 if(NOT TARGET mormerge)

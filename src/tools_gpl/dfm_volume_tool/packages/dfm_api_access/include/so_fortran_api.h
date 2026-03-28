@@ -32,6 +32,5 @@
 //
 //------------------------------------------------------------------------------
 
-
-char * strFcpy(char * str_1, int len);
-void RemoveTrailingBlanks_dll(char * String);
+char* strFcpy(char* str_1, int len);
+void RemoveTrailingBlanks_dll(char* String);
