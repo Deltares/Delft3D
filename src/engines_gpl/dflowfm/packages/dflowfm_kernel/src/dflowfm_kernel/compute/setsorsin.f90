@@ -104,14 +104,6 @@ contains
                      source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) / source_sink_reduction(1, n)
                   end do
                end if
-               do k = source_sink_indices(2, n), source_sink_indices(3, n)
-                  !if (jasal > 0) constituents(isalt,k) = source_sink_reduction(1+isalt,n)
-                  !if (temperature_model /= TEMPERATURE_MODEL_NONE) constituents(itemp,k) = source_sink_reduction(1+itemp,n)
-                  do L = 1, numconst
-                     constituents(L, k) = source_sink_reduction(L + 1, n)
-                  end do
-               end do
-
             end if
          end if
 
@@ -160,14 +152,6 @@ contains
                      source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) / source_sink_reduction(1 + numconst + 1, n)
                   end do
                end if
-               do k = source_sink_indices(5, n), source_sink_indices(6, n)
-                  !if (jasal > 0) constituents(isalt,k) = source_sink_reduction(1+numconst+1+isalt,n)
-                  !if (temperature_model /= TEMPERATURE_MODEL_NONE) constituents(itemp,k) = source_sink_reduction(1+numconst+1+itemp,n)
-                  do L = 1, numconst
-                     constituents(L, k) = source_sink_reduction(1 + numconst + 1 + L, n)
-                  end do
-               end do
-
             end if
          end if
 
