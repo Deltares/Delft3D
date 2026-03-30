@@ -237,8 +237,8 @@ contains
                      + (pocol(kll) - pocor(kr1 - kbr + 1)) * constituents(isalt, kr2)) &
                     / (pocor(kr2 - kbr + 1) - pocor(kr1 - kbr + 1))
             end if
-            grad1 = (constituents(isalt, kr) - cl) ! / dx(L)
-            grad2 = (cr - constituents(isalt, kL)) ! / dx(L)
+            grad1 = (constituents(isalt, kr) - cl)
+            grad2 = (cr - constituents(isalt, kL))
             grad = 0.0_dp
             if (grad1 * grad2 > 0.0_dp) then
                grad = 2.0_dp * grad1 * grad2 / (grad1 + grad2)
@@ -266,8 +266,8 @@ contains
                      + (pocol(kll) - pocor(kr1 - kbr + 1)) * constituents(itemp, kr2)) &
                     / (pocor(kr2 - kbr + 1) - pocor(kr1 - kbr + 1))
             end if
-            grad1 = (constituents(itemp, kr) - cl) ! / dx(L)
-            grad2 = (cr - constituents(itemp, kl)) ! / dx(L)
+            grad1 = (constituents(itemp, kr) - cl)
+            grad2 = (cr - constituents(itemp, kl))
             grad = 0.0_dp
             if (grad1 * grad2 > 0.0_dp) then
                grad = 2.0_dp * grad1 * grad2 / (grad1 + grad2)
