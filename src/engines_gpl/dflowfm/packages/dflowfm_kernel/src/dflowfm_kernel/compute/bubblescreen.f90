@@ -15,18 +15,12 @@ module m_bubblescreen
     public :: update_bubblescreen_discharge_wrapper
     public :: update_bubblescreen_discharge
     public :: convert_discharge_air_to_water
-    ! public :: compute_bubblescreen_area
     public :: find_active_layer_interfaces
-    ! public :: compute_water_discharge_across_layers
-    ! public :: compute_constituent_discharge
-    ! public :: write_discharge_to_source_sinks
 
 contains
 
     !> Wrapper subroutine to update the discharges for all bubble screens; loops over all bubble screens and calls update_bubblescreen_discharge for each of them
     subroutine update_bubblescreen_discharge_wrapper()
-        ! Parameters
-
         ! Local variables
         integer :: i !< Loop index
 
