@@ -46,7 +46,7 @@ contains
       use m_add_internaltidesfrictionforces, only: add_internaltidesfrictionforces
       use m_add_baroclinic_pressure, only: add_baroclinic_pressure
       use m_flow, only: kmx, hu, adve, wdsu, huvli, ltop, ktop, zws, lbot, u1, v, flow_without_waves, wavfu, ag, jatidep, rhomean, jaselfal, tidep, tidef, jacreep, use_density, dsalL, dtemL, &
-          jasecflow, czusf, frcu, ifrcutp, czssf, spirbeta, jafrcinternaltides2d, chkadvd, hs
+          jasecflow, czusf, frcu, ifrcutp, czssf, spirbeta, jafrcinternaltides2d, chkadvd, hs, epshu
       use m_flowparameters, only: trshcorio
       use m_flowgeom, only: lnx, lncn, ln, acl, csu, snu, jawave, dxi
       use m_netw, only: zk
