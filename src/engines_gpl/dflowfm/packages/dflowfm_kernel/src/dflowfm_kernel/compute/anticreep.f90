@@ -58,7 +58,7 @@ contains
       real(kind=dp), allocatable, dimension(:) :: poflu ! Z-coordinate gradient flux
       real(kind=dp), allocatable, dimension(:) :: point
       real(kind=dp), allocatable, dimension(:) :: drho, dsal, dtem
-      real(kind=dp), allocatable, dimension(:) :: kicol, kicor
+      integer, allocatable, dimension(:) :: kicol, kicor
 
       integer :: k1, k2, kbl, kbr, ktl, ktr, kll, krr, kl, kr, kl1, kl2, kr1, kr2
       integer :: kpoint, kf, k, j, Lb, Lt, LL, kfmax, kfmax1, kflux
