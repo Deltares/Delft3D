@@ -1676,7 +1676,6 @@ end subroutine rderosion
       real(fp), dimension(:, :), pointer :: mfluff
       real(fp), dimension(:, :, :), pointer :: msed
       real(fp), dimension(:, :), pointer :: thlyr
-      real(fp), dimension(:, :), pointer :: cmudlyr
       real(fp), dimension(:, :), pointer :: svfrac
       real(fp), dimension(:), pointer :: mfluni
       character(20), dimension(:), pointer :: namsed
@@ -1743,7 +1742,6 @@ end subroutine rderosion
          if (iunderlyr == 2) then
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'msed', msed)
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'thlyr', thlyr)
-            if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'cmudlyr', cmudlyr)
             if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'svfrac', svfrac)
          end if
          if (istat /= 0) then
@@ -1940,7 +1938,6 @@ end subroutine rderosion
                !
                msed = 0.0_fp
                thlyr = 0.0_fp
-               cmudlyr = 0.0_fp
                !
                ! allocate temporary array
                !
@@ -2255,7 +2252,6 @@ end subroutine rderosion
                               msed(ised, ilyr, nm) = msed(ised, ilyr, nm) + rtemp(nm, ised) * thtemp(nm) * cdryb(ised)
                            end do
                            thlyr(ilyr, nm) = thlyr(ilyr, nm) + thtemp(nm)
-                           cmudlyr(ilyr, nm) = msed(1, ilyr, nm)/thlyr(ilyr, nm)
                         end do
                      else
                         if (layertype == 'volume fraction') then
@@ -2277,7 +2273,6 @@ end subroutine rderosion
                               end do
                               thick = thlyr(ilyr, nm) + thtemp(nm)
                               svfrac(ilyr, nm) = (thlyr(ilyr, nm) * svfrac(ilyr, nm) + thtemp(nm) * svf) / thick
-                              cmudlyr(ilyr, nm) = svfrac(ilyr, nm) * rhosol(1)
                               thlyr(ilyr, nm) = thick
                            end do
                         else ! layertype == 'mass fraction'
@@ -2479,7 +2474,6 @@ end subroutine rderosion
                            do nm = 1, nmmax
                               msed(ised, ilyr, nm) = msed(ised, ilyr, nm) + rtemp(nm, ised)
                               thlyr(ilyr, nm) = thlyr(ilyr, nm) + rtemp(nm, ised) / cdryb(ised)
-                              cmudlyr(ilyr, nm) = msed(1, ilyr, nm)/thlyr(ilyr, nm)
                            end do
                         end do
                      else
@@ -2509,7 +2503,6 @@ end subroutine rderosion
                               thick = thlyr(ilyr, nm) + thtemp(nm)
                               svfrac(ilyr, nm) = (thlyr(ilyr, nm) * svfrac(ilyr, nm) + thtemp(nm) * svf) / thick
                               thlyr(ilyr, nm) = thick
-                              cmudlyr(ilyr, nm) = svfrac(ilyr, nm) * rhosol(ised) ! ised to be moved inside loop or recoded
                            end do
                         else ! layertype == 'sediment mass'
                            !
@@ -2534,7 +2527,6 @@ end subroutine rderosion
                               thick = thlyr(ilyr, nm) + thtemp(nm)
                               svfrac(ilyr, nm) = (thlyr(ilyr, nm) * svfrac(ilyr, nm) + thtemp(nm) * svf) / thick
                               thlyr(ilyr, nm) = thick
-                              cmudlyr(ilyr, nm) = msed(ised, ilyr, nm)/thlyr(ilyr, nm) ! ised to be moved inside loop or recoded
                            end do
                         end if
                      end if
