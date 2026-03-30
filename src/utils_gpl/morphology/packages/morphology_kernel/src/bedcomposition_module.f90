@@ -337,15 +337,12 @@ type bedcomp_state
     real(fp)   , dimension(:)    , pointer :: dpsed        !< Total depth sediment layer [m]
     real(fp)   , dimension(:)    , pointer :: dzc          !< subsidence
     real(fp)   , dimension(:,:,:), pointer :: msed         !< composition of morphological layers: mass of sediment fractions [kg /m2]
-    real(fp)   , dimension(:,:,:), pointer :: conclyr      !< composition of morphological layers: concentration of sediment fractions, conclyr=msed/thlyr
     real(fp)   , dimension(:,:)  , pointer :: preload      !< historical largest load [kg/m3]
     real(fp)   , dimension(:,:)  , pointer :: td           !< (morphological) time of latest load increment, i.e. that initiates primary compaction [minutes]
     real(fp)   , dimension(:)    , pointer :: rhow         !< Water density [kg/m3] (currently 2D, but should be 3D in the future)
     real(fp)   , dimension(:,:)  , pointer :: sedshort     !< sediment shortage in transport layer [kg /m2]
     real(fp)   , dimension(:,:)  , pointer :: svfrac       !< 1 - porosity coefficient [-]
     real(fp)   , dimension(:,:)  , pointer :: thlyr        !< thickness of morphological layers [m]
-    real(fp)   , dimension(:,:)  , pointer :: cmudlyr      !< mud dry bed density each layer
-    real(fp)   , dimension(:,:)  , pointer :: csandlyr     !< sand dry bed density each layer
     real(fp)   , dimension(:)    , pointer :: thmudgibson  !<
     real(fp)   , dimension(:)    , pointer :: thsandgibson !<
     real(fp)   , dimension(:,:)  , pointer :: thlyrtprev   !< overburden thickness of previous time step
@@ -452,8 +449,6 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
     real(fp)                                :: fac
     real(fp)                                :: localcrslyr
     real(fp)                                :: locallyr
-    real(fp)                                :: mmudlyr1
-    real(fp)                                :: msandlyr1
     real(fp)                                :: seddep0
     real(fp)                                :: seddep1
     real(fp)                                :: thdiff
@@ -490,9 +485,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
     real(fp)   , dimension(:,:)   , pointer :: thlyr
     real(fp)                      , pointer :: thtrempty
     real(fp)   , dimension(:)     , pointer :: thtrlyr
-    real(fp)   , dimension(:,:)   , pointer :: cmudlyr
     integer                       , pointer :: imobility
-    real(fp)   , dimension(:,:)   , pointer :: csandlyr
     real(fp)   , dimension(:,:)   , pointer :: preload
     real(fp)   , dimension(:,:)   , pointer :: td
     real(fp)                                :: poros
@@ -525,9 +518,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
     msed        => this%state%msed
     sedshort    => this%state%sedshort
     thlyr       => this%state%thlyr
-    cmudlyr     => this%state%cmudlyr
     imobility   => this%settings%imobility
-    csandlyr    => this%state%csandlyr
     preload     => this%state%preload
     td          => this%state%td
     !
@@ -687,19 +678,13 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                         ! Accumulate the contents of the top KTEMP layers such that the new top layer
                         ! is sufficiently thick.
                         !
-                        cmudlyr(1,nm)  = cmudlyr(1,nm)*thlyr(1,nm)
-                        csandlyr(1,nm) = csandlyr(1,nm)*thlyr(1,nm)
                         svfrac(1,nm)   = svfrac(1,nm)*thlyr(1,nm)
                         do k = 2,ktemp
                             do l = 1, this%settings%nfrac
                                 msed(l,1,nm) = msed(l,1,nm) + msed(l,k,nm)
                             enddo
-                            cmudlyr(1,nm)  = cmudlyr(1,nm)  + cmudlyr(k,nm)*thlyr(k,nm)
-                            csandlyr(1,nm) = csandlyr(1,nm) + csandlyr(k,nm)*thlyr(k,nm)
                             svfrac(1,nm)   = svfrac(1,nm)   + svfrac(k,nm)*thlyr(k,nm)
                         enddo
-                        cmudlyr(1,nm)  = cmudlyr(1,nm)/thick
-                        csandlyr(1,nm) = csandlyr(1,nm)/thick
                         svfrac(1,nm)   = svfrac(1,nm)/thick
                         thlyr(1,nm) = thick
                         
@@ -709,8 +694,6 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                             do l = 1, this%settings%nfrac
                                 msed(l,kk,nm) = msed(l,k, nm)
                             enddo
-                            cmudlyr(kk,nm) = cmudlyr(k+1,nm) 
-                            csandlyr(kk,nm) = csandlyr(k+1,nm) 
                             svfrac(kk,nm) = svfrac(k+1,nm)
                             thlyr(kk,nm) = thlyr(k+1,nm)
                         enddo
@@ -718,8 +701,6 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                         ! Erase the administration of the bottom-most consolidation layers.
                         do k = nconlyr-ktemp+2, nconlyr
                             msed(:,k,nm) = 0.0_fp
-                            cmudlyr(k,nm) = 0.0_fp
-                            csandlyr(k,nm) = 0.0_fp
                             svfrac(k,nm) = 0.0_fp
                             thlyr(k,nm) = 0.0_fp
                         enddo
@@ -789,18 +770,6 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                    thick = thick + msed(l, 1, nm)/rhofrac(l)
                enddo
                thick = thick/svfrac(1, nm)
-               !
-               mmudlyr1  = 0.0_fp
-               msandlyr1 = 0.0_fp
-               do l = 1, this%settings%nfrac
-                   if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                       mmudlyr1   = mmudlyr1 + msed(l,1,nm)
-                   else
-                       msandlyr1   = msandlyr1 + msed(l,1,nm)
-                   endif
-               enddo
-               cmudlyr(1,nm)  = mmudlyr1/thick
-               csandlyr(1,nm) = msandlyr1/thick
                !
                ! if there is not enough sediment in the bed then the actual
                ! thickness thick of the top layer may not reach the desired
@@ -2808,8 +2777,6 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     real(fp), dimension(nmfrom:nmto)                        , optional, intent(out) :: tcrero !< critical shear stress for erosion
     real(fp), dimension(nmfrom:nmto)                        , optional, intent(out) :: eropar !< erosion parameter
     !
-    real(fp) , dimension(:,:)  , pointer :: csandlyr      !< sand concentration at each layer
-    real(fp) , dimension(:,:)  , pointer :: cmudlyr       !< mud concentration at each layer
     real(fp) , dimension(:)    , pointer :: rhofrac       !<
     real(fp) , dimension(:)    , pointer :: rhow
     
@@ -2868,8 +2835,6 @@ subroutine getbedprop(this, nmfrom, nmto, poros, tcrero, eropar)
     !
     !! executable statements -------------------------------------------------------
     !
-    csandlyr       => this%state%csandlyr
-    cmudlyr        => this%state%cmudlyr
     rhow           => this%state%rhow
     ag             => this%settings%ag
     ierosion       => this%settings%ierosion
@@ -3536,7 +3501,6 @@ function initmorlyr(this) result (istat)
     nullify(state%dpsed)
     nullify(state%dzc)
     nullify(state%msed)
-    nullify(state%conclyr)
     nullify(state%mobile)
     nullify(state%preload)
     nullify(state%td)
@@ -3544,8 +3508,6 @@ function initmorlyr(this) result (istat)
     nullify(state%sedshort)
     nullify(state%svfrac)
     nullify(state%thlyr)
-    nullify(state%cmudlyr)
-    nullify(state%csandlyr)
     nullify(state%thmudgibson)
     nullify(state%thsandgibson)
     nullify(state%thlyrtprev)
@@ -3678,8 +3640,6 @@ function allocmorlyr(this) result (istat)
        endif
        if (istat == 0) allocate (state%msed(nfrac,settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%msed = 0.0_fp
-       if (istat == 0) allocate (state%conclyr(nfrac,settings%nlyr,nmlb:nmub), stat = istat)
-       if (istat == 0) state%conclyr = 0.0_fp       
        if (istat == 0) allocate (state%thlyr(settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%thlyr = 0.0_fp
        if (istat == 0) allocate (state%svfrac(settings%nlyr,nmlb:nmub), stat = istat)
@@ -3688,10 +3648,6 @@ function allocmorlyr(this) result (istat)
        if (istat == 0) state%preload = 0.0_fp
        if (istat == 0) allocate (state%td(settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%td = 0.0_fp
-       if (istat == 0) allocate (state%cmudlyr(settings%nlyr,nmlb:nmub), stat = istat)
-       if (istat == 0) state%cmudlyr = 0.0_fp
-       if (istat == 0) allocate (state%csandlyr(settings%nlyr,nmlb:nmub), stat = istat)
-       if (istat == 0) state%csandlyr = 0.0_fp
        if (istat == 0) allocate (state%thlyrtprev(settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%thlyrtprev = 0.0_fp
        
@@ -3868,9 +3824,6 @@ function clrmorlyr(this) result (istat)
        if (associated(state%msed))         deallocate(state%msed        , STAT = istat)
        if (associated(state%thlyr))        deallocate(state%thlyr       , STAT = istat)
        if (associated(state%sedshort))     deallocate(state%sedshort    , STAT = istat)
-       if (associated(state%conclyr))      deallocate(state%conclyr     , STAT = istat)
-       if (associated(state%cmudlyr))      deallocate(state%cmudlyr     , STAT = istat)
-       if (associated(state%csandlyr))     deallocate(state%csandlyr    , STAT = istat)
        if (associated(state%thmudgibson))  deallocate(state%thmudgibson , STAT = istat)
        if (associated(state%thsandgibson)) deallocate(state%thsandgibson, STAT = istat)
        if (associated(state%strain))       deallocate(state%strain      , STAT = istat)
@@ -4168,10 +4121,6 @@ function bedcomp_getpointer_fp_2darray(this, variable, val) result (istat)
        val => this%state%preload
     case ('layer_thickness','thlyr')
        val => this%state%thlyr
-    case ('layer_mud_concentration','cmudlyr')
-       val => this%state%cmudlyr
-    case ('layer_sand_concentration','csandlyr')
-       val => this%state%csandlyr
     case ('overburden_thickness_t-1','thlyrtprev')
        val => this%state%thlyrtprev
     case default
@@ -4206,8 +4155,6 @@ function bedcomp_getpointer_fp_3darray(this, variable, val) result (istat)
     select case (localname)
     case ('layer_mass','msed')
        val => this%state%msed
-    case ('layer_concentration','conclyr')
-       val => this%state%conclyr
     case default
        val => NULL()
     end select
@@ -4274,7 +4221,6 @@ subroutine bedcomp_use_bodsed(this)
     real(fp)  , dimension(:,:,:)     , pointer :: msed
     real(fp)  , dimension(:,:)       , pointer :: svfrac
     real(fp)  , dimension(:,:)       , pointer :: thlyr
-    real(fp)  , dimension(:,:)       , pointer :: cmudlyr
     real(fp)  , dimension(:)         , pointer :: thtrlyr
     real(fp)  , dimension(:)         , pointer :: thexlyr
     real(fp)  , dimension(:)         , pointer :: rhofrac
@@ -4288,7 +4234,6 @@ subroutine bedcomp_use_bodsed(this)
     msed       => this%state%msed
     svfrac     => this%state%svfrac
     thlyr      => this%state%thlyr
-    cmudlyr    => this%state%cmudlyr
     !
     ! Fill initial values of DPSED
     !
@@ -4311,7 +4256,6 @@ subroutine bedcomp_use_bodsed(this)
        !
        msed = 0.0_fp
        thlyr = 0.0_fp
-       cmudlyr = 0.0_fp
        do nm = this%settings%nmlb, this%settings%nmub
           !if (kcs(nm)<1 .or. kcs(nm)>2) cycle  !TODO: find a solution for this line
           !
@@ -4345,7 +4289,6 @@ subroutine bedcomp_use_bodsed(this)
              msed(ised, 1, nm) = real(bodsed(ised, nm),fp)*fac
           enddo
           svfrac(1, nm) = svf 
-          cmudlyr(1,nm) = svfrac(1, nm)*rhofrac(1)  ! zhou
           sedthick      = sedthick - thlyr(1, nm)
           !
           ! exchange layer
@@ -4372,7 +4315,6 @@ subroutine bedcomp_use_bodsed(this)
                 msed(ised, k, nm) = real(bodsed(ised, nm),fp)*fac
              enddo
              svfrac(k, nm) = svf
-             cmudlyr(k,nm) = svfrac(k, nm)*rhofrac(1)  ! zhou
           enddo
           !
           ! Eulerian layers
@@ -4385,7 +4327,6 @@ subroutine bedcomp_use_bodsed(this)
                 msed(ised, k, nm) = real(bodsed(ised, nm),fp)*fac
              enddo
              svfrac(k, nm) = svf
-             cmudlyr(k,nm) = svfrac(k, nm)*rhofrac(1)  ! zhou
           enddo
           !
           ! base layer
@@ -4396,7 +4337,6 @@ subroutine bedcomp_use_bodsed(this)
              msed(ised, this%settings%nlyr, nm) = real(bodsed(ised, nm),fp)*fac
           enddo
           svfrac(this%settings%nlyr, nm) = svf 
-          cmudlyr(this%settings%nlyr,nm) = svfrac(this%settings%nlyr, nm)*rhofrac(1)  ! zhou
        enddo
        
     case default ! BED_MIXED
@@ -4654,7 +4594,6 @@ subroutine consolidate_gibson(this, nm, dtmor)
     real(fp) , dimension(this%settings%nfrac) :: dzl
     real(fp) , dimension(:), pointer          :: dzc
     real(fp) , dimension(:,:,:), pointer      :: msed 
-    real(fp) , dimension(:,:,:), pointer      :: conclyr      
     real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation, z.z
     real(fp) , dimension(:,:)  , pointer      :: svfrac
     real(fp) , dimension(:,:)  , pointer      :: strain
@@ -4724,8 +4663,6 @@ subroutine consolidate_gibson(this, nm, dtmor)
     real(fp), dimension(:)   , pointer :: svfracmud0p5     ! mud solids fraction at layer interface 
     
     !--> low-concentration consoldiation
-    real(fp), dimension(:,:)   , pointer :: csandlyr       ! sand concentration at each layer
-    real(fp), dimension(:,:)   , pointer :: cmudlyr        ! mud concentration at each layer
     real(fp), dimension(:)     , pointer :: msandlyr       ! sand mass at each layer
     real(fp), dimension(:)     , pointer :: mmudlyr        ! mud mass at each layer
     real(fp), dimension(:)     , pointer :: plyrthk
@@ -4772,11 +4709,8 @@ subroutine consolidate_gibson(this, nm, dtmor)
     peatthick      => this%settings%peatthick
     strain         => this%state%strain
     
-    conclyr        => this%state%conclyr
-    csandlyr       => this%state%csandlyr
     thsandgibson   => this%state%thsandgibson
     thmudgibson    => this%state%thmudgibson
-    cmudlyr        => this%state%cmudlyr
     thlyrtprev      => this%state%thlyrtprev
     thlyrnew        => this%work%thlyrnew
 
@@ -4968,8 +4902,6 @@ subroutine consolidate_gibson(this, nm, dtmor)
             ! Update the state arrays based on new values.
             thlyr(k,nm) = thlyr2(k)
             svfrac(k,nm) = svfrac2(k)
-            cmudlyr(k,nm) = svfrac(k,nm)*rhos
-            csandlyr(k,nm)= 0.0_fp ! why?
         endif
         
         ! The property of the transport layer (1st layer) should be averaged with the layers below when replenish step is done.
@@ -5024,7 +4956,8 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp) , dimension(this%settings%nfrac) :: dzl
     real(fp) , dimension(:), pointer          :: dzc
     real(fp) , dimension(:,:,:), pointer      :: msed 
-    real(fp) , dimension(:,:,:), pointer      :: conclyr      
+    real(fp) , dimension(this%settings%nlyr)  :: csandlyr  ! sand concentration at each layer
+    real(fp) , dimension(this%settings%nlyr)  :: cmudlyr   ! mud concentration at each layer
     real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation, z.z
     real(fp) , dimension(:,:)  , pointer      :: svfrac
     real(fp) , dimension(:,:)  , pointer      :: strain
@@ -5093,15 +5026,13 @@ subroutine consolidate_decon(this, nm, dtmor)
     real(fp), dimension(:)   , pointer :: svfracmud0p5     ! mud solids fraction at layer interface 
     
     !--> low-concentration consoldiation
-    real(fp), dimension(:,:)   , pointer :: csandlyr       ! sand concentration at each layer
-    real(fp), dimension(:,:)   , pointer :: cmudlyr        ! mud concentration at each layer
     real(fp), dimension(:)     , pointer :: msandlyr       ! sand mass at each layer
     real(fp), dimension(:)     , pointer :: mmudlyr        ! mud mass at each layer
     real(fp), dimension(:)     , pointer :: plyrthk
     real(fp), dimension(:)     , pointer :: thmudgibson    ! total gibson height for mud
     real(fp), dimension(:)     , pointer :: thsandgibson   ! total gibson height for sand  
-    real(fp) , dimension(:)     , pointer     :: thlyrnew
-    real(fp) , dimension(:,:)   , pointer     :: thlyrtprev
+    real(fp), dimension(:)     , pointer :: thlyrnew
+    real(fp), dimension(:,:)   , pointer :: thlyrtprev
     
     !Peat 
     real(fp), pointer  :: ymodpeat
@@ -5141,11 +5072,8 @@ subroutine consolidate_decon(this, nm, dtmor)
     peatthick      => this%settings%peatthick
     strain         => this%state%strain
     
-    conclyr        => this%state%conclyr
-    csandlyr       => this%state%csandlyr
     thsandgibson   => this%state%thsandgibson
     thmudgibson    => this%state%thmudgibson
-    cmudlyr        => this%state%cmudlyr
     thlyrtprev      => this%state%thlyrtprev
     thlyrnew        => this%work%thlyrnew
 
@@ -5200,7 +5128,6 @@ subroutine consolidate_decon(this, nm, dtmor)
              mmudlyr(k)    = 0.0_fp
              msandlyr(k)   = 0.0_fp
              do l = 1, this%settings%nfrac
-                 conclyr(l,k,nm) = msed(l,k,nm)/thlyr(k,nm)
                  svfractemp = msed(l,k,nm)/this%settings%rhofrac(l)/thlyr(k,nm)
                  if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
                      svfracmud(k) = svfracmud(k) + svfractemp
@@ -5210,21 +5137,20 @@ subroutine consolidate_decon(this, nm, dtmor)
                      msandlyr(k)   = msandlyr(k) + msed(l,k,nm)
                  endif
              enddo
-             csandlyr(k,nm) =  msandlyr(k)/thlyr(k,nm)
-             cmudlyr(k,nm) = mmudlyr(k)/thlyr(k,nm)
+             csandlyr(k) =  msandlyr(k)/thlyr(k,nm)
+             cmudlyr(k) = mmudlyr(k)/thlyr(k,nm)
          else
-             conclyr(:,k,nm)  = 0.0_fp
              mmudlyr(k)       = 0.0_fp
              msandlyr(k)      = 0.0_fp
              svfracsand(k)    = 0.0_fp
              svfracmud(k)     = 0.0_fp 
-             csandlyr(k,nm)   = 0.0_fp 
-             cmudlyr(k,nm)    = 0.0_fp 
+             csandlyr(k)      = 0.0_fp 
+             cmudlyr(k)       = 0.0_fp 
          endif
-         thmudgibson_new   = thmudgibson_new + cmudlyr(k,nm)/(rhos-csandlyr(k,nm))*thlyr(k,nm)
-         thsandgibson_new  = thsandgibson_new + csandlyr(k,nm)/rhos*thlyr(k,nm)
-         thconlyr      = thconlyr + thlyr(k,nm)
-         mmudtot  = mmudtot + mmudlyr(k)
+         thmudgibson_new   = thmudgibson_new + cmudlyr(k)/(rhos-csandlyr(k))*thlyr(k,nm)
+         thsandgibson_new  = thsandgibson_new + csandlyr(k)/rhos*thlyr(k,nm)
+         thconlyr = thconlyr + thlyr(k,nm)
+         mmudtot  = mmudtot  + mmudlyr(k)
          msandtot = msandtot + msandlyr(k)
     enddo
     
@@ -5253,8 +5179,8 @@ subroutine consolidate_decon(this, nm, dtmor)
             z_up=sum(plyrthk(k:size(plyrthk)))*(thconlyreqm-thsandgibson_new)          !elevation of the upper border of the layer
             z_low=sum(plyrthk((k+1):size(plyrthk)))*(thconlyreqm-thsandgibson_new)     !elevation of the lower border of the layer
             !averaged integral of the concentration profile from z low to z up
-            cmudlyr(k,nm)=rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*((thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
-            svfracmud(k) = cmudlyr(k,nm)/rhos
+            cmudlyr(k)=rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*((thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
+            svfracmud(k) = cmudlyr(k)/rhos
             svfrac(k,nm) = svfracmud(k) + svfracsand(k)
        enddo
        ! redistribute mass and concentration in each layer
@@ -5262,17 +5188,14 @@ subroutine consolidate_decon(this, nm, dtmor)
            if (thlyr(k,nm) > 0.0_fp) then
                do l = 1, this%settings%nfrac
                    if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
-                       msed(l,k,nm) = thlyr(k,nm)*cmudlyr(k,nm)*permud(l)
-                       conclyr(l,k,nm) = msed(l,k,nm)/thlyr(k,nm)
+                       msed(l,k,nm) = thlyr(k,nm)*cmudlyr(k)*permud(l)
                    else
-                       msed(l,k,nm) = thlyr(k,nm)*csandlyr(k,nm)*persand(l)
-                       conclyr(l,k,nm) = msed(l,k,nm)/thlyr(k,nm)
+                       msed(l,k,nm) = thlyr(k,nm)*csandlyr(k)*persand(l)
                    endif
                enddo
             else
                do l = 1, this%settings%nfrac
                    msed(l,k,nm) = 0.0_fp
-                   conclyr(l,k,nm) = 0.0_fp
                enddo
             endif
        enddo
@@ -5471,7 +5394,6 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
     real(fp) , dimension(this%settings%nfrac) :: dzl
     real(fp) , dimension(:), pointer          :: dzc
     real(fp) , dimension(:,:,:), pointer      :: msed 
-    real(fp) , dimension(:,:,:), pointer      :: conclyr      
     real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation, z.z
     real(fp) , dimension(:,:)  , pointer      :: svfrac
     real(fp) , dimension(:,:)  , pointer      :: strain
@@ -5540,15 +5462,13 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
     real(fp), dimension(:)   , pointer :: svfracmud0p5     ! mud solids fraction at layer interface 
     
     !--> low-concentration consoldiation
-    real(fp), dimension(:,:)   , pointer :: csandlyr       ! sand concentration at each layer
-    real(fp), dimension(:,:)   , pointer :: cmudlyr        ! mud concentration at each layer
     real(fp), dimension(:)     , pointer :: msandlyr       ! sand mass at each layer
     real(fp), dimension(:)     , pointer :: mmudlyr        ! mud mass at each layer
     real(fp), dimension(:)     , pointer :: plyrthk
     real(fp), dimension(:)     , pointer :: thmudgibson    ! total gibson height for mud
     real(fp), dimension(:)     , pointer :: thsandgibson   ! total gibson height for sand  
-    real(fp) , dimension(:)     , pointer     :: thlyrnew
-    real(fp) , dimension(:,:)   , pointer     :: thlyrtprev
+    real(fp), dimension(:)     , pointer :: thlyrnew
+    real(fp), dimension(:,:)   , pointer :: thlyrtprev
     
     !Peat 
     real(fp), pointer  :: ymodpeat
@@ -5588,11 +5508,8 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
     peatthick      => this%settings%peatthick
     strain         => this%state%strain
     
-    conclyr        => this%state%conclyr
-    csandlyr       => this%state%csandlyr
     thsandgibson   => this%state%thsandgibson
     thmudgibson    => this%state%thmudgibson
-    cmudlyr        => this%state%cmudlyr
     thlyrtprev      => this%state%thlyrtprev
     thlyrnew        => this%work%thlyrnew
 
