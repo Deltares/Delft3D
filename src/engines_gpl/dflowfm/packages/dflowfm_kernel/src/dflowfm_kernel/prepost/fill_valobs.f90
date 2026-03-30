@@ -330,8 +330,6 @@ contains
             end if
 
             ! Finally; vertical positions
-            ! Maybe not the right place to do this, fille interfaces with bed level and water surface in case of 2d model
-
             if (model_is_3D()) then
                !       interface
                call interpolate_and_fill_valobs(zws, i, IPNT_ZWS, UNC_LOC_W,wet_or_dry)

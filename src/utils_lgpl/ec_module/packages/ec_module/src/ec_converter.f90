@@ -1679,8 +1679,6 @@ contains
       integer :: vectormax
       integer :: from, thru !< contiguous range of indices in the target array
       character(MAXIMUM_EC_MESSAGE_LENGTH) :: errormsg
-      logical :: oneSided
-!      character(maxMessageLen) :: errormsg
 
       !
       success = .false.
@@ -1771,38 +1769,44 @@ contains
            end if
            
            ! deal with one-sided interpolation
-           if (kL == 0 .and. kR /= 0) kL = kR
-           if (kR == 0 .and. kL /= 0) kR = kL
-           
-           ! No left or right point: do nothing (keep existing boundary values)
-           if (kL == 0 .and. kR == 0) return
-           
+           if (kL == 0 .and. kR /= 0) then
+               kL = kR
+            end if
+            if (kR == 0 .and. kL /= 0) then
+               kR = kL
+            end if
+            
+            ! No left or right point, do nothing
+            if (kL == 0 .and. kR == 0) then
+                cycle 
+            end if
+            
             select case (connection%converterPtr%operandType)
             case (operand_replace_element, operand_replace, operand_replace_if_value, operand_add)
                ! Are the subproviders 3D or 2D?
                if (.not. (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                           associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z))) then ! target has a vertical coordinate
-!                2D boundary quantities (like water level boundary for instance)  
+                  ! 2D subproviders   
                   val(1:vectormax) = wL * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kL - 1) * vectormax + 1:kL * vectormax) &
-                                   + wR * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kR - 1) * vectormax + 1:kR * vectormax) 
-
+                                   + wR * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kR - 1) * vectormax + 1:kR * vectormax)
+                  ! Write value
                   do k = 1, maxlay_tgt
                      from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
                      thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
                          (connection%converterPtr%operandType == operand_replace_element) .or. &
                          (connection%converterPtr%operandType == operand_replace_if_value)) then
-                        connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
+                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
 
                      else if (connection%converterPtr%operandType == operand_add) then
                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) + val(1:vectormax)
                      end if
                   end do
-               else
-!                3D boundary quantities                                 
-!                  if (kL > 0) then
-!                     if (kR > 0) then               
+               else                         
+                  ! 3D subproviders 
+                  if (kL > 0) then
+                     if (kR > 0) then               
                         kbegin = maxlay_tgt * (i - 1) + 1 ! refers to target column
                         kend = maxlay_tgt * i
 
@@ -1943,40 +1947,8 @@ contains
                               !
                            end do ! target layers
                         end if ! are we averaging the source in the vertical direction ?
-!                     end if ! kR > 0: right support point exists
-!                  end if ! kL > 0: left support point exists
-!              else ! no vertical coordinate assigned to this source item, i.e. 3D source
-                  ! 2D subproviders   
- !                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps !!!!! ???????
-                  ! Determine value
-                  ! TODO, adjust kL an kR in case of drying (permanent or temporary
-!                  if (kL > 0) then
-!                     if (kR > 0) then
-!                        val(1:vectormax) = wL * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kL - 1) * vectormax + 1:kL * vectormax) &
-!                                           + wR * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kR - 1) * vectormax + 1:kR * vectormax)
-!                     else ! Just left point
-!                        val(1:vectormax) = wL * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kL - 1) * vectormax + 1:kL * vectormax)
-!                     end if
-!                  else if (kR > 0) then ! Just right point
-!                     val(1:vectormax) = wR * connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((kR - 1) * vectormax + 1:kR * vectormax)
-!                  end if
-                  !
-!                  if (kL /= 0 .or. kR /= 0) then
-                     ! Write value
-!                     do k = 1, maxlay_tgt
-!                        from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
-!                        thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
-!                        if ((connection%converterPtr%operandType == operand_replace) .or. &
-!                            (connection%converterPtr%operandType == operand_replace_element) .or. &
-!                            (connection%converterPtr%operandType == operand_replace_if_value)) then
-!                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
-
-  !                      else if (connection%converterPtr%operandType == operand_add) then
-  !                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
-  !                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) + val(1:vectormax)
-  !                      end if
-  !                   end do
-!                  end if ! valid left or right point ?
+                     end if ! kR > 0: right support point exists
+                  end if ! kL > 0: left support point exists
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
             case default
                call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported operand type requested.")
