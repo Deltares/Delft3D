@@ -273,7 +273,7 @@ contains
             dsalL = 0.0_dp
             dtemL = 0.0_dp
             do L = 1, lnx
-               if (hu(L) > 0.0_dp) then
+               if (hu(L) > epshu) then
                   call anticreep(L)
                end if
             end do

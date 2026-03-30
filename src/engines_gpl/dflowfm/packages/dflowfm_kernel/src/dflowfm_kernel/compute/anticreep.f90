@@ -44,7 +44,7 @@ contains
       use m_flow, only: kmx, zws, BACKGROUNDWATERTEMPERATURE, BACKGROUNDSALINITY, ag, rhomean, adve, baroclinic_force_prev, dsall, dteml
       use m_flowgeom, only: ln, bob, acl, dx
       use m_transport, only: isalt, itemp, constituents
-      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, epshs
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getLbotLtop
       use m_density_formulas, only: derivative_density_to_salinity_eckart, derivative_density_to_temperature_eckart
@@ -81,9 +81,6 @@ contains
       call getkbotktop(k2, kbr, ktr)
       call getLbotLtop(L, Lb, Lt)
 
-      if (zws(ktl) - zws(kbl - 1) < epshs .or. zws(ktr) - zws(kbr - 1) < epshs) then
-         return
-      end if
 
       zbed = (bob(1, L) + bob(2, L)) * 0.5_dp ! interpolates the bed level on flow link
       !
