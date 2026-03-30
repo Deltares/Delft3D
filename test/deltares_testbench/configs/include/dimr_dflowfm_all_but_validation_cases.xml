@@ -1813,7 +1813,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c021_basinnofriction_squaresfine" ref="dflowfm_default">
-      <path version="2026-03-06T15:35:48.826000">e02_dflowfm/f006_external_forcing/c021_basinnofriction_squaresfine</path>
+      <path version="2026-03-26T16:06:44.519000">e02_dflowfm/f006_external_forcing/c021_basinnofriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basinsquaresfine_his.nc" type="netCDF">
@@ -1832,7 +1832,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c022_basinnofriction_triangles" ref="dflowfm_default">
-      <path version="2025-10-15T15:15:00.815000">e02_dflowfm/f006_external_forcing/c022_basinnofriction_triangles</path>
+      <path version="2026-03-26T16:06:52.105000">e02_dflowfm/f006_external_forcing/c022_basinnofriction_triangles</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basintriangles_his.nc" type="netCDF">
@@ -1851,7 +1851,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c024_basinwithfriction_squaresfine" ref="dflowfm_default">
-      <path version="2026-03-06T15:35:53.413000">e02_dflowfm/f006_external_forcing/c024_basinwithfriction_squaresfine</path>
+      <path version="2026-03-26T16:06:59.638000">e02_dflowfm/f006_external_forcing/c024_basinwithfriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basinsquaresfine_his.nc" type="netCDF">
@@ -1870,7 +1870,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c025_basinwithfriction_triangles" ref="dflowfm_default">
-      <path version="2025-10-15T15:15:04.021000">e02_dflowfm/f006_external_forcing/c025_basinwithfriction_triangles</path>
+      <path version="2026-03-26T16:07:06.862000">e02_dflowfm/f006_external_forcing/c025_basinwithfriction_triangles</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basintriangles_his.nc" type="netCDF">
@@ -4249,7 +4249,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f012_c100_dambreak_fiat" ref="dflowfm_default">
-      <path version="2026-03-13T16:40:28.958000">e02_dflowfm/f012_inout/c100_dambreak_fiat</path>
+      <path version="2026-03-26T16:21:47.200000">e02_dflowfm/f012_inout/c100_dambreak_fiat</path>
       <maxRunTime>10.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/dambreak2ddrybreach_fou.nc" type="netCDF">
