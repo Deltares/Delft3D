@@ -31,22 +31,22 @@ digraph CoupledSystem {
   /* -------------------------
      C-SUMO preCICE Side
   --------------------------*/
-  subgraph cluster_CSUMO_preCICE {
+  subgraph cluster_preC-SUMO {
     label="C-SUMO preCICE Side";
     style=dashed;
 
-    CSUMO_preCICE_adapter [label="Adapter\n(interface)", fillcolor="#A5B51B", style="rounded,filled"];
-    CSUMO_preCICE [label="C-SUMO preCICE", style="rounded,filled", fillcolor="#F26422"];
+    preC-SUMO_adapter [label="Adapter\n(interface)", fillcolor="#A5B51B", style="rounded,filled"];
+    preC-SUMO [label="C-SUMO preCICE", style="rounded,filled", fillcolor="#F26422"];
     
     FF2NF [label="FF2NF Files\n(Farfield→Nearfield)", shape=note, fillcolor="#FFE6CC"];
     NF2FF [label="NF2FF Files\n(Nearfield→Farfield)", shape=note, fillcolor="#CCE6FF"];
 
-    CSUMO_preCICE_adapter -> CSUMO_preCICE;
-    CSUMO_preCICE -> FF2NF [label="generates"];
-    NF2FF -> CSUMO_preCICE [label="consumes"];
+    preC-SUMO_adapter -> preC-SUMO;
+    preC-SUMO -> FF2NF [label="generates"];
+    NF2FF -> preC-SUMO [label="consumes"];
   }
   
-  PreCICEConfig -> CSUMO_preCICE_adapter [style=dashed];
+  PreCICEConfig -> preC-SUMO_adapter [style=dashed];
 
   /* -------------------------
      External C_SUMO Application
@@ -56,5 +56,5 @@ digraph CoupledSystem {
   FF2NF -> CSUMO_App [label="consumed by"];
   CSUMO_App -> NF2FF [label="produces"];
 
-  FM_preCICE_adapter -> CSUMO_preCICE_adapter [dir=both, label="Coupling Data\nExchange"];
+  FM_preCICE_adapter -> preC-SUMO_adapter [dir=both, label="Coupling Data\nExchange"];
 }

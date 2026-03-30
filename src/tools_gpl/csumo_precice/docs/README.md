@@ -1,6 +1,6 @@
 # Set up clang-format C++ Formatting
 We use clang-format for automatically formatting C++ source files.
-Clang-format will automatically use the src/tools_gpl/csumo_precice/.clang-format file for its settings.
+Clang-format will automatically use the src/tools_gpl/preC-SUMO/.clang-format file for its settings.
 Your editor should be set-up to use clang-format when saving the document.
 
 ## VSCode
@@ -19,7 +19,7 @@ Then, clang-format will be called upon save.
 
 # Set up clang-tidy static analysis (optional)
 We use clang-tidy to get live feedback while you code in your IDE.
-Clang-tidy will automatically use the src/tools_gpl/csumo_precice/.clang-tidy file for its settings.
+Clang-tidy will automatically use the src/tools_gpl/preC-SUMO/.clang-tidy file for its settings.
 Your editor should be set-up to use run clang-tidy in its language server for providing annotations.
 
 ## VSCode
@@ -40,7 +40,7 @@ This is much slower than clangd, because it does not cache any of its reading.
 
 ## Visual Studio 2022
 In Visual Studio, clang-tidy can be turned on per project.
-Go to the C++ project (csumo_precice) in the solution explorer, right click and go to Properties,
+Go to the C++ project (preC-SUMO) in the solution explorer, right click and go to Properties,
 or click on the project and go to Project -> Properties.
 Then, find Code Analysis -> General -> Enable Clang Tidy and set it to 'Yes.'
 It will automatically use the settings from the Visual Studio solution, and also find the project headers.

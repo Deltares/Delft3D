@@ -15,7 +15,7 @@
 <text text-anchor="middle" x="87" y="-741.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">D&#45;FlowFM</text>
 </g>
 <g id="clust2" class="cluster">
-<title>cluster_CSUMO_preCICE</title>
+<title>cluster_preC-SUMO</title>
 <polygon fill="none" stroke="#000000" stroke-dasharray="5,2" points="114,-89 114,-464 382,-464 382,-89 114,-89"/>
 <text text-anchor="middle" x="248" y="-448.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">C&#45;SUMO preCICE Side</text>
 </g>
@@ -38,16 +38,16 @@
 <path fill="none" stroke="#000000" d="M87,-689.7117C87,-661.3197 87,-606.3747 87,-572.3755"/>
 <polygon fill="#000000" stroke="#000000" points="90.5001,-572.1329 87,-562.133 83.5001,-572.133 90.5001,-572.1329"/>
 </g>
-<!-- CSUMO_preCICE_adapter -->
+<!-- preC-SUMO_adapter -->
 <g id="node4" class="node">
-<title>CSUMO_preCICE_adapter</title>
+<title>preC-SUMO_adapter</title>
 <path fill="#a5b51b" stroke="#000000" d="M187.5,-433C187.5,-433 134.5,-433 134.5,-433 128.5,-433 122.5,-427 122.5,-421 122.5,-421 122.5,-407 122.5,-407 122.5,-401 128.5,-395 134.5,-395 134.5,-395 187.5,-395 187.5,-395 193.5,-395 199.5,-401 199.5,-407 199.5,-407 199.5,-421 199.5,-421 199.5,-427 193.5,-433 187.5,-433"/>
 <text text-anchor="middle" x="161" y="-417.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">Adapter</text>
 <text text-anchor="middle" x="161" y="-402.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">(interface)</text>
 </g>
-<!-- FM_preCICE_adapter&#45;&gt;CSUMO_preCICE_adapter -->
+<!-- FM_preCICE_adapter&#45;&gt;preC-SUMO_adapter -->
 <g id="edge9" class="edge">
-<title>FM_preCICE_adapter&#45;&gt;CSUMO_preCICE_adapter</title>
+<title>FM_preCICE_adapter&#45;&gt;preC-SUMO_adapter</title>
 <path fill="none" stroke="#000000" d="M95.0714,-514.2141C99.4164,-500.8978 105.4479,-485.1539 113,-472 119.2415,-461.1289 127.5432,-450.2628 135.4856,-440.9238"/>
 <polygon fill="#000000" stroke="#000000" points="91.7051,-513.2525 92.0802,-523.8407 98.3899,-515.3297 91.7051,-513.2525"/>
 <polygon fill="#000000" stroke="#000000" points="138.3447,-442.9722 142.3119,-433.1481 133.0842,-438.354 138.3447,-442.9722"/>
@@ -69,21 +69,21 @@
 <path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M197.1929,-606.9581C176.9005,-595.18 150.6578,-579.9482 128.873,-567.3039"/>
 <polygon fill="#000000" stroke="#000000" points="130.5554,-564.2336 120.1496,-562.2407 127.0414,-570.2877 130.5554,-564.2336"/>
 </g>
-<!-- PreCICEConfig&#45;&gt;CSUMO_preCICE_adapter -->
+<!-- PreCICEConfig&#45;&gt;preC-SUMO_adapter -->
 <g id="edge6" class="edge">
-<title>PreCICEConfig&#45;&gt;CSUMO_preCICE_adapter</title>
+<title>PreCICEConfig&#45;&gt;preC-SUMO_adapter</title>
 <path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M228.2714,-606.8663C225.0913,-577.0932 216.8305,-518.2886 198,-472 193.7366,-461.52 187.5624,-450.8544 181.4751,-441.5755"/>
 <polygon fill="#000000" stroke="#000000" points="184.2577,-439.4437 175.7308,-433.1555 178.4752,-443.3887 184.2577,-439.4437"/>
 </g>
-<!-- CSUMO_preCICE -->
+<!-- preC-SUMO -->
 <g id="node5" class="node">
-<title>CSUMO_preCICE</title>
+<title>preC-SUMO</title>
 <path fill="#f26422" stroke="#000000" d="M272,-290C272,-290 168,-290 168,-290 162,-290 156,-284 156,-278 156,-278 156,-266 156,-266 156,-260 162,-254 168,-254 168,-254 272,-254 272,-254 278,-254 284,-260 284,-266 284,-266 284,-278 284,-278 284,-284 278,-290 272,-290"/>
 <text text-anchor="middle" x="220" y="-268.3" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">C&#45;SUMO preCICE</text>
 </g>
-<!-- CSUMO_preCICE_adapter&#45;&gt;CSUMO_preCICE -->
+<!-- preC-SUMO_adapter&#45;&gt;preC-SUMO -->
 <g id="edge3" class="edge">
-<title>CSUMO_preCICE_adapter&#45;&gt;CSUMO_preCICE</title>
+<title>preC-SUMO_adapter&#45;&gt;preC-SUMO</title>
 <path fill="none" stroke="#000000" d="M167.0652,-394.9282C172.3656,-378.7784 180.5214,-355.1128 189,-335 194.0174,-323.0978 200.1923,-310.2552 205.7068,-299.2898"/>
 <polygon fill="#000000" stroke="#000000" points="208.9133,-300.7063 210.3373,-290.2076 202.677,-297.5268 208.9133,-300.7063"/>
 </g>
@@ -96,9 +96,9 @@
 <text text-anchor="middle" x="220" y="-119.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">FF2NF Files</text>
 <text text-anchor="middle" x="220" y="-104.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">(Farfield→Nearfield)</text>
 </g>
-<!-- CSUMO_preCICE&#45;&gt;FF2NF -->
+<!-- preC-SUMO&#45;&gt;FF2NF -->
 <g id="edge4" class="edge">
-<title>CSUMO_preCICE&#45;&gt;FF2NF</title>
+<title>preC-SUMO&#45;&gt;FF2NF</title>
 <path fill="none" stroke="#000000" d="M220,-253.7995C220,-227.0817 220,-176.9695 220,-145.1037"/>
 <polygon fill="#000000" stroke="#000000" points="223.5001,-145.0567 220,-135.0567 216.5001,-145.0567 223.5001,-145.0567"/>
 <text text-anchor="middle" x="245.5" y="-183.8" font-family="Times,serif" font-size="14.00" fill="#000000">generates</text>
@@ -126,9 +126,9 @@
 <text text-anchor="middle" x="305" y="-417.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">NF2FF Files</text>
 <text text-anchor="middle" x="305" y="-402.8" font-family="Helvetica,sans-Serif" font-size="14.00" fill="#000000">(Nearfield→Farfield)</text>
 </g>
-<!-- NF2FF&#45;&gt;CSUMO_preCICE -->
+<!-- NF2FF&#45;&gt;preC-SUMO -->
 <g id="edge5" class="edge">
-<title>NF2FF&#45;&gt;CSUMO_preCICE</title>
+<title>NF2FF&#45;&gt;preC-SUMO</title>
 <path fill="none" stroke="#000000" d="M290.9079,-394.7873C281.9555,-382.2782 270.3378,-365.4681 261,-350 251.1417,-333.6696 241.1603,-314.7432 233.5143,-299.6237"/>
 <polygon fill="#000000" stroke="#000000" points="236.4559,-297.6808 228.8518,-290.3032 230.1955,-300.8125 236.4559,-297.6808"/>
 <text text-anchor="middle" x="288.5" y="-338.8" font-family="Times,serif" font-size="14.00" fill="#000000">consumes</text>

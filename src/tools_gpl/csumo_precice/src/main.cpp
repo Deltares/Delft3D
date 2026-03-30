@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-#include "csumo_precice_lib.hpp"
+#include "preC-SUMO_lib.hpp"
 
 namespace po = boost::program_options;
 
@@ -31,8 +31,8 @@ int main(int argc, char** argv)
 
     const auto usage = [&description] {
         std::ostringstream oss;
-        oss << "Usage: csumo_precice -c <csumoConfigFile> -a <adapterConfigFile> [options]\n"
-            << "       csumo_precice <csumoConfigFile> <adapterConfigFile> [options]\n\n"
+        oss << "Usage: preC-SUMO -c <csumoConfigFile> -a <adapterConfigFile> [options]\n"
+            << "       preC-SUMO <csumoConfigFile> <adapterConfigFile> [options]\n\n"
             << description << '\n';
         return oss.str();
     }();
@@ -59,5 +59,5 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    return csumo_precice::run(csumoConfigFileName, adapterConfigFileName);
+    return preC-SUMO::run(csumoConfigFileName, adapterConfigFileName);
 }

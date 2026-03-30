@@ -1,9 +1,9 @@
-#ifndef SRC_TOOLS_GPL_CSUMO_PRECICE_CSUMO_PRECICE_LIB_HPP
-#define SRC_TOOLS_GPL_CSUMO_PRECICE_CSUMO_PRECICE_LIB_HPP
+#ifndef SRC_TOOLS_GPL_preC-SUMO_preC-SUMO_LIB_HPP
+#define SRC_TOOLS_GPL_preC-SUMO_preC-SUMO_LIB_HPP
 
 #include <string_view>
 
-namespace csumo_precice
+namespace preC-SUMO
 {
     /**
      * @brief Entry point into the C-SUMO preCICE library.
@@ -20,6 +20,6 @@ namespace csumo_precice
      * @return int Return 0 on success
      */
     int run();
-} // namespace csumo_precice
+} // namespace preC-SUMO
 
-#endif // SRC_TOOLS_GPL_CSUMO_PRECICE_CSUMO_PRECICE_LIB_HPP
+#endif // SRC_TOOLS_GPL_preC-SUMO_preC-SUMO_LIB_HPP

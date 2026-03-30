@@ -1,5 +1,5 @@
-#ifndef SRC_TOOLS_GPL_CSUMO_PRECICE_CSUMO_SETTINGS_READER_HPP
-#define SRC_TOOLS_GPL_CSUMO_PRECICE_CSUMO_SETTINGS_READER_HPP
+#ifndef SRC_TOOLS_GPL_preC-SUMO_CSUMO_SETTINGS_READER_HPP
+#define SRC_TOOLS_GPL_preC-SUMO_CSUMO_SETTINGS_READER_HPP
 
 #include <expected>
 #include <filesystem>
@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-namespace csumo_precice
+namespace preC-SUMO
 {
     /**
      * @brief Error returned when a csumo settings XML cannot be parsed.
@@ -129,6 +129,6 @@ namespace csumo_precice
         std::string file_version_;
         std::vector<DiffuserSettings> diffusers_;
     };
-} // namespace csumo_precice
+} // namespace preC-SUMO
 
-#endif // SRC_TOOLS_GPL_CSUMO_PRECICE_CSUMO_SETTINGS_READER_HPP
+#endif // SRC_TOOLS_GPL_preC-SUMO_CSUMO_SETTINGS_READER_HPP

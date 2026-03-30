@@ -40,7 +40,7 @@
         <mxCell id="mrB0PPDz5KPW5tsmy0Pz-4" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="rounded=1;whiteSpace=wrap;html=1;" value="" vertex="1">
           <mxGeometry height="480" width="120" as="geometry" />
         </mxCell>
-        <mxCell id="mrB0PPDz5KPW5tsmy0Pz-8" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b&gt;csumo_precice&lt;/b&gt;" vertex="1">
+        <mxCell id="mrB0PPDz5KPW5tsmy0Pz-8" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b&gt;preC-SUMO&lt;/b&gt;" vertex="1">
           <mxGeometry height="30" width="90" x="15" as="geometry" />
         </mxCell>
         <mxCell id="mrB0PPDz5KPW5tsmy0Pz-15" parent="mrB0PPDz5KPW5tsmy0Pz-11" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=none;" value="" vertex="1">
