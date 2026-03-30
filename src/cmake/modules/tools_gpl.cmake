@@ -68,5 +68,5 @@ set(cosumo_bmi_module "${tools_gpl_path}/cosumo_bmi")
 set(csumo_nfio_module "${tools_gpl_path}/csumo_nfio")
 
 # preC-SUMO
-set(preC-SUMO_module "${tools_gpl_path}/preC-SUMO")
+set(preC-SUMO_module "${tools_gpl_path}/pre_c_sumo")
 
