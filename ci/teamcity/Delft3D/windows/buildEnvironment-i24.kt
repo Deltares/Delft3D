@@ -76,17 +76,16 @@ object WindowsBuildEnvironmentI24 : BuildType({
                 """.trimIndent()
             }
         }
-        if (DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true") {
-            dockerCommand {
-                name = "Docker push"
-                commandType = push {
-                    namesAndTags = """
-                        containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
-                    """.trimIndent()
-                }
-                conditions {
-                    equals("trigger.type", "vcs")
-                }
+        dockerCommand {
+            name = "Docker push"
+            enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
+            commandType = push {
+                namesAndTags = """
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
+                """.trimIndent()
+            }
+            conditions {
+                equals("trigger.type", "vcs")
             }
         }
     }
