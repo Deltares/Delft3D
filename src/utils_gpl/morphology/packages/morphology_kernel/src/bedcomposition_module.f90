@@ -694,8 +694,8 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, dtmor, morft, messages) r
                             do l = 1, this%settings%nfrac
                                 msed(l,kk,nm) = msed(l,k, nm)
                             enddo
-                            svfrac(kk,nm) = svfrac(k+1,nm)
-                            thlyr(kk,nm) = thlyr(k+1,nm)
+                            svfrac(kk,nm) = svfrac(k,nm)
+                            thlyr(kk,nm) = thlyr(k,nm)
                         enddo
                         
                         ! Erase the administration of the bottom-most consolidation layers.
