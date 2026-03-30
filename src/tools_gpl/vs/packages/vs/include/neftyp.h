@@ -28,8 +28,19 @@
 // $HeadURL$
 
 #ifndef _NEFTYP_INCLUDED
-    enum STORAGE_TYPE {DBLCMPL, COMPLEX, DOUBLE, FLOAT, INT, SHORT, \
-                       BOOL, BOOLSHRT, CHAR, UNDEF} ;
-        typedef enum STORAGE_TYPE NfDtp;
-#   define _NEFTYP_INCLUDED
+enum STORAGE_TYPE
+{
+    DBLCMPL,
+    COMPLEX,
+    DOUBLE,
+    FLOAT,
+    INT,
+    SHORT,
+    BOOL,
+    BOOLSHRT,
+    CHAR,
+    UNDEF
+};
+typedef enum STORAGE_TYPE NfDtp;
+    #define _NEFTYP_INCLUDED
 #endif

@@ -37,30 +37,26 @@
 //  (c) Deltares, 2026
 //
 
-
 #if (!defined(DIOSHM_HANDLE_H))
-#define DIOSHM_HANDLE_H
+    #define DIOSHM_HANDLE_H
 
-#if (defined(WIN32))
-#include <windows.h>
-#endif
+    #if (defined(WIN32))
+        #include <windows.h>
+    #endif
 
-
-class DioShmHandle {
-
+class DioShmHandle
+{
 public:
-#if (defined(WIN32))
-    HANDLE  mmfHandle;		// Windows Handle (Memory Mapped File)
-#else
-    void * mmfHandle;		// Unix Handle (ESM)
-#endif
+    #if (defined(WIN32))
+    HANDLE mmfHandle; // Windows Handle (Memory Mapped File)
+    #else
+    void* mmfHandle; // Unix Handle (ESM)
+    #endif
 
-    void * shmBlock;		// Handle to data (MapView of file)
+    void* shmBlock; // Handle to data (MapView of file)
 
-    DioShmHandle(int iSize, char * name);
+    DioShmHandle(int iSize, char* name);
     ~DioShmHandle();
-
 };
-
 
 #endif
