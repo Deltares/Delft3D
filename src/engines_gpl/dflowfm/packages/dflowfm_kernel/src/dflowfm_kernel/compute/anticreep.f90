@@ -67,9 +67,9 @@ contains
       real(kind=dp) :: zbot, ztop, zmid, zbed, farea
       real(kind=dp) :: drho_dsalinity, drho_dtemperature, temp, sal, baroclinic_force
 
-      allocate (polal(0:kmx), pocol(0:kmx), polar(0:kmx), pocor(0:kmx))
-      allocate (poflu(0:2 * kmx + 1), kicol(0:2 * kmx + 1), kicor(0:2 * kmx + 1))
-      allocate (point(0:2 * kmx + 1), drho(0:2 * kmx + 1), dsal(0:2 * kmx + 1), dtem(0:2 * kmx + 1))
+      allocate (polal(0:kmx), pocol(1:kmx), polar(0:kmx), pocor(1:kmx))
+      allocate (poflu(0:2 * kmx + 1), kicol(1:2 * kmx + 1), kicor(1:2 * kmx + 1))
+      allocate (point(0:2 * kmx + 1), drho(1:2 * kmx + 1), dsal(1:2 * kmx + 1), dtem(1:2 * kmx + 1))
 
       if (jasal == 0 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
          return
