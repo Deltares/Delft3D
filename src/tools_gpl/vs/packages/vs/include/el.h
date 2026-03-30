@@ -28,11 +28,8 @@
 // $HeadURL$
 
 #ifndef _EL_INCLUDED
-#   define _EL_INCLUDED
-    extern struct St_elm * EL_find_element_in_tree (
-                                         struct St_elm *, const BText ) ;
-    extern BVoid            EL_remove_element_branche (
-                                         struct St_elm * ) ;
-    extern  struct St_elm * EL_add_element_to_tree (
-                                         struct St_elm *, const BText ) ;
+#define _EL_INCLUDED
+extern struct St_elm* EL_find_element_in_tree(struct St_elm*, const BText);
+extern BVoid EL_remove_element_branche(struct St_elm*);
+extern struct St_elm* EL_add_element_to_tree(struct St_elm*, const BText);
 #endif

@@ -15,7 +15,7 @@ namespace csumo_precice
      */
     struct ParseError
     {
-            std::string message;
+        std::string message;
     };
 
     /**
@@ -23,8 +23,8 @@ namespace csumo_precice
      */
     struct Point2D
     {
-            double x{};
-            double y{};
+        double x{};
+        double y{};
     };
 
     /**
@@ -47,11 +47,11 @@ namespace csumo_precice
      */
     struct Discharge
     {
-            double flow_rate{}; ///< Volume flow rate [m³/s] (&lt;M3s&gt;)
-            ConstituentsOperator
-                constituents_operator{}; ///< Operator for constituent values (&lt;constituentsOperator&gt;)
-            std::vector<double>
-                constituents; ///< Concentrations: temperature, salinity, sediments, tracers (&lt;constituents&gt;)
+        double flow_rate{}; ///< Volume flow rate [m³/s] (&lt;M3s&gt;)
+        ConstituentsOperator
+            constituents_operator{}; ///< Operator for constituent values (&lt;constituentsOperator&gt;)
+        std::vector<double>
+            constituents; ///< Concentrations: temperature, salinity, sediments, tracers (&lt;constituents&gt;)
     };
 
     /**
@@ -61,26 +61,25 @@ namespace csumo_precice
      */
     struct DiffuserSettings
     {
-            // --- general section ---
-            std::optional<std::string> id;              ///< Diffuser identifier (&lt;ID&gt;, optional)
-            std::optional<std::string> sub_grid_model;  ///< Sub-grid model type (&lt;subGridModel&gt;, optional)
-            std::optional<std::string> far_field_model; ///< Far-field model name (&lt;farFieldModel&gt;, optional)
+        // --- general section ---
+        std::optional<std::string> id;              ///< Diffuser identifier (&lt;ID&gt;, optional)
+        std::optional<std::string> sub_grid_model;  ///< Sub-grid model type (&lt;subGridModel&gt;, optional)
+        std::optional<std::string> far_field_model; ///< Far-field model name (&lt;farFieldModel&gt;, optional)
 
-            // --- data section ---
-            Point2D position; ///< Diffuser position in the flow grid (&lt;XYdiff&gt;)
-            std::vector<Point2D>
-                ambient_positions;         ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
-            std::optional<Point2D> intake; ///< Intake location (&lt;XYintake&gt;, optional)
-            Discharge discharge;           ///< Discharge characteristics (&lt;discharge&gt;)
-            double nozzle_diameter{};      ///< Nozzle diameter [m] (&lt;D0&gt;)
-            double nozzle_elevation{};     ///< Height above the bed [m] (&lt;H0&gt;)
-            double vertical_angle{};       ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
-            double horizontal_angle{};     ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
-            std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional)
+        // --- data section ---
+        Point2D position;                       ///< Diffuser position in the flow grid (&lt;XYdiff&gt;)
+        std::vector<Point2D> ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
+        std::optional<Point2D> intake;          ///< Intake location (&lt;XYintake&gt;, optional)
+        Discharge discharge;                    ///< Discharge characteristics (&lt;discharge&gt;)
+        double nozzle_diameter{};               ///< Nozzle diameter [m] (&lt;D0&gt;)
+        double nozzle_elevation{};              ///< Height above the bed [m] (&lt;H0&gt;)
+        double vertical_angle{};                ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
+        double horizontal_angle{}; ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
+        std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional)
 
-            // --- comm section ---
-            std::filesystem::path ff2nf_dir;  ///< Directory for FF2NF communication files (&lt;FF2NFdir&gt;)
-            std::filesystem::path ff_run_dir; ///< Far-field model run directory (&lt;FFrundir&gt;)
+        // --- comm section ---
+        std::filesystem::path ff2nf_dir;  ///< Directory for FF2NF communication files (&lt;FF2NFdir&gt;)
+        std::filesystem::path ff_run_dir; ///< Far-field model run directory (&lt;FFrundir&gt;)
     };
 
     /**
@@ -94,41 +93,41 @@ namespace csumo_precice
      */
     class CSumoSettingsReader
     {
-        public:
-            /**
-             * @brief Create by reading and parsing an XML file.
-             * @param csumo_config_file Path to the C-SUMO configuration xml file.
-             * @return The reader on success, or a @ref ParseError describing the failure.
-             */
-            [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromFile(
-                const std::filesystem::path& csumo_config_file);
+    public:
+        /**
+         * @brief Create by reading and parsing an XML file.
+         * @param csumo_config_file Path to the C-SUMO configuration xml file.
+         * @return The reader on success, or a @ref ParseError describing the failure.
+         */
+        [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromFile(
+            const std::filesystem::path& csumo_config_file);
 
-            /**
-             * @brief Create by parsing XML from an in-memory string.
-             *
-             * This overload does not touch the filesystem and is well-suited for
-             * unit tests.
-             *
-             * @param xml Raw UTF-8 XML content.
-             * @return The reader on success, or a @ref ParseError describing the failure.
-             */
-            [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromString(std::string_view xml);
+        /**
+         * @brief Create by parsing XML from an in-memory string.
+         *
+         * This overload does not touch the filesystem and is well-suited for
+         * unit tests.
+         *
+         * @param xml Raw UTF-8 XML content.
+         * @return The reader on success, or a @ref ParseError describing the failure.
+         */
+        [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromString(std::string_view xml);
 
-            /**
-             * @brief The file format version (value of &lt;fileVersion&gt;).
-             */
-            [[nodiscard]] std::string_view fileVersion() const;
+        /**
+         * @brief The file format version (value of &lt;fileVersion&gt;).
+         */
+        [[nodiscard]] std::string_view fileVersion() const;
 
-            /**
-             * @brief All diffuser settings blocks read from the XML, in document order.
-             */
-            [[nodiscard]] const std::vector<DiffuserSettings>& diffusers() const;
+        /**
+         * @brief All diffuser settings blocks read from the XML, in document order.
+         */
+        [[nodiscard]] const std::vector<DiffuserSettings>& diffusers() const;
 
-        private:
-            explicit CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers);
+    private:
+        explicit CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers);
 
-            std::string file_version_;
-            std::vector<DiffuserSettings> diffusers_;
+        std::string file_version_;
+        std::vector<DiffuserSettings> diffusers_;
     };
 } // namespace csumo_precice
 
