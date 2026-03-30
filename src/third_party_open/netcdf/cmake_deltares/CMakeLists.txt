@@ -82,7 +82,7 @@ set(fortran_sources ${source_path}/module_netcdf4_nc_interfaces.f90
  set(oss_dependencies netcdf_c_extension)
  target_link_libraries(${netcdf_library_name} PRIVATE ${oss_dependencies})
 
- target_link_libraries(${netcdf_library_name} INTERFACE hdf5 hdf5_hl zlib)
+ target_link_libraries(${netcdf_library_name} PRIVATE hdf5 hdf5_hl zlib)
  target_compile_options(${netcdf_library_name} PRIVATE "SHELL:${heap_arrays_100_flag}")
 
  # Create the folder structure in vfproj

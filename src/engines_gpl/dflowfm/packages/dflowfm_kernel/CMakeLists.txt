@@ -171,7 +171,6 @@ if (UNIX)
                           PkgConfig::PETSC
                           uuid
     )
-    target_link_libraries(${library_name} INTERFACE petsc)
 endif(UNIX)
 
 if (WIN32)
@@ -199,7 +198,6 @@ if (WIN32)
                             "${mpi_fortran_library}"
                             petsc
     )
-    target_link_libraries(${library_name} INTERFACE petsc)
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
