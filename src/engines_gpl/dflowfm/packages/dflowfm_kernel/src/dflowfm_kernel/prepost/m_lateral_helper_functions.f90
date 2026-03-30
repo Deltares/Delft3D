@@ -10,7 +10,7 @@ contains
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       implicit none
 
-      integer, intent(out) :: kc(:) !< (ndx) The mask array that is to be filled.
+      integer, intent(inout) :: kc(:) !< (ndx) The mask array that is to be filled.
       integer, intent(in) :: ilattype !< Type of the new lateral (one of ILATTP_1D|2D|1D2D)
 
       integer :: L, k1, k2
