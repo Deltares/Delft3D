@@ -40,36 +40,41 @@ contains
    !> Reduces spurious horizontal layer motion ("creep") in stratified flows.
    subroutine anticreep(L)
       use precision, only: dp
-
-      use m_flow, only: kmx, zws, BACKGROUNDWATERTEMPERATURE, BACKGROUNDSALINITY, ag, rhomean, adve, baroclinic_force_prev, dsall, dteml
+      use m_flow, only: kmx, zws, BACKGROUNDWATERTEMPERATURE, BACKGROUNDSALINITY, ag, rhomean, adve, baroclinic_force_prev, dsall, dteml, &
+                        layertype, LAYTP_SIGMA
       use m_flowgeom, only: ln, bob, acl, dx
       use m_transport, only: isalt, itemp, constituents
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getLbotLtop
       use m_density_formulas, only: derivative_density_to_salinity_eckart, derivative_density_to_temperature_eckart
+      use precision_basics, only: comparereal
 
       integer, intent(in) :: L !< Horizontal link index
 
-      real(kind=dp), allocatable, dimension(:) :: polal ! Z-coordinate horizontal layers in nm
-      real(kind=dp), allocatable, dimension(:) :: pocol
-      real(kind=dp), allocatable, dimension(:) :: polar ! Z-coordinate horizontal layers in nmu
-      real(kind=dp), allocatable, dimension(:) :: pocor
-      real(kind=dp), allocatable, dimension(:) :: poflu ! Z-coordinate gradient flux
-      real(kind=dp), allocatable, dimension(:) :: point
-      real(kind=dp), allocatable, dimension(:) :: drho, dsal, dtem
-      integer, allocatable, dimension(:) :: kicol, kicor
+      real(kind=dp), allocatable, save :: polal(:), pocol(:), polar(:), pocor(:)
+      real(kind=dp), allocatable, save :: poflu(:), point(:), drho(:), dsal(:), dtem(:)
+      integer, allocatable, save :: kicol(:), kicor(:)
 
-      integer :: k1, k2, kbl, kbr, ktl, ktr, kll, krr, kl, kr, kl1, kl2, kr1, kr2
-      integer :: kpoint, kf, k, j, Lb, Lt, LL, kfmax, kfmax1, kflux
+      integer :: k1, k2, kbl, kbr, ktl, ktr, j
+      integer :: kll, krr, kl, kr, kl1, kl2, kr1, kr2
+      integer :: k, kf, kflux, kpoint, kmx_l, kmx_r, kmx_eff
+      integer :: LL, Lb, Lt, kfmax, kfmax1
 
-      real(kind=dp) :: grad, grad1, grad2, cl, cr, flux, flux1
-      real(kind=dp) :: zbot, ztop, zmid, zbed, farea
-      real(kind=dp) :: drho_dsalinity, drho_dtemperature, temp, sal, baroclinic_force
+      real(kind=dp) :: grad, grad1, grad2
+      real(kind=dp) :: cl, cr, flux, flux1, farea
+      real(kind=dp) :: zbot, ztop, zmid, zbed
+      real(kind=dp) :: drho_dsalinity, drho_dtemperature
+      real(kind=dp) :: sal, temp, baroclinic_force
+      real(kind=dp) :: weight_left, weight_right
 
-      allocate (polal(0:kmx), pocol(1:kmx), polar(0:kmx), pocor(1:kmx))
-      allocate (poflu(0:2 * kmx + 1), kicol(1:2 * kmx + 1), kicor(1:2 * kmx + 1))
-      allocate (point(0:2 * kmx + 1), drho(1:2 * kmx + 1), dsal(1:2 * kmx + 1), dtem(1:2 * kmx + 1))
+      ! Allocate once
+      if (.not. allocated(polal)) then
+         allocate (polal(0:kmx), pocol(1:kmx), polar(0:kmx), pocor(1:kmx))
+         allocate (poflu(0:2 * kmx + 1), point(0:2 * kmx + 1))
+         allocate (drho(1:2 * kmx + 1), dsal(1:2 * kmx + 1), dtem(1:2 * kmx + 1))
+         allocate (kicol(1:2 * kmx + 1), kicor(1:2 * kmx + 1))
+      end if
 
       if (jasal == 0 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
          return
@@ -81,6 +86,17 @@ contains
       call getkbotktop(k2, kbr, ktr)
       call getLbotLtop(L, Lb, Lt)
 
+      if (layertype == LAYTP_SIGMA) then
+         kmx_l = kmx
+         kmx_r = kmx
+      else
+         kmx_l = ktl - kbl + 1
+         kmx_r = ktr - kbr + 1
+      end if
+      kmx_eff = max(kmx_l, kmx_r)
+
+      weight_left = acl(L)
+      weight_right = 1.0_dp - weight_left
 
       zbed = (bob(1, L) + bob(2, L)) * 0.5_dp ! interpolates the bed level on flow link
       !
@@ -92,12 +108,14 @@ contains
       pocor = 0.0_dp
       polal(0) = zws(kbl - 1)
       polar(0) = zws(kbr - 1)
-      do k = 1, kmx
+      do k = 1, kmx_l
          kl = kbl + k - 1
-         kr = kbr + k - 1
          polal(k) = zws(kl)
-         polar(k) = zws(kr)
          pocol(k) = (zws(kl) + zws(kl - 1)) * 0.5_dp
+      end do
+      do k = 1, kmx_r
+         kr = kbr + k - 1
+         polar(k) = zws(kr)
          pocor(k) = (zws(kr) + zws(kr - 1)) * 0.5_dp
       end do
       !
@@ -105,12 +123,31 @@ contains
       !
       kll = 0
       krr = 0
-      do k = 0, 2 * kmx + 1
+      do k = 0, 2 * kmx_eff + 1
          j = 0
-         if (polal(kll) < polar(krr)) then
+         if (comparereal(polal(kll), polar(krr)) == 0) then ! Values are equal, consume both pointers
             point(k) = polal(kll)
             kll = kll + 1
-            if (kll > kmx) then
+            krr = krr + 1
+            if (kll > kmx_l .and. krr > kmx_r) then
+               kpoint = k
+               j = 1
+               exit
+            else if (kll > kmx_l) then
+               kpoint = k + 1
+               point(kpoint) = polar(krr)
+               j = 1
+               exit
+            else if (krr > kmx_r) then
+               kpoint = k + 1
+               point(kpoint) = polal(kll)
+               j = 1
+               exit
+            end if
+         else if (polal(kll) < polar(krr)) then
+            point(k) = polal(kll)
+            kll = kll + 1
+            if (kll > kmx_l) then
                kpoint = k + 1
                point(kpoint) = polar(krr)
                j = 1
@@ -119,7 +156,7 @@ contains
          else
             point(k) = polar(krr)
             krr = krr + 1
-            if (krr > kmx) then
+            if (krr > kmx_r) then
                kpoint = k + 1
                point(kpoint) = polal(kll)
                j = 1
@@ -128,7 +165,7 @@ contains
          end if
       end do
       if (j == 0) then
-         kpoint = 2 * kmx + 1
+         kpoint = 2 * kmx_eff + 1
       end if
       !
       !***position flux points
@@ -146,14 +183,14 @@ contains
       do kf = 1, kflux
          kicol(kf) = 0
          kicor(kf) = 0
-         do k = kll, kmx
+         do k = kll, kmx_l
             if (poflu(kf) >= polal(k - 1) .and. poflu(kf) <= polal(k)) then
                kicol(kf) = k
                kll = k
                exit
             end if
          end do
-         do k = krr, kmx
+         do k = krr, kmx_r
             if (poflu(kf) >= polar(k - 1) .and. poflu(kf) <= polar(k)) then
                kicor(kf) = k
                krr = k
@@ -164,9 +201,9 @@ contains
       !
       !***computation diffusive flux using limiter
       !
-      drho = 0.0_dp
-      dsal = 0.0_dp
-      dtem = 0.0_dp
+      drho(1:kflux) = 0.0_dp
+      dsal(1:kflux) = 0.0_dp
+      dtem(1:kflux) = 0.0_dp
       do kf = kflux, 1, -1
          kll = kicol(kf)
          krr = kicor(kf)
@@ -287,14 +324,16 @@ contains
       flux1 = 0.0_dp
       kfmax = kflux
       kfmax1 = kflux
-      do k = kmx, 1, -1
-         ztop = acl(L) * zws(kbl + k - 1) + (1.0_dp - acl(L)) * zws(kbr + k - 1)
-         zbot = acl(L) * zws(kbl + k - 2) + (1.0_dp - acl(L)) * zws(kbr + k - 2)
+
+      do LL = Lt, Lb, -1
+         k1 = ln(1, LL)
+         k2 = ln(2, LL)
+         ztop = weight_left * zws(k1) + weight_right * zws(k2)
+         zbot = weight_left * zws(k1 - 1) + weight_right * zws(k2 - 1)
          if (ztop - zbot < 1.0e-4_dp) then
             cycle
          end if
          zmid = (zbot + ztop) * 0.5_dp
-         LL = Lb + k - 1
          do kf = kfmax, 1, -1 ! HK: double inside loop, same as D3D => too much work
             kll = kicol(kf)
             krr = kicor(kf)
@@ -322,7 +361,7 @@ contains
             farea = -max(point(kf) - ztop, 0.0_dp) & ! to find the flux area between the flux pieces and the sigma layer
                     + max(point(kf) - zbot, 0.0_dp) &
                     - max(point(kf - 1) - zbot, 0.0_dp)
-            if (farea < 0) then
+            if (farea < 0.0_dp) then
                kfmax1 = kf
                exit
             end if
@@ -332,10 +371,6 @@ contains
          dsalL(LL) = dsalL(LL) / (ztop - zbot)
          dtemL(LL) = dtemL(LL) / (ztop - zbot)
       end do
-
-      deallocate (polal, pocol, polar, pocor)
-      deallocate (poflu, kicol, kicor)
-      deallocate (point, drho, dsal, dtem)
 
    end subroutine anticreep
 
