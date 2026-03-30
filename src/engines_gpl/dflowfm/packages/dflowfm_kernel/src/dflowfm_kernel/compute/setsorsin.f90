@@ -219,9 +219,9 @@ contains
          if (kk > 0) then ! FROM Point
             qsrckk = source_sink_water_discharge(n)
             qin(kk) = qin(kk) - qsrckk ! add to 2D pressure cell nr
+            dzss = zws(source_sink_indices(3, n)) - zws(source_sink_indices(2, n) - 1)
             do k = source_sink_indices(2, n), source_sink_indices(3, n)
                if (kmx > 0) then
-                  dzss = zws(source_sink_indices(3, n)) - zws(source_sink_indices(2, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
@@ -235,9 +235,9 @@ contains
          if (kk2 > 0) then ! TO Point
             qsrckk = source_sink_water_discharge(n)
             qin(kk2) = qin(kk2) + qsrckk ! add to 2D pressure cell nr
+            dzss = zws(source_sink_indices(6, n)) - zws(source_sink_indices(5, n) - 1)
             do k = source_sink_indices(5, n), source_sink_indices(6, n)
                if (kmx > 0) then
-                  dzss = zws(source_sink_indices(6, n)) - zws(source_sink_indices(5, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else

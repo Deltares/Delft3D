@@ -1223,14 +1223,14 @@ contains
    !! Input is a loaded .ext file tree structure.
    !! Returns the resulting number of source sinks
    function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(num_bubblescreen_source_sinks)
-      use fm_external_forcings_data, only: num_source_sink
+      use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_cell_geometry, only: ba
       use m_filez, only: oldfil
       use m_reapol, only: reapol
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
-      use string_module, only: strcmpi
+      use string_module, only: strcmpi, str_tolower
       use m_polygon, only: npl
       use network_data
       use m_flow
@@ -1250,8 +1250,10 @@ contains
       logical :: is_successful
       integer :: file_pointer
       integer :: i !< Loop index
+      integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file
       integer :: i_source_sink !< Loop index for source/sinks within a bubblescreen
       integer :: i_flowcell !< Loop index for flowcells within a bubblescreen
+      integer :: num_bubblescreens
       integer :: num_items_in_file
       real(kind=dp) :: total_area !< Total area of the bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
@@ -1263,10 +1265,20 @@ contains
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
+      type(t_Bubblescreen) :: bubblescreen
 
       ! Initialization
+      i_bubblescreen = 0
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
+
+      ! Count the number of [bubblescreen] blocks and allocate the bubblescreens and bubblescreen_air_discharge arrays
+      num_bubblescreens = tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
+      allocate (bubblescreens(num_bubblescreens))
+      allocate (bubblescreen_air_discharge(num_bubblescreens))
+
+      ! Initialize cache
+      call init_cell_geom_as_polylines() 
          
       ! Cycle through all [blocks] in the .ext file tree and find the [bubblescreen] blocks
       do i = 1, num_items_in_file
@@ -1274,6 +1286,7 @@ contains
          group_name = trim(tree_get_name(block_ptr))
 
          if (str_tolower(group_name) == 'bubblescreen') then
+            i_bubblescreen = i_bubblescreen + 1
             is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
             bubblescreen%id = id
 
@@ -1304,15 +1317,12 @@ contains
                   total_area = total_area + ba(bubblescreen%flowcell_indices(i_flowcell))
                end do
                bubblescreen%total_area = total_area
-           
-               ! Append the initialized bubblescreen to the global array 
-               ! (not really caring about performance here, as number of bubblescreens is expected to be low)
-               if (.not. allocated(bubblescreens)) then 
-                  bubblescreens = [bubblescreen]
-               else
-                  bubblescreens = [bubblescreens, bubblescreen]
-               end if
+               
             end if
+
+            ! Add the pre-initialized bubblescreen to bubblescreens
+            bubblescreens(i_bubblescreen) = bubblescreen
+
          end if
       end do 
 
@@ -1354,8 +1364,8 @@ contains
 
       real(kind=dp), dimension(1) :: x_flowcell !< x-coordinate of flow cell
       real(kind=dp), dimension(1) :: y_flowcell !< y-coordinate of flow cell
-      real(kind=dp), dimension(1) :: z_flowcell_source !< z-coordinate of flow cell source
-      real(kind=dp), dimension(1) :: z_flowcell_sink !< z-coordinate of flow cell sink
+      real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
+      real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
       real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
 
       character(len=:), allocatable :: id !< Bubblescreen id
