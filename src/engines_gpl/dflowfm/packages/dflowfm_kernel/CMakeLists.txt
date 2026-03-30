@@ -166,7 +166,7 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
-    target_link_libraries(${library_name} PUBLIC
+    target_link_libraries(${library_name} PRIVATE
                           interacter_stub
                           PkgConfig::PETSC
                           uuid
@@ -183,18 +183,18 @@ if (WIN32)
         if(NOT lib_interacter)
            message(SEND_ERROR "Required Interacter library (intmwi64.lib) is missing for dflowfm_kernel.")
         else()
-           target_link_libraries(${library_name} PUBLIC ${lib_interacter})
-           target_link_libraries(${library_name} PUBLIC interacter_utils)
+           target_link_libraries(${library_name} PRIVATE ${lib_interacter})
+           target_link_libraries(${library_name} PRIVATE interacter_utils)
         endif()
     else()
-        target_link_libraries(${library_name} PUBLIC interacter_stub)
+        target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
     target_link_directories(${library_name} PUBLIC
                                 "${mpi_library_path}"
     )
 
-    target_link_libraries(${library_name} PUBLIC
+    target_link_libraries(${library_name} PRIVATE
                             "${mpi_fortran_library}"
                             petsc
     )
