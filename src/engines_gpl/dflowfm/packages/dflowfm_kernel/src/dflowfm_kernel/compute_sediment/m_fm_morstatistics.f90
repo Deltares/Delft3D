@@ -414,14 +414,7 @@ contains
             qu = 0.0_fp
             qv = 0.0_fp
             do ll = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_fp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(ll)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(ll)
-               end select
+               rhol = get_rhol(stmpar, ll)
                qu = qu + sbcx(k, ll) / rhol + sbwx(k, ll) / rhol
                qv = qv + sbcy(k, ll) / rhol + sbwy(k, ll) / rhol
             end do
@@ -432,14 +425,7 @@ contains
             qu = 0.0_fp
             qv = 0.0_fp
             do ll = 1, stmpar%lsedsus
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_fp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(ll)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(ll)
-               end select
+               rhol = get_rhol(stmpar, ll)
                qu = qu + sscx(k, ll) / rhol + sswx(k, ll) / rhol
                qv = qv + sscy(k, ll) / rhol + sswy(k, ll) / rhol
             end do

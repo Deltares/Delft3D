@@ -104,7 +104,7 @@ contains
 
    !> Subroutine that divides sediment transport x,y variables by rho
    subroutine assign_sediment_transport(X, Y, IPNT_X, IPNT_Y)
-      use m_sediment, only: stmpar
+      use m_sediment, only: stmpar, get_rhol
       use m_observations_data, only: numobs, nummovobs, valobs
 
       real(dp), dimension(:), intent(out) :: X, Y !< arrays to assign valobs values to
@@ -115,14 +115,7 @@ contains
 
       ntot = numobs + nummovobs
       do l = 1, stmpar%lsedtot
-         select case (stmpar%morpar%moroutput%transptype)
-         case (0)
-            rhol = 1.0_dp
-         case (1)
-            rhol = stmpar%sedpar%cdryb(l)
-         case (2)
-            rhol = stmpar%sedpar%rhosol(l)
-         end select
+         rhol = get_rhol(stmpar, l)
          k = ntot * (l - 1)
          X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / rhol
          Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / rhol
@@ -356,7 +349,7 @@ contains
    subroutine aggregate_obscrs_data(data_pointer)
       use m_monitoring_crosssections
       use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
-      use m_sediment, only: sedtot2sedsus, stmpar, jased, stm_included
+      use m_sediment, only: sedtot2sedsus, stmpar, jased, stm_included, get_rhol
       real(dp), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to constit_crs_obs_data, unused
 
       integer :: i, IP, num, l, lsed
@@ -387,14 +380,7 @@ contains
          IP = IPNT_HUA + num
          if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
             l = sedtot2sedsus(num - ISED1 + 1)
-            select case (stmpar%morpar%moroutput%transptype)
-            case (0)
-               rhol = 1.0_dp
-            case (1)
-               rhol = stmpar%sedpar%cdryb(l)
-            case (2)
-               rhol = stmpar%sedpar%rhosol(l)
-            end select
+            rhol = get_rhol(stmpar, l)
          else
             rhol = 1.0_dp ! dummy
          end if

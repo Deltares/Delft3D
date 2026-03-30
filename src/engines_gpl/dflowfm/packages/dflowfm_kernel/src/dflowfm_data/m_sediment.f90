@@ -217,5 +217,22 @@ contains
          deallocate (sigsed)
       end if
    end subroutine deallocgrains
+   
+   
+   pure function get_rhol(stmpar, idx) result(rhol)
+      type(stmtype), intent(in) :: stmpar
+      integer, intent(in)           :: idx
+      real(dp)                      :: rhol
+
+      select case (stmpar%morpar%moroutput%transptype)
+      case (0)
+         rhol = 1.0_dp
+      case (1)
+         rhol = stmpar%sedpar%cdryb(idx)
+      case (2)
+         rhol = stmpar%sedpar%rhosol(idx)
+      end select
+   end function get_rhol
+
 
 end module m_sediment

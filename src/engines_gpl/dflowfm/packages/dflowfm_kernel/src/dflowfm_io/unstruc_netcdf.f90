@@ -6997,14 +6997,7 @@ contains
                call realloc(toutputx, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(l))
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   toutputx(:, l) = sedtra%e_ssn(:, l) / rhol
                   toutputy(:, l) = sedtra%e_sst(:, l) / rhol
                end do
@@ -7016,14 +7009,7 @@ contains
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
+               rhol = get_rhol(stmpar, l)
                toutputx(:, l) = sedtra%e_sbn(:, l) / rhol
                toutputy(:, l) = sedtra%e_sbt(:, l) / rhol
             end do
@@ -7034,14 +7020,7 @@ contains
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
+               rhol = get_rhol(stmpar, l)
                toutputx(:, l) = sedtra%e_sbwn(:, l) / rhol
                toutputy(:, l) = sedtra%e_sbwt(:, l) / rhol
             end do
@@ -7052,14 +7031,7 @@ contains
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
+               rhol = get_rhol(stmpar, l)
                toutputx(:, l) = sedtra%e_sswn(:, l) / rhol
                toutputy(:, l) = sedtra%e_sswt(:, l) / rhol
             end do
@@ -7070,14 +7042,7 @@ contains
             call realloc(toutputx, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [lnx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
+               rhol = get_rhol(stmpar, l)
                toutputx(:, l) = sedtra%e_sbcn(:, l) / rhol
                toutputy(:, l) = sedtra%e_sbct(:, l) / rhol
             end do
@@ -7172,14 +7137,7 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   toutputx(:, l) = sbcx_raw(:, l) / rhol
                   toutputy(:, l) = sbcy_raw(:, l) / rhol
                end do
@@ -7191,14 +7149,7 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   toutputx(:, l) = sbwx_raw(:, l) / rhol
                   toutputy(:, l) = sbwy_raw(:, l) / rhol
                end do
@@ -7210,14 +7161,7 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   toutputx(:, l) = sswx_raw(:, l) / rhol
                   toutputy(:, l) = sswy_raw(:, l) / rhol
                end do
@@ -7234,14 +7178,7 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(l))
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
-                  end select
+                  rhol = get_rhol(stmpar, sedtot2sedsus(l))
                   toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol
                   toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
                end do
@@ -7254,14 +7191,7 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
+               rhol = get_rhol(stmpar, l)
                toutputx(:, l) = sedtra%sbcx(:, l) / rhol
                toutputy(:, l) = sedtra%sbcy(:, l) / rhol
             end do
@@ -7273,14 +7203,7 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
+               rhol = get_rhol(stmpar, l)
                toutputx(:, l) = sedtra%sbwx(:, l) / rhol
                toutputy(:, l) = sedtra%sbwy(:, l) / rhol
             end do
@@ -7292,14 +7215,7 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedtot
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(l)
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(l)
-               end select
+               rhol = get_rhol(stmpar, l)
                toutputx(:, l) = sedtra%sswx(:, l) / rhol
                toutputy(:, l) = sedtra%sswy(:, l) / rhol
             end do
@@ -7311,14 +7227,7 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedsus
-               select case (stmpar%morpar%moroutput%transptype)
-               case (0)
-                  rhol = 1.0_dp
-               case (1)
-                  rhol = stmpar%sedpar%cdryb(sedtot2sedsus(l))
-               case (2)
-                  rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
-               end select
+               rhol = get_rhol(stmpar, l)
                toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol
                toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
             end do
@@ -7344,14 +7253,7 @@ contains
          call realloc(toutputx, [ndxndxi, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
          call realloc(toutputy, [ndxndxi, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
          do l = 1, stmpar%lsedtot
-            select case (stmpar%morpar%moroutput%transptype)
-            case (0)
-               rhol = 1.0_dp
-            case (1)
-               rhol = stmpar%sedpar%cdryb(l)
-            case (2)
-               rhol = stmpar%sedpar%rhosol(l)
-            end select
+            rhol = get_rhol(stmpar, l)
             toutputx(1:ndxndxi, l) = (sedtra%sxtot(1:ndxndxi, l)) / rhol
             toutputy(1:ndxndxi, l) = (sedtra%sytot(1:ndxndxi, l)) / rhol
          end do
@@ -7392,14 +7294,8 @@ contains
             call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
             if (dmorft > 0.0_dp) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhodt = dmorfs
-                  case (1)
-                     rhodt = stmpar%sedpar%cdryb(l) * dmorfs
-                  case (2)
-                     rhodt = stmpar%sedpar%rhosol(l) * dmorfs
-                  end select
+                  rhol = get_rhol(stmpar, l)
+                  rhodt = rhol * dmorfs
                   toutputx(:, l) = sedtra%sbxcum(:, l) / rhodt
                   toutputy(:, l) = sedtra%sbycum(:, l) / rhodt
                end do
@@ -7416,14 +7312,8 @@ contains
             ! Suspended load
             if (dmorft > 0.0_dp) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhodt = dmorfs
-                  case (1)
-                     rhodt = stmpar%sedpar%cdryb(l) * dmorfs
-                  case (2)
-                     rhodt = stmpar%sedpar%rhosol(l) * dmorfs
-                  end select
+                  rhol = get_rhol(stmpar, l)
+                  rhodt = rhol * dmorfs
                   toutputx(:, l) = sedtra%ssxcum(:, l) / rhodt
                   toutputy(:, l) = sedtra%ssycum(:, l) / rhodt
                end do
@@ -7441,14 +7331,8 @@ contains
                call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                if (dmorft > 0.0_dp) then
                   do l = 1, stmpar%lsedtot
-                     select case (stmpar%morpar%moroutput%transptype)
-                     case (0)
-                        rhodt = dmorfs
-                     case (1)
-                        rhodt = stmpar%sedpar%cdryb(l) * dmorfs
-                     case (2)
-                        rhodt = stmpar%sedpar%rhosol(l) * dmorfs
-                     end select
+                     rhol = get_rhol(stmpar, l)
+                     rhodt = rhol * dmorfs
                      toutputx(:, l) = sedtra%sbxcum(:, l) / rhodt
                      toutputy(:, l) = sedtra%sbycum(:, l) / rhodt
                   end do
@@ -7464,14 +7348,8 @@ contains
                ! Suspended load
                if (dmorft > 0.0_dp) then
                   do l = 1, stmpar%lsedtot
-                     select case (stmpar%morpar%moroutput%transptype)
-                     case (0)
-                        rhodt = dmorfs
-                     case (1)
-                        rhodt = stmpar%sedpar%cdryb(l) * dmorfs
-                     case (2)
-                        rhodt = stmpar%sedpar%rhosol(l) * dmorfs
-                     end select
+                     rhol = get_rhol(stmpar, l)
+                     rhodt = rhol * dmorfs
                      toutputx(:, l) = sedtra%ssxcum(:, l) / rhodt
                      toutputy(:, l) = sedtra%ssycum(:, l) / rhodt
                   end do
@@ -10707,14 +10585,7 @@ contains
 
             if (stmpar%morpar%moroutput%sbcuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   sedtra%sbcx(:, l) = sedtra%sbcx(:, l) / rhol
                   sedtra%sbcy(:, l) = sedtra%sbcy(:, l) / rhol
                end do
@@ -10724,14 +10595,7 @@ contains
 
             if (stmpar%morpar%moroutput%sbwuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   sedtra%sbwx(:, l) = sedtra%sbwx(:, l) / rhol
                   sedtra%sbwy(:, l) = sedtra%sbwy(:, l) / rhol
                end do
@@ -10741,14 +10605,7 @@ contains
 
             if (stmpar%morpar%moroutput%sswuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   sedtra%sswx(:, l) = sedtra%sswx(:, l) / rhol
                   sedtra%sswy(:, l) = sedtra%sswy(:, l) / rhol
                end do
@@ -10760,14 +10617,7 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(sedtot2sedsus(l)))
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(sedtot2sedsus(l)))
-                  end select
+                  rhol = get_rhol(stmpar, sedtot2sedsus(sedtot2sedsus(l)))
                   toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol ! mapping necessary because dim(sscx)=lsedtot
                   toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
                end do
@@ -10780,14 +10630,7 @@ contains
 
             if (stmpar%morpar%moroutput%sbcuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   sedtra%sbcx(:, l) = sedtra%sbcx(:, l) / rhol
                   sedtra%sbcy(:, l) = sedtra%sbcy(:, l) / rhol
                end do
@@ -10797,14 +10640,7 @@ contains
 
             if (stmpar%morpar%moroutput%sbwuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   sedtra%sbwx(:, l) = sedtra%sbwx(:, l) / rhol
                   sedtra%sbwy(:, l) = sedtra%sbwy(:, l) / rhol
                end do
@@ -10814,14 +10650,7 @@ contains
 
             if (stmpar%morpar%moroutput%sswuv) then
                do l = 1, stmpar%lsedtot
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   sedtra%sswx(:, l) = sedtra%sswx(:, l) / rhol
                   sedtra%sswy(:, l) = sedtra%sswy(:, l) / rhol
                end do
@@ -10833,14 +10662,7 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(sedtot2sedsus(sedtot2sedsus(l)))
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(sedtot2sedsus(sedtot2sedsus(l)))
-                  end select
+                  rhol = get_rhol(stmpar, sedtot2sedsus(sedtot2sedsus(l)))
                   toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol ! mapping necessary because dim(sscx)=lsedtot
                   toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
                end do
@@ -10852,14 +10674,7 @@ contains
                do l = 1, stmpar%lsedtot
                   call realloc(toutputx, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
                   call realloc(toutputy, [ndx, stmpar%lsedtot], keepExisting=.false., fill=-999.0_dp)
-                  select case (stmpar%morpar%moroutput%transptype)
-                  case (0)
-                     rhol = 1.0_dp
-                  case (1)
-                     rhol = stmpar%sedpar%cdryb(l)
-                  case (2)
-                     rhol = stmpar%sedpar%rhosol(l)
-                  end select
+                  rhol = get_rhol(stmpar, l)
                   toutputx(:, l) = sedtra%sxtot(:, l) / rhol
                   toutputy(:, l) = sedtra%sytot(:, l) / rhol
                end do
