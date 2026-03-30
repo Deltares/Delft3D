@@ -43,8 +43,6 @@ contains
         integer :: k_max_velocity !< Layer index for maximum downward velocity
         integer :: n !< 2D flow cell index; in {network_data::netcell}
         real(kind=dp) :: area_fraction !< Area fraction of the flow cell
-        ! real(kind=dp) :: max_velocity !< Maximum downward vertical velocity for this flow cell
-        ! real(kind=dp) :: total_area !< Total area of the bubble screen
         real(kind=dp) :: water_discharge !< Water discharge for this bubble screen
         real(kind=dp) :: local_water_discharge !< Water discharge for this flow cell
 
