@@ -7,7 +7,7 @@
 
 #include "csumo_settings_reader.hpp"
 
-namespace preC-SUMO
+namespace pre_c_sumo
 {
     /**
      * @details Entry point into the C-SUMO preCICE library.
@@ -41,4 +41,4 @@ namespace preC-SUMO
         std::println("Hello, world from C-SUMO PreCICE library!");
         return 0;
     }
-} // namespace preC-SUMO
+} // namespace pre_c_sumo

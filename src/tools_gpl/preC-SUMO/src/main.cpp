@@ -59,5 +59,5 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    return preC-SUMO::run(csumoConfigFileName, adapterConfigFileName);
+    return pre_c_sumo::run(csumoConfigFileName, adapterConfigFileName);
 }

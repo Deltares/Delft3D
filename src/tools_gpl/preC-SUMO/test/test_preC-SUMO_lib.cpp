@@ -5,6 +5,6 @@
 // Basic test to verify the library function executes successfully
 TEST(CsumoPreciceLibTest, BasicFunctionCallReturnsZero)
 {
-    int result = preC-SUMO::run();
+    int result = pre_c_sumo::run();
     EXPECT_EQ(result, 0);
 }
