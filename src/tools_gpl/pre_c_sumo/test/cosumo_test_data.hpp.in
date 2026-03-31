@@ -5,9 +5,9 @@
 
 #include <string_view>
 
-namespace preC-SUMO::test
+namespace pre_c_sumo::test
 {
     constexpr std::string_view full_settings_xml = R"(@FULL_SETTINGS_XML@)";
-} // namespace preC-SUMO::test
+} // namespace pre_c_sumo::test
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_TEST_CSUMO_TEST_DATA_HPP

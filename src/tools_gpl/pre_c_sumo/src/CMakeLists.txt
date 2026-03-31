@@ -1,29 +1,29 @@
 set(source_files
-    preC-SUMO_lib.cpp
+    pre_c_sumo_lib.cpp
     csumo_settings_reader.cpp
 )
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
-    ${include_dir}/preC-SUMO_lib.hpp
+    ${include_dir}/pre_c_sumo_lib.hpp
     ${include_dir}/csumo_settings_reader.hpp
     ${include_dir}/monadic_utils.hpp
 )
 
-add_library(preC-SUMO_lib ${source_files} ${header_files})
+add_library(pre_c_sumo_lib ${source_files} ${header_files})
 
-target_link_libraries(preC-SUMO_lib PRIVATE
+target_link_libraries(pre_c_sumo_lib PRIVATE
     compiler_warnings_settings
     precice::precice
     pugixml::pugixml
     Boost::headers
 )
 
-target_include_directories(preC-SUMO_lib PUBLIC ${include_dir})
+target_include_directories(pre_c_sumo_lib PUBLIC ${include_dir})
 
 add_executable(preC-SUMO main.cpp)
 target_link_libraries(preC-SUMO PRIVATE
     compiler_warnings_settings
-    preC-SUMO_lib
+    pre_c_sumo_lib
     Boost::program_options
 )
 
@@ -46,7 +46,7 @@ endif()
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files} main.cpp)
-set_target_properties(preC-SUMO preC-SUMO_lib PROPERTIES FOLDER tools_gpl/preC-SUMO)
+set_target_properties(preC-SUMO pre_c_sumo_lib PROPERTIES FOLDER tools_gpl/pre_c_sumo)
 
 install(TARGETS preC-SUMO
     RUNTIME DESTINATION bin
