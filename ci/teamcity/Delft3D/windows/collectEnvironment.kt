@@ -8,9 +8,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import Delft3D.template.*
 import Delft3D.step.*
 
-object WindowsBuildEnvironmentI24 : BuildType({
+object WindowsCollectEnvironment : BuildType({
 
-    description = "Build-environment container image to build our Delf3D software in."
+    description = "Collect-environment container image for prepping and verifying Delft3D Windows binaries."
 
     templates(
         TemplateMergeRequest,
@@ -19,12 +19,12 @@ object WindowsBuildEnvironmentI24 : BuildType({
         TemplateDockerRegistry
     )
 
-    name = "Delft3D build environment intel 2024 container"
+    name = "Delft3D collect environment container"
     buildNumberPattern = "%build.vcs.number%"
 
     params {
         param("trigger.type", "")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "collect-environment")
     }
 
     vcs {
@@ -33,37 +33,17 @@ object WindowsBuildEnvironmentI24 : BuildType({
     }
 
     steps {
-        powerShell {
-            name = "Get tooling from network share"
-            platform = PowerShellStep.Platform.x64
-            workingDir = "ci/dockerfiles/windows"
-            scriptMode = script {
-                content = """
-                    # Define the source directory
-                    ${'$'}sourceDir = "\\directory.intra\project\d-hydro\dsc-tools\toolchain2024"
-                    
-                    # Get the current working directory
-                    ${'$'}destinationDir = Get-Location
-                    
-                    # Copy the files from the source to the destination
-                    Copy-Item -Path ${'$'}sourceDir\* -Destination ${'$'}destinationDir -Recurse
-
-                    # List all the files in the destination directory
-                    Get-ChildItem -Path ${'$'}destinationDir -Recurse
-                """.trimIndent()
-            }
-        }
         dockerCommand {
-            name = "Docker build dhydro"
+            name = "Docker build collect environment container"
             commandType = build {
                 source = file {
-                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24"
+                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-collect"
                 }
                 contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%
+                    containers.deltares.nl/delft3d-dev/collect-windows:%build.vcs.number%
                 """.trimIndent()
                 commandArgs = "--no-cache"
             }
@@ -72,7 +52,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/collect-windows:%build.vcs.number%
                 """.trimIndent()
             }
         }
@@ -81,7 +61,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
             enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
+                    containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%
                 """.trimIndent()
             }
             conditions {
