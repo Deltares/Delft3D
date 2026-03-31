@@ -20,25 +20,9 @@ module precice_adapter
       character(kind=c_char, len=13) :: meshname = "fm_flow_nodes"
       character(kind=c_char, len=10) :: bed_levels_name = "bed_levels"
       character(kind=c_char, len=12) :: water_levels_name = "water_levels"
-      character(kind=c_char, len=13) :: flow_velocity_name = "flow_velocity"
-      character(kind=c_char, len=13) :: wind_velocity_name = "wind_velocity"
-      character(kind=c_char, len=23) :: vegetation_stem_density_name = "vegetation_stem_density"
-      character(kind=c_char, len=19) :: vegetation_diameter_name = "vegetation_diameter"
-      character(kind=c_char, len=17) :: vegetation_height_name = "vegetation_height"
+      character(kind=c_char, len=12) :: water_depths_name = "water_depths"
       integer(kind=c_int), dimension(:), allocatable :: vertex_ids
-      character(kind=c_char, len=2) :: fx_name = "fx"
-      character(kind=c_char, len=2) :: fy_name = "fy"
-      character(kind=c_char, len=7) :: wsbodyu_name = "wsbodyu"
-      character(kind=c_char, len=7) :: wsbodyv_name = "wsbodyv"
-      character(kind=c_char, len=2) :: mx_name = "mx"
-      character(kind=c_char, len=2) :: my_name = "my"
-      character(kind=c_char, len=7) :: dissip2_name = "dissip2" ! dsurf
-      character(kind=c_char, len=7) :: dissip3_name = "dissip3" ! dwcap
-      character(kind=c_char, len=4) :: ubot_name = "ubot"
-      character(kind=c_char, len=4) :: hrms_name = "hrms"
-      character(kind=c_char, len=2) :: tp_name = "tp"
-      character(kind=c_char, len=4) :: pdir_name = "pdir"
-      logical :: is_comm_set
+      logical :: is_comm_set = .false.
       integer(kind=c_int) :: comm
       integer(kind=c_int) :: my_rank = 0_c_int
       integer(kind=c_int) :: numranks = 1_c_int
@@ -171,17 +155,44 @@ contains
    end subroutine precice_adapter_initialize
 
    subroutine precice_adapter_update(self, timestep)
-      use precice, only: precicef_get_max_time_step_size, precicef_advance
+      use precice, only: precicef_get_max_time_step_size, precicef_advance, &
+                         precicef_is_coupling_ongoing, &
+                         precicef_get_max_time_step_size, precicef_write_data
       use precision, only: dp
-      ! TODO: Import (global) data structs here?
+      use m_flow, only: hs
+      ! TODO: Import more (global) data structs here.
 
       implicit none(type, external)
 
       class(precice_adapter_t), intent(inout) :: self
       real(kind=dp), intent(in) :: timestep
 
-      ! TODO: Implement precice advace and stuff including possible read/write, max timestep checking etc.
-      call precicef_advance(timestep)
+      integer(kind=c_int) :: is_ongoing
+      real(kind=c_double) :: max_timestep
+
+      call precicef_is_coupling_ongoing(is_ongoing)
+      if (.not. is_ongoing) then
+         return ! Skip if the connection is no longer ongoing.
+      end if
+
+      ! TODO: Implement precice stuff including possible read/write etc.
+
+      ! Write water depths (do we need to consider active nodes?)
+      call precicef_write_data(self%meshname, self%water_depths_name, &
+                               size(self%vertex_ids), self%vertex_ids, &
+                               hs, len(self%meshname), len(self%water_depths_name))
+
+      ! Actually advance time
+      call precicef_get_max_time_step_size(max_timestep)
+      if (max_timestep < timestep) then
+         call precicef_advance(max_timestep)
+         ! ... and now what?
+         call precicef_advance(timestep - max_timestep) ! This works?
+      else
+         call precicef_advance(timestep)
+      end if
+
+      ! TODO: Read latest state here ?
    end subroutine precice_adapter_update
 
    subroutine precice_adapter_finalize(self)
