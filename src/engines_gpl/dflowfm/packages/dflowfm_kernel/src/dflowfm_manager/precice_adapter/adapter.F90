@@ -1,8 +1,3 @@
-! TODO:
-! Component name : character(kind=c_char, len=2) :: component_name = "fm" <- needs to be configurable for FM-FM connections.
-! Mesh name :      character(kind=c_char, len=13) :: mesh_name = "fm_flow_nodes" <- needs configuring?
-! Quantity names : e.g. character(kind=c_char, len=12) :: water_levels_name = "water_levels" <- as number of static names, in future they may be remappable.
-! Vertex ID's :    integer(kind=c_int), dimension(:), allocatable :: flow_vertex_ids <- allocated and set at runtime.
 module precice_adapter
    use precice_adapter_interface, only: precice_adapter_interface_t
    use precice, only: precicef_finalize
