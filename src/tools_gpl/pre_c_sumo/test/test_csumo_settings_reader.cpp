@@ -151,8 +151,7 @@ TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorAbsolute)
 </COSUMO>)";
     const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->diffusers().front().discharge.constituents_operator,
-              pre_c_sumo::ConstituentsOperator::Absolute);
+    EXPECT_EQ(result->diffusers().front().discharge.constituents_operator, pre_c_sumo::ConstituentsOperator::Absolute);
 }
 
 TEST(CSumoSettingsReaderTest, ParsesConstituentsOperatorCaseInsensitive)
