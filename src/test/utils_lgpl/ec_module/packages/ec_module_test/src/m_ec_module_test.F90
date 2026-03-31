@@ -248,7 +248,7 @@ contains
                                                        xyen=xyen)
              endif
              if (.not.success) then
-                call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+                call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
                 call ec_test_exception
                 return
              endif
@@ -322,7 +322,7 @@ contains
                                                              xyen=xyen)
                    endif
                    if (.not.success) then
-                      call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+                      call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
                       call ec_test_exception
                       return
                    endif
@@ -432,7 +432,7 @@ contains
              success = ec_gettimespacevalue_by_itemID(ecInstancePtr, itemIDs(1), tst%tgt_refdate, tst%tgt_tzone, tst%tgt_tunit, tst%t(it), targetArray)
           endif
           if (.not.success) then
-             call TCMessage(testname,'Error getting value for target item','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+             call TCMessage(testname,'Error getting value for target item','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
              call ec_test_exception
              return
              cycle

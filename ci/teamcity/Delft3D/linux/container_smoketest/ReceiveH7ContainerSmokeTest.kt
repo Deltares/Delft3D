@@ -31,7 +31,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
 
     params {
         // H7 smoke test directory
-        param("h7_work_directory", "~/smoke/%build.revisions.short%")
+        param("h7_work_directory", "smoke/%build.revisions.short%")
         
         // H7 cluster access credentials
         param("h7_account_username", DslContext.getParameter("ad_h7_smoke_test_user"))

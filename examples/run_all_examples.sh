@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Call all run scripts with a path to a Dimrset-bin folder
-dimrset_bin=$PWD/../build_all/lnx64/bin
+dimrset_bin=$PWD/../install_all/lnx64/bin
 root=$PWD
 
 echo "==================================="

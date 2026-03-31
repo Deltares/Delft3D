@@ -86,6 +86,9 @@ module m_laterals
    real(kind=dp), allocatable, target, dimension(:, :, :), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
    real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Total water volume per layer, for each lateral (kmx,numlatsg).
 
+   real(kind=dp), dimension(:), allocatable, public :: qlatwaq !< Cumulative qsrc within current waq-timestep
+   real(kind=dp), dimension(:), allocatable, public :: qlatwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
+
    type t_flow_parameter !< General class for Flow parameters that require averaging.
       real(kind=dp), dimension(:), allocatable :: values !< Averaged values of the flow parameter.
       logical :: is_used = .false. !< Indicates whether this flow parameter is used.
