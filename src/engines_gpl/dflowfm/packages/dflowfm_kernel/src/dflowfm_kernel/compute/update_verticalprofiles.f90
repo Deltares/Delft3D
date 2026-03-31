@@ -29,7 +29,7 @@
 
 module m_update_verticalprofiles
 
-   implicit none 
+   implicit none
 
    private
 
@@ -86,7 +86,7 @@ contains
       integer :: k1, k2, n1, n2, kup, ierror, kk, kt, kb, kb0
 
       real(kind=dp) :: sortkebuoy, sortkeshear, sortkeeps, sorsum
-       
+
       if (iturbulencemodel <= 0 .or. kmx == 0) then
          return
       end if
@@ -377,7 +377,7 @@ contains
                   end if
 
                   sortkebuoy = 0.0_dp
-                  
+
                   !c Source and sink terms                                                                           k turkin
                   if (use_density()) then
                      k1 = ln(1, L)
@@ -392,11 +392,11 @@ contains
                         bruva(k) = (acl(LL) * drhodz(k1) + (1.0_dp - acl(LL)) * drhodz(k2)) * brunt_vaisala_coefficient
                      end if
                      buoflu(k) = max(vicwwu(L), vicwminb) * bruva(k)
-                     
+
                      bruva_u(L) = bruva(k)
 
                      sortkebuoy = -buoflu(k)
-                     
+
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
                      if (iturbulencemodel == 3) then
@@ -445,26 +445,26 @@ contains
                   !
                   if (iturbulencemodel == 3) then
                      if (testsplit == 1) then
-                         sortkeeps = - tureps0(L)
-                        if (janettosplit == 1) then         ! splitting on netto 
-                           sorsum = sortkebuoy+sortkeshear+sortkeeps
-                           call addsoursink( splitfac, sorsum  , turkin0(L), bk(k), dk(k) )
-                        else 
-                           sorsum = sortkeshear+sortkebuoy  ! sure positive, so add first
-                           call addsoursink( splitfac, sorsum     , turkin0(L), bk(k), dk(k) )
-                           call addsoursink( splitfac, sortkeeps  , turkin0(L), bk(k), dk(k) )
+                        sortkeeps = -tureps0(L)
+                        if (janettosplit == 1) then ! splitting on netto
+                           sorsum = sortkebuoy + sortkeshear + sortkeeps
+                           call addsoursink(splitfac, sorsum, turkin0(L), bk(k), dk(k))
+                        else
+                           sorsum = sortkeshear + sortkebuoy ! sure positive, so add first
+                           call addsoursink(splitfac, sorsum, turkin0(L), bk(k), dk(k))
+                           call addsoursink(splitfac, sortkeeps, turkin0(L), bk(k), dk(k))
                         end if
-                    else
-                       sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
-                       bk(k) = bk(k) + sinktu * 2.0_dp
-                       dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
+                     else
+                        sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
+                        bk(k) = bk(k) + sinktu * 2.0_dp
+                        dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
                      end if
                   else if (iturbulencemodel == 4) then
                      sinktu = 1.0_dp / tureps0(L) ! + tkedis(L) / turkin0(L)
                      bk(k) = bk(k) + sinktu
                      dk(k) = dk(k) + sourtu
                   end if
-        
+
                   ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
 
                end do ! Lb, Lt-1
@@ -906,7 +906,6 @@ contains
          turkin0 = turkin1
          tureps0 = tureps1
 
-
       else if (iturbulencemodel == 5) then
 
          call calculate_drhodz(zws, drhodz)
@@ -1055,7 +1054,7 @@ contains
                   dijdij(k) = ((ucx(Lu) - ucx(L))**2 + (ucy(Lu) - ucy(L))**2) / dzws(k)**2
 
                   if (jarichardsononoutput > 0) then
-                      richs(L) = sigrho * bruva(k) / max(1.0e-8_dp, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
+                     richs(L) = sigrho * bruva(k) / max(1.0e-8_dp, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
                   end if
 
                   sourtu = max(vicwws(L), vicwminb) * dijdij(k)
@@ -1298,7 +1297,7 @@ contains
 
       end if
 
-      if (iturbulencemodel < 5) then 
+      if (iturbulencemodel < 5) then
          call links_to_centers(vicwws, vicwwu)
          if (jarichardsononoutput > 0) then
             call links_to_centers(richs, rich)
@@ -1398,20 +1397,20 @@ contains
       end do
    end subroutine linkstocenters2Donly
 
-   subroutine addsoursink(splitfac,sor,tur,b,d) 
-   ! add sor (or sink if <0) to diag and/or rhs to compute tur 
-   
-   real(kind=dp), intent(in)     :: splitfac,sor,tur
-   real(kind=dp), intent(inout)  :: b,d
-   
-   if (sor > 0) then 
-      d = d + sor 
-   else if (sor < 0) then 
-      b = b - sor*(splitfac + 1.0_dp) / tur   ! splitfac : 0d0=Patankar, 1d0=Newton, 10d0=Guus
-      d = d - sor* splitfac 
-   endif  
-   
+   subroutine addsoursink(splitfac, sor, tur, b, d)
+      ! add sor (or sink if <0) to diag and/or rhs to compute tur
+
+      real(kind=dp), intent(in) :: splitfac, sor, tur
+      real(kind=dp), intent(inout) :: b, d
+
+      if (sor > 0) then
+         d = d + sor
+      else if (sor < 0) then
+         b = b - sor * (splitfac + 1.0_dp) / tur ! splitfac : 0d0=Patankar, 1d0=Newton, 10d0=Guus
+         d = d - sor * splitfac
+      end if
+
    end subroutine addsoursink
- 
+
 end module m_update_verticalprofiles
 
