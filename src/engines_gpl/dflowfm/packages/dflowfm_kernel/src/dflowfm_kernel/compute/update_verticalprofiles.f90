@@ -710,8 +710,8 @@ contains
                            sorsum = sinktu + sourtu
                            call addsoursink(splitfac, sorsum, tureps0(L), bk(k), dk(k))
                         else
-                           call addsoursink(splitfac, sinktu, tureps0(L), bk(k), dk(k)) ! sure positive, so add first
-                           call addsoursink(splitfac, sourtu, tureps0(L), bk(k), dk(k))
+                           call addsoursink(splitfac, sourtu, tureps0(L), bk(k), dk(k)) ! sure positive, so add first
+                           call addsoursink(splitfac, sinktu, tureps0(L), bk(k), dk(k))
                         end if
                      end if
 
