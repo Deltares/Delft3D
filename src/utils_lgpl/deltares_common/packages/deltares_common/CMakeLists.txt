@@ -19,12 +19,19 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
                   src/stdlib/stdlib_sorting_sort_index.f90
 )
 
+# Template include files (not compiled directly; included via #include in malloc.F90)
+set(malloc_inc_files
+    src/malloc_includes/malloc_body.inc
+)
+set_source_files_properties(${malloc_inc_files} PROPERTIES HEADER_FILE_ONLY TRUE)
+
 get_fortran_source_files(src source)
 
 set(library_name deltares_common)
 add_library(${library_name} ${source}
                             ${rd_token_source}
                             ${stdlib_source}
+                            ${malloc_inc_files}
                             ${fortran_version_file}
 )
 
@@ -39,6 +46,7 @@ target_include_directories(${library_name}  PRIVATE ${version_include_dir})
 set_source_files_properties(${fortran_version_file}
                             src/system_utils.F90
                             src/MessageHandling.F90
+                            src/malloc.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}"
 )
 
@@ -46,7 +54,8 @@ set_source_files_properties(${fortran_version_file}
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source}
                                                     ${rd_token_source}
                                                     ${stdlib_source}
-                                                    ${fortran_version_file})
+                                                    ${fortran_version_file}
+                                                    ${malloc_inc_files})
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_common)
 
@@ -54,7 +63,9 @@ set(gtest_path ${CMAKE_CURRENT_SOURCE_DIR}/../../gtest)
 f90twtest(test_deltares_common_gtest
     CFILES ${gtest_path}/test_deltares_common_gtest.cpp
     F90FILES ${gtest_path}/test_deltares_common_gtest.f90
+             ${gtest_path}/test_malloc.f90
     F2HFILES ${gtest_path}/test_deltares_common_gtest.f90
+             ${gtest_path}/test_malloc.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
     LIBRARIES deltares_common
     VISUAL_STUDIO_PATH utils_lgpl/deltares_common/gtest
