@@ -399,20 +399,22 @@ contains
 
                      !c Production, dissipation, and buoyancy term in TKE equation;
                      !c dissipation and positive buoyancy are split by Newton linearization:
-                     if (iturbulencemodel == 3) then
-                        if (bruva(k) > 0.0_dp) then
-                           dk(k) = dk(k) + buoflu(k)
-                           bk(k) = bk(k) + 2.0_dp * buoflu(k) / turkin0(L)
-                           ! EdG: make buoyance term in matrix safer
-                           !  bk(k) = bk(k) + 2.0_dp*buoflu(k) / max(turkin0(L), 1d-20)
-                        elseif (bruva(k) < 0.0_dp) then
-                           dk(k) = dk(k) - buoflu(k)
-                        end if
-                     else if (iturbulencemodel == 4) then
-                        if (bruva(k) > 0.0_dp) then
-                           bk(k) = bk(k) + buoflu(k) / turkin0(L)
-                        else if (bruva(k) < 0.0_dp) then
-                           dk(k) = dk(k) - buoflu(k)
+                     if (testsplit /= 1) then
+                        if (iturbulencemodel == 3) then
+                           if (bruva(k) > 0.0_dp) then
+                              dk(k) = dk(k) + buoflu(k)
+                              bk(k) = bk(k) + 2.0_dp * buoflu(k) / turkin0(L)
+                              ! EdG: make buoyance term in matrix safer
+                              !  bk(k) = bk(k) + 2.0_dp*buoflu(k) / max(turkin0(L), 1d-20)
+                           elseif (bruva(k) < 0.0_dp) then
+                              dk(k) = dk(k) - buoflu(k)
+                           end if
+                        else if (iturbulencemodel == 4) then
+                           if (bruva(k) > 0.0_dp) then
+                              bk(k) = bk(k) + buoflu(k) / turkin0(L)
+                           else if (bruva(k) < 0.0_dp) then
+                              dk(k) = dk(k) - buoflu(k)
+                           end if
                         end if
                      end if
                   end if
@@ -443,26 +445,16 @@ contains
 
                   sortkeshear = sourtu
                   !
-                  if (iturbulencemodel == 3) then
-                     if (testsplit == 1) then
-                        sortkeeps = -tureps0(L)
-                        if (janettosplit == 1) then ! splitting on netto
-                           sorsum = sortkebuoy + sortkeshear + sortkeeps
-                           call addsoursink(splitfac, sorsum, turkin0(L), bk(k), dk(k))
-                        else
-                           sorsum = sortkeshear + sortkebuoy ! sure positive, so add first
-                           call addsoursink(splitfac, sorsum, turkin0(L), bk(k), dk(k))
-                           call addsoursink(splitfac, sortkeeps, turkin0(L), bk(k), dk(k))
-                        end if
+                  if (testsplit == 1 .and. iturbulencemodel == 3) then
+                     sortkeeps = -tureps0(L)
+                     if (janettosplit == 1) then ! splitting on netto
+                        sorsum = sortkebuoy + sortkeshear + sortkeeps
+                        call addsoursink(splitfac, sorsum, turkin0(L), bk(k), dk(k))
                      else
-                        sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
-                        bk(k) = bk(k) + sinktu * 2.0_dp
-                        dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
+                        sorsum = sortkeshear + sortkebuoy ! sure positive, so add first
+                        call addsoursink(splitfac, sorsum, turkin0(L), bk(k), dk(k))
+                        call addsoursink(splitfac, sortkeeps, turkin0(L), bk(k), dk(k))
                      end if
-                  else if (iturbulencemodel == 4) then
-                     sinktu = 1.0_dp / tureps0(L) ! + tkedis(L) / turkin0(L)
-                     bk(k) = bk(k) + sinktu
-                     dk(k) = dk(k) + sourtu
                   end if
 
                   ! dk(k)  = dk(k)  + sourtu - sinktu*turkin0(L)
@@ -685,10 +677,12 @@ contains
                   if (iturbulencemodel == 3) then ! k-eps
 
                      !c Source and sink terms                                                                epsilon
-                     if (bruva(k) > 0.0_dp) then ! stable stratification
-                        dk(k) = dk(k) - cmukep * c3e_stable * bruva(k) * turkin1(L)
-                     elseif (bruva(k) < 0.0_dp) then ! unstable stratification
-                        dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
+                     if (testsplit /= 1) then
+                        if (bruva(k) > 0.0_dp) then ! stable stratification
+                           dk(k) = dk(k) - cmukep * c3e_stable * bruva(k) * turkin1(L)
+                        elseif (bruva(k) < 0.0_dp) then ! unstable stratification
+                           dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
+                        end if
                      end if
 
                      ! Similar to the k-equation, in the eps-equation the net IWE to TKE
@@ -708,8 +702,18 @@ contains
                      !c Addition of production and of dissipation to matrix ;                               epsilon
                      !c observe implicit treatment by Newton linearization.
 
-                     bk(k) = bk(k) + sinktu * 2.0_dp
-                     dk(k) = dk(k) + sinktu * tureps0(L) + sourtu
+                     if (testsplit /= 1) then
+                        bk(k) = bk(k) + sinktu * 2.0_dp
+                        dk(k) = dk(k) + sinktu * tureps0(L) + sourtu
+                     else
+                        if (janettosplit == 1) then ! splitting on netto
+                           sorsum = sinktu + sourtu
+                           call addsoursink(splitfac, sorsum, tureps0(L), bk(k), dk(k))
+                        else
+                           call addsoursink(splitfac, sinktu, tureps0(L), bk(k), dk(k)) ! sure positive, so add first
+                           call addsoursink(splitfac, sourtu, tureps0(L), bk(k), dk(k))
+                        end if
+                     end if
 
                   else if (iturbulencemodel == 4) then ! k-tau
 
