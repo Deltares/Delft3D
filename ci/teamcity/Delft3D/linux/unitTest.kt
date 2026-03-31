@@ -20,6 +20,7 @@ object LinuxUnitTest : BuildType({
     """.trimIndent()
 
     templates(
+        TemplateLinuxAgentNoFips,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance
@@ -168,9 +169,5 @@ object LinuxUnitTest : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })
