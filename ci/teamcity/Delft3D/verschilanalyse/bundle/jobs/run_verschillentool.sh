@@ -29,14 +29,16 @@ find "${VAHOME}/${JSON_CONFIGS_PATH}" -type f -name '*.json' -iregex "${MODEL_RE
     while IFS= read -r -d '' file; do
         rel_path="${file#"${VAHOME}"/"${JSON_CONFIGS_PATH}"}" # strip host prefix
         rel_path="${rel_path#/}"                              # and leading /
-        docker run \
+        if ! docker run \
             --rm \
             --volume="${VAHOME}/${MODELS_PATH}:/data/input:ro" \
             --volume="${VAHOME}/${JSON_CONFIGS_PATH}:/data/config:ro" \
             --volume="${VAHOME}/reference:/data/reference:ro" \
             --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
             containers.deltares.nl/verschillentool/verschillentool:release_v1.1.1 \
-            --config "/data/config/${rel_path}"
+            --config "/data/config/${rel_path}"; then
+            >&2 echo "Verschillentool failed with config: ${rel_path}"
+        fi
     done
 
 # Use the last part of the REFERENCE_PREFIX as the REFERENCE_TAG
