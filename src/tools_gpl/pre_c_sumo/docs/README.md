@@ -1,6 +1,6 @@
 # Set up clang-format C++ Formatting
 We use clang-format for automatically formatting C++ source files.
-Clang-format will automatically use the src/tools_gpl/preC-SUMO/.clang-format file for its settings.
+Clang-format will automatically use the src/tools_gpl/pre_c_sumo/.clang-format file for its settings.
 Your editor should be set-up to use clang-format when saving the document.
 
 ## VSCode
@@ -19,7 +19,7 @@ Then, clang-format will be called upon save.
 
 # Set up clang-tidy static analysis (optional)
 We use clang-tidy to get live feedback while you code in your IDE.
-Clang-tidy will automatically use the src/tools_gpl/preC-SUMO/.clang-tidy file for its settings.
+Clang-tidy will automatically use the src/tools_gpl/pre_c_sumo/.clang-tidy file for its settings.
 Your editor should be set-up to use run clang-tidy in its language server for providing annotations.
 
 ## VSCode
