@@ -701,7 +701,7 @@ contains
    subroutine longculvertsToProfs(skiplinks)
       use network_data
       use m_flowgeom
-      ! use unstruc_channel_flow, only: network
+      use unstruc_channel_flow, only: network
 
       logical, intent(in) :: skiplinks !< Skip determining the flow links or not
 
@@ -773,8 +773,7 @@ contains
             end do
             Lf = abs(longculverts(ilongc)%flowlinks(1))
             if (Lf > 0) then
-               ! The following call was added in UNST-9384. We decided not to use the default cross section because of differences above tolerance.
-               ! call add_longculvert_1D2D_crosssection(network, Lf, longculverts(ilongc)%branchid, longculverts(ilongc)%csdefId)
+               call add_longculvert_1D2D_crosssection(network, Lf, longculverts(ilongc)%branchid, longculverts(ilongc)%csdefId)
                wu(Lf) = longculverts(ilongc)%width
                bob(1, Lf) = longculverts(ilongc)%bl(1)
                bob(2, Lf) = bl(ln(2, Lf))
