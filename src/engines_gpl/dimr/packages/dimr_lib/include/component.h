@@ -34,61 +34,31 @@
 //  23 jan 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
+class Component
+{
+public:
+    Component(Dimr* DH);
 
-class Component {
-    public:
-        Component (
-            Dimr * DH
-            );
+    virtual ~Component(void);
 
-        virtual ~Component (
-            void
-            );
+    virtual void Run(void);
 
-        virtual void
-        Run (
-            void
-            );
+    virtual void Init(void);
 
-        virtual void
-        Init (
-            void
-            );
+    virtual void Step(double stepSize);
 
-        virtual void
-        Step (
-            double stepSize
-            );
+    virtual void Finish(void);
 
-        virtual void
-        Finish (
-            void
-            );
+    virtual double GetStartTime(void);
 
-        virtual double
-        GetStartTime (
-            void
-            );
+    virtual double GetEndTime(void);
 
-        virtual double
-        GetEndTime (
-            void
-            );
+    virtual double GetCurrTime(void);
 
-        virtual double
-        GetCurrTime (
-            void
-            );
+    virtual double GetTimeStep(void);
 
-        virtual double
-        GetTimeStep (
-            void
-            );
-
-    public:
-        Dimr * DH;        // Dimr instance
-
-    };
+public:
+    Dimr* DH; // Dimr instance
+};

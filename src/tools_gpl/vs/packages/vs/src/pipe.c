@@ -34,53 +34,51 @@
 
 #ifdef MSDOS
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+    #include <stdio.h>
+    #include <string.h>
+    #include <stdlib.h>
 
-#include "au.h"
+    #include "au.h"
 
-static BChar   Fg_process[120];
-static BChar   Fg_tempfile[120];
-static BInt2   Fg_pipe_is_open=False;
-
+static BChar Fg_process[120];
+static BChar Fg_tempfile[120];
+static BInt2 Fg_pipe_is_open = False;
 
 /*  @@  the functions emulate a simple version of the unix
         popen (only for write) and pclose for DOS environment.
         Only one pipe can be open at the same time.
  */
 
-FILE * popen (
-    const BText command,
-    const BText type
-    )
+FILE* popen(const BText command, const BText type)
 {
-    FILE * stream;
-    BText  tmp;
+    FILE* stream;
+    BText tmp;
 
-    if ( !Fg_pipe_is_open ) {
-        if ( strcmp ( type, "w" ) == 0 ) {
-
+    if (!Fg_pipe_is_open)
+    {
+        if (strcmp(type, "w") == 0)
+        {
             /* create temp file */
-            tmp = tempnam ( NULL, "vs_" );
-            (void)strcpy ( Fg_tempfile, tmp );
-            (void)free( tmp );
+            tmp = tempnam(NULL, "vs_");
+            (void)strcpy(Fg_tempfile, tmp);
+            (void)free(tmp);
 
             /* save name of process to start */
-            (void) sprintf ( Fg_process, "%s <%s", command,
-                             Fg_tempfile );
+            (void)sprintf(Fg_process, "%s <%s", command, Fg_tempfile);
 
-            stream = fopen ( Fg_tempfile, "w" );
+            stream = fopen(Fg_tempfile, "w");
 
             Fg_pipe_is_open = (stream != NULL);
 
             return stream;
         }
-        else {
+        else
+        {
             return NULL;
         }
     }
-    else {
+    else
+    {
         /* no two pipes at the same time */
         return NULL;
     }
@@ -88,16 +86,16 @@ FILE * popen (
 
 /*  @@
  */
-BInt4 pclose ( FILE * stream )
+BInt4 pclose(FILE* stream)
 {
-    if ( Fg_pipe_is_open ) {
-
+    if (Fg_pipe_is_open)
+    {
         /* close stream file and execute process */
-        (void)fclose ( stream );
-        (void)system ( Fg_process );
+        (void)fclose(stream);
+        (void)system(Fg_process);
 
         /* remove tempfile */
-        (void)remove ( Fg_tempfile );
+        (void)remove(Fg_tempfile);
         Fg_pipe_is_open = False;
     }
 }

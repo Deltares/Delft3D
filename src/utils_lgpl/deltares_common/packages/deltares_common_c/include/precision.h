@@ -40,36 +40,32 @@
 #ifndef _D3D_FLOW_PRECISION
 #define _D3D_FLOW_PRECISION
 
-#define REAL_HP double              // double or higher
-#define REAL_HP_TYPE DoubleType     // double or higher
+#define REAL_HP double          // double or higher
+#define REAL_HP_TYPE DoubleType // double or higher
 
-#  define REAL_SP float             // float, double or higher
-#  define REAL_SP_TYPE FloatType    // float, double or higher
+#define REAL_SP float          // float, double or higher
+#define REAL_SP_TYPE FloatType // float, double or higher
 
+#define FLOW_DOUBLE_PRECISION // activate this   define when fp == hp (high   precision)
+// #undef FLOW_DOUBLE_PRECISION      // activate this undefine when fp == sp (single precision)
 
-
-#define FLOW_DOUBLE_PRECISION  // activate this   define when fp == hp (high   precision)
-//#undef FLOW_DOUBLE_PRECISION      // activate this undefine when fp == sp (single precision)
-
-#define PREC_DOUBLE_PRECISION     // activate this   define when prec == hp (high   precision)
+#define PREC_DOUBLE_PRECISION // activate this   define when prec == hp (high   precision)
 // #undef PREC_DOUBLE_PRECISION   // activate this undefine when prec == sp (single precision)
 
-
-
 #if defined FLOW_DOUBLE_PRECISION
-#  define REAL_FP double            // double or higher
-#  define REAL_FP_TYPE DoubleType   // double or higher
+    #define REAL_FP double          // double or higher
+    #define REAL_FP_TYPE DoubleType // double or higher
 #else
-#  define REAL_FP float             // float, double or higher
-#  define REAL_FP_TYPE FloatType    // float, double or higher
+    #define REAL_FP float          // float, double or higher
+    #define REAL_FP_TYPE FloatType // float, double or higher
 #endif
 
 #if defined PREC_DOUBLE_PRECISION
-#  define REAL_PREC double            // double or higher
-#  define REAL_PREC_TYPE DoubleType   // double or higher
+    #define REAL_PREC double          // double or higher
+    #define REAL_PREC_TYPE DoubleType // double or higher
 #else
-#  define REAL_PREC float             // float, double or higher
-#  define REAL_PREC_TYPE FloatType    // float, double or higher
+    #define REAL_PREC float          // float, double or higher
+    #define REAL_PREC_TYPE FloatType // float, double or higher
 #endif
 
 #endif

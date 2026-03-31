@@ -47,11 +47,29 @@ Containers are lightweight, isolated environments that package an application an
       --build-arg THIRDPARTYLIBS_IMAGE_URL=localhost/third-party-libs \
       --build-arg BASE_TAG=$TAG
   ```
+- Alternatively, you can open the build container interactively while making the current folder (root of the repository) available as `/delft3d`:
+  ```
+  # Optionally repeat: export TAG=oneapi-2024
+  docker run -it -v .:/delft3d localhost/third-party-libs:$TAG
+  ```
+  and subsequently inside the container go to that folder, and run the build script.
+  Unfortunately, you have to make sure that some paths have been properly set such that the build process can find all dependencies.
+  In the build container only the last two have not yet been set.
+  ```
+  #export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+  #export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+  #export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
+  export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
+  export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
+  
+  cd /delft3d
+  ./build.sh --build all
+  ```
 
 ### Build arguments
 The dockerfile has seven build argument:
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
-- `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
+- `INTEL_FORTRAN_COMPILER` (default value: `ifx`)
 - `BUILD_TYPE` (default value: `Release`)
 - `CONFIGURATION` (default value: `all`)
 - `THIRDPARTYLIBS_IMAGE_URL` (default value: `containers.deltares.nl/delft3d-dev/delft3d-third-party-libs`)
@@ -65,7 +83,7 @@ The `INTEL_FORTRAN_COMPILER` selects which Fortran compiler is used to compile t
 Valid values are `ifort` and `ifx`.
 The `ifort` compiler in combination with an `INTEL_ONEAPI_VERSION` with value `2024` will result in a lot of warnings during compilation, since the `ifort` compiler has been deprecated and will no longer be included in the `2025` release of the intel compilers.
 
-The `BUILD_TYPE` should be `Release` for a regular optimized, release version of the code, `Debug` for debug version of the code, or `RelWithDebInfo` for something in between: a less optimized, release version of the code that still contains debug information.
+The `BUILD_TYPE` should be `Release` for a regular optimized, release version of the code, or `Debug` for debug version of the code.
 
 The `CONFIGURATION` determines whether to build Delft3D 4 (`d3d4-suite`), Delft3D FM (`fm-suite`) or both ( `all`).
 

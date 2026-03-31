@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "log/log.h"
 #include "dsle_config.h"
+#include "log/log.h"
 
 const char *dsle_key_separator = "/";
 static inline int dsle_to_dimr_status(int s) { return ((s) == 0 ? DIMR_BMI_OK : DIMR_BMI_FAILURE); }
@@ -56,7 +56,8 @@ int finalize() {
 // we don't make any attempt to recognize what each part is.
 // Note1: This function DOES change the content of the supplied key string.
 // Note2: This function is NOT thread safe. (strtok_r() does not exist in MSVC)
-static inline int parse_key(char *key, char **vartype_ptr, char **lock_id_ptr, char **quantity_ptr) {
+static inline int parse_key(char *key, char **vartype_ptr, char **lock_id_ptr,
+                            char **quantity_ptr) {
   char *token = NULL;
 
   assert(vartype_ptr != NULL);
@@ -145,7 +146,7 @@ int set_var(const char *key, void *src_ptr) {
   } else if (match_key(quantity, "temperature_sea")) {
     dest_ptr = &config.locks[lock_index].parameters.temperature_sea;
   } else {
-    log_debug("Unhandled set_var('%s', %g)\n", key, *(double*)src_ptr);
+    log_debug("Unhandled set_var('%s', %g)\n", key, *(double *)src_ptr);
     return DIMR_BMI_OK;
   }
 
@@ -156,7 +157,7 @@ int set_var(const char *key, void *src_ptr) {
   log_info("%s quantity = '%s', lock = %d, length = %d\n", __func__, quantity, lock_index,
            dest_len);
   for (int i = 0; i < dest_len; i++) {
-    log_info("%s value[%d] = %g\n", __func__, i, ((double**)src_ptr)[i]);
+    log_info("%s value[%d] = %g\n", __func__, i, ((double **)src_ptr)[i]);
   }
 
   memcpy(dest_ptr, src_ptr, dest_len * sizeof(double));
@@ -243,12 +244,12 @@ int get_var(const char *key, void **dst_ptr) {
   }
 
   if (dst_ptr == NULL || source_ptr == NULL) {
-      return DIMR_BMI_FAILURE;
+    return DIMR_BMI_FAILURE;
   }
 
   *(double **)dst_ptr = source_ptr;
-  log_info("%s quantity = '%s', lock = %d, length = %d\n", __func__, quantity,
-           lock_index, source_len);
+  log_info("%s quantity = '%s', lock = %d, length = %d\n", __func__, quantity, lock_index,
+           source_len);
   for (int i = 0; i < source_len; i++) {
     log_info("%s value[%d] = %g\n", __func__, i, source_ptr[i]);
   }
@@ -272,7 +273,7 @@ int update(double dt) {
 
   log_info("%s( %g ) called.\n", __func__, dt);
 
-  if(dt < 0) {
+  if (dt < 0) {
     return DIMR_BMI_FAILURE;
   }
 
@@ -355,8 +356,8 @@ int get_var_shape(char *key, int dims[DIMR_BMI_MAXDIMS]) { // dims -> int[6]
 
   memset(dims, 0, DIMR_BMI_MAXDIMS * sizeof(int));
   dims[0] = source_len;
-  log_info("%s yielded %d for quantity '%s' of lock %d.\n", __func__, source_len,
-           quantity, lock_index);
+  log_info("%s yielded %d for quantity '%s' of lock %d.\n", __func__, source_len, quantity,
+           lock_index);
   return DIMR_BMI_OK;
 }
 
@@ -396,4 +397,3 @@ void get_current_time(double *current_time_ptr) {
   log_info("%s( %g ) called.\n", __func__, *current_time_ptr);
   *current_time_ptr = time_to_timestamp(config.current_time);
 }
-

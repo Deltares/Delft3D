@@ -1,0 +1,2 @@
+add_library(test_helpers STATIC file_helpers.f90)
+target_link_libraries(test_helpers dflowfm_kernel)

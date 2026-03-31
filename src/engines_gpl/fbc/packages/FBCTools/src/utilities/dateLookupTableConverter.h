@@ -14,11 +14,11 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 /**
-	@file dateLookupTableConverter.h
-	@brief xxx
-	@author Tobias Schruff
-	@version 1.0
-	@date 2010
+    @file dateLookupTableConverter.h
+    @brief xxx
+    @author Tobias Schruff
+    @version 1.0
+    @date 2010
  */
 
 #ifndef DATELOOKUPTABLECONVERTER_H
@@ -26,73 +26,71 @@
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-/**
-	Convert from date / time values to double value.
-	<p>
-	Table: input[int[]] output[double]
+        /**
+            Convert from date / time values to double value.
+            <p>
+            Table: input[int[]] output[double]
 
-	<p>
-	Date fields consist of six int values:
-	<br>[year, month_of_year, day_of_month, hour_of_day, minute_of_hour, second_of_minute]
-	<p>
-	If a date field is to be ignored enter -1.
-	<p>
-	example:
-	<br>days of month [-1, (1-12), (1-31), -1, -1, -1][double]
-	<br>time of day [-1, -1, -1, (1-24), (1-60), (1-60)][double]
-	<br>date time [year, (1-12), (1-31), (1-24), (1-60), (1-60)][double]
- */
-class dateLookupTableConverter
-{
+            <p>
+            Date fields consist of six int values:
+            <br>[year, month_of_year, day_of_month, hour_of_day, minute_of_hour, second_of_minute]
+            <p>
+            If a date field is to be ignored enter -1.
+            <p>
+            example:
+            <br>days of month [-1, (1-12), (1-31), -1, -1, -1][double]
+            <br>time of day [-1, -1, -1, (1-24), (1-60), (1-60)][double]
+            <br>date time [year, (1-12), (1-31), (1-24), (1-60), (1-60)][double]
+         */
+        class dateLookupTableConverter
+        {
+        public:
+            /**
+             *	Default constructor.
+             *
+             *	\param dateValues	Values of input column.
+             *	\param values		Values of output column.
+             */
+            dateLookupTableConverter(int nValue, int** dateArray, double* valueArray);
 
-public:
+            /**
+                Deletes the dateLookupTableConverter.
+            */
+            ~dateLookupTableConverter();
 
-    /**
-	 *	Default constructor.
-	 *
-	 *	\param dateValues	Values of input column.
-	 *	\param values		Values of output column.
-     */
-	dateLookupTableConverter(int nValue, int **dateArray, double *valueArray);
+            /**
+             *	Perform lookup table conversion from x-column to y-column.
+             *
+             *	\param searchTime	Time in millis for which to return a value.
+             *	\return				Corresponding value for \searchTime.
+             */
+            double convert(long long searchTime);
 
-	/**
-		Deletes the dateLookupTableConverter.
-	*/
-	~dateLookupTableConverter();
+            /**
+                Returns the size of the date table which is the length of the x-column.
+            */
+            int size() const;
 
-	/**
-	 *	Perform lookup table conversion from x-column to y-column.
-     *
-	 *	\param searchTime	Time in millis for which to return a value.
-	 *	\return				Corresponding value for \searchTime.
-     */
-	double convert(long long searchTime);
+            /**
+                Returns the corresponding value at \a index.
 
-	/**
-		Returns the size of the date table which is the length of the x-column.
-	*/
-	int size() const;
+                \see convert()
+            */
+            double value(int index);
 
-	/**
-		Returns the corresponding value at \a index.
+        private:
+            bool isAscending(int** dateValues);
+            long long setDateFields(long long time, int dateArray[]);
 
-		\see convert()
-	*/
-	double value(int index);
+            int nValue;
+            int** dateArray;
+            double* valueArray;
+        };
 
-private:
-	bool isAscending(int **dateValues);
-	long long setDateFields(long long time, int dateArray[]);
-
-	int nValue;
-	int **dateArray;
-	double *valueArray;
-};
-
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
 #endif // DATELOOKUPTABLECONVERTER_H

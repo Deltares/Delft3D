@@ -29,12 +29,9 @@
 
 #ifndef _DF_INCLUDED
 
-    extern struct St_def *DF_find_definition_in_tree (
-                            struct St_def *, const BText ) ;
-    extern void           DF_remove_definition_branche (
-                            struct St_def * ) ;
-    extern struct St_def * DF_add_definition_to_tree (
-                            struct St_def *, const BText ) ;
+extern struct St_def* DF_find_definition_in_tree(struct St_def*, const BText);
+extern void DF_remove_definition_branche(struct St_def*);
+extern struct St_def* DF_add_definition_to_tree(struct St_def*, const BText);
 
-#   define _DF_INCLUDED
+    #define _DF_INCLUDED
 #endif

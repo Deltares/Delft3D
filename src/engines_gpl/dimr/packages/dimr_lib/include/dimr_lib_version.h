@@ -1,15 +1,15 @@
 #ifndef DIMR_LIB_VERSION
 #define DIMR_LIB_VERSION
 
-#define CAT(a, b) a ## b
+#define CAT(a, b) a##b
 #define FUNC_CAT(a, b) CAT(a, b)
 
-#define MOD_NAME         DIMR_LIB
-#define modname_program  "DIMR_LIB"
+#define MOD_NAME DIMR_LIB
+#define modname_program "DIMR_LIB"
 #if HAVE_CONFIG_H
-#   define F90_MOD_NAME   FC_FUNC(dimr, DIMR)
+    #define F90_MOD_NAME FC_FUNC(dimr, DIMR)
 #else
-#   define F90_MOD_NAME   MOD_NAME
+    #define F90_MOD_NAME MOD_NAME
 #endif
 
 #include "version_definition.h"
@@ -25,16 +25,18 @@
 
 #define modname_version modname_major "." modname_minor "." modname_build
 #define modname_version_short modname_major "." modname_minor
-#define modname_version_full  modname_company ", " modname_program " Version " modname_major "." modname_minor "." modname_build ", " __DATE__ ", " __TIME__ ""
+#define modname_version_full                                                                                         \
+    modname_company ", " modname_program " Version " modname_major "." modname_minor "." modname_build ", " __DATE__ \
+                    ", " __TIME__ ""
 #define modname_url modname_sourcecode_url
 
-/*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE ===================================================================== */
+/*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE
+ * ===================================================================== */
 
-const char * getversionstring_dimr_lib(void);
-const char * getfullversionstring_dimr_lib(void);
-const char * getshortversionstring_dimr_lib(void);
-const char * geturlstring_dimr_lib(void);
-const char * getversionidstring_dimr_lib(void);
+const char* getversionstring_dimr_lib(void);
+const char* getfullversionstring_dimr_lib(void);
+const char* getshortversionstring_dimr_lib(void);
+const char* geturlstring_dimr_lib(void);
+const char* getversionidstring_dimr_lib(void);
 
 #endif /* DIMR_LIB_VERSION */
-

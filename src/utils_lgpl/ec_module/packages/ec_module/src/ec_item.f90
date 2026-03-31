@@ -86,13 +86,13 @@ module m_ec_item
          ! allocation
          allocate(itemPtr, stat = istat)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_item::ecItemCreate: Unable to allocate additional memory")
+            call set_ec_message("ERROR: ec_item::ecItemCreate: Unable to allocate additional memory")
             itemPtr => null()
             return
          end if
          allocate(itemPtr%connectionsPtr(1), stat = istat)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_item::ecItemCreate: Unable to allocate additional memory")
+            call set_ec_message("ERROR: ec_item::ecItemCreate: Unable to allocate additional memory")
             itemPtr => null()
             return
          end if
@@ -161,7 +161,7 @@ module m_ec_item
          success = .true.
          !
          if (.not. associated(itemPtr)) then
-            call setECMessage("WARNING: ec_item::ecItemFree1dArray: Dummy argument itemPtr is already disassociated.")
+            call set_ec_message("WARNING: ec_item::ecItemFree1dArray: Dummy argument itemPtr is already disassociated.")
          else
             ! Free and deallocate all tEcItemPtrs in the 1d array.
             do i=1, nItems
@@ -218,7 +218,7 @@ module m_ec_item
          itemPtr => ecSupportFindItem(instancePtr, itemId)
          if (.not.associated(itemPtr)) then
             write(message,'(a,i8)') "Updating target failed, item not found, itemId=",itemId
-            call setECMessage(trim(message))
+            call set_ec_message(trim(message))
             return
          endif
          if (itemPtr%role == itemType_target) then
@@ -229,7 +229,7 @@ module m_ec_item
                write(message,'(a,i8,a)') "Updating target failed, quantity='" &
                                //trim(itemPtr%quantityPtr%name)   &
                                //"', itemId=",itemPtr%id
-               call setECMessage(trim(message))
+               call set_ec_message(trim(message))
                return
             endif
          endif
@@ -250,7 +250,7 @@ module m_ec_item
          itemPtr => ecSupportFindItem(instancePtr, itemId)
          if (.not.associated(itemPtr)) then
             write(message,'(a,i8)') "Updating target failed, item not found, itemId=",itemId
-            call setECMessage(trim(message))
+            call set_ec_message(trim(message))
             return
          endif
          if (itemPtr%role == itemType_target) then
@@ -275,7 +275,7 @@ module m_ec_item
          itemPtr => ecSupportFindItem(instancePtr, itemId)
          if (.not.associated(itemPtr)) then
             write(message,'(a,i8)') "Updating target failed, item not found, itemId=",itemId
-            call setECMessage(trim(message))
+            call set_ec_message(trim(message))
             return
          endif
          providerID = itemPtr%providerID
@@ -330,7 +330,7 @@ module m_ec_item
          itemPtr => ecSupportFindItem(instancePtr, itemId)
          if (.not.associated(itemPtr)) then
             write(message,'(a,i8)') "Updating target failed, item not found, itemId=",itemId
-            call setECMessage(trim(message))
+            call set_ec_message(trim(message))
             return
          endif
          select case (selector)
@@ -375,7 +375,7 @@ module m_ec_item
 
          allocate(skipWeights(item%nConnections), stat = istat)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_item::ecItemUpdateTargetItem: Unable to allocate additional memory")
+            call set_ec_message("ERROR: ec_item::ecItemUpdateTargetItem: Unable to allocate additional memory")
             success = .false.
          end if
          !
@@ -411,7 +411,7 @@ module m_ec_item
                                            //trim(item%connectionsPtr(i)%ptr%sourceItemsPtr(j)%ptr%quantityPtr%name)   &
                                            //"', item=",item%connectionsPtr(i)%ptr%sourceItemsPtr(j)%ptr%id,   &
                                              ", location="//trim(item%connectionsPtr(i)%ptr%sourceItemsPtr(j)%ptr%elementsetPtr%name)
-                           call setECMessage(trim(message))
+                           call set_ec_message(trim(message))
                            success = .false.
                            exit UpdateSrc
                         end if
@@ -436,7 +436,7 @@ module m_ec_item
                if (.not. skipWeights(i)) then
                   if (.not. (ecConverterUpdateWeightFactors(instancePtr, item%connectionsPtr(i)%ptr))) then
                      write(message,'(a,i5.5)') "Updating weights failed, connection='",item%connectionsPtr(i)%ptr%id
-                     call setECMessage(trim(message))
+                     call set_ec_message(trim(message))
                      success = .false.
                      exit UpdateWeight
                   end if
@@ -448,7 +448,7 @@ module m_ec_item
             do i=1, item%nConnections
                if (.not. (ecConverterPerformConversions(item%connectionsPtr(i)%ptr, timesteps))) then
                   write(message,'(a,i5.5)') "Converter operation failed, connection='",item%connectionsPtr(i)%ptr%id
-                  call setECMessage(trim(message))
+                  call set_ec_message(trim(message))
                   success = .false.
                   exit
                end if
@@ -459,7 +459,7 @@ module m_ec_item
          if (allocated(skipWeights)) then
             deallocate(skipWeights, stat = istat)
             if (istat /= 0) then
-               call setECMessage("Warning: deallocate skipWeights failed. Will continue.")
+               call set_ec_message("Warning: deallocate skipWeights failed. Will continue.")
                success = .false.
             end if
          end if
@@ -522,15 +522,15 @@ module m_ec_item
                   else
                      filename => fileReaderPtr%fileName
                   endif
-                  call setECMessage("       in file: '"//trim(filename)//"'.")
+                  call set_ec_message("       in file: '"//trim(filename)//"'.")
                endif
                call real2stringLeft(strnum1, '(f22.3)', timesteps%mjd())
-               call setECMessage("             Requested: t= " // trim(strnum1) // ' seconds')
+               call set_ec_message("             Requested: t= " // trim(strnum1) // ' seconds')
                call real2stringLeft(strnum1, '(f22.3)', item%sourceT0FieldPtr%timesteps)
-               call setECMessage("       Current EC-time: t= " // trim(strnum1) // ' seconds')
+               call set_ec_message("       Current EC-time: t= " // trim(strnum1) // ' seconds')
                call real2stringLeft(strnum1, '(f22.3)', item%sourceT0FieldPtr%timesteps-timesteps%mjd())
                call real2stringLeft(strnum2, '(f22.3)', (item%sourceT0FieldPtr%timesteps-timesteps%mjd())*86400)
-               call setECMessage("Requested time preceeds current forcing EC-timelevel by " // trim(strnum1) // " days = " // trim(strnum2) // " seconds.")
+               call set_ec_message("Requested time preceeds current forcing EC-timelevel by " // trim(strnum1) // " days = " // trim(strnum2) // " seconds.")
             else
                success = .true.
             endif
@@ -576,12 +576,6 @@ module m_ec_item
                            end if
                         end if
                         if (comparereal(item%sourceT1FieldPtr%timesteps, timesteps%mjd()) /= -1) then
-                           if (item%quantityPtr%timeint == timeint_bfrom) then
-                              if (comparereal(item%sourceT1FieldPtr%timesteps, timesteps%mjd(), 1.0D-7) == 0) then
-                                 ! Adjust the value in T0 field (the converter will only use the T0-field)s
-                                 item%sourceT0FieldPtr%arr1d = item%sourceT1FieldPtr%arr1d
-                              end if
-                           end if
                            success = .true.
                            exit
                         end if
@@ -591,6 +585,12 @@ module m_ec_item
                            success = ecItemFromTimeseries(item, timesteps%mjd())
                            return
                         end if
+                        ! by block-from definition, we use the last value indefinitely
+                        if (item%quantityPtr%timeint == timeint_bfrom) then
+                           item%sourceT0FieldPtr%arr1d = item%sourceT1FieldPtr%arr1d
+                           success = .true. 
+                        end if
+                     
                         if (interpol_type == interpolate_time_extrapolation_ok) then
                            exit
                         else
@@ -603,6 +603,10 @@ module m_ec_item
                if (item%quantityPtr%periodic) then
                   success = ecItemFromTimeseries(item, timesteps%mjd())
                endif
+               ! by block-from definition, we use the last value indefinitely and that is already in the T0 field
+               if (item%quantityPtr%timeint == timeint_bfrom) then
+                  success = .true.
+               end if
             endif
          end if
       end function ecItemUpdateSourceItem
@@ -631,7 +635,7 @@ module m_ec_item
             endif
             success = .true.
          else
-            call setECMessage("ERROR: ec_item::ecItemSetRole: Cannot find an Item with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemSetRole: Cannot find an Item with the supplied id.")
          end if
       end function ecItemSetProperty
 
@@ -659,9 +663,9 @@ module m_ec_item
          itemPtr_src => ecSupportFindItem(instancePtr, itemId_src)
          itemPtr_tgt => ecSupportFindItem(instancePtr, itemId_tgt)
          if (.not.associated(itemPtr_src)) then
-            call setECMessage("ERROR: ec_item::ecItemCopyProperty: Cannot find a source Item with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemCopyProperty: Cannot find a source Item with the supplied id.")
          else if (.not.associated(itemPtr_tgt)) then
-            call setECMessage("ERROR: ec_item::ecItemCopyProperty: Cannot find a target Item with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemCopyProperty: Cannot find a target Item with the supplied id.")
          else
             if (index(proplist,'quantityPtr')>0) then
                itemPtr_tgt%quantityPtr => itemPtr_src%quantityPtr
@@ -690,7 +694,7 @@ module m_ec_item
             itemPtr%role = newRole
             success = .true.
          else
-            call setECMessage("ERROR: ec_item::ecItemSetRole: Cannot find an Item with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemSetRole: Cannot find an Item with the supplied id.")
          end if
       end function ecItemSetRole
 
@@ -713,7 +717,7 @@ module m_ec_item
             itemPtr%accessType = newType
             success = .true.
          else
-            call setECMessage("ERROR: ec_item::ecItemSetType: Cannot find an Item with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemSetType: Cannot find an Item with the supplied id.")
          end if
       end function ecItemSetType
 
@@ -739,7 +743,7 @@ module m_ec_item
             itemPtr%quantityPtr => quantityPtr
             success = .true.
          else
-            call setECMessage("ERROR: ec_item::ecItemSetQuantity: Cannot find an Item or Quantity with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemSetQuantity: Cannot find an Item or Quantity with the supplied id.")
          end if
       end function ecItemSetQuantity
 
@@ -765,7 +769,7 @@ module m_ec_item
             itemPtr%elementSetPtr => elementSetPtr
             success = .true.
          else
-            call setECMessage("ERROR: ec_item::ecItemSetElementSet: Cannot find an Item or ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemSetElementSet: Cannot find an Item or ElementSet with the supplied id.")
          end if
       end function ecItemSetElementSet
 
@@ -792,10 +796,10 @@ module m_ec_item
                itemPtr%sourceT0FieldPtr => fieldPtr
                success = .true.
             else
-               call setECMessage("WARNING: ec_item::ecItemSetTargetField: Won't assign to the source Field of a non-source Item.")
+               call set_ec_message("WARNING: ec_item::ecItemSetTargetField: Won't assign to the source Field of a non-source Item.")
             end if
          else
-            call setECMessage("ERROR: ec_item::ecItemSetSourceT0Field: Cannot find an Item or Field with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemSetSourceT0Field: Cannot find an Item or Field with the supplied id.")
          end if
       end function ecItemSetSourceT0Field
 
@@ -822,10 +826,10 @@ module m_ec_item
                itemPtr%sourceT1FieldPtr => fieldPtr
                success = .true.
             else
-               call setECMessage("WARNING: ec_item::ecItemSetTargetField: Won't assign to the source Field of a non-source Item.")
+               call set_ec_message("WARNING: ec_item::ecItemSetTargetField: Won't assign to the source Field of a non-source Item.")
             end if
          else
-            call setECMessage("ERROR: ec_item::ecItemSetSourceT1Field: Cannot find an Item or Field with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemSetSourceT1Field: Cannot find an Item or Field with the supplied id.")
          end if
       end function ecItemSetSourceT1Field
 
@@ -852,10 +856,10 @@ module m_ec_item
                itemPtr%targetFieldPtr => fieldPtr
                success = .true.
             else
-               call setECMessage("WARNING: ec_item::ecItemSetTargetField: Won't assign to the target Field of a non-target Item.")
+               call set_ec_message("WARNING: ec_item::ecItemSetTargetField: Won't assign to the target Field of a non-target Item.")
             end if
          else
-            call setECMessage("ERROR: ec_item::ecItemSetTargetField: Cannot find an Item or Field with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemSetTargetField: Cannot find an Item or Field with the supplied id.")
          end if
       end function ecItemSetTargetField
 
@@ -889,10 +893,10 @@ module m_ec_item
                itemPtr%connectionsPtr(itemPtr%nConnections)%ptr => connectionPtr
                success = .true.
             else
-               call setECMessage("WARNING: ec_item::ecItemAddConnection: Won't add a Connection to a non-target Item.")
+               call set_ec_message("WARNING: ec_item::ecItemAddConnection: Won't add a Connection to a non-target Item.")
             end if
          else
-            call setECMessage("ERROR: ec_item::ecItemAddConnection: Cannot find an Item or Connection with the supplied id.")
+            call set_ec_message("ERROR: ec_item::ecItemAddConnection: Cannot find an Item or Connection with the supplied id.")
          end if
       end function ecItemAddConnection
 
