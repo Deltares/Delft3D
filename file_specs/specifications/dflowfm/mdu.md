@@ -562,10 +562,10 @@ This section contains the settings for various output files.
 | `fouFile` | Name of attribute file that defines the \*_fou.nc Fourier output file in NetCDF format. |  |  |  |
 | `fouUpdateStep` | Fourier output type. | `0` | <ul><li>**`0`**: every user step</li><li>**`1`**: every computational step</li><li>**`2`**: equal to his output</li></ul> |  |
 | `hisFile` | \*_his.nc History file in NetCDF format. |  |  |  |
-| `hisInterval` | History output, given as 'interval' 'start period' 'end period'. | `300.0` |  | [s] |
+| `hisInterval` | History output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |
 | `xlsInterval` | Interval between XLS history. | `0.0` |  | [s] |
 | `mapFile` | \*_map.nc Map file in NetCDF format. |  |  |  |
-| `mapInterval` | Map file output, given as 'interval' 'start period' 'end period'. | `1200.0` |  | [s] |
+| `mapInterval` | Map file output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |
 | `rstInterval` | Restart file output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |
 | `comInterval` | Comfile write times, given as 'interval' 'start period' 'end period' w.r.t. `refDate`. | `300.0` |  | [s] |
 | `mapFormat` | Map file format. | `4` | <ul><li>**`1`**: NetCDF</li><li>**`4`**: NetCDF UGRID</li></ul> |  |

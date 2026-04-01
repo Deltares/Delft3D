@@ -3280,7 +3280,7 @@
                 {
                     "key": "hisInterval",
                     "default_value": [
-                        300.0
+                        0.0
                     ],
                     "value_type": "list[float]",
                     "description": "History output, given as 'interval' 'start period' 'end period'.",
@@ -3303,7 +3303,7 @@
                 {
                     "key": "mapInterval",
                     "default_value": [
-                        1200.0
+                        0.0
                     ],
                     "value_type": "list[float]",
                     "description": "Map file output, given as 'interval' 'start period' 'end period'.",
