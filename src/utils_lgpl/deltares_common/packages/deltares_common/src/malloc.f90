@@ -28,6 +28,8 @@
 !
 !> Utility routines for memory (re)allocation.
 module m_alloc
+   use stdlib_kinds, only: c_bool
+
    implicit none
    private
 
@@ -204,111 +206,21 @@ contains
 
    end subroutine aerr
 
-!===============================================================================
-! Rank 1 - allocatable
-!
-#define DATTR allocatable
-#define IS_ALLOCATED(x) allocated(x)
-#define MOVE_ALLOC call move_alloc(temp, arr)
-!
-!===============================================================================
-   subroutine reallocDouble(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE double precision
 #include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocDouble
 
-   subroutine reallocReal(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE real
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocReal
+   REALLOC1(reallocDouble, double precision)
+   REALLOC1(reallocReal, real)
+   REALLOC1(reallocInt, integer)
+   REALLOC1(reallocLogical, logical)
+   REALLOC1(reallocBool, logical(kind=c_bool))
+   REALLOC1(reallocCharacter,  character)
 
-   subroutine reallocInt(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE integer
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocInt
-
-   subroutine reallocLogical(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE logical
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocLogical
-
-   subroutine reallocCharacter(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE character(len=*)
-#define DTYPE_CHAR
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE_CHAR
-#undef DTYPE
-   end subroutine reallocCharacter
-
-   subroutine reallocBool(arr, uindex, lindex, stat, fill, shift, keepExisting)
-      use stdlib_kinds, only: c_bool
-#define DTYPE logical(kind=c_bool)
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocBool
-!
-!===============================================================================
-! Rank 1 - pointer
-!
-#undef DATTR
-#undef IS_ALLOCATED
-#undef MOVE_ALLOC
-#define DATTR pointer
-#define IS_ALLOCATED(x) associated(x)
-#define MOVE_ALLOC if (associated(arr)) deallocate(arr); arr => temp
-!
-!===============================================================================
-   subroutine reallocPDouble(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE double precision
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocPDouble
-
-   subroutine reallocPReal(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE real
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocPReal
-
-   subroutine reallocPInt(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE integer
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocPInt
-
-   subroutine reallocPLogical(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE logical
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocPLogical
-
-   subroutine reallocPCharacter(arr, uindex, lindex, stat, fill, shift, keepExisting)
-#define DTYPE character(len=*)
-#define DTYPE_CHAR
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE_CHAR
-#undef DTYPE
-   end subroutine reallocPCharacter
-
-   subroutine reallocPBool(arr, uindex, lindex, stat, fill, shift, keepExisting)
-      use stdlib_kinds, only: c_bool
-#define DTYPE logical(kind=c_bool)
-#include "malloc_includes/malloc_body.inc"
-#undef DTYPE
-   end subroutine reallocPBool
-!
-!===============================================================================
-! End rank 1
-!
-#undef DATTR
-#undef IS_ALLOCATED
-#undef MOVE_ALLOC
-!===============================================================================
-
+   REALLOC1P(reallocPDouble, double precision)
+   REALLOC1P(reallocPReal, real)
+   REALLOC1P(reallocPInt, integer)
+   REALLOC1P(reallocPLogical, logical)
+   REALLOC1P(reallocPBool, logical(kind=c_bool))
+   REALLOC1P(reallocPCharacter,  character)
 !===============================================================================
    subroutine reallocReal2x(arr, u1, u2, l1, l2, stat, keepExisting)
       real, allocatable, intent(inout) :: arr(:, :)
