@@ -240,29 +240,10 @@ contains
          end if
 
          if (kcu(L) == 3) then ! 1D2D internal link, bobs at minimum
-            ! if (kcs(n1) == 21) then
-            !    bedlevel_at_link = bl(n1)
-            !    call get2Dnormal(n1, xn, yn) ! xn, yn = 2D land normal vector pointing upward, both zero = flat
-            !    call get1Ddir(n2, xt, yt) ! xt, yt = 1D river tangential normal vector
-            ! end if
-            ! if (kcs(n2) == 21) then
-            !    bedlevel_at_link = bl(n2)
-            !    call get2Dnormal(n2, xn, yn)
-            !    call get1Ddir(n1, xt, yt)
-            ! end if
-            ! skewn = abs(xn * xt + yn * yt)
-
             bob(1, L) = max(bl(n1), bl(n2))
             bob(2, L) = max(bl(n1), bl(n2)) ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
             bob0(1, L) = max(bl(n1), bl(n2))
             bob0(2, L) = max(bl(n1), bl(n2)) ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
-
-            ! bob(1, L) = bedlevel_at_link
-            ! bob(2, L) = bedlevel_at_link ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
-            ! bob0(1, L) = bedlevel_at_link
-            ! bob0(2, L) = bedlevel_at_link ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
-            ! bl(n1) = min(bl(n1), bedlevel_at_link)
-            ! bl(n2) = min(bl(n2), bedlevel_at_link)
          else if (kcu(L) == BEDLEV_TYPE_MIN) then ! left right
             bedlevel_at_link = min(zn1, zn2)
             bob(1, L) = zn1
