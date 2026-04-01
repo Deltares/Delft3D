@@ -228,11 +228,11 @@ contains
       if (allocated(arr)) then
          if (required_size > size(arr)) then
             length = max(required_size, 2 * size(arr))
-            !call realloc(arr, length, fill=fill, keepexisting=.true.)
+            call realloc(arr, length, fill=fill, keepexisting=.true.)
          end if
       else
          length = max(required_size, 10)
-         !call realloc(arr, length, fill=fill)
+         call realloc(arr, length, fill=fill)
       end if
    end subroutine reserve_sufficient_space_int
 
@@ -316,9 +316,6 @@ contains
       if (keepExisting_ .and. allocated(string)) then
          data_l_index = max(1 + shift_, 1)
          data_u_index = min(original_size + shift_, new_size)
-         ! string access below is safe, because:
-         ! data_l_index - shift_ >= (1 + shift_) - shift_ = 1
-         ! data_u_index - shift_ <= (original_size + shift_) - shift_ = original_size
          temp(data_l_index:data_u_index) = string(data_l_index - shift_:data_u_index - shift_)
          if (fill_available) then
             call fill_string(temp(1:data_l_index - 1), fill, 0)
