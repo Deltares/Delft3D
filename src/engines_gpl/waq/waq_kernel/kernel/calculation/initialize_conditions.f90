@@ -32,6 +32,7 @@ module initialize_conditions
     use m_attribute_array, only: change_attribute_array
     use m_array_manipulation, only: initialize_real_array, copy_real_array_elements, create_pointer_table
     use m_open_waq_files
+    use m_wet_dry_cells, only: get_minimum_volume
 
     private
     public :: initialize_all_conditions
@@ -79,6 +80,7 @@ contains
         integer(kind = int_wp), intent(inout) :: ierr          !< error count
 
         REAL(kind = real_wp) :: RDUMMY(1)
+        REAL(kind = real_wp) :: minimum_volume
         LOGICAL       LDUMMY, UPDATR
         CHARACTER(len = 200) FINAM
         INTEGER(kind = int_wp) :: SENDBUF(3)
@@ -366,11 +368,12 @@ contains
                     enddo
                 enddo
             else
+                call get_minimum_volume( minimum_volume )
                 do cell_i = 0, nosss - 1
                     volume = a(ivol + cell_i)
                     do i1 = cell_i * num_substances_total, cell_i * num_substances_total + num_substances_transported - 1
                         a(imass + i1) = a(iconc + i1)
-                        a(iconc + i1) = a(iconc + i1) / merge( volume, 1.0, volume /= 0.0 )
+                        a(iconc + i1) = a(iconc + i1) / merge( volume, minimum_volume, volume /= 0.0 )
                     enddo
                 enddo
             endif
