@@ -2971,6 +2971,9 @@ contains
       use m_flowgeom, only: lnx
       use m_alloc, only: realloc
 
+       if (allocated(wx)) then
+         return !> realloc is not pointer safe!
+       end if
        call realloc(wx, lnx, keepExisting=.false., fill=0.0_dp)
        call realloc(wy, lnx, keepExisting=.false., fill=0.0_dp)
        call realloc(wdsu, lnx, keepExisting=.false., fill=0.0_dp)
