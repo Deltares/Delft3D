@@ -39,10 +39,10 @@ contains
    subroutine heatun(n, time_in_hours, nominal_solar_radiation)
       use precision, only: dp, comparereal, fp
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
-      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, sfr, &
-                            soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, secchidepth2, surftempsmofac, &
-                            jadelvappos, zab, free_convection_coefficient
-      use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, secchi_depth, &
+                            soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
+                            jadelvappos, free_convection_coefficient, secchi_radiation_fraction, secchi_extinction_depth
+      use m_heatfluxes, only: em, albedo, cpa, enable_spatial_secchi_depth, spatial_secchi_depth, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
       use m_flowparameters, only: jahisheatflux, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
@@ -85,6 +85,7 @@ contains
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
+      real(kind=dp), dimension(2) :: local_secchi_extinction_depth !< Local Secchi extinction depth used in computations
 
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
 
@@ -204,7 +205,10 @@ contains
          if (solar_radiation_flux > 0.0_dp) then
 
             if (kmx > 0) then ! distribute incoming radiation over water column
-               if (secchidepth2 > 0.0_dp) then
+               local_secchi_extinction_depth(1) = secchi_extinction_depth(1)
+               local_secchi_extinction_depth(2) = secchi_extinction_depth(2)
+
+               if (secchi_depth(2) > 0.0_dp) then
                   j2 = 2
                else
                   j2 = 1
@@ -212,8 +216,8 @@ contains
 
                do j = j2, 1, -1
 
-                  if (j == 1 .and. jasecchisp > 0) then
-                     zab(1) = secchisp(n) / 1.7_dp
+                  if (j == 1 .and. enable_spatial_secchi_depth == 1) then
+                     local_secchi_extinction_depth(1) = spatial_secchi_depth(n) / 1.7_dp
                   end if
 
                   zlo = 0.0_dp
@@ -223,7 +227,7 @@ contains
                      zup = zlo
                      expup = explo
                      zlo = zws(k_top) - zws(cell_index_3D - 1)
-                     ratio = zlo / zab(j)
+                     ratio = zlo / local_secchi_extinction_depth(j)
                      if (ratio > 4.0_dp) then !  .or. cell_index_3D.eq.k_bot) then
                         explo = 0.0_dp
                      else
@@ -231,7 +235,7 @@ contains
                      end if
                      dexp = expup - explo
                      if (dexp > 0.0_dp) then
-                        heatsrc0(cell_index_3D) = heatsrc0(cell_index_3D) + sfr(j) * solar_radiation_flux * dexp * ice_free_area_fraction
+                        heatsrc0(cell_index_3D) = heatsrc0(cell_index_3D) + secchi_radiation_fraction(j) * solar_radiation_flux * dexp * ice_free_area_fraction
                      else
                         exit
                      end if

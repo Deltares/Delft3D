@@ -263,17 +263,17 @@ contains
 
             else if (qid == 'secchidepth') then
 
-               if (jaSecchisp == 0) then
-                  if (allocated(Secchisp)) then
-                     deallocate (Secchisp)
+               if (enable_spatial_secchi_depth == 0) then
+                  if (allocated(spatial_secchi_depth)) then
+                     deallocate (spatial_secchi_depth)
                   end if
-                  allocate (Secchisp(ndx), stat=ierr)
-                  call aerr('Secchisp(ndx)', ierr, lnx)
-                  Secchisp = dmiss
-                  jaSecchisp = 1
+                  allocate (spatial_secchi_depth(ndx), stat=ierr)
+                  call aerr('spatial_secchi_depth(ndx)', ierr, lnx)
+                  spatial_secchi_depth = dmiss
+                  enable_spatial_secchi_depth = 1
                end if
 
-               success = timespaceinitialfield(xz, yz, Secchisp, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
+               success = timespaceinitialfield(xz, yz, spatial_secchi_depth, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
 
             else if (qid == 'advectiontype') then
 

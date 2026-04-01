@@ -1583,7 +1583,7 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
-      use m_heatfluxes, only: secchisp
+      use m_heatfluxes, only: spatial_secchi_depth
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
@@ -1733,9 +1733,9 @@ contains
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
       case ('secchidepth')
-         call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat=ierr)
+         call realloc(spatial_secchi_depth, ndx, keepExisting=.true., fill=dmiss, stat=ierr)
          target_location_type = UNC_LOC_S
-         target_array => secchisp
+         target_array => spatial_secchi_depth
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
          call realloc(dicoww, ndx, constant_dicoww)
@@ -2008,8 +2008,8 @@ contains
       use m_grw, only: jaintercept2D
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
 
-      use m_heatfluxes, only: jasecchisp, secchisp
-      use m_physcoef, only: secchidepth
+      use m_heatfluxes, only: enable_spatial_secchi_depth, spatial_secchi_depth
+      use m_physcoef, only: secchi_depth
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemheight, stemheightstd
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
@@ -2066,10 +2066,10 @@ contains
       case ('sea_ice_thickness')
          ja_ice_thickness_read = 1
       case ('secchidepth')
-         jaSecchisp = 1
+         enable_spatial_secchi_depth = 1
          do n = 1, ndx
-            if (secchisp(n) == dmiss) then
-               secchisp(n) = secchidepth
+            if (spatial_secchi_depth(n) == dmiss) then
+               spatial_secchi_depth(n) = secchi_depth(1)
             end if
          end do
       case ('stemheight')
