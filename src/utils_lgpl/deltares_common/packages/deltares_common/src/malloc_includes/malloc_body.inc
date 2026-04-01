@@ -15,20 +15,28 @@
       integer :: new_l_index, new_u_index
       integer :: data_l_index, data_u_index
       integer :: shift_
+      integer :: local_err
       logical :: keepExisting_
       logical :: allocated_old
 
-      if (present(stat)) stat = 0
-
+      local_err = 0
       new_l_index = 1
-      if (present(lindex)) new_l_index = lindex
       new_u_index = uindex
-
       shift_ = 0
-      if (present(shift)) shift_ = shift
-
       keepExisting_ = .true.
-      if (present(keepExisting)) keepExisting_ = keepExisting
+
+      if (present(stat)) then
+         stat = 0
+      end if
+      if (present(lindex)) then
+         new_l_index = lindex
+      end if
+      if (present(shift)) then 
+         shift_ = shift
+      end if
+      if (present(keepExisting)) then
+         keepExisting_ = keepExisting
+      end if
 
       allocated_old = IS_ALLOCATED(arr)
 
@@ -37,15 +45,22 @@
          old_u_index = ubound(arr, 1)
 
          if (new_l_index == old_l_index .and. new_u_index == old_u_index .and. shift_ == 0) then
-            if (.not. keepExisting_ .and. present(fill)) arr = fill
+            if (.not. keepExisting_ .and. present(fill)) then
+               arr = fill
+            end if
             return
          end if
       end if
 
       ! Reallocation required
-      allocate(temp(new_l_index:new_u_index))
+      allocate(temp(new_l_index:new_u_index), stat=local_err)
+      if (local_err /= 0) then
+         goto 999
+      end if
 
-      if (present(fill)) temp = fill
+      if (present(fill)) then
+         temp = fill
+      end if
 
       if (keepExisting_ .and. allocated_old) then
          data_l_index = max(old_l_index + shift_, new_l_index)
@@ -59,3 +74,8 @@
       end if
 
       MOVE_ALLOC
+
+999   continue
+      if (present(stat)) then
+         stat = local_err
+      end if
