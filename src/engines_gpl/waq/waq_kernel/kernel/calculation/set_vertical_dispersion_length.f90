@@ -52,13 +52,13 @@ contains
         integer(kind = int_wp), intent(in) :: num_exchanges_z_dir     !< Nr. of exchanges direction 3
         integer(kind = int_wp), intent(in) :: num_spatial_parameters  !< Number of parameters
         integer(kind = int_wp), intent(in) :: ipoint(4, num_exchanges)!< 1= "From"   segment pointers
-        !< 2= "To"     segment pointers
-        !< 3= "From-1" segment pointers
-        !< 4= "To+1"   segment pointers
+                                                                      !< 2= "To"     segment pointers
+                                                                      !< 3= "From-1" segment pointers
+                                                                      !< 4= "To+1"   segment pointers
         real(kind = real_wp), intent(in) :: VOLUME(num_cells)         !< Segment volumes
         real(kind = real_wp), intent(inout) :: ALENG(2, num_exchanges)      !< 1= Length to "From" surface
-        !< 2= Length to "To"   surface
-        !< 3 lengths in the grid
+                                                                            !< 2= Length to "To"   surface
+                                                                            !< 3 lengths in the grid
         real(kind = real_wp), intent(inout) :: PARAM(num_spatial_parameters, num_cells) !< Model parameters
         character(len = 20), intent(in) :: PANAME(*)              !< Parameter names
         integer(kind = int_wp), intent(in) :: ILFLAG              !< if 0 then 3 length values

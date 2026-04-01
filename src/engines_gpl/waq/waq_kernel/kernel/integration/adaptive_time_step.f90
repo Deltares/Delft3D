@@ -149,7 +149,7 @@ contains
         integer(kind = int_wp) :: iqd                         !< Help variable for dump pointers
         real(kind = dp) :: a                                  !< This area
         real(kind = dp) :: q                                  !< Flow for this exchange
-        real(kind = dp) :: e                                  !< Dispersion for this exchange
+        real(kind = dp) :: e                                  !< Dispersion or dispersive flow for this exchange
         real(kind = dp) :: al                                 !< This length
         real(kind = dp) :: dl                                 !< Area / length
         real(kind = dp) :: d                                  !< Dispersion for this substance
@@ -165,7 +165,7 @@ contains
         logical disp0bnd                                      !< Bit one   of integration_id: 1 if no dispersion across boundaries
         logical loword                                        !< Bit two   of integration_id: 1 if lower order across boundaries
         logical fluxes                                        !< Bit three of integration_id: 1 if mass balance output
-        logical abound                                        !< Is it a boundary?
+        logical abound, is_bc                                 !< Is it a boundary?
         logical wetting                                       !< Are cells becoming wet?
         logical, save :: sw_settling                          !< Should settling be dealt with upwind?
         integer(kind = int_wp), save :: init = 0              !< First call ?
@@ -212,6 +212,12 @@ contains
 
 
         if (timon) call timstrt("locally_adaptive_time_step", ithandl)
+        ! just debugging purposes
+        do i = 1, 200! nosss
+            write (*,*) vol_old(i), vol_new(i)
+        end do
+        
+            
 
        ! Initialisations
         if (timon) call timstrt("administration", ithand1)
@@ -257,7 +263,7 @@ contains
 
 
         call assign_dt_boxes_to_exchanges(num_exchanges, ipoint, idx_box_cell, &
-                                        idx_box_flow, count_flows_for_box)
+                                        idx_box_flow, count_boxes, count_flows_for_box)
 
 
         ! 1g: write report on basket sizes
@@ -397,9 +403,10 @@ contains
                 end do                                                 ! End of the loop over exchanges
             end do                                                     ! End of the loop over boxes
             
-            ! Update dconc2 in all cells along entire column (Estimate of conc used in flux correction)
+            ! Update dconc2 (= conc at the end of the fraction step) in all cells along entire column (Estimate of conc used in flux correction)
+            ! rhs = mass updated at end of fraction step, volint = volume at end of fraction step
             ! if not dry: dconc2 = rhs / volint
-            ! if dry:     dconc2 = conc
+            ! if dry:     dconc2 = conc, concentration doesn't change if cell is dry, so use old concentration for the estimate
             do ibox = first_box_smallest_used_dt, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
@@ -457,7 +464,7 @@ contains
                     else
                         f1 = 0.5 ! [-] no units
                     end if
-                    e = e * a / al        !  constant dispersion in m3/s
+                    e = e * a / al        !  discrete dispersion flux coefficient in m3/s = e * area / length = dispersion_coeff * area / length
 
                     ! if ifrom == BC
                     if (ifrom < 0) then
@@ -661,7 +668,7 @@ contains
                             cell_i = ivert(j)
                             iseg2 = ivert(j + 1)
                             ilay = ilay + 1
-                            pivot = low(ilay + 1) / dia(ilay)
+                            pivot = low(ilay + 1) / dia(ilay) ! [-] pivot element to eliminate lower diagonal
                             dia(ilay + 1) = dia(ilay + 1) - pivot * upr(ilay)
                             do substance_i = 1, num_substances_transported
                                 rhs(substance_i, iseg2) = rhs(substance_i, iseg2) - pivot * rhs(substance_i, cell_i)
@@ -816,7 +823,7 @@ contains
             write (file_unit, '(a,2g12.4)') 'Number of segments remained: ', acc_remained / count_substeps
         end if
 
-        !  update mass of box of dry cells
+        !  update mass of box of DRY CELLS
         ! using deriv(substance_i, cell_i) * idt
         ! so only reactions?)
         do i = 1, count_cells_for_box(count_boxes + 2)
@@ -855,12 +862,12 @@ contains
         ! Prepare implicit step settling (additional velocities and dispersions)
         ! finalize passive substances (set_explicit_time_step)
         ! diag = volume of each cell
-        ! rhs is increased mass in each cell after explicit step +=deriv*idt
+        ! rhs for sediment bed is increased mass in each cell after explicit step +=deriv*idt
         do cell_i = 1, nosss
             vol = vol_new(cell_i)
             do substance_i = 1, num_substances_transported
                 diag(substance_i, cell_i) = vol
-                ! if volume at sediment bed
+                ! Update d_mass by reactions in SEDIMENT BED
                 if (cell_i > num_cells) then
                     rhs(substance_i, cell_i) = amass(substance_i, cell_i) + deriv(substance_i, cell_i) * idt
                 end if
@@ -871,7 +878,7 @@ contains
         acodia(:, 1:noqv) = 0.0d0
         bcodia(:, 1:noqv) = 0.0d0
 
-        ! Loop over (vertical? + sediment?) exchanges to fill the matrices
+        ! Loop over (vertical? + sediment?) exchanges to fill the matrices, water phase and sediment phase together
         do iq = noqh + 1, num_exchanges + num_exchanges_bottom_dir
 
             ! Initialisations, check for transport anyhow
@@ -882,9 +889,9 @@ contains
             if (ifrom == 0 .or. ito == 0) cycle
             ! if two B.C.'s, cycle
             if (ifrom < 0 .and. ito < 0) cycle
-            abound = .false.
+            is_bc = .false.
             ! if one B.C.
-            if (ifrom < 0 .or. ito < 0) abound = .true.
+            if (ifrom < 0 .or. ito < 0) is_bc = .true.
 
             a = area(iq)
             q = 0.0
@@ -912,7 +919,7 @@ contains
                 q = 0.0d0
                 if (ivpnt(substance_i) > 0) q = velo(ivpnt(substance_i), iq) * a
                 
-                ! assign q1 and q2
+                ! assign advective flows q1 and q2: {0, q}
                 if (sw_settling) then         !  additional velocity upwind
                     if (q > 0.0d0) then
                         q1 = q
@@ -921,7 +928,7 @@ contains
                         q1 = 0.0d0
                         q2 = q
                     end if
-                else if (iq > num_exchanges .or. (abound .and. loword)) then  ! in the bed upwind
+                else if (iq > num_exchanges .or. (is_bc .and. loword)) then  ! in the bed upwind
                     if (q > 0.0d0) then
                         q1 = q
                         q2 = 0.0d0
@@ -944,35 +951,37 @@ contains
                     end if
                 end if
 
-                ! diffusion
+                ! diffusive flow
                 d = e
                 if (idpnt(substance_i) > 0) d = d + disper(idpnt(substance_i), iq) * dl
-                if (abound .and. disp0bnd) d = 0.0d0
+                if (is_bc .and. disp0bnd) d = 0.0d0
 
                 ! fill the tridiag matrix
-                q3 = (q1 + d) * idt
-                q4 = (q2 - d) * idt
+                q3 = (q1 + d) * idt ! total advective and dispersive dlt_vol from 'from' to 'to' during this time step
+                q4 = (q2 - d) * idt ! total advective and dispersive dlt_vol from 'to' to 'from' during this time step
 
                 ! if inner cell
-                if (.not. abound) then   ! the regular case
-                    diag(substance_i, ifrom) = diag(substance_i, ifrom) + q3
-                    bcodia(substance_i, iqv) = bcodia(substance_i, iqv) + q4
-                    diag(substance_i, ito) = diag(substance_i, ito) - q4
-                    acodia(substance_i, iqv) = acodia(substance_i, iqv) - q3
+                ! update the main diagonal, lower and upper diagonals with dlt_vol
+                ! update the rhs with dlt_mass = dlt_vol * concentration in the cell where the flow comes from for BC's
+                if (.not. is_bc) then   ! the regular case
+                    diag(substance_i, ifrom) = diag(substance_i, ifrom) + q3 ! q3 == dlt_vol
+                    bcodia(substance_i, iqv) = bcodia(substance_i, iqv) + q4 ! q4 == dlt_vol
+                    diag(substance_i, ito) = diag(substance_i, ito) - q4     ! q4 == dlt_vol
+                    acodia(substance_i, iqv) = acodia(substance_i, iqv) - q3 ! q3 == dlt_vol
                 else
                     ! 'to' cell is not a BC
                     ! 'from' cell is a BC
                     if (ito > 0) then
-                        q3 = q3 * bound(substance_i, -ifrom)
-                        diag(substance_i, ito) = diag(substance_i, ito) - q4
-                        rhs(substance_i, ito) = rhs(substance_i, ito) + q3
+                        q3 = q3 * bound(substance_i, -ifrom) ! here q3 becomes dlt_mass
+                        diag(substance_i, ito) = diag(substance_i, ito) - q4 ! q4 == dlt_vol
+                        rhs(substance_i, ito) = rhs(substance_i, ito) + q3 ! q3 == dlt_mass
                     end if
                     ! 'from' cell is not a BC
                     ! 'to' cell is a BC
                     if (ifrom > 0) then
-                        q4 = q4 * bound(substance_i, -ito)
-                        diag(substance_i, ifrom) = diag(substance_i, ifrom) + q3
-                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - q4
+                        q4 = q4 * bound(substance_i, -ito) ! here q4 becomes dlt_mass
+                        diag(substance_i, ifrom) = diag(substance_i, ifrom) + q3 ! q3 == dlt_vol
+                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - q4 ! q4 == dlt_mass
                     end if
                 end if
             end do
@@ -980,20 +989,21 @@ contains
             ! End of loop over exchanges
         end do
 
-        ! Now make the solution:  loop over vertical exchanges in the water
+        ! Now solve:
+        ! Loop over vertical exchanges in the water phase (noqh + 1 -> num_exchanges)
         do iq = noqh + 1, num_exchanges
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom <= 0 .or. ito <= 0) cycle
             do substance_i = 1, num_substances_transported
-                pivot = acodia(substance_i, iqv) / diag(substance_i, ifrom)
-                diag(substance_i, ito) = diag(substance_i, ito) - pivot * bcodia(substance_i, iqv)
-                rhs(substance_i, ito) = rhs(substance_i, ito) - pivot * rhs(substance_i, ifrom)
+                pivot = acodia(substance_i, iqv) / diag(substance_i, ifrom) ! [-] pivot element to eliminate upper diagonal
+                diag(substance_i, ito) = diag(substance_i, ito) - pivot * bcodia(substance_i, iqv) ! [L3] update main diagonal
+                rhs(substance_i, ito) = rhs(substance_i, ito) - pivot * rhs(substance_i, ifrom) ! [M] update rhs
             end do
         end do
 
-        ! loop over exchanges in the bed
+        ! Loop over exchanges in the bed (num_exchanges + 1 -> num_exchanges + num_exchanges_bottom_dir)
         do iq = num_exchanges + 1, num_exchanges + num_exchanges_bottom_dir
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
@@ -1009,14 +1019,14 @@ contains
             end do                              !  if not found, this was the
             if (iq3 == 0) cycle            !  the second and must be skipped
             do substance_i = 1, num_substances_transported
-                pivot = acodia(substance_i, iqv) + acodia(substance_i, iq3 - noqh)
-                pivot = pivot / diag(substance_i, ifrom)
-                rhs(substance_i, ito) = rhs(substance_i, ito) - pivot * rhs(substance_i, ifrom)
-                diag(substance_i, ito) = diag(substance_i, ito) - pivot * (bcodia(substance_i, iqv) + bcodia(substance_i, iq3 - noqh))
+                pivot = acodia(substance_i, iqv) + acodia(substance_i, iq3 - noqh) ! [L3]
+                pivot = pivot / diag(substance_i, ifrom) ! [L3] / [L3] = [-]
+                rhs(substance_i, ito) = rhs(substance_i, ito) - pivot * rhs(substance_i, ifrom) ![M]
+                diag(substance_i, ito) = diag(substance_i, ito) - pivot * (bcodia(substance_i, iqv) + bcodia(substance_i, iq3 - noqh)) ![L3]
             end do
         end do
 
-        ! inverse loop over exchanges in the bed
+        ! Inverse loop over exchanges in the bed (inverse direction) (num_exchanges + num_exchanges_bottom_dir -> num_exchanges + 1)
         do iq = num_exchanges + num_exchanges_bottom_dir, num_exchanges + 1, -1
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
@@ -1032,18 +1042,18 @@ contains
             end do                              !  if not found, this was the
             if (iq3 == 0) cycle            !  the second and must be skipped
             do substance_i = 1, num_substances_transported
-                pivot = diag(substance_i, ito) + tiny(pivot)
-                rhs(substance_i, ito) = rhs(substance_i, ito) / pivot
-                diag(substance_i, ito) = 1.0
+                pivot = diag(substance_i, ito) + tiny(pivot) ! [L3] + tiny to avoid division by zero
+                rhs(substance_i, ito) = rhs(substance_i, ito) / pivot ! [M] / [L3] = [M/L3]
+                diag(substance_i, ito) = 1.0 ! [?]
             end do
             if (ifrom <= 0) cycle
             do substance_i = 1, num_substances_transported
-                pivot = bcodia(substance_i, iqv) + bcodia(substance_i, iq3 - noqh)
-                rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - pivot * rhs(substance_i, ito)
+                pivot = bcodia(substance_i, iqv) + bcodia(substance_i, iq3 - noqh) ! [L3]
+                rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - pivot * rhs(substance_i, ito) ! [?]
             end do
         end do
 
-        ! Inverse loop over exchanges in the water phase
+        ! Inverse loop over vertical exchanges in the water phase, not in bed (so num_exchanges -> noqh + 1)
         do iq = num_exchanges, noqh + 1, -1
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
@@ -1076,12 +1086,12 @@ contains
             ito = ipoint(2, iq)
             if (ifrom == 0 .or. ito == 0) cycle
             if (ifrom < 0 .and. ito < 0) cycle            ! trivial
-            abound = .false.
+            is_bc = .false.
             iqd = iqdmp(iq)
             if (ifrom >= 0 .and. ito >= 0) then             ! internal
                 if (iqd <= 0) cycle                            ! no dump required
             else
-                abound = .true.                                    ! is boundary
+                is_bc = .true.                                    ! is boundary
             end if
             a = area(iq)
             e = disp(3)
@@ -1114,7 +1124,7 @@ contains
                         q1 = 0.0d0
                         q2 = q
                     end if
-                else if (iq > num_exchanges .or. (abound .and. loword)) then  ! in the bed upwind
+                else if (iq > num_exchanges .or. (is_bc .and. loword)) then  ! in the bed upwind
                     if (q > 0.0d0) then
                         q1 = q
                         q2 = 0.0d0
@@ -1140,12 +1150,12 @@ contains
                 ! diffusion
                 d = e
                 if (idpnt(substance_i) > 0) d = d + disper(idpnt(substance_i), iq) * dl
-                if (abound .and. disp0bnd) d = 0.0d0
+                if (is_bc .and. disp0bnd) d = 0.0d0
 
                 ! fill the tridiag matrix
                 q3 = (q1 + d) * idt
                 q4 = (q2 - d) * idt
-                if (abound) then
+                if (is_bc) then
                     if (ito > 0) then
                         dlt_mass = q3 * bound(substance_i, -ifrom) + q4 * rhs(substance_i, ito)
                         if (dlt_mass > 0.0d0) then
@@ -1185,7 +1195,7 @@ contains
        ! End of Part 3 
 
         ! assign the double precisison results to the single precision system arrays
-        ! for the bed phase only
+        ! for the BED PHASE only
         do cell_i = num_cells + 1, nosss
             vol = vol_new(cell_i)
             do substance_i = 1, num_substances_transported
@@ -1719,19 +1729,21 @@ contains
     end subroutine assign_dt_boxes_to_cells
 
     subroutine assign_dt_boxes_to_exchanges(num_exchanges, ipoint, dt_box_for_cell, &
-        dt_box_for_exchange, count_flows_for_box)
+        dt_box_for_exchange, count_boxes, count_flows_for_box)
         !> Assigns a delta time box to each exchange based on the boxes of the connected cells.
         implicit none
 
-        integer, intent(in) :: num_exchanges !< total number of exchanges or flows between cells
+        integer, intent(in) :: num_exchanges            !< total number of exchanges or flows between cells
         integer, intent(in) :: ipoint(4, num_exchanges) !< exchange connectivity array (indices of cells before and after exchange)
-        integer, intent(in) :: dt_box_for_cell(:) !< delta time box index assigned to each cell
-        integer, intent(out) :: count_flows_for_box(:) !< number of exchanges assigned to each box
+        integer, intent(in) :: dt_box_for_cell(:)       !< delta time box index assigned to each cell
+        integer, intent(in) :: count_boxes              !< total number of boxes or baskets
+        integer, intent(out) :: count_flows_for_box(:)  !< number of exchanges assigned to each box
 
         integer, intent(out) :: dt_box_for_exchange(num_exchanges) !< delta time box index assigned to each exchange
 
         ! Local variables
         integer :: idx_exchange !< exchange index in loops
+        integer :: idx_box      !< index of box to assign to exchange
         integer :: cell_i_from  !< index of cell from which flow originates
         integer :: cell_i_to    !< index of cell to which flow goes
         integer :: box_from     !< box index of cell from which flow originates
@@ -1747,7 +1759,11 @@ contains
             box_to = 0
             if (cell_i_from > 0) box_from = dt_box_for_cell(cell_i_from)
             if (cell_i_to > 0) box_to = dt_box_for_cell(cell_i_to)
-            dt_box_for_exchange(idx_exchange) = max(box_from, box_to)
+            idx_box = max(box_from, box_to)
+            if (idx_box == 0) then
+                idx_box = count_boxes + 2 ! if both cells are dry or stagnant, assign to dry box
+            end if
+            dt_box_for_exchange(idx_exchange) = idx_box
             count_flows_for_box(dt_box_for_exchange(idx_exchange)) = &
                 count_flows_for_box(dt_box_for_exchange(idx_exchange)) + 1
         end do
@@ -1999,51 +2015,52 @@ contains
 
         implicit none
         ! Subroutine arguments
-        integer(kind = int_wp), intent(in) :: count_boxes !< number of delta time boxes or baskets
-        integer(kind = int_wp), intent(in) :: count_flows_for_box(:) !< number of exchanges assigned to each box
-        integer(kind = int_wp), intent(in) :: count_cells_for_box(:) !< number of cells assigned to each box
-        integer(kind = int_wp), intent(in) :: sep_vert_flow_per_box(:) !< separation index of vertical flows per box
-        integer(kind = int_wp), intent(out) :: i_flow_begin_cfl_risk !< beginning index for flow with CFL risk
-        integer(kind = int_wp), intent(out) :: i_flow_end_cfl_risk !< ending index for flow with CFL risk
-        integer(kind = int_wp), intent(out) :: i_cell_begin_cfl_risk !< beginning index for cell with CFL risk
-        integer(kind = int_wp), intent(out) :: i_cell_end_cfl_risk !< ending index for cell with CFL risk
-        integer(kind = int_wp), intent(inout) :: sorted_cells(:) !< array of cells sorted by box index
-        integer(kind = int_wp), intent(inout) :: sorted_flows(:) !< array of exchanges sorted by box index
-        integer(kind = int_wp), intent(in) :: nvert(:,:)   !< Column number and indices of cells above/below
-        integer(kind = int_wp), intent(in) :: ivert(:)      !< ordering array of cells in vertical columns
-        real(kind = dp), intent(inout) :: volint(:) !< internal volumes of cells
-        real(kind = dp), intent(inout) :: rhs(:,:) !< right-hand side array for transported substances
-        real(kind = real_wp), intent(inout) :: conc(:,:) !< concentration array for transported substances
-        real(kind = real_wp), intent(in) :: bound(num_substances_transported, *) !< boundary concentrations for transported substances
-        logical, intent(in) :: fluxes !< flags for active flows
-        integer(kind = int_wp), intent(in) :: num_exchanges !< total number of exchanges or flows between cells
-        real(kind = real_wp), intent(in) :: flow(:) !< flow rate through each exchange
-        integer(kind = int_wp), intent(in) :: ipoint(4, num_exchanges) !< exchange connectivity array (indices of cells before and after exchange)
-        real(kind = dp), intent(in) :: delta_t_box(:) !< delta t assigned to each box
-        integer(kind = int_wp), intent(in) :: first_box_smallest_used_dt !< index of the first box (with smallest delta t) that is used
-        integer(kind = int_wp), intent(in) :: num_substances_transported !< number of substances being transported
-        integer(kind = int_wp), intent(in) :: num_cells !< total number of cells
-        logical, intent(inout) :: massbal !< mass balance array for transported substances
-        real(kind = real_wp), intent(inout) :: amass2(num_substances_total, 5) !< auxiliary mass balance array for transported substances
-        real(kind = real_wp), intent(inout) :: dmps(num_substances_total,num_monitoring_cells,*) !< dispersion coefficient array for transported substances
-        real(kind = real_wp), intent(inout) :: dmpq(:,:,:) !< dispersion coefficient array for transported substances
-        integer(kind = int_wp), intent(in) :: iqdmp(:) !< indices for dispersion coefficients
-        real(kind = real_wp), intent(in) :: wdrawal(:) !< withdrawal rates for transported substances
-        integer(kind = int_wp), intent(in) :: num_substances_total !< total number of substances
-        integer(kind = int_wp), intent(in) :: num_monitoring_cells !< number of monitoring cells
-        integer(kind = int_wp), intent(in) :: isdmp(:) !< indices for monitoring cells
-        integer(kind = int_wp), intent(in) :: num_waste_loads !< number of waste loads
-        integer(kind = int_wp), intent(in) :: iwaste(:) !< indices for waste loads
-        real(kind = real_wp), intent(inout) :: wstdmp(:,:,:) !< waste loads for transported substances
-        real(kind = real_wp), intent(in) :: vol_new(:) !< new volumes of cells at the end of the time step
-        real(kind = real_wp), intent(in) :: vol_old(:) !< old volumes of cells at the beginning of the time step
-        real(kind = real_wp), intent(in) :: deriv(:,:) !< derivative array for transported substances
-        real(kind = dp), intent(in) :: fact !< factor array for transported substances
-        integer(kind = int_wp), intent(in) :: idx_box_cell(:) !< array of box indices assigned to each cell  
-        real(kind = real_wp), intent(inout) :: acc_remained !< accumulated mass that remained in cells
-        real(kind = real_wp), intent(inout) :: acc_changed !< accumulated mass that changed in cells
-        integer, intent(in) :: file_unit !< unit number for output messages
-        logical, intent(in) :: report !< reporting flag
+         integer(kind = int_wp), intent(in) :: count_boxes !< number of delta time boxes or baskets
+         integer(kind = int_wp), intent(in) :: count_flows_for_box(:) !< number of exchanges assigned to each box
+         integer(kind = int_wp), intent(in) :: count_cells_for_box(:) !< number of cells assigned to each box
+         integer(kind = int_wp), intent(in) :: sep_vert_flow_per_box(:) !< separation index of vertical flows per box
+         integer(kind = int_wp), intent(out) :: i_flow_begin_cfl_risk !< beginning index for flow with CFL risk
+         integer(kind = int_wp), intent(out) :: i_flow_end_cfl_risk !< ending index for flow with CFL risk
+         integer(kind = int_wp), intent(out) :: i_cell_begin_cfl_risk !< beginning index for cell with CFL risk
+         integer(kind = int_wp), intent(out) :: i_cell_end_cfl_risk !< ending index for cell with CFL risk
+         integer(kind = int_wp), intent(inout) :: sorted_cells(:) !< array of cells sorted by box index
+         integer(kind = int_wp), intent(inout) :: sorted_flows(:) !< array of exchanges sorted by box index
+         integer(kind = int_wp), intent(in) :: nvert(:,:)   !< Column number and indices of cells above/below
+         integer(kind = int_wp), intent(in) :: ivert(:)      !< ordering array of cells in vertical columns
+         real(kind = dp), intent(inout) :: volint(:) !< internal volumes of cells
+         real(kind = dp), intent(inout) :: rhs(:,:) !< right-hand side array for transported substances
+         real(kind = real_wp), intent(inout) :: conc(:,:) !< concentration array for transported substances
+         real(kind = real_wp), intent(in) :: bound(num_substances_transported, *) !< boundary concentrations for transported substances
+         logical, intent(in) :: fluxes !< flags for active flows
+         integer(kind = int_wp), intent(in) :: num_exchanges !< total number of exchanges or flows between cells
+         real(kind = real_wp), intent(in) :: flow(:) !< flow rate through each exchange
+         integer(kind = int_wp), intent(in) :: ipoint(4, num_exchanges) !< exchange connectivity array (indices of cells before and after exchange)
+         real(kind = dp), intent(in) :: delta_t_box(:) !< delta t assigned to each box
+         integer(kind = int_wp), intent(in) :: first_box_smallest_used_dt !< index of the first box (with smallest delta t) that is used
+         integer(kind = int_wp), intent(in) :: num_substances_transported !< number of substances being transported
+         integer(kind = int_wp), intent(in) :: num_cells !< total number of cells
+         logical, intent(inout) :: massbal !< mass balance array for transported substances
+         real(kind = real_wp), intent(inout) :: amass2(num_substances_total, 5) !< auxiliary mass balance array for transported substances
+         real(kind = real_wp), intent(inout) :: dmps(num_substances_total,num_monitoring_cells,*) !< dispersion coefficient array for transported substances
+         real(kind = real_wp), intent(inout) :: dmpq(:,:,:) !< dispersion coefficient array for transported substances
+         integer(kind = int_wp), intent(in) :: iqdmp(:) !< indices for dispersion coefficients
+         real(kind = real_wp), intent(in) :: wdrawal(:) !< withdrawal rates for transported substances
+         integer(kind = int_wp), intent(in) :: num_substances_total !< total number of substances
+         integer(kind = int_wp), intent(in) :: num_monitoring_cells !< number of monitoring cells
+         integer(kind = int_wp), intent(in) :: isdmp(:) !< indices for monitoring cells
+         integer(kind = int_wp), intent(in) :: num_waste_loads !< number of waste loads
+         integer(kind = int_wp), intent(in) :: iwaste(:) !< indices for waste loads
+         real(kind = real_wp), intent(inout) :: wstdmp(:,:,:) !< waste loads for transported substances
+         real(kind = real_wp), intent(in) :: vol_new(:) !< new volumes of cells at the end of the time step
+         real(kind = real_wp), intent(in) :: vol_old(:) !< old volumes of cells at the beginning of the time step
+         real(kind = real_wp), intent(in) :: deriv(:,:) !< derivative array for transported substances
+         real(kind = dp), intent(in) :: fact !< factor array for transported substances
+         integer(kind = int_wp), intent(in) :: idx_box_cell(:) !< array of box indices assigned to each cell  
+         real(kind = real_wp), intent(inout) :: acc_remained !< accumulated mass that remained in cells
+         real(kind = real_wp), intent(inout) :: acc_changed !< accumulated mass that changed in cells
+         integer, intent(in) :: file_unit !< unit number for output messages
+         logical, intent(in) :: report !< reporting flag
+        !
 
         ! Local variables
         integer(kind = int_wp) :: ithand2 = 0 !< timing handle
@@ -2289,12 +2306,14 @@ contains
                 source_is_bc = is_bc_cell(i_source)
                 target_is_bc = is_bc_cell(i_target)
 
+                ! assign source_has_cfl_risk
                 if (source_is_bc) then
                     source_has_cfl_risk = .false. ! boundary condition cell is assumed to have enough water not to go dry
                 else if (dt_box_cell(i_source) == count_boxes + 1) then
                     source_has_cfl_risk = .true. ! cell with risk not to be CFL compliant, previously named wetting == partially filled cell
                 end if
 
+                ! assign target_has_cfl_risk
                 if (target_is_bc) then
                     target_has_cfl_risk = .false. ! boundary condition cell is assumed to have enough water not to go dry
                 else if (dt_box_cell(i_target) == count_boxes + 1) then
@@ -2314,6 +2333,7 @@ contains
                 i_target = get_top_cell_index(i_target, nvert, ivert)
 
 
+                ! set source concentration for flow calculation
                 if (source_is_bc) then
                     conc_source = bound(:, -i_source)
                 else
