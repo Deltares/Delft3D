@@ -29,7 +29,7 @@
 !> Utility routines for memory (re)allocation.
 module m_alloc
    use stdlib_kinds, only: c_bool
-
+   use precision, only: sp, dp
    implicit none
    private
 
@@ -208,14 +208,14 @@ contains
 
 #include "malloc_includes/malloc_body.inc"
 
-   REALLOC1(reallocDouble, double precision)
-   REALLOC1(reallocReal, real)
+   REALLOC1(reallocDouble, real(dp))
+   REALLOC1(reallocReal, real(sp))
    REALLOC1(reallocInt, integer)
    REALLOC1(reallocLogical, logical)
    REALLOC1(reallocBool, logical(kind=c_bool))
 
-   REALLOC1P(reallocPDouble, double precision)
-   REALLOC1P(reallocPReal, real)
+   REALLOC1P(reallocPDouble, real(dp))
+   REALLOC1P(reallocPReal, real(sp))
    REALLOC1P(reallocPInt, integer)
    REALLOC1P(reallocPLogical, logical)
    REALLOC1P(reallocPBool, logical(kind=c_bool))
