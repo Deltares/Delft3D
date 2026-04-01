@@ -3,11 +3,11 @@
 #include "test_utilities.hpp"
 #include "pre_c_sumo_internal.hpp"
 
-TEST(CsumoPreciceLibTest, DoTimeloopRunsExpectedNumberOfIterations)
+// This test verifies that the do_timeloop function allows the loop to run the expected number of times.
+// Since do_timeloop uses a static variable to count iterations, we can call it in a loop and count how many times
+// it returns true.
+TEST(CsumoPreciceInternalTest, DoTimeloopRunsExpectedNumberOfIterations)
 {
-    // This test verifies that the do_timeloop function allows the loop to run the expected number of times.
-    // Since do_timeloop uses a static variable to count iterations, we can call it in a loop and count how many times
-    // it returns true.
     int iteration_count = 0;
     while (pre_c_sumo::do_timeloop())
     {
@@ -16,10 +16,21 @@ TEST(CsumoPreciceLibTest, DoTimeloopRunsExpectedNumberOfIterations)
     EXPECT_EQ(iteration_count, 2); // We expect it to run 2 iterations based on the implementation
 }
 
-TEST(CsumoPreciceLibTest, ReadCosumoConfigFile)
+// This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.
+TEST(CsumoPreciceInternalTest, ReadCosumoConfigFile)
 {
-    // This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.
     auto result = pre_c_sumo::read_csumo_config_file("non_existent_file.xml");
     EXPECT_FALSE(result.has_value());
     EXPECT_PRED2(test_utilities::contains, result.error().message, "Cannot open file: ");
+}
+
+// This test verifies that the receive_ff_data function executes without throwing an exception.
+TEST(CsumoPreciceInternalTest, ReceiveNFData) { EXPECT_NO_THROW(pre_c_sumo::receive_ff_data()); }
+
+// This test verifies that the write_ff2nf_files function handles invalid settings gracefully.
+TEST(CsumoPreciceInternalTest, WriteFF2NFFilesWithInvalidSettings)
+{
+    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> invalidSettings =
+        std::unexpected(pre_c_sumo::ParseError{"Invalid C-SUMO settings"});
+    EXPECT_NO_THROW(pre_c_sumo::write_ff2nf_files(invalidSettings));
 }
