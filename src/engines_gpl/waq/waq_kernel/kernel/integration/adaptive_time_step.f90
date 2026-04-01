@@ -2328,10 +2328,16 @@ contains
                 end if
 
                 !source_will_go_dry = ((.not. source_is_bc) .and. source_has_cfl_risk .and. (volint(i_source) - dlt_vol < tiny_value)) ! assumption is that not wetting cell will have enough water not to go dry
-                source_will_go_dry = (source_has_cfl_risk .and. (volint(i_source) - dlt_vol < tiny_value)) ! assumption is that non CFL-risk cells will have enough water not to go dry
+                if (source_is_bc) then
+                    source_will_go_dry = .false. ! boundary condition cell is assumed to have enough water not to go dry
+                else
+                    source_will_go_dry = (source_has_cfl_risk .and. (volint(i_source) - dlt_vol < tiny_value)) ! assumption is that non CFL-risk cells will have enough water not to go dry
+                end if
 
-                i_target = get_top_cell_index(i_target, nvert, ivert)
-
+                if (.not. target_is_bc) then
+                    ! target is interior cell, move to upper-most cell of column
+                    i_target = get_top_cell_index(i_target, nvert, ivert)
+                end if
 
                 ! set source concentration for flow calculation
                 if (source_is_bc) then
@@ -2360,7 +2366,7 @@ contains
                     if (source_will_go_dry) then
                         ! flow will NOT be processed
                         remained = remained + 1
-                        write(*,*) 'CFL risk flow could not be processed: ', i_flow, ' from cell ', i_source
+                        ! write(*,*) 'CFL risk flow could not be processed: ', i_flow, ' from cell ', i_source
                     else
                         ! flow will be successfully processed
                         volint(i_source) = volint(i_source) - dlt_vol
