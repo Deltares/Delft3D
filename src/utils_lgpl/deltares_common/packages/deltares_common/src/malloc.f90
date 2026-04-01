@@ -213,15 +213,152 @@ contains
    REALLOC1(reallocInt, integer)
    REALLOC1(reallocLogical, logical)
    REALLOC1(reallocBool, logical(kind=c_bool))
-   REALLOC1(reallocCharacter,  character)
 
    REALLOC1P(reallocPDouble, double precision)
    REALLOC1P(reallocPReal, real)
    REALLOC1P(reallocPInt, integer)
    REALLOC1P(reallocPLogical, logical)
    REALLOC1P(reallocPBool, logical(kind=c_bool))
-   REALLOC1P(reallocPCharacter,  character)
-!===============================================================================
+
+   subroutine reallocCharacter(arr, uindex, lindex, stat, fill, shift, keepExisting)
+      implicit none
+      character(len=*), allocatable, intent(inout) :: arr(:)
+      integer, intent(in) :: uindex
+      integer, intent(in), optional :: lindex
+      integer, intent(out), optional :: stat
+      character(len=*), intent(in), optional :: fill
+      integer, intent(in), optional :: shift
+      logical, intent(in), optional :: keepExisting
+
+      character(len=len(arr)), allocatable :: temp(:)
+      integer :: original_l_index, original_u_index, data_l_index, data_u_index, new_l_index, new_u_index, shift_
+      integer :: local_err
+      logical :: keepExisting_
+      logical :: equal_bounds
+
+      if (present(lindex)) then
+         new_l_index = lindex
+      else
+         new_l_index = 1
+      end if
+      new_u_index = uindex
+
+      if (present(shift)) then
+         shift_ = shift
+      else
+         shift_ = 0
+      end if
+
+      if (present(keepExisting)) then
+         keepExisting_ = keepExisting
+      else
+         keepExisting_ = .true.
+      end if
+
+      local_err = 0
+      if (allocated(arr)) then
+         original_l_index = lbound(arr, dim=1)
+         original_u_index = ubound(arr, dim=1)
+         equal_bounds = (new_l_index == original_l_index) .and. (new_u_index == original_u_index)
+         if (equal_bounds .and. (keepExisting_ .or. .not. present(fill)) .and. shift_ == 0) then
+            goto 999 ! output=input
+         end if
+      end if
+
+      allocate (temp(new_l_index:new_u_index), stat=local_err)
+      if (local_err /= 0) then
+         goto 999
+      end if
+
+      if (keepExisting_ .and. allocated(arr)) then
+         data_l_index = max(original_l_index + shift_, new_l_index)
+         data_u_index = min(original_u_index + shift_, new_u_index)
+         ! arr access below is safe, because:
+         ! data_l_index - shift_ >= (original_l_index + shift_) - shift_ = original_l_index
+         ! data_u_index - shift_ <= (original_u_index + shift_) - shift_ = original_u_index
+         temp(data_l_index:data_u_index) = arr(data_l_index - shift_:data_u_index - shift_)
+         if (present(fill)) then
+            temp(new_l_index:data_l_index - 1) = fill
+            temp(data_u_index + 1:new_u_index) = fill
+         end if
+      elseif (present(fill)) then
+         temp = fill
+      end if
+      call move_alloc(temp, arr)
+999   continue
+      if (present(stat)) then
+         stat = local_err
+      end if
+   end subroutine reallocCharacter
+
+ subroutine reallocPCharacter(arr, uindex, lindex, stat, fill, shift, keepExisting)
+      implicit none
+      character(len=*), pointer, intent(inout) :: arr(:)
+      integer, intent(in) :: uindex
+      integer, optional, intent(in) :: lindex
+      integer, optional, intent(out) :: stat
+      character(len=*), optional, intent(in) :: fill
+      integer, optional, intent(in) :: shift
+      logical, optional, intent(in) :: keepExisting
+
+      character(len=len(arr)), pointer :: b(:)
+      integer :: uind, lind, muind, mlind, lindex_, shift_, i
+      integer :: localErr
+      logical :: keepExisting_
+      logical :: equalSize
+
+      if (present(lindex)) then
+         lindex_ = lindex
+      else
+         lindex_ = 1
+      end if
+
+      if (present(shift)) then
+         shift_ = shift
+      else
+         shift_ = 0
+      end if
+
+      if (present(keepExisting)) then
+         keepExisting_ = keepExisting
+      else
+         keepExisting_ = .true.
+      end if
+
+      if (present(stat)) stat = 0
+      localErr = 0
+      nullify (b)
+      if (associated(arr)) then
+         uind = ubound(arr, 1)
+         lind = lbound(arr, 1)
+         equalSize = (uindex == uind) .and. (lindex_ == lind)
+         if (equalSize .and. (keepExisting_ .or. .not. present(fill)) .and. shift_ == 0) then
+            goto 999 ! output=input
+         end if
+!
+         if (keepExisting_) then
+            mlind = max(lind + shift_, lindex_)
+            muind = min(uind + shift_, uindex)
+            b => arr
+            nullify (arr)
+         elseif (.not. equalSize) then
+            deallocate (arr, stat=localErr)
+         end if
+      end if
+      if (.not. associated(arr) .and. localErr == 0) then
+         allocate (arr(lindex_:uindex), stat=localErr)
+      end if
+      if (present(fill) .and. localErr == 0) arr = fill
+      if (associated(b) .and. localErr == 0 .and. size(b) > 0) then
+         do i = mlind, muind
+            arr(i) = b(i - shift_)
+         end do
+         deallocate (b, stat=localErr)
+      end if
+999   continue
+      if (present(stat)) stat = localErr
+   end subroutine reallocPCharacter
+
    subroutine reallocReal2x(arr, u1, u2, l1, l2, stat, keepExisting)
       real, allocatable, intent(inout) :: arr(:, :)
       integer :: u1, u2
