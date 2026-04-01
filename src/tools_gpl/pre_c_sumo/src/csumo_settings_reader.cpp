@@ -23,22 +23,21 @@ namespace
     // Numeric parsing
     // -------------------------------------------------------------------------
 
-    std::expected<std::vector<double>, csumo_precice::ParseError> parseDoubleVector(const std::string_view text,
-                                                                                    const std::string_view element_name)
+    std::expected<std::vector<double>, pre_c_sumo::ParseError> parseDoubleVector(const std::string_view text,
+                                                                                 const std::string_view element_name)
     {
         std::vector<std::string> space_separated_tokens;
         boost::algorithm::split(space_separated_tokens, text, boost::algorithm::is_space(),
                                 boost::algorithm::token_compress_on);
 
         auto is_non_empty = [](const std::string_view token) { return !token.empty(); };
-        auto to_double =
-            [element_name](const std::string_view token) -> std::expected<double, csumo_precice::ParseError> {
+        auto to_double = [element_name](const std::string_view token) -> std::expected<double, pre_c_sumo::ParseError> {
             double value{};
             const auto [_, error_code] = std::from_chars(token.data(), token.data() + token.size(), value);
             if (error_code != std::errc{})
             {
                 return std::unexpected(
-                    csumo_precice::ParseError{std::format("<{}> contains invalid token: '{}'", element_name, token)});
+                    pre_c_sumo::ParseError{std::format("<{}> contains invalid token: '{}'", element_name, token)});
             }
             return value;
         };
@@ -55,28 +54,28 @@ namespace
         return expected_doubles | std::ranges::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
     }
 
-    std::expected<double, csumo_precice::ParseError> parseDouble(const std::string_view text,
-                                                                 const std::string_view element_name)
+    std::expected<double, pre_c_sumo::ParseError> parseDouble(const std::string_view text,
+                                                              const std::string_view element_name)
     {
         ASSIGN_OR_RETURN(const auto values, parseDoubleVector(text, element_name));
         if (values.size() != 1)
         {
             return std::unexpected(
-                csumo_precice::ParseError{std::format("<{}> must contain exactly one numeric value", element_name)});
+                pre_c_sumo::ParseError{std::format("<{}> must contain exactly one numeric value", element_name)});
         }
         return values[0];
     }
 
-    std::expected<csumo_precice::Point2D, csumo_precice::ParseError> parsePoint2D(const std::string_view text,
-                                                                                  const std::string_view element_name)
+    std::expected<pre_c_sumo::Point2D, pre_c_sumo::ParseError> parsePoint2D(const std::string_view text,
+                                                                            const std::string_view element_name)
     {
         ASSIGN_OR_RETURN(const auto values, parseDoubleVector(text, element_name));
         if (values.size() != 2)
         {
-            return std::unexpected(csumo_precice::ParseError{
+            return std::unexpected(pre_c_sumo::ParseError{
                 std::format("<{}> must contain two numeric values, got: '{}'", element_name, text)});
         }
-        return csumo_precice::Point2D{values[0], values[1]};
+        return pre_c_sumo::Point2D{values[0], values[1]};
     }
 
     // -------------------------------------------------------------------------
@@ -88,19 +87,18 @@ namespace
         return parent.find_child([name](const pugi::xml_node child) { return boost::iequals(child.name(), name); });
     }
 
-    std::expected<std::string, csumo_precice::ParseError> requiredChildText(const pugi::xml_node parent,
-                                                                            const std::string_view child_name)
+    std::expected<std::string, pre_c_sumo::ParseError> requiredChildText(const pugi::xml_node parent,
+                                                                         const std::string_view child_name)
     {
         const pugi::xml_node child = findChild(parent, child_name);
         if (!child)
         {
-            return std::unexpected(
-                csumo_precice::ParseError{std::format("Required element <{}> not found", child_name)});
+            return std::unexpected(pre_c_sumo::ParseError{std::format("Required element <{}> not found", child_name)});
         }
         const std::string text = child.child_value();
         if (text.empty())
         {
-            return std::unexpected(csumo_precice::ParseError{std::format("Element <{}> is empty", child_name)});
+            return std::unexpected(pre_c_sumo::ParseError{std::format("Element <{}> is empty", child_name)});
         }
         return text;
     }
@@ -127,23 +125,23 @@ namespace
     // Typed element parsers
     // -------------------------------------------------------------------------
 
-    std::expected<csumo_precice::Point2D, csumo_precice::ParseError> parseRequiredPoint2D(
-        const pugi::xml_node parent, const std::string_view element_name)
+    std::expected<pre_c_sumo::Point2D, pre_c_sumo::ParseError> parseRequiredPoint2D(const pugi::xml_node parent,
+                                                                                    const std::string_view element_name)
     {
         ASSIGN_OR_RETURN(const auto point_text, requiredChildText(parent, element_name));
         return parsePoint2D(point_text, element_name);
     }
 
-    std::optional<csumo_precice::Point2D> parseOptionalPoint2D(const pugi::xml_node parent,
-                                                               const std::string_view element_name)
+    std::optional<pre_c_sumo::Point2D> parseOptionalPoint2D(const pugi::xml_node parent,
+                                                            const std::string_view element_name)
     {
         ASSIGN_OR_RETURN(const auto point_text, optionalChildText(parent, element_name));
         const auto result = parsePoint2D(point_text, element_name);
         return result.has_value() ? std::optional{*result} : std::nullopt;
     }
 
-    std::expected<double, csumo_precice::ParseError> parseRequiredDouble(const pugi::xml_node parent,
-                                                                         const std::string_view element_name)
+    std::expected<double, pre_c_sumo::ParseError> parseRequiredDouble(const pugi::xml_node parent,
+                                                                      const std::string_view element_name)
     {
         ASSIGN_OR_RETURN(const auto text, requiredChildText(parent, element_name));
         return parseDouble(text, element_name);
@@ -162,10 +160,10 @@ namespace
 
     struct DataSection
     {
-        csumo_precice::Point2D position;
-        std::vector<csumo_precice::Point2D> ambient_positions;
-        std::optional<csumo_precice::Point2D> intake;
-        csumo_precice::Discharge discharge;
+        pre_c_sumo::Point2D position;
+        std::vector<pre_c_sumo::Point2D> ambient_positions;
+        std::optional<pre_c_sumo::Point2D> intake;
+        pre_c_sumo::Discharge discharge;
         double nozzle_diameter{};
         double nozzle_elevation{};
         double vertical_angle{};
@@ -183,7 +181,7 @@ namespace
     // Section parsers
     // -------------------------------------------------------------------------
 
-    std::vector<csumo_precice::Point2D> parseAmbientPoints(const pugi::xml_node data_node)
+    std::vector<pre_c_sumo::Point2D> parseAmbientPoints(const pugi::xml_node data_node)
     {
         auto is_ambient = [](const pugi::xml_node child) { return boost::iequals(child.name(), "xyambient"); };
         auto to_expected_point2d = [](const pugi::xml_node child) {
@@ -195,34 +193,34 @@ namespace
                std::ranges::to<std::vector>();
     }
 
-    std::expected<csumo_precice::ConstituentsOperator, csumo_precice::ParseError> parseConstituentsOperator(
+    std::expected<pre_c_sumo::ConstituentsOperator, pre_c_sumo::ParseError> parseConstituentsOperator(
         const pugi::xml_node discharge_node)
     {
         ASSIGN_OR_RETURN(const auto operator_text, requiredChildText(discharge_node, "constituentsOperator"));
         if (boost::iequals(operator_text, "absolute"))
         {
-            return csumo_precice::ConstituentsOperator::Absolute;
+            return pre_c_sumo::ConstituentsOperator::Absolute;
         }
         if (boost::iequals(operator_text, "excess"))
         {
-            return csumo_precice::ConstituentsOperator::Excess;
+            return pre_c_sumo::ConstituentsOperator::Excess;
         }
-        return std::unexpected(csumo_precice::ParseError{std::format(
+        return std::unexpected(pre_c_sumo::ParseError{std::format(
             "<constituentsOperator> has unknown value: '{}'; expected 'absolute' or 'excess'", operator_text)});
     }
 
-    std::expected<csumo_precice::Discharge, csumo_precice::ParseError> parseDischarge(const pugi::xml_node data_node)
+    std::expected<pre_c_sumo::Discharge, pre_c_sumo::ParseError> parseDischarge(const pugi::xml_node data_node)
     {
         const pugi::xml_node discharge_node = findChild(data_node, "discharge");
         if (!discharge_node)
         {
-            return std::unexpected(csumo_precice::ParseError{"Required element <discharge> not found in <data>"});
+            return std::unexpected(pre_c_sumo::ParseError{"Required element <discharge> not found in <data>"});
         }
         ASSIGN_OR_RETURN(const auto flow_rate, parseRequiredDouble(discharge_node, "M3s"));
         ASSIGN_OR_RETURN(const auto constituents_operator, parseConstituentsOperator(discharge_node));
         ASSIGN_OR_RETURN(const auto constituents_text, requiredChildText(discharge_node, "constituents"));
         ASSIGN_OR_RETURN(auto constituents, parseDoubleVector(constituents_text, "constituents"));
-        return csumo_precice::Discharge{flow_rate, constituents_operator, std::move(constituents)};
+        return pre_c_sumo::Discharge{flow_rate, constituents_operator, std::move(constituents)};
     }
 
     // Returns a GeneralSection; all fields are potentially empty so absence of <general> yields an empty struct.
@@ -240,12 +238,12 @@ namespace
         };
     }
 
-    std::expected<DataSection, csumo_precice::ParseError> parseDataSection(const pugi::xml_node settings_node)
+    std::expected<DataSection, pre_c_sumo::ParseError> parseDataSection(const pugi::xml_node settings_node)
     {
         const pugi::xml_node data_node = findChild(settings_node, "data");
         if (!data_node)
         {
-            return std::unexpected(csumo_precice::ParseError{"Required element <data> not found in <settings>"});
+            return std::unexpected(pre_c_sumo::ParseError{"Required element <data> not found in <settings>"});
         }
         ASSIGN_OR_RETURN(const auto position, parseRequiredPoint2D(data_node, "XYdiff"));
         const auto intake_point = parseOptionalPoint2D(data_node, "XYintake");
@@ -268,12 +266,12 @@ namespace
         };
     }
 
-    std::expected<CommSection, csumo_precice::ParseError> parseCommSection(const pugi::xml_node settings_node)
+    std::expected<CommSection, pre_c_sumo::ParseError> parseCommSection(const pugi::xml_node settings_node)
     {
         const pugi::xml_node comm_node = findChild(settings_node, "comm");
         if (!comm_node)
         {
-            return std::unexpected(csumo_precice::ParseError{"Required element <comm> not found in <settings>"});
+            return std::unexpected(pre_c_sumo::ParseError{"Required element <comm> not found in <settings>"});
         }
         ASSIGN_OR_RETURN(auto ff2nf_dir, requiredChildText(comm_node, "FF2NFdir"));
         ASSIGN_OR_RETURN(auto ff_run_dir, requiredChildText(comm_node, "FFrundir"));
@@ -284,14 +282,14 @@ namespace
         };
     }
 
-    std::expected<csumo_precice::DiffuserSettings, csumo_precice::ParseError> parseOneDiffuser(
+    std::expected<pre_c_sumo::DiffuserSettings, pre_c_sumo::ParseError> parseOneDiffuser(
         const pugi::xml_node settings_node)
     {
         const GeneralSection general = parseGeneralSection(settings_node);
         ASSIGN_OR_RETURN(auto comm, parseCommSection(settings_node));
         ASSIGN_OR_RETURN(auto data, parseDataSection(settings_node));
 
-        return csumo_precice::DiffuserSettings{
+        return pre_c_sumo::DiffuserSettings{
             .id = general.id,
             .sub_grid_model = general.sub_grid_model,
             .far_field_model = general.far_field_model,
@@ -313,27 +311,27 @@ namespace
     // Top-level document parsers
     // -------------------------------------------------------------------------
 
-    std::expected<pugi::xml_node, csumo_precice::ParseError> validateRoot(const pugi::xml_document& doc)
+    std::expected<pugi::xml_node, pre_c_sumo::ParseError> validateRoot(const pugi::xml_document& doc)
     {
         const pugi::xml_node root = doc.document_element();
         if (!root)
         {
-            return std::unexpected(csumo_precice::ParseError{"XML document is empty"});
+            return std::unexpected(pre_c_sumo::ParseError{"XML document is empty"});
         }
         if (!boost::iequals(root.name(), "COSUMO") && !boost::iequals(root.name(), "CSUMO"))
         {
             return std::unexpected(
-                csumo_precice::ParseError{std::format("Root element must be <COSUMO>, got: <{}>", root.name())});
+                pre_c_sumo::ParseError{std::format("Root element must be <COSUMO>, got: <{}>", root.name())});
         }
         return root;
     }
 
-    std::expected<std::string, csumo_precice::ParseError> parseFileVersion(const pugi::xml_node root)
+    std::expected<std::string, pre_c_sumo::ParseError> parseFileVersion(const pugi::xml_node root)
     {
         return requiredChildText(root, "fileVersion");
     }
 
-    std::expected<std::vector<csumo_precice::DiffuserSettings>, csumo_precice::ParseError> parseAllDiffusers(
+    std::expected<std::vector<pre_c_sumo::DiffuserSettings>, pre_c_sumo::ParseError> parseAllDiffusers(
         const pugi::xml_node root)
     {
         auto expected_diffusers =
@@ -349,7 +347,7 @@ namespace
     }
 } // namespace
 
-namespace csumo_precice
+namespace pre_c_sumo
 {
     std::expected<CSumoSettingsReader, ParseError> CSumoSettingsReader::fromFile(
         const std::filesystem::path& csumo_config_file)
@@ -386,4 +384,4 @@ namespace csumo_precice
     std::string_view CSumoSettingsReader::fileVersion() const { return file_version_; }
 
     const std::vector<DiffuserSettings>& CSumoSettingsReader::diffusers() const { return diffusers_; }
-} // namespace csumo_precice
+} // namespace pre_c_sumo
