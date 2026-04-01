@@ -240,7 +240,7 @@ contains
             if (ibflag > 0) then
                call integrate_fluxes_for_dump_areas(num_fluxes, ndmpar, idt, itfact, a(iflxd:), &
                                                     a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
-               a(iflxd:iflxd-1+num_monitoring_cells*num_fluxes) = 0.0
+               !a(iflxd:iflxd-1+num_monitoring_cells*num_fluxes) = 0.0
             end if
 
 
