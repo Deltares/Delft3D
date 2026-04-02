@@ -2,15 +2,9 @@
 
 namespace pre_c_sumo
 {
-    void makeEndpoint(
-        Endpoint& endpoint,
-        int id,
-        double coordinate_x,
-        double coordinate_y,
-        double vertical_boundary_lower,
-        double vertical_boundary_upper,
-        double discharge,
-        int connected_id)
+    void makeEndpoint(Endpoint& endpoint, int id, double coordinate_x, double coordinate_y,
+                      double vertical_boundary_lower, double vertical_boundary_upper, double discharge,
+                      int connected_id)
     {
         endpoint.id = id;
         endpoint.connected_id = connected_id;
@@ -26,10 +20,8 @@ namespace pre_c_sumo
         return Momentum{velocity_magnitude, velocity_direction_deg};
     }
 
-    Constituents makeConstituents(
-        double temperature,
-        double salinity,
-        const std::array<double, constituent_count>& additional_constituents)
+    Constituents makeConstituents(double temperature, double salinity,
+                                  const std::array<double, constituent_count>& additional_constituents)
     {
         return Constituents{temperature, salinity, additional_constituents};
     }

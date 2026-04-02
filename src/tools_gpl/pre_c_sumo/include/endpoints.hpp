@@ -20,7 +20,7 @@ namespace pre_c_sumo
      */
     struct Endpoint
     {
-        int id{};           ///< Unique identifier of this endpoint record.
+        int id{};             ///< Unique identifier of this endpoint record.
         int connected_id{-1}; ///< Identifier of the paired endpoint (-1 when unpaired).
 
         double coordinate_x{}; ///< Horizontal x-coordinate in model space [m].
@@ -50,13 +50,19 @@ namespace pre_c_sumo
      * @brief Optional constituent concentrations for a source.
      *
      * Values are absolute concentrations.
+     *
+     * TODO: Check if some way is required to identify constituents
+     * (e.g., via a separate array of names or an enum) or
+     * if it's sufficient to document the order of the additional constituents
+     * when sending source/sink data to FM.
      */
     struct Constituents
     {
         double temperature{}; ///< Absolute temperature concentration [degC].
         double salinity{};    ///< Absolute salinity concentration [ppt].
 
-        std::array<double, constituent_count> additional_constituents{}; ///< Absolute concentrations for additional tracers [kg/m3].
+        std::array<double, constituent_count>
+            additional_constituents{}; ///< Absolute concentrations for additional tracers [kg/m3].
     };
 
     /**
@@ -64,8 +70,8 @@ namespace pre_c_sumo
      */
     struct Source : Endpoint
     {
-        std::optional<Momentum> momentum;           ///< Optional momentum data used for directional source forcing.
-        std::optional<Constituents> constituents;  ///< Optional constituent concentrations carried by this source.
+        std::optional<Momentum> momentum;         ///< Optional momentum data used for directional source forcing.
+        std::optional<Constituents> constituents; ///< Optional constituent concentrations carried by this source.
     };
 
     /**
@@ -92,15 +98,9 @@ namespace pre_c_sumo
      * @param discharge Fully weighted discharge [m3/s]. Negative values represent withdrawals.
      * @param connected_id Identifier of the paired endpoint (-1 when unpaired).
      */
-    void makeEndpoint(
-        Endpoint& endpoint,
-        int id,
-        double coordinate_x,
-        double coordinate_y,
-        double vertical_boundary_lower,
-        double vertical_boundary_upper,
-        double discharge,
-        int connected_id = -1);
+    void makeEndpoint(Endpoint& endpoint, int id, double coordinate_x, double coordinate_y,
+                      double vertical_boundary_lower, double vertical_boundary_upper, double discharge,
+                      int connected_id = -1);
 
     /**
      * @brief Construct momentum data for source.
@@ -120,9 +120,7 @@ namespace pre_c_sumo
      * @return Fully initialized @ref Constituents.
      */
     [[nodiscard]] Constituents makeConstituents(
-        double temperature,
-        double salinity,
-        const std::array<double, constituent_count>& additional_constituents = {});
+        double temperature, double salinity, const std::array<double, constituent_count>& additional_constituents = {});
 
     /**
      * @brief Attach momentum data to a source.
