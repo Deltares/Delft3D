@@ -10,7 +10,7 @@ configure_file(
 
 set(source_files
     test_pre_c_sumo_lib.cpp
-    test_pre_c_sumo_internal.cpp
+    coupling_steps.cpp
     test_csumo_settings_reader.cpp
 )
 

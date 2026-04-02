@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "csumo_settings_reader.hpp"
-#include "pre_c_sumo_internal.hpp"
+#include "coupling_steps.hpp"
 
 namespace pre_c_sumo
 {

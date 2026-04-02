@@ -1,5 +1,5 @@
-#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_INTERNAL_HPP
-#define SRC_TOOLS_GPL_PRE_C_SUMO_INTERNAL_HPP
+#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
+#define SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
 #include <expected>
 
 #include <string_view>
@@ -148,4 +148,4 @@ namespace pre_c_sumo
 
 } // namespace pre_c_sumo
 
-#endif // SRC_TOOLS_GPL_PRE_C_SUMO_INTERNAL_HPP
+#endif // SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
