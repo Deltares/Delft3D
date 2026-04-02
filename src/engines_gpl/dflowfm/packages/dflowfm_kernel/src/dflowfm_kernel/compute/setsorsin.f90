@@ -104,9 +104,9 @@ contains
                   do L = 1, numconst
                      source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) + constituents(L, k) * vol1(k)
                   end do
-                  if (FRAC * source_sink_reduction(1, n) / dts < abs(source_sink_water_discharge(n))) then
-                     exit
-                  end if
+                  ! if (FRAC * source_sink_reduction(1, n) / dts > abs(source_sink_water_discharge(n))) then
+                  !    exit
+                  ! end if
                end do
                if (source_sink_reduction(1, n) > 0.0_dp) then
                   do L = 1, numconst
@@ -152,9 +152,9 @@ contains
                   do L = 1, numconst
                      source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) + constituents(L, k) * vol1(k)
                   end do
-                  if (FRAC * source_sink_reduction(1 + numconst + 1, n) / dts < abs(source_sink_water_discharge(n))) then
-                     exit
-                  end if
+                  ! if (FRAC * source_sink_reduction(1 + numconst + 1, n) / dts > abs(source_sink_water_discharge(n))) then
+                  !    exit
+                  ! end if
                end do
                if (source_sink_reduction(1 + numconst + 1, n) > 0.0_dp) then
                   do L = 1, numconst
