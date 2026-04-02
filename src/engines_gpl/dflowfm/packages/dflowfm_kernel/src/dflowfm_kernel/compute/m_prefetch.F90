@@ -64,15 +64,14 @@ contains
       use m_flowgeom, only: lnx, ln, lncn
       use m_sferic, only: jsferic, jasfer3D
       use m_flowgeom, only: csb, snb, csbn, snbn, bai
-      use m_flow, only: ndkx
 
       integer :: ierr, L
 
       if (is_initialized) return
 
       ! Allocate pre-flattened index maps
-      allocate (node_map_1(ndkx), node_map_2(ndkx))
-      allocate (corner_map_1(ndkx), corner_map_2(ndkx))
+      allocate (node_map_1(lnx), node_map_2(lnx))
+      allocate (corner_map_1(lnx), corner_map_2(lnx))
 
       ! Allocate temporary gather buffers
       allocate (ucx_1(lnx), ucy_1(lnx), stat=ierr)
@@ -164,7 +163,7 @@ contains
 
       if (.not. is_initialized) return
 
-      do L = L1, L2
+      do concurrent (L = L1:L2)
          uxcorner_1(L) = ucnx(corner_map_1(L))
          uycorner_1(L) = ucny(corner_map_1(L))
          uxcorner_2(L) = ucnx(corner_map_2(L))
