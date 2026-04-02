@@ -4099,7 +4099,8 @@ contains
       case ('O')
          ec_operand = operand_replace
       case ('V')
-         ec_operand = operand_replace_if_value
+         ! Used to map to operand_replace_if_value in past but this has been removed
+         ec_operand = operand_replace
       case ('+')
          ec_operand = operand_add
       case default
