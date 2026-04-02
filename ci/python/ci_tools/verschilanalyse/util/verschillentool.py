@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import ClassVar
-
+from typing import Dict
 from openpyxl import Workbook
 
 
@@ -12,176 +11,106 @@ class OutputType(Enum):
     MAP = "map"
 
 
-class Variable(Enum):
-    """The variable in the verschillentool output file.
+@dataclass(frozen=True)
+class Tolerance:
+    """Tolerances for max, bias and rms statistics. Errors
+    Are reported when these tolerances are exceeded.
 
-    The unit of the water level is meters (m).
-    The unit of the flow velocity is meters per second (m/s).
+    Attributes
+    ----------
+    max : float
+        Tolerance of the `max` statistic.
+    bias : float
+        Tolerance of the `bias` statistic.
+    rms : float
+        Tolerance of the `rms` statistic.
     """
 
-    WATER_LEVEL = "water_level"  # in meters (m)
-    FLOW_VELOCITY = "flow_velocity"  # in meters per second (m/s)
-
-    @property
-    def unit(self) -> str:
-        """Get the unit of the variable."""
-        return {
-            Variable.WATER_LEVEL: "m",
-            Variable.FLOW_VELOCITY: "m/s",
-        }[self]
+    max: float
+    bias: float
+    rms: float
 
 
-class Tolerances:
-    """The maximum values of statistics above which a tolerance error is reported."""
+@dataclass(frozen=True)
+class VariableAttributes:
+    name: str
+    unit: str
+    tolerances: Dict[OutputType, Tolerance]
 
-    @staticmethod
-    def max(output_type: OutputType, variable: Variable) -> float:
-        """Get the tolerance for the `max` statistic given output type and variable.
-
-        Parameters
-        ----------
-        output_type : OutputType
-        variable : Variable
-
-        Returns
-        -------
-        float
-        """
-        match output_type, variable:
-            case OutputType.HIS, Variable.WATER_LEVEL:
-                return HisWaterLevelTolerances.MAX
-            case OutputType.HIS, Variable.FLOW_VELOCITY:
-                return HisFlowVelocityTolerances.MAX
-            case OutputType.MAP, Variable.WATER_LEVEL:
-                return MapWaterLevelTolerances.MAX
-            case OutputType.MAP, Variable.FLOW_VELOCITY:
-                return MapFlowVelocityTolerances.MAX
-            case _:
-                raise ValueError(f"Unsupported output type {output_type} and variable {variable}")
-
-    @staticmethod
-    def bias(output_type: OutputType, variable: Variable) -> float:
-        """Get the tolerance for the `bias` statistic given output type and variable.
-
-        Parameters
-        ----------
-        output_type : OutputType
-        variable : Variable
-
-        Returns
-        -------
-        float
-        """
-        match output_type, variable:
-            case OutputType.HIS, Variable.WATER_LEVEL:
-                return HisWaterLevelTolerances.BIAS
-            case OutputType.HIS, Variable.FLOW_VELOCITY:
-                return HisFlowVelocityTolerances.BIAS
-            case OutputType.MAP, Variable.WATER_LEVEL:
-                return MapWaterLevelTolerances.BIAS
-            case OutputType.MAP, Variable.FLOW_VELOCITY:
-                return MapFlowVelocityTolerances.BIAS
-            case _:
-                raise ValueError(f"Unsupported output type {output_type} and variable {variable}")
-
-    @staticmethod
-    def rms(output_type: OutputType, variable: Variable) -> float:
-        """Get the tolerance for the `rms` statistic given output type and variable.
-
-        Parameters
-        ----------
-        output_type : OutputType
-        variable : Variable
-
-        Returns
-        -------
-        float
-        """
-        match output_type, variable:
-            case OutputType.HIS, Variable.WATER_LEVEL:
-                return HisWaterLevelTolerances.RMS
-            case OutputType.HIS, Variable.FLOW_VELOCITY:
-                return HisFlowVelocityTolerances.RMS
-            case OutputType.MAP, Variable.WATER_LEVEL:
-                return MapWaterLevelTolerances.RMS
-            case OutputType.MAP, Variable.FLOW_VELOCITY:
-                return MapFlowVelocityTolerances.RMS
-            case _:
-                raise ValueError(f"Unsupported output type {output_type} and variable {variable}")
-
-
-class HisWaterLevelTolerances:
-    """The maximum values of statistics above which a tolerance error is reported."""
-
-    MAX: ClassVar[float] = 0.01  # m
-    RMS: ClassVar[float] = 0.001  # m
-    BIAS: ClassVar[float] = 0.0001  # m
-
-
-class HisFlowVelocityTolerances:
-    """The maximum values of statistics above which a tolerance error is reported."""
-
-    MAX: ClassVar[float] = 0.05  # m/s
-    RMS: ClassVar[float] = 0.005  # m/s
-    BIAS: ClassVar[float] = 0.0005  # m/s
-
-
-class MapWaterLevelTolerances:
-    """The maximum values of statistics above which a tolerance error is reported."""
-
-    MAX: ClassVar[float] = 0.05  # m
-    RMS: ClassVar[float] = 0.001  # m
-    BIAS: ClassVar[float] = 0.0001  # m
-
-
-class MapFlowVelocityTolerances:
-    """The maximum values of statistics above which a tolerance error is reported."""
-
-    MAX: ClassVar[float] = 0.1  # m/s
-    RMS: ClassVar[float] = 0.005  # m/s
-    BIAS: ClassVar[float] = 0.0005  # m/s
-
-
-@dataclass
+@dataclass(frozen=True)
 class Statistics:
-    """Contains statistics of a sample."""
+    """Contains statistics of a sample.
+
+    These statistics are computed by the verschillentool and represent
+    aggregated measures of the difference between two model runs.
+
+    Attributes
+    ----------
+    avg_max : float
+        The average of the maximum differences.
+    avg_bias : float
+        The average bias between the model runs.
+    avg_rms : float
+        The average root-mean-square difference.
+    max : float
+        The maximum difference observed.
+    """
 
     avg_max: float
     avg_bias: float
     avg_rms: float
     max: float
 
+class VariableRegistry:
+    def __init__(self):
+        self._variables: Dict[str, VariableAttributes] = {}
 
-@dataclass
+    def register(self, 
+                 name: str,
+                 unit: str, 
+                 tolerances: Dict[OutputType, Tolerance]) -> None:
+        if name in self._variables:
+            raise ValueError(f"Variable '{name}' already registered.")
+        self._variables[name] = VariableAttributes(name, unit, tolerances)
+
+    def get(self, name: str) -> VariableAttributes:
+        return self._variables[name]
+
+    def all(self):
+        return list(self._variables.keys())
+
+
+@dataclass(frozen=True)
 class VerschillentoolOutput:
     """Contains statistics of a model run."""
 
     output_type: OutputType
-    flow_velocity: Statistics
-    water_level: Statistics
+    statistics: Dict[str, Statistics]
     row_count: int
 
     @staticmethod
-    def from_verschillentool_workbook(workbook: Workbook, output_type: OutputType) -> "VerschillentoolOutput":
-        """Make a `VerschillentoolOutput` from a verschillentool excel file.
-
-        This factory method produces an `VerschillentoolOuptut` from a `Workbook`,
-        which is an excel file opened with `openpyxl`. The excel file is produced
-        by the "verschillentool" and this class makes assumptions about the structure
-        of the excel file (names of sheets, content of cells, etc...).
+    def from_verschillentool_workbook(
+        workbook: Workbook,
+        output_type: OutputType,
+        variable_registry: VariableRegistry
+    ) -> "VerschillentoolOutput":
+        """
+        Build a VerschillentoolOutput from an Excel workbook and injected registry.
 
         Parameters
         ----------
         workbook : Workbook
-            A workbook created from a verschillentool output excel file.
+            Excel file exported by the verschillentool.
         output_type : OutputType
-            The type of output file used to generate the excel file (map or his).
+            HIS or MAP.
+        variable_registry : VariableRegistry
+            Registry containing variable definitions.
 
         Returns
         -------
         VerschillentoolOutput
-            The information found in the verschillentool excel file.
         """
+
         averages_sheet = workbook["Averages"]
         statistics_sheet = workbook["Statistics"]
         maxima_sheet = workbook["Maxima"]
@@ -195,31 +124,31 @@ class VerschillentoolOutput:
         last_col = maxima_sheet.max_column - 2
 
         maxima_dict = {
-            str(maxima_sheet[row][first_col].value).split(maxsplit=1)[0]: float(
-                maxima_sheet[row][last_col].value  # type: ignore
-            )
+            str(maxima_sheet[row][first_col].value).split(maxsplit=1)[0]:
+                float(maxima_sheet[row][last_col].value)
             for row in range(2, maxima_sheet.max_row + 1)
         }
 
-        try:
-            flow_velocity_stats = Statistics(
-                avg_max=stats_dict["sea_water_speed_max"],
-                avg_bias=stats_dict["sea_water_speed_bias"],
-                avg_rms=stats_dict["sea_water_speed_rms"],
-                max=maxima_dict["sea_water_speed"],
-            )
-            water_level_stats = Statistics(
-                avg_max=stats_dict["sea_surface_height_max"],
-                avg_bias=stats_dict["sea_surface_height_bias"],
-                avg_rms=stats_dict["sea_surface_height_rms"],
-                max=maxima_dict["sea_surface_height"],
-            )
-        except KeyError as exc:
-            raise ValueError(f"Failed to parse verschillentool output: Missing key {exc}") from exc
+        stats_per_variable: Dict[str, Statistics] = {}
+
+        for var_name in variable_registry.all():
+            var = variable_registry.get(var_name)
+
+            try:
+                stats_per_variable[var_name] = Statistics(
+                    avg_max=stats_dict[f"{var.name}_max"],
+                    avg_bias=stats_dict[f"{var.name}_bias"],
+                    avg_rms=stats_dict[f"{var.name}_rms"],
+                    max=maxima_dict[var.name],
+                )
+            except KeyError as exc:
+                raise ValueError(
+                    f"Failed to parse verschillentool output: Missing key '{exc}' for variable '{var.name}'"
+                ) from exc
 
         return VerschillentoolOutput(
             output_type=output_type,
-            flow_velocity=flow_velocity_stats,
-            water_level=water_level_stats,
-            row_count=statistics_sheet.max_row - 1,  # The number of rows (minus one header row)
+            statistics=stats_per_variable,
+            row_count=statistics_sheet.max_row - 1,
         )
+    

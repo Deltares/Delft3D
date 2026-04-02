@@ -6,7 +6,7 @@ from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
 from ci_tools.verschilanalyse.util.verschilanalyse_comparison import VerschilanalyseComparison
-from ci_tools.verschilanalyse.util.verschillentool import OutputType
+from ci_tools.verschilanalyse.util.verschillentool import OutputType, VariableRegistry
 from tests.helpers import verschilanalyse as helper
 
 
@@ -24,6 +24,7 @@ def test_get_log_comparisons() -> None:
 
 
 def test_from_report_directories__no_logs_no_excel_files__no_problem(
+    test_variable_registry: VariableRegistry,
     caplog: pytest.LogCaptureFixture, fs: FakeFilesystem
 ) -> None:
     # Act
@@ -34,6 +35,7 @@ def test_from_report_directories__no_logs_no_excel_files__no_problem(
             verschillen_dir=Path("verschillen"),
             s3_current_prefix="s3://bucket/latest/",
             s3_reference_prefix="s3://bucket/last-week//",
+            variable_registry=test_variable_registry,
         )
 
     # Assert
@@ -61,7 +63,10 @@ def test_from_report_directories__no_logs_no_excel_files__no_problem(
     ],
 )
 def test_from_report_directories__gather_slurm_log_data_from_directories(
-    model_log_dir: Path, is_current: bool, fs: FakeFilesystem
+    test_variable_registry: VariableRegistry,
+    model_log_dir: Path,
+    is_current: bool,
+    fs: FakeFilesystem,
 ) -> None:
     # Arrange
     for model_name in ("foo", "bar", "baz"):
@@ -77,6 +82,7 @@ def test_from_report_directories__gather_slurm_log_data_from_directories(
         verschillen_dir=Path("verschillen"),
         s3_current_prefix="s3://bucket/latest",
         s3_reference_prefix="s3://bucket/last-week",
+        variable_registry=test_variable_registry,
     )
 
     # Assert
@@ -93,7 +99,10 @@ def test_from_report_directories__gather_slurm_log_data_from_directories(
 
 @pytest.mark.parametrize("output_type", OutputType)
 def test_from_report_directories__verschillentool_output(
-    output_type: OutputType, fs: FakeFilesystem, mocker: MockerFixture
+    test_variable_registry: VariableRegistry,
+    output_type: OutputType, 
+    fs: FakeFilesystem, 
+    mocker: MockerFixture,
 ) -> None:
     # Arrange
     verschillen_dir = Path("verschillen")
@@ -113,6 +122,7 @@ def test_from_report_directories__verschillentool_output(
         verschillen_dir=verschillen_dir,
         s3_current_prefix="s3://bucket/latest",
         s3_reference_prefix="s3://bucket/last-week",
+        variable_registry=test_variable_registry,
     )
 
     # Assert

@@ -5,7 +5,12 @@ from pathlib import Path
 import openpyxl
 
 from ci_tools.verschilanalyse.util.slurm_log_data import LogComparison, SlurmLogData
-from ci_tools.verschilanalyse.util.verschillentool import OutputType, VerschillentoolOutput
+from ci_tools.verschilanalyse.util.verschillentool import (
+    OutputType,
+    VariableRegistry,
+    VerschillentoolOutput,
+)
+
 
 
 @dataclass
@@ -47,6 +52,7 @@ class VerschilanalyseComparison:
         verschillen_dir: Path,
         s3_current_prefix: str,
         s3_reference_prefix: str,
+        variable_registry: VariableRegistry,
     ) -> "VerschilanalyseComparison":
         """Make a `VerschilanalyseComparison` from the logs and verschillentool output.
 
@@ -63,8 +69,9 @@ class VerschilanalyseComparison:
         """
         current_logs = cls._get_all_log_data(current_log_dir / "models")
         reference_logs = cls._get_all_log_data(reference_log_dir / "models")
-        his_stats = cls._get_verschillentool_output(verschillen_dir, OutputType.HIS)
-        map_stats = cls._get_verschillentool_output(verschillen_dir, OutputType.MAP)
+
+        his_stats = cls._get_verschillentool_output(verschillen_dir, OutputType.HIS, variable_registry)
+        map_stats = cls._get_verschillentool_output(verschillen_dir, OutputType.MAP, variable_registry)
 
         return VerschilanalyseComparison(
             s3_current_prefix=s3_current_prefix.rstrip("/"),
@@ -87,13 +94,28 @@ class VerschilanalyseComparison:
         return result
 
     @staticmethod
-    def _get_verschillentool_output(verschillen_dir: Path, output_type: OutputType) -> dict[str, VerschillentoolOutput]:
+    def _get_verschillentool_output(
+        verschillen_dir: Path,
+        output_type: OutputType,
+        variable_registry: VariableRegistry,
+    ) -> dict[str, VerschillentoolOutput]:
         result: dict[str, VerschillentoolOutput] = {}
         for path in verschillen_dir.rglob(f"{output_type.value}_output.xlsx"):
             key = path.parent.name.removeprefix("verschil_")
             with path.open("rb") as stream:
-                workbook = openpyxl.load_workbook(stream)
-                result[key] = VerschillentoolOutput.from_verschillentool_workbook(workbook, output_type)
+                try:
+                    workbook = openpyxl.load_workbook(stream)
+                    result[key] = VerschillentoolOutput.from_verschillentool_workbook(
+                        workbook,
+                        output_type,
+                        variable_registry,
+                    )
+                except Exception as exc:
+                    logging.warning("Invalid excel file: %s", path, exc_info=exc)
         if not result:
-            logging.warning("No %s file statistics found in %s", output_type.value, verschillen_dir)
+            logging.warning(
+                "No %s file statistics found in %s",
+                output_type.value,
+                verschillen_dir,
+            )
         return result

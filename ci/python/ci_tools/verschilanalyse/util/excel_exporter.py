@@ -1,3 +1,4 @@
+
 import itertools
 from typing import ClassVar, Sequence
 
@@ -7,8 +8,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from ci_tools.verschilanalyse.util.slurm_log_data import LogComparison, SlurmLogData, Status
 from ci_tools.verschilanalyse.util.verschilanalyse_comparison import VerschilanalyseComparison
-from ci_tools.verschilanalyse.util.verschillentool import OutputType, Tolerances, Variable, VerschillentoolOutput
-
+from ci_tools.verschilanalyse.util.verschillentool import OutputType, VariableRegistry, VerschillentoolOutput
 
 class ExcelExporter:
     """Contains code to generate the excel file attachment for the weekly verschilanalyse email."""
@@ -39,45 +39,6 @@ class ExcelExporter:
         OutputType.MAP: "Map count",
     }
 
-    @classmethod
-    def _append_row(cls, sheet: Worksheet, model_name: str, stats: VerschillentoolOutput, ndigits: int = 4) -> None:
-        sheet.append(
-            [
-                model_name,
-                stats.row_count,
-                round(stats.water_level.avg_max, ndigits=ndigits),
-                round(stats.water_level.avg_bias, ndigits=ndigits),
-                round(stats.water_level.avg_rms, ndigits=ndigits),
-                round(stats.water_level.max, ndigits=ndigits),
-                round(stats.flow_velocity.avg_max, ndigits=ndigits),
-                round(stats.flow_velocity.avg_bias, ndigits=ndigits),
-                round(stats.flow_velocity.avg_rms, ndigits=ndigits),
-                round(stats.flow_velocity.max, ndigits=ndigits),
-            ]
-        )
-
-        row = sheet[sheet.max_row]
-        red_fill = cls._status_to_fill(Status.ERROR)
-        # Apply the red style to cells based on the thresholds.
-        if stats.water_level.avg_max > Tolerances.max(stats.output_type, Variable.WATER_LEVEL):
-            row[2].fill = red_fill
-            row[2].value = f"❌ {row[2].value}"
-        if stats.water_level.avg_bias > Tolerances.bias(stats.output_type, Variable.WATER_LEVEL):
-            row[3].fill = red_fill
-            row[3].value = f"❌ {row[3].value}"
-        if stats.water_level.avg_rms > Tolerances.rms(stats.output_type, Variable.WATER_LEVEL):
-            row[4].fill = red_fill
-            row[4].value = f"❌ {row[4].value}"
-        if stats.flow_velocity.avg_max > Tolerances.max(stats.output_type, Variable.FLOW_VELOCITY):
-            row[6].fill = red_fill
-            row[6].value = f"❌ {row[6].value}"
-        if stats.flow_velocity.avg_bias > Tolerances.bias(stats.output_type, Variable.FLOW_VELOCITY):
-            row[7].fill = red_fill
-            row[7].value = f"❌ {row[7].value}"
-        if stats.flow_velocity.avg_rms > Tolerances.rms(stats.output_type, Variable.FLOW_VELOCITY):
-            row[8].fill = red_fill
-            row[8].value = f"❌ {row[8].value}"
-
     @staticmethod
     def _to_column(log_data: SlurmLogData | None) -> Sequence[str | int | float]:
         if log_data is None:
@@ -107,6 +68,67 @@ class ExcelExporter:
                 raise ValueError("Invalid icon")
 
     @classmethod
+    def _append_row(
+        cls,
+        sheet: Worksheet,
+        model_name: str,
+        stats: VerschillentoolOutput,
+        registry: VariableRegistry,
+        ndigits: int = 4,
+    ) -> None:
+        """
+        Append a row summarizing statistics for a single model run.
+
+        Extended
+        --------
+        This version supports dynamically registered variables rather than the
+        fixed WATER_LEVEL / FLOW_VELOCITY variables used in older versions.
+        All variables present in the injected `VariableRegistry` will appear in
+        the export automatically in registry order.
+        """
+        # Begin row
+        row_values = [model_name, stats.row_count]
+
+        # Add statistic columns for each registered variable
+        for var_name in registry.all():
+            s = stats.statistics[var_name]
+            row_values.extend([
+                round(s.avg_max, ndigits),
+                round(s.avg_bias, ndigits),
+                round(s.avg_rms, ndigits),
+                round(s.max, ndigits),
+            ])
+
+        sheet.append(row_values)
+
+        #
+        # Apply red highlighting for exceeded tolerances
+        #
+        row = sheet[sheet.max_row]
+        red_fill = cls._status_to_fill(Status.ERROR)
+
+        col = 2  # first statistics column
+
+        for var_name in registry.all():
+            var = registry.get(var_name)
+            tolerance = var.tolerances[stats.output_type]
+            s = stats.statistics[var_name]
+
+            checks = [
+                (s.avg_max, tolerance.max),
+                (s.avg_bias, tolerance.bias),
+                (s.avg_rms, tolerance.rms),
+                (s.max, tolerance.max),
+            ]
+
+            for value, limit in checks:
+                if value > limit:
+                    cell = row[col]
+                    cell.fill = red_fill
+                    cell.value = f"❌ {cell.value}"
+                col += 1
+
+    @classmethod
     def _make_log_comparison_sheet(
         cls,
         sheet: Worksheet,
@@ -131,10 +153,8 @@ class ExcelExporter:
             speedup = comparison.speedup() or "-"
             time_diff = comparison.computation_time_difference() or "-"
 
-            # Display 'error', 'warning', 'success' status of comparison.
             status_bar = comparison.get_comparison_status()
 
-            # Write header with status.
             sheet.append([model_name, "Current", "Reference"])
             for i, status in enumerate(status_bar):
                 cell = sheet[sheet.max_row][i]
@@ -144,8 +164,10 @@ class ExcelExporter:
             description_column = cls.LOG_COMPARISON_DESCRIPTIONS
             current_column = itertools.chain(cls._to_column(current), [speedup, time_diff])
             reference_column = cls._to_column(reference)
+
             for row in itertools.zip_longest(description_column, current_column, reference_column, fillvalue=""):
                 sheet.append(row)
+
             sheet.append([])
 
     @classmethod
@@ -154,6 +176,7 @@ class ExcelExporter:
         sheet: Worksheet,
         output_type: OutputType,
         model_stats: dict[str, VerschillentoolOutput],
+        registry: VariableRegistry,
         ndigits: int = 4,
     ) -> None:
         if output_type == OutputType.HIS:
@@ -163,26 +186,34 @@ class ExcelExporter:
         else:
             raise ValueError(f"Invalid OutputType {output_type}")
 
-        other_headers = [
-            f"Maximum water level averaged over {unit} ({Variable.WATER_LEVEL.unit})",
-            f"Bias water level averaged over {unit} ({Variable.WATER_LEVEL.unit})",
-            f"RMSE water level averaged over {unit} ({Variable.WATER_LEVEL.unit})",
-            f"Maximum water level over all {unit} ({Variable.WATER_LEVEL.unit})",
-            f"Maximum flow velocity averaged over {unit} ({Variable.FLOW_VELOCITY.unit})",
-            f"Bias flow velocity averaged over {unit} ({Variable.FLOW_VELOCITY.unit})",
-            f"RMSE flow velocity averaged over {unit} ({Variable.FLOW_VELOCITY.unit})",
-            f"Maximum flow velocity over all {unit} ({Variable.FLOW_VELOCITY.unit})",
-        ]
+        # Dynamic headers based on registry
+        variable_headers = []
+        for var_name in registry.all():
+            var = registry.get(var_name)
+            u = f"({var.unit})"
+            variable_headers.extend([
+                f"Maximum {var_name} averaged over {unit} {u}",
+                f"Bias {var_name} averaged over {unit} {u}",
+                f"RMSE {var_name} averaged over {unit} {u}",
+                f"Maximum {var_name} over all {unit} {u}",
+            ])
 
         count_header = cls.VERSCHILLENTOOL_COUNT_HEADERS[output_type]
 
-        sheet.append(["Model name", count_header, *other_headers])
+        sheet.append(["Model name", count_header, *variable_headers])
+
         for model, stats in sorted(model_stats.items()):
-            cls._append_row(sheet, model, stats, ndigits=ndigits)
+            cls._append_row(sheet, model, stats, registry, ndigits=ndigits)
 
     @classmethod
-    def make_summary_workbook(cls, verschilanalyse: VerschilanalyseComparison, ndigits: int = 4) -> Workbook:
-        """Make an excel workbook containing information found in this weekly verschilanalyse.
+    def make_summary_workbook(
+        cls,
+        verschilanalyse: VerschilanalyseComparison,
+        registry: VariableRegistry,
+        ndigits: int = 4,
+    ) -> Workbook:
+        """
+        Make an excel workbook containing information found in this weekly verschilanalyse.
 
         The excel file contains more information than the email. It contains the
         statistics found in the verschillentool output excel files. It should be
@@ -193,19 +224,11 @@ class ExcelExporter:
         and the reference verschilanalyse). The last two sheets contain the statistics
         reported by the verschillentool, for the `his` and `map` files respectively.
 
-        Parameters
-        ----------
-        verschilanalyse : VerschilanalyseComparison
-            An object containing all of the information collected for
-            the weekly automated verschilanalyse.
-        ndigits : int, optional
-            Round the numbers in the excel file to `ndigits` amount of
-            decimals after the decimal point. The default is four digits.
-
-        Returns
-        -------
-        Workbook
-            The excel workbook to write in the email attachment.
+        Extended
+        --------
+        This version supports any number of dynamically registered variables via
+        injection of a `VariableRegistry`. The exported columns and tolerance checks
+        automatically adjust to whatever variables are present in the registry.
         """
         workbook = Workbook()
         log_comp_sheet = workbook.active
@@ -221,10 +244,26 @@ class ExcelExporter:
             log_comparisons=log_comparisons,
         )
 
-        his_sheet: Worksheet = workbook.create_sheet(title=cls.VERSCHILLENTOOL_SHEET_NAMES[OutputType.HIS])
-        cls._make_verschillentool_sheet(his_sheet, OutputType.HIS, verschilanalyse.his_outputs, ndigits=ndigits)
+        his_sheet: Worksheet = workbook.create_sheet(
+            title=cls.VERSCHILLENTOOL_SHEET_NAMES[OutputType.HIS]
+        )
+        cls._make_verschillentool_sheet(
+            his_sheet,
+            OutputType.HIS,
+            verschilanalyse.his_outputs,
+            registry,
+            ndigits=ndigits,
+        )
 
-        map_sheet: Worksheet = workbook.create_sheet(title=cls.VERSCHILLENTOOL_SHEET_NAMES[OutputType.MAP])
-        cls._make_verschillentool_sheet(map_sheet, OutputType.MAP, verschilanalyse.map_outputs, ndigits=ndigits)
+        map_sheet: Worksheet = workbook.create_sheet(
+            title=cls.VERSCHILLENTOOL_SHEET_NAMES[OutputType.MAP]
+        )
+        cls._make_verschillentool_sheet(
+            map_sheet,
+            OutputType.MAP,
+            verschilanalyse.map_outputs,
+            registry,
+            ndigits=ndigits,
+        )
 
         return workbook

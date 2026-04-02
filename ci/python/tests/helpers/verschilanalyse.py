@@ -8,8 +8,8 @@ from ci_tools.verschilanalyse.util.verschilanalyse_comparison import Verschilana
 from ci_tools.verschilanalyse.util.verschillentool import (
     OutputType,
     Statistics,
-    Tolerances,
-    Variable,
+    Tolerance,
+    VariableRegistry,
     VerschillentoolOutput,
 )
 
@@ -49,7 +49,6 @@ def make_log_data(
         error_lines=error_lines,
     )
 
-
 def make_verschillentool_output(
     output_type: OutputType = OutputType.HIS,
     water_level: Statistics | None = None,
@@ -60,12 +59,15 @@ def make_verschillentool_output(
 
     Has default values for all parameters to make it easier to create test instances.
     """
-    flow_velocity = flow_velocity or Statistics(0.0, 0.0, 0.0, 0.0)
     water_level = water_level or Statistics(0.0, 0.0, 0.0, 0.0)
+    flow_velocity = flow_velocity or Statistics(0.0, 0.0, 0.0, 0.0)
+
     return VerschillentoolOutput(
         output_type=output_type,
-        water_level=water_level,
-        flow_velocity=flow_velocity,
+        statistics={
+            "sea_water_speed": water_level,
+            "sea_surface_height": flow_velocity,
+        },
         row_count=row_count,
     )
 
@@ -78,7 +80,7 @@ def make_verschilanalyse_comparison(
     his_outputs: dict[str, VerschillentoolOutput] | None = None,
     map_outputs: dict[str, VerschillentoolOutput] | None = None,
 ) -> VerschilanalyseComparison:
-    """Test helper actory for `VerschilanalyseComparison` instances.
+    """Test helper factory for `VerschilanalyseComparison` instances.
 
     Has default values for all parameters to make it easier to create test instances.
     """
@@ -155,26 +157,25 @@ def make_verschillentool_workbook(
     return workbook
 
 
-def tolerance_stats(output_type: OutputType, variable: Variable, diff: float = 0.0) -> Statistics:
-    """Set statistics to the maximum allowed tolerances and optionally add a difference value.
+def tolerance_stats(
+    registry: VariableRegistry,
+    variable_name: str,
+    output_type: OutputType,
+    diff: float = 0.0,
+) -> Statistics:
+    
+    try:
+        var_attr = registry.get(variable_name)
+    except KeyError as exc:
+        raise KeyError(
+            f"Variable '{variable_name}' is not registered in the VariableRegistry."
+        ) from exc
 
-    The maximum allowed tolerance values depend on the `OutputType` and `Variable`.
-
-    Parameters
-    ----------
-    output_type : OutputType
-    variable : Variable
-    diff : float, optional
-        Add this value to the maximum tolerance values. Pass a
-        negative value here to stay under the tolerance threshold.
-
-    Returns
-    -------
-    Statistics
-    """
+    tol = var_attr.tolerances[output_type]
+    
     return Statistics(
-        avg_max=Tolerances.max(output_type, variable) + diff,
-        avg_bias=Tolerances.bias(output_type, variable) + diff,
-        avg_rms=Tolerances.rms(output_type, variable) + diff,
-        max=Tolerances.max(output_type, variable) + diff,
+        avg_max=tol.max + diff,
+        avg_bias=tol.bias + diff,
+        avg_rms=tol.rms + diff,
+        max=tol.max + diff,
     )

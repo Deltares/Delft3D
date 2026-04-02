@@ -8,7 +8,7 @@ from typing import Iterator
 import pytest
 
 from ci_tools.verschilanalyse.util.html_formatter import HtmlFormatter
-from ci_tools.verschilanalyse.util.verschillentool import OutputType, Variable
+from ci_tools.verschilanalyse.util.verschillentool import OutputType, VariableRegistry
 from tests.helpers import verschilanalyse as helper
 
 
@@ -58,7 +58,7 @@ class SummaryPageParser(HTMLParser):
             self._current_section = last_section_id
 
 
-def test_make_summary_page__find_all_sections_and_check_tags() -> None:
+def test_make_summary_page__find_all_sections_and_check_tags(test_variable_registry: VariableRegistry) -> None:
     # Arrange
     verschilanalyse_comparison = helper.make_verschilanalyse_comparison()
 
@@ -67,6 +67,7 @@ def test_make_summary_page__find_all_sections_and_check_tags() -> None:
         verschilanalyse=verschilanalyse_comparison,
         report_build_url="https://foo.bar/report",
         artifact_base_url="https://foo.bar/artifacts",
+        variable_registry=test_variable_registry,
     )
     parser = SummaryPageParser()
     parser.feed(html_page)
@@ -78,15 +79,15 @@ def test_make_summary_page__find_all_sections_and_check_tags() -> None:
         "model-run-table": "table",
         "commit-id-list": "ul",
         "prefix-list": "ul",
-        "his-water-level-tolerance-list": "ul",
-        "his-flow-velocity-tolerance-list": "ul",
-        "map-water-level-tolerance-list": "ul",
-        "map-flow-velocity-tolerance-list": "ul",
+        "his-sea-surface-height-tolerance-list": "ul",
+        "his-sea-water-speed-tolerance-list": "ul",
+        "map-sea-surface-height-tolerance-list": "ul",
+        "map-sea-water-speed-tolerance-list": "ul",
         "links": "ul",
     }
 
 
-def test_make_summary_page__prefix() -> None:
+def test_make_summary_page__prefix(test_variable_registry: VariableRegistry) -> None:
     # Arrange
     current_prefix = "s3://my-bucket/output/weekly/latest"
     reference_prefix = "s3://my-bucket/output/weekly/last-week"
@@ -99,6 +100,7 @@ def test_make_summary_page__prefix() -> None:
         ),
         report_build_url="https://foo.bar/report",
         artifact_base_url="https://foo.bar/artifacts",
+        variable_registry=test_variable_registry,
     )
     parser = SummaryPageParser()
     parser.feed(html_page)
@@ -109,7 +111,7 @@ def test_make_summary_page__prefix() -> None:
     assert reference_prefix in links
 
 
-def test_make_summary_page__dimr_version() -> None:
+def test_make_summary_page__dimr_version(test_variable_registry: VariableRegistry) -> None:
     # Arrange
     current_version = "decade0fbadcoffee"
     reference_version = "deadbeefc0decafe"
@@ -123,6 +125,7 @@ def test_make_summary_page__dimr_version() -> None:
         verschilanalyse=verschilanalyse_comparison,
         report_build_url="https://foo.bar/report",
         artifact_base_url="https://foo.bar/artifacts",
+        variable_registry=test_variable_registry,
     )
     parser = SummaryPageParser()
     parser.feed(html_page)
@@ -133,7 +136,7 @@ def test_make_summary_page__dimr_version() -> None:
     assert reference_version in dimr_version_list
 
 
-def test_make_summary_page__model_run_table() -> None:
+def test_make_summary_page__model_run_table(test_variable_registry: VariableRegistry) -> None:
     # Arrange
     current_log_data = {
         "foo": helper.make_log_data(error_lines=[(42, "Explosion")]),
@@ -149,6 +152,7 @@ def test_make_summary_page__model_run_table() -> None:
         verschilanalyse=verschilanalyse_comparison,
         report_build_url="https://foo.bar/report",
         artifact_base_url="https://foo.bar/artifacts",
+        variable_registry=test_variable_registry,
     )
     parser = SummaryPageParser()
     parser.feed(html_page)
@@ -166,18 +170,21 @@ def test_make_summary_page__model_run_table() -> None:
 
 
 @pytest.mark.parametrize("output_type", OutputType)
-def test_make_summary_page__tolerance_list(output_type: OutputType) -> None:
+def test_make_summary_page__tolerance_list(
+    test_variable_registry: VariableRegistry,
+    output_type: OutputType,
+    ) -> None:
     # Arrange
     foo_output = helper.make_verschillentool_output(  # All variables within tolerance.
         output_type=output_type,
-        water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, -1e-6),
-        flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, -1e-6),
+        water_level=helper.tolerance_stats(test_variable_registry, "sea_water_speed", output_type, -1e-6),
+        flow_velocity=helper.tolerance_stats(test_variable_registry, "sea_surface_height", output_type, -1e-6),
         row_count=42,
     )
     bar_output = helper.make_verschillentool_output(  # Flow velocity above tolerance.
         output_type=output_type,
-        water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, -1e-6),
-        flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, 1e-6),
+        water_level=helper.tolerance_stats(test_variable_registry, "sea_water_speed", output_type, -1e-6),
+        flow_velocity=helper.tolerance_stats(test_variable_registry, "sea_surface_height", output_type, 1e-6),
     )
 
     outputs = {"foo": foo_output, "bar": bar_output}
@@ -189,12 +196,13 @@ def test_make_summary_page__tolerance_list(output_type: OutputType) -> None:
         verschilanalyse=verschilanalyse_comparison,
         report_build_url="https://foo.bar/report",
         artifact_base_url="https://foo.bar/artifacts",
+        variable_registry=test_variable_registry,
     )
     parser = SummaryPageParser()
     parser.feed(html_page)
     sections = parser.sections
-    water_level = sections[f"{output_type.value}-water-level-tolerance-list"].get_text(html_page)
-    flow_velocity = sections[f"{output_type.value}-flow-velocity-tolerance-list"].get_text(html_page)
+    water_level = sections[f"{output_type.value}-sea-surface-height-tolerance-list"].get_text(html_page)
+    flow_velocity = sections[f"{output_type.value}-sea-water-speed-tolerance-list"].get_text(html_page)
 
     # Assert
     assert all(name not in water_level for name in ("foo", "bar"))
@@ -204,7 +212,7 @@ def test_make_summary_page__tolerance_list(output_type: OutputType) -> None:
     assert "bar" in flow_velocity  # Because bar flow velocity above tolerance
 
 
-def test_make_summary_page__links() -> None:
+def test_make_summary_page__links(test_variable_registry: VariableRegistry) -> None:
     # Arrange
     report_build_url = "https://foo.bar/the-build-report-url"
     artifact_base_url = "https://foo.bar/path/to/my/artifacts"
@@ -214,6 +222,7 @@ def test_make_summary_page__links() -> None:
         verschilanalyse=helper.make_verschilanalyse_comparison(),
         report_build_url=report_build_url,
         artifact_base_url=artifact_base_url,
+        variable_registry=test_variable_registry,
     )
     parser = SummaryPageParser()
     parser.feed(html_page)

@@ -33,6 +33,7 @@ Testing/**
 src/test/**/ftnunit.run
 src/test/**/ftnunit.html
 src/test/**/DFM_OUTPUT_*/**
+ci/python/ci_tools/dimrset_delivery/output/*
 
 # ignore files created by updating process definition files
 src/engines_gpl/waq/resources/process_lib/*.log
