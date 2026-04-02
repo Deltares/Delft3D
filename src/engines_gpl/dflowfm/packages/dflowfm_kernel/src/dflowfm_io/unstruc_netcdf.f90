@@ -11944,7 +11944,8 @@ contains
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
-      temp_indices = [(l, l=1, numl)]
+      allocate(temp_indices(numl))
+      forall (l=1:numl) temp_indices(l) = l
       temp_indices = pack(temp_indices, is_valid_2d2d_netlink(temp_indices))
       n2d2dcontacts = size(temp_indices)
       if (n2d2dcontacts > 0) then
