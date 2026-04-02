@@ -12,8 +12,8 @@ namespace pre_c_sumo
      * @brief Internal helper functions for the preC-SUMO tool.
      *
      * These functions are internal implementation helpers used by the
-     * preC-SUMO library. They handle timestepping control, configuration
-     * file parsing and the conversion/communication of NF/FF data.
+     * preC-SUMO library. They handle timestepping control, configuration and settings
+     * files parsing and the conversion/communication of NF/FF data.
      */
 
     /**
@@ -28,17 +28,17 @@ namespace pre_c_sumo
     bool doTimeloop();
 
     /**
-     * @brief Read and parse the C-SUMO configuration file.
+     * @brief Read and parse the C-SUMO settings file.
      *
-     * Attempts to read the C-SUMO configuration from the given file.
+     * Attempts to read the C-SUMO settings from the given file.
      * On success returns a populated `CSumoSettingsReader`. On failure
      * returns a `ParseError` describing the problem.
      *
-     * @param csumoConfigFileName Path or name of the C-SUMO configuration file.
+     * @param csumoSettingsFileName Path or name of the C-SUMO settings file.
      * @return std::expected containing `CSumoSettingsReader` on success or `ParseError` on failure.
      */
-    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoConfigFile(
-        const std::string_view csumoConfigFileName);
+    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoSettingsFile(
+        const std::string_view csumoSettingsFileName);
 
     /**
      * @brief Receive farfield (FF) data from external sources via preCICE.

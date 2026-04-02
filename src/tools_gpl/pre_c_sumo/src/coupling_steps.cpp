@@ -16,11 +16,11 @@ namespace pre_c_sumo
         return iteration++ < 2; // Run the loop 2 times for demonstration
     }
 
-    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoConfigFile(
-        const std::string_view csumo_config_file_name)
+    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoSettingsFile(
+        const std::string_view csumo_settings_file_name)
     {
         std::println("Reading C-SUMO configuration file...");
-        auto expectedCsumoSettings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_config_file_name);
+        auto expectedCsumoSettings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_settings_file_name);
 
         if (!expectedCsumoSettings.has_value())
         {

@@ -21,7 +21,7 @@ namespace pre_c_sumo
 
         while (doTimeloop())
         {
-            const auto csumo_settings = readCsumoConfigFile(csumo_config_file_name);
+            const auto csumo_settings = readCsumoSettingsFile(csumo_config_file_name);
             receiveFFData();
             writeFF2NFFiles(csumo_settings.value());
             waitForNF2FFFiles(csumo_settings.value());
