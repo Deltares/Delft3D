@@ -11866,6 +11866,7 @@ contains
       use m_inquire_link_type, only: is_valid_2d2d_netlink, is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
       use m_cell_geometry, only: blcell
       use m_longculverts_data, only: longculverts, is_2D2D_longculvertlink
+      use array_module, only: convert_mask_to_indices
 
       implicit none
 
@@ -11946,7 +11947,7 @@ contains
       end if
       allocate(temp_indices(numl))
       forall (l=1:numl) temp_indices(l) = l
-      temp_indices = pack(temp_indices, is_valid_2d2d_netlink(temp_indices))
+      temp_indices = convert_mask_to_indices(is_valid_2d2d_netlink(temp_indices))
       n2d2dcontacts = size(temp_indices)
       if (n2d2dcontacts > 0) then
          allocate (contacts_2D2D(2, n2d2dcontacts))
