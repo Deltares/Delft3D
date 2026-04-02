@@ -34,14 +34,9 @@ namespace pre_c_sumo
 
     void receive_ff_data() { std::println("Receiving far-field data..."); }
 
-    void write_ff2nf_files(std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings)
+    void write_ff2nf_files(CSumoSettingsReader csumoSettings)
     {
-        if (!csumoSettings.has_value())
-        {
-            std::println(stderr, "Cannot write FF2NF files: invalid C-SUMO settings.");
-            return;
-        }
-        for (const auto& diffuser : csumoSettings.value().diffusers())
+        for (const auto& diffuser : csumoSettings.diffusers())
         {
             std::println("Write FF2NF file for diffuser with position: ({}, {})", diffuser.position.x,
                          diffuser.position.y);
@@ -49,9 +44,9 @@ namespace pre_c_sumo
         }
     }
 
-    void wait_for_nf2ff_files(std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings)
+    void wait_for_nf2ff_files(CSumoSettingsReader csumoSettings)
     {
-        for (const auto& diffuser : csumoSettings.value().diffusers())
+        for (const auto& diffuser : csumoSettings.diffusers())
         {
             if (diffuser.nf2ff_file.has_value())
             {
@@ -61,9 +56,9 @@ namespace pre_c_sumo
         }
     }
 
-    void read_nf2ff_files(std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings)
+    void read_nf2ff_files(CSumoSettingsReader csumoSettings)
     {
-        for (const auto& diffuser : csumoSettings.value().diffusers())
+        for (const auto& diffuser : csumoSettings.diffusers())
         {
             if (diffuser.nf2ff_file.has_value())
             {
@@ -73,10 +68,9 @@ namespace pre_c_sumo
         }
     }
 
-    void convert_nf_to_sources_sinks(
-        std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings)
+    void convert_nf_to_sources_sinks(CSumoSettingsReader csumoSettings)
     {
-        for (const auto& diffuser : csumoSettings.value().diffusers())
+        for (const auto& diffuser : csumoSettings.diffusers())
         {
             std::println("Converting NF data to sources/sinks for diffuser {} ...", diffuser.nf2ff_file.value());
             convert_nf_sinks_to_ff();
@@ -85,7 +79,7 @@ namespace pre_c_sumo
         }
     }
 
-    void send_sources_sinks_to_ff(std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings)
+    void send_sources_sinks_to_ff(CSumoSettingsReader csumoSettings)
     {
         std::println("Sending sources/sinks data to far-field...");
         (void)csumoSettings;

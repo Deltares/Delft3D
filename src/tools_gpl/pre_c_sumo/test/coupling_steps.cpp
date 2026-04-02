@@ -26,11 +26,3 @@ TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
 
 // This test verifies that the receive_ff_data function executes without throwing an exception.
 TEST(CsumoPreciceCouplingStepsTest, ReceiveNFData) { EXPECT_NO_THROW(pre_c_sumo::receive_ff_data()); }
-
-// This test verifies that the write_ff2nf_files function handles invalid settings gracefully.
-TEST(CsumoPreciceCouplingStepsTest, WriteFF2NFFilesWithInvalidSettings)
-{
-    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> invalidSettings =
-        std::unexpected(pre_c_sumo::ParseError{"Invalid C-SUMO settings"});
-    EXPECT_NO_THROW(pre_c_sumo::write_ff2nf_files(invalidSettings));
-}

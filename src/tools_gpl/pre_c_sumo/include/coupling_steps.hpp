@@ -56,7 +56,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void write_ff2nf_files(std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings);
+    void write_ff2nf_files(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Wait until NF2FF files become available.
@@ -67,7 +67,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void wait_for_nf2ff_files(std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings);
+    void wait_for_nf2ff_files(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Read NF2FF files and extract the required data.
@@ -77,7 +77,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void read_nf2ff_files(std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings);
+    void read_nf2ff_files(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
@@ -86,8 +86,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void convert_nf_to_sources_sinks(
-        std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings);
+    void convert_nf_to_sources_sinks(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Send computed sources/sinks to the farfield model.
@@ -97,7 +96,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void send_sources_sinks_to_ff(std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> csumoSettings);
+    void send_sources_sinks_to_ff(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Convert NF sinks to farfield sinks.

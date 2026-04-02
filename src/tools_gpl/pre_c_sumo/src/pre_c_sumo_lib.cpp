@@ -23,11 +23,11 @@ namespace pre_c_sumo
         {
             const auto csumoSettings = read_csumo_config_file(csumoConfigFileName);
             receive_ff_data();
-            write_ff2nf_files(csumoSettings);
-            wait_for_nf2ff_files(csumoSettings);
-            read_nf2ff_files(csumoSettings);
-            convert_nf_to_sources_sinks(csumoSettings);
-            send_sources_sinks_to_ff(csumoSettings);
+            write_ff2nf_files(csumoSettings.value());
+            wait_for_nf2ff_files(csumoSettings.value());
+            read_nf2ff_files(csumoSettings.value());
+            convert_nf_to_sources_sinks(csumoSettings.value());
+            send_sources_sinks_to_ff(csumoSettings.value());
         }
         return 0;
     }
