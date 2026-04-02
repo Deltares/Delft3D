@@ -3722,6 +3722,99 @@ contains
 #endif
    end subroutine reduce_kobs
 
+   !> Reduce lateral output, make all them available only in rank0
+   subroutine reduce_lateral_output()
+      use m_laterals, only: lateral_volume_per_layer, numlatsg, average_waterlevels_per_lateral, outgoing_lat_volume, &
+                            outgoing_lat_concentration
+      use m_flow, only: kmx
+      use m_transport, only: numconst
+      use precision_basics, only: comparereal
+      use m_flowparameters, only: eps10
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer :: ierror, i_element, num_lateral_layer, num_lateral_layer_constituent
+      real(kind=dp), dimension(:, :), allocatable, save :: lateral_volume_per_layer_buffer
+      real(kind=dp), dimension(:, :), allocatable, save :: outgoing_lat_volume_buffer
+      real(kind=dp), dimension(:, :, :), allocatable, save :: outgoing_lat_concentration_buffer
+      real(kind=dp), dimension(:), allocatable, save  :: cumulative_value_buffer
+      real(kind=dp), dimension(:), allocatable, save  :: cumulative_weight_buffer
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
+
+#ifdef HAVE_MPI
+
+      ! Global lateral_volume_per_layer is required in all ranks, while the other variables only in rank0
+      lateral_volume_per_layer_buffer = lateral_volume_per_layer
+      outgoing_lat_concentration_buffer = outgoing_lat_concentration
+      outgoing_lat_volume_buffer = outgoing_lat_volume
+      if (kmx > 0) then
+         num_lateral_layer = kmx * numlatsg
+         num_lateral_layer_constituent = kmx * numlatsg * numconst
+      else
+         num_lateral_layer = numlatsg
+         num_lateral_layer_constituent = numlatsg * numconst
+      end if
+      call MPI_reduce(outgoing_lat_concentration_buffer, outgoing_lat_concentration, num_lateral_layer_constituent, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_reduce(outgoing_lat_volume_buffer, outgoing_lat_volume, num_lateral_layer, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_allreduce(lateral_volume_per_layer_buffer, lateral_volume_per_layer, num_lateral_layer, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
+
+      if (average_waterlevels_per_lateral%is_used) then
+         cumulative_value_buffer = average_waterlevels_per_lateral%cumulative_value
+         cumulative_weight_buffer = average_waterlevels_per_lateral%cumulative_weight
+          call MPI_reduce(cumulative_value_buffer, average_waterlevels_per_lateral%cumulative_value, average_waterlevels_per_lateral%num_elements, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+          call MPI_reduce(cumulative_weight_buffer, average_waterlevels_per_lateral%cumulative_weight, average_waterlevels_per_lateral%num_elements, mpi_double_precision, mpi_sum, 0, DFM_COMM_DFMWORLD, ierror)
+          if (my_rank == 0) then
+             do i_element = 1, average_waterlevels_per_lateral%num_elements
+                 average_waterlevels_per_lateral%values(i_element) = average_waterlevels_per_lateral%cumulative_value(i_element) / &
+                                                                     max(average_waterlevels_per_lateral%cumulative_weight(i_element), eps10)
+             end do
+          else
+              ! This is a work-around required to avoid issue in dimr.cpp send() i.e. when reducing negative values
+              average_waterlevels_per_lateral%values = dsmall
+          end if
+      end if
+#endif
+      return
+    end subroutine reduce_lateral_output    
+
+   !> Distribute lateral input to all ranks
+   subroutine distribute_lateral_input()
+      use m_laterals, only: incoming_lat_concentration, numlatsg, qplat
+      use m_flow, only: kmx
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_transport, only: numconst
+      use precision_basics, only: comparereal
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer :: ierror, num_lateral_layer, num_lateral_layer_constituent
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
+
+#ifdef HAVE_MPI
+
+      if (my_rank > 0) then
+         qplat = 0.0_dp
+         incoming_lat_concentration = 0.0_dp
+      end if
+      if (kmx > 0) then
+         num_lateral_layer = kmx * numlatsg
+         num_lateral_layer_constituent = kmx * numlatsg * numconst
+      else
+         num_lateral_layer = numlatsg
+         num_lateral_layer_constituent = numlatsg * numconst
+      end if
+      call MPI_bcast(qplat, num_lateral_layer, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
+      call MPI_bcast(incoming_lat_concentration, num_lateral_layer_constituent, mpi_double_precision, 0, DFM_COMM_DFMWORLD, ierror)
+#endif
+      return
+   end subroutine distribute_lateral_input    
+    
 !> reduce outputted values at observation stations
 !! NOTE: It seems that, now that we reduce the statistical output before writing, this routine is
 !!       only needed to maintain functionality in unstruc_bmi/get_compound_field
