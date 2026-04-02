@@ -795,6 +795,7 @@ contains
    !>    find triangle for interpolation with kdtree
    !>       will initialize kdtree and triangulation connectivity
    subroutine findtri_kdtree(XP, YP, ZP, XS, YS, ZS, NS, NDIM, NRFIND, INTRI, JSLO, SLO, JATEK, jadum, ierror, ind, wf, dmiss, jsferic, jins, jasfer3D)
+      use m_sferic, only: CARTESIAN
       implicit none
 
       real(kind=hp), intent(in) :: xp, yp !< node coordinates
@@ -880,8 +881,8 @@ contains
 
             !              compute triangle circumcenter
             if (jasfer3D == 1) then
-               !jsferic = 0, dlaun output is not spherical safe!
-               call ave3D(3, xv, yv, xx(i), yy(i), 0, jasfer3D)
+               !jsferic = CARTESIAN, dlaun output is not spherical safe!
+               call ave3D(3, xv, yv, xx(i), yy(i), CARTESIAN, jasfer3D)
             else
                xx(i) = sum(xv(1:3)) / 3d0
                yy(i) = sum(yv(1:3)) / 3d0
@@ -930,7 +931,7 @@ contains
 
 !        get a point in the cell
             if (jasfer3D == 1) then
-               call ave3D(3, xv, yv, xz, yz, 0, jasfer3D)
+               call ave3D(3, xv, yv, xz, yz, CARTESIAN, jasfer3D)
             else
                xz = sum(xv(1:3)) / 3d0
                yz = sum(yv(1:3)) / 3d0
@@ -971,9 +972,9 @@ contains
                k1 = edgeindx(1, iedge)
                k2 = edgeindx(2, iedge)
                if (jasfer3D == 0) then
-                  call CROSS(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), JACROS, SL, SM, XCR, YCR, CRP, 0, dmiss)
+                  call CROSS(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), JACROS, SL, SM, XCR, YCR, CRP, CARTESIAN, dmiss)
                else
-                  call cross3D(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), jacros, sL, sm, xcr, ycr, 0, dmiss)
+                  call cross3D(xz, yz, xp, yp, xs(k1), ys(k1), xs(k2), ys(k2), jacros, sL, sm, xcr, ycr, CARTESIAN, dmiss)
                end if
 
                !              use tolerance
@@ -1007,7 +1008,6 @@ contains
          !            call qnerror('findtri_kdtree: error', ' ', ' ')
       end if
 
-      !> interploation doesn't use dlaun coordinates, so it uses original jsferic
       if (intri == 1) then
          if (jasfer3D == 0) then
             call interpolate_linear_from_triangle(xv, yv, zv, NDIM, xp, yp, zp, JSLO, SLO, wf, dmiss, jsferic)
