@@ -30,12 +30,12 @@
 !
 !
 module m_set_bobs
-   use m_get2dnormal, only: get2dnormal
-   use m_get1ddir, only: get1ddir
    use m_duikerstoprofs
 
-   implicit none
+   implicit none(type, external)
+
 contains
+
    subroutine setbobs() ! and set blu, weigthed depth at u point
       use precision, only: dp
       use m_netw, only: netcell, zk, zkuni, numl, numl1d, lne, kn, nmk
@@ -53,8 +53,7 @@ contains
       use unstruc_model, only: md_convertlongculverts
 
       integer :: L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, Lf, mis, i, numcoords, ibotL
-      real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
-      ! real(kind=dp), external :: skewav
+      real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf
 
       ! First, prepare bed levels at pressure points:
 
@@ -325,9 +324,8 @@ contains
                bl(n1) = bl1
                bob(1, L) = max(bl(n1), bl(n2))
                bob(2, L) = bob(1, L)
-               !elseif (bl(n1) == 1d30 .or. bl(n2) == 30) then
             else if (.not. network%loaded) then
-!          SPvdP: previous expression is problematic when zk(k2) and/or zk(k3) have missing values
+!               SPvdP: previous expression is problematic when zk(k2) and/or zk(k3) have missing values
                zn2 = zk(k2)
                if (zn2 == dmiss) then
                   zn2 = zkuni
@@ -398,6 +396,7 @@ contains
       jaupdbndbl = 0 ! after first run of setbobs set to 0 = no update
 
    end subroutine setbobs
+   
    !> calculate bed level at a link based on the type of bed level definition and the input parameters.
    function get_bedlevel_at_link(n1, n2, k1, k2, blu, ibot) result(bedlevel_at_link)
 
