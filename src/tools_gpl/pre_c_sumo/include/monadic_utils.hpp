@@ -43,14 +43,22 @@ namespace monadic_utils::internal
 
 } // namespace monadic_utils::internal
 
-#define ASSIGN_OR_RETURN_CONCAT_(x, y) x##y
-#define ASSIGN_OR_RETURN_CONCAT(x, y) ASSIGN_OR_RETURN_CONCAT_(x, y)
+#define MONADIC_UTILS_CONCAT_(x, y) x##y
+#define MONADIC_UTILS_CONCAT(x, y) MONADIC_UTILS_CONCAT_(x, y)
 
-#define ASSIGN_OR_RETURN(lhs, expr)                                                                           \
-    auto&& ASSIGN_OR_RETURN_CONCAT(_res_, __LINE__) = (expr);                                                 \
-    if (!ASSIGN_OR_RETURN_CONCAT(_res_, __LINE__))                                                            \
-        return monadic_utils::internal::makeErrorReturn(std::move(ASSIGN_OR_RETURN_CONCAT(_res_, __LINE__))); \
-    lhs = *std::move(ASSIGN_OR_RETURN_CONCAT(_res_, __LINE__))
+#define ASSIGN_OR_RETURN(lhs, expr)                                                                        \
+    auto&& MONADIC_UTILS_CONCAT(_res_, __LINE__) = (expr);                                                 \
+    if (!MONADIC_UTILS_CONCAT(_res_, __LINE__))                                                            \
+        return monadic_utils::internal::makeErrorReturn(std::move(MONADIC_UTILS_CONCAT(_res_, __LINE__))); \
+    lhs = *std::move(MONADIC_UTILS_CONCAT(_res_, __LINE__))
+
+#define RETURN_IF_ERROR(expr)                                                                                  \
+    do                                                                                                         \
+    {                                                                                                          \
+        auto&& MONADIC_UTILS_CONCAT(_res_, __LINE__) = (expr);                                                 \
+        if (!MONADIC_UTILS_CONCAT(_res_, __LINE__))                                                            \
+            return monadic_utils::internal::makeErrorReturn(std::move(MONADIC_UTILS_CONCAT(_res_, __LINE__))); \
+    } while (false)
 
 namespace monadic_utils
 {
