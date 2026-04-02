@@ -197,7 +197,7 @@
             "issuedTo": "Stichting Deltares"
         },
         {
-            "file": "bin\\csumo_precice.exe",
+            "file": "bin\\preC-SUMO.exe",
             "issuedTo": "Stichting Deltares"
         },
         {
@@ -555,10 +555,6 @@
         {
             "file": "lib\\vcomp140.dll",
             "issuedTo": "Microsoft Windows Software Compatibility Publisher"
-        },
-        {
-            "file": "lib\\ucrtbased.dll",
-            "issuedTo": "Microsoft Corporation"
         },
         {
             "file": "lib\\boost_date_time-vc143-mt-x64-1_90.dll",
