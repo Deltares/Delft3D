@@ -87,26 +87,20 @@ contains
       if (jsferic == 1 .and. jasfer3D == 1) then
          allocate (csb_1(lnx), csb_2(lnx), snb_1(lnx), snb_2(lnx))
          allocate (csbn_1(lnx), csbn_2(lnx), snbn_1(lnx), snbn_2(lnx))
-         do concurrent (L = 1:lnx)
-            node_map_1(L)   = ln(1, L)
-            node_map_2(L)   = ln(2, L)
-            corner_map_1(L) = lncn(1, L)
-            corner_map_2(L) = lncn(2, L)
-            bai_1(L)        = bai(node_map_1(L))
-            bai_2(L)        = bai(node_map_2(L))
-            csb_1(L)        = csb(1, L)
-            csb_2(L)        = csb(2, L)
-            snb_1(L)        = snb(1, L)
-            snb_2(L)        = snb(2, L)
-            csbn_1(L)       = csbn(1, L)
-            csbn_2(L)       = csbn(2, L)
-            snbn_1(L)       = snbn(1, L)
-            snbn_2(L)       = snbn(2, L)
+         do concurrent(L=1:lnx)
+            csb_1(L) = csb(1, L)
+            csb_2(L) = csb(2, L)
+            snb_1(L) = snb(1, L)
+            snb_2(L) = snb(2, L)
+            csbn_1(L) = csbn(1, L)
+            csbn_2(L) = csbn(2, L)
+            snbn_1(L) = snbn(1, L)
+            snbn_2(L) = snbn(2, L)
          end do
       end if
       ! Build flattened index maps (one-time cost at initialization)
 
-      do concurrent (L = 1:lnx)
+      do concurrent(L=1:lnx)
          corner_map_1(L) = lncn(1, L)
          corner_map_2(L) = lncn(2, L)
          node_map_1(L) = ln(1, L)
@@ -135,7 +129,7 @@ contains
 
       if (.not. is_initialized) return
 
-      do concurrent (L = L1:L2)
+      do concurrent(L=L1:L2)
          ucx_1(L) = ucx(node_map_1(L))
          ucy_1(L) = ucy(node_map_1(L))
          ucx_2(L) = ucx(node_map_2(L))
@@ -163,7 +157,7 @@ contains
 
       if (.not. is_initialized) return
 
-      do concurrent (L = L1:L2)
+      do concurrent(L=L1:L2)
          uxcorner_1(L) = ucnx(corner_map_1(L))
          uycorner_1(L) = ucny(corner_map_1(L))
          uxcorner_2(L) = ucnx(corner_map_2(L))
