@@ -50,8 +50,7 @@ double *io_layer_linear_z_positions(const int number_of_layers) {
 
 // Set up a default '2D' profile
 #define IO_2D_PROFILE_SIZE (2)
-#define IO_2D_PROFILE()                                                                            \
-  { 1.0, 1.0 }
+#define IO_2D_PROFILE() {1.0, 1.0}
 int io_layer_init_2d(profile_t *profile) {
   int array_length = 0;
   double default_values[IO_2D_PROFILE_SIZE] = IO_2D_PROFILE();
@@ -108,7 +107,9 @@ int io_normalize_profile(profile_t *profile) {
         return -1;
       }
     }
-    z_zero = (profile->relative_z_position[index_before_zero + 1] + profile->relative_z_position[index_after_zero-1])/2;
+    z_zero = (profile->relative_z_position[index_before_zero + 1] +
+              profile->relative_z_position[index_after_zero - 1]) /
+             2;
   } else {
     // Find z_zero position by linear interpolation.
     const double z_before = profile->relative_z_position[index_before_zero];
@@ -248,11 +249,14 @@ int distribute_discharge_over_layers(double total_quantity, const profile_t *pro
       if (relative_z < relative_z_start || relative_z_prev > relative_z_end) {
         relative_quantity_layer = 0.0;
       } else if (relative_z >= relative_z_start && relative_z_prev < relative_z_start) {
-        relative_quantity_layer = integrate_piecewise_linear_profile(profile, relative_z_start, relative_z);
+        relative_quantity_layer =
+            integrate_piecewise_linear_profile(profile, relative_z_start, relative_z);
       } else if (relative_z > relative_z_end && relative_z_prev >= relative_z_start) {
-        relative_quantity_layer = integrate_piecewise_linear_profile(profile, relative_z_prev, relative_z_end);
+        relative_quantity_layer =
+            integrate_piecewise_linear_profile(profile, relative_z_prev, relative_z_end);
       } else {
-        relative_quantity_layer = integrate_piecewise_linear_profile(profile, relative_z_prev, relative_z);
+        relative_quantity_layer =
+            integrate_piecewise_linear_profile(profile, relative_z_prev, relative_z);
       }
       const double layer_quantity = fabs(relative_quantity_layer) * total_quantity;
       profile_integral += relative_quantity_layer;

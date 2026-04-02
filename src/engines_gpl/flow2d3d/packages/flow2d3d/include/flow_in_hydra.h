@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: flow_in_hydra.h 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/flow_in_hydra.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/flow_in_hydra.h
+// $
 //------------------------------------------------------------------------------
 //  Flow2D3D mapper definitions
 //
@@ -34,170 +36,163 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
-
 #include "precision.h"
-
 
 //
 //  Flow / Gaws Messages
 //
 
-
 // TODORE: make arrays for these sizes dynamic
 #define MAX_NUM_MAPPERS 100
 #define MAX_NUM_D3D_FLOW_PROCS 25
-
-
 
 //
 // Flow DD blobs:
 //
 
-
-typedef struct {
+typedef struct
+{
     unsigned int value;
-    } BarrierMessage;
-
+} BarrierMessage;
 
 //
 // Enumeration for memory types
 //
-typedef enum {
-    Mem_Unknown,            // NOT SET
-    Mem_Shared,             // In process
-    Mem_Distributed,        // Distributed
+typedef enum
+{
+    Mem_Unknown,     // NOT SET
+    Mem_Shared,      // In process
+    Mem_Distributed, // Distributed
     NUM_MEM_TYPES
 } MemType;
-
 
 //
 // Define enumeration for two contexts in a Mapper
 //
 typedef enum
 {
-   C_0,         // first context
-   C_1,         // second context
-   NR_CNTXTS    // number of contexts (use for declatrions)
-}  Cntxt;
+    C_0,      // first context
+    C_1,      // second context
+    NR_CNTXTS // number of contexts (use for declatrions)
+} Cntxt;
 
-
-typedef struct {
-    int     mMax  ;
-    int     nMax  ;
-    int     nMaxus;
-    int     kMax  ;
-    int     lStsci;
-    int     lTur  ;
-    int     lSedtt;
-    int     Zmodel;
-    int     Roller;
-    int     dDb   ;
-    int     mMaxdb;
-    int     nMaxdb;
-    REAL_FP Hdt   ;
+typedef struct
+{
+    int mMax;
+    int nMax;
+    int nMaxus;
+    int kMax;
+    int lStsci;
+    int lTur;
+    int lSedtt;
+    int Zmodel;
+    int Roller;
+    int dDb;
+    int mMaxdb;
+    int nMaxdb;
+    REAL_FP Hdt;
 } Flow2MapperSizesFlags;
 
-
-typedef struct {
-    int     mMax  ;
-    int     nMax  ;
-    int     nMaxus;
-    int     kMax  ;
-    int     dDb   ;
-    int     mMaxdb;
-    int     nMaxdb;
-    REAL_FP Hdt   ;
+typedef struct
+{
+    int mMax;
+    int nMax;
+    int nMaxus;
+    int kMax;
+    int dDb;
+    int mMaxdb;
+    int nMaxdb;
+    REAL_FP Hdt;
 } Flow2GawsSizes;
 
-
 const int startEndSize = 3;
-typedef struct {
-    int edgeType     ;
+typedef struct
+{
+    int edgeType;
     int mStart[startEndSize];
     int nStart[startEndSize];
-    int mEnd  [startEndSize];
-    int nEnd  [startEndSize];
-    int mStartMin    ;
-    int nStartMin    ;
-    int mStripSize   ;
-    int nStripSize   ;
+    int mEnd[startEndSize];
+    int nEnd[startEndSize];
+    int mStartMin;
+    int nStartMin;
+    int mStripSize;
+    int nStripSize;
 } Mapper2FlowMapperInfo;
-
 
 //
 //  DD Messages (flow / mapper)
 //
 
-
-typedef struct DDMesg_STR {
-    int         value;
+typedef struct DDMesg_STR
+{
+    int value;
 } DDMesg;
 
-
-typedef struct UpdateHeader_STR{ // TODORE: remove _STR
-    int         nextStep     ;   // Step to be performed by receiver
-    int         distribGroup ;   // Group to be communicated
-    int         numMessages  ;   // #messages for this step (==0 or 1)
-    int         intValue     ;   // message value if #messages == 1
+typedef struct UpdateHeader_STR
+{                     // TODORE: remove _STR
+    int nextStep;     // Step to be performed by receiver
+    int distribGroup; // Group to be communicated
+    int numMessages;  // #messages for this step (==0 or 1)
+    int intValue;     // message value if #messages == 1
 } UpdateHeader;
 
-
-#define STEP_UNDEF (-99)   // undefined (next-)step
-
+#define STEP_UNDEF (-99) // undefined (next-)step
 
 //
 //  Flow / Gaws Messages
 //
 
-enum { FinishGaws = -1 };
+enum
+{
+    FinishGaws = -1
+};
 
-typedef struct {
-    int     intValue;
+typedef struct
+{
+    int intValue;
 } GawsDirectionMesg;
 
-
-typedef struct {
-    int     result;  // 0: OK, /= 0: error
+typedef struct
+{
+    int result; // 0: OK, /= 0: error
 } GawsOKMesg;
-
-
 
 //
 // Enumeration for Identification of Exchanged Blobs
 //
-typedef enum {
+typedef enum
+{
 
-F2M_Blob_ContextID          = 102000,
-F2M_Blob_SubdomainSizesFlags= 102002,
+    F2M_Blob_ContextID = 102000,
+    F2M_Blob_SubdomainSizesFlags = 102002,
 
-M2F_Blob_InfoOnMapperStrips = 201001,
+    M2F_Blob_InfoOnMapperStrips = 201001,
 
-F2M_Blob_MapperStep         = 102011,
-F2M_Blob_NumMessages        = 102012,
-F2M_Blob_Messages           = 102013,
-F2M_Blob_Update             = 102014,
+    F2M_Blob_MapperStep = 102011,
+    F2M_Blob_NumMessages = 102012,
+    F2M_Blob_Messages = 102013,
+    F2M_Blob_Update = 102014,
 
-M2F_Blob_FlowStep           = 201011,
-M2F_Blob_NumMessages        = 201012,
-M2F_Blob_Messages           = 201013,
-M2F_Blob_Update             = 201014,
+    M2F_Blob_FlowStep = 201011,
+    M2F_Blob_NumMessages = 201012,
+    M2F_Blob_Messages = 201013,
+    M2F_Blob_Update = 201014,
 
-F2G_Blob_ContextID          = 103000,
-F2G_Blob_SubdomainSizes     = 103001,
-F2G_Blob_KCS_Array          = 103002,
+    F2G_Blob_ContextID = 103000,
+    F2G_Blob_SubdomainSizes = 103001,
+    F2G_Blob_KCS_Array = 103002,
 
-G2F_Blob_NumCommPoints      = 301001,
-G2F_Blob_CommPoints         = 301002,
+    G2F_Blob_NumCommPoints = 301001,
+    G2F_Blob_CommPoints = 301002,
 
-F2G_Blob_Left2RightMessage  = 103011,
-F2G_Blob_Update             = 103012,
+    F2G_Blob_Left2RightMessage = 103011,
+    F2G_Blob_Update = 103012,
 
-G2F_Blob_OKMessage          = 301011,
-G2F_Blob_Update             = 301012,
+    G2F_Blob_OKMessage = 301011,
+    G2F_Blob_Update = 301012,
 
-NUM_FLOW_DD_MESSAGES
+    NUM_FLOW_DD_MESSAGES
 
 } DDBlobID;

@@ -28,28 +28,33 @@
 // $HeadURL$
 
 #ifndef _GEN_INCLUDED
-#   define _GEN_INCLUDED
+#define _GEN_INCLUDED
 
-#   define UNDEFVALUE 999.999
-#   define MAXNUMBEROFVARS 40
-#   define MAXNUMBEROFPARS 40
+#define UNDEFVALUE 999.999
+#define MAXNUMBEROFVARS 40
+#define MAXNUMBEROFPARS 40
 
-#   include "neftyp.h"
-#   include "btps.h"
+#include "neftyp.h"
+#include "btps.h"
 
-    enum INTR_TYPE    { AVERAGE, MAXIMUM, MINIMUM } ;
+enum INTR_TYPE
+{
+    AVERAGE,
+    MAXIMUM,
+    MINIMUM
+};
 
-    extern BInt4   GEN_string_compare ( const BText, const BText );
-    extern BText   GEN_tekst ( BText ) ;
-    extern BVoid   GEN_close_output_stream ( BVoid );
-    extern BVoid   GEN_declare_error_file ( FILE * );
-    extern BVoid   GEN_display_help ( BVoid ) ;
-    extern BVoid   GEN_free  ( BVoid * );
-    extern BVoid   GEN_init  ( );
-    extern BVoid   GEN_mallinfo( BVoid );
-    extern BVoid   GEN_message_to_errorfile( BInt4, ... );
-    extern BVoid   GEN_print ( FILE *, const BText, ... );
-    extern BVoid * GEN_malloc ( BInt4 );
-    extern FILE  * GEN_get_output_stream( BVoid );
+extern BInt4 GEN_string_compare(const BText, const BText);
+extern BText GEN_tekst(BText);
+extern BVoid GEN_close_output_stream(BVoid);
+extern BVoid GEN_declare_error_file(FILE*);
+extern BVoid GEN_display_help(BVoid);
+extern BVoid GEN_free(BVoid*);
+extern BVoid GEN_init();
+extern BVoid GEN_mallinfo(BVoid);
+extern BVoid GEN_message_to_errorfile(BInt4, ...);
+extern BVoid GEN_print(FILE*, const BText, ...);
+extern BVoid* GEN_malloc(BInt4);
+extern FILE* GEN_get_output_stream(BVoid);
 
 #endif

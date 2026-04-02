@@ -22,15 +22,6 @@ add_library(${library_name} SHARED ${source}
                                    ${includes}
 )
 
-# Add dependencies
-if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
-
-    target_link_libraries(${library_name} PRIVATE PkgConfig::PETSC)
-endif(UNIX)
-
 target_link_libraries(${library_name} PRIVATE
                       dflowfm_kernel
                       gridgeom
@@ -38,23 +29,12 @@ target_link_libraries(${library_name} PRIVATE
                       netcdff
 )
 
-if(UNIX)
-    message(STATUS "Setting target_compile_definitions in Unix")
-    target_compile_definitions(${library_name} PRIVATE "HAVE_MPI;HAVE_PETSC")
-endif(UNIX)
-
-if(WIN32)
-    message(STATUS "Setting target_compile_definitions in windows")
-    target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_MPI;HAVE_PETSC")
-endif(WIN32)
-
 # Define additional compilation flags
 set_source_files_properties(${source} PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 if (WIN32)
     target_include_directories(${library_name} PRIVATE  include
                                                         ${mpi_module_path}
-                                                        ${petsc_libdir}
     )
 
     # Set linker properties
@@ -63,7 +43,6 @@ if (WIN32)
                             PRIVATE
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${petsc_libdir}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name} PRIVATE

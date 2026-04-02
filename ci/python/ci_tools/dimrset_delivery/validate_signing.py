@@ -9,13 +9,8 @@ from pathlib import Path
 SIGNTOOL = "signtool.exe"
 
 
-def is_signtool_available(developer_prompt: str) -> bool:
-    """Check if the 'signtool' is available in the given developer prompt.
-
-    Parameters
-    ----------
-    developer_prompt : str
-        The command to open the developer prompt.
+def is_signtool_available() -> bool:
+    """Check if 'signtool' is available on the PATH.
 
     Returns
     -------
@@ -24,16 +19,9 @@ def is_signtool_available(developer_prompt: str) -> bool:
     """
     try:
         result = subprocess.run(
-            [
-                developer_prompt,
-                "&&",
-                SIGNTOOL,
-                "verify",
-                "/?",
-            ],
+            [SIGNTOOL, "verify", "/?"],
             capture_output=True,
             text=True,
-            shell=True,
         )
         if result.returncode == 0:
             return True
@@ -45,15 +33,13 @@ def is_signtool_available(developer_prompt: str) -> bool:
         return False
 
 
-def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple[str, str]:
-    """Verify the signing authority of a given file using the specified developer prompt.
+def verify_signing_authority(filepath: str) -> tuple[str, str]:
+    """Verify the signing authority of a given file.
 
     Parameters
     ----------
     filepath : str
         The path to the file to be verified.
-    developer_prompt : str
-        The developer prompt command to be used for verification.
 
     Returns
     -------
@@ -63,18 +49,9 @@ def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple[str,
     """
     try:
         result = subprocess.run(
-            [
-                developer_prompt,
-                "&&",
-                SIGNTOOL,
-                "verify",
-                "/pa",
-                "/v",
-                filepath,
-            ],
+            [SIGNTOOL, "verify", "/pa", "/v", filepath],
             capture_output=True,
             text=True,
-            shell=True,
         )
         if "Successfully verified" in result.stdout:
             issuer = ""
@@ -95,7 +72,6 @@ def validate_signing_status(
     directory: str,
     files_that_should_be_signed_with_issued_to: list,
     files_that_should_not_be_signed: list[Path],
-    developer_prompt: str,
 ) -> tuple[str, bool]:
     """Validate the signing status of a file.
 
@@ -109,8 +85,6 @@ def validate_signing_status(
         List of files that should be signed with a specific issuer.
     files_that_should_not_be_signed : list[Path]
         List of files that should not be signed.
-    developer_prompt : str
-        Prompt for the developer.
 
     Returns
     -------
@@ -119,7 +93,7 @@ def validate_signing_status(
     """
     filepath = os.path.join(directory, file)
     filepath = os.path.normpath(filepath)
-    status, issued_to = verify_signing_authority(filepath, developer_prompt)
+    status, issued_to = verify_signing_authority(filepath)
     if status == "Error":
         return f"Error occurred while verifying signing for file: {file}", False
     signed_files = {item["file"]: item for item in files_that_should_be_signed_with_issued_to}
@@ -146,7 +120,7 @@ def validate_signing_status(
     return "", True
 
 
-def signing_is_valid(filepath: str, developer_prompt: str, expected_issued_to: str = "") -> bool:
+def signing_is_valid(filepath: str, expected_issued_to: str = "") -> bool:
     """
     Check if the signing of a file is valid.
 
@@ -154,8 +128,6 @@ def signing_is_valid(filepath: str, developer_prompt: str, expected_issued_to: s
     ----------
     filepath : str
         The path to the file to check.
-    developer_prompt : str
-        The developer prompt command to use for verification.
     expected_issued_to : str, optional
         The expected issuer name for signed files. If empty, the file should not be signed.
 
@@ -164,7 +136,7 @@ def signing_is_valid(filepath: str, developer_prompt: str, expected_issued_to: s
     bool
         True if the signing status matches expectations, False otherwise.
     """
-    status, issued_to = verify_signing_authority(filepath, developer_prompt)
+    status, issued_to = verify_signing_authority(filepath)
     if status == "Error":
         print(f"Error occurred while verifying signing for file: {filepath}")
         return False
@@ -183,7 +155,6 @@ def is_signing_correct(
     directory: str,
     files_that_should_be_signed_with_issued_to: list,
     files_that_should_not_be_signed: list[Path],
-    developer_prompt: str,
 ) -> bool:
     """
     Check if the signing status of files is correct.
@@ -191,7 +162,6 @@ def is_signing_correct(
     Args:
         files_that_should_be_signed_with_issued_to (list): List of files that should be signed with "issuedTo".
         files_that_should_not_be_signed (list): List of files that should not be signed.
-        developer_prompt (str): Developer prompt for signing validation.
 
     Returns
     -------
@@ -203,7 +173,6 @@ def is_signing_correct(
         signed_results = executor.map(
             lambda item: signing_is_valid(
                 os.path.join(directory, item["file"]),
-                developer_prompt,
                 item["issuedTo"],
             ),
             files_that_should_be_signed_with_issued_to,
@@ -211,7 +180,7 @@ def is_signing_correct(
         files_signed_correctly = all(signed_results)
 
         unsigned_results = executor.map(
-            lambda item: signing_is_valid(os.path.join(directory, item), developer_prompt),
+            lambda item: signing_is_valid(os.path.join(directory, item)),
             files_that_should_not_be_signed,
         )
         files_unsigned_correctly = not any(unsigned_results)
@@ -296,7 +265,7 @@ def parse_common_arguments() -> argparse.Namespace:
     Returns
     -------
     argparse.Namespace
-        Parsed command-line arguments containing expected_structure_json, developer_prompt, and directory.
+        Parsed command-line arguments containing expected_structure_json and directory.
     """
     parser = argparse.ArgumentParser(description="Validate file structure and signing status of files in a directory.")
     parser.add_argument(
@@ -304,10 +273,9 @@ def parse_common_arguments() -> argparse.Namespace:
         help="Json file with expected file structure.",
         type=str,
     )
-    parser.add_argument("developer_prompt", help="Path to the vs studio developer prompt", type=str)
     parser.add_argument("directory", help="Directory to validate.", type=str)
-    if len(sys.argv) != 4:
-        print("Usage: python script.py <expected_structure_json> <developer_prompt> <directory>")
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <expected_structure_json> <directory>")
         sys.exit(1)
     args = parser.parse_args()
     return args
@@ -317,7 +285,6 @@ if __name__ == "__main__":
     args = parse_common_arguments()
 
     file_structure_json = args.expected_structure_json
-    developer_prompt = args.developer_prompt
     directory = args.directory
 
     try:
@@ -345,7 +312,7 @@ if __name__ == "__main__":
 
     print("Directory check passed: All expected files are present and in the right structure.")
 
-    if not is_signtool_available(developer_prompt):
+    if not is_signtool_available():
         print("Signtool is required to run this script. Please ensure it is installed and available in the PATH.")
         sys.exit(1)
 
@@ -354,7 +321,6 @@ if __name__ == "__main__":
         directory,
         files_that_should_be_signed_with_issued_to,
         files_that_should_not_be_signed,
-        developer_prompt,
     ):
         print("Some files are not correctly signed")
         sys.exit(1)

@@ -12,7 +12,7 @@ void tearDown(void) {}
 // `timegm` is implemented in the Windows C standard library as `_mkgmtime`.
 // So unfortunately we need a platform dependent macro if we want to use `timegm`.
 #ifdef _WIN32
-#define timegm _mkgmtime
+#  define timegm _mkgmtime
 #endif
 
 static int get_tz_offset_seconds(time_t epoch_time) {
@@ -34,7 +34,8 @@ static void test_timestamp_conversion(void) {
   int local_tz_offset = get_tz_offset_seconds(time_minus_local_tz);
   TEST_ASSERT_EQUAL_INT64(time_at_utc, time_minus_local_tz + local_tz_offset);
   TEST_ASSERT_EQUAL_DOUBLE(202409181404.0, local_timestamp_as_double);
-  TEST_ASSERT_EQUAL_INT64(time_at_utc, timestamp_to_time(local_timestamp_as_double) + local_tz_offset);
+  TEST_ASSERT_EQUAL_INT64(time_at_utc,
+                          timestamp_to_time(local_timestamp_as_double) + local_tz_offset);
 }
 
 static void test_timestamp_advance(void) {
