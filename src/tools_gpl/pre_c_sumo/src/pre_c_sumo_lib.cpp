@@ -13,21 +13,21 @@ namespace pre_c_sumo
     /**
      * @details Entry point into the C-SUMO preCICE library.
      */
-    int run(const std::string_view csumoConfigFileName, const std::string_view adapterConfigFileName)
+    int run(const std::string_view csumo_config_file_name, const std::string_view adapter_config_file_name)
     {
-        constexpr int mpiRank = 0;
-        constexpr int mpiSize = 1;
-        precice::Participant participant{"C-SUMO", adapterConfigFileName, mpiRank, mpiSize};
+        constexpr int mpi_rank = 0;
+        constexpr int mpi_size = 1;
+        precice::Participant participant{"C-SUMO", adapter_config_file_name, mpi_rank, mpi_size};
 
-        while (do_timeloop())
+        while (doTimeloop())
         {
-            const auto csumoSettings = read_csumo_config_file(csumoConfigFileName);
-            receive_ff_data();
-            write_ff2nf_files(csumoSettings.value());
-            wait_for_nf2ff_files(csumoSettings.value());
-            read_nf2ff_files(csumoSettings.value());
-            convert_nf_to_sources_sinks(csumoSettings.value());
-            send_sources_sinks_to_ff(csumoSettings.value());
+            const auto csumo_settings = readCsumoConfigFile(csumo_config_file_name);
+            receiveFFData();
+            writeFF2NFFiles(csumo_settings.value());
+            waitForNF2FFFiles(csumo_settings.value());
+            readNF2FFFiles(csumo_settings.value());
+            convertNFToSourcesSinks(csumo_settings.value());
+            sendSourcesSinksToFF(csumo_settings.value());
         }
         return 0;
     }

@@ -25,7 +25,7 @@ namespace pre_c_sumo
      *
      * @return true if the timeloop should continue, false otherwise.
      */
-    bool do_timeloop();
+    bool doTimeloop();
 
     /**
      * @brief Read and parse the C-SUMO configuration file.
@@ -37,7 +37,7 @@ namespace pre_c_sumo
      * @param csumoConfigFileName Path or name of the C-SUMO configuration file.
      * @return std::expected containing `CSumoSettingsReader` on success or `ParseError` on failure.
      */
-    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> read_csumo_config_file(
+    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoConfigFile(
         const std::string_view csumoConfigFileName);
 
     /**
@@ -46,7 +46,7 @@ namespace pre_c_sumo
      * Blocking receive of farfield data via preCICE.
      * The demo implementation only logs a message.
      */
-    void receive_ff_data();
+    void receiveFFData();
 
     /**
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
@@ -56,7 +56,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void write_ff2nf_files(CSumoSettingsReader csumoSettings);
+    void writeFF2NFFiles(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Wait until NF2FF files become available.
@@ -67,7 +67,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void wait_for_nf2ff_files(CSumoSettingsReader csumoSettings);
+    void waitForNF2FFFiles(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Read NF2FF files and extract the required data.
@@ -77,7 +77,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void read_nf2ff_files(CSumoSettingsReader csumoSettings);
+    void readNF2FFFiles(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
@@ -86,7 +86,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void convert_nf_to_sources_sinks(CSumoSettingsReader csumoSettings);
+    void convertNFToSourcesSinks(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Send computed sources/sinks to the farfield model.
@@ -96,7 +96,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void send_sources_sinks_to_ff(CSumoSettingsReader csumoSettings);
+    void sendSourcesSinksToFF(CSumoSettingsReader csumoSettings);
 
     /**
      * @brief Convert NF sinks to farfield sinks.
@@ -104,7 +104,7 @@ namespace pre_c_sumo
      * Converts NF sink information into the format required by the
      * farfield component.
      */
-    void convert_nf_sinks_to_ff();
+    void convertNFSinksToFF();
 
     /**
      * @brief Convert NF intakes to farfield sinks.
@@ -112,7 +112,7 @@ namespace pre_c_sumo
      * Converts NF intake information into the format required by the
      * farfield component.
      */
-    void convert_nf_intakes_to_ff();
+    void convertNFIntakesToFF();
 
     /**
      * @brief Convert NF source definitions to farfield sources.
@@ -120,21 +120,21 @@ namespace pre_c_sumo
      * Depending on whether a diffuser is modelled this will either
      * process explicit source locations or build a diffuser model.
      */
-    void convert_nf_sources_to_ff();
+    void convertNFSourcesToFF();
 
     /**
      * @brief Query whether the diffuser is modelled explicitly.
      *
      * @return true if the diffuser is modelled, false otherwise.
      */
-    bool is_diffuser_modelled();
+    bool isDiffuserModelled();
 
     /**
      * @brief Process explicit source locations from NF data.
      *
      * Converts NF source information into the format required by the farfield component.
      */
-    void process_source_locations();
+    void processSourceLocations();
 
     /**
      * @brief Create an approximate diffuser model from NF source data.
@@ -143,7 +143,7 @@ namespace pre_c_sumo
      * a simplified diffuser representation and converts the created source information into the format required by the
      * farfield component.
      */
-    void create_diffuser_model();
+    void createDiffuserModel();
 
 } // namespace pre_c_sumo
 

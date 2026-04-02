@@ -9,7 +9,7 @@
 TEST(CsumoPreciceCouplingStepsTest, DoTimeloopRunsExpectedNumberOfIterations)
 {
     int iteration_count = 0;
-    while (pre_c_sumo::do_timeloop())
+    while (pre_c_sumo::doTimeloop())
     {
         iteration_count++;
     }
@@ -19,10 +19,10 @@ TEST(CsumoPreciceCouplingStepsTest, DoTimeloopRunsExpectedNumberOfIterations)
 // This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.
 TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
 {
-    auto result = pre_c_sumo::read_csumo_config_file("non_existent_file.xml");
+    auto result = pre_c_sumo::readCsumoConfigFile("non_existent_file.xml");
     EXPECT_FALSE(result.has_value());
     EXPECT_PRED2(test_utilities::contains, result.error().message, "Cannot open file: ");
 }
 
 // This test verifies that the receive_ff_data function executes without throwing an exception.
-TEST(CsumoPreciceCouplingStepsTest, ReceiveNFData) { EXPECT_NO_THROW(pre_c_sumo::receive_ff_data()); }
+TEST(CsumoPreciceCouplingStepsTest, ReceiveNFData) { EXPECT_NO_THROW(pre_c_sumo::receiveFFData()); }

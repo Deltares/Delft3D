@@ -10,33 +10,33 @@
 namespace pre_c_sumo
 {
 
-    bool do_timeloop()
+    bool doTimeloop()
     {
         static int iteration = 0;
         return iteration++ < 2; // Run the loop 2 times for demonstration
     }
 
-    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> read_csumo_config_file(
-        const std::string_view csumoConfigFileName)
+    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoConfigFile(
+        const std::string_view csumo_config_file_name)
     {
         std::println("Reading C-SUMO configuration file...");
-        auto expectedCsumoSettings = pre_c_sumo::CSumoSettingsReader::fromFile(csumoConfigFileName);
+        auto expectedCsumoSettings = pre_c_sumo::CSumoSettingsReader::fromFile(csumo_config_file_name);
 
         if (!expectedCsumoSettings.has_value())
         {
             std::println(stderr, "Error parsing C-SUMO configuration: {}", expectedCsumoSettings.error().message);
             return expectedCsumoSettings;
         }
-        const auto csumoSettings = std::move(expectedCsumoSettings).value();
-        std::println("Successfully parsed C-SUMO configuration file version: {}", csumoSettings.fileVersion());
+        const auto csumo_settings = std::move(expectedCsumoSettings).value();
+        std::println("Successfully parsed C-SUMO configuration file version: {}", csumo_settings.fileVersion());
         return expectedCsumoSettings.value();
     }
 
-    void receive_ff_data() { std::println("Receiving far-field data..."); }
+    void receiveFFData() { std::println("Receiving far-field data..."); }
 
-    void write_ff2nf_files(CSumoSettingsReader csumoSettings)
+    void writeFF2NFFiles(CSumoSettingsReader csumo_settings)
     {
-        for (const auto& diffuser : csumoSettings.diffusers())
+        for (const auto& diffuser : csumo_settings.diffusers())
         {
             std::println("Write FF2NF file for diffuser with position: ({}, {})", diffuser.position.x,
                          diffuser.position.y);
@@ -44,9 +44,9 @@ namespace pre_c_sumo
         }
     }
 
-    void wait_for_nf2ff_files(CSumoSettingsReader csumoSettings)
+    void waitForNF2FFFiles(CSumoSettingsReader csumo_settings)
     {
-        for (const auto& diffuser : csumoSettings.diffusers())
+        for (const auto& diffuser : csumo_settings.diffusers())
         {
             if (diffuser.nf2ff_file.has_value())
             {
@@ -56,9 +56,9 @@ namespace pre_c_sumo
         }
     }
 
-    void read_nf2ff_files(CSumoSettingsReader csumoSettings)
+    void readNF2FFFiles(CSumoSettingsReader csumo_settings)
     {
-        for (const auto& diffuser : csumoSettings.diffusers())
+        for (const auto& diffuser : csumo_settings.diffusers())
         {
             if (diffuser.nf2ff_file.has_value())
             {
@@ -68,47 +68,47 @@ namespace pre_c_sumo
         }
     }
 
-    void convert_nf_to_sources_sinks(CSumoSettingsReader csumoSettings)
+    void convertNFToSourcesSinks(CSumoSettingsReader csumo_settings)
     {
-        for (const auto& diffuser : csumoSettings.diffusers())
+        for (const auto& diffuser : csumo_settings.diffusers())
         {
             std::println("Converting NF data to sources/sinks for diffuser {} ...", diffuser.nf2ff_file.value());
-            convert_nf_sinks_to_ff();
-            convert_nf_intakes_to_ff();
-            convert_nf_sources_to_ff();
+            convertNFSinksToFF();
+            convertNFIntakesToFF();
+            convertNFSourcesToFF();
         }
     }
 
-    void send_sources_sinks_to_ff(CSumoSettingsReader csumoSettings)
+    void sendSourcesSinksToFF(CSumoSettingsReader csumo_settings)
     {
         std::println("Sending sources/sinks data to far-field...");
-        (void)csumoSettings;
+        (void)csumo_settings;
     }
 
-    void convert_nf_sinks_to_ff() { std::println("Processing sinks..."); }
+    void convertNFSinksToFF() { std::println("Processing sinks..."); }
 
-    void convert_nf_intakes_to_ff() { std::println("Processing intakes..."); }
+    void convertNFIntakesToFF() { std::println("Processing intakes..."); }
 
-    void convert_nf_sources_to_ff()
+    void convertNFSourcesToFF()
     {
-        if (is_diffuser_modelled())
+        if (isDiffuserModelled())
         {
-            process_source_locations();
+            processSourceLocations();
         }
         else
         {
-            create_diffuser_model();
+            createDiffuserModel();
         }
     }
 
-    bool is_diffuser_modelled()
+    bool isDiffuserModelled()
     {
         // Placeholder logic to determine if the diffuser is modelled
         return true; // Assume it's modelled for demonstration
     }
 
-    void process_source_locations() { std::println("Processing source locations..."); }
+    void processSourceLocations() { std::println("Processing source locations..."); }
 
-    void create_diffuser_model() { std::println("Creating diffuser model..."); }
+    void createDiffuserModel() { std::println("Creating diffuser model..."); }
 
 } // namespace pre_c_sumo
