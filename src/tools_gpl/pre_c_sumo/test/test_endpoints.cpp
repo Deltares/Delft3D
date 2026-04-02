@@ -97,8 +97,8 @@ TEST(EndpointsTest, AddConstituentsAttachesToNonNegativeDischargeSource)
 {
     pre_c_sumo::Source source = makeTestSource();
 
-    const bool attached = pre_c_sumo::addConstituents(
-        source, pre_c_sumo::makeConstituents(18.5, 30.2, {1.0, 2.0, 3.0}));
+    const bool attached =
+        pre_c_sumo::addConstituents(source, pre_c_sumo::makeConstituents(18.5, 30.2, {1.0, 2.0, 3.0}));
 
     EXPECT_TRUE(attached);
     ASSERT_TRUE(source.constituents.has_value());
@@ -110,8 +110,8 @@ TEST(EndpointsTest, AddConstituentsRejectsNegativeDischargeSource)
 {
     pre_c_sumo::Source source = makeTestSource(-12.5);
 
-    const bool attached = pre_c_sumo::addConstituents(
-        source, pre_c_sumo::makeConstituents(18.5, 30.2, {1.0, 2.0, 3.0}));
+    const bool attached =
+        pre_c_sumo::addConstituents(source, pre_c_sumo::makeConstituents(18.5, 30.2, {1.0, 2.0, 3.0}));
 
     EXPECT_FALSE(attached);
     EXPECT_FALSE(source.constituents.has_value());
