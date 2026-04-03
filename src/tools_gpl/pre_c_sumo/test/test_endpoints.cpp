@@ -9,14 +9,14 @@ namespace
     pre_c_sumo::Source makeTestSource(double discharge = 12.5)
     {
         pre_c_sumo::Source source{};
-        pre_c_sumo::makeEndpoint(source, 7, 100.5, 200.75, -4.0, -2.0, discharge, 11);
+        pre_c_sumo::makeEndpoint(source.endpoint, 7, 100.5, 200.75, -4.0, -2.0, discharge, 11);
         return source;
     }
 
     /// Returns a Sink initialised with a fixed, representative set of values.
-    pre_c_sumo::Sink makeTestSink()
+    pre_c_sumo::Endpoint makeTestSink()
     {
-        pre_c_sumo::Sink sink{};
+        pre_c_sumo::Endpoint sink{};
         pre_c_sumo::makeEndpoint(sink, 3, 10.0, 20.0, -6.0, -6.0, -5.25);
         return sink;
     }
@@ -47,20 +47,20 @@ TEST(EndpointsTest, MakeEndpointConstructsSourceWithDefaulTestValues)
 {
     const pre_c_sumo::Source source = makeTestSource();
 
-    EXPECT_EQ(source.id, 7);
-    EXPECT_EQ(source.connected_id, 11);
-    EXPECT_DOUBLE_EQ(source.coordinate_x, 100.5);
-    EXPECT_DOUBLE_EQ(source.coordinate_y, 200.75);
-    EXPECT_DOUBLE_EQ(source.vertical_boundary_lower, -4.0);
-    EXPECT_DOUBLE_EQ(source.vertical_boundary_upper, -2.0);
-    EXPECT_DOUBLE_EQ(source.discharge, 12.5);
+    EXPECT_EQ(source.endpoint.id, 7);
+    EXPECT_EQ(source.endpoint.connected_id, 11);
+    EXPECT_DOUBLE_EQ(source.endpoint.coordinate_x, 100.5);
+    EXPECT_DOUBLE_EQ(source.endpoint.coordinate_y, 200.75);
+    EXPECT_DOUBLE_EQ(source.endpoint.vertical_boundary_lower, -4.0);
+    EXPECT_DOUBLE_EQ(source.endpoint.vertical_boundary_upper, -2.0);
+    EXPECT_DOUBLE_EQ(source.endpoint.discharge, 12.5);
     EXPECT_FALSE(source.momentum.has_value());
     EXPECT_FALSE(source.constituents.has_value());
 }
 
 TEST(EndpointsTest, MakeEndpointConstructsSinkWithDefaulTestValues)
 {
-    const pre_c_sumo::Sink sink = makeTestSink();
+    const pre_c_sumo::Endpoint sink = makeTestSink();
 
     EXPECT_EQ(sink.id, 3);
     EXPECT_EQ(sink.connected_id, -1);
@@ -142,14 +142,14 @@ TEST(EndpointsTest, SourceCanStoreMomentumAndConstituents)
 TEST(EndpointsTest, SourceAndSinkConnectedToEachOther)
 {
     pre_c_sumo::Source source{};
-    source.id = 1;
-    source.connected_id = 2;
+    source.endpoint.id = 1;
+    source.endpoint.connected_id = 2;
 
-    pre_c_sumo::Sink sink{};
-    sink.id = source.connected_id;
-    sink.connected_id = source.id;
+    pre_c_sumo::Endpoint sink{};
+    sink.id = source.endpoint.connected_id;
+    sink.connected_id = source.endpoint.id;
 
-    const pre_c_sumo::Endpoint& source_endpoint = source;
+    const pre_c_sumo::Endpoint& source_endpoint = source.endpoint;
     const pre_c_sumo::Endpoint& sink_endpoint = sink;
 
     EXPECT_EQ(source_endpoint.id, 1);
