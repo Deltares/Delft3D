@@ -18,9 +18,14 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
                   src/stdlib/stdlib_sorting_radix_sort.f90
                   src/stdlib/stdlib_sorting_sort_index.f90
 )
-
+set(malloc_template_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_body.f90.in")
+set(malloc_output_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_generated.f90")
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_malloc.cmake")
-generate_malloc(OUTPUT_FILE malloc_file)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_malloc.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_body.f90.in"
+)
+generate_malloc()
 
 get_fortran_source_files(src source)
 
@@ -28,7 +33,7 @@ set(library_name deltares_common)
 add_library(${library_name} ${source}
                             ${rd_token_source}
                             ${stdlib_source}
-                            ${malloc_file}
+                            ${malloc_output_file}
                             ${fortran_version_file}
 )
 
