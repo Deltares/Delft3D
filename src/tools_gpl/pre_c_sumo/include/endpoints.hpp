@@ -76,45 +76,6 @@ namespace pre_c_sumo
     };
 
     /**
-     * @brief Initialize the common endpoint fields on an endpoint-like value.
-     *
-     * This helper can be used with @ref Endpoint itself and with types derived
-     * from it such as @ref Source and @ref Sink.
-     *
-     * @param endpoint Endpoint-like object to initialize.
-     * @param id Unique identifier of the endpoint record.
-     * @param coordinate_x Horizontal x-coordinate in model space [m].
-     * @param coordinate_y Horizontal y-coordinate in model space [m].
-     * @param vertical_boundary_lower Lower vertical boundary of injection/withdrawal zone [m].
-     * @param vertical_boundary_upper Upper vertical boundary of injection/withdrawal zone [m].
-     * @param discharge Fully weighted discharge [m3/s]. Negative values represent withdrawals.
-     * @param connected_id Identifier of the paired endpoint (-1 when unpaired).
-     */
-    void makeEndpoint(Endpoint& endpoint, int id, double coordinate_x, double coordinate_y,
-                      double vertical_boundary_lower, double vertical_boundary_upper, double discharge,
-                      int connected_id = -1);
-
-    /**
-     * @brief Construct momentum data for source.
-     *
-     * @param velocity_magnitude Exit velocity magnitude [m/s].
-     * @param velocity_direction_deg Horizontal direction [deg], 0=North, 90=East.
-     * @return Fully initialized @ref Momentum.
-     */
-    [[nodiscard]] Momentum makeMomentum(double velocity_magnitude, double velocity_direction_deg);
-
-    /**
-     * @brief Construct constituent data for source.
-     *
-     * @param temperature Absolute temperature concentration [degC].
-     * @param salinity Absolute salinity concentration [ppt].
-     * @param additional_constituents Absolute concentrations for additional tracers [kg/m3].
-     * @return Fully initialized @ref Constituents.
-     */
-    [[nodiscard]] Constituents makeConstituents(
-        double temperature, double salinity, const std::array<double, constituent_count>& additional_constituents = {});
-
-    /**
      * @brief Attach momentum data to a source.
      *
      * Momentum is only valid for non-negative endpoint discharge. If the endpoint has

@@ -9,15 +9,26 @@ namespace
     pre_c_sumo::Source makeTestSource(double discharge = 12.5)
     {
         pre_c_sumo::Source source{};
-        pre_c_sumo::makeEndpoint(source.endpoint, 7, 100.5, 200.75, -4.0, -2.0, discharge, 11);
+        source.endpoint = pre_c_sumo::Endpoint{.id = 7,
+                                               .connected_id = 11,
+                                               .coordinate_x = 100.5,
+                                               .coordinate_y = 200.75,
+                                               .vertical_boundary_lower = -4.0,
+                                               .vertical_boundary_upper = -2.0,
+                                               .discharge = discharge};
         return source;
     }
 
     /// Returns a Sink initialised with a fixed, representative set of values.
     pre_c_sumo::Endpoint makeTestSink()
     {
-        pre_c_sumo::Endpoint sink{};
-        pre_c_sumo::makeEndpoint(sink, 3, 10.0, 20.0, -6.0, -6.0, -5.25);
+        pre_c_sumo::Endpoint sink{.id = 3,
+                                  .connected_id = -1,
+                                  .coordinate_x = 10.0,
+                                  .coordinate_y = 20.0,
+                                  .vertical_boundary_lower = -6.0,
+                                  .vertical_boundary_upper = -6.0,
+                                  .discharge = -5.25};
         return sink;
     }
 } // namespace
@@ -75,7 +86,8 @@ TEST(EndpointsTest, AddMomentumAttachesToNonNegativeDischargeSource)
 {
     pre_c_sumo::Source source = makeTestSource();
 
-    const bool attached = pre_c_sumo::addMomentum(source, pre_c_sumo::makeMomentum(2.1, 135.0));
+    const bool attached = pre_c_sumo::addMomentum(
+        source, pre_c_sumo::Momentum{.velocity_magnitude = 2.1, .velocity_direction_deg = 135.0});
 
     EXPECT_TRUE(attached);
     ASSERT_TRUE(source.momentum.has_value());
@@ -87,7 +99,8 @@ TEST(EndpointsTest, AddMomentumRejectsNegativeDischargeSource)
 {
     pre_c_sumo::Source source = makeTestSource(-12.5);
 
-    const bool attached = pre_c_sumo::addMomentum(source, pre_c_sumo::makeMomentum(2.1, 135.0));
+    const bool attached = pre_c_sumo::addMomentum(
+        source, pre_c_sumo::Momentum{.velocity_magnitude = 2.1, .velocity_direction_deg = 135.0});
 
     EXPECT_FALSE(attached);
     EXPECT_FALSE(source.momentum.has_value());
@@ -97,8 +110,9 @@ TEST(EndpointsTest, AddConstituentsAttachesToNonNegativeDischargeSource)
 {
     pre_c_sumo::Source source = makeTestSource();
 
-    const bool attached =
-        pre_c_sumo::addConstituents(source, pre_c_sumo::makeConstituents(18.5, 30.2, {1.0, 2.0, 3.0}));
+    const bool attached = pre_c_sumo::addConstituents(
+        source,
+        pre_c_sumo::Constituents{.temperature = 18.5, .salinity = 30.2, .additional_constituents = {1.0, 2.0, 3.0}});
 
     EXPECT_TRUE(attached);
     ASSERT_TRUE(source.constituents.has_value());
@@ -110,8 +124,9 @@ TEST(EndpointsTest, AddConstituentsRejectsNegativeDischargeSource)
 {
     pre_c_sumo::Source source = makeTestSource(-12.5);
 
-    const bool attached =
-        pre_c_sumo::addConstituents(source, pre_c_sumo::makeConstituents(18.5, 30.2, {1.0, 2.0, 3.0}));
+    const bool attached = pre_c_sumo::addConstituents(
+        source,
+        pre_c_sumo::Constituents{.temperature = 18.5, .salinity = 30.2, .additional_constituents = {1.0, 2.0, 3.0}});
 
     EXPECT_FALSE(attached);
     EXPECT_FALSE(source.constituents.has_value());
@@ -121,8 +136,9 @@ TEST(EndpointsTest, SourceCanStoreMomentumAndConstituents)
 {
     pre_c_sumo::Source source = makeTestSource();
 
-    source.momentum = pre_c_sumo::makeMomentum(2.1, 135.0);
-    source.constituents = pre_c_sumo::makeConstituents(18.5, 30.2, {1.0, 2.0, 3.0});
+    source.momentum = pre_c_sumo::Momentum{.velocity_magnitude = 2.1, .velocity_direction_deg = 135.0};
+    source.constituents =
+        pre_c_sumo::Constituents{.temperature = 18.5, .salinity = 30.2, .additional_constituents = {1.0, 2.0, 3.0}};
 
     ASSERT_TRUE(source.momentum.has_value());
     EXPECT_DOUBLE_EQ(source.momentum->velocity_magnitude, 2.1);
