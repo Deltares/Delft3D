@@ -24,9 +24,7 @@ contains
    subroutine test_realloc_grow_keeps_existing() bind(C)
       real(dp), allocatable :: arr(:)
       call realloc(arr, 3, fill=0.0d0)
-      arr(1) = 1.0d0
-      arr(2) = 2.0d0
-      arr(3) = 3.0d0
+      arr = [1.0d0, 2.0d0, 3.0d0]
       call realloc(arr, 5, fill=-1.0d0, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
       call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0) .and. equal(arr(3), 3.0d0))
@@ -39,9 +37,7 @@ contains
    subroutine test_realloc_shrink_keeps_existing() bind(C)
       real(dp), allocatable :: arr(:)
       call realloc(arr, 5, fill=0.0d0)
-      arr(1) = 1.0d0
-      arr(2) = 2.0d0
-      arr(3) = 3.0d0
+      arr = [1.0d0, 2.0d0, 3.0d0]
       call realloc(arr, 2, keepExisting=.true.)
       call f90_expect_eq(size(arr), 2)
       call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0))
@@ -80,9 +76,7 @@ contains
    subroutine test_realloc_shift() bind(C)
       real(dp), allocatable :: arr(:)
       call realloc(arr, 3, fill=0.0d0)
-      arr(1) = 10.0d0
-      arr(2) = 20.0d0
-      arr(3) = 30.0d0
+      arr = [10.0d0, 20.0d0, 30.0d0]
       call realloc(arr, 5, fill=-1.0d0, shift=2, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
       call f90_expect_true(equal(arr(1), -1.0d0) .and. equal(arr(2), -1.0d0))
@@ -106,12 +100,8 @@ contains
    subroutine test_realloc_rank2_fixed_first_dim() bind(C)
       integer, allocatable :: arr(:, :)
       call realloc(arr, [3, 2], fill=0)
-      arr(1, 1) = 1
-      arr(2, 1) = 2
-      arr(3, 1) = 3
-      arr(1, 2) = 4
-      arr(2, 2) = 5
-      arr(3, 2) = 6
+      arr(:, 1) = [1, 2, 3]
+      arr(:, 2) = [4, 5, 6]
       call realloc(arr, [3, 4], fill=-1, keepExisting=.true.)
       call f90_expect_eq(size(arr, 1), 3)
       call f90_expect_eq(size(arr, 2), 4)
@@ -140,9 +130,7 @@ contains
       real(dp), pointer :: arr(:)
       nullify (arr)
       call reallocp(arr, 3, fill=0.0d0)
-      arr(1) = 1.0d0
-      arr(2) = 2.0d0
-      arr(3) = 3.0d0
+      arr = [1.0d0, 2.0d0, 3.0d0]
       call reallocp(arr, 5, fill=-1.0d0, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
       call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0) .and. equal(arr(3), 3.0d0))
