@@ -59,14 +59,14 @@ set(shift_zero_list
 )
 
 set(allocate_temp_list
-    "allocate(temp(new_l_index:new_u_index), stat=stat_)"
-    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2)), stat=stat_)"
-    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2), new_l_index(3):new_u_index(3)), stat=stat_)"
-    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2), new_l_index(3):new_u_index(3), new_l_index(4):new_u_index(4)), stat=stat_)"
+    "allocate(temp(new_l_index:uindex), stat=stat_)"
+    "allocate(temp(new_l_index(1):uindex(1), new_l_index(2):uindex(2)), stat=stat_)"
+    "allocate(temp(new_l_index(1):uindex(1), new_l_index(2):uindex(2), new_l_index(3):uindex(3)), stat=stat_)"
+    "allocate(temp(new_l_index(1):uindex(1), new_l_index(2):uindex(2), new_l_index(3):uindex(3), new_l_index(4):uindex(4)), stat=stat_)"
 )
 
-    set(_bounds_unchanged_1 "new_l_index == old_l_index .and. new_u_index == old_u_index .and. shift_ == 0")
-    set(_bounds_unchanged_N "all(new_l_index == old_l_index) .and. all(new_u_index == old_u_index) .and. all(shift_ == 0)")
+    set(_bounds_unchanged_1 "new_l_index == old_l_index .and. uindex == old_u_index .and. shift_ == 0")
+    set(_bounds_unchanged_N "all(new_l_index == old_l_index) .and. all(uindex == old_u_index) .and. all(shift_ == 0)")
     set(bounds_unchanged_list
         "${_bounds_unchanged_1}"
         "${_bounds_unchanged_N}"

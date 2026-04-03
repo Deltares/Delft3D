@@ -1,7 +1,7 @@
-  subroutine @PROC_NAME@(arr, new_u_index, lindex, stat, fill, shift, keepExisting)
+  subroutine @PROC_NAME@(arr, uindex, lindex, stat, fill, shift, keepExisting)
       implicit none
       @DTYPE@, @DATTR@, intent(inout) :: arr @DRANK@
-      @DINDEX@, intent(in)            :: new_u_index
+      @DINDEX@, intent(in)            :: uindex
       @DINDEX@, intent(in), optional  :: lindex
       integer, intent(out), optional  :: stat
       @DTYPE@, intent(in), optional   :: fill
@@ -48,7 +48,7 @@
 
       if (keepExisting_ .and. allocated_old) then
          data_l_index = max(old_l_index + shift_, new_l_index)
-         data_u_index = min(old_u_index + shift_, new_u_index)
+         data_u_index = min(old_u_index + shift_, uindex)
          if (@OVERLAP_NONEMPTY@) then
             @COPY_SECTION@
          end if
