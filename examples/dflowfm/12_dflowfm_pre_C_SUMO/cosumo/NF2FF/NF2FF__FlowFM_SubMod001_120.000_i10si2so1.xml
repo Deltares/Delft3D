@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NF2FF>
+  <fileVersion>0.3</fileVersion>
+  <!--'discharge' or 'velocity'-->
+  <discharge>
+    <Qintake>10.0</Qintake>
+    <Qsource>10.0</Qsource>
+    <!-- Constituents in fixed order: Temperature, Salinity, Sediments, Tracers
+         Operator: "absolute" values or "excess" (dT,dS,d..) -->
+    <constituentsOperator>excess</constituentsOperator>
+    <constituents>10.0 0.0</constituents>
+  </discharge>
+  <velocity>
+    <!-- Not implemented yet -->
+    <!-- This velocity block is added here as an example
+         COSUMO should produce a file that ONLY contains a discharge block OR a velocity block -->
+  </velocity>
+  <NFResult>
+    <intakes>
+	1550.000	   950     0.5
+	1550.000	   950     1.5
+	1550.000	   950     2.5
+	1550.000	   950     3.5
+	1550.000	   950     4.5
+	1550.000	   950     5.5
+	1550.000	   950     6.5
+	1550.000	   950     7.5
+	1550.000	   950     8.5
+	1550.000	   950     9.5
+	</intakes>
+    <!--Intake(s) - total Q0(/U0?) will be taken from these locations and distributed over the number of rows of intakes. This water will be directly distributed over the sources (complimented with the entrained water from the sinks, if any).-->
+    <!--Sinks will use dS/dTr(ajectory) to determine entrainment sinks. If dS/dTr=0 no (additional) entrainment will take place.-->
+    <sinks>
+   250.000	   350.087	     9.700	     1.000	     0.000	     0.000
+   252.500	   350.048	     9.700	     5   	     0.250	     0.380
+	</sinks>
+    <sources>
+   1050.000	   350.365	     5.000	     5.000	     5	    15.000
+    </sources>
+  </NFResult>
+</NF2FF>
+
+<!--
+Data added to D-Flow FM arrays when run via DIMR:
+
+ ENTRAINMENT
+ num, name, sink_index, sink_zbot, sink_ztop, sour_index, sour_zbot, sour_ztop, Q, (sinkid,) consts:  1  2
+   1, "diffuser 0001 , sink 0002 , source_track 0001",  13,   -9.95,   -9.45,  78,  -10.00,    0.00,   0.40E+02,(,)   0.00E+00  0.00E+00
+  
+ DISCHARGES
+ num, name, sink_index, sink_zbot, sink_ztop, sour_index, sour_zbot, sour_ztop, Q, area, cos, sin, consts:  1  2
+   2, "diffuser 0001 , discharge at source_track 0001",   0,    0.00,    0.00,  78,  -10.00,    0.00,   0.10E+02,   0.00E+00,   0.61E-16,   0.10E+01,   0.25E+02  0.10E+01
+  
+ INTAKES
+ num, name, sink_index, sink_zbot, sink_ztop, sour_index, sour_zbot, sour_ztop, Q, consts:  1  2
+   3, "diffuser 0001 , intake 0001", 184,   -0.50,   -0.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+   4, "diffuser 0001 , intake 0002", 184,   -1.50,   -1.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+   5, "diffuser 0001 , intake 0003", 184,   -2.50,   -2.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+   6, "diffuser 0001 , intake 0004", 184,   -3.50,   -3.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+   7, "diffuser 0001 , intake 0005", 184,   -4.50,   -4.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+   8, "diffuser 0001 , intake 0006", 184,   -5.50,   -5.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+   9, "diffuser 0001 , intake 0007", 184,   -6.50,   -6.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+  10, "diffuser 0001 , intake 0008", 184,   -7.50,   -7.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+  11, "diffuser 0001 , intake 0009", 184,   -8.50,   -8.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+  12, "diffuser 0001 , intake 0010", 184,   -9.50,   -9.50,   0,    0.00,    0.00,   0.10E+01,   0.00E+00  0.00E+00
+-->
