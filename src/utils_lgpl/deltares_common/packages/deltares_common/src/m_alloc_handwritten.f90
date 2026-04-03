@@ -1,5 +1,5 @@
 module m_alloc_handwritten
-   use m_alloc_generated, only: reallocDouble1, reallocReal2, reallocDouble2, reallocInt2, reallocCharacter2, reallocReal3
+   use m_alloc_generated, only: reallocDouble1, reallocReal2, reallocDouble2, reallocInt1, reallocInt2, reallocCharacter2, reallocReal3
    use precision
    implicit none
    private
@@ -144,11 +144,11 @@ contains
       if (allocated(arr)) then
          if (required_size > size(arr)) then
             length = max(required_size, 2 * size(arr))
-            !call realloc(arr, length, fill=fill, keepexisting=.true.)
+            call reallocint1(arr, length, fill=fill, keepexisting=.true.)
          end if
       else
          length = max(required_size, 10)
-         !call realloc(arr, length, fill=fill)
+         call reallocint1(arr, length, fill=fill)
       end if
    end subroutine reserve_sufficient_space_int
 
