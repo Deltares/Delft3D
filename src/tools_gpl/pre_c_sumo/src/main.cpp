@@ -23,7 +23,7 @@ int main(int argc, char** argv)
             "Path and filename of C-SUMO settings xml file")
         ("precice-config-file,p", boost::program_options::value<std::string>(&preciceConfigFileName)->default_value("precice_config.xml"),
             "Path and filename of preCICE adapter configuration file");
-    // clang-format on
+    // clang-format on 
 
     boost::program_options::positional_options_description positionals;
     positionals.add("csumo-settings-file", 1);

@@ -43,7 +43,7 @@
     <export:vtu directory="precice-exports" />
   </participant>
 
-  <m2n:sockets acceptor="fm" connector="preC-SUMO" exchange-directory=".." />
+  <m2n:sockets acceptor="fm" connector="preC-SUMO" exchange-directory="." />
 
   <coupling-scheme:serial-explicit>
     <time-window-size value="3600" method="fixed" />
