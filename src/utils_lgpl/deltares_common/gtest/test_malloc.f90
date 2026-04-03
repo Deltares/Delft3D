@@ -3,7 +3,7 @@ module test_malloc
    use m_alloc
    use precision, only: sp, dp
    use ISO_C_BINDING
-
+   use precision_basics, only: equal
    implicit none(type, external)
 
 contains
@@ -15,7 +15,7 @@ contains
       call realloc(arr, 5, fill=-999.0d0)
       call f90_expect_true(allocated(arr))
       call f90_expect_eq(size(arr), 5)
-      call f90_expect_true(all(arr == -999.0d0))
+      call f90_expect_true(all(equal(arr, -999.0d0)))
    end subroutine test_realloc_unallocated_with_fill
    !$f90tw)
 
@@ -27,8 +27,8 @@ contains
       arr(1) = 1.0d0; arr(2) = 2.0d0; arr(3) = 3.0d0
       call realloc(arr, 5, fill=-1.0d0, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
-      call f90_expect_true(arr(1) == 1.0d0 .and. arr(2) == 2.0d0 .and. arr(3) == 3.0d0)
-      call f90_expect_true(arr(4) == -1.0d0 .and. arr(5) == -1.0d0)
+      call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0) .and. equal(arr(3), 3.0d0))
+      call f90_expect_true(equal(arr(4), -1.0d0) .and. equal(arr(5), -1.0d0))
    end subroutine test_realloc_grow_keeps_existing
    !$f90tw)
 
@@ -40,7 +40,7 @@ contains
       arr(1) = 1.0d0; arr(2) = 2.0d0; arr(3) = 3.0d0
       call realloc(arr, 2, keepExisting=.true.)
       call f90_expect_eq(size(arr), 2)
-      call f90_expect_true(arr(1) == 1.0d0 .and. arr(2) == 2.0d0)
+      call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0))
    end subroutine test_realloc_shrink_keeps_existing
    !$f90tw)
 
@@ -52,7 +52,7 @@ contains
       call realloc(arr, 3, fill=1.0d0)
       ptr_before => arr(1)
       call realloc(arr, 3, fill=-999.0d0, keepExisting=.false.)
-      call f90_expect_true(all(arr == -999.0d0))
+      call f90_expect_true(all(equal(arr, -999.0d0)))
       call f90_expect_true(associated(ptr_before, arr(1)))
    end subroutine test_realloc_same_bounds_no_keepexisting_fill
    !$f90tw)
@@ -66,7 +66,7 @@ contains
       arr(2) = 42.0d0
       ptr_before => arr(1)
       call realloc(arr, 3)
-      call f90_expect_true(arr(2) == 42.0d0)
+      call f90_expect_true(equal(arr(2), 42.0d0))
       call f90_expect_true(associated(ptr_before, arr(1)))
    end subroutine test_realloc_same_bounds_no_fill_unchanged
    !$f90tw)
@@ -79,8 +79,8 @@ contains
       arr(1) = 10.0d0; arr(2) = 20.0d0; arr(3) = 30.0d0
       call realloc(arr, 5, fill=-1.0d0, shift=2, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
-      call f90_expect_true(arr(1) == -1.0d0 .and. arr(2) == -1.0d0)
-      call f90_expect_true(arr(3) == 10.0d0 .and. arr(4) == 20.0d0 .and. arr(5) == 30.0d0)
+      call f90_expect_true(equal(arr(1), -1.0d0) .and. equal(arr(2), -1.0d0))
+      call f90_expect_true(equal(arr(3), 10.0d0) .and. equal(arr(4), 20.0d0) .and. equal(arr(5), 30.0d0))
    end subroutine test_realloc_shift
    !$f90tw)
 
@@ -91,7 +91,7 @@ contains
       call realloc(arr, 5, lindex=0, fill=1.0d0)
       call f90_expect_eq(lbound(arr, 1), 0)
       call f90_expect_eq(ubound(arr, 1), 5)
-      call f90_expect_true(all(arr == 1.0d0))
+      call f90_expect_true(all(equal(arr, 1.0d0)))
    end subroutine test_realloc_nondefault_lindex
    !$f90tw)
 
@@ -119,7 +119,7 @@ contains
       call reallocp(arr, 5, fill=-999.0d0)
       call f90_expect_true(associated(arr))
       call f90_expect_eq(size(arr), 5)
-      call f90_expect_true(all(arr == -999.0d0))
+      call f90_expect_true(all(equal(arr, -999.0d0)))
       deallocate(arr)
    end subroutine test_reallocp_unassociated
    !$f90tw)
@@ -133,8 +133,8 @@ contains
       arr(1) = 1.0d0; arr(2) = 2.0d0; arr(3) = 3.0d0
       call reallocp(arr, 5, fill=-1.0d0, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
-      call f90_expect_true(arr(1) == 1.0d0 .and. arr(2) == 2.0d0 .and. arr(3) == 3.0d0)
-      call f90_expect_true(arr(4) == -1.0d0 .and. arr(5) == -1.0d0)
+      call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0) .and. equal(arr(3), 3.0d0))
+      call f90_expect_true(equal(arr(4), -1.0d0) .and. equal(arr(5), -1.0d0))
       deallocate(arr)
    end subroutine test_reallocp_grow_keeps_existing
    !$f90tw)
