@@ -35,7 +35,7 @@ set(dtype_names
     set(attr_is_alloc    "allocated(arr)" "associated(arr)")
     set(attr_move_alloc
     "call move_alloc(temp, arr)"
-    "if (associated(arr)) deallocate(arr)\n      arr => temp"
+    "if (associated(arr)) deallocate(arr,stat=stat_)\n      arr => temp"
 )
 
     # All rank-varying fields that contain commas or semicolons are stored as
@@ -57,12 +57,14 @@ set(shift_zero_list
     "(/0, 0, 0/)"
     "(/0, 0, 0, 0/)"
 )
+
 set(allocate_temp_list
-    "allocate(temp(new_l_index:new_u_index))"
-    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2)))"
-    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2), new_l_index(3):new_u_index(3)))"
-    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2), new_l_index(3):new_u_index(3), new_l_index(4):new_u_index(4)))"
+    "allocate(temp(new_l_index:new_u_index), stat=stat_)"
+    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2)), stat=stat_)"
+    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2), new_l_index(3):new_u_index(3)), stat=stat_)"
+    "allocate(temp(new_l_index(1):new_u_index(1), new_l_index(2):new_u_index(2), new_l_index(3):new_u_index(3), new_l_index(4):new_u_index(4)), stat=stat_)"
 )
+
     set(_bounds_unchanged_1 "new_l_index == old_l_index .and. new_u_index == old_u_index .and. shift_ == 0")
     set(_bounds_unchanged_N "all(new_l_index == old_l_index) .and. all(new_u_index == old_u_index) .and. all(shift_ == 0)")
     set(bounds_unchanged_list
@@ -138,23 +140,23 @@ set(copy_section_list
                     set(DTYPE_TEMP "${DTYPE}")
                 endif()
 
-                set(proc_name "realloc${attr_prefix}${dtype_name}${rank_suffix}")
+                set(PROC_NAME "realloc${attr_prefix}${dtype_name}${rank_suffix}")
 
                 # Render the body by substituting @VAR@ placeholders
                 set(body "${body_template}")
-                foreach(var DTYPE DTYPE_TEMP DATTR DRANK DINDEX
+                foreach(var PROC_NAME DTYPE DTYPE_TEMP DATTR DRANK DINDEX
                             LINDEX_ONE SHIFT_ZERO IS_ALLOCATED GET_BOUNDS
                             BOUNDS_UNCHANGED ALLOCATE_TEMP OVERLAP_NONEMPTY
                             COPY_SECTION MOVE_ALLOC)
                     string(REPLACE "@${var}@" "${${var}}" body "${body}")
                 endforeach()
 
-                string(APPEND all_bodies "\n   subroutine ${proc_name}(arr, uindex, lindex, stat, fill, shift, keepExisting)\n${body}   end subroutine ${proc_name}\n")
+                string(APPEND all_bodies "\n${body}\n")
 
                 if(attr_prefix STREQUAL "P")
-                    list(APPEND reallocP_procs "      module procedure ${proc_name}")
+                    list(APPEND reallocP_procs "      module procedure ${PROC_NAME}")
                 else()
-                    list(APPEND realloc_procs "      module procedure ${proc_name}")
+                    list(APPEND realloc_procs "      module procedure ${PROC_NAME}")
                 endif()
             endforeach()
         endforeach()
