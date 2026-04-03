@@ -402,7 +402,6 @@ subroutine GetAndCheckFileNames(nrd, sedpar, lsedtot)
    enddo
    
    if (noFiles) then
-      call SetMessage(LEVEL_WARN, 'No Nodal Point Relations Specified, Set to (Default) Proportional.')
       nrd%NRD_Overall = .true.
       nrd%NRD_Default = .true.
    else

@@ -954,10 +954,10 @@ contains
    !!
 
       use sediment_basics_module
-      use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
+      use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz
       use m_flow, only: kmx, s1, vol1
       use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
-      use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp
+      use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp, ndx => ndx_mor
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
       use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
@@ -2196,9 +2196,9 @@ contains
    !Modules
    use precision, only: dp
    use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
-   use m_flowgeom, only: nd, wu_mor, ln, bl
+   use m_flowgeom, only: wu_mor, bl
    use m_flow, only: u1, qa, q1_main, u_to_umain
-   use m_fm_erosed, only: lsedtot, e_sbcn
+   use m_fm_erosed, only: lsedtot, e_sbcn, nd_mor, ln_mor
    use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
    use Messagehandling, only: LEVEL_FATAL, mess, errmsg
 
@@ -2227,9 +2227,9 @@ contains
          
    !Locals
    logical :: error
+   integer :: node_out
    integer :: inod, kl1, link_junction, link_dir, flownode_idx, ised, istat, n_links
    integer :: sb_dir !< direction of transport at geometry (junction) node
-   integer :: node_out
                                                             !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
                                                             !  1: Sediment enters the flow node.
                                                             ! -1: Sediment exits the flow node.                       
@@ -2357,9 +2357,9 @@ contains
          flownode_idx = pnod%gridnumber
          flownode_junction(n_junctions)=flownode_idx
 
-         do kl1 = 1, nd(flownode_idx)%lnx 
-            link_junction = abs(nd(flownode_idx)%ln(kl1))
-            link_dir = sign(1, nd(flownode_idx)%ln(kl1))
+         do kl1 = 1, nd_mor(flownode_idx)%lnx 
+            link_junction = abs(nd_mor(flownode_idx)%ln(kl1))
+            link_dir = sign(1, nd_mor(flownode_idx)%ln(kl1))
             wb1d = wu_mor(link_junction)
             
             if (u1(link_junction) * link_dir < 0_dp) then
@@ -2378,10 +2378,10 @@ contains
                total_water_discharge_out(n_junctions) = total_water_discharge_out(n_junctions) + qb1d
                sb_dir = -1
                ! Find the node connected to this outgoing link that is not the junction node.
-               if (ln(1,link_junction) == flownode_idx) then
-                  node_out = ln(2,link_junction)
+               if (ln_mor(1,link_junction) == flownode_idx) then
+                  node_out = ln_mor(2,link_junction)
                else
-                  node_out = ln(1,link_junction)
+                  node_out = ln_mor(1,link_junction)
                end if
                bl_out(n_junctions,n_links)=bl(node_out)
             else
