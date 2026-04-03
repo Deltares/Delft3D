@@ -11,13 +11,13 @@
 namespace pre_c_sumo
 {
     /**
-     * @details Entry point into the C-SUMO preCICE library.
+     * @details Entry point into the preC-SUMO preCICE library.
      */
     int run(const std::string_view csumo_config_file_name, const std::string_view adapter_config_file_name)
     {
         constexpr int mpi_rank = 0;
         constexpr int mpi_size = 1;
-        precice::Participant participant{"C-SUMO", adapter_config_file_name, mpi_rank, mpi_size};
+        precice::Participant participant{"preC-SUMO", adapter_config_file_name, mpi_rank, mpi_size};
 
         while (doTimeloop())
         {
@@ -37,7 +37,7 @@ namespace pre_c_sumo
      */
     int run()
     {
-        std::println("Hello, world from C-SUMO PreCICE library!");
+        std::println("Hello, world from preC-SUMO application!");
         return 0;
     }
 
