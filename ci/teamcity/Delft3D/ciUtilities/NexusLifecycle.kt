@@ -2,6 +2,7 @@ package Delft3D.ciUtilities
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
+import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerRegistryConnections
 
 object NexusLifecycle : BuildType({
     name = "Nexus Lifecycle"
