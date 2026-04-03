@@ -1,14 +1,11 @@
 # Generates malloc_generated.f90 — all realloc/reallocP overloads for all dtype/attr/rank combinations.
-#
-# Usage:
-#   generate_malloc(OUTPUT_FILE <out_var>)
+
 function(generate_malloc)
     file(READ "${malloc_template_file}" body_template)
 
     # All supported Fortran types. The type string is used directly as the declaration.
     # Exception: character(len=*) gets a special DTYPE_TEMP (see below).
-    # Note: integer(kind=1)/Byte is excluded here — it only exists as reallocByte2
-    #       and is handled as a one-off in malloc.f90 alongside reallocString.
+    
 set(dtypes
     "real(dp)"
     "real(sp)"
@@ -28,8 +25,6 @@ set(dtype_names
     "Character"
 )
 
-    # attr entries: p_prefix | fortran_attr | is_allocated_expr
-    # move_alloc_stmt is stored separately because the pointer variant contains a semicolon
     set(attr_prefixes    ""             "P")
     set(attr_fortran     "allocatable"  "pointer")
     set(attr_is_alloc    "allocated(arr)" "associated(arr)")
@@ -38,10 +33,7 @@ set(dtype_names
     "if (associated(arr)) deallocate(arr,stat=stat_)\n      arr => temp"
 )
 
-    # All rank-varying fields that contain commas or semicolons are stored as
-    # named variables per rank to avoid corrupting the CMake list split.
     set(ranks "1" "2" "3" "4")
-
     set(drank_list        "(:)"  "(:,:)"  "(:,:,:)"  "(:,:,:,:)")
     set(dindex_list       "integer"  "integer, dimension(2)"  "integer, dimension(3)"  "integer, dimension(4)")
 
