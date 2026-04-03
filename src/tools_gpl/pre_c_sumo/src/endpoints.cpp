@@ -28,7 +28,7 @@ namespace pre_c_sumo
 
     bool addMomentum(Source& source, const Momentum& momentum)
     {
-        if (source.discharge < 0.0)
+        if (source.endpoint.discharge < 0.0)
         {
             return false;
         }
@@ -39,7 +39,7 @@ namespace pre_c_sumo
 
     bool addConstituents(Source& source, const Constituents& constituents)
     {
-        if (source.discharge < 0.0)
+        if (source.endpoint.discharge < 0.0)
         {
             return false;
         }

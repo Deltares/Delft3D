@@ -68,19 +68,11 @@ namespace pre_c_sumo
     /**
      * @brief NF2FF source entry.
      */
-    struct Source : Endpoint
+    struct Source
     {
+        Endpoint endpoint;
         std::optional<Momentum> momentum;         ///< Optional momentum data used for directional source forcing.
         std::optional<Constituents> constituents; ///< Optional constituent concentrations carried by this source.
-    };
-
-    /**
-     * @brief NF2FF sink entry.
-     *
-     * No additional fields beyond @ref Endpoint.
-     */
-    struct Sink : Endpoint
-    {
     };
 
     /**
