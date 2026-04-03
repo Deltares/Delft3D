@@ -6,30 +6,29 @@
 #include <vector>
 
 #include "csumo_settings_reader.hpp"
+#include "coupling_steps.hpp"
 
 namespace pre_c_sumo
 {
     /**
      * @details Entry point into the C-SUMO preCICE library.
      */
-    int run(const std::string_view csumoConfigFileName, const std::string_view adapterConfigFileName)
+    int run(const std::string_view csumo_config_file_name, const std::string_view adapter_config_file_name)
     {
-        auto expectedCsumoSettings = CSumoSettingsReader::fromFile(csumoConfigFileName);
+        constexpr int mpi_rank = 0;
+        constexpr int mpi_size = 1;
+        precice::Participant participant{"C-SUMO", adapter_config_file_name, mpi_rank, mpi_size};
 
-        if (!expectedCsumoSettings.has_value())
+        while (doTimeloop())
         {
-            std::println(stderr, "Error parsing C-SUMO configuration: {}", expectedCsumoSettings.error().message);
-            return 1;
+            const auto csumo_settings = readCsumoSettingsFile(csumo_config_file_name);
+            receiveFFData();
+            writeFF2NFFiles(csumo_settings.value());
+            waitForNF2FFFiles(csumo_settings.value());
+            readNF2FFFiles(csumo_settings.value());
+            convertNFToSourcesSinks(csumo_settings.value());
+            sendSourcesSinksToFF(csumo_settings.value());
         }
-        const auto csumoSettings = std::move(expectedCsumoSettings).value();
-
-        std::println("Successfully parsed C-SUMO configuration file version: {}", csumoSettings.fileVersion());
-
-        (void)adapterConfigFileName; // Unused parameter, avoid compiler warning
-        constexpr std::string_view csumo_config_file = "csumo_config.xml";
-        constexpr int mpiRank = 0;
-        constexpr int mpiSize = 1;
-        precice::Participant participant{"C-SUMO", csumo_config_file, mpiRank, mpiSize};
         return 0;
     }
 
@@ -41,4 +40,5 @@ namespace pre_c_sumo
         std::println("Hello, world from C-SUMO PreCICE library!");
         return 0;
     }
+
 } // namespace pre_c_sumo
