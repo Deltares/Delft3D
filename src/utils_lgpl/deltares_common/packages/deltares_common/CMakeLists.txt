@@ -21,15 +21,16 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
 set(malloc_template_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_body.f90.in")
 set(malloc_output_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_generated.f90")
 set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_m_alloc.cmake")
-include("${malloc_generator_file}")
-set_source_files_properties("${malloc_generator_file}"
-    PROPERTIES HEADER_FILE_ONLY TRUE
+add_custom_command(
+    OUTPUT  "${malloc_output_file}"
+    COMMAND ${CMAKE_COMMAND}
+            -D malloc_template_file="${malloc_template_file}"
+            -D malloc_output_file="${malloc_output_file}"
+            -P "${malloc_generator_file}"
+    DEPENDS "${malloc_template_file}"
+            "${malloc_generator_file}"
+    COMMENT "Generating m_alloc_generated.f90"
 )
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-    "${malloc_generator_file}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_body.f90.in"
-)
-generate_malloc()
 
 get_fortran_source_files(src source)
 
