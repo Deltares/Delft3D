@@ -18,16 +18,16 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
                   src/stdlib/stdlib_sorting_radix_sort.f90
                   src/stdlib/stdlib_sorting_sort_index.f90
 )
-set(malloc_template_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_body.f90.in")
-set(malloc_output_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_generated.f90")
-set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_malloc.cmake")
+set(malloc_template_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_body.f90.in")
+set(malloc_output_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_generated.f90")
+set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_m_alloc.cmake")
 include("${malloc_generator_file}")
 set_source_files_properties("${malloc_generator_file}"
     PROPERTIES HEADER_FILE_ONLY TRUE
 )
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${malloc_generator_file}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_body.f90.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_body.f90.in"
 )
 generate_malloc()
 
