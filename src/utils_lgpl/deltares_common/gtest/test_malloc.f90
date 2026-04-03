@@ -2,7 +2,7 @@ module test_malloc
    use assertions_gtest
    use m_alloc
    use precision, only: sp, dp
-   use ISO_C_BINDING
+   use iso_c_binding
    use precision_basics, only: equal
    implicit none(type, external)
 
@@ -24,7 +24,9 @@ contains
    subroutine test_realloc_grow_keeps_existing() bind(C)
       real(dp), allocatable :: arr(:)
       call realloc(arr, 3, fill=0.0d0)
-      arr(1) = 1.0d0; arr(2) = 2.0d0; arr(3) = 3.0d0
+      arr(1) = 1.0d0
+      arr(2) = 2.0d0
+      arr(3) = 3.0d0
       call realloc(arr, 5, fill=-1.0d0, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
       call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0) .and. equal(arr(3), 3.0d0))
@@ -37,7 +39,9 @@ contains
    subroutine test_realloc_shrink_keeps_existing() bind(C)
       real(dp), allocatable :: arr(:)
       call realloc(arr, 5, fill=0.0d0)
-      arr(1) = 1.0d0; arr(2) = 2.0d0; arr(3) = 3.0d0
+      arr(1) = 1.0d0
+      arr(2) = 2.0d0
+      arr(3) = 3.0d0
       call realloc(arr, 2, keepExisting=.true.)
       call f90_expect_eq(size(arr), 2)
       call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0))
@@ -76,7 +80,9 @@ contains
    subroutine test_realloc_shift() bind(C)
       real(dp), allocatable :: arr(:)
       call realloc(arr, 3, fill=0.0d0)
-      arr(1) = 10.0d0; arr(2) = 20.0d0; arr(3) = 30.0d0
+      arr(1) = 10.0d0
+      arr(2) = 20.0d0
+      arr(3) = 30.0d0
       call realloc(arr, 5, fill=-1.0d0, shift=2, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
       call f90_expect_true(equal(arr(1), -1.0d0) .and. equal(arr(2), -1.0d0))
@@ -98,16 +104,20 @@ contains
    !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_rank2_fixed_first_dim, test_realloc_rank2_fixed_first_dim,
    !> Rank 2: growing only second dimension preserves all data (regression for neighbour_nodes_obs bug)
    subroutine test_realloc_rank2_fixed_first_dim() bind(C)
-      integer, allocatable :: arr(:,:)
+      integer, allocatable :: arr(:, :)
       call realloc(arr, [3, 2], fill=0)
-      arr(1,1) = 1; arr(2,1) = 2; arr(3,1) = 3
-      arr(1,2) = 4; arr(2,2) = 5; arr(3,2) = 6
+      arr(1, 1) = 1
+      arr(2, 1) = 2
+      arr(3, 1) = 3
+      arr(1, 2) = 4
+      arr(2, 2) = 5
+      arr(3, 2) = 6
       call realloc(arr, [3, 4], fill=-1, keepExisting=.true.)
       call f90_expect_eq(size(arr, 1), 3)
       call f90_expect_eq(size(arr, 2), 4)
-      call f90_expect_true(arr(1,1) == 1 .and. arr(2,1) == 2 .and. arr(3,1) == 3)
-      call f90_expect_true(arr(1,2) == 4 .and. arr(2,2) == 5 .and. arr(3,2) == 6)
-      call f90_expect_true(arr(1,3) == -1 .and. arr(1,4) == -1)
+      call f90_expect_true(arr(1, 1) == 1 .and. arr(2, 1) == 2 .and. arr(3, 1) == 3)
+      call f90_expect_true(arr(1, 2) == 4 .and. arr(2, 2) == 5 .and. arr(3, 2) == 6)
+      call f90_expect_true(arr(1, 3) == -1 .and. arr(1, 4) == -1)
    end subroutine test_realloc_rank2_fixed_first_dim
    !$f90tw)
 
@@ -115,12 +125,12 @@ contains
    !> Pointer realloc on unassociated pointer should allocate without crash
    subroutine test_reallocp_unassociated() bind(C)
       real(dp), pointer :: arr(:)
-      nullify(arr)
+      nullify (arr)
       call reallocp(arr, 5, fill=-999.0d0)
       call f90_expect_true(associated(arr))
       call f90_expect_eq(size(arr), 5)
       call f90_expect_true(all(equal(arr, -999.0d0)))
-      deallocate(arr)
+      deallocate (arr)
    end subroutine test_reallocp_unassociated
    !$f90tw)
 
@@ -128,14 +138,16 @@ contains
    !> Pointer realloc grow preserves existing data
    subroutine test_reallocp_grow_keeps_existing() bind(C)
       real(dp), pointer :: arr(:)
-      nullify(arr)
+      nullify (arr)
       call reallocp(arr, 3, fill=0.0d0)
-      arr(1) = 1.0d0; arr(2) = 2.0d0; arr(3) = 3.0d0
+      arr(1) = 1.0d0
+      arr(2) = 2.0d0
+      arr(3) = 3.0d0
       call reallocp(arr, 5, fill=-1.0d0, keepExisting=.true.)
       call f90_expect_eq(size(arr), 5)
       call f90_expect_true(equal(arr(1), 1.0d0) .and. equal(arr(2), 2.0d0) .and. equal(arr(3), 3.0d0))
       call f90_expect_true(equal(arr(4), -1.0d0) .and. equal(arr(5), -1.0d0))
-      deallocate(arr)
+      deallocate (arr)
    end subroutine test_reallocp_grow_keeps_existing
    !$f90tw)
 
