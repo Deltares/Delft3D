@@ -13,15 +13,15 @@ namespace pre_c_sumo
     /**
      * @details Entry point into the preC-SUMO preCICE library.
      */
-    int run(const std::string_view csumo_config_file_name, const std::string_view adapter_config_file_name)
+    int run(const std::string_view csumo_settings_file_name, const std::string_view precice_config_file_name)
     {
         constexpr int mpi_rank = 0;
         constexpr int mpi_size = 1;
-        precice::Participant participant{"preC-SUMO", adapter_config_file_name, mpi_rank, mpi_size};
+        precice::Participant participant{"preC-SUMO", precice_config_file_name, mpi_rank, mpi_size};
 
         while (doTimeloop())
         {
-            const auto csumo_settings = readCsumoSettingsFile(csumo_config_file_name);
+            const auto csumo_settings = readCsumoSettingsFile(csumo_settings_file_name);
             receiveFFData();
             writeFF2NFFiles(csumo_settings.value());
             waitForNF2FFFiles(csumo_settings.value());

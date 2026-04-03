@@ -7,9 +7,11 @@ del /f /q fm\DFM_OUTPUT_FlowFM\*.*
 del /f /q cosumo\FF2NF\*.xml
 del /f /q cosumo\csumo_bmi.dia
 del /f /q csumo_to_dflowfm.nc
+del /f /q precice_debug_output.txt
+del /f /q precice-profiling\*.*
 
 rem call c:\adri\work\delft3d\2026.01\x64\bin\run_dimr.bat
-%bindir%\preC-SUMO.exe -c cosumo\CSUMOsettings.xml -a precice_config.xml
+%bindir%\preC-SUMO.exe -c cosumo\CSUMOsettings.xml -p precice_config.xml
 
 
     rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
