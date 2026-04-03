@@ -19,11 +19,8 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
                   src/stdlib/stdlib_sorting_sort_index.f90
 )
 
-# Template include files (not compiled directly; included via #include in malloc.F90)
-set(malloc_inc_files
-    src/malloc_includes/malloc_body.inc
-)
-set_source_files_properties(${malloc_inc_files} PROPERTIES HEADER_FILE_ONLY TRUE)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_malloc.cmake")
+generate_malloc(OUTPUT_FILE malloc_file)
 
 get_fortran_source_files(src source)
 
@@ -31,7 +28,7 @@ set(library_name deltares_common)
 add_library(${library_name} ${source}
                             ${rd_token_source}
                             ${stdlib_source}
-                            ${malloc_inc_files}
+                            ${malloc_file}
                             ${fortran_version_file}
 )
 
