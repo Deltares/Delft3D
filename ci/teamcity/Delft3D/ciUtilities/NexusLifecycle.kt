@@ -17,6 +17,10 @@ object NexusLifecycle : BuildType({
             id = "LifecycleSyftWindows"
             type = "LifecycleSyftWindows"
         }
+        step {
+            id = "LifecycleCdxgenWindows"
+            type = "LifecycleCdxgenWindows"
+        }
     }
 
     features {
