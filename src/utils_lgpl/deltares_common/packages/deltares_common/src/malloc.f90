@@ -96,6 +96,19 @@ module m_alloc
 !
 ! actual implementations are in m_alloc_generated, which is generated from malloc_body.f90.in by the script generate_malloc.cmake
 !
+   interface realloc
+      module procedure reallocString
+      module procedure reallocReal2x
+      module procedure reallocDouble2x
+      module procedure reallocInt2x
+      module procedure reallocCharacter2x
+      module procedure reallocReal3x
+   end interface
+
+   interface reallocP
+      ! all reallocP procedures are in m_alloc_generated via use
+   end interface
+
    interface reserve_sufficient_space
       module procedure reserve_sufficient_space_int
    end interface
@@ -272,7 +285,7 @@ contains
          stat = local_err
       end if
    end subroutine reallocString
-!
+
 !===============================================================================
 ! Rank 2x/3x convenience wrappers (scalar dimension arguments)
 !
