@@ -21,6 +21,12 @@ object NexusLifecycle : BuildType({
             id = "LifecycleCdxgenWindows"
             type = "LifecycleCdxgenWindows"
         }
+        step {
+            id = "LifecycleNexusIqWindows"
+            type = "LifecycleNexusIqWindows"
+            param("nexus_iq_username", "test")
+            param("nexus_iq_password", "test")
+        }
     }
 
     features {
