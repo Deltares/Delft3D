@@ -74,8 +74,10 @@ set(allocate_temp_list
         "${_bounds_unchanged_N}"
     )
 
-    set(_get_bounds_1 "old_l_index = lbound(arr, 1); old_u_index = ubound(arr, 1)")
-    set(_get_bounds_N "old_l_index = lbound(arr); old_u_index = ubound(arr)")
+    set(_get_bounds_1 "old_l_index = lbound(arr, 1)
+         old_u_index = ubound(arr, 1)")
+    set(_get_bounds_N "old_l_index = lbound(arr)
+         old_u_index = ubound(arr)")
     set(get_bounds_list
         "${_get_bounds_1}"
         "${_get_bounds_N}"

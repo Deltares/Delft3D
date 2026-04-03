@@ -35,7 +35,7 @@
             if (.not. keepExisting_ .and. present(fill)) then
                arr = fill
             end if
-            return
+            goto 999
          end if
       end if
 
