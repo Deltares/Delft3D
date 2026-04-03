@@ -31,8 +31,10 @@ set(dtype_names
     set(attr_prefixes    ""             "P")
     set(attr_fortran     "allocatable"  "pointer")
     set(attr_is_alloc    "allocated(arr)" "associated(arr)")
-    set(attr_move_alloc  "call move_alloc(temp, arr)"
-                         "if (associated(arr)) deallocate(arr); arr => temp")
+    set(attr_move_alloc
+    "call move_alloc(temp, arr)"
+    "if (associated(arr)) deallocate(arr)\n      arr => temp"
+)
 
     # All rank-varying fields that contain commas or semicolons are stored as
     # named variables per rank to avoid corrupting the CMake list split.

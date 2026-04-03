@@ -20,9 +20,13 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
 )
 set(malloc_template_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_body.f90.in")
 set(malloc_output_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_generated.f90")
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_malloc.cmake")
+set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_malloc.cmake")
+include("${malloc_generator_file}")
+set_source_files_properties("${malloc_generator_file}"
+    PROPERTIES HEADER_FILE_ONLY TRUE
+)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_malloc.cmake"
+    "${malloc_generator_file}"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/malloc_body.f90.in"
 )
 generate_malloc()
@@ -34,6 +38,8 @@ add_library(${library_name} ${source}
                             ${rd_token_source}
                             ${stdlib_source}
                             ${malloc_output_file}
+                            ${malloc_template_file}
+                            ${malloc_generator_file}
                             ${fortran_version_file}
 )
 
@@ -57,7 +63,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source}
                                                     ${rd_token_source}
                                                     ${stdlib_source}
                                                     ${fortran_version_file}
-                                                    ${malloc_inc_files})
+                                                    ${malloc_output_file}
+                                                    ${malloc_template_file}
+                                                    ${malloc_generator_file})
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_common)
 
