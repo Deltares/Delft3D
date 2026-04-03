@@ -24,8 +24,8 @@ object NexusLifecycle : BuildType({
         step {
             id = "LifecycleNexusIqWindows"
             type = "LifecycleNexusIqWindows"
-            param("nexus_iq_username", "test")
-            param("nexus_iq_password", "test")
+            param("nexus_iq_username", "%nexus_iq_username%")
+            param("nexus_iq_password", "%nexus_iq_password%")
         }
     }
 
