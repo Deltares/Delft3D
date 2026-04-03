@@ -95,22 +95,6 @@ contains
    end subroutine test_realloc_nondefault_lindex
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_rank2_fixed_first_dim, test_realloc_rank2_fixed_first_dim,
-   !> Rank 2: growing only second dimension preserves all data (regression for neighbour_nodes_obs bug)
-   subroutine test_realloc_rank2_fixed_first_dim() bind(C)
-      integer, allocatable :: arr(:, :)
-      call realloc(arr, [3, 2], fill=0)
-      arr(:, 1) = [1, 2, 3]
-      arr(:, 2) = [4, 5, 6]
-      call realloc(arr, [3, 4], fill=-1, keepExisting=.true.)
-      call f90_expect_eq(size(arr, 1), 3)
-      call f90_expect_eq(size(arr, 2), 4)
-      call f90_expect_true(arr(1, 1) == 1 .and. arr(2, 1) == 2 .and. arr(3, 1) == 3)
-      call f90_expect_true(arr(1, 2) == 4 .and. arr(2, 2) == 5 .and. arr(3, 2) == 6)
-      call f90_expect_true(arr(1, 3) == -1 .and. arr(1, 4) == -1)
-   end subroutine test_realloc_rank2_fixed_first_dim
-   !$f90tw)
-
    !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_reallocp_unassociated, test_reallocp_unassociated,
    !> Pointer realloc on unassociated pointer should allocate without crash
    subroutine test_reallocp_unassociated() bind(C)
@@ -193,6 +177,69 @@ contains
       call f90_expect_true(allocated(arr))
       call f90_expect_eq(size(arr), 0)
    end subroutine test_realloc_negative_size
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_rank2_fixed_first_dim, test_realloc_rank2_fixed_first_dim,
+   !> Rank 2: growing only second dimension preserves all data
+   subroutine test_realloc_rank2_fixed_first_dim() bind(C)
+      integer, allocatable :: arr(:, :)
+      call realloc(arr, [3, 2], fill=0)
+      arr(:, 1) = [1, 2, 3]
+      arr(:, 2) = [4, 5, 6]
+      call realloc(arr, [3, 4], fill=-1, keepExisting=.true.)
+      call f90_expect_eq(size(arr, 1), 3)
+      call f90_expect_eq(size(arr, 2), 4)
+      call f90_expect_true(arr(1, 1) == 1 .and. arr(2, 1) == 2 .and. arr(3, 1) == 3)
+      call f90_expect_true(arr(1, 2) == 4 .and. arr(2, 2) == 5 .and. arr(3, 2) == 6)
+      call f90_expect_true(arr(1, 3) == -1 .and. arr(1, 4) == -1)
+   end subroutine test_realloc_rank2_fixed_first_dim
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_rank2_grow_keeps_existing, test_realloc_rank2_grow_keeps_existing,
+   !> Rank 2: growing both dimensions preserves existing data and fills new elements
+   subroutine test_realloc_rank2_grow_keeps_existing() bind(C)
+      real(dp), allocatable :: arr(:, :)
+      call realloc(arr, [2, 2], fill=0.0d0)
+      arr(:, 1) = [1, 2]
+      arr(:, 2) = [3, 4]
+      call realloc(arr, [3, 3], fill=-1.0d0, keepExisting=.true.)
+      call f90_expect_eq(size(arr, 1), 3)
+      call f90_expect_eq(size(arr, 2), 3)
+      call f90_expect_true(equal(arr(1, 1), 1.0d0) .and. equal(arr(2, 1), 2.0d0))
+      call f90_expect_true(equal(arr(1, 2), 3.0d0) .and. equal(arr(2, 2), 4.0d0))
+      call f90_expect_true(equal(arr(3, 1), -1.0d0) .and. equal(arr(1, 3), -1.0d0))
+   end subroutine test_realloc_rank2_grow_keeps_existing
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_rank2_nondefault_lindex, test_realloc_rank2_nondefault_lindex,
+   !> Rank 2: non-default lower bounds produce correct bounds
+   subroutine test_realloc_rank2_nondefault_lindex() bind(C)
+      real(dp), allocatable :: arr(:, :)
+      call realloc(arr, [3, 3], lindex=[0, 0], fill=1.0d0)
+      call f90_expect_eq(lbound(arr, 1), 0)
+      call f90_expect_eq(lbound(arr, 2), 0)
+      call f90_expect_eq(ubound(arr, 1), 3)
+      call f90_expect_eq(ubound(arr, 2), 3)
+      call f90_expect_true(all(equal(arr, 1.0d0)))
+   end subroutine test_realloc_rank2_nondefault_lindex
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_rank2_shift, test_realloc_rank2_shift,
+   !> Rank 2: shift moves data along both dimensions independently
+   subroutine test_realloc_rank2_shift() bind(C)
+      real(dp), allocatable :: arr(:, :)
+      call realloc(arr, [2, 2], fill=0.0d0)
+      arr(:, 1) = [1, 2]
+      arr(:, 2) = [3, 4]
+      call realloc(arr, [3, 3], fill=-1.0d0, shift=[1, 1], keepExisting=.true.)
+      call f90_expect_eq(size(arr, 1), 3)
+      call f90_expect_eq(size(arr, 2), 3)
+      call f90_expect_true(equal(arr(1, 1), -1.0d0)) ! shifted out of range
+      call f90_expect_true(equal(arr(2, 2), 1.0d0))  ! original (1,1) -> (2,2)
+      call f90_expect_true(equal(arr(3, 2), 2.0d0))  ! original (2,1) -> (3,2)
+      call f90_expect_true(equal(arr(2, 3), 3.0d0))  ! original (1,2) -> (2,3)
+      call f90_expect_true(equal(arr(3, 3), 4.0d0))  ! original (2,2) -> (3,3)
+   end subroutine test_realloc_rank2_shift
    !$f90tw)
 
 end module test_malloc
