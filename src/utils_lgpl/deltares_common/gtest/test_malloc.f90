@@ -124,6 +124,16 @@ contains
    end subroutine test_reallocp_unassociated
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_stat_success, test_realloc_stat_success,
+   !> stat should be zero on successful allocation
+   subroutine test_realloc_stat_success() bind(C)
+      real(dp), allocatable :: arr(:)
+      integer :: ierr
+      call realloc(arr, 5, stat=ierr, fill=0.0d0)
+      call f90_expect_eq(ierr, 0)
+   end subroutine test_realloc_stat_success
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_reallocp_grow_keeps_existing, test_reallocp_grow_keeps_existing,
    !> Pointer realloc grow preserves existing data
    subroutine test_reallocp_grow_keeps_existing() bind(C)
@@ -137,6 +147,52 @@ contains
       call f90_expect_true(equal(arr(4), -1.0d0) .and. equal(arr(5), -1.0d0))
       deallocate (arr)
    end subroutine test_reallocp_grow_keeps_existing
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_lindex_preserved_on_grow, test_realloc_lindex_preserved_on_grow,
+   !> Lower bound set on first alloc should be preserved when growing
+   subroutine test_realloc_lindex_preserved_on_grow() bind(C)
+      real(dp), allocatable :: arr(:)
+      call realloc(arr, 5, lindex=0, fill=1.0d0)
+      call realloc(arr, 8, lindex=0, fill=2.0d0, keepExisting=.true.)
+      call f90_expect_eq(lbound(arr, 1), 0)
+      call f90_expect_eq(ubound(arr, 1), 8)
+      call f90_expect_true(equal(arr(0), 1.0d0))
+      call f90_expect_true(equal(arr(6), 2.0d0))
+   end subroutine test_realloc_lindex_preserved_on_grow
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_string_grow, test_realloc_string_grow,
+   !> Reallocating a string to a larger length preserves existing content
+   subroutine test_realloc_string_grow() bind(C)
+      character(len=:), allocatable :: str
+      call realloc(str, 5, fill='x')
+      str(1:3) = 'abc'
+      call realloc(str, 8, fill='y', keepExisting=.true.)
+      call f90_expect_eq(len(str), 8)
+      call f90_expect_true(str(1:3) == 'abc')
+      call f90_expect_true(str(6:8) == 'yyy')
+   end subroutine test_realloc_string_grow
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_zero_size, test_realloc_zero_size,
+   !> Reallocating to size 0 should produce an allocated zero-size array
+   subroutine test_realloc_zero_size() bind(C)
+      real(dp), allocatable :: arr(:)
+      call realloc(arr, 0, fill=1.0d0)
+      call f90_expect_true(allocated(arr))
+      call f90_expect_eq(size(arr), 0)
+   end subroutine test_realloc_zero_size
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_deltares_common_gtest, test_realloc_negative_size, test_realloc_negative_size,
+   !> Reallocating to negative size should produce an allocated zero-size array
+   subroutine test_realloc_negative_size() bind(C)
+      real(dp), allocatable :: arr(:)
+      call realloc(arr, -1, fill=1.0d0)
+      call f90_expect_true(allocated(arr))
+      call f90_expect_eq(size(arr), 0)
+   end subroutine test_realloc_negative_size
    !$f90tw)
 
 end module test_malloc
